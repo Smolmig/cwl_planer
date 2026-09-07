@@ -1,7 +1,7 @@
 {
   "name": "CWL Planer",
   "short_name": "CWL Planer",
-  "description": "Mobiler CWL-Einteilungsplaner für 7 Kriege mit Fixspielern, Rotation und Sonderfällen.",
+  "description": "Mobiler CWL-Einteilungsplaner mit Profilen, Fixspielern, Rotation und Sonderfällen.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
