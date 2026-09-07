@@ -21,3 +21,12 @@ Update v4:
 - CSV-Vorlage kann heruntergeladen, ausgefüllt und wieder importiert werden (Dabei/Fix/Priorität/Tag1-Tag7).
 - Profil-Backup einzeln sowie Komplett-Backup aller Profile möglich.
 - „Fehler melden“ öffnet direkt ein neues GitHub-Issue mit technischen Basisinfos, aber ohne Spielernamen.
+
+Update v5:
+- Mitgliederlisten-Vorlage vereinfacht: nur noch ein Spielername pro Zeile; Einstellungen erfolgen danach in der App.
+- Vorlage verständlicher benannt und direkt in der Datei erklärt.
+- Mitgliederliste kann jetzt auch direkt im Mitglieder-Tab importiert werden.
+- Mehrfachauswahl erweitert: ausgewählte Mitglieder gemeinsam auf Dabei/Pause sowie Fix/Nicht-Fix setzen.
+- „Erst ab Tag …“ und „Raus ab Tag …“ können kombiniert werden und die Auswahl bleibt sichtbar gespeichert.
+- Profil-Auswahl enthält unten direkt „+ Neues Profil erstellen…“.
+- Frische Nutzer starten weiterhin mit leerem Profil; vorhandene v4-Daten werden automatisch in v5 übernommen.

@@ -1,0 +1,8 @@
+# CWL Planer – Mitgliederlisten-Vorlage
+# Unter der Überschrift Mitglied nur EINEN Spielernamen pro Zeile eintragen.
+# Keine weiteren Spalten nötig. Dabei/Fix/Priorität/Sonderfälle werden danach in der App gesetzt.
+# Beim Import starten neue Namen standardmäßig auf Pause (Dabei = aus).
+Mitglied
+Spielername 1
+Spielername 2
+Spielername 3
