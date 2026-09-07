@@ -1,7 +1,7 @@
 {
   "name": "CWL Planer",
   "short_name": "CWL Planer",
-  "description": "Mobiler CWL-Einteilungsplaner mit Profilen, Fixspielern, Rotation und Sonderfällen.",
+  "description": "Mobiler CWL-Einteilungsplaner mit Profilen, fairer Rotation, Rathaus- und 3★-Stärke-Tageszielen.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

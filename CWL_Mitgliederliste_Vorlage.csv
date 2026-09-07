@@ -1,0 +1,11 @@
+﻿# CWL Planer – Mitgliederliste
+# SO GEHT'S:
+# 1. Unter der Überschrift 'Mitglied' pro Zeile genau EINEN Spielernamen eintragen.
+# 2. Nach jedem Namen Enter drücken.
+# 3. Keine weiteren Spalten verwenden.
+# 4. Dabei, Fix, Prio, Rathaus, 3★-Stärke und Sonderfälle stellst du danach in der App ein.
+# Zeilen mit # werden beim Import automatisch ignoriert.
+# Beispiel (nur zur Erklärung, wird ignoriert): Spieler Alpha
+Mitglied
+
+

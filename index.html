@@ -20,6 +20,56 @@
 @media(max-width:520px){.toprow{align-items:flex-start}.toprow>.btn{flex:0 0 auto}.profilebar select{max-width:190px}.member-top{grid-template-columns:auto 1fr auto}.member-fixed{grid-column:3}.member-part{grid-column:3}.kpis{grid-template-columns:repeat(3,1fr)}.member-actionbar{display:grid;grid-template-columns:1fr 1fr}.member-actionbar .btn{width:100%}.member-actionbar .btn.primary{grid-column:1}.member-actionbar .btn.addmany{grid-column:2}.bulk-groups{grid-template-columns:1fr}.bulk-head{align-items:flex-start}.quickrow{grid-template-columns:1fr}.modalbox{margin:2vh auto}.section-title{align-items:flex-start}}
 @media(min-width:700px){.lineup{grid-template-columns:repeat(3,minmax(0,1fr))}.dayrules{grid-template-columns:repeat(7,1fr)}}
 @media(prefers-color-scheme:dark){:root{--bg:#0b1220;--card:#111827;--text:#e5edf7;--muted:#94a3b8;--line:#263244;--shadow:none}.topbar{background:rgba(11,18,32,.94)}.bottomnav{background:rgba(17,24,39,.96)}.kpi,.player-chip,.rule-panel,.profile-active,.helpbox,.member-hint{background:#172033}.bulk-group{background:rgba(17,24,39,.5)}.field input,.field select,.name-input,.quickrow select,.rulebtn,textarea,.profilebar select{background:#111827;color:var(--text)}}
+
+/* v7 UI cleanup */
+.top-actions{display:flex;gap:7px;align-items:center;flex:0 0 auto}
+.info-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px;padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:13px;font-size:11px;color:var(--muted);line-height:1.45}
+.info-strip b{color:var(--text)}
+.info-pill{display:inline-flex;gap:4px;align-items:center}
+.list-management{margin:14px 0 12px;padding:11px;border:1px solid var(--line);border-radius:15px;background:#f8fafc}
+.list-management-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+.list-management-title{font-weight:900}.list-management-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.list-management-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sort-select{min-width:190px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:8px 10px;font-weight:750}
+.bulkbar{color:var(--text)}
+.bulk-group{color:var(--text)}
+.bulk-control{width:100%;border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:var(--card);color:var(--text);font-weight:750}
+.priority{width:92px!important;padding:8px!important}.townhall{width:88px!important;padding:8px!important}
+.member-order{display:inline-flex;gap:4px}.order-btn{min-width:34px;padding:7px 8px!important}
+.add-member-bottom{display:flex;justify-content:center;padding:16px 0 2px}
+.add-member-bottom .btn{min-width:220px}
+.toast{position:fixed;z-index:200;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,18px);background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 40px rgba(0,0,0,.24);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;opacity:0;pointer-events:none;transition:.22s ease;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.help-item{border:1px solid var(--line);background:#f8fafc;border-radius:13px;padding:10px}.help-item b{display:block;margin-bottom:3px}.help-item div{font-size:12px;color:var(--muted);line-height:1.45}
+.template-note{font-size:11px;color:var(--muted);line-height:1.45}
+@media(max-width:520px){.top-actions{flex-direction:column;align-items:stretch}.top-actions .btn{width:100%}.list-management-head{display:block}.list-management-actions{display:grid;grid-template-columns:1fr}.sort-select{width:100%;min-width:0}.help-grid{grid-template-columns:1fr}.priority{width:96px!important}.townhall{width:90px!important}}
+@media(prefers-color-scheme:dark){
+  :root{--bluebg:#172554;--greenbg:#153523;--redbg:#421f23;--amberbg:#3a3017}
+  .info-strip,.list-management,.help-item{background:#172033}
+  .bulkbar{background:#14213a;border-color:#29456d}
+  .bulk-group{background:#0f172a;border-color:#2d3d55}
+  .sort-select,.bulk-control{background:#111827;color:var(--text)}
+}
+
+/* v8: Tagesziele, Spielstärke & Optimierung */
+.strength{min-width:150px!important;width:auto!important;padding:8px!important}
+.player-meta{display:block;font-size:10px;color:var(--muted);font-weight:650;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.goal-pill{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:#f8fafc;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;color:var(--muted)}
+.goal-pill.met{background:var(--greenbg);color:var(--green);border-color:transparent}.goal-pill.miss{background:var(--amberbg);color:var(--amber);border-color:transparent}
+.goal-modal-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.goal-modal-section:first-of-type{margin-top:4px;padding-top:0;border-top:0}
+.goal-modal-section h4{margin:0 0 5px;font-size:14px}.goal-modal-section p{margin:0 0 9px;font-size:11px;color:var(--muted);line-height:1.45}
+.goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.goal-row{display:grid;grid-template-columns:1fr 76px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 9px;background:#f8fafc}
+.goal-row label{font-size:12px;font-weight:800}.goal-row small{display:block;font-size:10px;color:var(--muted);font-weight:600;margin-top:2px}.goal-row input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:7px 6px;text-align:center;font-weight:900}
+.goal-empty{font-size:12px;color:var(--muted);padding:10px;border:1px dashed var(--line);border-radius:12px}
+.goal-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}
+.goal-note{padding:9px 10px;border-radius:12px;background:var(--bluebg);font-size:11px;color:var(--text);line-height:1.45;margin-top:9px}.goal-total{font-size:11px;font-weight:800;color:var(--muted);margin-top:8px}.goal-total.over{color:var(--red)}
+.goal-day-btn.active{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+@media(max-width:520px){.strength{min-width:138px!important}.goal-grid{grid-template-columns:1fr}.goal-row{grid-template-columns:1fr 72px}}
+@media(prefers-color-scheme:dark){.goal-pill,.goal-row{background:#172033}.goal-row input{background:#111827;color:var(--text)}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -37,7 +87,7 @@
       <div class="subtitle">7 Tage fair verteilen · Sonderfälle · Live-Anpassungen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <button class="btn small primary" id="recalcBtn">Neu berechnen</button>
+    <div class="top-actions"><button class="btn small" id="helpBtn">? Hilfe</button><button class="btn small primary" id="recalcBtn">Neu berechnen</button></div>
   </div>
 </div>
 <main class="content">
@@ -58,20 +108,44 @@
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
       <button class="btn small addmany" id="multiAddBtn">+ Mehrere Mitglieder</button>
       <button class="btn small" id="membersImportBtn">Mitgliederliste importieren</button>
-      <button class="btn small" id="membersTemplateBtn">CSV-Vorlage herunterladen</button>
-      <button class="btn small" id="selectMembersBtn">Mehrfach bearbeiten</button>
+      <button class="btn small" id="membersTemplateBtn">Leere Mitglieder-Vorlage</button>
     </div>
-    <div class="member-hint"><b>Listenformat:</b> Ein Spielername pro Zeile. Keine weiteren Spalten nötig – Dabei, Fix, Priorität und Sonderfälle stellst du danach in der App ein.</div>
+    <div class="member-hint"><b>Mitgliederliste:</b> Beim Import reicht ein Spielername pro Zeile. Dabei, Fix, Prio, Rathaus, 3★-Stärke und Sonderfälle stellst du anschließend in der App ein.</div>
+    <div class="info-strip">
+      <span class="info-pill"><b>Dabei</b> = nimmt an der aktuellen CWL teil</span>
+      <span class="info-pill"><b>Fix</b> = wird an jedem verfügbaren Tag gesetzt</span>
+      <span class="info-pill"><b>Prio</b> = Tie-Breaker bei gleicher Einsatzanzahl</span>
+      <button class="btn small" id="membersHelpBtn">Mehr erklären</button>
+    </div>
+    <div class="list-management">
+      <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Sortieren, eigene Reihenfolge festlegen oder mehrere Spieler gemeinsam ändern.</div></div></div>
+      <div class="list-management-actions">
+        <select id="memberSortSelect" class="sort-select">
+          <option value="manual">Eigene Reihenfolge</option>
+          <option value="name">Name A–Z</option>
+          <option value="th-desc">Rathaus hoch → niedrig</option>
+          <option value="th-asc">Rathaus niedrig → hoch</option>
+          <option value="priority">Priorität hoch → niedrig</option>
+          <option value="strength">3★-Stärke hoch → niedrig</option>
+          <option value="participating">Dabei zuerst</option>
+        </select>
+        <button class="btn small" id="selectMembersBtn">Mehrfach bearbeiten</button>
+      </div>
+    </div>
     <div class="bulkbar hidden" id="bulkBar">
       <div class="bulk-head"><div><div class="bulk-title">Mehrfachbearbeitung</div><div class="bulk-count"><b id="selectedCount">0</b> Mitglieder ausgewählt</div></div></div>
       <div class="bulk-groups">
         <div class="bulk-group"><span class="bulk-label">Auswahl</span><div class="bulk-buttons"><button class="btn small" id="selectAllBtn">Alle auswählen</button><button class="btn small" id="selectNoneBtn">Auswahl aufheben</button></div></div>
         <div class="bulk-group"><span class="bulk-label">CWL-Teilnahme</span><div class="bulk-buttons"><button class="btn small" id="bulkParticipatingOnBtn">Als Dabei markieren</button><button class="btn small" id="bulkParticipatingOffBtn">Auf Pause setzen</button></div></div>
         <div class="bulk-group"><span class="bulk-label">Fixstatus</span><div class="bulk-buttons"><button class="btn small" id="bulkFixedOnBtn">Als Fix markieren</button><button class="btn small" id="bulkFixedOffBtn">Fix entfernen</button></div></div>
+        <div class="bulk-group"><span class="bulk-label">Priorität</span><select class="bulk-control" id="bulkPrioritySelect"><option value="">Priorität setzen …</option><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option><option value="4">Prio 4</option><option value="5">Prio 5</option></select></div>
+        <div class="bulk-group"><span class="bulk-label">Rathaus (optional)</span><select class="bulk-control" id="bulkTownHallSelect"><option value="">Rathaus setzen …</option><option value="none">RH entfernen</option></select></div>
+        <div class="bulk-group"><span class="bulk-label">3★-Stärke</span><select class="bulk-control" id="bulkStrengthSelect"><option value="">3★-Stärke setzen …</option><option value="unknown">Unbekannt</option><option value="high">Oft 3★</option><option value="medium">Solide / teils 3★</option><option value="low">Selten 3★</option><option value="verylow">Normal kein 3★</option></select></div>
         <div class="bulk-group danger-zone"><span class="bulk-label">Löschen</span><div class="bulk-buttons"><button class="btn small danger" id="deleteSelectedBtn">Ausgewählte löschen</button><button class="btn small danger" id="deleteAllBtn">Alle Mitglieder löschen</button></div></div>
       </div>
     </div>
     <div id="memberList"></div>
+    <div class="add-member-bottom"><button class="btn primary" id="addMemberBottomBtn">＋ Neues Mitglied hinzufügen</button></div>
   </div>
 </section>
 <section id="view-summary" class="view">
@@ -94,26 +168,58 @@
 <nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button></div></nav>
 
 <div class="modal" id="lineupModal"><div class="modalbox"><div class="section-title"><div><h3 id="modalTitle">Tag bearbeiten</h3><div class="statusline" id="modalCount"></div></div><button class="btn small" id="modalClose">Schließen</button></div><div class="modal-list" id="modalList"></div><div class="actions"><button class="btn primary" id="modalSave">Als tatsächlich gespielt speichern</button><button class="btn" id="modalCancel">Abbrechen</button></div></div></div>
-<div class="modal" id="bulkModal"><div class="modalbox"><div class="section-title"><div><h3>Mehrere Mitglieder hinzufügen</h3><div class="statusline">Jeder Spielername kommt in eine eigene Zeile.</div></div><button class="btn small" id="bulkClose">Schließen</button></div><div class="helpbox modal-tip"><b>So geht’s:</b> Namen eingeben → <b>Enter</b> drücken → nächsten Namen eingeben. Doppelte Namen werden automatisch übersprungen.<div class="example-list">UF⚡Galaxy
-Jamie
-m-z</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler 1&#10;Spieler 2&#10;Spieler 3"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit Priorität 0 und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
+<div class="modal" id="bulkModal"><div class="modalbox"><div class="section-title"><div><h3>Mehrere Mitglieder hinzufügen</h3><div class="statusline">Ein Name pro Zeile – nach jedem Namen einfach Enter drücken.</div></div><button class="btn small" id="bulkClose">Schließen</button></div><div class="helpbox modal-tip"><b>So geht’s:</b> Ersten Namen eingeben → <b>Enter</b> → nächsten Namen eingeben. Doppelte Namen werden automatisch übersprungen.<div class="example-list">Spieler Alpha
+Spieler Bravo
+Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
+<div class="modal" id="helpModal"><div class="modalbox"><div class="section-title"><div><h3>Hilfe & Funktionen</h3><div class="statusline">Kurz erklärt, wie der CWL Planer entscheidet.</div></div><button class="btn small" id="helpClose">Schließen</button></div>
+  <div class="help-grid">
+    <div class="help-item"><b>Dabei</b><div>Der Spieler gehört zur aktuellen CWL-Auswahl und darf vom Planer eingesetzt werden. Deaktiviert = Pause und wird nicht eingeplant.</div></div>
+    <div class="help-item"><b>Fix</b><div>Ein Fixspieler wird an jedem Tag gesetzt, an dem er verfügbar ist. RAUS bzw. Erst-ab/Raus-ab haben trotzdem Vorrang.</div></div>
+    <div class="help-item"><b>Prio 0–5</b><div>Ein Tie-Breaker innerhalb vergleichbarer Kandidaten. Tagesziele und Fairness sind wichtiger; bei gleicher Eignung wird die höhere Prio bevorzugt.</div></div>
+    <div class="help-item"><b>Rathaus (RH)</b><div>Optionale Mitgliederinfo. RH kann zum Sortieren genutzt und zusätzlich als Tagesziel verwendet werden, z. B. „Tag 5: Ziel 4× RH18“.</div></div>
+    <div class="help-item"><b>3★-Stärke</b><div>Deine grobe Einschätzung eines Angreifers: Oft 3★, solide, selten 3★ oder normalerweise kein 3★. Das ist bewusst eine manuelle Einschätzung und keine Garantie.</div></div>
+    <div class="help-item"><b>Tagesziele</b><div>Pro Krieg kannst du gewünschte RH- und 3★-Stärke-Anzahlen festlegen. Der Planer versucht diese weichen Ziele zuerst zu treffen und verteilt die übrigen Plätze danach möglichst fair.</div></div>
+    <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>AUTO lässt den Planer entscheiden. MUSS erzwingt den Einsatz an diesem Tag. RAUS macht den Spieler an diesem Tag nicht verfügbar.</div></div>
+    <div class="help-item"><b>Erst ab / Raus ab</b><div>Beide Regeln lassen sich kombinieren, z. B. erst ab Tag 2 und ab Tag 5 wieder raus.</div></div>
+    <div class="help-item"><b>Eigene Reihenfolge</b><div>Mit ↑ und ↓ legst du die Reihenfolge selbst fest. Sie dient außerdem als letzter Tie-Breaker, wenn Einsätze und Prio gleich sind.</div></div>
+    <div class="help-item"><b>Als gespielt speichern</b><div>Sperrt das tatsächliche Line-up eines Tages. Spätere Ausfälle oder Änderungen berechnen dann nur die kommenden Tage neu.</div></div>
+    <div class="help-item"><b>Profile / Clans</b><div>Jedes Profil speichert seine eigene Mitgliederliste, Regeln und CWL. Profile können kopiert, umbenannt, exportiert und gelöscht werden.</div></div>
+    <div class="help-item"><b>Backups & Fehler melden</b><div>JSON-Backups sichern Profile. „Fehler melden“ öffnet ein GitHub-Issue mit technischen Basisinfos, aber ohne Spielernamen.</div></div>
+  </div>
+</div></div>
 
+<div class="modal" id="goalsModal"><div class="modalbox">
+  <div class="section-title"><div><h3 id="goalsTitle">Tagesziele</h3><div class="statusline">Gewünschte Zusammensetzung für diesen Krieg.</div></div><button class="btn small" id="goalsClose">Schließen</button></div>
+  <div class="goal-note"><b>Weiche Ziele:</b> Fix, MUSS, RAUS und bereits gespeicherte Tage haben Vorrang. Der Planer versucht die Ziele bestmöglich zu treffen und hält bei den übrigen Plätzen die Einsatzanzahl fair. <b>0 = kein Ziel.</b></div>
+  <div class="goal-modal-section"><h4>Rathaus-Ziele</h4><p>Es werden nur RH-Level angezeigt, die im aktuellen Teilnehmerfeld vorkommen. Beispiel: RH18 = 4 bedeutet „möglichst 4 Spieler mit RH18“.</p><div id="townHallGoalGrid" class="goal-grid"></div></div>
+  <div class="goal-modal-section"><h4>3★-Stärke-Ziele</h4><p>Lege fest, wie viele Spieler aus deinen manuellen Stärke-Kategorien im Line-up sein sollen.</p><div id="strengthGoalGrid" class="goal-grid"></div><div id="goalsTotals" class="goal-total"></div></div>
+  <div class="goal-actions"><button class="btn danger" id="goalsClear">Ziele für diesen Tag löschen</button><div class="actions"><button class="btn" id="goalsCancel">Abbrechen</button><button class="btn primary" id="goalsSave">Ziele speichern</button></div></div>
+</div></div>
+
+<div class="toast" id="toast">Plan neu berechnet ✓</div>
 <script>
-const APP_VERSION="v6";
-const STORAGE_KEY="cwl_planer_mobile_v6";
+const APP_VERSION="v8";
+const STORAGE_KEY="cwl_planer_mobile_v8";
+const V7_STORAGE_KEY="cwl_planer_mobile_v7";
+const V6_STORAGE_KEY="cwl_planer_mobile_v6";
 const V5_STORAGE_KEY="cwl_planer_mobile_v5";
 const V4_STORAGE_KEY="cwl_planer_mobile_v4";
 const LEGACY_STORAGE_KEY="cwl_planer_mobile_v1";
 const BUG_URL="https://github.com/smolmig/cwl_planer/issues/new";
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
-function freshMember(name=""){return{id:uid(),name,participating:true,fixed:false,priority:0,statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
-function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7},members:[],locks:Array.from({length:7},()=>({locked:false,lineup:[]})),updatedAt:Date.now()}}
-function defaultApp(){const p=freshProfile();return{version:6,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
+const STRENGTH_LABELS={unknown:"Unbekannt",high:"Oft 3★",medium:"Solide / teils 3★",low:"Selten 3★",verylow:"Normal kein 3★"};
+const STRENGTH_SHORT={unknown:"3★ ?",high:"3★ hoch",medium:"3★ solide",low:"3★ selten",verylow:"3★ kaum"};
+const STRENGTH_RANK={high:4,medium:3,low:2,verylow:1,unknown:0};
+function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,verylow:0}}}
+function freshMember(name=""){return{id:uid(),name,participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
+function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),updatedAt:Date.now()}}
+function defaultApp(){const p=freshProfile();return{version:8,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();
   p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
-  p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));
-  p.members=Array.isArray(p.members)?p.members:[];p.members.forEach(m=>{m.id||=uid();m.name||="";m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");const oldFirst=m.firstDay,oldOut=m.outFromDay;m.firstDay=(Number(oldFirst)>=1&&Number(oldFirst)<=7)?Number(oldFirst):null;m.outFromDay=(Number(oldOut)>=1&&Number(oldOut)<=7)?Number(oldOut):null;if(oldFirst==null&&oldOut==null){let prefix=0;while(prefix<7&&m.statuses[prefix]==="out")prefix++;let suffix=7;while(suffix>prefix&&m.statuses[suffix-1]==="out")suffix--;const innerHasOut=m.statuses.slice(prefix,suffix).some(x=>x==="out");if(!innerHasOut){if(prefix>0&&prefix<7)m.firstDay=prefix+1;if(suffix<7&&suffix>0)m.outFromDay=suffix+1}}});
+  p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","participating"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
+  p.members=Array.isArray(p.members)?p.members:[];p.members.forEach(m=>{m.id||=uid();m.name||="";m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.threeStar=Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown";const th=Number(m.townHall);m.townHall=(Number.isFinite(th)&&th>=1&&th<=20)?th:null;m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");const oldFirst=m.firstDay,oldOut=m.outFromDay;m.firstDay=(Number(oldFirst)>=1&&Number(oldFirst)<=7)?Number(oldFirst):null;m.outFromDay=(Number(oldOut)>=1&&Number(oldOut)<=7)?Number(oldOut):null;if(oldFirst==null&&oldOut==null){let prefix=0;while(prefix<7&&m.statuses[prefix]==="out")prefix++;let suffix=7;while(suffix>prefix&&m.statuses[suffix-1]==="out")suffix--;const innerHasOut=m.statuses.slice(prefix,suffix).some(x=>x==="out");if(!innerHasOut){if(prefix>0&&prefix<7)m.firstDay=prefix+1;if(suffix<7&&suffix>0)m.outFromDay=suffix+1}}});
+  p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=1&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});
   p.locks=Array.from({length:7},(_,i)=>({locked:!!p.locks?.[i]?.locked,lineup:Array.isArray(p.locks?.[i]?.lineup)?p.locks[i].lineup:[]}));return p;
 }
 function normalizeApp(a){
@@ -121,14 +227,16 @@ function normalizeApp(a){
   a.profiles=Array.isArray(a.profiles)?a.profiles.map(normalizeProfile):[];
   if(!a.profiles.length)a.profiles=[freshProfile()];
   if(!a.profiles.some(p=>p.id===a.activeProfileId))a.activeProfileId=a.profiles[0].id;
-  a.version=6;return a;
+  a.version=8;return a;
 }
 function migrateLegacy(raw){
-  try{const old=JSON.parse(raw);const p=normalizeProfile(old);p.id=uid("p");p.name="Mein Clan";return{version:6,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}catch(e){return defaultApp()}
+  try{const old=JSON.parse(raw);const p=normalizeProfile(old);p.id=uid("p");p.name="Mein Clan";return{version:8,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}catch(e){return defaultApp()}
 }
 function loadApp(){
   try{
     const raw=localStorage.getItem(STORAGE_KEY);if(raw)return normalizeApp(JSON.parse(raw));
+    const v7=localStorage.getItem(V7_STORAGE_KEY);if(v7)return normalizeApp(JSON.parse(v7));
+    const v6=localStorage.getItem(V6_STORAGE_KEY);if(v6)return normalizeApp(JSON.parse(v6));
     const v5=localStorage.getItem(V5_STORAGE_KEY);if(v5)return normalizeApp(JSON.parse(v5));
     const v4=localStorage.getItem(V4_STORAGE_KEY);if(v4)return normalizeApp(JSON.parse(v4));
     const legacy=localStorage.getItem(LEGACY_STORAGE_KEY);if(legacy)return migrateLegacy(legacy);
@@ -142,6 +250,21 @@ function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)retu
 function saveApp(){state.updatedAt=Date.now();app.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(app));const b=document.getElementById("saveBadge");if(b){b.textContent="lokal gespeichert";b.className="badge ok"}}
 function memberById(id){return state.members.find(m=>m.id===id)}
 function effectiveStatus(m,d){const day=d+1;if(m.firstDay&&day<m.firstDay)return"out";if(m.outFromDay&&day>=m.outFromDay)return"out";return m.statuses[d]||"auto"}
+function activeDayGoal(d){return state.dayGoals?.[d]||emptyDayGoal()}
+function goalSnapshot(lineup,d){
+  const g=activeDayGoal(d),th={},strength={high:0,medium:0,low:0,verylow:0};
+  for(const id of lineup){const m=memberById(id);if(!m)continue;if(m.townHall)th[m.townHall]=(th[m.townHall]||0)+1;if(strength[m.threeStar]!==undefined)strength[m.threeStar]++}
+  const items=[],issues=[];
+  for(const [level,target] of Object.entries(g.townHall||{})){if(!target)continue;const actual=th[level]||0;items.push({label:`RH${level}`,actual,target,met:actual===target});if(actual!==target)issues.push(`Ziel RH${level}: ${actual}/${target} erreicht.`)}
+  for(const key of ["high","medium","low","verylow"]){const target=g.strength?.[key]||0;if(!target)continue;const actual=strength[key]||0;items.push({label:STRENGTH_LABELS[key],actual,target,met:actual===target});if(actual!==target)issues.push(`Ziel ${STRENGTH_LABELS[key]}: ${actual}/${target} erreicht.`)}
+  return{items,issues};
+}
+function candidateGoalScore(m,d,current){
+  const g=activeDayGoal(d);let score=0;
+  if(m.townHall&&g.townHall?.[String(m.townHall)]){const target=g.townHall[String(m.townHall)],actual=current.th[m.townHall]||0;score+=actual<target?120:-18}
+  if(m.threeStar!=="unknown"&&g.strength?.[m.threeStar]){const target=g.strength[m.threeStar],actual=current.strength[m.threeStar]||0;score+=actual<target?120:-18}
+  return score;
+}
 function calculatePlan(){
   const slots=state.config.slots,days=state.config.days,counts=Object.fromEntries(state.members.map(m=>[m.id,0])),dayPlans=[];
   for(let d=0;d<days;d++){
@@ -152,11 +275,22 @@ function calculatePlan(){
       for(const m of eligible){if(effectiveStatus(m,d)==="must"&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}}
       for(const m of eligible){if(m.fixed&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}}
       if(eligible.length<slots)warnings.push(`Nur ${eligible.length} Spieler verfügbar.`);if(required.length>slots)warnings.push(`${required.length} Fix/MUSS-Spieler für nur ${slots} Plätze.`);
-      const candidates=eligible.filter(m=>!reqSet.has(m.id));
-      candidates.sort((a,b)=>{const ca=counts[a.id]||0,cb=counts[b.id]||0;if(ca!==cb)return ca-cb;if(a.priority!==b.priority)return b.priority-a.priority;const ia=state.members.indexOf(a),ib=state.members.indexOf(b),ta=(ia*17+d*13)%997,tb=(ib*17+d*13)%997;return ta-tb});
-      const chosen=[...required];for(const m of candidates){if(chosen.length>=slots)break;chosen.push(m)}lineup=chosen.slice(0,Math.max(slots,required.length)).map(m=>m.id);
+      const remaining=eligible.filter(m=>!reqSet.has(m.id)),chosen=[...required];
+      const current={th:{},strength:{high:0,medium:0,low:0,verylow:0}};
+      const addCurrent=m=>{if(m.townHall)current.th[m.townHall]=(current.th[m.townHall]||0)+1;if(current.strength[m.threeStar]!==undefined)current.strength[m.threeStar]++};
+      chosen.forEach(addCurrent);
+      while(chosen.length<slots&&remaining.length){
+        remaining.sort((a,b)=>{
+          const ga=candidateGoalScore(a,d,current),gb=candidateGoalScore(b,d,current);if(ga!==gb)return gb-ga;
+          const ca=counts[a.id]||0,cb=counts[b.id]||0;if(ca!==cb)return ca-cb;
+          if(a.priority!==b.priority)return b.priority-a.priority;
+          const ia=state.members.indexOf(a),ib=state.members.indexOf(b),ta=(ia*17+d*13)%997,tb=(ib*17+d*13)%997;return ta-tb;
+        });
+        const m=remaining.shift();chosen.push(m);addCurrent(m);
+      }
+      lineup=chosen.slice(0,Math.max(slots,required.length)).map(m=>m.id);
     }
-    lineup.forEach(id=>counts[id]=(counts[id]||0)+1);const prev=d>0?dayPlans[d-1].lineup:[],rein=d>0?lineup.filter(id=>!prev.includes(id)):[],raus=d>0?prev.filter(id=>!lineup.includes(id)):[];dayPlans.push({day:d+1,lineup,rein,raus,warnings,locked:!!lock?.locked});
+    lineup.forEach(id=>counts[id]=(counts[id]||0)+1);const prev=d>0?dayPlans[d-1].lineup:[],rein=d>0?lineup.filter(id=>!prev.includes(id)):[],raus=d>0?prev.filter(id=>!lineup.includes(id)):[],goal=goalSnapshot(lineup,d);dayPlans.push({day:d+1,lineup,rein,raus,warnings,goal,locked:!!lock?.locked});
   }
   return{dayPlans,counts};
 }
@@ -169,64 +303,122 @@ function renderProfileUI(){
 function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length;document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots}
 function renderPlan(){
   const root=document.getElementById("planDays");root.innerHTML="";
-  lastPlan.dayPlans.forEach(dp=>{const names=dp.lineup.map(memberById).filter(Boolean),rein=dp.rein.map(memberById).filter(Boolean).map(m=>m.name),raus=dp.raus.map(memberById).filter(Boolean).map(m=>m.name),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.className="card day-card"+(dp.locked?" locked":"");card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${exact?"ok":"warn"}">${dp.locked?"GESPEICHERT":(exact?"OK":"PRÜFEN")}</span></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}<div class="lineup">${names.map((m,i)=>`<div class="player-chip">${i+1}. ${esc(m.name)}</div>`).join("")}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 Rein</b><div>${rein.length?rein.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 Raus</b><div>${raus.length?raus.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions" style="margin-top:10px">${dp.locked?`<button class="btn small edit-day" data-day="${dp.day-1}">Line-up bearbeiten</button><button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:`<button class="btn small lock-day" data-day="${dp.day-1}">Als gespielt speichern</button>`}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">Wechsel kopieren</button>`:""}</div>`;root.appendChild(card)});
+  lastPlan.dayPlans.forEach(dp=>{
+    const names=dp.lineup.map(memberById).filter(Boolean),rein=dp.rein.map(memberById).filter(Boolean).map(m=>m.name),raus=dp.raus.map(memberById).filter(Boolean).map(m=>m.name),goalItems=dp.goal?.items||[],goalMiss=goalItems.some(x=>!x.met),exact=names.length===state.config.slots&&!dp.warnings.length;
+    const card=document.createElement("div");card.className="card day-card"+(dp.locked?" locked":"");
+    const goalHtml=goalItems.length?`<div class="goal-summary">${goalItems.map(x=>`<span class="goal-pill ${x.met?"met":"miss"}">${esc(x.label)} ${x.actual}/${x.target}</span>`).join("")}</div>`:"";
+    card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${exact&&!goalMiss?"ok":"warn"}">${dp.locked?"GESPEICHERT":(exact&&!goalMiss?"OK":goalMiss?"ZIEL PRÜFEN":"PRÜFEN")}</span></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${goalHtml}<div class="lineup">${names.map((m,i)=>`<div class="player-chip">${i+1}. ${esc(m.name)}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("")}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 Rein</b><div>${rein.length?rein.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 Raus</b><div>${raus.length?raus.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions" style="margin-top:10px"><button class="btn small goal-day-btn ${goalItems.length?"active":""}" data-day="${dp.day-1}">🎯 Tagesziele${goalItems.length?` (${goalItems.length})`:""}</button>${dp.locked?`<button class="btn small edit-day" data-day="${dp.day-1}">Line-up bearbeiten</button><button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:`<button class="btn small lock-day" data-day="${dp.day-1}">Als gespielt speichern</button>`}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">Wechsel kopieren</button>`:""}</div>`;root.appendChild(card)
+  });
+  root.querySelectorAll(".goal-day-btn").forEach(b=>b.onclick=()=>openGoalsModal(Number(b.dataset.day)));
   root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.day);state.locks[d]={locked:true,lineup:[...lastPlan.dayPlans[d].lineup]};renderAll()});
   root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.day);state.locks[d]={locked:false,lineup:[]};renderAll()});
   root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));
-  root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>{const dp=lastPlan.dayPlans[Number(b.dataset.day)],ins=dp.rein.map(id=>memberById(id)?.name).filter(Boolean),outs=dp.raus.map(id=>memberById(id)?.name).filter(Boolean),text=`Tag ${dp.day}\n🔴 Raus: ${outs.join(", ")||"–"}\n🟢 Rein: ${ins.join(", ")||"–"}`;copyText(text,b,"Wechsel kopieren")});
+  root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>{const dp=lastPlan.dayPlans[Number(b.dataset.day)],ins=dp.rein.map(id=>memberById(id)?.name).filter(Boolean),outs=dp.raus.map(id=>memberById(id)?.name).filter(Boolean),text=`Tag ${dp.day}
+🔴 Raus: ${outs.join(", ")||"–"}
+🟢 Rein: ${ins.join(", ")||"–"}`;copyText(text,b,"Wechsel kopieren")});
 }
 function updateBulkBar(){document.getElementById("bulkBar").classList.toggle("hidden",!selectionMode);document.getElementById("selectedCount").textContent=selectedMembers.size;document.getElementById("selectMembersBtn").textContent=selectionMode?"Mehrfachbearbeitung beenden":"Mehrfach bearbeiten"}
+function getDisplayMembers(){
+  const list=[...state.members],mode=state.config.memberSort||"manual";
+  if(mode==="manual")return list;
+  if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));
+  if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));
+  if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));
+  if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));
+  if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));
+  if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));
+  return list;
+}
+function moveMember(id,delta){const i=state.members.findIndex(m=>m.id===id),j=i+delta;if(i<0||j<0||j>=state.members.length)return;[state.members[i],state.members[j]]=[state.members[j],state.members[i]];renderAll()}
 function renderMembers(){
   const root=document.getElementById("memberList");updateBulkBar();
-  if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Du kannst einzelne Namen hinzufügen, mehrere Namen untereinander einfügen oder eine Mitgliederliste importieren.</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button><button class="btn small" id="emptyTemplate">CSV-Vorlage herunterladen</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();document.getElementById("emptyTemplate").onclick=downloadTemplate;return}
-  root.innerHTML=state.members.map(m=>{
+  const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";
+  if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Du kannst einzelne Namen hinzufügen, mehrere Namen untereinander einfügen oder eine Mitgliederliste importieren.</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button><button class="btn small" id="emptyTemplate">Leere Mitglieder-Vorlage</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();document.getElementById("emptyTemplate").onclick=downloadTemplate;return}
+  const display=getDisplayMembers(),manual=(state.config.memberSort||"manual")==="manual";
+  root.innerHTML=display.map(m=>{
     const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay);return`<button class="rulebtn ${eff}" data-day="${d}" ${quickOut?'disabled title="Durch Erst-ab/Raus-ab-Regel nicht verfügbar"':''}>T${d+1}<br>${eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");
     const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");
     const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");
-    return`<div class="member" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name"><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-tools"><select class="name-input priority member-priority">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><button class="btn small toggle-rules">Tage / Sonderfall</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span></div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div><div class="statusline">Beide Regeln können kombiniert werden, z. B. „Erst ab Tag 2“ + „Raus ab Tag 5“.</div></div></div>`
+    const thOpts=`<option value="">RH –</option>`+Array.from({length:20},(_,i)=>i+1).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("");
+    const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");
+    const idx=state.members.findIndex(x=>x.id===m.id);
+    const orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"";
+    return`<div class="member" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name"><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select>${orderBtns}<button class="btn small toggle-rules">Tage / Sonderfall</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span></div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div><div class="statusline">Beide Regeln können kombiniert werden, z. B. „Erst ab Tag 2“ + „Raus ab Tag 5“.</div></div></div>`
   }).join("");
-  root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");sel.onchange=e=>{e.target.checked?selectedMembers.add(id):selectedMembers.delete(id);updateBulkBar()};el.querySelector(".member-name").onchange=e=>{m.name=e.target.value.trim();renderAll()};el.querySelector(".member-part input").onchange=e=>{m.participating=e.target.checked;renderAll()};el.querySelector(".member-fixed input").onchange=e=>{m.fixed=e.target.checked;renderAll()};el.querySelector(".member-priority").onchange=e=>{m.priority=Number(e.target.value);renderAll()};el.querySelector(".toggle-rules").onclick=()=>{if(openRulePanels.has(id))openRulePanels.delete(id);else openRulePanels.add(id);el.querySelector(".rule-panel").classList.toggle("open")};el.querySelector(".delete-member").onclick=()=>{if(confirm(`${m.name||"Mitglied"} wirklich löschen?`)){openRulePanels.delete(id);selectedMembers.delete(id);removeMembers(new Set([id]));renderAll()}};el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll()});el.querySelector(".first-day").onchange=e=>{m.firstDay=e.target.value?Number(e.target.value):null;renderAll()};el.querySelector(".out-from").onchange=e=>{m.outFromDay=e.target.value?Number(e.target.value):null;renderAll()}});
+  root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");sel.onchange=e=>{e.target.checked?selectedMembers.add(id):selectedMembers.delete(id);updateBulkBar()};el.querySelector(".member-name").onchange=e=>{m.name=e.target.value.trim();renderAll()};el.querySelector(".member-part input").onchange=e=>{m.participating=e.target.checked;renderAll()};el.querySelector(".member-fixed input").onchange=e=>{m.fixed=e.target.checked;renderAll()};el.querySelector(".member-priority").onchange=e=>{m.priority=Number(e.target.value);renderAll()};el.querySelector(".member-th").onchange=e=>{m.townHall=e.target.value?Number(e.target.value):null;renderAll()};el.querySelector(".member-strength").onchange=e=>{m.threeStar=e.target.value;renderAll()};el.querySelector(".move-up")?.addEventListener("click",()=>moveMember(id,-1));el.querySelector(".move-down")?.addEventListener("click",()=>moveMember(id,1));el.querySelector(".toggle-rules").onclick=()=>{if(openRulePanels.has(id))openRulePanels.delete(id);else openRulePanels.add(id);el.querySelector(".rule-panel").classList.toggle("open")};el.querySelector(".delete-member").onclick=()=>{if(confirm(`${m.name||"Mitglied"} wirklich löschen?`)){openRulePanels.delete(id);selectedMembers.delete(id);removeMembers(new Set([id]));renderAll()}};el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll()});el.querySelector(".first-day").onchange=e=>{m.firstDay=e.target.value?Number(e.target.value):null;renderAll()};el.querySelector(".out-from").onchange=e=>{m.outFromDay=e.target.value?Number(e.target.value):null;renderAll()}});
 }
 function removeMembers(ids){state.members=state.members.filter(m=>!ids.has(m.id));state.locks.forEach(l=>l.lineup=l.lineup.filter(id=>!ids.has(id)))}
 function buildFullPlanText(){const lines=[`⚔️ CWL Aufstellung – ${state.name}`,""];lastPlan.dayPlans.forEach(dp=>{const names=dp.lineup.map(id=>memberById(id)?.name).filter(Boolean);lines.push(`Tag ${dp.day}`);if(dp.day>1){const ins=dp.rein.map(id=>memberById(id)?.name).filter(Boolean),outs=dp.raus.map(id=>memberById(id)?.name).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push("Aufstellung:");names.forEach((name,i)=>lines.push(`${i+1}. ${name}`));lines.push("")});return lines.join("\n").trim()}
 async function copyText(text,button,normalLabel){try{await navigator.clipboard.writeText(text);if(button){button.textContent="Kopiert ✓";setTimeout(()=>button.textContent=normalLabel,1400)}}catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");if(button){button.textContent="Kopiert ✓";setTimeout(()=>button.textContent=normalLabel,1400)}}catch(_){alert(text)}ta.remove()}}
-function renderSummary(){const root=document.getElementById("summaryList"),rows=state.members.filter(m=>m.participating&&m.name.trim()).map(m=>({m,count:lastPlan.counts[m.id]||0})).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de")),rot=rows.filter(x=>!x.m.fixed),avg=rot.length?rot.reduce((s,x)=>s+x.count,0)/rot.length:0;root.innerHTML=rows.map(x=>{const d=x.m.fixed?0:x.count-avg,cls=x.m.fixed?"zero":Math.abs(d)<.51?"zero":d>0?"pos":"neg",label=x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`;return`<div class="summary-row"><div><b>${esc(x.m.name)}</b><div class="statusline">${x.m.fixed?"Fixspieler":"Rotation"} · Prio ${x.m.priority}</div></div><span class="delta ${cls}">${label}</span><span class="count">${x.count}×</span></div>`}).join("")||'<div class="empty">Keine Teilnehmer ausgewählt.</div>';const badge=document.getElementById("fairBadge");if(rot.length){const vals=rot.map(x=>x.count),spread=Math.max(...vals)-Math.min(...vals);badge.textContent=spread<=1?"sehr fair":spread<=2?"okay":"prüfen";badge.className="badge "+(spread<=1?"ok":spread<=2?"warn":"err")}else{badge.textContent="–";badge.className="badge ok"}}
+function renderSummary(){const root=document.getElementById("summaryList"),rows=state.members.filter(m=>m.participating&&m.name.trim()).map(m=>({m,count:lastPlan.counts[m.id]||0})).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de")),rot=rows.filter(x=>!x.m.fixed),avg=rot.length?rot.reduce((s,x)=>s+x.count,0)/rot.length:0;root.innerHTML=rows.map(x=>{const d=x.m.fixed?0:x.count-avg,cls=x.m.fixed?"zero":Math.abs(d)<.51?"zero":d>0?"pos":"neg",label=x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`;return`<div class="summary-row"><div><b>${esc(x.m.name)}</b><div class="statusline">${x.m.fixed?"Fixspieler":"Rotation"}${x.m.townHall?` · RH ${x.m.townHall}`:""} · ${esc(STRENGTH_SHORT[x.m.threeStar]||"3★ ?")} · Prio ${x.m.priority}</div></div><span class="delta ${cls}">${label}</span><span class="count">${x.count}×</span></div>`}).join("")||'<div class="empty">Keine Teilnehmer ausgewählt.</div>';const badge=document.getElementById("fairBadge");if(rot.length){const vals=rot.map(x=>x.count),spread=Math.max(...vals)-Math.min(...vals);badge.textContent=spread<=1?"sehr fair":spread<=2?"okay":"prüfen";badge.className="badge "+(spread<=1?"ok":spread<=2?"warn":"err")}else{badge.textContent="–";badge.className="badge ok"}}
 function syncConfigInputs(){document.getElementById("slotsInput").value=state.config.slots;document.getElementById("daysInput").value=state.config.days}
 function openLineupModal(day){modalDay=day;modalSelection=new Set(state.locks[day]?.lineup||lastPlan.dayPlans[day].lineup);document.getElementById("lineupModal").classList.add("open");document.getElementById("modalTitle").textContent=`Tag ${day+1} – tatsächliches Line-up`;renderModalList()}
-function renderModalList(){const list=document.getElementById("modalList"),candidates=state.members.filter(m=>m.name.trim());list.innerHTML=candidates.map(m=>`<label class="pick"><input type="checkbox" data-id="${m.id}" ${modalSelection.has(m.id)?"checked":""}><span><b>${esc(m.name)}</b><br><small>${m.fixed?"Fixspieler · ":""}${m.participating?"CWL dabei":"aktuell nicht dabei"}</small></span></label>`).join("");list.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{if(cb.checked)modalSelection.add(cb.dataset.id);else modalSelection.delete(cb.dataset.id);updateModalCount()});updateModalCount()}
+function renderModalList(){const list=document.getElementById("modalList"),candidates=state.members.filter(m=>m.name.trim());list.innerHTML=candidates.map(m=>`<label class="pick"><input type="checkbox" data-id="${m.id}" ${modalSelection.has(m.id)?"checked":""}><span><b>${esc(m.name)}</b><br><small>${m.fixed?"Fixspieler · ":""}${m.participating?"CWL dabei":"aktuell nicht dabei"}${m.townHall?` · RH${m.townHall}`:""} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</small></span></label>`).join("");list.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{if(cb.checked)modalSelection.add(cb.dataset.id);else modalSelection.delete(cb.dataset.id);updateModalCount()});updateModalCount()}
 function updateModalCount(){const el=document.getElementById("modalCount");el.textContent=`${modalSelection.size}/${state.config.slots} Spieler gewählt`;el.style.color=modalSelection.size===state.config.slots?"var(--green)":"var(--red)"}
 function closeModal(){document.getElementById("lineupModal").classList.remove("open");modalDay=null;modalSelection=new Set()}
+let goalsDay=null,goalDraft=null;
+function cloneGoal(g){return{townHall:{...(g?.townHall||{})},strength:{high:Number(g?.strength?.high)||0,medium:Number(g?.strength?.medium)||0,low:Number(g?.strength?.low)||0,verylow:Number(g?.strength?.verylow)||0}}}
+function openGoalsModal(day){goalsDay=day;goalDraft=cloneGoal(activeDayGoal(day));document.getElementById("goalsTitle").textContent=`Tag ${day+1} – Tagesziele`;renderGoalsModal();document.getElementById("goalsModal").classList.add("open")}
+function renderGoalsModal(){
+  const thRoot=document.getElementById("townHallGoalGrid"),strengthRoot=document.getElementById("strengthGoalGrid");
+  const levels=[...new Set(state.members.filter(m=>m.participating&&m.townHall).map(m=>m.townHall).concat(Object.keys(goalDraft.townHall).map(Number)))].filter(Boolean).sort((a,b)=>b-a);
+  thRoot.innerHTML=levels.length?levels.map(th=>{const available=state.members.filter(m=>m.participating&&m.townHall===th&&effectiveStatus(m,goalsDay)!=="out").length;return`<div class="goal-row"><label>RH ${th}<small>${available} an Tag ${goalsDay+1} verfügbar</small></label><input class="goal-th-input" data-th="${th}" type="number" min="0" max="${state.config.slots}" value="${goalDraft.townHall[String(th)]||0}"></div>`}).join(""):'<div class="goal-empty">Noch keine Rathaus-Level bei den CWL-Teilnehmern hinterlegt. Trage zuerst bei den Mitgliedern optional ein RH ein.</div>';
+  const keys=["high","medium","low","verylow"];strengthRoot.innerHTML=keys.map(key=>{const available=state.members.filter(m=>m.participating&&m.threeStar===key&&effectiveStatus(m,goalsDay)!=="out").length;return`<div class="goal-row"><label>${esc(STRENGTH_LABELS[key])}<small>${available} an Tag ${goalsDay+1} verfügbar</small></label><input class="goal-strength-input" data-strength="${key}" type="number" min="0" max="${state.config.slots}" value="${goalDraft.strength[key]||0}"></div>`}).join("");
+  document.querySelectorAll("#goalsModal input[type=number]").forEach(el=>el.addEventListener("input",updateGoalTotals));updateGoalTotals();
+}
+function updateGoalTotals(){const th=[...document.querySelectorAll("#townHallGoalGrid .goal-th-input")].reduce((s,e)=>s+(Number(e.value)||0),0),st=[...document.querySelectorAll("#strengthGoalGrid .goal-strength-input")].reduce((s,e)=>s+(Number(e.value)||0),0),el=document.getElementById("goalsTotals");if(!el)return;el.textContent=`RH-Ziele gesamt: ${th}/${state.config.slots} · Stärke-Ziele gesamt: ${st}/${state.config.slots}${th>state.config.slots||st>state.config.slots?" · Achtung: Summe größer als Line-up":""}`;el.classList.toggle("over",th>state.config.slots||st>state.config.slots)}
+function readGoalsDraft(){
+  const townHall={};document.querySelectorAll("#townHallGoalGrid .goal-th-input").forEach(el=>{const n=Math.max(0,Math.min(state.config.slots,Number(el.value)||0));if(n>0)townHall[String(el.dataset.th)]=n});
+  const strength={high:0,medium:0,low:0,verylow:0};document.querySelectorAll("#strengthGoalGrid .goal-strength-input").forEach(el=>strength[el.dataset.strength]=Math.max(0,Math.min(state.config.slots,Number(el.value)||0)));
+  return{townHall,strength};
+}
+function closeGoalsModal(){document.getElementById("goalsModal").classList.remove("open");goalsDay=null;goalDraft=null}
+
 function countBulkNames(){const el=document.getElementById("bulkNames"),out=document.getElementById("bulkDetectedCount");if(!el||!out)return;const names=el.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);out.textContent=`${names.length} ${names.length===1?"Name":"Namen"} erkannt`}
 function openBulkModal(){const el=document.getElementById("bulkNames");el.value="";countBulkNames();document.getElementById("bulkModal").classList.add("open");setTimeout(()=>el.focus(),50)}
 function closeBulkModal(){document.getElementById("bulkModal").classList.remove("open")}
 function addMany(text){const names=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),existing=new Set(state.members.map(m=>m.name.trim().toLowerCase()).filter(Boolean));let added=0;for(const name of names){const k=name.toLowerCase();if(existing.has(k))continue;state.members.push(freshMember(name));existing.add(k);added++}return added}
 function downloadFile(name,text,type="application/json"){const blob=new Blob([text],{type}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function exportActiveProfile(){downloadFile(`CWL_Profil_${safeName(state.name)}_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-profile",version:6,profile:state},null,2))}
-function exportAllProfiles(){downloadFile(`CWL_Alle_Profile_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:6,app},null,2))}
+function exportActiveProfile(){downloadFile(`CWL_Profil_${safeName(state.name)}_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-profile",version:8,profile:state},null,2))}
+function exportAllProfiles(){downloadFile(`CWL_Alle_Profile_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:8,app},null,2))}
 function safeName(s){return(s||"Profil").replace(/[^a-z0-9äöüß_-]+/gi,"_").replace(/^_+|_+$/g,"")||"Profil"}
-function cloneProfile(p,newName){const map=new Map(),members=p.members.map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),locks=p.locks.map(l=>({locked:l.locked,lineup:l.lineup.map(id=>map.get(id)).filter(Boolean)}));return normalizeProfile({id:uid("p"),name:newName,config:{...p.config},members,locks,updatedAt:Date.now()})}
-function clearActiveProfile(){state.config={slots:15,days:7};state.members=[];state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));openRulePanels.clear();selectionMode=false;selectedMembers.clear()}
-function downloadTemplate(){const text=["# CWL Planer – Mitgliederliste","# ANLEITUNG: Unter der Überschrift Mitglied pro Zeile genau EINEN Spielernamen eintragen.","# Nach jedem Namen eine neue Zeile beginnen (Enter). Keine Zusatzspalten oder weiteren Angaben nötig.","# Dabei/Fix/Priorität und Sonderfälle werden nach dem Import direkt in der App eingestellt.","# Importierte Namen starten standardmäßig auf Pause (Dabei = aus).","Mitglied"].join("\n");downloadFile("CWL_Mitgliederliste_Eintragen.csv",text,"text/csv;charset=utf-8")}
+function cloneProfile(p,newName){const map=new Map(),members=p.members.map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),dayGoals=(p.dayGoals||[]).map(cloneGoal),locks=p.locks.map(l=>({locked:l.locked,lineup:l.lineup.map(id=>map.get(id)).filter(Boolean)}));return normalizeProfile({id:uid("p"),name:newName,config:{...p.config},members,dayGoals,locks,updatedAt:Date.now()})}
+function clearActiveProfile(){state.config={slots:15,days:7,memberSort:"manual"};state.members=[];state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));openRulePanels.clear();selectionMode=false;selectedMembers.clear()}
+function downloadTemplate(){const text="\ufeff"+["# CWL Planer – Mitgliederliste","# SO GEHT'S:","# 1. Unter der Überschrift 'Mitglied' pro Zeile genau EINEN Spielernamen eintragen.","# 2. Nach jedem Namen Enter drücken.","# 3. Keine weiteren Spalten verwenden.","# 4. Dabei, Fix, Prio, Rathaus, 3★-Stärke und Sonderfälle stellst du danach in der App ein.","# Zeilen mit # werden beim Import automatisch ignoriert.","# Beispiel (nur zur Erklärung, wird ignoriert): Spieler Alpha","Mitglied"].join("\r\n");downloadFile("CWL_Mitgliederliste_Vorlage.csv",text,"text/csv;charset=utf-8")}
 function importMemberText(text,filename=""){
-  const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith("#"));if(!lines.length)return{added:0,existing:0};
+  const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith("#"));if(!lines.length)return{added:0,existing:0};
   const names=[];for(let line of lines){const first=line.split(/[;,]/)[0].trim().replace(/^"|"$/g,"");if(!first)continue;const low=first.toLowerCase();if(["mitglied","name","spieler","spielername"].includes(low))continue;names.push(first)}
   let added=0,existing=0;for(const name of names){let m=state.members.find(x=>x.name.trim().toLowerCase()===name.toLowerCase());if(m){existing++;continue}m=freshMember(name);m.participating=false;state.members.push(m);added++}
   return{added,existing};
 }
 function buildBugUrl(){const participants=state.members.filter(m=>m.participating).length,fixed=state.members.filter(m=>m.participating&&m.fixed).length;const body=["**Was ist passiert?**","Bitte beschreiben…","","**Schritte zum Nachstellen**","1. ","2. ","3. ","","**Technische Infos**",`- App: ${APP_VERSION}`,`- Profile: ${app.profiles.length}`,`- Teilnehmer im aktiven Profil: ${participants}`,`- Fixspieler: ${fixed}`,`- Kriegsgröße: ${state.config.slots}`,`- Kriege: ${state.config.days}`,`- Gerät/Browser: ${navigator.userAgent}`].join("\n");return BUG_URL+"?title="+encodeURIComponent("[Bug] ")+"&body="+encodeURIComponent(body)}
 
+let toastTimer=null;
+function showToast(message){const t=document.getElementById("toast");if(!t)return;t.textContent=message;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1800)}
+function openHelp(){document.getElementById("helpModal").classList.add("open")}
+function closeHelp(){document.getElementById("helpModal").classList.remove("open")}
+function applyBulkValue(field,value){if(!selectedMembers.size){showToast("Bitte zuerst Mitglieder auswählen");return}for(const id of selectedMembers){const m=memberById(id);if(m)m[field]=value}renderAll();showToast(`${selectedMembers.size} Mitglieder geändert ✓`)}
 function createProfilePrompt(){const name=(prompt("Name des neuen Profils/Clans:","Neuer Clan")||"").trim();if(!name){renderProfileUI();return}const p=freshProfile(name);app.profiles.push(p);setActiveProfile(p.id)}
-function applyBulkFlag(field,value){if(!selectedMembers.size){alert("Bitte zuerst Mitglieder auswählen.");return}for(const id of selectedMembers){const m=memberById(id);if(m)m[field]=value}renderAll()}
+function applyBulkFlag(field,value){applyBulkValue(field,value)}
 // Navigation / core events
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-"+b.dataset.view).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})});
 document.getElementById("profileSelect").onchange=e=>{if(e.target.value==="__new__")createProfilePrompt();else setActiveProfile(e.target.value)};
-document.getElementById("recalcBtn").onclick=renderAll;
+document.getElementById("recalcBtn").onclick=()=>{renderAll();showToast("Plan neu berechnet ✓")};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),document.getElementById("copyFullPlanBtn"),"📋 Aufstellung + Wechsel kopieren");
-document.getElementById("addMemberBtn").onclick=()=>{state.members.push(freshMember(""));renderAll();setTimeout(()=>{const inputs=document.querySelectorAll(".member-name");inputs[inputs.length-1]?.focus()},50)};
+function addSingleMember(){state.members.push(freshMember(""));state.config.memberSort="manual";renderAll();setTimeout(()=>{const inputs=document.querySelectorAll(".member-name");inputs[inputs.length-1]?.focus();window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})},60)}
+document.getElementById("addMemberBtn").onclick=addSingleMember;
+document.getElementById("addMemberBottomBtn").onclick=addSingleMember;
 document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();
 document.getElementById("membersTemplateBtn").onclick=downloadTemplate;
 document.getElementById("multiAddBtn").onclick=openBulkModal;
 document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};
+document.getElementById("memberSortSelect").onchange=e=>{state.config.memberSort=e.target.value;renderAll()};
+document.getElementById("helpBtn").onclick=openHelp;
+document.getElementById("membersHelpBtn").onclick=openHelp;
+const bulkTh=document.getElementById("bulkTownHallSelect");for(let v=1;v<=20;v++){const o=document.createElement("option");o.value=String(v);o.textContent=`RH ${v}`;bulkTh.appendChild(o)}
+document.getElementById("bulkPrioritySelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("priority",Number(e.target.value));e.target.value=""}};
+document.getElementById("bulkTownHallSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("townHall",e.target.value==="none"?null:Number(e.target.value));e.target.value=""}};
+document.getElementById("bulkStrengthSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("threeStar",e.target.value);e.target.value=""}};
 document.getElementById("selectAllBtn").onclick=()=>{selectedMembers=new Set(state.members.map(m=>m.id));renderMembers()};
 document.getElementById("selectNoneBtn").onclick=()=>{selectedMembers.clear();renderMembers()};
 document.getElementById("bulkParticipatingOnBtn").onclick=()=>applyBulkFlag("participating",true);
@@ -250,10 +442,15 @@ document.getElementById("importFile").onchange=async e=>{const f=e.target.files?
 document.getElementById("resetBtn").onclick=()=>{if(confirm(`Profil „${state.name}“ komplett leeren? Mitglieder, Regeln und gespeicherte Tage werden entfernt.`)){clearActiveProfile();renderAll()}};
 document.getElementById("membersFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const res=importMemberText(await f.text(),f.name);renderAll();alert(`${res.added} neu hinzugefügt, ${res.existing} bereits vorhanden und übersprungen.`)}catch(err){alert("Mitgliederliste konnte nicht importiert werden.")}e.target.value=""};
 document.getElementById("reportBugBtn").onclick=()=>window.open(buildBugUrl(),"_blank");
+// Help
+document.getElementById("helpClose").onclick=closeHelp;document.getElementById("helpModal").onclick=e=>{if(e.target.id==="helpModal")closeHelp()};
 // Modals
 document.getElementById("modalClose").onclick=closeModal;document.getElementById("modalCancel").onclick=closeModal;document.getElementById("modalSave").onclick=()=>{if(modalSelection.size!==state.config.slots){if(!confirm(`Aktuell sind ${modalSelection.size} statt ${state.config.slots} Spieler gewählt. Trotzdem speichern?`))return}state.locks[modalDay]={locked:true,lineup:[...modalSelection]};closeModal();renderAll()};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeModal()};
 document.getElementById("bulkNames").addEventListener("input",countBulkNames);
-document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll();alert(`${added} Mitglieder hinzugefügt.`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};
+document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll();showToast(`${added} Mitglieder hinzugefügt ✓`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};
+document.getElementById("goalsClose").onclick=closeGoalsModal;document.getElementById("goalsCancel").onclick=closeGoalsModal;document.getElementById("goalsModal").onclick=e=>{if(e.target.id==="goalsModal")closeGoalsModal()};
+document.getElementById("goalsSave").onclick=()=>{if(goalsDay==null)return;const d=goalsDay;state.dayGoals[d]=readGoalsDraft();closeGoalsModal();renderAll();showToast(`Tag ${d+1} Ziele gespeichert ✓`)};
+document.getElementById("goalsClear").onclick=()=>{if(goalsDay==null)return;state.dayGoals[goalsDay]=emptyDayGoal();closeGoalsModal();renderAll();showToast("Tagesziele gelöscht ✓")};
 renderAll();
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error))}</script>
