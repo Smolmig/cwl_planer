@@ -1,3 +1,5 @@
+Site: https://smolmig.github.io/cwl_planer/
+
 Hinweise:
 - Die App speichert Daten lokal auf dem jeweiligen Gerät.
 - In der App kannst du ein JSON-Backup exportieren/importieren.
