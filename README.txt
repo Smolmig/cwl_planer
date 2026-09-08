@@ -105,3 +105,10 @@ Update v9.4:
 - Cyberpunk Dunkel und Cyberpunk Hell visuell deutlich eigenständiger: stärkere Cyan-/Magenta-Neonlinien, statisches Grid/Scanline-Finish, kantigere Panel-/Button-Geometrie, Mono-Typografie für UI-Akzente und klarere Neon-KPIs/Badges.
 - Performance-Grundsatz aus v9.3 bleibt: keine dauerhaft laufenden Animationen, kein bewegtes Grid, kein Button-Shimmer und kein flächendeckender Backdrop-Blur.
 - Datenformat bleibt v9; vorhandene Profile, Archive und Einstellungen bleiben kompatibel.
+
+
+Update v9.4.1:
+- Cyberpunk-Line-up-Akzente sind nicht mehr dekorativ nach Position verteilt. Alle normalen Spieler verwenden denselben Cyan-Akzent.
+- Fixspieler sind im Tages-Line-up jetzt explizit mit einem „FIX“-Badge markiert; im Cyberpunk-Theme erhält nur ein tatsächlich als Fix gesetzter Spieler den Magenta-Akzent.
+- Dadurch haben Farbakzente in der Aufstellung eine eindeutige Bedeutung statt zufällig zu wirken.
+- Datenformat bleibt v9; vorhandene Profile und Archive bleiben kompatibel.
