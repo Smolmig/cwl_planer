@@ -88,3 +88,9 @@ Update v9.1:
 - Bei doppelten Spielernamen öffnet das ! direkt die Erklärung und das optionale Player-Tag-Feld. Player-Tags liegen nicht mehr versteckt unter „Tage & Verfügbarkeit“.
 - AUTO / MUSS / RAUS sind nun deutlich farbcodiert (blau / grün / rot), gespielte Tage bleiben neutral gesperrt.
 - Kleinere Theme-/Kontrastkorrekturen für Warntexte.
+
+
+Update v9.2:
+- Alle Browser-eigenen alert/confirm/prompt-Dialoge wurden durch app-eigene, nicht blockierende Aktionskarten ersetzt.
+- Neues optionales Cyberpunk-Theme mit Neon-Akzenten, subtiler Grid-/Sweep-Animation und Reduced-Motion-Unterstützung. Dunkel bleibt Standard; Hell/System bleiben jederzeit auswählbar.
+- Datenformat bleibt v9; vorhandene v9/v9.1-Profile und Archive werden unverändert weiterverwendet.
