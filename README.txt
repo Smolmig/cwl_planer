@@ -112,3 +112,7 @@ Update v9.4.1:
 - Fixspieler sind im Tages-Line-up jetzt explizit mit einem „FIX“-Badge markiert; im Cyberpunk-Theme erhält nur ein tatsächlich als Fix gesetzter Spieler den Magenta-Akzent.
 - Dadurch haben Farbakzente in der Aufstellung eine eindeutige Bedeutung statt zufällig zu wirken.
 - Datenformat bleibt v9; vorhandene Profile und Archive bleiben kompatibel.
+
+Update v9.4.2:
+- Cyberpunk Hell: Toast-/Kopiermeldungen besitzen jetzt explizit eine dunkle Textfarbe auf hellem Hintergrund. Dadurch sind Meldungen wie „Wechseltext kopiert ✓“ wieder klar lesbar.
+- Rein visueller Theme-Fix; Datenformat bleibt v9 und vorhandene Profile/Archive bleiben kompatibel.
