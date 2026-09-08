@@ -81,3 +81,10 @@ Update v9:
 - Backup-Wiederherstellung warnt vor dem Ersetzen aller Profile; Datenformat ist versioniert. Ein lokaler Recovery-Snapshot schützt zusätzlich vor beschädigten gespeicherten Daten.
 - Grunddaten werden nach CWL-Start gesperrt, damit keine gemischten 15er/30er- oder Tageszustände entstehen.
 - Diverse Dark-Mode-Kontrast-, Safe-Area-, Touch- und Toast-Verbesserungen.
+
+Update v9.1:
+- Kompaktansicht zeigt die Namen der Rein-/Raus-Wechsel weiterhin direkt an; nur die vollständige Aufstellung wird eingeklappt.
+- Einzelne Mitglieder werden direkt inline im Mitglieder-Tab hinzugefügt; kein Browser-Popup mehr.
+- Bei doppelten Spielernamen öffnet das ! direkt die Erklärung und das optionale Player-Tag-Feld. Player-Tags liegen nicht mehr versteckt unter „Tage & Verfügbarkeit“.
+- AUTO / MUSS / RAUS sind nun deutlich farbcodiert (blau / grün / rot), gespielte Tage bleiben neutral gesperrt.
+- Kleinere Theme-/Kontrastkorrekturen für Warntexte.
