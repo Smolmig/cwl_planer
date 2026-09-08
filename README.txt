@@ -99,3 +99,9 @@ Update v9.3:
 - Cyberpunk-Theme technisch entschlackt: keine dauerhaft laufende Grid-, Karten-Sweep- oder Button-Shimmer-Animation mehr; teure Mehrfach-Blur-Effekte entfernt. Der Neon-Look bleibt erhalten, Interaktionen nutzen nur leichte Hover-/Transform-Effekte.
 - Neues optionales „Cyberpunk Hell“-Theme mit heller Cyan-/Magenta-Neon-Optik. Dunkel bleibt weiterhin das Standardtheme; alle Themes können jederzeit gewechselt werden.
 - Datenformat bleibt v9; vorhandene Profile, Archive und Einstellungen werden unverändert weiterverwendet.
+
+
+Update v9.4:
+- Cyberpunk Dunkel und Cyberpunk Hell visuell deutlich eigenständiger: stärkere Cyan-/Magenta-Neonlinien, statisches Grid/Scanline-Finish, kantigere Panel-/Button-Geometrie, Mono-Typografie für UI-Akzente und klarere Neon-KPIs/Badges.
+- Performance-Grundsatz aus v9.3 bleibt: keine dauerhaft laufenden Animationen, kein bewegtes Grid, kein Button-Shimmer und kein flächendeckender Backdrop-Blur.
+- Datenformat bleibt v9; vorhandene Profile, Archive und Einstellungen bleiben kompatibel.
