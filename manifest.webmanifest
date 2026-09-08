@@ -1,13 +1,13 @@
 {
   "name": "CWL Planer",
   "short_name": "CWL Planer",
-  "description": "Mobiler CWL-Einteilungsplaner mit Profilen, fairer Rotation, Rathaus- und 3★-Stärke-Tageszielen.",
+  "description": "CWL-Einteilungsplaner mit fairer Rotation, Live-CWL-Workflow, optionalen Gegnerzielen, Backups und CWL-Archiv.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "./icon-192.png",
