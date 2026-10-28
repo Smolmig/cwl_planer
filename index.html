@@ -983,7 +983,16 @@ document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelect
 document.getElementById("recoveryAcceptBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderAll("Wiederhergestellter Stand übernommen ✓")};document.getElementById("recoveryImportBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("recoveryEmptyBtn").onclick=async()=>{if(!await confirmInline("Die beschädigten lokalen Daten bleiben dadurch nicht erhalten.",{title:"Mit leerem Profil starten?",confirmText:"Leeres Profil starten",danger:true}))return;app=defaultApp();state=app.profiles[0];suspendWrites=false;startupStorageIssue=null;localStorage.removeItem(STORAGE_KEY);renderAll("Leeres Profil gestartet ✓")};
 document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("inlineActionPanel")?.classList.contains("open"))closeInlineAction()});
 window.addEventListener("online",updateOnlineStatus);window.addEventListener("offline",updateOnlineStatus);updateOnlineStatus();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(uiSettings.theme==="system")applyTheme()});
-if("serviceWorker" in navigator)window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("./service-worker.js")}catch(e){console.error(e)}});
+if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
+  try{
+    // Temporary GitHack branch previews should never keep their own stale PWA cache.
+    // The published GitHub Pages app keeps the normal offline worker unchanged.
+    if(location.hostname==="raw.githack.com"){
+      const previous=await navigator.serviceWorker.getRegistration("./");
+      if(previous&&previous.scope.includes("/Smolmig/cwl_planer/"))await previous.unregister();
+    }else swRegistration=await navigator.serviceWorker.register("./service-worker.js");
+  }catch(e){console.error(e)}
+});
 renderAll();
 
 </script>
