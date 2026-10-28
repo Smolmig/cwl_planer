@@ -1,0 +1,24 @@
+name: CWL Planer regression
+on:
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: cwl-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install DOM test runtime
+        run: npm install --no-save --no-package-lock jsdom@27 playwright@1.56.1
+      - name: Install Chromium for responsive browser tests
+        run: npx playwright install chromium
+      - name: Verify syntax and planner regressions
+        run: node --test tests/*.test.cjs

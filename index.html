@@ -51,7 +51,7 @@
   .sort-select,.bulk-control{background:#111827;color:var(--text)}
 }
 
-/* v8: Tagesziele, Spielstärke & Optimierung */
+/* historische CSS-Regeln; 3★-Stärke bleibt eine Spielerinformation */
 .strength{min-width:150px!important;width:auto!important;padding:8px!important}
 .player-meta{display:block;font-size:10px;color:var(--muted);font-weight:650;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .goal-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
@@ -66,7 +66,7 @@
 .goal-empty{font-size:12px;color:var(--muted);padding:10px;border:1px dashed var(--line);border-radius:12px}
 .goal-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}
 .goal-note{padding:9px 10px;border-radius:12px;background:var(--bluebg);font-size:11px;color:var(--text);line-height:1.45;margin-top:9px}.goal-total{font-size:11px;font-weight:800;color:var(--muted);margin-top:8px}.goal-total.over{color:var(--red)}
-.goal-day-btn.active{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+
 @media(max-width:520px){.strength{min-width:138px!important}.goal-grid{grid-template-columns:1fr}.goal-row{grid-template-columns:1fr 72px}}
 @media(prefers-color-scheme:dark){.goal-pill,.goal-row{background:#172033}.goal-row input{background:#111827;color:var(--text)}}
 
@@ -193,11 +193,419 @@ html[data-theme="cyberlight"] .changebox.in{background:linear-gradient(105deg,#e
 html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgba(34,231,255,.55);background:#06111d;box-shadow:0 8px 26px rgba(0,0,0,.34),0 0 16px rgba(34,231,255,.08)}html[data-theme="cyberlight"] .toast{border-radius:3px 12px 3px 12px;color:#0a2437;border-color:rgba(0,127,167,.48)}
 @media(max-width:520px){html[data-theme="cyber"] .titleblock h1::after,html[data-theme="cyberlight"] .titleblock h1::after{display:none}html[data-theme="cyber"] body::before,html[data-theme="cyberlight"] body::before{background-size:32px 32px,32px 32px,100% 6px}}
 
+
+/* v9.5: mobile-first day navigation and accessible lineup confirmation */
+.mobile-lineup-toggle,.mobile-overview-toggle{display:none}
+#lineupModal.open{display:flex;align-items:center;justify-content:center}
+#lineupModal .lineup-modal-box{display:flex;flex-direction:column;max-height:calc(100dvh - 36px);margin:0;min-height:0}
+#lineupModal .lineup-modal-head,#lineupModal .lineup-modal-footer{flex:0 0 auto}
+#lineupModal .modal-list{min-height:0;max-height:none;flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:699px){
+  .topbar{background:var(--card);backdrop-filter:none;box-shadow:none;padding:calc(8px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 9px max(12px,env(safe-area-inset-left))}
+  html[data-theme="cyber"] .topbar{background:#08101d;background-image:none;box-shadow:none}
+  html[data-theme="cyberlight"] .topbar{background:#f7fcff;background-image:none;box-shadow:none}
+  .toprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+  .titleblock h1{font-size:17px;line-height:1.2;white-space:nowrap}
+  .subtitle{display:none}
+  .profilebar{margin-top:5px;gap:6px}
+  .profilebar select{max-width:min(64vw,260px);padding:5px 7px;font-size:13px}
+  .top-actions{display:flex;flex-direction:row;align-items:center}
+  .top-actions #helpBtn{padding:7px 9px;min-height:35px}
+  .top-actions .auto-badge{display:none}
+  .content{padding:10px 12px}
+  .plan-overview{padding:10px 12px;margin-bottom:10px}
+  .plan-overview .section-title{margin-bottom:4px}
+  .plan-overview .section-title .actions{align-items:center;justify-content:flex-end;gap:6px}
+  .plan-overview #saveBadge{font-size:10px}
+  .mobile-overview-toggle{display:inline-flex;align-items:center;min-height:34px!important}
+  .plan-overview:not(.overview-open) .kpis,.plan-overview:not(.overview-open) .plan-actions{display:none}
+  .plan-overview .cwl-status-row{margin-top:7px}
+  .plan-overview .kpis{margin-top:10px}
+  .mobile-day-switcher{display:block;position:sticky;top:calc(76px + env(safe-area-inset-top));z-index:15;padding:7px 2px 10px;background:var(--bg);scroll-margin-top:calc(82px + env(safe-area-inset-top))}
+  .mobile-day-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .mobile-day-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:48px;padding:5px 1px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--muted);font-weight:800}
+  .mobile-day-tab.active{border-color:var(--primary);background:var(--bluebg);color:var(--text);box-shadow:inset 0 0 0 1px var(--primary)}
+  .mobile-day-tab .day-no{font-size:13px}
+  .mobile-day-tab .day-state{font-size:11px;line-height:1}
+  .mobile-day-tab.played .day-state{color:var(--green)}
+  .mobile-day-tab.active .day-state{color:var(--primary)}
+  .day-card.mobile-day-hidden{display:none!important}
+  .day-card{padding:12px}
+  .day-card .lineup{display:none}
+  .day-card.mobile-lineup-expanded .lineup,.compact-plan .day-card.mobile-lineup-expanded.compact-collapsed .lineup{display:grid!important}
+  .mobile-lineup-toggle{display:inline-flex;margin-top:10px;min-height:40px!important;width:100%;justify-content:center;align-items:center}
+  
+  .day-actions .btn{flex:1 1 100%;white-space:normal}
+  .changes{gap:7px}
+  .changebox{min-width:0;overflow-wrap:anywhere}
+  .changebox div{font-size:12px}
+  #lineupModal{padding:0!important;overflow:hidden;overscroll-behavior:contain}
+  #lineupModal.open{display:flex;align-items:stretch;justify-content:center}
+  #lineupModal .lineup-modal-box{width:100%;max-width:none;max-height:100dvh;height:100dvh;margin:0;border:0;border-radius:0!important;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:calc(12px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+  #lineupModal .lineup-modal-head{flex:0 0 auto}
+  #lineupModal .section-title{margin-bottom:7px}
+  #lineupModal .section-title h3{font-size:18px}
+  #lineupModal .helpbox{font-size:11px;line-height:1.35;padding:8px 10px;margin:6px 0}
+  #lineupModal .modal-search{font-size:16px;min-height:44px}
+  #lineupModal .modal-list{flex:1 1 auto;min-height:0;max-height:none;margin:9px 0;overflow-y:auto;overscroll-behavior:contain}
+  #lineupModal .pick{padding:11px 8px;min-height:64px}
+  #lineupModal .lineup-modal-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 0 0;margin:0;border-top:1px solid var(--line);background:transparent}
+  #lineupModal .lineup-modal-footer .btn{min-height:48px;padding:10px;white-space:normal}
+}
+
+/* v9.5: day navigation on desktop as well as mobile */
+.mobile-day-switcher{margin-bottom:12px}
+.day-switcher-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.day-switcher-label{font-size:12px;font-weight:800;color:var(--muted)}
+.desktop-day-mode{display:flex;gap:6px}
+.desktop-day-mode .btn.active{background:var(--bluebg);color:var(--primary);border-color:var(--primary)}
+@media(min-width:700px){
+  .mobile-day-switcher{display:block;background:var(--card);padding:12px;border:1px solid var(--line);border-radius:14px}
+  .mobile-day-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+  .mobile-day-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;padding:7px 5px;background:var(--bg);color:var(--muted);border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:800}
+  .mobile-day-tab.active{background:var(--bluebg);border-color:var(--primary);color:var(--text);box-shadow:inset 0 0 0 1px var(--primary)}
+  .mobile-day-tab .day-state{font-size:12px;color:var(--muted)}
+  .mobile-day-tab.played .day-state{color:var(--green)}
+  #view-plan.desktop-one-day #planDays .day-card.mobile-day-hidden{display:none!important}
+}
+@media(max-width:699px){
+  .desktop-day-mode{display:none}
+  .day-switcher-header{margin-bottom:5px}
+  .day-switcher-label{font-size:11px}
+  .mobile-day-switcher{margin-bottom:3px}
+}
+
+/* v9.5: compact member management, filters and progressive editing */
+.member-help-details{margin:0 0 10px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 10px}
+.member-help-details summary{cursor:pointer;font-weight:800;font-size:12px;color:var(--muted)}
+.member-help-details .member-hint{margin-top:10px}
+.member-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:9px 0 12px}
+.member-filters input,.member-filters select{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);padding:9px;min-height:42px}
+.member-filters input{flex:2 1 190px;min-width:0;font-size:16px}
+.member-filters select{flex:1 1 130px;min-width:0}
+.member-visible-count{font-size:11px;color:var(--muted);font-weight:750;white-space:nowrap}
+.member{padding:11px 12px;margin:0 0 8px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.member:last-child{border-bottom:1px solid var(--line)}
+.member-top{gap:8px}
+.member-snapshot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 0}
+.member-brief{font-size:11px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.member-edit-toggle{flex:0 0 auto;min-height:34px!important;padding:6px 10px!important}
+.member-details{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.member-details .member-tools{margin-top:0;align-items:center}
+.member-details select{max-width:100%}
+@media(max-width:699px){
+  .member{padding:10px;margin-bottom:8px}
+  .member-top{grid-template-columns:minmax(0,1fr) auto auto}
+  .member-top .member-select:not(.hidden){grid-column:1/-1;justify-self:start}
+  .member-top .member-name{font-size:16px;min-width:0}
+  .member-snapshot{margin-top:6px}
+  .member-brief{line-height:1.45}
+  .member-tools .member-strength{width:100%!important;min-width:0!important;flex:1 1 100%}
+  .member-tools .member-th,.member-tools .member-priority{width:auto!important;min-width:95px}
+  .member-filters{display:grid;grid-template-columns:minmax(0,1fr) 122px;gap:7px}
+  .member-filters input{grid-column:1/2;min-width:0;width:100%}
+  .member-filters select{grid-column:2/3;width:100%;font-size:12px}
+  .member-visible-count{grid-column:1/-1}
+}
+@media(min-width:1000px){
+  #memberList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+  #memberList>.member{margin:0}
+}
+
+/* v9.5 mobile members, second pass: real compact list, controls only when editing */
+.member-extra-toggle{display:none}
+.member-additional-actions{display:contents}
+.member-brief-mobile{display:none}
+.member-snapshot-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.member-status-chip{display:none;font-size:10px;font-weight:850;letter-spacing:.01em;padding:3px 5px;border-radius:6px;white-space:nowrap}
+.member-status-chip.in{color:var(--green);background:var(--greenbg)}
+.member-status-chip.off{color:var(--muted);background:var(--bluebg)}
+.member-status-chip.fixed{color:var(--red);background:var(--redbg)}
+@media(max-width:699px){
+ #view-members>.card{padding:10px}
+ #view-members>.card>.section-title{margin-bottom:7px;padding-bottom:3px}
+ #view-members>.card>.section-title .statusline{display:none}
+ #view-members .member-actionbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px;gap:6px;margin:0 0 8px}
+ #view-members .member-actionbar .btn{padding:8px 5px;font-size:12px;min-height:39px;width:100%}
+ #view-members .member-actionbar .btn.primary{grid-column:auto;order:0}
+ #view-members .member-actionbar .btn.addmany{grid-column:auto;order:0}
+ #view-members .member-extra-toggle{display:inline-flex;align-items:center;justify-content:center;grid-column:3;order:0;font-size:19px}
+ #view-members .member-additional-actions{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:6px}
+ #view-members .member-additional-actions.open{display:grid}
+ #view-members .member-help-details{margin:0 0 7px;padding:6px 9px}
+ #view-members .list-management{padding:0;margin:0 0 6px;border:0;background:transparent}
+ #view-members .list-management-head{display:none}
+ #view-members .list-management-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+ #view-members .sort-select{width:100%;min-width:0;padding:7px 8px;min-height:38px;font-size:12px}
+ #view-members #selectMembersBtn{min-height:38px;font-size:11px;width:auto;padding:6px 10px}
+ #view-members .member-filters{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:6px;margin:7px 0}
+ #view-members .member-filters input,#view-members .member-filters select{min-height:40px;padding:8px}
+ #view-members .member-visible-count{font-size:10px}
+ #view-members .member{padding:8px 10px;margin-bottom:5px;border-radius:10px}
+ #view-members .member-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+ #view-members .member-top .member-select:not(.hidden){flex:0 0 22px;width:22px;margin:0}
+ #view-members .member-top .name-wrap{flex:1 1 150px;min-width:0;max-width:100%}
+ #view-members .member-top .member-name{padding:0!important;min-height:26px;font-size:15px;font-weight:800;background:transparent!important;border:1px solid transparent!important;box-shadow:none}
+ #view-members .member-top .member-name:focus{background:var(--card)!important;border-color:var(--primary)!important;padding:3px 6px!important}
+ #view-members .member:not(.member-expanded) .member-part,#view-members .member:not(.member-expanded) .member-fixed{display:none}
+ #view-members .member-expanded .member-top .name-wrap{flex-basis:100%}
+ #view-members .member-expanded .member-part,#view-members .member-expanded .member-fixed{min-height:35px;margin-right:13px}
+ #view-members .member-snapshot{margin:0;gap:6px;min-height:25px}
+ #view-members .member-brief{font-size:10px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+ #view-members .member-brief-desktop{display:none}
+ #view-members .member-brief-mobile{display:inline}
+ #view-members .member-snapshot-actions{gap:4px}
+ #view-members .member-status-chip{display:inline-flex;align-items:center}
+ #view-members .member-edit-toggle{min-height:29px!important;font-size:11px;padding:3px 6px!important}
+ #view-members .member-details{margin-top:7px;padding-top:9px}
+ #view-members .member-details .member-tools{display:flex;gap:7px}
+ #view-members .member-details .member-tools .btn{min-height:39px}
+ #view-members .member-details .member-tools .member-strength{flex:1 1 100%;min-width:0!important}
+ #view-members .member-details .member-tools .member-priority,
+ #view-members .member-details .member-tools .member-th{min-width:0!important;flex:1 1 100px;width:auto!important}
+ #view-members .member-details .rule-panel{padding:8px}
+ #view-members .member-details .rulebtn{font-size:10px;padding:7px 2px}
+}
+
+/* v9.6: long names remain readable, even on narrow iPhones */
+@media(max-width:699px){
+  #view-plan .player-chip{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;line-height:1.35;min-height:47px}
+  #view-members .member-top .member-name{min-height:32px;text-overflow:clip}
+  .summary-row{min-width:0;overflow-wrap:anywhere}
+  .summary-row .statusline{line-height:1.5}
+}
+
+.day-head-actions{display:flex;align-items:center;gap:6px}
+.day-head .why-day-btn{padding:4px 8px;min-height:29px}
+.why-roster-list{max-height:55dvh;overflow:auto}
+.why-row{display:flex;align-items:center;justify-content:space-between;padding:9px 5px;gap:10px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.why-row:last-child{border-bottom:0}
+.why-row>div{min-width:0}
+.why-row .badge{flex:0 0 auto}
+
+/* v9.6: short-height mobile landscape (iPhone PWA and browser)
+   Reduce chrome and show one useful day, independently from desktop preference. */
+@media (orientation: landscape) and (max-height:540px) and (max-width:1100px) {
+  .topbar{position:relative!important;top:auto;padding:4px max(10px,env(safe-area-inset-right)) 4px max(10px,env(safe-area-inset-left))!important;backdrop-filter:none}
+  .toprow{display:flex;align-items:center;gap:6px}
+  .titleblock h1{font-size:15px;line-height:1.1}
+  .subtitle{display:none!important}
+  .profilebar{margin-top:2px;gap:4px}
+  .profilebar span{display:none}
+  .profilebar select{max-width:180px;padding:3px 5px;min-height:28px;font-size:12px}
+  .top-actions .btn{min-height:28px!important;padding:3px 8px;font-size:11px}
+  .top-actions .auto-badge{display:none}
+  .content{padding:5px max(8px,env(safe-area-inset-right)) 36px max(8px,env(safe-area-inset-left))!important}
+  #view-plan .plan-overview{padding:5px 9px;margin-bottom:4px}
+  #view-plan .plan-overview .section-title{margin:0}
+  #view-plan .plan-overview .kpis{display:none!important}
+  #view-plan .plan-overview .cwl-status-row{display:none}
+  #view-plan .plan-overview .plan-actions{display:none}
+  .mobile-day-switcher{position:sticky;top:0!important;z-index:18;padding:4px!important;margin:0 0 5px!important;scroll-margin-top:0;background:var(--bg)}
+  .day-switcher-header{display:none}
+  .mobile-day-tabs{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+  .mobile-day-tab{min-height:34px!important;padding:2px;flex-direction:row;gap:4px;border-radius:8px}
+  .mobile-day-tab .day-no{font-size:12px}
+  .mobile-day-tab .day-state{font-size:11px}
+  #view-plan #planDays .day-card.mobile-day-hidden{display:none!important}
+  .day-card{padding:8px!important;margin-bottom:6px}
+  .day-card .day-title{font-size:15px}
+  .day-card .statusline{font-size:10px}
+  .day-card .day-head{align-items:center}
+  .day-card .mobile-lineup-toggle{display:inline-flex;min-height:30px!important;padding:4px;width:auto;margin:5px 0}
+  .day-card .lineup{display:none}
+  .day-card.mobile-lineup-expanded .lineup{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .day-actions .btn{min-height:33px!important;padding:4px 7px;font-size:11px;flex:1 1 auto}
+  .changes{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .changebox{padding:5px 7px}
+  .bottomnav{padding:2px max(12px,env(safe-area-inset-right)) max(2px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));backdrop-filter:none}
+  .navinner{gap:5px}
+  .navbtn{padding:1px 4px;min-height:30px!important;font-size:10px;line-height:1.15}
+  #view-members>.card{padding:7px}
+  #view-members>.card>.section-title{margin-bottom:4px}
+  #view-members .member-actionbar{margin-bottom:5px}
+  #view-members .member-actionbar .btn{min-height:32px}
+  #view-members .member-help-details{display:none}
+  #view-members .member{margin-bottom:4px;padding:6px 9px}
+  #view-members .member-filters{margin:5px 0}
+  #lineupModal.open{display:flex;align-items:stretch}
+  #lineupModal .lineup-modal-box{height:100dvh;max-height:100dvh;margin:0;max-width:none;width:100%;padding:4px max(12px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));border-radius:0;display:flex;flex-direction:column;min-height:0}
+  #lineupModal .lineup-modal-head .helpbox{display:none}
+  #lineupModal .section-title{margin-bottom:2px}
+  #lineupModal .lineup-modal-head h3{font-size:16px}
+  #lineupModal .modal-search{min-height:32px;margin-top:3px;padding:5px 8px}
+  #lineupModal .modal-list{flex:1 1 auto;min-height:0;max-height:none;margin:4px 0;overflow-y:auto}
+  #lineupModal .lineup-modal-footer{flex:0 0 auto;padding:4px 0 0;display:flex;gap:8px}
+  #lineupModal .lineup-modal-footer .btn{min-height:38px!important;padding:4px 10px}
+  #lineupModal .pick{min-height:42px;padding:5px 8px}
+}
+
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px) and (min-width:700px){
+  #view-members .member-actionbar{display:grid;grid-template-columns:1fr 1fr 40px;gap:6px}
+  #view-members .member-actionbar .member-extra-toggle{display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+  #view-members .member-additional-actions{display:none;grid-column:1/-1}
+  #view-members .member-additional-actions.open{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  #view-members .member:not(.member-expanded) .member-part,#view-members .member:not(.member-expanded) .member-fixed{display:none}
+  #view-members .member-status-chip{display:inline-flex}
+  #view-members .member-brief-desktop{display:none}
+  #view-members .member-brief-mobile{display:inline}
+  #view-members .member-snapshot{margin:1px 0;gap:6px}
+  #view-members .member-top .member-name{background:transparent!important;border-color:transparent!important;min-height:32px;font-size:15px}
+}
+
+/* RH chooser: fully reachable on small mobile screens, no oversized native popup */
+.member-th-picker,.bulk-th-picker{display:none}
+.townhall-picker-box{width:min(100%,480px);max-height:min(82dvh,690px);overflow-y:auto;overscroll-behavior:contain;margin:0 auto}
+.townhall-picker-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.townhall-choice{min-width:0;min-height:45px;padding:8px 2px!important;text-align:center;justify-content:center;white-space:nowrap}
+.townhall-choice.chosen{background:var(--bluebg);border-color:var(--primary);color:var(--text);box-shadow:inset 0 0 0 1px var(--primary)}
+@media(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+  #view-members .member-th,#view-members #bulkTownHallSelect{display:none!important}
+  #view-members .member-th-picker,#view-members .bulk-th-picker{display:inline-flex!important;align-items:center;justify-content:center;min-height:42px!important}
+  #view-members .member-th-picker{flex:1 1 95px;padding:6px 8px}
+  #view-members .bulk-th-picker{width:100%}
+  #townHallPickerModal.open{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  #townHallPickerModal .townhall-picker-box{flex:0 1 460px;min-height:0;max-height:calc(100dvh - 22px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #townHallPickerModal .townhall-choice{min-height:39px!important}
+}
+
+/* v9.6: shared lineup visibility on desktop too */
+@media(min-width:700px) and (min-height:541px){
+  #view-plan .mobile-lineup-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:36px;width:auto;margin:9px 0 5px}
+  #view-plan .day-card:not(.mobile-lineup-expanded) .lineup{display:none!important}
+}
+.member-field-picker{display:none}
+.townhall-picker-grid.wide-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.townhall-picker-grid.wide-options .townhall-choice{white-space:normal;overflow-wrap:anywhere;min-height:48px;text-align:center}
+@media(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+  #view-members .member-priority,#view-members .member-strength{display:none!important}
+  #view-members .member-field-picker{display:inline-flex!important;align-items:center;justify-content:center;min-height:42px!important;padding:6px 9px;min-width:0;flex:1 1 100px}
+  #view-members .member-strength-picker{flex-basis:100%;white-space:normal}
+  #view-members .member-th-picker{min-width:0;flex:1 1 100px}
+}
+
+/* v9.6: dense deployment distribution with fast filtering */
+.summary-tools{display:grid;grid-template-columns:minmax(0,2fr) minmax(130px,1fr) auto;gap:7px;align-items:center;margin:8px 0}
+.summary-tools input,.summary-tools select{min-width:0;min-height:39px;padding:7px 9px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:9px;font-size:13px}
+.summary-visible-count{color:var(--muted);font-weight:750;font-size:11px;white-space:nowrap}
+.summary-legend{font-size:11px;color:var(--muted);margin:5px 0 10px}
+.summary-compact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px;align-items:start}
+.summary-compact-grid>.empty{grid-column:1/-1}
+.summary-compact-row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;min-width:0;min-height:46px;padding:6px 9px;background:var(--card);border:1px solid var(--line);border-radius:9px}
+.summary-compact-name{min-width:0;flex:1 1 105px;display:flex;flex-direction:column;gap:2px}
+.summary-compact-name>b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-compact-meta{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-compact-numbers{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 0 auto}
+.summary-stat{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;border-radius:5px;padding:3px 4px;background:var(--bluebg)}
+.summary-stat.played{color:var(--green)}
+.summary-stat.planned{color:var(--muted)}
+.summary-stat.total{font-size:12px;background:var(--bluebg);color:var(--text)}
+.summary-compact-deviation{font-size:10px;color:var(--muted);flex:0 0 100%;text-align:right;line-height:1;display:none}
+@media(max-width:699px) and (orientation:portrait){
+  .summary-compact-grid{grid-template-columns:minmax(0,1fr);gap:4px}
+  .summary-tools{grid-template-columns:minmax(0,1fr) 125px;gap:5px}
+  .summary-tools .summary-visible-count{grid-column:1/-1}
+  .summary-compact-row{min-height:43px;padding:5px 7px}
+}
+@media(orientation:landscape) and (max-height:540px) and (min-width:600px) and (max-width:1100px){
+  #memberList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px 8px;align-items:start}
+  #memberList>.member{margin:0!important;min-width:0;padding:7px 8px}
+  #memberList>.empty{grid-column:1/-1}
+  #memberList .member-top .name-wrap{flex:1 1 100px;min-width:0}
+  #memberList .member-snapshot{min-width:0}
+  #memberList .member-brief{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  #view-members .member-details .member-tools{display:flex;flex-wrap:wrap;gap:6px}
+  .summary-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-summary>.card{padding:10px}
+}
+
+/* Keep lineup confirmation buttons within the usable viewport on iOS and desktop.
+   Border-box includes the safe-area padding in 100dvh. */
+#lineupModal .lineup-modal-box{box-sizing:border-box!important}
+@media(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+  #lineupModal .lineup-modal-box{height:100dvh!important;max-height:100dvh!important;min-height:0;overflow:hidden}
+  #lineupModal .lineup-modal-footer{flex-shrink:0}
+}
+/* Centered, keyboard-accessible decision dialog (instead of bottom-right toast) */
+.inline-action-backdrop{position:fixed;inset:0;z-index:185;background:rgba(5,11,23,.62);opacity:0;pointer-events:none;transition:opacity .18s ease}
+.inline-action-backdrop.open{opacity:1;pointer-events:auto}
+.inline-action-panel{top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;max-height:calc(100dvh - 34px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;width:min(480px,calc(100vw - 32px));transform:translate(-50%,-48%) scale(.985)!important;border-radius:16px}
+.inline-action-panel.open{transform:translate(-50%,-50%) scale(1)!important}
+.inline-action-title{font-size:16px;line-height:1.3}
+.inline-action-message{font-size:13px;line-height:1.55;margin-top:7px}
+.inline-action-head{min-width:0}
+.inline-action-head>div{min-width:0}
+.inline-action-buttons{gap:8px}
+.inline-action-buttons .btn{min-height:40px;white-space:normal}
+@media(max-width:520px){.inline-action-panel{width:calc(100vw - 24px);padding:14px}.inline-action-buttons .btn{flex:1 1 120px}}
+@media(prefers-reduced-motion:reduce){.inline-action-panel,.inline-action-backdrop,.toast{transition:none!important}}
+
+/* Short landscape: coherent header and denser management controls */
+@media(orientation:landscape) and (max-height:540px) and (min-width:600px) and (max-width:1100px){
+  .topbar{padding:7px max(12px,env(safe-area-inset-right)) 7px max(12px,env(safe-area-inset-left))!important}
+  .toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .titleblock{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;min-width:0}
+  .titleblock h1{font-size:17px;line-height:1.25;white-space:nowrap;flex:0 0 auto}
+  .profilebar{margin:0;min-width:0;flex:0 1 220px}
+  .profilebar select{width:100%;min-width:0;max-width:215px;height:33px;padding:5px 8px;font-size:12px}
+  .top-actions{flex:0 0 auto}
+  .top-actions .btn{min-height:33px!important;padding:5px 10px;font-size:12px}
+  .content{padding:6px max(10px,env(safe-area-inset-right)) 60px max(10px,env(safe-area-inset-left))!important}
+  #view-members>.card{padding:9px 10px 10px!important;margin-bottom:7px}
+  #view-members>.card>.section-title{margin:0 0 6px!important;align-items:center}
+  #view-members>.card>.section-title h3{font-size:18px;line-height:1.2}
+  #view-members>.card>.section-title .statusline{display:none}
+  #view-members .member-actionbar{display:flex!important;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+  #view-members .member-actionbar>.btn{min-height:34px!important;width:auto!important;flex:0 0 auto;padding:5px 11px!important;font-size:12px}
+  #view-members .member-actionbar .member-extra-toggle{width:36px!important;min-width:36px;padding:4px!important}
+  #view-members .member-additional-actions{display:none!important;flex:1 0 100%;gap:6px}
+  #view-members .member-additional-actions.open{display:flex!important;flex-wrap:wrap}
+  #view-members .list-management{margin:0 0 6px!important;padding:0!important;border:0!important;border-radius:0;background:transparent!important}
+  #view-members .list-management-head{display:none!important}
+  #view-members .list-management-actions{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
+  #view-members .sort-select{width:min(240px,55vw);min-width:0;min-height:34px;padding:4px 8px;font-size:12px}
+  #view-members #selectMembersBtn{min-height:34px;padding:5px 8px;font-size:11px}
+  #view-members .member-filters{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(120px,160px) auto!important;align-items:center;gap:7px;margin:0 0 7px!important}
+  #view-members .member-filters input,#view-members .member-filters select{min-height:34px;padding:5px 8px;font-size:12px}
+  #view-members .member-visible-count{grid-column:auto!important;font-size:11px;white-space:nowrap}
+  #view-members .member{padding:7px 8px;margin:0}
+  #view-members .member-top .member-name{font-size:14px}
+  .bottomnav{padding:3px max(10px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  .navinner{max-width:900px}
+  .navbtn{min-height:34px!important;padding:2px 5px}
+  #view-summary>.card{padding:10px 12px;margin-bottom:8px}
+  #view-summary .section-title{margin-bottom:6px}
+  #view-summary .settings-subcard{padding:9px}
+}
+@media(max-width:699px) and (orientation:landscape){
+ .titleblock{gap:8px}
+ .titleblock h1{font-size:16px}
+ .profilebar{max-width:170px}
+}
+
+/* Consistent dialogs, focus treatment, and beginner-friendly help */
+#helpModal.open{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.help-modal-box{box-sizing:border-box;width:min(100%,620px);max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.help-modal-box .help-intro{margin-bottom:12px;color:var(--text)}
+.help-section-heading{font-size:14px;margin:15px 0 8px;color:var(--text)}
+.help-steps{display:grid;gap:7px}
+.help-steps>div{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:9px 11px;font-size:12px;line-height:1.5}
+.help-steps>div>b{flex:0 0 27px;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bluebg);color:var(--primary);font-size:13px}
+.help-steps strong{color:var(--text)}
+.help-grid .help-item{min-width:0;overflow-wrap:anywhere}
+.help-grid .help-item div b{display:inline}
+:where(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:699px){.help-modal-box{max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0;padding:12px}.help-steps>div{padding:8px;font-size:12px}.help-section-heading{margin-top:12px}}
+/* Darken primary buttons slightly to keep white button text legible in bright themes. */
+.btn.primary{background:color-mix(in srgb,var(--primary) 45%,#061728 55%);border-color:color-mix(in srgb,var(--primary) 45%,#061728 55%);color:#fff}
+/* Contrast-conscious theme accents, including the light Cyberpunk theme. */
+html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary{background:linear-gradient(105deg,#087486 0%,#184eab 46%,#59259f 72%,#9a1c61 100%);border-color:#268ab1;color:#fff;text-shadow:none}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="CWL Planer">
 <meta name="mobile-web-app-capable" content="yes">
 </head>
@@ -215,38 +623,47 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 </div>
 <main class="content">
 <section id="view-plan" class="view active">
-  <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
-  <div class="card">
-    <div class="section-title"><h3>Übersicht</h3><span class="badge ok" id="saveBadge">automatisch gespeichert</span></div>
+  <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryExportBtn">JSON-Backup jetzt sichern</button><button class="btn hidden" id="recoveryRetryBtn">Speichern erneut versuchen</button><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
+  <div class="card plan-overview" id="planOverview">
+    <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
-    <div class="plan-actions"><button class="btn primary" id="copyFullPlanBtn">📋 Gesamten CWL-Plan kopieren</button><button class="btn" id="compactPlanBtn">▦ Kompaktansicht</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+    <div class="plan-actions"><button class="btn primary" id="copyFullPlanBtn">📋 Gesamten CWL-Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
+  <div class="mobile-day-switcher" id="mobileDaySwitcher" aria-label="CWL-Tag wählen">
+  <div class="day-switcher-header"><span class="day-switcher-label">Kriegstag wählen</span><div class="desktop-day-mode" role="group" aria-label="Tagesansicht"><button type="button" class="btn small" id="singleDayMode" aria-pressed="false">Einzeltag</button><button type="button" class="btn small" id="allDaysMode" aria-pressed="true">Alle Tage</button></div></div>
+  <div class="mobile-day-tabs" id="mobileDayTabs"></div>
+</div>
   <div id="planDays"></div>
 </section>
 <section id="view-members" class="view">
   <div class="card">
     <div class="section-title">
-      <div><h3>Mitglieder</h3><div class="statusline">Teilnehmer verwalten, Verfügbarkeiten festlegen und die Rotation feinsteuern.</div></div>
+      <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
     </div>
     <div class="member-actionbar">
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
       <button class="btn small addmany" id="multiAddBtn">+ Mehrere Mitglieder</button>
-      <button class="btn small" id="membersImportBtn">Mitgliederliste importieren</button>
-      <button class="btn small" id="membersTemplateBtn">Leere Mitglieder-Vorlage</button>
+      <button class="btn small member-extra-toggle" id="memberExtraToggle" type="button" aria-label="Weitere Aktionen anzeigen" aria-expanded="false" aria-controls="memberAdditionalActions" title="Weitere Aktionen">•••</button>
+      <div class="member-additional-actions" id="memberAdditionalActions">
+        <button class="btn small" id="membersImportBtn">Mitgliederliste importieren</button>
+        <button class="btn small" id="membersTemplateBtn">Leere Mitglieder-Vorlage</button>
+      </div>
     </div>
     <div class="inline-member-add hidden" id="inlineMemberAdd"><input class="name-input" id="inlineMemberName" type="text" autocomplete="off" placeholder="Name des neuen Mitglieds"><button class="btn small primary" id="inlineMemberSave">Hinzufügen</button><button class="btn small" id="inlineMemberCancel">Abbrechen</button></div>
-    <div class="member-hint"><b>Schnellstart:</b> Namen hinzufügen, die CWL-Teilnehmer auf <b>Dabei</b> setzen und bekannte Fix-/MUSS-/RAUS-Fälle eintragen. RH, 3★-Stärke, Prio und Tagesziele sind optional für eine feinere Steuerung.</div>
+    <details class="member-help-details"><summary>Kurzhilfe: Dabei, Fix & Priorität</summary>
+    <div class="member-hint"><b>Schnellstart:</b> Namen hinzufügen, die CWL-Teilnehmer auf <b>Dabei</b> setzen und bekannte Fix-/MUSS-/RAUS-Fälle eintragen. RH und 3★-Stärke sind optionale Richtwerte. Prio entscheidet bei ansonsten vergleichbaren Spielern.</div>
     <div class="info-strip">
       <span class="info-pill"><b>Dabei</b> = nimmt an der aktuellen CWL teil</span>
       <span class="info-pill"><b>Fix</b> = wird an jedem verfügbaren Tag gesetzt</span>
       <span class="info-pill"><b>Prio</b> = bevorzugt bei sonst vergleichbaren Spielern den zusätzlichen Einsatz</span>
       <button class="btn small" id="membersHelpBtn">Mehr erklären</button>
     </div>
+    </details>
     <div class="list-management">
-      <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Sortieren, eigene Reihenfolge festlegen oder mehrere Spieler gemeinsam ändern.</div></div></div>
+      <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Mitglieder sortieren oder mehrere gleichzeitig bearbeiten.</div></div></div>
       <div class="list-management-actions">
-        <select id="memberSortSelect" class="sort-select">
+        <select id="memberSortSelect" class="sort-select" aria-label="Mitglieder sortieren">
           <option value="manual">Eigene Reihenfolge</option>
           <option value="name">Name A–Z</option>
           <option value="th-desc">Rathaus hoch → niedrig</option>
@@ -258,14 +675,21 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
         <button class="btn small" id="selectMembersBtn">Mehrere auswählen</button>
       </div>
     </div>
+    <div class="member-filters" role="search">
+      <input id="memberSearch" type="search" autocomplete="off" placeholder="Spieler suchen …" aria-label="Nach Spielername oder Player-Tag suchen">
+      <select id="memberFilter" aria-label="Mitglieder filtern">
+        <option value="all">Alle</option><option value="participating">CWL dabei</option><option value="paused">Pause</option><option value="fixed">Fixspieler</option>
+      </select>
+      <span id="memberVisibleCount" class="member-visible-count" aria-live="polite"></span>
+    </div>
     <div class="bulkbar hidden" id="bulkBar">
       <div class="bulk-head"><div><div class="bulk-title">Mehrfachbearbeitung</div><div class="bulk-count"><b id="selectedCount">0</b> Mitglieder ausgewählt</div><div class="bulk-guide">1. Spieler markieren · 2. gemeinsame Änderung auswählen</div></div></div>
       <div class="bulk-groups">
-        <div class="bulk-group"><span class="bulk-label">Auswahl</span><div class="bulk-buttons"><button class="btn small" id="selectAllBtn">Alle auswählen</button><button class="btn small" id="selectNoneBtn">Auswahl aufheben</button></div></div>
+        <div class="bulk-group"><span class="bulk-label">Auswahl</span><div class="bulk-buttons"><button class="btn small" id="selectAllBtn">Sichtbare auswählen</button><button class="btn small" id="selectNoneBtn">Auswahl aufheben</button></div></div>
         <div class="bulk-group"><span class="bulk-label">CWL-Teilnahme</span><div class="bulk-buttons"><button class="btn small" id="bulkParticipatingOnBtn">Als Dabei markieren</button><button class="btn small" id="bulkParticipatingOffBtn">Auf Pause setzen</button></div></div>
         <div class="bulk-group"><span class="bulk-label">Fixstatus</span><div class="bulk-buttons"><button class="btn small" id="bulkFixedOnBtn">Als Fix markieren</button><button class="btn small" id="bulkFixedOffBtn">Fix entfernen</button></div></div>
         <div class="bulk-group"><span class="bulk-label">Priorität</span><select class="bulk-control" id="bulkPrioritySelect"><option value="">Priorität setzen …</option><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option><option value="4">Prio 4</option><option value="5">Prio 5</option></select></div>
-        <div class="bulk-group"><span class="bulk-label">Rathaus (optional)</span><select class="bulk-control" id="bulkTownHallSelect"><option value="">Rathaus setzen …</option><option value="none">RH entfernen</option></select></div>
+        <div class="bulk-group"><span class="bulk-label">Rathaus (optional)</span><select class="bulk-control" id="bulkTownHallSelect"><option value="">Rathaus setzen …</option><option value="none">RH entfernen</option></select><button class="btn small bulk-th-picker" id="bulkTownHallPicker" type="button">RH auswählen …</button></div>
         <div class="bulk-group"><span class="bulk-label">3★-Stärke</span><select class="bulk-control" id="bulkStrengthSelect"><option value="">3★-Stärke setzen …</option><option value="unknown">Unbekannt</option><option value="high">Oft 3★</option><option value="medium">Solide / teils 3★</option><option value="low">Selten 3★</option><option value="verylow">Normal kein 3★</option></select></div>
         <div class="bulk-group danger-zone"><span class="bulk-label">Löschen</span><div class="bulk-buttons"><button class="btn small danger" id="deleteSelectedBtn">Ausgewählte löschen</button><button class="btn small danger" id="deleteAllBtn">Alle Mitglieder löschen</button></div></div>
       </div>
@@ -275,7 +699,14 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   </div>
 </section>
 <section id="view-summary" class="view">
-  <div class="card"><div class="section-title"><div><h3>Einsatz-Verteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryList"></div></div>
+  <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
+  <select id="summaryFilter" aria-label="Einsätze filtern">
+    <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
+  </select>
+  <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
+</div><div class="summary-legend">G = gespielt · P = noch geplant · Gesamt = beide zusammen</div>
+<div id="summaryList" class="summary-compact-grid"></div></div>
   <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
   <div class="card">
     <div class="section-title"><h3>Profile / Clans</h3><span class="badge ok" id="profileCountBadge">1 Profil</span></div>
@@ -295,47 +726,68 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 </main></div>
 <nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button></div></nav>
 
-<div class="modal" id="lineupModal"><div class="modalbox"><div class="section-title"><div><h3 id="modalTitle">Tag bearbeiten</h3><div class="statusline" id="modalCount"></div></div><button class="btn small" id="modalClose">Schließen</button></div><div class="helpbox">Prüfe das geplante Line-up und passe es bei Bedarf an. Es müssen exakt so viele Spieler gewählt sein wie die Kriegsgröße.</div><input class="modal-search" id="lineupSearch" type="search" placeholder="Spieler oder Player-Tag suchen"><div class="modal-list" id="modalList"></div><div class="actions"><button class="btn primary" id="modalSave">Tatsächliches Line-up speichern</button><button class="btn" id="modalCancel">Abbrechen</button></div></div></div>
+<div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
+  <div class="lineup-modal-head">
+    <div class="section-title"><div><h3 id="modalTitle">Tag bearbeiten</h3><div class="statusline" id="modalCount" aria-live="polite"></div></div><button class="btn small" id="modalClose">Schließen</button></div>
+    <div class="helpbox">Wähle die Spieler aus, die an diesem Kriegstag wirklich teilgenommen haben. Die Anzahl muss zur Kriegsgröße passen.</div>
+    <input class="modal-search" id="lineupSearch" type="search" placeholder="Spieler oder Player-Tag suchen" aria-label="Spieler oder Player-Tag suchen">
+  </div>
+  <div class="modal-list" id="modalList"></div>
+  <div class="actions lineup-modal-footer"><button class="btn primary" id="modalSave">Line-up speichern</button><button class="btn" id="modalCancel">Abbrechen</button></div>
+</div></div>
 <div class="modal" id="bulkModal"><div class="modalbox"><div class="section-title"><div><h3>Mehrere Mitglieder hinzufügen</h3><div class="statusline">Ein Name pro Zeile – nach jedem Namen einfach Enter drücken.</div></div><button class="btn small" id="bulkClose">Schließen</button></div><div class="helpbox modal-tip"><b>So geht’s:</b> Ersten Namen eingeben → <b>Enter</b> → nächsten Namen eingeben. Gleiche Namen sind in Clash möglich und werden zugelassen. Namensdopplungen werden anschließend mit einem ! markiert; dort ist ein Player-Tag empfohlen.<div class="example-list">Spieler Alpha
 Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
-<div class="modal" id="helpModal"><div class="modalbox"><div class="section-title"><div><h3>Hilfe & Funktionen</h3><div class="statusline">Schnellstart und Begriffe des CWL Planers.</div></div><button class="btn small" id="helpClose">Schließen</button></div>
-  <div class="helpbox"><b>CWL in 4 Schritten:</b><br>1. Mitglieder hinzufügen und <b>Dabei</b> aktivieren.<br>2. Fixspieler und bekannte MUSS/RAUS-/Verfügbarkeiten eintragen.<br>3. Plan und besonders die <b>Einsatz-Verteilung</b> prüfen; der Rest wird automatisch rotiert.<br>4. Nach jedem Krieg das tatsächliche Line-up als <b>GESPIELT</b> bestätigen. Danach werden nur kommende Tage neu berechnet.<br><br><b>Optional:</b> RH, 3★-Stärke, Prio und Tagesziele brauchst du nur für feinere Steuerung.</div>
-  <div class="help-grid">
-    <div class="help-item"><b>Dabei</b><div>Der Spieler gehört zur aktuellen CWL-Auswahl und darf vom Planer eingesetzt werden. Deaktiviert = Pause; Stammdaten bleiben erhalten.</div></div>
-    <div class="help-item"><b>Fix</b><div>Ein Fixspieler wird an jedem zukünftigen Tag gesetzt, an dem er verfügbar ist. RAUS bzw. Erst-ab/Raus-ab haben Vorrang.</div></div>
-    <div class="help-item"><b>Prio 0–5</b><div>Keine feste Einsatzvorgabe, sondern ein Tie-Breaker: Wenn vergleichbare Spieler wegen der Rotation z. B. teils 3 und teils 4 Einsätze bekommen, erhält ein Spieler mit höherer Prio eher den zusätzlichen Einsatz. Tagesregeln, optionale Ziele und bisherige Einsätze sind wichtiger.</div></div>
-    <div class="help-item"><b>Rathaus (RH)</b><div>Optionale Info von RH3 bis RH20. Sie kann zum Sortieren und für optionale Tagesziele genutzt werden.</div></div>
-    <div class="help-item"><b>3★-Stärke</b><div>Deine manuelle Einschätzung eines Angreifers: Oft 3★, solide, selten 3★ oder normalerweise kein 3★. Keine Garantie, sondern Planungshilfe.</div></div>
-    <div class="help-item"><b>Optionale Tagesziele</b><div>Fortgeschrittenenfunktion für Gegnerplanung: Nach Analyse eines stärkeren oder schwächeren CWL-Gegners kannst du gezielt mehr bestimmte RH-Level oder stärkere 3★-Angreifer einplanen. Für eine normale faire Rotation nicht nötig.</div></div>
-    <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>AUTO lässt den Planer entscheiden. MUSS erzwingt den Einsatz an diesem zukünftigen Tag. RAUS macht den Spieler dort nicht verfügbar. Tippen wechselt AUTO → MUSS → RAUS.</div></div>
-    <div class="help-item"><b>Erst ab / Raus ab</b><div>Schnellregeln für längere Abwesenheiten. Beispiel: Erst ab Tag 2 + Raus ab Tag 6 = verfügbar T2–T5.</div></div>
-    <div class="help-item"><b>Einsatz-Verteilung</b><div>Zeigt sofort, wie oft jeder Spieler eingeplant ist. Spieler mit bereits gespielten Einsätzen bleiben sichtbar, auch wenn sie später pausieren oder aus der aktuellen CWL entfernt werden.</div></div>
-    <div class="help-item"><b>Fairness-Badge</b><div>Kleines Zusatzsignal: Spanne = höchste minus niedrigste Einsatzanzahl der aktuellen Rotationsspieler. Die konkrete Einsatzanzahl ist wichtiger.</div></div>
-    <div class="help-item"><b>GESPIELT</b><div>Nach dem Krieg das tatsächliche Line-up bestätigen. Vergangene Tage bleiben dadurch stabil; spätere Änderungen berechnen nur die Zukunft neu.</div></div>
-    <div class="help-item"><b>Profile / Backups</b><div>Profile speichern getrennte Clans. Profilnamen müssen eindeutig sein. Backups sichern aktuelle CWLs und Archive; ein Komplett-Backup ersetzt beim Wiederherstellen alle Profile erst nach Warnung.</div></div>
-    <div class="help-item"><b>Darstellung</b><div>Dunkel bleibt Standard. Hell und System sind jederzeit wählbar; Cyberpunk ist ein optionales, deutlich stärker stilisiertes Neon-Theme ohne dauerhafte Animationen. Die Auswahl gilt nur für dieses Gerät und ändert keine CWL-Daten.</div></div>
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
+  <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
+  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe oder Ergebnisse liest die App nicht automatisch aus Clash of Clans aus.</b></div>
+  <h4 class="help-section-heading">So gehst du vor</h4>
+  <div class="help-steps">
+    <div><b>1</b><span><strong>Mitglieder eintragen</strong> – Im Tab „Mitglieder“ Spieler hinzufügen und bei allen CWL-Teilnehmern „Dabei“ aktivieren.</span></div>
+    <div><b>2</b><span><strong>Besonderheiten festlegen</strong> – Fixspieler markieren und bei Bedarf einzelne Tage auf „MUSS“ oder „RAUS“ setzen.</span></div>
+    <div><b>3</b><span><strong>Plan prüfen</strong> – Unter „Plan“ siehst du die Aufstellung für jeden Krieg. Du kannst zwischen den Tagen wechseln oder sie alle anzeigen.</span></div>
+    <div><b>4</b><span><strong>Gespielten Tag bestätigen</strong> – Nach dem Krieg die tatsächlich eingesetzten Spieler auswählen und speichern. Der Plan für die restlichen Tage wird dann neu berechnet.</span></div>
   </div>
+  <h4 class="help-section-heading">Was bedeuten die Einstellungen?</h4>
+  <div class="help-grid">
+    <div class="help-item"><b>Dabei / Pause</b><div>„Dabei“ bedeutet: Der Spieler kann für diese CWL eingeplant werden. Bei „Pause“ bleibt er in der Mitgliederliste, wird aber nicht neu eingeteilt.</div></div>
+    <div class="help-item"><b>Fix</b><div>Der Spieler wird an jedem Tag eingeplant, an dem er verfügbar ist. Eine ausdrückliche Abwesenheit („RAUS“) hat Vorrang.</div></div>
+    <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>Pro Kriegstag: „AUTO“ lässt den Planer entscheiden, „MUSS“ verlangt den Einsatz, „RAUS“ schließt ihn für diesen Tag aus. Durch Antippen wechselst du die Einstellung.</div></div>
+    <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
+    <div class="help-item"><b>Priorität (Prio 0–5)</b><div>Bei ähnlichen Einsatzchancen wird ein Spieler mit höherer Zahl eher berücksichtigt. Bisherige Einsätze und verfügbare Tage sind wichtiger.</div></div>
+    <div class="help-item"><b>RH und 3★-Stärke</b><div>Rathaus-Level und deine Einschätzung der 3-Sterne-Stärke sind zusätzliche Spielerinfos. Sie helfen dir bei der Übersicht, verändern aber die automatische Einteilung nicht.</div></div>
+    <div class="help-item"><b>Einsatzverteilung</b><div>In „Übersicht“ bedeutet <b>G</b> = bereits tatsächlich gespielt und <b>P</b> = für kommende Tage geplant. Die Gesamtzahl ist G + P. Über Suche und Filter findest du einzelne Spieler schnell.</div></div>
+    <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
+    <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kannst du die gespeicherte Aufstellung nachträglich anpassen. Kommende Tage werden danach erneut geplant.</div></div>
+    <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
+  </div>
+  <h4 class="help-section-heading">Speicherung und Backup</h4>
+  <div class="helpbox">Die App speichert automatisch <b>in diesem Browser bzw. in der installierten App</b>. Für ein anderes Gerät oder zur Sicherheit unter „Übersicht“ ein <b>komplettes Backup</b> erstellen. Beim Wiederherstellen eines kompletten Backups können vorhandene Profile ersetzt werden. Vor einem größeren Update ist ein Backup sinnvoll.</div>
 </div></div>
-
-<div class="modal" id="goalsModal"><div class="modalbox">
-  <div class="section-title"><div><h3 id="goalsTitle">Tagesziele</h3><div class="statusline">Optional für eine gezielte Gegnerplanung.</div></div><button class="btn small" id="goalsClose">Schließen</button></div>
-  <div class="goal-note"><b>Optionale Zielzusammensetzung:</b> Nutze sie nur, wenn du einen Gegner gezielt mit bestimmten RH-Leveln oder 3★-Stärken angehen willst. Fix, MUSS, RAUS und gespielte Tage haben Vorrang. <b>0 = kein Ziel.</b></div><div class="readonly-note hidden" id="goalsReadonly">🔒 Dieser Tag wurde bereits gespielt. Ziele sind nur noch zur Ansicht verfügbar.</div><div class="goal-conflict hidden" id="goalsConflictText"></div>
-  <div class="goal-modal-section"><h4>Rathaus-Ziele</h4><p>Es werden nur RH-Level angezeigt, die im aktuellen Teilnehmerfeld vorkommen. Beispiel: RH18 = 4 bedeutet „möglichst 4 Spieler mit RH18“.</p><div id="townHallGoalGrid" class="goal-grid"></div></div>
-  <div class="goal-modal-section"><h4>3★-Stärke-Ziele</h4><p>Lege fest, wie viele Spieler aus deinen manuellen Stärke-Kategorien im Line-up sein sollen.</p><div id="strengthGoalGrid" class="goal-grid"></div><div id="goalsTotals" class="goal-total"></div></div>
-  <div class="goal-actions"><button class="btn danger" id="goalsClear">Ziele für diesen Tag löschen</button><div class="actions"><button class="btn" id="goalsCancel">Abbrechen</button><button class="btn primary" id="goalsSave">Ziele speichern</button></div></div>
-</div></div>
-
+<div class="modal" id="townHallPickerModal" role="dialog" aria-modal="true" aria-labelledby="townHallPickerTitle">
+  <div class="modalbox townhall-picker-box">
+    <div class="section-title"><h3 id="townHallPickerTitle">Rathaus auswählen</h3><button class="btn small" type="button" id="townHallPickerClose">Schließen</button></div>
+    <div class="statusline">Tippe auf das gewünschte Rathaus. Ohne Angabe ist ebenfalls möglich.</div>
+    <div class="townhall-picker-grid" id="townHallPickerGrid"></div>
+  </div>
+</div>
 <div class="modal" id="archiveModal"><div class="modalbox"><div class="section-title"><div><h3 id="archiveTitle">Vergangene CWL</h3><div class="statusline">Archivierter, schreibgeschützter Stand.</div></div><button class="btn small" id="archiveClose">Schließen</button></div><div id="archiveContent"></div></div></div>
 
-<div class="inline-action-panel" id="inlineActionPanel" role="status" aria-live="polite" aria-hidden="true">
+<div class="modal" id="whyModal" role="dialog" aria-modal="true" aria-labelledby="whyTitle"><div class="modalbox">
+  <div class="section-title"><h3 id="whyTitle">Warum diese Aufstellung?</h3><button class="btn small" id="whyClose" type="button">Schließen</button></div>
+  <div class="helpbox" id="whyExplanation"></div>
+  <div class="modal-list why-roster-list" id="whyRoster"></div>
+</div></div>
+
+<div class="inline-action-backdrop" id="inlineActionBackdrop" aria-hidden="true"></div>
+<div class="inline-action-panel" id="inlineActionPanel" role="dialog" aria-modal="true" aria-labelledby="inlineActionTitle" aria-describedby="inlineActionMessage" aria-hidden="true" tabindex="-1">
   <div class="inline-action-head"><div><div class="inline-action-title" id="inlineActionTitle">Bestätigen</div><div class="inline-action-message" id="inlineActionMessage"></div></div><button class="inline-action-close" id="inlineActionClose" type="button" aria-label="Schließen">×</button></div>
   <label class="inline-action-input-wrap hidden" id="inlineActionInputWrap"><span id="inlineActionInputLabel">Eingabe</span><input id="inlineActionInput" type="text" autocomplete="off"></label>
   <div class="inline-action-buttons" id="inlineActionButtons"></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v9.4.2";
+const APP_VERSION="v9.6.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -345,8 +797,10 @@ const BUG_URL="https://github.com/smolmig/cwl_planer/issues/new";
 const STRENGTH_LABELS={unknown:"Unbekannt",high:"Oft 3★",medium:"Solide / teils 3★",low:"Selten 3★",verylow:"Normal kein 3★"};
 const STRENGTH_SHORT={unknown:"3★ ?",high:"3★ hoch",medium:"3★ solide",low:"3★ selten",verylow:"3★ kaum"};
 const STRENGTH_RANK={high:4,medium:3,low:2,verylow:1,unknown:0};
-let toastTimer=null,modalDay=null,modalSelection=new Set(),goalsDay=null,goalDraft=null,openRulePanels=new Set(),openDuplicatePanels=new Set(),selectionMode=false,selectedMembers=new Set(),expandedCompactDays=new Set(),swRegistration=null;
+let toastTimer=null,modalDay=null,modalSelection=new Set(),openRulePanels=new Set(),openDuplicatePanels=new Set(),selectionMode=false,selectedMembers=new Set(),swRegistration=null;
 let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
+let mobileSelectedDay=null,mobileLineupsExpanded=!matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches;
+let memberSearch="",memberFilter="all",summarySearch="",summaryFilter="all",openMemberDetails=new Set(),townHallPickHandler=null;
 
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -354,46 +808,82 @@ function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,veryl
 function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
 function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],archivedMembers:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[],updatedAt:Date.now()}}
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
-function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,lastBackupAt:null}}}
+function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
-function saveUiSettings(){localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}
+function saveUiSettings(){try{localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}catch(e){/* UI preferences are non-critical */}}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
 function normalizeMember(m){m=m&&typeof m==="object"?m:freshMember();m.id||=uid();m.name=String(m.name||"").trim();m.playerTag=normalizePlayerTag(m.playerTag);m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.threeStar=Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown";const th=Number(m.townHall);m.townHall=(Number.isFinite(th)&&th>=3&&th<=20)?th:null;m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");m.firstDay=(Number(m.firstDay)>=1&&Number(m.firstDay)<=7)?Number(m.firstDay):null;m.outFromDay=(Number(m.outFromDay)>=1&&Number(m.outFromDay)<=7)?Number(m.outFromDay):null;return m}
-function normalizeArchive(a){if(!a||typeof a!=="object")return null;return{id:a.id||uid("a"),label:String(a.label||"Archivierte CWL"),createdAt:Number(a.createdAt)||Date.now(),slots:Math.max(1,Math.min(50,Number(a.slots)||15)),days:Math.max(1,Math.min(7,Number(a.days)||7)),playedCount:Math.max(0,Math.min(7,Number(a.playedCount)||0)),complete:!!a.complete,players:Array.isArray(a.players)?a.players.map(p=>({id:p.id||uid(),name:String(p.name||"Unbekannt"),playerTag:normalizePlayerTag(p.playerTag),townHall:(Number(p.townHall)>=3&&Number(p.townHall)<=20)?Number(p.townHall):null,threeStar:Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,p.threeStar)?p.threeStar:"unknown",fixed:!!p.fixed})):[],lineups:Array.isArray(a.lineups)?a.lineups.map(x=>({day:Number(x.day)||1,lineup:Array.isArray(x.lineup)?x.lineup:[]})):[],counts:a.counts&&typeof a.counts==="object"?a.counts:{}}}
+function normalizeArchive(a){
+  if(!a||typeof a!=="object")return null;
+  const players=Array.isArray(a.players)?a.players.map(normalizeSnapshot).filter(Boolean):[];
+  const lineups=Array.isArray(a.lineups)?a.lineups.map(x=>({day:Number(x.day)||1,lineup:Array.isArray(x.lineup)?x.lineup:[],snapshots:normalizeSnapshots(x.snapshots)})):[];
+  const counts={};for(const p of players)counts[p.id]=0;
+  for(const l of lineups)for(const id of l.lineup)counts[id]=(counts[id]||0)+1;
+  return{id:a.id||uid("a"),label:String(a.label||"Archivierte CWL"),createdAt:Number(a.createdAt)||Date.now(),
+    slots:Math.max(1,Math.min(50,Number(a.slots)||15)),days:Math.max(1,Math.min(7,Number(a.days)||7)),
+    playedCount:Math.max(0,Math.min(7,Number(a.playedCount)||lineups.length)),complete:!!a.complete,
+    players,lineups,counts};
+}
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
   p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","participating"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
   p.members=Array.isArray(p.members)?p.members.map(normalizeMember):[];p.archivedMembers=Array.isArray(p.archivedMembers)?p.archivedMembers.map(normalizeMember):[];
   p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=3&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});
-  p.locks=Array.from({length:7},(_,i)=>({locked:!!p.locks?.[i]?.locked,lineup:Array.isArray(p.locks?.[i]?.lineup)?p.locks[i].lineup:[]}));p.archives=(Array.isArray(p.archives)?p.archives.map(normalizeArchive).filter(Boolean):[]);return p
+  p.locks=Array.from({length:7},(_,i)=>({locked:!!p.locks?.[i]?.locked,lineup:Array.isArray(p.locks?.[i]?.lineup)?p.locks[i].lineup:[],snapshots:normalizeSnapshots(p.locks?.[i]?.snapshots)}));p.archives=(Array.isArray(p.archives)?p.archives.map(normalizeArchive).filter(Boolean):[]);return p
 }
 function canonicalProfileName(name){return String(name||"").trim().replace(/\s+/g," ").toLocaleLowerCase("de")}
 function normalizeApp(a){if(!a||typeof a!=="object")return defaultApp();a.profiles=Array.isArray(a.profiles)?a.profiles.map(normalizeProfile):[];if(!a.profiles.length)a.profiles=[freshProfile()];const seen=new Set();for(const p of a.profiles){let base=p.name||"Neuer Clan",candidate=base,n=2;while(seen.has(canonicalProfileName(candidate)))candidate=`${base} (${n++})`;p.name=candidate;seen.add(canonicalProfileName(candidate))}if(!a.profiles.some(p=>p.id===a.activeProfileId))a.activeProfileId=a.profiles[0].id;a.version=DATA_VERSION;a.dataVersion=DATA_VERSION;return a}
 function safeParse(raw){try{return JSON.parse(raw)}catch(e){return null}}
 function loadApp(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(raw){const parsed=safeParse(raw);if(parsed)return normalizeApp(parsed);const recovery=localStorage.getItem(RECOVERY_KEY),rp=safeParse(recovery);startupStorageIssue=rp?"recovery":"corrupt";suspendWrites=true;return rp?normalizeApp(rp):defaultApp()}
-  for(const key of LEGACY_KEYS){const old=localStorage.getItem(key);if(!old)continue;const parsed=safeParse(old);if(!parsed)continue;if(Array.isArray(parsed.profiles))return normalizeApp(parsed);if(parsed.members||parsed.config){const p=normalizeProfile(parsed);p.id=uid("p");p.name=(p.name||"Mein Clan").trim()||"Mein Clan";return normalizeApp({version:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()})}}
+  let raw;try{raw=localStorage.getItem(STORAGE_KEY)}catch(e){startupStorageIssue="read";suspendWrites=true;return defaultApp()}
+  if(raw){const parsed=safeParse(raw);if(parsed)return normalizeApp(parsed);let recovery;try{recovery=localStorage.getItem(RECOVERY_KEY)}catch(e){}const rp=safeParse(recovery);startupStorageIssue=rp?"recovery":"corrupt";suspendWrites=true;return rp?normalizeApp(rp):defaultApp()}
+  for(const key of LEGACY_KEYS){let old;try{old=localStorage.getItem(key)}catch(e){continue}if(!old)continue;const parsed=safeParse(old);if(!parsed)continue;if(Array.isArray(parsed.profiles))return normalizeApp(parsed);if(parsed.members||parsed.config){const p=normalizeProfile(parsed);p.id=uid("p");p.name=(p.name||"Mein Clan").trim()||"Mein Clan";return normalizeApp({version:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()})}}
   return defaultApp()
 }
 let app=loadApp();
 let state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];
 function memberById(id){return state.members.find(m=>m.id===id)||state.archivedMembers.find(m=>m.id===id)}
+function playerSnapshot(m){return{id:m.id,name:m.name,playerTag:m.playerTag||"",townHall:m.townHall,threeStar:m.threeStar,fixed:!!m.fixed}}
+function normalizeSnapshot(m){if(!m||typeof m!=="object")return null;return{id:String(m.id||""),name:String(m.name||"Unbekannt"),playerTag:normalizePlayerTag(m.playerTag),townHall:Number(m.townHall)>=3&&Number(m.townHall)<=20?Number(m.townHall):null,threeStar:Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown",fixed:!!m.fixed}}
+function normalizeSnapshots(raw){const result={};if(raw&&typeof raw==="object")for(const [id,value] of Object.entries(raw)){const m=normalizeSnapshot(value);if(m)result[id]=m}return result}
+function lineupPlayer(id,day){const m=memberById(id),past=state.locks[day]?.locked?state.locks[day]?.snapshots?.[id]:null;return past?{...m,...past,id}:m}
 function allKnownMembers(){return [...state.members,...state.archivedMembers]}
 function profileNameExists(name,excludeId=null){const key=canonicalProfileName(name);return app.profiles.some(p=>p.id!==excludeId&&canonicalProfileName(p.name)===key)}
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
-function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();expandedCompactDays.clear();renderAll()}
-function saveApp(){const b=document.getElementById("saveBadge");if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}state.updatedAt=Date.now();app.updatedAt=Date.now();app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;try{const prev=localStorage.getItem(STORAGE_KEY);if(prev&&safeParse(prev))localStorage.setItem(RECOVERY_KEY,prev);localStorage.setItem(STORAGE_KEY,JSON.stringify(app));if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}}catch(e){if(b){b.textContent="Speicherfehler";b.className="badge err"}}}
+function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()}
+function saveApp(){
+  const b=document.getElementById("saveBadge");
+  if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}
+  state.updatedAt=Date.now();app.updatedAt=Date.now();app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;
+  try{
+    const serialized=JSON.stringify(app),prev=localStorage.getItem(STORAGE_KEY);
+    // Recovery is best effort: a full storage quota must never prevent saving the actual data.
+    if(prev&&safeParse(prev)){try{localStorage.setItem(RECOVERY_KEY,prev)}catch(e){/* previous backup retained */}}
+    localStorage.setItem(STORAGE_KEY,serialized);
+    if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}
+  }catch(e){
+    suspendWrites=true;startupStorageIssue="save";
+    if(b){b.textContent="Speicherfehler – Backup sichern";b.className="badge err"}
+    renderRecoveryBanner();
+  }
+}
 function showToast(message){const t=document.getElementById("toast");if(!t)return;t.textContent=message;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
-let inlineActionResolve=null;
-function closeInlineAction(result={value:"cancel",input:""}){const p=document.getElementById("inlineActionPanel");if(p){p.classList.remove("open","error");p.setAttribute("aria-hidden","true")}const resolve=inlineActionResolve;inlineActionResolve=null;if(resolve)resolve(result)}
-function askInlineAction({title="Bitte bestätigen",message="",inputLabel="",inputValue=null,buttons=null,error=false}={}){if(inlineActionResolve)closeInlineAction();const p=document.getElementById("inlineActionPanel"),titleEl=document.getElementById("inlineActionTitle"),msg=document.getElementById("inlineActionMessage"),wrap=document.getElementById("inlineActionInputWrap"),input=document.getElementById("inlineActionInput"),label=document.getElementById("inlineActionInputLabel"),btns=document.getElementById("inlineActionButtons");titleEl.textContent=title;msg.textContent=message;p.classList.toggle("error",!!error);btns.innerHTML="";const hasInput=inputValue!==null;wrap.classList.toggle("hidden",!hasInput);if(hasInput){label.textContent=inputLabel||"Eingabe";input.value=String(inputValue??"")}const defs=buttons||[{value:"confirm",text:"Bestätigen",primary:true},{value:"cancel",text:"Abbrechen"}];return new Promise(resolve=>{inlineActionResolve=resolve;for(const d of defs){const b=document.createElement("button");b.type="button";b.className="btn"+(d.primary?" primary":"")+(d.danger?" danger":"");b.textContent=d.text;b.onclick=()=>closeInlineAction({value:d.value,input:hasInput?input.value:""});btns.appendChild(b)}p.classList.add("open");p.setAttribute("aria-hidden","false");requestAnimationFrame(()=>{if(hasInput){input.focus();input.select()}else btns.querySelector(".primary")?.focus()})})}
+let inlineActionResolve=null,inlineActionPreviousFocus=null;
+function closeInlineAction(result={value:"cancel",input:""}){
+  const p=document.getElementById("inlineActionPanel");
+  if(p){p.classList.remove("open","error");p.setAttribute("aria-hidden","true")}
+  document.getElementById("inlineActionBackdrop").classList.remove("open");
+  const resolve=inlineActionResolve;inlineActionResolve=null;
+  if(resolve)resolve(result);
+  if(inlineActionPreviousFocus?.isConnected)inlineActionPreviousFocus.focus();
+  inlineActionPreviousFocus=null;
+}
+function askInlineAction({title="Bitte bestätigen",message="",inputLabel="",inputValue=null,buttons=null,error=false}={}){if(inlineActionResolve)closeInlineAction();inlineActionPreviousFocus=document.activeElement;const p=document.getElementById("inlineActionPanel"),titleEl=document.getElementById("inlineActionTitle"),msg=document.getElementById("inlineActionMessage"),wrap=document.getElementById("inlineActionInputWrap"),input=document.getElementById("inlineActionInput"),label=document.getElementById("inlineActionInputLabel"),btns=document.getElementById("inlineActionButtons");titleEl.textContent=title;msg.textContent=message;p.classList.toggle("error",!!error);btns.innerHTML="";const hasInput=inputValue!==null;wrap.classList.toggle("hidden",!hasInput);if(hasInput){label.textContent=inputLabel||"Eingabe";input.value=String(inputValue??"")}const defs=buttons||[{value:"confirm",text:"Bestätigen",primary:true},{value:"cancel",text:"Abbrechen"}];return new Promise(resolve=>{inlineActionResolve=resolve;for(const d of defs){const b=document.createElement("button");b.type="button";b.className="btn"+(d.primary?" primary":"")+(d.danger?" danger":"");b.textContent=d.text;b.onclick=()=>closeInlineAction({value:d.value,input:hasInput?input.value:""});btns.appendChild(b)}document.getElementById("inlineActionBackdrop").classList.add("open");p.classList.add("open");p.setAttribute("aria-hidden","false");requestAnimationFrame(()=>{if(hasInput){input.focus();input.select()}else btns.querySelector(".primary")?.focus()})})}
 async function confirmInline(message,{title="Bitte bestätigen",confirmText="Bestätigen",danger=false}={}){const r=await askInlineAction({title,message,buttons:[{value:"confirm",text:confirmText,primary:!danger,danger},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"}
 async function promptInline(title,inputLabel,inputValue=""){const r=await askInlineAction({title,inputLabel,inputValue,message:"",buttons:[{value:"confirm",text:"Übernehmen",primary:true},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"?r.input:null}
 
 function renderAll(message=""){lastPlan=calculatePlan();renderProfileUI();renderKpis();renderPlan();renderMembers();renderSummary();renderArchives();syncConfigInputs();renderRecoveryBanner();saveApp();if(message)setTimeout(()=>showToast(message),0)}
 function effectiveStatus(m,d){const day=d+1;if(m.firstDay&&day<m.firstDay)return"out";if(m.outFromDay&&day>=m.outFromDay)return"out";return m.statuses[d]||"auto"}
-function activeDayGoal(d){return state.dayGoals?.[d]||emptyDayGoal()}
 function playedCount(){return state.locks.slice(0,state.config.days).filter(l=>l.locked).length}
 function playedPrefixLength(){let n=0;for(let i=0;i<state.config.days&&state.locks[i]?.locked;i++)n++;return n}
 function lastUnlockableDay(){for(let i=state.config.days-1;i>=0;i--)if(state.locks[i]?.locked)return i;return-1}
@@ -402,45 +892,216 @@ function duplicateNameKeys(){const counts={};for(const m of state.members){const
 function isDuplicateMember(m){return duplicateNameKeys().has(m.name.trim().toLocaleLowerCase("de"))}
 function displayMemberName(m,forCopy=false){if(!m)return"Unbekannt";if(isDuplicateMember(m)&&m.playerTag)return`${m.name} (${m.playerTag})`;return m.name}
 function sortIdsByMemberOrder(ids){const order=new Map(state.members.map((m,i)=>[m.id,i]));state.archivedMembers.forEach((m,i)=>order.set(m.id,state.members.length+i));return [...ids].sort((a,b)=>(order.get(a)??9999)-(order.get(b)??9999)||displayMemberName(memberById(a)).localeCompare(displayMemberName(memberById(b)),"de"))}
-function goalSnapshot(lineup,d){const g=activeDayGoal(d),th={},strength={high:0,medium:0,low:0,verylow:0};for(const id of lineup){const m=memberById(id);if(!m)continue;if(m.townHall)th[m.townHall]=(th[m.townHall]||0)+1;if(strength[m.threeStar]!==undefined)strength[m.threeStar]++}const items=[],issues=[];for(const [level,target] of Object.entries(g.townHall||{})){if(!target)continue;const actual=th[level]||0;items.push({label:`RH${level}`,actual,target,met:actual===target});if(actual!==target)issues.push(`Ziel RH${level}: ${actual}/${target} erreicht.`)}for(const key of ["high","medium","low","verylow"]){const target=g.strength?.[key]||0;if(!target)continue;const actual=strength[key]||0;items.push({label:STRENGTH_LABELS[key],actual,target,met:actual===target});if(actual!==target)issues.push(`Ziel ${STRENGTH_LABELS[key]}: ${actual}/${target} erreicht.`)}return{items,issues}}
-function candidateGoalScore(m,d,current){const g=activeDayGoal(d);let score=0;if(m.townHall&&g.townHall?.[String(m.townHall)]){const target=g.townHall[String(m.townHall)],actual=current.th[m.townHall]||0;score+=actual<target?120:-18}if(m.threeStar!=="unknown"&&g.strength?.[m.threeStar]){const target=g.strength[m.threeStar],actual=current.strength[m.threeStar]||0;score+=actual<target?120:-18}return score}
-function calculatePlan(){const slots=state.config.slots,days=state.config.days,counts=Object.fromEntries(allKnownMembers().map(m=>[m.id,0])),dayPlans=[];for(let d=0;d<days;d++){let lineup=[],warnings=[];const lock=state.locks[d];if(lock?.locked&&lock.lineup?.length){lineup=lock.lineup.filter(id=>memberById(id));if(lineup.length!==slots)warnings.push(`Gespielter Tag hat ${lineup.length} statt ${slots} Spieler.`)}else{const eligible=state.members.filter(m=>m.participating&&effectiveStatus(m,d)!=="out"&&m.name.trim()),required=[],reqSet=new Set();for(const m of eligible){if(effectiveStatus(m,d)==="must"&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}}for(const m of eligible){if(m.fixed&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}}if(eligible.length<slots)warnings.push(`Nur ${eligible.length} Spieler verfügbar.`);if(required.length>slots)warnings.push(`${required.length} Fix/MUSS-Spieler für nur ${slots} Plätze.`);const remaining=eligible.filter(m=>!reqSet.has(m.id)),chosen=[...required],current={th:{},strength:{high:0,medium:0,low:0,verylow:0}},addCurrent=m=>{if(m.townHall)current.th[m.townHall]=(current.th[m.townHall]||0)+1;if(current.strength[m.threeStar]!==undefined)current.strength[m.threeStar]++};chosen.forEach(addCurrent);while(chosen.length<slots&&remaining.length){remaining.sort((a,b)=>{const ga=candidateGoalScore(a,d,current),gb=candidateGoalScore(b,d,current);if(ga!==gb)return gb-ga;const ca=counts[a.id]||0,cb=counts[b.id]||0;if(ca!==cb)return ca-cb;if(a.priority!==b.priority)return b.priority-a.priority;const ia=state.members.indexOf(a),ib=state.members.indexOf(b),ta=(ia*17+d*13)%997,tb=(ib*17+d*13)%997;return ta-tb});const m=remaining.shift();chosen.push(m);addCurrent(m)}lineup=chosen.slice(0,Math.max(slots,required.length)).map(m=>m.id)}lineup.forEach(id=>counts[id]=(counts[id]||0)+1);const prev=d>0?dayPlans[d-1].lineup:[],rein=d>0?lineup.filter(id=>!prev.includes(id)):[],raus=d>0?prev.filter(id=>!lineup.includes(id)):[],goal=goalSnapshot(lineup,d);dayPlans.push({day:d+1,lineup,rein,raus,warnings,goal,locked:!!lock?.locked})}return{dayPlans,counts}}
+function futureEligibilityCount(m,start){let n=0;for(let k=start;k<state.config.days;k++)if(m.participating&&m.name.trim()&&effectiveStatus(m,k)!=="out")n++;return n}
+function fairnessCandidateScore(m,d,counts){
+  return {used:counts[m.id]||0,remaining:futureEligibilityCount(m,d+1),priority:m.priority};
+}
+function calculatePlan(){
+  const slots=state.config.slots,days=state.config.days,counts=Object.fromEntries(allKnownMembers().map(m=>[m.id,0])),playedCounts={...counts},dayPlans=[];
+  const lockedIds=new Set();
+  for(let d=0;d<days;d++)if(state.locks[d]?.locked)for(const id of state.locks[d].lineup||[])lockedIds.add(id);
+  for(let d=0;d<days;d++){
+    let lineup=[],warnings=[];const lock=state.locks[d],startingCounts={...counts};
+    if(lock?.locked){
+      lineup=(lock.lineup||[]).filter(id=>memberById(id));
+      if(lineup.length!==slots)warnings.push(`Gespielter Tag hat ${lineup.length} statt ${slots} Spieler.`);
+    }else{
+      const eligible=state.members.filter(m=>m.participating&&effectiveStatus(m,d)!=="out"&&m.name.trim()),required=[],reqSet=new Set();
+      for(const m of eligible)if(effectiveStatus(m,d)==="must"&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}
+      for(const m of eligible)if(m.fixed&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}
+      if(eligible.length<slots)warnings.push(`Nur ${eligible.length} Spieler verfügbar.`);
+      if(required.length>slots)warnings.push(`${required.length} Fix/MUSS-Spieler für nur ${slots} Plätze.`);
+      const remaining=eligible.filter(m=>!reqSet.has(m.id)),chosen=[...required];
+      while(chosen.length<slots&&remaining.length){
+        remaining.sort((a,b)=>{
+          const A=fairnessCandidateScore(a,d,counts),B=fairnessCandidateScore(b,d,counts);
+          if(A.used!==B.used)return A.used-B.used;
+          if(A.remaining!==B.remaining)return A.remaining-B.remaining;
+          if(A.priority!==B.priority)return B.priority-A.priority;
+          const ia=state.members.indexOf(a),ib=state.members.indexOf(b);
+          return (ia*17+d*13)%997-(ib*17+d*13)%997;
+        });
+        const m=remaining.shift();chosen.push(m)
+      }
+      lineup=chosen.map(m=>m.id);
+    }
+    for(const id of lineup){counts[id]=(counts[id]||0)+1;if(lock?.locked)playedCounts[id]=(playedCounts[id]||0)+1}
+    const prev=d>0?dayPlans[d-1].lineup:[],
+      rein=d>0?lineup.filter(id=>!prev.includes(id)):[],
+      raus=d>0?prev.filter(id=>!lineup.includes(id)):[];
+    dayPlans.push({day:d+1,lineup,rein,raus,warnings,locked:!!lock?.locked,startingCounts});
+  }
+  return{dayPlans,counts,playedCounts};
+}
 function renderProfileUI(){const sel=document.getElementById("profileSelect");sel.innerHTML=app.profiles.map(p=>`<option value="${p.id}" ${p.id===state.id?"selected":""}>${esc(p.name)}</option>`).join("")+`<option disabled>────────────</option><option value="__new__">＋ Neues Profil erstellen…</option>`;document.getElementById("activeProfileName").textContent=state.name;document.getElementById("profileCountBadge").textContent=`${app.profiles.length} Profil${app.profiles.length===1?"":"e"}`}
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
-function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`CWL vorbereitet · ${days} Kriege · noch kein Tag gespielt`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";document.getElementById("compactPlanBtn").textContent=uiSettings.compactPlan?"▤ Normalansicht":"▦ Kompaktansicht"}
-function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(memberById).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),goalItems=dp.goal?.items||[],goalMiss=goalItems.some(x=>!x.met),exact=names.length===state.config.slots&&!dp.warnings.length,collapsed=uiSettings.compactPlan&&!expandedCompactDays.has(dp.day-1),card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(collapsed?" compact-collapsed":"");const goalHtml=goalItems.length?`<div class="goal-summary">${goalItems.map(x=>`<span class="goal-pill ${x.met?"met":"miss"}">${esc(x.label)} ${x.actual}/${x.target}</span>`).join("")}</div>`:"";const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(memberById(id))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(memberById(id))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Tatsächliches Line-up ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Tag abschließen / Line-up bestätigen</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact&&!goalMiss?"ok":"warn"}">${dp.locked?"GESPIELT":exact&&!goalMiss?"PLAN OK":goalMiss?"ZIEL PRÜFEN":"PRÜFEN"}</span></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${goalHtml}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px"><button class="btn small goal-day-btn ${goalItems.length?"active":""}" data-day="${dp.day-1}">🎯 Optionale Tagesziele${goalItems.length?` (${goalItems.length})`:""}</button>${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}${uiSettings.compactPlan?`<button class="btn small compact-day-toggle" data-day="${dp.day-1}">${collapsed?"Aufstellung anzeigen":"Aufstellung einklappen"}</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".goal-day-btn").forEach(b=>b.onclick=()=>openGoalsModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".compact-day-toggle").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.day);expandedCompactDays.has(d)?expandedCompactDays.delete(d):expandedCompactDays.add(d);renderPlan()})}
+function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`Plan bereit · ${days} Kriegstage · noch keiner als gespielt gespeichert`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
+function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Gespielte Aufstellung ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Tag als gespielt speichern</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${dp.locked?"GESPIELT":exact?"BESETZT":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px">${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays()}
+function renderMobileDays(){
+  const root=document.getElementById("mobileDayTabs");if(!root)return;
+  const days=state.config.days,next=Math.min(playedPrefixLength(),days-1);
+  if(mobileSelectedDay===null||mobileSelectedDay>=days||mobileSelectedDay<0)mobileSelectedDay=next;
+  const single=uiSettings.dayViewMode==="single";
+  document.getElementById("view-plan").classList.toggle("desktop-one-day",single);
+  document.getElementById("view-plan").classList.toggle("landscape-one-day",matchMedia("(orientation: landscape) and (max-height: 540px) and (max-width: 1100px)").matches);
+  for(const [id,active] of [["singleDayMode",single],["allDaysMode",!single]]){
+    const button=document.getElementById(id);if(button){button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active))}
+  }
+  root.innerHTML=Array.from({length:days},(_,d)=>{
+    const played=!!state.locks[d]?.locked,active=d===mobileSelectedDay,status=played?"✓":d===playedPrefixLength()?"●":"·";
+    return `<button type="button" class="mobile-day-tab${active?" active":""}${played?" played":""}" data-day="${d}" aria-label="Tag ${d+1}${played?", gespielt":""}" aria-pressed="${active}"><span class="day-no">${d+1}</span><span class="day-state">${status}</span></button>`;
+  }).join("");
+  root.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+    mobileSelectedDay=Number(btn.dataset.day);
+    uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays();
+    document.getElementById("mobileDaySwitcher")?.scrollIntoView({block:"start",behavior:"smooth"});
+  });
+  document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",d!==mobileSelectedDay));
+}
+
 function getDisplayMembers(){const list=[...state.members],mode=state.config.memberSort||"manual";if(mode==="manual")return list;if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));return list}
 function availabilityLabel(m){const start=m.firstDay||1,end=(m.outFromDay||state.config.days+1)-1;if(!m.firstDay&&!m.outFromDay)return"";if(start>end)return"Keine verfügbaren Tage";return`Verfügbar: T${start}${end!==start?`–T${Math.min(end,state.config.days)}`:""}`}
-function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;document.getElementById("selectMembersBtn").textContent=selectionMode?"Mehrfachbearbeitung beenden":"Mehrere auswählen";["bulkParticipatingOnBtn","bulkParticipatingOffBtn","bulkFixedOnBtn","bulkFixedOffBtn","bulkPrioritySelect","bulkTownHallSelect","bulkStrengthSelect","deleteSelectedBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=count===0})}
-function renderMembers(){const root=document.getElementById("memberList");updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Füge einen Namen hinzu, mehrere Namen untereinander ein oder importiere eine Liste.</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();return}const display=getDisplayMembers(),manual=(state.config.memberSort||"manual")==="manual",dups=duplicateNameKeys();root.innerHTML=display.map(m=>{const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay),played=!!state.locks[d]?.locked,disabled=quickOut||played,title=played?"Tag bereits gespielt – vergangene Line-ups im Plan ändern":quickOut?"Durch Erst-ab/Raus-ab-Regel nicht verfügbar":"Tippen wechselt AUTO → MUSS → RAUS";return`<button class="rulebtn ${eff}" data-day="${d}" ${disabled?`disabled title="${esc(title)}"`:""}>T${d+1}<br>${played?"🔒":eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");const thOpts=`<option value="">RH –</option>`+Array.from({length:18},(_,i)=>i+3).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("");const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");const idx=state.members.findIndex(x=>x.id===m.id),orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"",dup=dups.has(m.name.trim().toLocaleLowerCase("de")),avail=availabilityLabel(m);return`<div class="member" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><div class="name-wrap"><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name">${dup?`<button class="dup-warning" type="button" title="Doppelter Spielername" aria-label="Doppelter Spielername – Player-Tag öffnen">!</button>`:""}</div><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div>${dup?`<div class="duplicate-panel ${openDuplicatePanels.has(m.id)?"":"hidden"}"><div class="duplicate-text"><b>Doppelter Spielername:</b> Dieser Name kommt mehrfach vor. Das ist in Clash möglich. Zur eindeutigen Zuordnung wird ein Player-Tag empfohlen.</div><div class="duplicate-tag-row"><input class="name-input player-tag" value="${esc(m.playerTag||"")}" placeholder="#ABC123"><button class="btn small close-duplicate" type="button">Schließen</button></div></div>`:""}<div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select>${orderBtns}<button class="btn small toggle-rules">Tage & Verfügbarkeit</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span>${avail?`<span class="availability-pill ${avail.startsWith("Keine")?"bad":""}">${esc(avail)}</span>`:""}</div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="rule-explain"><b>Tippen:</b> AUTO → MUSS → RAUS. Gespielte Tage sind gesperrt.</div><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div></div></div>`}).join("");root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");sel.onchange=e=>{e.target.checked?selectedMembers.add(id):selectedMembers.delete(id);updateBulkBar()};el.querySelector(".member-name").onchange=e=>{const next=e.target.value.trim();if(!next){e.target.value=m.name;showToast("Name darf nicht leer sein");return}m.name=next;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".dup-warning")?.addEventListener("click",()=>{openDuplicatePanels.has(id)?openDuplicatePanels.delete(id):openDuplicatePanels.add(id);renderMembers();if(openDuplicatePanels.has(id))setTimeout(()=>document.querySelector(`.member[data-id="${id}"] .player-tag`)?.focus(),30)});el.querySelector(".close-duplicate")?.addEventListener("click",()=>{openDuplicatePanels.delete(id);renderMembers()});el.querySelector(".member-part input").onchange=e=>{m.participating=e.target.checked;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-fixed input").onchange=e=>{m.fixed=e.target.checked;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-priority").onchange=e=>{m.priority=Number(e.target.value);renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-th").onchange=e=>{m.townHall=e.target.value?Number(e.target.value):null;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-strength").onchange=e=>{m.threeStar=e.target.value;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".player-tag")?.addEventListener("change",e=>{m.playerTag=normalizePlayerTag(e.target.value);renderAll("Player-Tag gespeichert ✓")});el.querySelector(".move-up")?.addEventListener("click",()=>moveMember(id,-1));el.querySelector(".move-down")?.addEventListener("click",()=>moveMember(id,1));el.querySelector(".toggle-rules").onclick=()=>{openRulePanels.has(id)?openRulePanels.delete(id):openRulePanels.add(id);renderMembers()};el.querySelector(".delete-member").onclick=()=>deleteMember(id);el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll("Tagesregel gespeichert · Plan aktualisiert ✓")});el.querySelector(".first-day").onchange=e=>setFirstDay(m,e.target.value?Number(e.target.value):null);el.querySelector(".out-from").onchange=e=>setOutFromDay(m,e.target.value?Number(e.target.value):null)});updateBulkBar()}
+function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;document.getElementById("selectMembersBtn").textContent=selectionMode?"Mehrfachbearbeitung beenden":"Mehrere auswählen";document.getElementById("deleteAllBtn").disabled=!!memberSearch||memberFilter!=="all";document.getElementById("deleteAllBtn").title=memberSearch||memberFilter!=="all"?"Filter zurücksetzen, um den gesamten Kader löschen zu können":"";["bulkParticipatingOnBtn","bulkParticipatingOffBtn","bulkFixedOnBtn","bulkFixedOffBtn","bulkPrioritySelect","bulkTownHallSelect","bulkTownHallPicker","bulkStrengthSelect","deleteSelectedBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=count===0})}
+function getVisibleMembers(){const q=memberSearch.trim().toLocaleLowerCase("de");return getDisplayMembers().filter(m=>(memberFilter==="all"||memberFilter==="participating"&&m.participating||memberFilter==="paused"&&!m.participating||memberFilter==="fixed"&&m.fixed)&&(!q||m.name.toLocaleLowerCase("de").includes(q)||(m.playerTag||"").toLocaleLowerCase("de").includes(q)))}
+function renderMembers(){const root=document.getElementById("memberList");updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Füge einen Namen hinzu, mehrere Namen untereinander ein oder importiere eine Liste.</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();return}const display=getVisibleMembers();document.getElementById("memberVisibleCount").textContent=`${display.length} von ${state.members.length}`;if(!display.length){root.innerHTML='<div class="empty">Keine Spieler gefunden. Suche oder Filter ändern.</div>';return}const manual=(state.config.memberSort||"manual")==="manual",dups=duplicateNameKeys();root.innerHTML=display.map(m=>{const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay),played=!!state.locks[d]?.locked,disabled=quickOut||played,title=played?"Tag bereits gespielt – vergangene Line-ups im Plan ändern":quickOut?"Durch Erst-ab/Raus-ab-Regel nicht verfügbar":"Tippen wechselt AUTO → MUSS → RAUS";return`<button class="rulebtn ${eff}" data-day="${d}" ${disabled?`disabled title="${esc(title)}"`:""}>T${d+1}<br>${played?"🔒":eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");const thOpts=`<option value="">RH –</option>`+Array.from({length:17},(_,i)=>19-i).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("")+(m.townHall===20?`<option value="20" selected>RH20 (bestehend)</option>`:"");const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");const idx=state.members.findIndex(x=>x.id===m.id),orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"",dup=dups.has(m.name.trim().toLocaleLowerCase("de")),avail=availabilityLabel(m);return`<div class="member${openMemberDetails.has(m.id)?" member-expanded":""}${selectionMode?" member-selecting":""}" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><div class="name-wrap"><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name">${dup?`<button class="dup-warning" type="button" title="Doppelter Spielername" aria-label="Doppelter Spielername – Player-Tag öffnen">!</button>`:""}</div><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-snapshot"><span class="member-brief"><span class="member-brief-desktop">${m.townHall?`RH${m.townHall}`:"RH –"} · Prio ${m.priority} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span><span class="member-brief-mobile">${m.townHall?`RH${m.townHall}`:"RH –"} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} · P${m.priority}</span></span><span class="member-snapshot-actions"><span class="member-status-chip ${m.participating?"in":"off"}">${m.participating?"Dabei":"Pause"}</span>${m.fixed?`<span class="member-status-chip fixed">FIX</span>`:""}<button class="btn small member-edit-toggle" type="button" aria-label="${esc(m.name)} ${openMemberDetails.has(m.id)?"schließen":"bearbeiten"}" aria-expanded="${openMemberDetails.has(m.id)}">${openMemberDetails.has(m.id)?"Schließen ▴":"Bearbeiten ▾"}</button></span></div>${dup?`<div class="duplicate-panel ${openDuplicatePanels.has(m.id)?"":"hidden"}"><div class="duplicate-text"><b>Doppelter Spielername:</b> Dieser Name kommt mehrfach vor. Das ist in Clash möglich. Zur eindeutigen Zuordnung wird ein Player-Tag empfohlen.</div><div class="duplicate-tag-row"><input class="name-input player-tag" value="${esc(m.playerTag||"")}" placeholder="#ABC123"><button class="btn small close-duplicate" type="button">Schließen</button></div></div>`:""}<div class="member-details ${openMemberDetails.has(m.id)?"":"hidden"}"><div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><button type="button" class="btn member-th-picker" aria-label="Rathaus für ${esc(m.name)} auswählen">RH ${m.townHall??"–"} ▾</button><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><button type="button" class="btn member-field-picker member-prio-picker" aria-label="Priorität für ${esc(m.name)} auswählen">Prio ${m.priority} ▾</button><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select><button type="button" class="btn member-field-picker member-strength-picker" aria-label="3-Sterne-Stärke für ${esc(m.name)} auswählen">${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} ▾</button>${orderBtns}<button class="btn small toggle-rules">Tage & Verfügbarkeit</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span>${avail?`<span class="availability-pill ${avail.startsWith("Keine")?"bad":""}">${esc(avail)}</span>`:""}</div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="rule-explain"><b>Tippen:</b> AUTO → MUSS → RAUS. Gespielte Tage sind gesperrt.</div><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div></div></div></div>`}).join("");root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");el.querySelector(".member-edit-toggle").onclick=()=>{
+  const expanded=!openMemberDetails.has(id);
+  if(expanded&&matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches)openMemberDetails.clear();
+  expanded?openMemberDetails.add(id):openMemberDetails.delete(id);
+  renderMembers();
+  if(expanded&&matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches){
+    const row=[...document.querySelectorAll("#memberList .member")].find(item=>item.dataset.id===id);
+    row?.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }
+};sel.onchange=e=>{e.target.checked?selectedMembers.add(id):selectedMembers.delete(id);updateBulkBar()};el.querySelector(".member-name").onchange=e=>{const next=e.target.value.trim();if(!next){e.target.value=m.name;showToast("Name darf nicht leer sein");return}m.name=next;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".dup-warning")?.addEventListener("click",()=>{openDuplicatePanels.has(id)?openDuplicatePanels.delete(id):openDuplicatePanels.add(id);renderMembers();if(openDuplicatePanels.has(id))setTimeout(()=>document.querySelector(`.member[data-id="${id}"] .player-tag`)?.focus(),30)});el.querySelector(".close-duplicate")?.addEventListener("click",()=>{openDuplicatePanels.delete(id);renderMembers()});el.querySelector(".member-part input").onchange=e=>{m.participating=e.target.checked;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-fixed input").onchange=e=>{m.fixed=e.target.checked;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-priority").onchange=e=>{m.priority=Number(e.target.value);renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-prio-picker").onclick=()=>openMemberChoicePicker("Priorität auswählen",[0,1,2,3,4,5].map(v=>({value:v,label:"Prio "+v})),m.priority,value=>{m.priority=value;renderAll("Priorität gespeichert ✓")});el.querySelector(".member-th").onchange=e=>{m.townHall=e.target.value?Number(e.target.value):null;renderAll("Rathaus gespeichert ✓")};el.querySelector(".member-th-picker").onclick=()=>openTownHallPicker(m.townHall,value=>{m.townHall=value;renderAll("Rathaus gespeichert ✓")});el.querySelector(".member-strength").onchange=e=>{m.threeStar=e.target.value;renderAll("Änderungen gespeichert · Plan aktualisiert ✓")};el.querySelector(".member-strength-picker").onclick=()=>openMemberChoicePicker("3★-Stärke auswählen",Object.entries(STRENGTH_LABELS).map(([value,label])=>({value,label})),m.threeStar,value=>{m.threeStar=value;renderAll("3★-Stärke gespeichert ✓")});el.querySelector(".player-tag")?.addEventListener("change",e=>{m.playerTag=normalizePlayerTag(e.target.value);renderAll("Player-Tag gespeichert ✓")});el.querySelector(".move-up")?.addEventListener("click",()=>moveMember(id,-1));el.querySelector(".move-down")?.addEventListener("click",()=>moveMember(id,1));el.querySelector(".toggle-rules").onclick=()=>{openRulePanels.has(id)?openRulePanels.delete(id):openRulePanels.add(id);renderMembers()};el.querySelector(".delete-member").onclick=()=>deleteMember(id);el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll("Tagesregel gespeichert · Plan aktualisiert ✓")});el.querySelector(".first-day").onchange=e=>setFirstDay(m,e.target.value?Number(e.target.value):null);el.querySelector(".out-from").onchange=e=>setOutFromDay(m,e.target.value?Number(e.target.value):null)});updateBulkBar()}
 function moveMember(id,delta){const i=state.members.findIndex(m=>m.id===id),j=i+delta;if(i<0||j<0||j>=state.members.length)return;[state.members[i],state.members[j]]=[state.members[j],state.members[i]];renderAll("Reihenfolge gespeichert · Plan aktualisiert ✓")}
 function setFirstDay(m,value){if(value&&m.outFromDay&&value>=m.outFromDay){showToast("Erst-ab muss vor Raus-ab liegen");renderMembers();return}m.firstDay=value;if(value)for(let d=0;d<value-1;d++)m.statuses[d]="auto";renderAll("Verfügbarkeit gespeichert · Plan aktualisiert ✓")}
 function setOutFromDay(m,value){if(value&&m.firstDay&&value<=m.firstDay){showToast("Raus-ab muss nach Erst-ab liegen");renderMembers();return}m.outFromDay=value;if(value)for(let d=value-1;d<7;d++)m.statuses[d]="auto";renderAll("Verfügbarkeit gespeichert · Plan aktualisiert ✓")}
-function removeMembers(ids){let archived=0,removed=0;for(const id of [...ids]){const m=state.members.find(x=>x.id===id);if(!m)continue;if(usedInLockedDay(id)){if(!state.archivedMembers.some(x=>x.id===id))state.archivedMembers.push({...m,statuses:[...m.statuses],participating:false,fixed:false});archived++}else removed++;state.members=state.members.filter(x=>x.id!==id);openRulePanels.delete(id);selectedMembers.delete(id)}return{archived,removed}}
+function removeMembers(ids){let archived=0,removed=0;for(const id of [...ids]){const m=state.members.find(x=>x.id===id);if(!m)continue;if(usedInLockedDay(id)){if(!state.archivedMembers.some(x=>x.id===id))state.archivedMembers.push({...m,statuses:[...m.statuses],participating:false});archived++}else removed++;state.members=state.members.filter(x=>x.id!==id);openRulePanels.delete(id);selectedMembers.delete(id)}return{archived,removed}}
 async function deleteMember(id){const m=memberById(id);if(!m)return;const used=usedInLockedDay(id),msg=used?`„${m.name}“ wurde bereits an einem gespielten Tag eingesetzt. Aus der aktuellen CWL entfernen? Vergangene gespielte Line-ups und Einsätze bleiben erhalten.`:`${m.name||"Mitglied"} wirklich löschen?`;if(!await confirmInline(msg,{title:used?"Spieler aus aktueller CWL entfernen":"Mitglied löschen",confirmText:used?"Aus CWL entfernen":"Löschen",danger:true}))return;const r=removeMembers(new Set([id]));renderAll(r.archived?"Spieler aus aktueller CWL entfernt · Historie bleibt erhalten ✓":"Mitglied gelöscht ✓")}
-function renderSummary(){const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));lockedIds.forEach(id=>ids.add(id));const rows=[...ids].map(id=>({m:memberById(id),count:lastPlan.counts[id]||0})).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de")),rot=rows.filter(x=>state.members.includes(x.m)&&x.m.participating&&!x.m.fixed),avg=rot.length?rot.reduce((s,x)=>s+x.count,0)/rot.length:0;document.getElementById("summaryList").innerHTML=rows.map(x=>{const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,cls=!active||x.m.fixed?"zero":Math.abs(d)<.51?"zero":d>0?"pos":"neg",label=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,sub=!active?"Nicht mehr in aktueller Rotation":x.m.fixed?"Fixspieler":"Rotation";return`<div class="summary-row"><div><b>${esc(displayMemberName(x.m))}</b><div class="statusline">${sub}${x.m.townHall?` · RH ${x.m.townHall}`:""} · ${esc(STRENGTH_SHORT[x.m.threeStar]||"3★ ?")} · Prio ${x.m.priority}</div></div><span class="delta ${cls}">${label}</span><span class="count">${x.count}×</span></div>`}).join("")||'<div class="empty">Keine Teilnehmer ausgewählt.</div>';const badge=document.getElementById("fairBadge"),rotStats=rotationStats();if(rotStats){badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");document.getElementById("rotationSummary").textContent=`Rotation ${rotStats.min}–${rotStats.max}× · Spanne ${rotStats.spread}`}else{badge.textContent="–";badge.className="badge ok";document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet"}}
-function archiveCurrentCwl(){const all=allKnownMembers(),playerMap=new Map(all.map(m=>[m.id,m])),lineups=[];for(let d=0;d<state.config.days;d++)if(state.locks[d]?.locked)lineups.push({day:d+1,lineup:[...state.locks[d].lineup]});const counts={};for(const l of lineups)for(const id of l.lineup)counts[id]=(counts[id]||0)+1;const used=new Set(lineups.flatMap(l=>l.lineup));state.members.forEach(m=>{if(m.participating)used.add(m.id)});const players=[...used].map(id=>playerMap.get(id)).filter(Boolean).map(m=>({id:m.id,name:m.name,playerTag:m.playerTag||"",townHall:m.townHall,threeStar:m.threeStar,fixed:m.fixed})),played=lineups.length,date=new Date(),base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric"}),same=state.archives.filter(a=>a.label.startsWith(base)).length,label=same?`${base} · ${same+1}`:base;return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,playedCount:played,complete:played===state.config.days,players,lineups,counts}}
+function renderSummary(){
+  const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
+    ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
+  lockedIds.forEach(id=>ids.add(id));
+  const rows=[...ids].map(id=>({
+    m:memberById(id),count:lastPlan.counts[id]||0,played:lastPlan.playedCounts[id]||0
+  })).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de"));
+  const rot=rows.filter(x=>state.members.includes(x.m)&&x.m.participating&&!x.m.fixed),
+    avg=rot.length?rot.reduce((sum,x)=>sum+x.count,0)/rot.length:0;
+  const query=summarySearch.trim().toLocaleLowerCase("de");
+  const visible=rows.filter(x=>{
+    if(query&&!displayMemberName(x.m).toLocaleLowerCase("de").includes(query)&&!(x.m.playerTag||"").toLocaleLowerCase("de").includes(query))return false;
+    if(summaryFilter==="zero")return x.count===0;
+    if(summaryFilter==="played")return x.played>0;
+    if(summaryFilter==="future")return x.count>x.played;
+    if(summaryFilter==="fixed")return x.m.fixed;
+    return true;
+  });
+  document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
+  document.getElementById("summaryList").innerHTML=visible.map(x=>{
+    const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,
+      deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
+      available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
+    return `<div class="summary-compact-row">
+      <div class="summary-compact-name"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
+        <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${esc(STRENGTH_SHORT[x.m.threeStar]||"3★ ?")} · P${x.m.priority}${active?` · ${available} Tage`:""}</span>
+      </div>
+      <div class="summary-compact-numbers" aria-label="${x.played} gespielt, ${Math.max(0,x.count-x.played)} geplant, ${x.count} gesamt">
+        <span class="summary-stat played" title="Tatsächlich gespielt">G ${x.played}</span>
+        <span class="summary-stat planned" title="Noch geplant">P ${Math.max(0,x.count-x.played)}</span>
+        <b class="summary-stat total" title="Gesamt: gespielt und geplant">${x.count}×</b>
+      </div>
+      <span class="summary-compact-deviation" title="Abweichung zum unbereinigten Rotationsdurchschnitt">${deviation}</span>
+    </div>`;
+  }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
+  const badge=document.getElementById("fairBadge"),rotStats=rotationStats();
+  if(rotStats){
+    badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";
+    badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");
+    document.getElementById("rotationSummary").textContent=`Einsätze: ${rotStats.min}–${rotStats.max} pro Rotationsspieler · Unterschied: ${rotStats.spread} (Verfügbarkeit nicht berücksichtigt)`;
+  }else{
+    badge.textContent="–";badge.className="badge ok";
+    document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet";
+  }
+}
+function archiveCurrentCwl(){
+  const all=allKnownMembers(),playerMap=new Map(all.map(m=>[m.id,m])),lineups=[];
+  for(let d=0;d<state.config.days;d++)if(state.locks[d]?.locked){
+    const lock=state.locks[d],snapshots={};
+    for(const id of lock.lineup||[]){const current=lock.snapshots?.[id]||playerMap.get(id);if(current)snapshots[id]=playerSnapshot(current)}
+    lineups.push({day:d+1,lineup:[...lock.lineup],snapshots});
+  }
+  const used=new Set(lineups.flatMap(l=>l.lineup));
+  state.members.forEach(m=>{if(m.participating)used.add(m.id)});
+  const players=[...used].map(id=>{
+    const original=lineups.find(l=>l.snapshots?.[id])?.snapshots?.[id]||playerMap.get(id);
+    return original?playerSnapshot(original):null
+  }).filter(Boolean);
+  const counts=Object.fromEntries(players.map(p=>[p.id,0]));
+  for(const l of lineups)for(const id of l.lineup)counts[id]=(counts[id]||0)+1;
+  const played=lineups.length,date=new Date(),base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric"}),
+    same=state.archives.filter(a=>a.label.startsWith(base)).length,label=same?`${base} · ${same+1}`:base;
+  return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,
+    playedCount:played,complete:played===state.config.days,players,lineups,counts};
+}
 function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge");badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><button class="btn small view-archive" data-id="${a.id}">Ansehen</button></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id))}
-function openArchiveModal(id){const a=state.archives.find(x=>x.id===id);if(!a)return;const map=new Map(a.players.map(p=>[p.id,p]));document.getElementById("archiveTitle").textContent=a.label;const counts=Object.entries(a.counts||{}).map(([id,n])=>({p:map.get(id),n})).filter(x=>x.p).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name,"de"));document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Tag ${l.day} · GESPIELT</b><div>${l.lineup.map(id=>esc(map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsatz-Verteilung</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine gespielten Line-ups.</div>'}`;openModal("archiveModal")}
-function resetPlanningData(){state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];expandedCompactDays.clear()}
-async function handleCwlManage(){const played=playedCount();if(!played){if(!await confirmInline("Tagesziele, MUSS/RAUS sowie Erst-ab/Raus-ab werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage, Tagesziele und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
-function buildFullPlanText(){const lines=[`⚔️ CWL Plan – ${state.name}`,""];lastPlan.dayPlans.forEach(dp=>{lines.push(`Tag ${dp.day} · ${dp.locked?"🔒 GESPIELT":"GEPLANT"}`);if(dp.day>1){const ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(memberById(id))).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(memberById(id))).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push(`Aufstellung · ${dp.lineup.length} Spieler:`);dp.lineup.map(id=>memberById(id)).filter(Boolean).forEach(m=>lines.push(`• ${displayMemberName(m,true)}`));lines.push("")});return lines.join("\n").trim()}
+function openArchiveModal(id){
+  const a=state.archives.find(x=>x.id===id);if(!a)return;
+  const map=new Map(a.players.map(p=>[p.id,p]));
+  document.getElementById("archiveTitle").textContent=a.label;
+  const counts=a.players.map(p=>({p,n:a.counts?.[p.id]||0})).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name,"de"));
+  document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Tag ${l.day} · GESPIELT</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsatz-Verteilung</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
+  openModal("archiveModal");
+}
+function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];}
+async function handleCwlManage(){const played=playedCount();if(!played){if(!await confirmInline("MUSS/RAUS sowie Erst-ab/Raus-ab werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
+function buildFullPlanText(){const lines=[`⚔️ CWL Plan – ${state.name}`,""];lastPlan.dayPlans.forEach(dp=>{lines.push(`Tag ${dp.day} · ${dp.locked?"🔒 GESPIELT":"GEPLANT"}`);if(dp.day>1){const ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push(`Aufstellung · ${dp.lineup.length} Spieler:`);dp.lineup.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean).forEach(m=>lines.push(`• ${displayMemberName(m,true)}`));lines.push("")});return lines.join("\n").trim()}
 async function copyText(text,message){try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}showToast(message)}
-function copyChanges(day){const dp=lastPlan.dayPlans[day],ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(memberById(id),true)).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(memberById(id),true)).filter(Boolean);copyText(`Tag ${dp.day}\n🔴 Raus: ${outs.join(", ")||"–"}\n🟢 Rein: ${ins.join(", ")||"–"}`,"Wechseltext kopiert ✓")}
+function copyChanges(day){const dp=lastPlan.dayPlans[day],ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,day),true)).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,day-1)),true)).filter(Boolean);copyText(`Tag ${dp.day}\n🔴 Raus: ${outs.join(", ")||"–"}\n🟢 Rein: ${ins.join(", ")||"–"}`,"Wechseltext kopiert ✓")}
+function closeTownHallPicker(){townHallPickHandler=null;closeModalById("townHallPickerModal")}
+
+function openMemberChoicePicker(title,options,current,onPick){
+  townHallPickHandler=onPick;
+  document.getElementById("townHallPickerTitle").textContent=title;
+  const grid=document.getElementById("townHallPickerGrid");
+  grid.classList.toggle("wide-options",options.some(item=>String(item.label).length>12));
+  grid.innerHTML=options.map((item,i)=>`<button class="btn townhall-choice${item.value===current?" chosen":""}" type="button" data-choice="${i}" aria-pressed="${item.value===current}">${esc(item.label)}</button>`).join("");
+  grid.querySelectorAll(".townhall-choice").forEach(button=>button.onclick=()=>{
+    const callback=townHallPickHandler,chosen=options[Number(button.dataset.choice)].value;
+    closeTownHallPicker();callback?.(chosen);
+  });
+  openModal("townHallPickerModal");
+}
+function openTownHallPicker(current,onPick){
+  const values=[null,...Array.from({length:17},(_,i)=>19-i),...(current===20?[20]:[])];
+  openMemberChoicePicker("Rathaus auswählen",values.map(value=>({value,label:value===null?"RH –":"RH "+value})),current,onPick);
+  document.querySelectorAll("#townHallPickerGrid .townhall-choice").forEach((button,i)=>{button.dataset.rh=values[i]??""});
+}
 function openModal(id){document.getElementById(id).classList.add("open");document.body.classList.add("modal-open")}
 function closeModalById(id){document.getElementById(id).classList.remove("open");if(!document.querySelector(".modal.open"))document.body.classList.remove("modal-open")}
-function openLineupModal(day){modalDay=day;modalSelection=new Set(state.locks[day]?.locked?state.locks[day].lineup:lastPlan.dayPlans[day].lineup);document.getElementById("modalTitle").textContent=`Tag ${day+1} – tatsächliches Line-up`;document.getElementById("lineupSearch").value="";renderModalList();openModal("lineupModal")}
-function renderModalList(){const list=document.getElementById("modalList"),query=(document.getElementById("lineupSearch").value||"").trim().toLocaleLowerCase("de"),selectedArchived=state.archivedMembers.filter(m=>modalSelection.has(m.id)),base=[...state.members,...selectedArchived.filter(a=>!state.members.some(m=>m.id===a.id))],candidates=base.filter(m=>m.name.trim()&&(!query||m.name.toLocaleLowerCase("de").includes(query)||(m.playerTag||"").toLocaleLowerCase("de").includes(query))).sort((a,b)=>Number(modalSelection.has(b.id))-Number(modalSelection.has(a.id))||a.name.localeCompare(b.name,"de"));list.innerHTML=candidates.map(m=>`<label class="pick"><input type="checkbox" data-id="${m.id}" ${modalSelection.has(m.id)?"checked":""}><span><b>${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline">!</span>`:""}</b><br><small>${m.fixed?"Fixspieler · ":""}${state.members.some(x=>x.id===m.id)?(m.participating?"CWL dabei":"aktuell nicht dabei"):"nicht mehr im aktuellen Kader"}${m.townHall?` · RH${m.townHall}`:""} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</small></span></label>`).join("")||'<div class="empty">Keine Spieler gefunden.</div>';list.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{cb.checked?modalSelection.add(cb.dataset.id):modalSelection.delete(cb.dataset.id);updateModalCount()});updateModalCount()}
+function openLineupModal(day){modalDay=day;modalSelection=new Set(state.locks[day]?.locked?state.locks[day].lineup:lastPlan.dayPlans[day].lineup);document.getElementById("modalTitle").textContent=`Tag ${day+1} – eingesetzte Spieler`;document.getElementById("lineupSearch").value="";renderModalList();openModal("lineupModal")}
+function openWhyModal(day){
+  const dp=lastPlan.dayPlans[day];if(!dp)return;
+  document.getElementById("whyTitle").textContent=`Tag ${day+1} – Auswahl erklärt`;
+  document.getElementById("whyExplanation").textContent=dp.locked?
+    "Für diesen Kriegstag wurde die tatsächliche Aufstellung gespeichert. Sie ersetzt die ursprüngliche Planung.":
+    "Fixspieler und Spieler mit „MUSS“ werden eingeplant, sofern sie verfügbar sind. Bei freien Plätzen berücksichtigt der Planer zuerst Spieler mit weniger Einsätzen, dann Spieler mit weniger verbleibenden Einsatzmöglichkeiten und schließlich die Priorität.";
+  const selected=new Set(dp.lineup),available=state.members.filter(m=>m.participating&&m.name.trim()&&effectiveStatus(m,day)!=="out"),
+    roster=[...dp.lineup.map(id=>lineupPlayer(id,day)).filter(Boolean),...(dp.locked?[]:available.filter(m=>!selected.has(m.id)))];
+  const markup=roster.map(m=>{
+    const isSelected=selected.has(m.id),force=effectiveStatus(m,day)==="must",fixed=m.fixed,
+      role=dp.locked?(isSelected?"Bestätigter Einsatz":""):
+        !isSelected?"Nicht eingeplant":force?"MUSS-Regel":fixed?"Fixspieler":"Automatische Auswahl",
+      before=dp.startingCounts?.[m.id]||0,soon=futureEligibilityCount(m,day+1);
+    return `<div class="why-row"><div><b>${esc(displayMemberName(m))}</b><div class="statusline">${esc(role)} · ${before} zuvor · ${soon} spätere mögliche Tage${m.townHall?` · RH${m.townHall}`:""} · Prio ${m.priority}</div></div><span class="badge ${isSelected?"ok":"warn"}">${isSelected?"Dabei":"Draußen"}</span></div>`;
+  }).join("");
+  document.getElementById("whyRoster").innerHTML=markup||'<div class="empty">Keine Spieler vorhanden.</div>';
+  openModal("whyModal");
+}
+function renderModalList(){const list=document.getElementById("modalList"),query=(document.getElementById("lineupSearch").value||"").trim().toLocaleLowerCase("de"),selectedArchived=state.archivedMembers,base=[...state.members,...selectedArchived.filter(a=>!state.members.some(m=>m.id===a.id))],candidates=base.filter(m=>m.name.trim()&&(!query||m.name.toLocaleLowerCase("de").includes(query)||(m.playerTag||"").toLocaleLowerCase("de").includes(query))).sort((a,b)=>Number(modalSelection.has(b.id))-Number(modalSelection.has(a.id))||a.name.localeCompare(b.name,"de"));list.innerHTML=candidates.map(m=>`<label class="pick"><input type="checkbox" data-id="${m.id}" ${modalSelection.has(m.id)?"checked":""}><span><b>${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline">!</span>`:""}</b><br><small>${m.fixed?"Fixspieler · ":""}${state.members.some(x=>x.id===m.id)?(m.participating?"CWL dabei":"aktuell nicht dabei"):"nicht mehr im aktuellen Kader"}${m.townHall?` · RH${m.townHall}`:""} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</small></span></label>`).join("")||'<div class="empty">Keine Spieler gefunden.</div>';list.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{cb.checked?modalSelection.add(cb.dataset.id):modalSelection.delete(cb.dataset.id);updateModalCount()});updateModalCount()}
 function updateModalCount(){const el=document.getElementById("modalCount"),save=document.getElementById("modalSave"),ok=modalSelection.size===state.config.slots;el.textContent=`${modalSelection.size}/${state.config.slots} Spieler gewählt`;el.style.color=ok?"var(--green)":"var(--red)";save.disabled=!ok}
 function closeLineupModal(){closeModalById("lineupModal");modalDay=null;modalSelection=new Set()}
-async function unlockDay(day){if(day!==lastUnlockableDay()){showToast("Nur der zuletzt bestätigte Tag kann entsperrt werden");return}if(!await confirmInline(`Das gespeicherte tatsächliche Line-up wird entfernt und Tag ${day+1} sowie spätere offene Tage werden neu berechnet.`,{title:`Tag ${day+1} wieder als ungeplant markieren?`,confirmText:"Tag entsperren",danger:true}))return;state.locks[day]={locked:false,lineup:[]};renderAll(`Tag ${day+1} entsperrt · Plan aktualisiert ✓`)}
-function goalAvailabilityInfo(day,predicate){const eligible=state.members.filter(m=>m.participating&&m.name.trim()&&effectiveStatus(m,day)!=="out"),required=[],seen=new Set();for(const m of eligible){if((effectiveStatus(m,day)==="must"||m.fixed)&&!seen.has(m.id)){required.push(m);seen.add(m.id)}}const available=eligible.filter(predicate).length,requiredOther=required.filter(m=>!predicate(m)).length,maxPossible=Math.max(0,Math.min(available,state.config.slots-requiredOther));return{available,maxPossible,requiredOther}}
+async function unlockDay(day){if(day!==lastUnlockableDay()){showToast("Nur der zuletzt bestätigte Tag kann entsperrt werden");return}if(!await confirmInline(`Das gespeicherte tatsächliche Line-up wird entfernt und Tag ${day+1} sowie spätere offene Tage werden neu berechnet.`,{title:`Tag ${day+1} wieder als ungeplant markieren?`,confirmText:"Tag entsperren",danger:true}))return;state.locks[day]={locked:false,lineup:[]};mobileSelectedDay=day;renderAll(`Tag ${day+1} entsperrt · Plan aktualisiert ✓`)}
 function cloneGoal(g){return{townHall:{...(g?.townHall||{})},strength:{high:Number(g?.strength?.high)||0,medium:Number(g?.strength?.medium)||0,low:Number(g?.strength?.low)||0,verylow:Number(g?.strength?.verylow)||0}}}
-function openGoalsModal(day){goalsDay=day;goalDraft=cloneGoal(activeDayGoal(day));document.getElementById("goalsTitle").textContent=`Tag ${day+1} – optionale Tagesziele`;renderGoalsModal();openModal("goalsModal")}
-function renderGoalsModal(){const locked=!!state.locks[goalsDay]?.locked,thRoot=document.getElementById("townHallGoalGrid"),strengthRoot=document.getElementById("strengthGoalGrid"),levels=[...new Set(state.members.filter(m=>m.participating&&m.townHall).map(m=>m.townHall).concat(Object.keys(goalDraft.townHall).map(Number)))].filter(Boolean).sort((a,b)=>b-a);thRoot.innerHTML=levels.length?levels.map(th=>{const info=goalAvailabilityInfo(goalsDay,m=>m.townHall===th),note=info.maxPossible<info.available?`${info.available} verfügbar · mit Fix/MUSS max. ${info.maxPossible}`:`${info.available} an Tag ${goalsDay+1} verfügbar`;return`<div class="goal-row"><label>RH ${th}<small>${note}</small></label><input class="goal-th-input" data-th="${th}" data-maxpossible="${info.maxPossible}" type="number" min="0" max="${state.config.slots}" value="${goalDraft.townHall[String(th)]||0}" ${locked?"disabled":""}></div>`}).join(""):'<div class="goal-empty">Noch keine Rathaus-Level bei den CWL-Teilnehmern hinterlegt.</div>';const keys=["high","medium","low","verylow"];strengthRoot.innerHTML=keys.map(key=>{const info=goalAvailabilityInfo(goalsDay,m=>m.threeStar===key),note=info.maxPossible<info.available?`${info.available} verfügbar · mit Fix/MUSS max. ${info.maxPossible}`:`${info.available} an Tag ${goalsDay+1} verfügbar`;return`<div class="goal-row"><label>${esc(STRENGTH_LABELS[key])}<small>${note}</small></label><input class="goal-strength-input" data-strength="${key}" data-maxpossible="${info.maxPossible}" type="number" min="0" max="${state.config.slots}" value="${goalDraft.strength[key]||0}" ${locked?"disabled":""}></div>`}).join("");document.getElementById("goalsSave").disabled=locked;document.getElementById("goalsClear").disabled=locked;document.getElementById("goalsReadonly").classList.toggle("hidden",!locked);document.querySelectorAll("#goalsModal input[type=number]").forEach(el=>el.addEventListener("input",updateGoalTotals));updateGoalTotals()}
-function updateGoalTotals(){const inputs=[...document.querySelectorAll("#goalsModal input[type=number]")],problems=[];for(const el of inputs){const val=Number(el.value)||0,max=Number(el.dataset.maxpossible)||0,row=el.closest(".goal-row"),bad=val>max;row?.classList.toggle("impossible",bad);if(bad){const label=row?.querySelector("label")?.childNodes?.[0]?.textContent?.trim()||"Ziel";problems.push(`${label}: Ziel ${val}, maximal ${max} möglich`)}}const th=[...document.querySelectorAll("#townHallGoalGrid .goal-th-input")].reduce((s,e)=>s+(Number(e.value)||0),0),st=[...document.querySelectorAll("#strengthGoalGrid .goal-strength-input")].reduce((s,e)=>s+(Number(e.value)||0),0),el=document.getElementById("goalsTotals");el.textContent=`RH-Ziele gesamt: ${th}/${state.config.slots} · Stärke-Ziele gesamt: ${st}/${state.config.slots}${th>state.config.slots||st>state.config.slots?" · Summe größer als Line-up":""}`;el.classList.toggle("over",th>state.config.slots||st>state.config.slots);const conflict=document.getElementById("goalsConflictText");conflict.textContent=problems.length?`⚠ ${problems.join(" · ")}`:"";conflict.classList.toggle("hidden",!problems.length)}
-function readGoalsDraft(){const townHall={};document.querySelectorAll("#townHallGoalGrid .goal-th-input").forEach(el=>{const n=Math.max(0,Math.min(state.config.slots,Number(el.value)||0));if(n>0)townHall[String(el.dataset.th)]=n});const strength={high:0,medium:0,low:0,verylow:0};document.querySelectorAll("#strengthGoalGrid .goal-strength-input").forEach(el=>strength[el.dataset.strength]=Math.max(0,Math.min(state.config.slots,Number(el.value)||0)));return{townHall,strength}}
-function closeGoalsModal(){closeModalById("goalsModal");goalsDay=null;goalDraft=null}
 function countBulkNames(){const names=document.getElementById("bulkNames").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),counts={};names.forEach(n=>{const k=n.toLocaleLowerCase("de");counts[k]=(counts[k]||0)+1});const existing=new Set(state.members.map(m=>m.name.trim().toLocaleLowerCase("de")).filter(Boolean)),dups=names.filter(n=>existing.has(n.toLocaleLowerCase("de"))||counts[n.toLocaleLowerCase("de")]>1).length;document.getElementById("bulkDetectedCount").textContent=`${names.length} ${names.length===1?"Name":"Namen"} erkannt${dups?` · ${dups} Namensdopplung${dups===1?"":"en"}`:""}`}
 function openBulkModal(){document.getElementById("bulkNames").value="";countBulkNames();openModal("bulkModal");setTimeout(()=>document.getElementById("bulkNames").focus(),50)}
 function closeBulkModal(){closeModalById("bulkModal")}
@@ -454,8 +1115,14 @@ function safeName(s){return(s||"Profil").replace(/[^a-z0-9äöüß_-]+/gi,"_").r
 function markBackupNow(){uiSettings.lastBackupAt=Date.now();saveUiSettings();syncConfigInputs()}
 function exportActiveProfile(){downloadFile(`CWL_Profil_${safeName(state.name)}_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-profile",version:APP_VERSION,dataVersion:DATA_VERSION,profile:state},null,2));markBackupNow();showToast("Aktuelles Profil exportiert ✓")}
 function exportAllProfiles(){downloadFile(`CWL_Alle_Profile_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:APP_VERSION,dataVersion:DATA_VERSION,app},null,2));markBackupNow();showToast("Komplettes Backup erstellt ✓")}
-function cloneProfile(p,newName){const map=new Map(),members=p.members.map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),archivedMembers=(p.archivedMembers||[]).map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),dayGoals=(p.dayGoals||[]).map(cloneGoal),locks=p.locks.map(l=>({locked:l.locked,lineup:l.lineup.map(id=>map.get(id)).filter(Boolean)})),archives=JSON.parse(JSON.stringify(p.archives||[]));return normalizeProfile({id:uid("p"),name:newName,config:{...p.config},members,archivedMembers,dayGoals,locks,archives,updatedAt:Date.now()})}
-function resetProfileCompletely(){state.config={slots:15,days:7,memberSort:"manual"};state.members=[];state.archivedMembers=[];state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));state.archives=[];openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();expandedCompactDays.clear()}
+function cloneProfile(p,newName){const map=new Map(),members=p.members.map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),archivedMembers=(p.archivedMembers||[]).map(m=>{const id=uid();map.set(m.id,id);return{...m,id,statuses:[...m.statuses]}}),dayGoals=(p.dayGoals||[]).map(cloneGoal),locks=p.locks.map(l=>({
+  locked:!!l.locked,lineup:(l.lineup||[]).map(id=>map.get(id)).filter(Boolean),
+  snapshots:Object.fromEntries(Object.entries(l.snapshots||{}).map(([oldId,snapshot])=>{
+    const id=map.get(oldId);
+    return [id,id?{...snapshot,id}:null];
+  }).filter(([id,snapshot])=>id&&snapshot))
+})),archives=JSON.parse(JSON.stringify(p.archives||[]));return normalizeProfile({id:uid("p"),name:newName,config:{...p.config},members,archivedMembers,dayGoals,locks,archives,updatedAt:Date.now()})}
+function resetProfileCompletely(){state.config={slots:15,days:7,memberSort:"manual"};state.members=[];state.archivedMembers=[];state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));state.archives=[];openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();}
 function downloadTemplate(){const text="\ufeff"+["# CWL Planer – Mitgliederliste","# Pro Zeile genau EINEN Spielernamen eintragen.","# Gleiche Namen sind in Clash erlaubt und werden importiert.","# Player-Tags können bei Namensdopplungen später optional in der App ergänzt werden.","# Zeilen mit # werden ignoriert.","Mitglied"].join("\r\n");downloadFile("CWL_Mitgliederliste_Vorlage.csv",text,"text/csv;charset=utf-8")}
 function importMemberText(text,participating=false){const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith("#")),names=[];for(let line of lines){const first=line.split(/[;,]/)[0].trim().replace(/^"|"$/g,"");if(!first)continue;const low=first.toLowerCase();if(["mitglied","name","spieler","spielername"].includes(low))continue;names.push(first)}const before=duplicateNameKeys();for(const name of names){const m=freshMember(name);m.participating=participating;state.members.push(m)}const after=duplicateNameKeys();return{added:names.length,duplicateGroups:[...after].filter(k=>!before.has(k)||state.members.filter(m=>m.name.trim().toLocaleLowerCase("de")===k).length>1).length}}
 function buildBugUrl(){const participants=state.members.filter(m=>m.participating).length,fixed=state.members.filter(m=>m.participating&&m.fixed).length,body=["**Was ist passiert?**","Bitte beschreiben…","","**Schritte zum Nachstellen**","1. ","2. ","3. ","","**Technische Infos**",`- App: ${APP_VERSION}`,`- Datenformat: ${DATA_VERSION}`,`- Profile: ${app.profiles.length}`,`- Teilnehmer im aktiven Profil: ${participants}`,`- Fixspieler: ${fixed}`,`- Kriegsgröße: ${state.config.slots}`,`- Kriege: ${state.config.days}`,`- Gerät/Browser: ${navigator.userAgent}`].join("\n");return BUG_URL+"?title="+encodeURIComponent("[Bug] ")+"&body="+encodeURIComponent(body)}
@@ -464,21 +1131,47 @@ async function createProfilePrompt(){const raw=await promptInline("Neues Profil 
 function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
 async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
 function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
-function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
-function renderRecoveryBanner(){const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);if(!startupStorageIssue)return;document.getElementById("recoveryMessage").textContent=startupStorageIssue==="recovery"?"Die aktuellen lokalen Daten waren nicht lesbar. Ein vorheriger funktionierender Stand wurde geladen. Automatisches Speichern bleibt pausiert, bis du ihn übernimmst.":"Die gespeicherten lokalen Daten konnten nicht gelesen werden. Automatisches Speichern ist pausiert, damit nichts überschrieben wird.";document.getElementById("recoveryAcceptBtn").classList.toggle("hidden",startupStorageIssue!=="recovery")}
+function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');if(apple)apple.content=resolved==="light"||resolved==="cyberlight"?"default":"black";if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
+function renderRecoveryBanner(){
+  const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
+  if(!startupStorageIssue)return;
+  document.getElementById("recoveryMessage").textContent=
+    startupStorageIssue==="recovery"?"Die aktuellen lokalen Daten waren nicht lesbar. Ein vorheriger funktionierender Stand wurde geladen. Automatisches Speichern bleibt pausiert, bis du ihn übernimmst.":
+    startupStorageIssue==="save"?"Der Browser konnte die Änderungen nicht mehr speichern (z. B. zu wenig Speicherplatz). Deine aktuellen Änderungen sind nur im offenen Fenster vorhanden. Bitte zuerst ein vollständiges JSON-Backup exportieren. Danach kannst du Speicherplatz freigeben und das Speichern erneut versuchen.":
+    startupStorageIssue==="read"?"Der lokale Speicher konnte nicht gelesen werden. Es wurde kein vorhandener Stand überschrieben. Bitte Zugriff auf den Browserspeicher prüfen oder ein externes Backup importieren; kein leeres Profil speichern, bevor du sicher bist.":
+    "Die gespeicherten lokalen Daten konnten nicht gelesen werden. Automatisches Speichern ist pausiert, damit nichts überschrieben wird.";
+  document.getElementById("recoveryAcceptBtn").classList.toggle("hidden",startupStorageIssue!=="recovery");
+  document.getElementById("recoveryRetryBtn").classList.toggle("hidden",startupStorageIssue!=="save");
+  document.getElementById("recoveryExportBtn").classList.toggle("hidden",startupStorageIssue!=="save");
+}
 async function checkForUpdate(){if(!navigator.onLine){showToast("Offline · Update derzeit nicht möglich");return}try{if(!swRegistration&&"serviceWorker" in navigator)swRegistration=await navigator.serviceWorker.getRegistration();if(swRegistration)await swRegistration.update();showToast("Update geprüft · App wird neu geladen");setTimeout(()=>location.reload(),650)}catch(e){showToast("Update-Prüfung fehlgeschlagen")}}
+
 function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.classList.toggle("hidden",navigator.onLine);if(!navigator.onLine)b.textContent="Offline – gespeicherte App-Version"}
 
 // Navigation
-applyTheme();document.body.classList.toggle("compact-plan",uiSettings.compactPlan);
+applyTheme();
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-"+b.dataset.view).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})});
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
-document.getElementById("compactPlanBtn").onclick=()=>{uiSettings.compactPlan=!uiSettings.compactPlan;saveUiSettings();document.body.classList.toggle("compact-plan",uiSettings.compactPlan);expandedCompactDays.clear();renderAll(uiSettings.compactPlan?"Kompaktansicht aktiviert":"Normalansicht aktiviert")};
-document.getElementById("manageCwlBtn").onclick=handleCwlManage;document.getElementById("nextDayBtn").onclick=()=>{const d=playedPrefixLength();document.getElementById(`day-card-${d}`)?.scrollIntoView({behavior:"smooth",block:"start"})};
-document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);document.getElementById("addMemberBottomBtn").onclick=()=>openInlineMemberAdd(true);document.getElementById("inlineMemberSave").onclick=commitInlineMemberAdd;document.getElementById("inlineMemberCancel").onclick=closeInlineMemberAdd;document.getElementById("inlineMemberName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitInlineMemberAdd()}else if(e.key==="Escape")closeInlineMemberAdd()});document.getElementById("multiAddBtn").onclick=openBulkModal;document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();document.getElementById("membersTemplateBtn").onclick=downloadTemplate;document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};document.getElementById("memberSortSelect").onchange=e=>{state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
+document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
+document.getElementById("allDaysMode").onclick=()=>{uiSettings.dayViewMode="all";saveUiSettings();renderMobileDays()};
+document.getElementById("mobileOverviewToggle").onclick=()=>{const card=document.getElementById("planOverview"),button=document.getElementById("mobileOverviewToggle"),opened=card.classList.toggle("overview-open");button.setAttribute("aria-expanded",String(opened));button.textContent=opened?"Aktionen ▴":"Aktionen ▾"};
+document.getElementById("recoveryExportBtn").onclick=()=>{downloadFile(`CWL_Notfall_Backup_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:APP_VERSION,dataVersion:DATA_VERSION,app},null,2));showToast("Notfall-Backup erstellt ✓")};
+document.getElementById("recoveryRetryBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderRecoveryBanner();if(!suspendWrites)showToast("Speicherung wiederhergestellt ✓")};
+document.getElementById("manageCwlBtn").onclick=handleCwlManage;document.getElementById("nextDayBtn").onclick=()=>{const d=Math.min(playedPrefixLength(),state.config.days-1);mobileSelectedDay=d;renderMobileDays();document.getElementById(`day-card-${d}`)?.scrollIntoView({behavior:"smooth",block:"start"})};
+document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);document.getElementById("addMemberBottomBtn").onclick=()=>openInlineMemberAdd(true);document.getElementById("inlineMemberSave").onclick=commitInlineMemberAdd;document.getElementById("inlineMemberCancel").onclick=closeInlineMemberAdd;document.getElementById("inlineMemberName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitInlineMemberAdd()}else if(e.key==="Escape")closeInlineMemberAdd()});document.getElementById("multiAddBtn").onclick=openBulkModal;document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();document.getElementById("membersTemplateBtn").onclick=downloadTemplate;document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};document.getElementById("memberExtraToggle").onclick=()=>{
+  const area=document.getElementById("memberAdditionalActions");
+  const button=document.getElementById("memberExtraToggle");
+  const open=area.classList.toggle("open");
+  button.setAttribute("aria-expanded",String(open));
+  button.textContent=open?"×":"•••";button.setAttribute("aria-label",open?"Weitere Aktionen schließen":"Weitere Aktionen anzeigen");
+};
+document.getElementById("summarySearch").oninput=e=>{summarySearch=e.target.value;renderSummary()};
+document.getElementById("summaryFilter").onchange=e=>{summaryFilter=e.target.value;renderSummary()};
+document.getElementById("memberSearch").oninput=e=>{memberSearch=e.target.value;renderMembers()};document.getElementById("memberFilter").onchange=e=>{memberFilter=e.target.value;renderMembers()};
+document.getElementById("memberSortSelect").onchange=e=>{state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
 document.getElementById("helpBtn").onclick=()=>openModal("helpModal");document.getElementById("membersHelpBtn").onclick=()=>openModal("helpModal");
-const bulkTh=document.getElementById("bulkTownHallSelect");for(let v=3;v<=20;v++){const o=document.createElement("option");o.value=String(v);o.textContent=`RH ${v}`;bulkTh.appendChild(o)}document.getElementById("bulkPrioritySelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("priority",Number(e.target.value));e.target.value=""}};document.getElementById("bulkTownHallSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("townHall",e.target.value==="none"?null:Number(e.target.value));e.target.value=""}};document.getElementById("bulkStrengthSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("threeStar",e.target.value);e.target.value=""}};document.getElementById("selectAllBtn").onclick=()=>{selectedMembers=new Set(state.members.map(m=>m.id));renderMembers()};document.getElementById("selectNoneBtn").onclick=()=>{selectedMembers.clear();renderMembers()};document.getElementById("bulkParticipatingOnBtn").onclick=()=>applyBulkValue("participating",true);document.getElementById("bulkParticipatingOffBtn").onclick=()=>applyBulkValue("participating",false);document.getElementById("bulkFixedOnBtn").onclick=()=>applyBulkValue("fixed",true);document.getElementById("bulkFixedOffBtn").onclick=()=>applyBulkValue("fixed",false);document.getElementById("deleteSelectedBtn").onclick=async()=>{if(!selectedMembers.size)return;const used=[...selectedMembers].filter(usedInLockedDay).length,msg=used?`${used} davon wurden bereits eingesetzt; ihre gespielten Line-ups bleiben erhalten.`:"Diese Aktion entfernt die ausgewählten Spieler aus der aktuellen Mitgliederliste.";if(!await confirmInline(msg,{title:`${selectedMembers.size} Mitglieder entfernen?`,confirmText:"Mitglieder entfernen",danger:true}))return;const r=removeMembers(new Set(selectedMembers));selectedMembers.clear();renderAll(r.archived?`${r.archived} historische Spieler erhalten · Mitglieder entfernt ✓`:"Mitglieder gelöscht ✓")};document.getElementById("deleteAllBtn").onclick=async()=>{if(!state.members.length)return;if(!await confirmInline("Spieler aus bereits gespielten Tagen bleiben in der Historie erhalten.",{title:`Alle ${state.members.length} aktuellen Mitglieder entfernen?`,confirmText:"Alle entfernen",danger:true}))return;const r=removeMembers(new Set(state.members.map(m=>m.id)));selectedMembers.clear();renderAll(r.archived?"Aktuelle Mitglieder entfernt · gespielte Historie erhalten ✓":"Alle Mitglieder gelöscht ✓")};
+const bulkTh=document.getElementById("bulkTownHallSelect");for(let v=19;v>=3;v--){const o=document.createElement("option");o.value=String(v);o.textContent=`RH ${v}`;bulkTh.appendChild(o)}document.getElementById("bulkPrioritySelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("priority",Number(e.target.value));e.target.value=""}};document.getElementById("bulkTownHallSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("townHall",e.target.value==="none"?null:Number(e.target.value));e.target.value=""}};document.getElementById("bulkTownHallPicker").onclick=()=>openTownHallPicker(null,value=>applyBulkValue("townHall",value));document.getElementById("bulkStrengthSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("threeStar",e.target.value);e.target.value=""}};document.getElementById("selectAllBtn").onclick=()=>{getVisibleMembers().forEach(m=>selectedMembers.add(m.id));renderMembers()};document.getElementById("selectNoneBtn").onclick=()=>{selectedMembers.clear();renderMembers()};document.getElementById("bulkParticipatingOnBtn").onclick=()=>applyBulkValue("participating",true);document.getElementById("bulkParticipatingOffBtn").onclick=()=>applyBulkValue("participating",false);document.getElementById("bulkFixedOnBtn").onclick=()=>applyBulkValue("fixed",true);document.getElementById("bulkFixedOffBtn").onclick=()=>applyBulkValue("fixed",false);document.getElementById("deleteSelectedBtn").onclick=async()=>{if(!selectedMembers.size)return;const used=[...selectedMembers].filter(usedInLockedDay).length,msg=used?`${used} davon wurden bereits eingesetzt; ihre gespielten Line-ups bleiben erhalten.`:"Diese Aktion entfernt die ausgewählten Spieler aus der aktuellen Mitgliederliste.";if(!await confirmInline(msg,{title:`${selectedMembers.size} Mitglieder entfernen?`,confirmText:"Mitglieder entfernen",danger:true}))return;const r=removeMembers(new Set(selectedMembers));selectedMembers.clear();renderAll(r.archived?`${r.archived} historische Spieler erhalten · Mitglieder entfernt ✓`:"Mitglieder gelöscht ✓")};document.getElementById("deleteAllBtn").onclick=async()=>{if(!state.members.length)return;if(!await confirmInline("Spieler aus bereits gespielten Tagen bleiben in der Historie erhalten.",{title:`Alle ${state.members.length} aktuellen Mitglieder entfernen?`,confirmText:"Alle entfernen",danger:true}))return;const r=removeMembers(new Set(state.members.map(m=>m.id)));selectedMembers.clear();renderAll(r.archived?"Aktuelle Mitglieder entfernt · gespielte Historie erhalten ✓":"Alle Mitglieder gelöscht ✓")};
 // Profiles
 document.getElementById("newProfileBtn").onclick=createProfilePrompt;document.getElementById("copyProfileBtn").onclick=async()=>{const raw=await promptInline("Profil duplizieren","Name der vollständigen Profilkopie",state.name+" – Kopie"),name=(raw||"").trim();if(!name)return;if(profileNameExists(name)){showToast("Ein Profil mit diesem Namen existiert bereits");return}const p=cloneProfile(state,name);app.profiles.push(p);setActiveProfile(p.id)};document.getElementById("renameProfileBtn").onclick=async()=>{const raw=await promptInline("Profil umbenennen","Neuer Profilname",state.name),name=(raw||"").trim();if(!name)return;if(profileNameExists(name,state.id)){showToast("Ein Profil mit diesem Namen existiert bereits");return}state.name=name;renderAll("Profil umbenannt ✓")};document.getElementById("deleteProfileBtn").onclick=async()=>{if(!await confirmInline(`Das Profil „${state.name}“ inklusive aktueller CWL und Archive wird gelöscht.`,{title:"Profil wirklich löschen?",confirmText:"Profil löschen",danger:true}))return;app.profiles=app.profiles.filter(p=>p.id!==state.id);if(!app.profiles.length)app.profiles.push(freshProfile());app.activeProfileId=app.profiles[0].id;state=app.profiles[0];openRulePanels.clear();openDuplicatePanels.clear();selectedMembers.clear();selectionMode=false;renderAll("Profil gelöscht ✓")};
 // Settings / backups
@@ -486,12 +1179,34 @@ document.getElementById("slotsPreset").onchange=e=>{if(e.target.value==="custom"
 document.getElementById("importFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text()),dv=Number(obj.dataVersion||obj.version||0);if(dv>DATA_VERSION)throw new Error("newer");if(obj.kind==="cwl-app-backup"&&obj.app){if(!await confirmInline(`Deine aktuell gespeicherten ${app.profiles.length} Profile werden durch den Backup-Stand ersetzt. Empfehlung: vorher ein aktuelles Backup erstellen.`,{title:"Komplettes Backup wiederherstellen?",confirmText:"Backup wiederherstellen",danger:true})){e.target.value="";return}app=normalizeApp(obj.app);state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];startupStorageIssue=null;suspendWrites=false;renderAll("Komplettes Backup wiederhergestellt ✓")}else if(obj.kind==="cwl-profile"&&obj.profile){const name=uniqueProfileName(obj.profile.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj.profile),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Profil als neues Profil importiert ✓")}else if(obj.members||obj.config){const name=uniqueProfileName(obj.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Älteres Backup als neues Profil importiert ✓")}else throw new Error("unknown")}catch(err){showToast(err.message==="newer"?"Backup ist neuer als diese App – zuerst App aktualisieren":"Backup konnte nicht gelesen werden")}e.target.value=""};
 document.getElementById("membersFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const choice=await askInlineAction({title:"Mitglieder importieren",message:"Wie sollen die importierten Spieler angelegt werden?",buttons:[{value:"participating",text:"Als Dabei importieren",primary:true},{value:"paused",text:"Auf Pause importieren"},{value:"cancel",text:"Abbrechen"}]});if(choice.value==="cancel"){e.target.value="";return}const res=importMemberText(await f.text(),choice.value==="participating");renderAll(`${res.added} Mitglieder importiert · Plan aktualisiert ✓`);if(res.duplicateGroups)showToast(`${res.duplicateGroups} Namensdopplung(en) markiert · Player-Tag empfohlen`)}catch(err){showToast("Mitgliederliste konnte nicht importiert werden")}e.target.value=""};
 // Modals / help
-document.getElementById("helpClose").onclick=()=>closeModalById("helpModal");document.getElementById("helpModal").onclick=e=>{if(e.target.id==="helpModal")closeModalById("helpModal")};document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay;state.locks[d]={locked:true,lineup:[...modalSelection]};closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeLineupModal()};document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll(`${added} Mitglieder hinzugefügt · Plan aktualisiert ✓`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};document.getElementById("goalsClose").onclick=closeGoalsModal;document.getElementById("goalsCancel").onclick=closeGoalsModal;document.getElementById("goalsModal").onclick=e=>{if(e.target.id==="goalsModal")closeGoalsModal()};document.getElementById("goalsSave").onclick=()=>{if(goalsDay==null||state.locks[goalsDay]?.locked)return;const d=goalsDay;state.dayGoals[d]=readGoalsDraft();closeGoalsModal();renderAll(`Tag ${d+1} Ziele gespeichert · Plan aktualisiert ✓`)};document.getElementById("goalsClear").onclick=()=>{if(goalsDay==null||state.locks[goalsDay]?.locked)return;state.dayGoals[goalsDay]=emptyDayGoal();closeGoalsModal();renderAll("Tagesziele gelöscht · Plan aktualisiert ✓")};document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");document.getElementById("archiveModal").onclick=e=>{if(e.target.id==="archiveModal")closeModalById("archiveModal")};
+document.getElementById("helpClose").onclick=()=>closeModalById("helpModal");document.getElementById("helpModal").onclick=e=>{if(e.target.id==="helpModal")closeModalById("helpModal")};document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
+document.getElementById("townHallPickerModal").onclick=e=>{if(e.target.id==="townHallPickerModal")closeTownHallPicker()};
+document.getElementById("whyClose").onclick=()=>closeModalById("whyModal");document.getElementById("whyModal").onclick=e=>{if(e.target.id==="whyModal")closeModalById("whyModal")};
+document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeLineupModal()};document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll(`${added} Mitglieder hinzugefügt · Plan aktualisiert ✓`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");document.getElementById("archiveModal").onclick=e=>{if(e.target.id==="archiveModal")closeModalById("archiveModal")};
 // Recovery
 document.getElementById("recoveryAcceptBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderAll("Wiederhergestellter Stand übernommen ✓")};document.getElementById("recoveryImportBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("recoveryEmptyBtn").onclick=async()=>{if(!await confirmInline("Die beschädigten lokalen Daten bleiben dadurch nicht erhalten.",{title:"Mit leerem Profil starten?",confirmText:"Leeres Profil starten",danger:true}))return;app=defaultApp();state=app.profiles[0];suspendWrites=false;startupStorageIssue=null;localStorage.removeItem(STORAGE_KEY);renderAll("Leeres Profil gestartet ✓")};
-document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("inlineActionPanel")?.classList.contains("open"))closeInlineAction()});
+document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionBackdrop").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{
+  const panel=document.getElementById("inlineActionPanel");if(!panel?.classList.contains("open"))return;
+  if(e.key==="Escape"){e.preventDefault();closeInlineAction();return}
+  if(e.key==="Tab"){
+    const focusable=[...panel.querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(el=>!el.closest(".hidden")&&getComputedStyle(el).visibility!=="hidden");
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&(document.activeElement===last||!panel.contains(document.activeElement))){e.preventDefault();first.focus()}
+  }
+});
 window.addEventListener("online",updateOnlineStatus);window.addEventListener("offline",updateOnlineStatus);updateOnlineStatus();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(uiSettings.theme==="system")applyTheme()});
-if("serviceWorker" in navigator)window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("./service-worker.js")}catch(e){console.error(e)}});
+if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
+  try{
+    // Temporary GitHack branch previews should never keep their own stale PWA cache.
+    // The published GitHub Pages app keeps the normal offline worker unchanged.
+    if(location.hostname==="raw.githack.com"){
+      const previous=await navigator.serviceWorker.getRegistration("./");
+      if(previous&&previous.scope.includes("/Smolmig/cwl_planer/"))await previous.unregister();
+    }else swRegistration=await navigator.serviceWorker.register("./service-worker.js");
+  }catch(e){console.error(e)}
+});
 renderAll();
 
 </script>
