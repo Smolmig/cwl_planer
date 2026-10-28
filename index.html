@@ -195,7 +195,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 
 
 /* v9.5: mobile-first day navigation and accessible lineup confirmation */
-.mobile-day-switcher,.mobile-lineup-toggle,.mobile-overview-toggle{display:none}
+.mobile-lineup-toggle,.mobile-overview-toggle{display:none}
 #lineupModal.open{display:flex;align-items:center;justify-content:center}
 #lineupModal .lineup-modal-box{display:flex;flex-direction:column;max-height:calc(100dvh - 36px);margin:0;min-height:0}
 #lineupModal .lineup-modal-head,#lineupModal .lineup-modal-footer{flex:0 0 auto}
@@ -252,6 +252,28 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   #lineupModal .lineup-modal-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 0 0;margin:0;border-top:1px solid var(--line);background:transparent}
   #lineupModal .lineup-modal-footer .btn{min-height:48px;padding:10px;white-space:normal}
 }
+
+/* v9.5: day navigation on desktop as well as mobile */
+.mobile-day-switcher{margin-bottom:12px}
+.day-switcher-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.day-switcher-label{font-size:12px;font-weight:800;color:var(--muted)}
+.desktop-day-mode{display:flex;gap:6px}
+.desktop-day-mode .btn.active{background:var(--bluebg);color:var(--primary);border-color:var(--primary)}
+@media(min-width:700px){
+  .mobile-day-switcher{display:block;background:var(--card);padding:12px;border:1px solid var(--line);border-radius:14px}
+  .mobile-day-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+  .mobile-day-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;padding:7px 5px;background:var(--bg);color:var(--muted);border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:800}
+  .mobile-day-tab.active{background:var(--bluebg);border-color:var(--primary);color:var(--text);box-shadow:inset 0 0 0 1px var(--primary)}
+  .mobile-day-tab .day-state{font-size:12px;color:var(--muted)}
+  .mobile-day-tab.played .day-state{color:var(--green)}
+  #view-plan.desktop-one-day #planDays .day-card.mobile-day-hidden{display:none!important}
+}
+@media(max-width:699px){
+  .desktop-day-mode{display:none}
+  .day-switcher-header{margin-bottom:5px}
+  .day-switcher-label{font-size:11px}
+  .mobile-day-switcher{margin-bottom:3px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -281,7 +303,10 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn primary" id="copyFullPlanBtn">📋 Gesamten CWL-Plan kopieren</button><button class="btn" id="compactPlanBtn">▦ Kompaktansicht</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
-  <div class="mobile-day-switcher" id="mobileDaySwitcher" aria-label="CWL-Tag wählen"><div class="mobile-day-tabs" id="mobileDayTabs"></div></div>
+  <div class="mobile-day-switcher" id="mobileDaySwitcher" aria-label="CWL-Tag wählen">
+  <div class="day-switcher-header"><span class="day-switcher-label">Kriegstag wählen</span><div class="desktop-day-mode" role="group" aria-label="Tagesansicht"><button type="button" class="btn small" id="singleDayMode" aria-pressed="false">Einzeltag</button><button type="button" class="btn small" id="allDaysMode" aria-pressed="true">Alle Tage</button></div></div>
+  <div class="mobile-day-tabs" id="mobileDayTabs"></div>
+</div>
   <div id="planDays"></div>
 </section>
 <section id="view-members" class="view">
@@ -416,6 +441,7 @@ const STRENGTH_RANK={high:4,medium:3,low:2,verylow:1,unknown:0};
 let toastTimer=null,modalDay=null,modalSelection=new Set(),goalsDay=null,goalDraft=null,openRulePanels=new Set(),openDuplicatePanels=new Set(),selectionMode=false,selectedMembers=new Set(),expandedCompactDays=new Set(),swRegistration=null;
 let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
 let mobileSelectedDay=null,mobileLineupExpanded=new Set();
+let memberSearch="",memberFilter="all",openMemberDetails=new Set();
 
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -423,7 +449,7 @@ function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,veryl
 function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
 function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],archivedMembers:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[],updatedAt:Date.now()}}
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
-function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,lastBackupAt:null}}}
+function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
 function saveUiSettings(){localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
@@ -478,7 +504,26 @@ function renderProfileUI(){const sel=document.getElementById("profileSelect");se
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
 function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`CWL vorbereitet · ${days} Kriege · noch kein Tag gespielt`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";document.getElementById("compactPlanBtn").textContent=uiSettings.compactPlan?"▤ Normalansicht":"▦ Kompaktansicht"}
 function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(memberById).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),goalItems=dp.goal?.items||[],goalMiss=goalItems.some(x=>!x.met),exact=names.length===state.config.slots&&!dp.warnings.length,collapsed=uiSettings.compactPlan&&!expandedCompactDays.has(dp.day-1),card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(collapsed?" compact-collapsed":"")+(mobileLineupExpanded.has(dp.day-1)?" mobile-lineup-expanded":"");const goalHtml=goalItems.length?`<div class="goal-summary">${goalItems.map(x=>`<span class="goal-pill ${x.met?"met":"miss"}">${esc(x.label)} ${x.actual}/${x.target}</span>`).join("")}</div>`:"";const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupExpanded.has(dp.day-1)}">${mobileLineupExpanded.has(dp.day-1)?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(memberById(id))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(memberById(id))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Tatsächliches Line-up ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Tag abschließen / Line-up bestätigen</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact&&!goalMiss?"ok":"warn"}">${dp.locked?"GESPIELT":exact&&!goalMiss?"PLAN OK":goalMiss?"ZIEL PRÜFEN":"PRÜFEN"}</span></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${goalHtml}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px"><button class="btn small goal-day-btn ${goalItems.length?"active":""}" data-day="${dp.day-1}">🎯 Optionale Tagesziele${goalItems.length?` (${goalItems.length})`:""}</button>${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}${uiSettings.compactPlan?`<button class="btn small compact-day-toggle" data-day="${dp.day-1}">${collapsed?"Aufstellung anzeigen":"Aufstellung einklappen"}</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".goal-day-btn").forEach(b=>b.onclick=()=>openGoalsModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".compact-day-toggle").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.day);expandedCompactDays.has(d)?expandedCompactDays.delete(d):expandedCompactDays.add(d);renderPlan()});root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.day);mobileLineupExpanded.has(d)?mobileLineupExpanded.delete(d):mobileLineupExpanded.add(d);renderPlan()});renderMobileDays()}
-function renderMobileDays(){const root=document.getElementById("mobileDayTabs");if(!root)return;const days=state.config.days,next=Math.min(playedPrefixLength(),days-1);if(mobileSelectedDay===null||mobileSelectedDay>=days||mobileSelectedDay<0)mobileSelectedDay=next;root.innerHTML=Array.from({length:days},(_,d)=>{const played=!!state.locks[d]?.locked,active=d===mobileSelectedDay,status=played?"✓":d===playedPrefixLength()?"●":"·";return`<button type="button" class="mobile-day-tab${active?" active":""}${played?" played":""}" data-day="${d}" aria-label="Tag ${d+1}${played?", gespielt":""}" aria-pressed="${active}"><span class="day-no">${d+1}</span><span class="day-state">${status}</span></button>`}).join("");root.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{mobileSelectedDay=Number(btn.dataset.day);renderMobileDays();document.getElementById("mobileDaySwitcher")?.scrollIntoView({block:"start",behavior:"smooth"})});document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",d!==mobileSelectedDay))}
+function renderMobileDays(){
+  const root=document.getElementById("mobileDayTabs");if(!root)return;
+  const days=state.config.days,next=Math.min(playedPrefixLength(),days-1);
+  if(mobileSelectedDay===null||mobileSelectedDay>=days||mobileSelectedDay<0)mobileSelectedDay=next;
+  const single=uiSettings.dayViewMode==="single";
+  document.getElementById("view-plan").classList.toggle("desktop-one-day",single);
+  for(const [id,active] of [["singleDayMode",single],["allDaysMode",!single]]){
+    const button=document.getElementById(id);if(button){button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active))}
+  }
+  root.innerHTML=Array.from({length:days},(_,d)=>{
+    const played=!!state.locks[d]?.locked,active=d===mobileSelectedDay,status=played?"✓":d===playedPrefixLength()?"●":"·";
+    return `<button type="button" class="mobile-day-tab${active?" active":""}${played?" played":""}" data-day="${d}" aria-label="Tag ${d+1}${played?", gespielt":""}" aria-pressed="${active}"><span class="day-no">${d+1}</span><span class="day-state">${status}</span></button>`;
+  }).join("");
+  root.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+    mobileSelectedDay=Number(btn.dataset.day);
+    uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays();
+    document.getElementById("mobileDaySwitcher")?.scrollIntoView({block:"start",behavior:"smooth"});
+  });
+  document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",d!==mobileSelectedDay));
+}
 
 function getDisplayMembers(){const list=[...state.members],mode=state.config.memberSort||"manual";if(mode==="manual")return list;if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));return list}
 function availabilityLabel(m){const start=m.firstDay||1,end=(m.outFromDay||state.config.days+1)-1;if(!m.firstDay&&!m.outFromDay)return"";if(start>end)return"Keine verfügbaren Tage";return`Verfügbar: T${start}${end!==start?`–T${Math.min(end,state.config.days)}`:""}`}
@@ -545,6 +590,8 @@ applyTheme();document.body.classList.toggle("compact-plan",uiSettings.compactPla
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-"+b.dataset.view).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})});
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
+document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
+document.getElementById("allDaysMode").onclick=()=>{uiSettings.dayViewMode="all";saveUiSettings();renderMobileDays()};
 document.getElementById("mobileOverviewToggle").onclick=()=>{const card=document.getElementById("planOverview"),button=document.getElementById("mobileOverviewToggle"),opened=card.classList.toggle("overview-open");button.setAttribute("aria-expanded",String(opened));button.textContent=opened?"Aktionen ▴":"Aktionen ▾"};
 document.getElementById("compactPlanBtn").onclick=()=>{uiSettings.compactPlan=!uiSettings.compactPlan;saveUiSettings();document.body.classList.toggle("compact-plan",uiSettings.compactPlan);expandedCompactDays.clear();renderAll(uiSettings.compactPlan?"Kompaktansicht aktiviert":"Normalansicht aktiviert")};
 document.getElementById("manageCwlBtn").onclick=handleCwlManage;document.getElementById("nextDayBtn").onclick=()=>{const d=Math.min(playedPrefixLength(),state.config.days-1);mobileSelectedDay=d;renderMobileDays();document.getElementById(`day-card-${d}`)?.scrollIntoView({behavior:"smooth",block:"start"})};
