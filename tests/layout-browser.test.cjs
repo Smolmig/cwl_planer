@@ -117,6 +117,7 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
        assert.ok(choice.y>=-2&&choice.y+choice.height<=846,"picker out of vertical bounds");
        await page.locator("#townHallPickerClose").click();
        await page.locator('.navbtn[data-view="plan"]').click();
+       await page.locator('#mobileDayTabs button[data-day="0"]').click();
        await page.locator("#planDays .edit-day").first().click();
        await page.locator("#lineupModal.open").waitFor();
        const button=await page.locator("#modalSave").boundingBox();
