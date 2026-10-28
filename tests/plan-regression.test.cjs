@@ -20,7 +20,7 @@ const names=["memberById","allKnownMembers","effectiveStatus","emptyDayGoal",
   "futureEligibilityCount","fairnessCandidateScore","calculatePlan",
   "playerSnapshot","normalizeSnapshot","normalizeSnapshots","lineupPlayer","normalizeArchive",
   "archiveCurrentCwl","removeMembers","usedInLockedDay","normalizePlayerTag",
-  "normalizeMember","normalizeProfile"];
+  "normalizeMember","normalizeProfile","cloneGoal","cloneProfile"];
 const code=names.map(extract).join("\n");
 const strengths={high:"Oft 3★",medium:"Solide",low:"Selten",verylow:"Normal kein",unknown:"Unbekannt"};
 function member(id,rest={}){
@@ -35,7 +35,7 @@ function profile(members,{slots=2,days=7,goals,locks}={}){
     dayGoals:Array.from({length:7},(_,i)=>goals?.[i]||goal()),archives:[]};
 }
 function context(state){
-  const c=vm.createContext({state,STRENGTH_LABELS:strengths,uid:()=>"test-id",
+  let idCounter=0;const c=vm.createContext({state,STRENGTH_LABELS:strengths,uid:()=>"test-id-"+(++idCounter),
     openRulePanels:new Set(),selectedMembers:new Set()});
   vm.runInContext(code,c,{timeout:5000});
   return c;
@@ -125,4 +125,22 @@ test("failed primary save pauses further writes and flags emergency export",()=>
   vm.runInContext("saveApp()",c);
   assert.equal(c.suspendWrites,true);
   assert.equal(c.startupStorageIssue,"save");
+});
+
+
+test("duplicating a clan preserves played-day historical snapshots with remapped IDs",()=>{
+ const original=profile([member("a",{name:"Now A"}),member("b",{name:"Now B"})],{
+  locks:[{locked:true,lineup:["a","b"],snapshots:{
+    a:{id:"a",name:"Original A",playerTag:"#OLD",townHall:18,fixed:true,threeStar:"high"}
+  }}]
+ });
+ const c=context(original),copy=c.cloneProfile(original,"Test-Kopie");
+ assert.equal(copy.members.length,2);
+ assert.equal(copy.locks[0].lineup.length,2);
+ const newId=copy.members.find(m=>m.name==="Now A").id;
+ assert.notEqual(newId,"a");
+ assert.ok(copy.locks[0].lineup.includes(newId));
+ assert.equal(copy.locks[0].snapshots[newId].name,"Original A");
+ assert.equal(copy.locks[0].snapshots[newId].fixed,true);
+ assert.equal(copy.locks[0].snapshots[newId].id,newId);
 });
