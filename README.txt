@@ -158,3 +158,14 @@ Update v9.6.0 (gemeinsamer Release-Kandidat, inklusive aller v9.5-UX-Änderungen
 
 Vor Freigabe zwingend am echten iPhone als Homescreen-PWA prüfen: Statusleisten-Fade, Landscape, Scrollen/Auswahl mit 15/30 Spielern, Speichern-Button und Offline/Update-Verhalten. Außerdem mit einem separaten Testprofil Fix/MUSS/RAUS, echte gespielte Tage, Korrektur von Tag 1, Archiv inkl. 0 Einsätzen und Backup-Wiederherstellung prüfen.
 Wichtig: Bestehende Profile/Archive bleiben kompatibel, aber ohne Backup kein Browserwechsel oder Neuinstallieren der PWA durchführen.
+
+Korrektur für den finalen v9.6.0-Release-Kandidaten (überschreibt frühere Beschreibungen von Tageszielen/Kompaktmodus):
+- **Optionale Tagesziele entfernt**: Keine RH-/3★-Ziele mehr je Kriegstag. Der Planer nutzt sie auch dann nicht mehr, wenn sie aus alten Backups noch vorhanden sind. Solche Altwerte bleiben nur aus Gründen der Datenkompatibilität erhalten.
+- **Spielerinformationen bleiben**: RH und manuelle 3★-Stärke sind Richtwerte für Mitglieder, Aufstellungen und Sortierung. Sie beeinflussen die automatische Einteilung nicht. Fairness, künftige Verfügbarkeit, Prio und MUSS/FIX/RAUS bleiben maßgeblich.
+- **RH-Auswahl mobil über Raster**: Statt des unzugänglichen langen iOS-Dropdowns nun ein eigenes, in der Höhe begrenztes und scrollbar bleibendes Auswahlfenster. Reihenfolge RH19 bis RH3, Option ohne RH. Bei bereits gespeicherten RH20-Spielern bleibt RH20 als Legacy-Auswahl sichtbar und wird nicht überschrieben.
+- **RH-Auswahl am Desktop** startet ebenfalls bei RH19 abwärts; Mehrfachbearbeitung entsprechend angepasst.
+- **Normal-/Kompaktansicht-Schalter entfernt**. Am PC weiterhin Einzeltag/Alle Tage, am Handy die kompakte Tagesnavigation.
+- **Mobile „Aufstellung anzeigen“ gilt für alle Kriegstage** und bleibt beim Tageswechsel aktiv, bis auf einem beliebigen Tag wieder „Aufstellung einklappen“ gedrückt wird.
+- **Hilfe und Erklärung der Tagesaufstellung aktualisiert**; keine Referenz auf aktive optionale Tagesziele.
+- Neue DOM-Regressionstests für RH-Auswahl, bestehende RH20-Spieler, gemeinsame Aufklappfunktion und entfernte Steuerelemente; insgesamt 16 automatische Tests.
+- Live-Version main unverändert. Vor Veröffentlichung noch am echten iPhone in Safari und Homescreen-PWA testen.
