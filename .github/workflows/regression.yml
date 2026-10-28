@@ -1,8 +1,11 @@
 name: CWL Planer regression
 on:
   push:
-    branches: [main, "feature/**"]
+    branches: [main]
   pull_request:
+concurrency:
+  group: cwl-regression-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-latest
