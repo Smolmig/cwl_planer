@@ -575,6 +575,21 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
  .titleblock h1{font-size:16px}
  .profilebar{max-width:170px}
 }
+
+/* Consistent dialogs, focus treatment, and beginner-friendly help */
+.help-modal-box{max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+.help-modal-box .help-intro{margin-bottom:12px;color:var(--text)}
+.help-section-heading{font-size:14px;margin:15px 0 8px;color:var(--text)}
+.help-steps{display:grid;gap:7px}
+.help-steps>div{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:9px 11px;font-size:12px;line-height:1.5}
+.help-steps>div>b{flex:0 0 27px;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bluebg);color:var(--primary);font-size:13px}
+.help-steps strong{color:var(--text)}
+.help-grid .help-item{min-width:0;overflow-wrap:anywhere}
+.help-grid .help-item div b{display:inline}
+:where(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:699px){.help-modal-box{max-height:calc(100dvh - 22px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0 auto;padding:12px}.help-steps>div{padding:8px;font-size:12px}.help-section-heading{margin-top:12px}}
+/* Darken primary buttons slightly to keep white button text legible in bright themes. */
+.btn.primary{background:color-mix(in srgb,var(--primary) 65%,#061728 35%);border-color:color-mix(in srgb,var(--primary) 65%,#061728 35%);color:#fff}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -613,7 +628,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 <section id="view-members" class="view">
   <div class="card">
     <div class="section-title">
-      <div><h3>Mitglieder</h3><div class="statusline">Teilnehmer verwalten, Verfügbarkeiten festlegen und die Rotation feinsteuern.</div></div>
+      <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
     </div>
     <div class="member-actionbar">
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
@@ -635,7 +650,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
     </div>
     </details>
     <div class="list-management">
-      <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Sortieren, eigene Reihenfolge festlegen oder mehrere Spieler gemeinsam ändern.</div></div></div>
+      <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Mitglieder sortieren oder mehrere gleichzeitig bearbeiten.</div></div></div>
       <div class="list-management-actions">
         <select id="memberSortSelect" class="sort-select" aria-label="Mitglieder sortieren">
           <option value="manual">Eigene Reihenfolge</option>
@@ -673,13 +688,13 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   </div>
 </section>
 <section id="view-summary" class="view">
-  <div class="card"><div class="section-title"><div><h3>Einsatz-Verteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
-    <option value="all">Alle Spieler</option><option value="zero">0 Einsätze</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
+    <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
   </select>
   <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
-</div><div class="summary-legend">G = tatsächlich gespielt · P = künftig geplant · Gesamt = G + P</div>
+</div><div class="summary-legend">G = gespielt · P = noch geplant · Gesamt = beide zusammen</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
   <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
   <div class="card">
@@ -703,7 +718,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
     <div class="section-title"><div><h3 id="modalTitle">Tag bearbeiten</h3><div class="statusline" id="modalCount" aria-live="polite"></div></div><button class="btn small" id="modalClose">Schließen</button></div>
-    <div class="helpbox">Prüfe die tatsächlich eingesetzten Spieler. Es müssen genau so viele wie die Kriegsgröße ausgewählt sein.</div>
+    <div class="helpbox">Wähle die Spieler aus, die an diesem Kriegstag wirklich teilgenommen haben. Die Anzahl muss zur Kriegsgröße passen.</div>
     <input class="modal-search" id="lineupSearch" type="search" placeholder="Spieler oder Player-Tag suchen" aria-label="Spieler oder Player-Tag suchen">
   </div>
   <div class="modal-list" id="modalList"></div>
@@ -712,25 +727,32 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 <div class="modal" id="bulkModal"><div class="modalbox"><div class="section-title"><div><h3>Mehrere Mitglieder hinzufügen</h3><div class="statusline">Ein Name pro Zeile – nach jedem Namen einfach Enter drücken.</div></div><button class="btn small" id="bulkClose">Schließen</button></div><div class="helpbox modal-tip"><b>So geht’s:</b> Ersten Namen eingeben → <b>Enter</b> → nächsten Namen eingeben. Gleiche Namen sind in Clash möglich und werden zugelassen. Namensdopplungen werden anschließend mit einem ! markiert; dort ist ein Player-Tag empfohlen.<div class="example-list">Spieler Alpha
 Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
-<div class="modal" id="helpModal"><div class="modalbox"><div class="section-title"><div><h3>Hilfe & Funktionen</h3><div class="statusline">Schnellstart und Begriffe des CWL Planers.</div></div><button class="btn small" id="helpClose">Schließen</button></div>
-  <div class="helpbox"><b>CWL in 4 Schritten:</b><br>1. Mitglieder hinzufügen und <b>Dabei</b> aktivieren.<br>2. Fixspieler und bekannte MUSS/RAUS-/Verfügbarkeiten eintragen.<br>3. Plan und besonders die <b>Einsatz-Verteilung</b> prüfen; der Rest wird automatisch rotiert.<br>4. Nach jedem Krieg das tatsächliche Line-up als <b>GESPIELT</b> bestätigen. Danach werden nur kommende Tage neu berechnet.<br><br><b>Optional:</b> RH und 3★-Stärke dienen als Richtwerte pro Spieler. Die automatische Einteilung berücksichtigt Einsätze, Verfügbarkeit, Tagesregeln und Prio.</div>
-  <div class="help-grid">
-    <div class="help-item"><b>Dabei</b><div>Der Spieler gehört zur aktuellen CWL-Auswahl und darf vom Planer eingesetzt werden. Deaktiviert = Pause; Stammdaten bleiben erhalten.</div></div>
-    <div class="help-item"><b>Fix</b><div>Ein Fixspieler wird an jedem zukünftigen Tag gesetzt, an dem er verfügbar ist. RAUS bzw. Erst-ab/Raus-ab haben Vorrang.</div></div>
-    <div class="help-item"><b>Prio 0–5</b><div>Keine feste Einsatzvorgabe, sondern ein Tie-Breaker: Wenn vergleichbare Spieler wegen der Rotation z. B. teils 3 und teils 4 Einsätze bekommen, erhält ein Spieler mit höherer Prio eher den zusätzlichen Einsatz. Tagesregeln, bisherige Einsätze und zukünftige Verfügbarkeit sind wichtiger.</div></div>
-    <div class="help-item"><b>Rathaus (RH)</b><div>Optionaler Richtwert zur Übersicht und Sortierung. Die Auswahl beginnt bei RH19 abwärts; bereits gespeicherte RH20-Werte bleiben erhalten. RH beeinflusst die automatische Einteilung nicht.</div></div>
-    <div class="help-item"><b>3★-Stärke</b><div>Manuelle Einschätzung eines Angreifers: Oft 3★, solide, selten 3★ oder normalerweise kein 3★. Nur Richtwert für die Clanführung und Anzeige, kein automatisches Tagesziel.</div></div>
-    
-    <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>AUTO lässt den Planer entscheiden. MUSS erzwingt den Einsatz an diesem zukünftigen Tag. RAUS macht den Spieler dort nicht verfügbar. Tippen wechselt AUTO → MUSS → RAUS.</div></div>
-    <div class="help-item"><b>Erst ab / Raus ab</b><div>Schnellregeln für längere Abwesenheiten. Beispiel: Erst ab Tag 2 + Raus ab Tag 6 = verfügbar T2–T5.</div></div>
-    <div class="help-item"><b>Einsatz-Verteilung</b><div>Zeigt tatsächlich gespielte und noch geplante Einsätze getrennt. Auch Spieler mit bereits gespielten Einsätzen bleiben sichtbar, wenn sie später pausieren oder den Kader verlassen.</div></div>
-    <div class="help-item"><b>Fairness-Badge</b><div>Kleines Zusatzsignal: Spanne = höchste minus niedrigste Einsatzanzahl der aktuellen Rotationsspieler. Die konkrete Einsatzanzahl ist wichtiger.</div></div>
-    <div class="help-item"><b>GESPIELT</b><div>Nach dem Krieg das tatsächliche Line-up bestätigen. Vergangene Tage bleiben dadurch stabil; spätere Änderungen berechnen nur die Zukunft neu.</div></div>
-    <div class="help-item"><b>Profile / Backups</b><div>Profile speichern getrennte Clans. Profilnamen müssen eindeutig sein. Backups sichern aktuelle CWLs und Archive; ein Komplett-Backup ersetzt beim Wiederherstellen alle Profile erst nach Warnung.</div></div>
-    <div class="help-item"><b>Darstellung</b><div>Dunkel bleibt Standard. Hell und System sind jederzeit wählbar; Cyberpunk ist ein optionales, deutlich stärker stilisiertes Neon-Theme ohne dauerhafte Animationen. Die Auswahl gilt nur für dieses Gerät und ändert keine CWL-Daten.</div></div>
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
+  <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
+  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe oder Ergebnisse liest die App nicht automatisch aus Clash of Clans aus.</b></div>
+  <h4 class="help-section-heading">So gehst du vor</h4>
+  <div class="help-steps">
+    <div><b>1</b><span><strong>Mitglieder eintragen</strong> – Im Tab „Mitglieder“ Spieler hinzufügen und bei allen CWL-Teilnehmern „Dabei“ aktivieren.</span></div>
+    <div><b>2</b><span><strong>Besonderheiten festlegen</strong> – Fixspieler markieren und bei Bedarf einzelne Tage auf „MUSS“ oder „RAUS“ setzen.</span></div>
+    <div><b>3</b><span><strong>Plan prüfen</strong> – Unter „Plan“ siehst du die Aufstellung für jeden Krieg. Du kannst zwischen den Tagen wechseln oder sie alle anzeigen.</span></div>
+    <div><b>4</b><span><strong>Gespielten Tag bestätigen</strong> – Nach dem Krieg die tatsächlich eingesetzten Spieler auswählen und speichern. Der Plan für die restlichen Tage wird dann neu berechnet.</span></div>
   </div>
+  <h4 class="help-section-heading">Was bedeuten die Einstellungen?</h4>
+  <div class="help-grid">
+    <div class="help-item"><b>Dabei / Pause</b><div>„Dabei“ bedeutet: Der Spieler kann für diese CWL eingeplant werden. Bei „Pause“ bleibt er in der Mitgliederliste, wird aber nicht neu eingeteilt.</div></div>
+    <div class="help-item"><b>Fix</b><div>Der Spieler wird an jedem Tag eingeplant, an dem er verfügbar ist. Eine ausdrückliche Abwesenheit („RAUS“) hat Vorrang.</div></div>
+    <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>Pro Kriegstag: „AUTO“ lässt den Planer entscheiden, „MUSS“ verlangt den Einsatz, „RAUS“ schließt ihn für diesen Tag aus. Durch Antippen wechselst du die Einstellung.</div></div>
+    <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
+    <div class="help-item"><b>Priorität (Prio 0–5)</b><div>Bei ähnlichen Einsatzchancen wird ein Spieler mit höherer Zahl eher berücksichtigt. Bisherige Einsätze und verfügbare Tage sind wichtiger.</div></div>
+    <div class="help-item"><b>RH und 3★-Stärke</b><div>Rathaus-Level und deine Einschätzung der 3-Sterne-Stärke sind zusätzliche Spielerinfos. Sie helfen dir bei der Übersicht, verändern aber die automatische Einteilung nicht.</div></div>
+    <div class="help-item"><b>Einsatzverteilung</b><div>In „Übersicht“ bedeutet <b>G</b> = bereits tatsächlich gespielt und <b>P</b> = für kommende Tage geplant. Die Gesamtzahl ist G + P. Über Suche und Filter findest du einzelne Spieler schnell.</div></div>
+    <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
+    <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kannst du die gespeicherte Aufstellung nachträglich anpassen. Kommende Tage werden danach erneut geplant.</div></div>
+    <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
+  </div>
+  <h4 class="help-section-heading">Speicherung und Backup</h4>
+  <div class="helpbox">Die App speichert automatisch <b>in diesem Browser bzw. in der installierten App</b>. Für ein anderes Gerät oder zur Sicherheit unter „Übersicht“ ein <b>komplettes Backup</b> erstellen. Beim Wiederherstellen eines kompletten Backups können vorhandene Profile ersetzt werden. Vor einem größeren Update ist ein Backup sinnvoll.</div>
 </div></div>
-
 <div class="modal" id="townHallPickerModal" role="dialog" aria-modal="true" aria-labelledby="townHallPickerTitle">
   <div class="modalbox townhall-picker-box">
     <div class="section-title"><h3 id="townHallPickerTitle">Rathaus auswählen</h3><button class="btn small" type="button" id="townHallPickerClose">Schließen</button></div>
@@ -902,8 +924,8 @@ function calculatePlan(){
 }
 function renderProfileUI(){const sel=document.getElementById("profileSelect");sel.innerHTML=app.profiles.map(p=>`<option value="${p.id}" ${p.id===state.id?"selected":""}>${esc(p.name)}</option>`).join("")+`<option disabled>────────────</option><option value="__new__">＋ Neues Profil erstellen…</option>`;document.getElementById("activeProfileName").textContent=state.name;document.getElementById("profileCountBadge").textContent=`${app.profiles.length} Profil${app.profiles.length===1?"":"e"}`}
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
-function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`CWL vorbereitet · ${days} Kriege · noch kein Tag gespielt`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
-function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Tatsächliches Line-up ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Tag abschließen / Line-up bestätigen</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${dp.locked?"GESPIELT":exact?"PLAN OK":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px">${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays()}
+function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`Plan bereit · ${days} Kriegstage · noch keiner als gespielt gespeichert`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
+function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${m.townHall?`RH${m.townHall} · `:""}${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Gespielte Aufstellung ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Tag als gespielt speichern</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${dp.locked?"GESPIELT":exact?"BESETZT":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px">${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays()}
 function renderMobileDays(){
   const root=document.getElementById("mobileDayTabs");if(!root)return;
   const days=state.config.days,next=Math.min(playedPrefixLength(),days-1);
@@ -984,7 +1006,7 @@ function renderSummary(){
   if(rotStats){
     badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";
     badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");
-    document.getElementById("rotationSummary").textContent=`Rotation ${rotStats.min}–${rotStats.max}× · Spanne ${rotStats.spread} (ohne Verfügbarkeit)`;
+    document.getElementById("rotationSummary").textContent=`Einsätze: ${rotStats.min}–${rotStats.max} pro Rotationsspieler · Unterschied: ${rotStats.spread} (Verfügbarkeit nicht berücksichtigt)`;
   }else{
     badge.textContent="–";badge.className="badge ok";
     document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet";
@@ -1045,13 +1067,13 @@ function openTownHallPicker(current,onPick){
 }
 function openModal(id){document.getElementById(id).classList.add("open");document.body.classList.add("modal-open")}
 function closeModalById(id){document.getElementById(id).classList.remove("open");if(!document.querySelector(".modal.open"))document.body.classList.remove("modal-open")}
-function openLineupModal(day){modalDay=day;modalSelection=new Set(state.locks[day]?.locked?state.locks[day].lineup:lastPlan.dayPlans[day].lineup);document.getElementById("modalTitle").textContent=`Tag ${day+1} – tatsächliches Line-up`;document.getElementById("lineupSearch").value="";renderModalList();openModal("lineupModal")}
+function openLineupModal(day){modalDay=day;modalSelection=new Set(state.locks[day]?.locked?state.locks[day].lineup:lastPlan.dayPlans[day].lineup);document.getElementById("modalTitle").textContent=`Tag ${day+1} – eingesetzte Spieler`;document.getElementById("lineupSearch").value="";renderModalList();openModal("lineupModal")}
 function openWhyModal(day){
   const dp=lastPlan.dayPlans[day];if(!dp)return;
   document.getElementById("whyTitle").textContent=`Tag ${day+1} – Auswahl erklärt`;
   document.getElementById("whyExplanation").textContent=dp.locked?
-    "Dieser Krieg wurde als tatsächlich gespielt gespeichert. Die Auswahl entspricht der bestätigten Aufstellung und wurde nicht durch den Algorithmus getroffen.":
-    "Fix- und MUSS-Spieler sind gesetzt, RAUS/Erst-ab/Raus-ab werden ausgeschlossen. Freie Plätze: zuerst weniger bisherige Einsätze, dann weniger zukünftige Gelegenheiten, danach Priorität. Die angezeigten bisherigen Einsätze beziehen sich auf den Zeitpunkt vor diesem Krieg.";
+    "Für diesen Kriegstag wurde die tatsächliche Aufstellung gespeichert. Sie ersetzt die ursprüngliche Planung.":
+    "Fixspieler und Spieler mit „MUSS“ werden eingeplant, sofern sie verfügbar sind. Bei freien Plätzen berücksichtigt der Planer zuerst Spieler mit weniger Einsätzen, dann Spieler mit weniger verbleibenden Einsatzmöglichkeiten und schließlich die Priorität.";
   const selected=new Set(dp.lineup),available=state.members.filter(m=>m.participating&&m.name.trim()&&effectiveStatus(m,day)!=="out"),
     roster=[...dp.lineup.map(id=>lineupPlayer(id,day)).filter(Boolean),...(dp.locked?[]:available.filter(m=>!selected.has(m.id)))];
   const markup=roster.map(m=>{
