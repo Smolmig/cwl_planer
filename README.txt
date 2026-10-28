@@ -135,3 +135,10 @@ v9.5.0 – Ergänzung Desktop-Tagesnavigation und Mitglieder-UX:
 - Jede Mitgliederkarte zeigt Spielername, Dabei/Fix sowie RH, Priorität und 3★-Stärke direkt. Selten benötigte Felder und Tagesregeln öffnen über „Bearbeiten“.
 - Mehrfachauswahl „Sichtbare auswählen“ nimmt bei aktivem Filter nur sichtbare Spieler; eine Filterung sperrt vorsorglich den Button für das Löschen des vollständigen Kaders.
 - Grundfunktionen (inkl. Member-Reihenfolge, Player-Tags, Regeln, CSV, Backups) und CWL-Einteilungsalgorithmus bleiben erhalten.
+
+v9.5.0 – Mobile Mitgliederliste, zweiter UI-Durchgang:
+- Für Smartphones (<700 px) wird die Mitgliederliste als platzsparende Zeilen mit Name, RH, 3★-Stärke, Prio sowie Dabei/Pause- und FIX-Kennzeichnung angezeigt.
+- Dabei/Fix-Schalter, RH-/Stärke-/Prioritätsfelder und Tagesregeln werden beim jeweiligen Spieler erst nach „Bearbeiten“ eingeblendet. Am Handy ist jeweils nur ein Bearbeitungsbereich gleichzeitig offen.
+- Die Aktionen Mitgliederimport und CSV-Vorlage sind am Handy hinter einem kleinen „Weitere Aktionen“-Menü erreichbar; die Hauptaktionen Hinzufügen/Mehrere bleiben direkt sichtbar.
+- Sortier- und Suchleiste wurden auf Mobil verdichtet, die PC-Mitgliederansicht bleibt weitgehend unverändert.
+- Keine Änderung der Berechnungslogik, Profile, Datenversion oder des lokalen Speicherschlüssels.
