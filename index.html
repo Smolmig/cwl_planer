@@ -519,6 +519,13 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   #view-summary>.card{padding:10px}
 }
 
+/* Keep lineup confirmation buttons within the usable viewport on iOS and desktop.
+   Border-box includes the safe-area padding in 100dvh. */
+#lineupModal .lineup-modal-box{box-sizing:border-box!important}
+@media(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+  #lineupModal .lineup-modal-box{height:100dvh!important;max-height:100dvh!important;min-height:0;overflow:hidden}
+  #lineupModal .lineup-modal-footer{flex-shrink:0}
+}
 /* Centered, keyboard-accessible decision dialog (instead of bottom-right toast) */
 .inline-action-backdrop{position:fixed;inset:0;z-index:185;background:rgba(5,11,23,.62);opacity:0;pointer-events:none;transition:opacity .18s ease}
 .inline-action-backdrop.open{opacity:1;pointer-events:auto}
