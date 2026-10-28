@@ -20,6 +20,7 @@ function boot(stored,{mobile=true}={}){
    beforeParse(w){
      w.matchMedia=()=>({matches:mobile,media:"(max-width:699px)",addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
      w.HTMLElement.prototype.scrollIntoView=function(){};
+     w.scrollTo=function(){};
      if(stored)w.localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(stored));
      w.addEventListener("error",e=>errors.push(e.message||String(e.error)));
    }
