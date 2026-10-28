@@ -483,6 +483,41 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   #view-members .member-strength-picker{flex-basis:100%;white-space:normal}
   #view-members .member-th-picker{min-width:0;flex:1 1 100px}
 }
+
+/* v9.6: dense deployment distribution with fast filtering */
+.summary-tools{display:grid;grid-template-columns:minmax(0,2fr) minmax(130px,1fr) auto;gap:7px;align-items:center;margin:8px 0}
+.summary-tools input,.summary-tools select{min-width:0;min-height:39px;padding:7px 9px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:9px;font-size:13px}
+.summary-visible-count{color:var(--muted);font-weight:750;font-size:11px;white-space:nowrap}
+.summary-legend{font-size:11px;color:var(--muted);margin:5px 0 10px}
+.summary-compact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px;align-items:start}
+.summary-compact-grid>.empty{grid-column:1/-1}
+.summary-compact-row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;min-width:0;min-height:46px;padding:6px 9px;background:var(--card);border:1px solid var(--line);border-radius:9px}
+.summary-compact-name{min-width:0;flex:1 1 105px;display:flex;flex-direction:column;gap:2px}
+.summary-compact-name>b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-compact-meta{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-compact-numbers{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 0 auto}
+.summary-stat{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;border-radius:5px;padding:3px 4px;background:var(--bluebg)}
+.summary-stat.played{color:var(--green)}
+.summary-stat.planned{color:var(--muted)}
+.summary-stat.total{font-size:12px;background:var(--bluebg);color:var(--text)}
+.summary-compact-deviation{font-size:10px;color:var(--muted);flex:0 0 100%;text-align:right;line-height:1;display:none}
+@media(max-width:699px) and (orientation:portrait){
+  .summary-compact-grid{grid-template-columns:minmax(0,1fr);gap:4px}
+  .summary-tools{grid-template-columns:minmax(0,1fr) 125px;gap:5px}
+  .summary-tools .summary-visible-count{grid-column:1/-1}
+  .summary-compact-row{min-height:43px;padding:5px 7px}
+}
+@media(orientation:landscape) and (max-height:540px) and (min-width:600px) and (max-width:1100px){
+  #memberList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px 8px;align-items:start}
+  #memberList>.member{margin:0!important;min-width:0;padding:7px 8px}
+  #memberList>.empty{grid-column:1/-1}
+  #memberList .member-top .name-wrap{flex:1 1 100px;min-width:0}
+  #memberList .member-snapshot{min-width:0}
+  #memberList .member-brief{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  #view-members .member-details .member-tools{display:flex;flex-wrap:wrap;gap:6px}
+  .summary-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-summary>.card{padding:10px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -581,7 +616,14 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   </div>
 </section>
 <section id="view-summary" class="view">
-  <div class="card"><div class="section-title"><div><h3>Einsatz-Verteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryList"></div></div>
+  <div class="card"><div class="section-title"><div><h3>Einsatz-Verteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
+  <select id="summaryFilter" aria-label="Einsätze filtern">
+    <option value="all">Alle Spieler</option><option value="zero">0 Einsätze</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
+  </select>
+  <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
+</div><div class="summary-legend">G = tatsächlich gespielt · P = künftig geplant · Gesamt = G + P</div>
+<div id="summaryList" class="summary-compact-grid"></div></div>
   <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
   <div class="card">
     <div class="section-title"><h3>Profile / Clans</h3><span class="badge ok" id="profileCountBadge">1 Profil</span></div>
@@ -667,7 +709,7 @@ const STRENGTH_RANK={high:4,medium:3,low:2,verylow:1,unknown:0};
 let toastTimer=null,modalDay=null,modalSelection=new Set(),openRulePanels=new Set(),openDuplicatePanels=new Set(),selectionMode=false,selectedMembers=new Set(),swRegistration=null;
 let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
 let mobileSelectedDay=null,mobileLineupsExpanded=!matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches;
-let memberSearch="",memberFilter="all",openMemberDetails=new Set(),townHallPickHandler=null;
+let memberSearch="",memberFilter="all",summarySearch="",summaryFilter="all",openMemberDetails=new Set(),townHallPickHandler=null;
 
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -841,18 +883,46 @@ function renderSummary(){
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
     ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
   lockedIds.forEach(id=>ids.add(id));
-  const rows=[...ids].map(id=>({m:memberById(id),count:lastPlan.counts[id]||0,played:lastPlan.playedCounts[id]||0})).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de")),
-    rot=rows.filter(x=>state.members.includes(x.m)&&x.m.participating&&!x.m.fixed),avg=rot.length?rot.reduce((s,x)=>s+x.count,0)/rot.length:0;
-  document.getElementById("summaryList").innerHTML=rows.map(x=>{
+  const rows=[...ids].map(id=>({
+    m:memberById(id),count:lastPlan.counts[id]||0,played:lastPlan.playedCounts[id]||0
+  })).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de"));
+  const rot=rows.filter(x=>state.members.includes(x.m)&&x.m.participating&&!x.m.fixed),
+    avg=rot.length?rot.reduce((sum,x)=>sum+x.count,0)/rot.length:0;
+  const query=summarySearch.trim().toLocaleLowerCase("de");
+  const visible=rows.filter(x=>{
+    if(query&&!displayMemberName(x.m).toLocaleLowerCase("de").includes(query)&&!(x.m.playerTag||"").toLocaleLowerCase("de").includes(query))return false;
+    if(summaryFilter==="zero")return x.count===0;
+    if(summaryFilter==="played")return x.played>0;
+    if(summaryFilter==="future")return x.count>x.played;
+    if(summaryFilter==="fixed")return x.m.fixed;
+    return true;
+  });
+  document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
+  document.getElementById("summaryList").innerHTML=visible.map(x=>{
     const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,
-      cls=!active||x.m.fixed?"zero":Math.abs(d)<.51?"zero":d>0?"pos":"neg",label=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
-      available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0,
-      sub=!active?"Nicht mehr in aktueller Rotation":x.m.fixed?"Fixspieler":"Rotation";
-    return`<div class="summary-row"><div><b>${esc(displayMemberName(x.m))}</b><div class="statusline">${sub}${x.m.townHall?` · RH ${x.m.townHall}`:""} · ${esc(STRENGTH_SHORT[x.m.threeStar]||"3★ ?")} · Prio ${x.m.priority}</div><div class="statusline"><strong>${x.played} gespielt</strong> · ${Math.max(0,x.count-x.played)} geplant${active?` · ${available} Tage verfügbar`:""}</div></div><span class="delta ${cls}">${label}</span><span class="count">${x.count}×</span></div>`
-  }).join("")||'<div class="empty">Keine Teilnehmer ausgewählt.</div>';
+      deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
+      available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
+    return `<div class="summary-compact-row">
+      <div class="summary-compact-name"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
+        <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${esc(STRENGTH_SHORT[x.m.threeStar]||"3★ ?")} · P${x.m.priority}${active?` · ${available} Tage`:""}</span>
+      </div>
+      <div class="summary-compact-numbers" aria-label="${x.played} gespielt, ${Math.max(0,x.count-x.played)} geplant, ${x.count} gesamt">
+        <span class="summary-stat played" title="Tatsächlich gespielt">G ${x.played}</span>
+        <span class="summary-stat planned" title="Noch geplant">P ${Math.max(0,x.count-x.played)}</span>
+        <b class="summary-stat total" title="Gesamt: gespielt und geplant">${x.count}×</b>
+      </div>
+      <span class="summary-compact-deviation" title="Abweichung zum unbereinigten Rotationsdurchschnitt">${deviation}</span>
+    </div>`;
+  }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
   const badge=document.getElementById("fairBadge"),rotStats=rotationStats();
-  if(rotStats){badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");document.getElementById("rotationSummary").textContent=`Rotation ${rotStats.min}–${rotStats.max}× · Spanne ${rotStats.spread} (ohne Verfügbarkeit)`}
-  else{badge.textContent="–";badge.className="badge ok";document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet"}
+  if(rotStats){
+    badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";
+    badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");
+    document.getElementById("rotationSummary").textContent=`Rotation ${rotStats.min}–${rotStats.max}× · Spanne ${rotStats.spread} (ohne Verfügbarkeit)`;
+  }else{
+    badge.textContent="–";badge.className="badge ok";
+    document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet";
+  }
 }
 function archiveCurrentCwl(){
   const all=allKnownMembers(),playerMap=new Map(all.map(m=>[m.id,m])),lineups=[];
@@ -991,6 +1061,8 @@ document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);d
   button.setAttribute("aria-expanded",String(open));
   button.textContent=open?"×":"•••";button.setAttribute("aria-label",open?"Weitere Aktionen schließen":"Weitere Aktionen anzeigen");
 };
+document.getElementById("summarySearch").oninput=e=>{summarySearch=e.target.value;renderSummary()};
+document.getElementById("summaryFilter").onchange=e=>{summaryFilter=e.target.value;renderSummary()};
 document.getElementById("memberSearch").oninput=e=>{memberSearch=e.target.value;renderMembers()};document.getElementById("memberFilter").onchange=e=>{memberFilter=e.target.value;renderMembers()};
 document.getElementById("memberSortSelect").onchange=e=>{state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
 document.getElementById("helpBtn").onclick=()=>openModal("helpModal");document.getElementById("membersHelpBtn").onclick=()=>openModal("helpModal");
