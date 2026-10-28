@@ -219,3 +219,62 @@ test("landscape CSS supports two-column members and summaries",()=>{
  assert.ok(style.includes("#memberList{display:grid!important;grid-template-columns:repeat(2"));
  assert.ok(style.includes(".summary-compact-grid{grid-template-columns:repeat(2"));
 });
+
+
+test("new CWL confirmation is a real dialog, can be cancelled, and keeps members after archiving",async()=>{
+ const saved=sample(),members=saved.profiles[0].members;
+ saved.profiles[0].locks[0]={locked:true,lineup:members.slice(0,15).map(m=>m.id)};
+ const c=boot(saved);
+ try{
+   assert.deepEqual(c.errors,[]);
+   c.d.getElementById("manageCwlBtn").click();
+   const panel=c.d.getElementById("inlineActionPanel");
+   const backdrop=c.d.getElementById("inlineActionBackdrop");
+   assert.ok(panel.classList.contains("open"));
+   assert.ok(backdrop.classList.contains("open"));
+   assert.equal(panel.getAttribute("role"),"dialog");
+   assert.equal(panel.getAttribute("aria-modal"),"true");
+   assert.match(c.d.getElementById("inlineActionTitle").textContent,/Neue CWL/);
+   c.d.querySelector('#inlineActionButtons button:last-child').click();
+   await new Promise(resolve=>setImmediate(resolve));
+   assert.ok(!panel.classList.contains("open"));
+   assert.ok(!backdrop.classList.contains("open"));
+   let state=JSON.parse(c.w.localStorage.getItem("cwl_planer_mobile_v9"));
+   assert.ok(state.profiles[0].locks[0].locked,"cancel must not reset current CWL");
+   c.d.getElementById("manageCwlBtn").click();
+   const confirm=c.d.querySelector("#inlineActionButtons button:first-child");
+   assert.match(confirm.textContent,/Archivieren/);
+   confirm.click();
+   await new Promise(resolve=>setImmediate(resolve));
+   state=JSON.parse(c.w.localStorage.getItem("cwl_planer_mobile_v9"));
+   assert.equal(state.profiles[0].members.length,20);
+   assert.equal(state.profiles[0].archives.length,1);
+   assert.equal(state.profiles[0].locks[0].locked,false);
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("beginner help covers normal CWL workflow and avoids removed settings",()=>{
+ const c=boot(sample());
+ try{
+   c.d.getElementById("helpBtn").click();
+   const modal=c.d.getElementById("helpModal");
+   assert.ok(modal.classList.contains("open"));
+   assert.equal(modal.getAttribute("role"),"dialog");
+   assert.equal(c.d.querySelectorAll(".help-steps>div").length,4);
+   const content=modal.textContent;
+   for(const phrase of ["Dabei / Pause","Priorität","Erst ab","MUSS","RAUS","Speicherung","Backup","tatsächlich"])assert.ok(content.includes(phrase),phrase);
+   assert.ok(!content.includes("Tie-Breaker"));
+   assert.ok(!content.includes("Kompaktansicht"));
+   assert.ok(!content.includes("Tagesziele"));
+   c.d.getElementById("helpClose").click();
+   assert.ok(!modal.classList.contains("open"));
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("landscape styles compact the management panels and center confirmation",()=>{
+ const style=html.split("<style>")[1]?.split("</style>")[0]||"";
+ for(const selector of [".inline-action-backdrop.open",".inline-action-panel.open","#view-members .list-management-head{display:none!important}","#view-members .member-filters{display:grid!important",
+ ".titleblock h1{font-size:17px", "#view-members .member-actionbar{display:grid!important"]){
+   assert.ok(style.includes(selector),"CSS missing: "+selector);
+ }
+});
