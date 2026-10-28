@@ -382,6 +382,63 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 .why-row:last-child{border-bottom:0}
 .why-row>div{min-width:0}
 .why-row .badge{flex:0 0 auto}
+
+/* v9.6: short-height mobile landscape (iPhone PWA and browser)
+   Reduce chrome and show one useful day, independently from desktop preference. */
+@media (orientation: landscape) and (max-height:540px) and (max-width:1100px) {
+  .topbar{position:relative!important;top:auto;padding:4px max(10px,env(safe-area-inset-right)) 4px max(10px,env(safe-area-inset-left))!important;backdrop-filter:none}
+  .toprow{display:flex;align-items:center;gap:6px}
+  .titleblock h1{font-size:15px;line-height:1.1}
+  .subtitle{display:none!important}
+  .profilebar{margin-top:2px;gap:4px}
+  .profilebar span{display:none}
+  .profilebar select{max-width:180px;padding:3px 5px;min-height:28px;font-size:12px}
+  .top-actions .btn{min-height:28px!important;padding:3px 8px;font-size:11px}
+  .top-actions .auto-badge{display:none}
+  .content{padding:5px max(8px,env(safe-area-inset-right)) 36px max(8px,env(safe-area-inset-left))!important}
+  #view-plan .plan-overview{padding:5px 9px;margin-bottom:4px}
+  #view-plan .plan-overview .section-title{margin:0}
+  #view-plan .plan-overview .kpis{display:none!important}
+  #view-plan .plan-overview .cwl-status-row{display:none}
+  #view-plan .plan-overview .plan-actions{display:none}
+  .mobile-day-switcher{position:sticky;top:0!important;z-index:18;padding:4px!important;margin:0 0 5px!important;scroll-margin-top:0;background:var(--bg)}
+  .day-switcher-header{display:none}
+  .mobile-day-tabs{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+  .mobile-day-tab{min-height:34px!important;padding:2px;flex-direction:row;gap:4px;border-radius:8px}
+  .mobile-day-tab .day-no{font-size:12px}
+  .mobile-day-tab .day-state{font-size:11px}
+  #view-plan.landscape-one-day #planDays .day-card.mobile-day-hidden{display:none!important}
+  .day-card{padding:8px!important;margin-bottom:6px}
+  .day-card .day-title{font-size:15px}
+  .day-card .statusline{font-size:10px}
+  .day-card .day-head{align-items:center}
+  .day-card .mobile-lineup-toggle{display:inline-flex;min-height:30px!important;padding:4px;width:auto;margin:5px 0}
+  .day-card .lineup{display:none}
+  .day-card.mobile-lineup-expanded .lineup{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .day-actions .btn{min-height:33px!important;padding:4px 7px;font-size:11px;flex:1 1 auto}
+  .changes{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .changebox{padding:5px 7px}
+  .bottomnav{padding:2px max(12px,env(safe-area-inset-right)) max(2px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));backdrop-filter:none}
+  .navinner{gap:5px}
+  .navbtn{padding:1px 4px;min-height:30px!important;font-size:10px;line-height:1.15}
+  #view-members>.card{padding:7px}
+  #view-members>.card>.section-title{margin-bottom:4px}
+  #view-members .member-actionbar{margin-bottom:5px}
+  #view-members .member-actionbar .btn{min-height:32px}
+  #view-members .member-help-details{display:none}
+  #view-members .member{margin-bottom:4px;padding:6px 9px}
+  #view-members .member-filters{margin:5px 0}
+  #lineupModal.open{display:flex;align-items:stretch}
+  #lineupModal .lineup-modal-box{height:100dvh;max-height:100dvh;margin:0;max-width:none;width:100%;padding:4px max(12px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));border-radius:0;display:flex;flex-direction:column;min-height:0}
+  #lineupModal .lineup-modal-head .helpbox{display:none}
+  #lineupModal .section-title{margin-bottom:2px}
+  #lineupModal .lineup-modal-head h3{font-size:16px}
+  #lineupModal .modal-search{min-height:32px;margin-top:3px;padding:5px 8px}
+  #lineupModal .modal-list{flex:1 1 auto;min-height:0;max-height:none;margin:4px 0;overflow-y:auto}
+  #lineupModal .lineup-modal-footer{flex:0 0 auto;padding:4px 0 0;display:flex;gap:8px}
+  #lineupModal .lineup-modal-footer .btn{min-height:38px!important;padding:4px 10px}
+  #lineupModal .pick{min-height:42px;padding:5px 8px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -719,6 +776,7 @@ function renderMobileDays(){
   if(mobileSelectedDay===null||mobileSelectedDay>=days||mobileSelectedDay<0)mobileSelectedDay=next;
   const single=uiSettings.dayViewMode==="single";
   document.getElementById("view-plan").classList.toggle("desktop-one-day",single);
+  document.getElementById("view-plan").classList.toggle("landscape-one-day",matchMedia("(orientation: landscape) and (max-height: 540px) and (max-width: 1100px)").matches);
   for(const [id,active] of [["singleDayMode",single],["allDaysMode",!single]]){
     const button=document.getElementById(id);if(button){button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active))}
   }
