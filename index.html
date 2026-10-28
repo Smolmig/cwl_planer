@@ -518,6 +518,63 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   .summary-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   #view-summary>.card{padding:10px}
 }
+
+/* Centered, keyboard-accessible decision dialog (instead of bottom-right toast) */
+.inline-action-backdrop{position:fixed;inset:0;z-index:185;background:rgba(5,11,23,.62);opacity:0;pointer-events:none;transition:opacity .18s ease}
+.inline-action-backdrop.open{opacity:1;pointer-events:auto}
+.inline-action-panel{top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;max-height:calc(100dvh - 34px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;width:min(480px,calc(100vw - 32px));transform:translate(-50%,-48%) scale(.985)!important;border-radius:16px}
+.inline-action-panel.open{transform:translate(-50%,-50%) scale(1)!important}
+.inline-action-title{font-size:16px;line-height:1.3}
+.inline-action-message{font-size:13px;line-height:1.55;margin-top:7px}
+.inline-action-head{min-width:0}
+.inline-action-head>div{min-width:0}
+.inline-action-buttons{gap:8px}
+.inline-action-buttons .btn{min-height:40px;white-space:normal}
+@media(max-width:520px){.inline-action-panel{width:calc(100vw - 24px);padding:14px}.inline-action-buttons .btn{flex:1 1 120px}}
+@media(prefers-reduced-motion:reduce){.inline-action-panel,.inline-action-backdrop,.toast{transition:none!important}}
+
+/* Short landscape: coherent header and denser management controls */
+@media(orientation:landscape) and (max-height:540px) and (min-width:600px) and (max-width:1100px){
+  .topbar{padding:7px max(12px,env(safe-area-inset-right)) 7px max(12px,env(safe-area-inset-left))!important}
+  .toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .titleblock{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;min-width:0}
+  .titleblock h1{font-size:17px;line-height:1.25;white-space:nowrap;flex:0 0 auto}
+  .profilebar{margin:0;min-width:0;flex:0 1 220px}
+  .profilebar select{width:100%;min-width:0;max-width:215px;height:33px;padding:5px 8px;font-size:12px}
+  .top-actions{flex:0 0 auto}
+  .top-actions .btn{min-height:33px!important;padding:5px 10px;font-size:12px}
+  .content{padding:6px max(10px,env(safe-area-inset-right)) 60px max(10px,env(safe-area-inset-left))!important}
+  #view-members>.card{padding:9px 10px 10px!important;margin-bottom:7px}
+  #view-members>.card>.section-title{margin:0 0 6px!important;align-items:center}
+  #view-members>.card>.section-title h3{font-size:18px;line-height:1.2}
+  #view-members>.card>.section-title .statusline{display:none}
+  #view-members .member-actionbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px!important;gap:6px;margin:0 0 6px}
+  #view-members .member-actionbar>.btn{min-height:34px!important;width:100%;padding:5px 6px!important;font-size:12px}
+  #view-members .member-actionbar .member-extra-toggle{grid-column:3;min-width:0}
+  #view-members .member-additional-actions{grid-column:1/-1;gap:6px}
+  #view-members .member-additional-actions.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-members .list-management{margin:0 0 6px!important;padding:0!important;border:0!important;border-radius:0;background:transparent!important}
+  #view-members .list-management-head{display:none!important}
+  #view-members .list-management-actions{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
+  #view-members .sort-select{width:min(240px,55vw);min-width:0;min-height:34px;padding:4px 8px;font-size:12px}
+  #view-members #selectMembersBtn{min-height:34px;padding:5px 8px;font-size:11px}
+  #view-members .member-filters{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(120px,160px) auto!important;align-items:center;gap:7px;margin:0 0 7px!important}
+  #view-members .member-filters input,#view-members .member-filters select{min-height:34px;padding:5px 8px;font-size:12px}
+  #view-members .member-visible-count{grid-column:auto!important;font-size:11px;white-space:nowrap}
+  #view-members .member{padding:7px 8px;margin:0}
+  #view-members .member-top .member-name{font-size:14px}
+  .bottomnav{padding:3px max(10px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  .navinner{max-width:900px}
+  .navbtn{min-height:34px!important;padding:2px 5px}
+  #view-summary>.card{padding:10px 12px;margin-bottom:8px}
+  #view-summary .section-title{margin-bottom:6px}
+  #view-summary .settings-subcard{padding:9px}
+}
+@media(max-width:699px) and (orientation:landscape){
+ .titleblock{gap:8px}
+ .titleblock h1{font-size:16px}
+ .profilebar{max-width:170px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -689,7 +746,8 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div class="modal-list why-roster-list" id="whyRoster"></div>
 </div></div>
 
-<div class="inline-action-panel" id="inlineActionPanel" role="status" aria-live="polite" aria-hidden="true">
+<div class="inline-action-backdrop" id="inlineActionBackdrop" aria-hidden="true"></div>
+<div class="inline-action-panel" id="inlineActionPanel" role="dialog" aria-modal="true" aria-labelledby="inlineActionTitle" aria-describedby="inlineActionMessage" aria-hidden="true" tabindex="-1">
   <div class="inline-action-head"><div><div class="inline-action-title" id="inlineActionTitle">Bestätigen</div><div class="inline-action-message" id="inlineActionMessage"></div></div><button class="inline-action-close" id="inlineActionClose" type="button" aria-label="Schließen">×</button></div>
   <label class="inline-action-input-wrap hidden" id="inlineActionInputWrap"><span id="inlineActionInputLabel">Eingabe</span><input id="inlineActionInput" type="text" autocomplete="off"></label>
   <div class="inline-action-buttons" id="inlineActionButtons"></div>
@@ -777,9 +835,17 @@ function saveApp(){
   }
 }
 function showToast(message){const t=document.getElementById("toast");if(!t)return;t.textContent=message;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
-let inlineActionResolve=null;
-function closeInlineAction(result={value:"cancel",input:""}){const p=document.getElementById("inlineActionPanel");if(p){p.classList.remove("open","error");p.setAttribute("aria-hidden","true")}const resolve=inlineActionResolve;inlineActionResolve=null;if(resolve)resolve(result)}
-function askInlineAction({title="Bitte bestätigen",message="",inputLabel="",inputValue=null,buttons=null,error=false}={}){if(inlineActionResolve)closeInlineAction();const p=document.getElementById("inlineActionPanel"),titleEl=document.getElementById("inlineActionTitle"),msg=document.getElementById("inlineActionMessage"),wrap=document.getElementById("inlineActionInputWrap"),input=document.getElementById("inlineActionInput"),label=document.getElementById("inlineActionInputLabel"),btns=document.getElementById("inlineActionButtons");titleEl.textContent=title;msg.textContent=message;p.classList.toggle("error",!!error);btns.innerHTML="";const hasInput=inputValue!==null;wrap.classList.toggle("hidden",!hasInput);if(hasInput){label.textContent=inputLabel||"Eingabe";input.value=String(inputValue??"")}const defs=buttons||[{value:"confirm",text:"Bestätigen",primary:true},{value:"cancel",text:"Abbrechen"}];return new Promise(resolve=>{inlineActionResolve=resolve;for(const d of defs){const b=document.createElement("button");b.type="button";b.className="btn"+(d.primary?" primary":"")+(d.danger?" danger":"");b.textContent=d.text;b.onclick=()=>closeInlineAction({value:d.value,input:hasInput?input.value:""});btns.appendChild(b)}p.classList.add("open");p.setAttribute("aria-hidden","false");requestAnimationFrame(()=>{if(hasInput){input.focus();input.select()}else btns.querySelector(".primary")?.focus()})})}
+let inlineActionResolve=null,inlineActionPreviousFocus=null;
+function closeInlineAction(result={value:"cancel",input:""}){
+  const p=document.getElementById("inlineActionPanel");
+  if(p){p.classList.remove("open","error");p.setAttribute("aria-hidden","true")}
+  document.getElementById("inlineActionBackdrop").classList.remove("open");
+  const resolve=inlineActionResolve;inlineActionResolve=null;
+  if(resolve)resolve(result);
+  if(inlineActionPreviousFocus?.isConnected)inlineActionPreviousFocus.focus();
+  inlineActionPreviousFocus=null;
+}
+function askInlineAction({title="Bitte bestätigen",message="",inputLabel="",inputValue=null,buttons=null,error=false}={}){if(inlineActionResolve)closeInlineAction();inlineActionPreviousFocus=document.activeElement;const p=document.getElementById("inlineActionPanel"),titleEl=document.getElementById("inlineActionTitle"),msg=document.getElementById("inlineActionMessage"),wrap=document.getElementById("inlineActionInputWrap"),input=document.getElementById("inlineActionInput"),label=document.getElementById("inlineActionInputLabel"),btns=document.getElementById("inlineActionButtons");titleEl.textContent=title;msg.textContent=message;p.classList.toggle("error",!!error);btns.innerHTML="";const hasInput=inputValue!==null;wrap.classList.toggle("hidden",!hasInput);if(hasInput){label.textContent=inputLabel||"Eingabe";input.value=String(inputValue??"")}const defs=buttons||[{value:"confirm",text:"Bestätigen",primary:true},{value:"cancel",text:"Abbrechen"}];return new Promise(resolve=>{inlineActionResolve=resolve;for(const d of defs){const b=document.createElement("button");b.type="button";b.className="btn"+(d.primary?" primary":"")+(d.danger?" danger":"");b.textContent=d.text;b.onclick=()=>closeInlineAction({value:d.value,input:hasInput?input.value:""});btns.appendChild(b)}document.getElementById("inlineActionBackdrop").classList.add("open");p.classList.add("open");p.setAttribute("aria-hidden","false");requestAnimationFrame(()=>{if(hasInput){input.focus();input.select()}else btns.querySelector(".primary")?.focus()})})}
 async function confirmInline(message,{title="Bitte bestätigen",confirmText="Bestätigen",danger=false}={}){const r=await askInlineAction({title,message,buttons:[{value:"confirm",text:confirmText,primary:!danger,danger},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"}
 async function promptInline(title,inputLabel,inputValue=""){const r=await askInlineAction({title,inputLabel,inputValue,message:"",buttons:[{value:"confirm",text:"Übernehmen",primary:true},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"?r.input:null}
 
@@ -1080,7 +1146,17 @@ document.getElementById("whyClose").onclick=()=>closeModalById("whyModal");docum
 document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeLineupModal()};document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll(`${added} Mitglieder hinzugefügt · Plan aktualisiert ✓`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");document.getElementById("archiveModal").onclick=e=>{if(e.target.id==="archiveModal")closeModalById("archiveModal")};
 // Recovery
 document.getElementById("recoveryAcceptBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderAll("Wiederhergestellter Stand übernommen ✓")};document.getElementById("recoveryImportBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("recoveryEmptyBtn").onclick=async()=>{if(!await confirmInline("Die beschädigten lokalen Daten bleiben dadurch nicht erhalten.",{title:"Mit leerem Profil starten?",confirmText:"Leeres Profil starten",danger:true}))return;app=defaultApp();state=app.profiles[0];suspendWrites=false;startupStorageIssue=null;localStorage.removeItem(STORAGE_KEY);renderAll("Leeres Profil gestartet ✓")};
-document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("inlineActionPanel")?.classList.contains("open"))closeInlineAction()});
+document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionBackdrop").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{
+  const panel=document.getElementById("inlineActionPanel");if(!panel?.classList.contains("open"))return;
+  if(e.key==="Escape"){e.preventDefault();closeInlineAction();return}
+  if(e.key==="Tab"){
+    const focusable=[...panel.querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(el=>el.offsetParent!==null||getComputedStyle(el).display!=="none");
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&(document.activeElement===last||!panel.contains(document.activeElement))){e.preventDefault();first.focus()}
+  }
+});
 window.addEventListener("online",updateOnlineStatus);window.addEventListener("offline",updateOnlineStatus);updateOnlineStatus();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(uiSettings.theme==="system")applyTheme()});
 if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
   try{
