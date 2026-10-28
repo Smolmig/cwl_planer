@@ -589,7 +589,10 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 :where(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 @media(max-width:699px){.help-modal-box{max-height:calc(100dvh - 22px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0 auto;padding:12px}.help-steps>div{padding:8px;font-size:12px}.help-section-heading{margin-top:12px}}
 /* Darken primary buttons slightly to keep white button text legible in bright themes. */
-.btn.primary{background:color-mix(in srgb,var(--primary) 65%,#061728 35%);border-color:color-mix(in srgb,var(--primary) 65%,#061728 35%);color:#fff}
+.btn.primary{background:color-mix(in srgb,var(--primary) 45%,#061728 55%);border-color:color-mix(in srgb,var(--primary) 45%,#061728 55%);color:#fff}
+/* Contrast-conscious theme accents, including the light Cyberpunk theme. */
+html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary{background:linear-gradient(105deg,#087486 0%,#184eab 46%,#59259f 72%,#9a1c61 100%);border-color:#268ab1;color:#fff;text-shadow:none}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1172,7 +1175,7 @@ document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();doc
   const panel=document.getElementById("inlineActionPanel");if(!panel?.classList.contains("open"))return;
   if(e.key==="Escape"){e.preventDefault();closeInlineAction();return}
   if(e.key==="Tab"){
-    const focusable=[...panel.querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(el=>el.offsetParent!==null||getComputedStyle(el).display!=="none");
+    const focusable=[...panel.querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(el=>!el.closest(".hidden")&&getComputedStyle(el).visibility!=="hidden");
     if(!focusable.length)return;
     const first=focusable[0],last=focusable[focusable.length-1];
     if(e.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){e.preventDefault();last.focus()}
