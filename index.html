@@ -196,7 +196,8 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 
 /* v9.5: mobile-first day navigation and accessible lineup confirmation */
 .mobile-day-switcher,.mobile-lineup-toggle,.mobile-overview-toggle{display:none}
-#lineupModal .lineup-modal-box{display:flex;flex-direction:column;max-height:calc(100dvh - 36px)}
+#lineupModal.open{display:flex;align-items:center;justify-content:center}
+#lineupModal .lineup-modal-box{display:flex;flex-direction:column;max-height:calc(100dvh - 36px);margin:0;min-height:0}
 #lineupModal .lineup-modal-head,#lineupModal .lineup-modal-footer{flex:0 0 auto}
 #lineupModal .modal-list{min-height:0;max-height:none;flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:699px){
