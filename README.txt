@@ -127,3 +127,11 @@ Update v9.5.0:
 - Nach Bestätigung des aktuellen Kriegs wird mobil automatisch der nächste Tag ausgewählt. Entsperren zeigt wieder den betroffenen Tag.
 - App-/Service-Worker-Version gemeinsam auf v9.5.0 aktualisiert.
 - Reine UI-/Bedienungsänderung; Einteilungsalgorithmus und Datenformat v9 bleiben unverändert. Bestehende Profile, gespielte Kriege und Archive werden weiterverwendet.
+
+v9.5.0 – Ergänzung Desktop-Tagesnavigation und Mitglieder-UX:
+- Die Tagesleiste ist auch auf Tablet/Desktop sichtbar. Einzeltag und „Alle Tage“ können umgeschaltet werden; Desktop startet mit „Alle Tage“. Antippen eines Tages wechselt zur Einzeltag-Ansicht.
+- Die Desktop-Ansichtspräferenz wird ausschließlich in den gerätespezifischen UI-Einstellungen gespeichert; am Smartphone bleibt die Einzeltag-Ansicht aktiv.
+- Mitglieder-Tab kompakter: Schnellhilfe einklappbar, Filter nach Name/Player-Tag sowie Dabei/Pause/Fix.
+- Jede Mitgliederkarte zeigt Spielername, Dabei/Fix sowie RH, Priorität und 3★-Stärke direkt. Selten benötigte Felder und Tagesregeln öffnen über „Bearbeiten“.
+- Mehrfachauswahl „Sichtbare auswählen“ nimmt bei aktivem Filter nur sichtbare Spieler; eine Filterung sperrt vorsorglich den Button für das Löschen des vollständigen Kaders.
+- Grundfunktionen (inkl. Member-Reihenfolge, Player-Tags, Regeln, CSV, Backups) und CWL-Einteilungsalgorithmus bleiben erhalten.
