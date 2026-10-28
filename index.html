@@ -943,6 +943,8 @@ function renderRecoveryBanner(){
   document.getElementById("recoveryRetryBtn").classList.toggle("hidden",startupStorageIssue!=="save");
   document.getElementById("recoveryExportBtn").classList.toggle("hidden",startupStorageIssue!=="save");
 }
+async function checkForUpdate(){if(!navigator.onLine){showToast("Offline · Update derzeit nicht möglich");return}try{if(!swRegistration&&"serviceWorker" in navigator)swRegistration=await navigator.serviceWorker.getRegistration();if(swRegistration)await swRegistration.update();showToast("Update geprüft · App wird neu geladen");setTimeout(()=>location.reload(),650)}catch(e){showToast("Update-Prüfung fehlgeschlagen")}}
+
 function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.classList.toggle("hidden",navigator.onLine);if(!navigator.onLine)b.textContent="Offline – gespeicherte App-Version"}
 
 // Navigation
