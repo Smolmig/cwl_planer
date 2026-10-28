@@ -274,7 +274,7 @@ test("beginner help covers normal CWL workflow and avoids removed settings",()=>
 test("landscape styles compact the management panels and center confirmation",()=>{
  const style=html.split("<style>")[1]?.split("</style>")[0]||"";
  for(const selector of [".inline-action-backdrop.open",".inline-action-panel.open","#view-members .list-management-head{display:none!important}","#view-members .member-filters{display:grid!important",
- ".titleblock h1{font-size:17px", "#view-members .member-actionbar{display:grid!important"]){
+ ".titleblock h1{font-size:17px", "#view-members .member-actionbar{display:flex!important"]){
    assert.ok(style.includes(selector),"CSS missing: "+selector);
  }
 });
