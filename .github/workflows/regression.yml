@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install DOM test runtime
+        run: npm install --no-save --no-package-lock jsdom@27
       - name: Verify syntax and planner regressions
         run: node --test tests/*.test.cjs
