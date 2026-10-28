@@ -32,7 +32,7 @@ function server(){
    }
  });
 }
-test("Chromium: responsive member layout, headers, dialogs, help and input controls",async(t)=>{
+test("Chromium: responsive member layout, headers, dialogs, help and input controls",{timeout:150000},async(t)=>{
  const appServer=server();
  await new Promise(resolve=>appServer.listen(0,"127.0.0.1",resolve));
  const address="http://127.0.0.1:"+appServer.address().port+"/index.html";
@@ -50,7 +50,7 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
    ];
    for(const size of sizes){
      await t.test(size.name,async()=>{
-       const page=await browser.newPage({viewport:{width:size.width,height:size.height}});
+       const page=await browser.newPage({viewport:{width:size.width,height:size.height}});page.setDefaultTimeout(6000);
        const errors=[];page.on("pageerror",e=>errors.push(e.message));
        try{
          await page.addInitScript(data=>{localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data))},demoApp());
@@ -90,7 +90,7 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
      });
    }
    await t.test("desktop new-CWL modal is truly centered and backdrop closes",async()=>{
-     const page=await browser.newPage({viewport:{width:1280,height:800}});
+     const page=await browser.newPage({viewport:{width:1280,height:800}});page.setDefaultTimeout(6000);
      try{
        await page.addInitScript(data=>{localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data))},demoApp());
        await page.goto(address,{waitUntil:"domcontentloaded"});
@@ -106,7 +106,7 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
      }finally{await page.close()}
    });
    await t.test("mobile priority picker and played-day confirmation stay within viewport",async()=>{
-     const page=await browser.newPage({viewport:{width:390,height:844}});
+     const page=await browser.newPage({viewport:{width:390,height:844}});page.setDefaultTimeout(6000);
      try{
        await page.addInitScript(data=>{localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data))},demoApp());
        await page.goto(address,{waitUntil:"domcontentloaded"});
