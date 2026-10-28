@@ -577,7 +577,8 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 }
 
 /* Consistent dialogs, focus treatment, and beginner-friendly help */
-.help-modal-box{max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+#helpModal.open{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.help-modal-box{box-sizing:border-box;width:min(100%,620px);max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .help-modal-box .help-intro{margin-bottom:12px;color:var(--text)}
 .help-section-heading{font-size:14px;margin:15px 0 8px;color:var(--text)}
 .help-steps{display:grid;gap:7px}
@@ -587,7 +588,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 .help-grid .help-item{min-width:0;overflow-wrap:anywhere}
 .help-grid .help-item div b{display:inline}
 :where(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-@media(max-width:699px){.help-modal-box{max-height:calc(100dvh - 22px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0 auto;padding:12px}.help-steps>div{padding:8px;font-size:12px}.help-section-heading{margin-top:12px}}
+@media(max-width:699px){.help-modal-box{max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:0;padding:12px}.help-steps>div{padding:8px;font-size:12px}.help-section-heading{margin-top:12px}}
 /* Darken primary buttons slightly to keep white button text legible in bright themes. */
 .btn.primary{background:color-mix(in srgb,var(--primary) 45%,#061728 55%);border-color:color-mix(in srgb,var(--primary) 45%,#061728 55%);color:#fff}
 /* Contrast-conscious theme accents, including the light Cyberpunk theme. */
