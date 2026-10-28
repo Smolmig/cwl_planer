@@ -11,14 +11,14 @@ function sample(){
  members:Array.from({length:20},(_,i)=>member(i)),archivedMembers:[],dayGoals:Array.from({length:7},()=>({townHall:{},strength:{high:0,medium:0,low:0,verylow:0}})),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[]};
  return {version:9,dataVersion:9,profiles:[p],activeProfileId:p.id};
 }
-function boot(stored){
+function boot(stored,{mobile=true}={}){
  const errors=[],virtualConsole=new VirtualConsole();
  virtualConsole.on("jsdomError",e=>errors.push(e.message));
  virtualConsole.on("error",m=>errors.push(String(m)));
  const dom=new JSDOM(html,{runScripts:"dangerously",url:"https://preview.example.test/cwl_planer/index.html",
    pretendToBeVisual:true,virtualConsole,
    beforeParse(w){
-     w.matchMedia=()=>({matches:true,media:"(max-width:699px)",addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
+     w.matchMedia=()=>({matches:mobile,media:"(max-width:699px)",addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
      w.HTMLElement.prototype.scrollIntoView=function(){};
      if(stored)w.localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(stored));
      w.addEventListener("error",e=>errors.push(e.message||String(e.error)));
@@ -149,4 +149,72 @@ test("simplified planning has no optional day goals or compact mode buttons",()=
    assert.ok(c.d.querySelector("#helpModal .help-item"));
    assert.deepEqual(c.errors,[]);
  }finally{c.close()}
+});
+
+
+test("desktop starts expanded and can fold/unfold the entire seven-day lineup",()=>{
+ const c=boot(sample(),{mobile:false});
+ try{
+   assert.deepEqual(c.errors,[]);
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,7);
+   c.d.querySelectorAll("#planDays .mobile-lineup-toggle")[2].click();
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,0);
+   c.d.querySelectorAll("#planDays .mobile-lineup-toggle")[5].click();
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,7);
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("mobile priority and three-star pickers have same selectable modal behavior as town hall",()=>{
+ const c=boot(sample());
+ try{
+   assert.deepEqual(c.errors,[]);
+   c.d.querySelector("#memberList .member-edit-toggle").click();
+   c.d.querySelector("#memberList .member-prio-picker").click();
+   assert.equal(c.d.getElementById("townHallPickerTitle").textContent,"Priorität auswählen");
+   assert.equal(c.d.querySelectorAll("#townHallPickerGrid .townhall-choice").length,6);
+   c.d.querySelector('#townHallPickerGrid [data-choice="5"]').click();
+   assert.equal(c.d.querySelector("#memberList .member-brief-mobile").textContent.includes("P5"),true);
+   c.d.querySelector("#memberList .member-strength-picker").click();
+   assert.equal(c.d.getElementById("townHallPickerTitle").textContent,"3★-Stärke auswählen");
+   const options=Array.from(c.d.querySelectorAll("#townHallPickerGrid .townhall-choice"));
+   assert.equal(options.length,5);
+   const index=options.findIndex(el=>el.textContent==="Oft 3★");
+   assert.ok(index>=0);
+   options[index].click();
+   const saved=JSON.parse(c.w.localStorage.getItem("cwl_planer_mobile_v9"));
+   assert.equal(saved.profiles[0].members[0].priority,5);
+   assert.equal(saved.profiles[0].members[0].threeStar,"high");
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("deployment overview filters, planned/played counters and reset of search",()=>{
+ const c=boot(sample());
+ try{
+   assert.deepEqual(c.errors,[]);
+   c.d.querySelector("#planDays .lock-day").click();
+   c.d.getElementById("modalSave").click();
+   c.d.querySelector('[data-view="summary"]').click();
+   const rows=c.d.querySelectorAll("#summaryList .summary-compact-row");
+   assert.equal(rows.length,20);
+   assert.ok(c.d.querySelector("#summaryList .summary-stat.played"));
+   assert.ok(c.d.querySelector("#summaryList .summary-stat.planned"));
+   const filter=c.d.getElementById("summaryFilter");
+   filter.value="played";filter.dispatchEvent(new c.w.Event("change",{bubbles:true}));
+   assert.equal(c.d.querySelectorAll("#summaryList .summary-compact-row").length,15);
+   filter.value="zero";filter.dispatchEvent(new c.w.Event("change",{bubbles:true}));
+   assert.equal(c.d.querySelectorAll("#summaryList .summary-compact-row").length,0);
+   filter.value="all";filter.dispatchEvent(new c.w.Event("change",{bubbles:true}));
+   const input=c.d.getElementById("summarySearch");
+   input.value="Spieler 19";input.dispatchEvent(new c.w.Event("input",{bubbles:true}));
+   assert.equal(c.d.querySelectorAll("#summaryList .summary-compact-row").length,1);
+   input.value="";input.dispatchEvent(new c.w.Event("input",{bubbles:true}));
+   assert.equal(c.d.querySelectorAll("#summaryList .summary-compact-row").length,20);
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("landscape CSS supports two-column members and summaries",()=>{
+ const style=html.split("<style>")[1]?.split("</style>")[0]||"";
+ assert.ok(style.includes("(orientation:landscape) and (max-height:540px) and (min-width:600px)"));
+ assert.ok(style.includes("#memberList{display:grid!important;grid-template-columns:repeat(2"));
+ assert.ok(style.includes(".summary-compact-grid{grid-template-columns:repeat(2"));
 });
