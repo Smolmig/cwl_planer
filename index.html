@@ -51,7 +51,7 @@
   .sort-select,.bulk-control{background:#111827;color:var(--text)}
 }
 
-/* v8: Tagesziele, Spielstärke & Optimierung */
+/* historische CSS-Regeln; 3★-Stärke bleibt eine Spielerinformation */
 .strength{min-width:150px!important;width:auto!important;padding:8px!important}
 .player-meta{display:block;font-size:10px;color:var(--muted);font-weight:650;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .goal-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
@@ -234,7 +234,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   .day-card .lineup{display:none}
   .day-card.mobile-lineup-expanded .lineup,.compact-plan .day-card.mobile-lineup-expanded.compact-collapsed .lineup{display:grid!important}
   .mobile-lineup-toggle{display:inline-flex;margin-top:10px;min-height:40px!important;width:100%;justify-content:center;align-items:center}
-  .day-card .compact-day-toggle{display:none}
+  
   .day-actions .btn{flex:1 1 100%;white-space:normal}
   .changes{gap:7px}
   .changebox{min-width:0;overflow-wrap:anywhere}
@@ -609,7 +609,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     
     <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>AUTO lässt den Planer entscheiden. MUSS erzwingt den Einsatz an diesem zukünftigen Tag. RAUS macht den Spieler dort nicht verfügbar. Tippen wechselt AUTO → MUSS → RAUS.</div></div>
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Schnellregeln für längere Abwesenheiten. Beispiel: Erst ab Tag 2 + Raus ab Tag 6 = verfügbar T2–T5.</div></div>
-    <div class="help-item"><b>Einsatz-Verteilung</b><div>Zeigt sofort, wie oft jeder Spieler eingeplant ist. Spieler mit bereits gespielten Einsätzen bleiben sichtbar, auch wenn sie später pausieren oder aus der aktuellen CWL entfernt werden.</div></div>
+    <div class="help-item"><b>Einsatz-Verteilung</b><div>Zeigt tatsächlich gespielte und noch geplante Einsätze getrennt. Auch Spieler mit bereits gespielten Einsätzen bleiben sichtbar, wenn sie später pausieren oder den Kader verlassen.</div></div>
     <div class="help-item"><b>Fairness-Badge</b><div>Kleines Zusatzsignal: Spanne = höchste minus niedrigste Einsatzanzahl der aktuellen Rotationsspieler. Die konkrete Einsatzanzahl ist wichtiger.</div></div>
     <div class="help-item"><b>GESPIELT</b><div>Nach dem Krieg das tatsächliche Line-up bestätigen. Vergangene Tage bleiben dadurch stabil; spätere Änderungen berechnen nur die Zukunft neu.</div></div>
     <div class="help-item"><b>Profile / Backups</b><div>Profile speichern getrennte Clans. Profilnamen müssen eindeutig sein. Backups sichern aktuelle CWLs und Archive; ein Komplett-Backup ersetzt beim Wiederherstellen alle Profile erst nach Warnung.</div></div>
@@ -868,8 +868,8 @@ function openArchiveModal(id){
   document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Tag ${l.day} · GESPIELT</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsatz-Verteilung</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
   openModal("archiveModal");
 }
-function resetPlanningData(){mobileSelectedDay=null;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];}
-async function handleCwlManage(){const played=playedCount();if(!played){if(!await confirmInline("Tagesziele, MUSS/RAUS sowie Erst-ab/Raus-ab werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage, Tagesziele und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
+function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];}
+async function handleCwlManage(){const played=playedCount();if(!played){if(!await confirmInline("MUSS/RAUS sowie Erst-ab/Raus-ab werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
 function buildFullPlanText(){const lines=[`⚔️ CWL Plan – ${state.name}`,""];lastPlan.dayPlans.forEach(dp=>{lines.push(`Tag ${dp.day} · ${dp.locked?"🔒 GESPIELT":"GEPLANT"}`);if(dp.day>1){const ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push(`Aufstellung · ${dp.lineup.length} Spieler:`);dp.lineup.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean).forEach(m=>lines.push(`• ${displayMemberName(m,true)}`));lines.push("")});return lines.join("\n").trim()}
 async function copyText(text,message){try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}showToast(message)}
 function copyChanges(day){const dp=lastPlan.dayPlans[day],ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,day),true)).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,day-1)),true)).filter(Boolean);copyText(`Tag ${dp.day}\n🔴 Raus: ${outs.join(", ")||"–"}\n🟢 Rein: ${ins.join(", ")||"–"}`,"Wechseltext kopiert ✓")}
@@ -897,7 +897,7 @@ function openWhyModal(day){
   document.getElementById("whyTitle").textContent=`Tag ${day+1} – Auswahl erklärt`;
   document.getElementById("whyExplanation").textContent=dp.locked?
     "Dieser Krieg wurde als tatsächlich gespielt gespeichert. Die Auswahl entspricht der bestätigten Aufstellung und wurde nicht durch den Algorithmus getroffen.":
-    "Fix- und MUSS-Spieler sind gesetzt, RAUS/Erst-ab/Raus-ab werden ausgeschlossen. Freie Plätze: zuerst weniger bisherige Einsätze, dann weniger zukünftige Gelegenheiten, danach optionale Tagesziele und Priorität. Die angezeigten bisherigen Einsätze beziehen sich auf den Zeitpunkt vor diesem Krieg.";
+    "Fix- und MUSS-Spieler sind gesetzt, RAUS/Erst-ab/Raus-ab werden ausgeschlossen. Freie Plätze: zuerst weniger bisherige Einsätze, dann weniger zukünftige Gelegenheiten, danach Priorität. Die angezeigten bisherigen Einsätze beziehen sich auf den Zeitpunkt vor diesem Krieg.";
   const selected=new Set(dp.lineup),available=state.members.filter(m=>m.participating&&m.name.trim()&&effectiveStatus(m,day)!=="out"),
     roster=[...dp.lineup.map(id=>lineupPlayer(id,day)).filter(Boolean),...(dp.locked?[]:available.filter(m=>!selected.has(m.id)))];
   const markup=roster.map(m=>{
