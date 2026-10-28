@@ -8,7 +8,7 @@ const {chromium}=require("playwright");
 
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 function demoApp(){
- const members=Array.from({length:26},(_,i)=>({
+ const members=Array.from({length:36},(_,i)=>({
    id:"player"+i,name:i===1?"Sehr langer Clash-Spielername mit Sonderzeichen ★":("Spieler "+String(i+1).padStart(2,"0")),
    playerTag:"",townHall:19-i%5,participating:true,fixed:i<2,priority:i%6,
    threeStar:["high","medium","unknown","low"][i%4],statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null
@@ -121,8 +121,13 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
        await page.locator("#planDays .edit-day").first().click();
        await page.locator("#lineupModal.open").waitFor();
        const button=await page.locator("#modalSave").boundingBox();
-       assert.ok(button.bottom<=845&&button.y>=0,"save button is outside viewport");
-       await page.locator("#modalClose").click();
+       assert.ok(button.y>=0&&button.y+button.height<=845,"save button outside viewport at open: "+JSON.stringify(button));
+       await page.locator("#modalList").evaluate(el=>{el.scrollTop=el.scrollHeight});
+       await page.waitForTimeout(60);
+       const afterScroll=await page.locator("#modalSave").boundingBox();
+       assert.ok(afterScroll.y>=0&&afterScroll.y+afterScroll.height<=845,"save button outside viewport after scrolling: "+JSON.stringify(afterScroll));
+       await page.locator("#modalSave").click();
+       assert.equal(await page.locator("#lineupModal.open").count(),0,"modal did not save and close");
      }finally{await page.close()}
    });
  }finally{
