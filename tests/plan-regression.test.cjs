@@ -16,8 +16,8 @@ function extract(name){
   const end=html.indexOf("\nfunction ",start+12);
   return html.slice(start,end<0?html.length:end).trim();
 }
-const names=["memberById","allKnownMembers","effectiveStatus","activeDayGoal","emptyDayGoal",
-  "goalSnapshot","candidateGoalScore","futureEligibilityCount","fairnessCandidateScore","calculatePlan",
+const names=["memberById","allKnownMembers","effectiveStatus","emptyDayGoal",
+  "futureEligibilityCount","fairnessCandidateScore","calculatePlan",
   "playerSnapshot","normalizeSnapshot","normalizeSnapshots","lineupPlayer","normalizeArchive",
   "archiveCurrentCwl","removeMembers","usedInLockedDay","normalizePlayerTag",
   "normalizeMember","normalizeProfile"];
@@ -41,10 +41,12 @@ function context(state){
   return c;
 }
 
-test("daily high 3-star goal cannot starve regular players",()=>{
+test("legacy RH and 3-star day goals no longer affect the planner",()=>{
   const m=[member("fix",{fixed:true}),member("high",{threeStar:"high"}),member("b"),member("c")];
   const g=Array.from({length:7},()=>({...goal(),strength:{high:1,medium:0,low:0,verylow:0}}));
   const p=context(profile(m,{goals:g})).calculatePlan();
+  const withoutGoals=context(profile(m)).calculatePlan();
+  assert.equal(JSON.stringify(p.dayPlans.map(d=>d.lineup)),JSON.stringify(withoutGoals.dayPlans.map(d=>d.lineup)));
   assert.ok(p.counts.b>=2&&p.counts.c>=2,JSON.stringify(p.counts));
   assert.equal(p.counts.fix,7);
 });
