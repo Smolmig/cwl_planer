@@ -55,8 +55,8 @@ test("Chromium: responsive member layout, headers, dialogs, help and input contr
        try{
          await page.addInitScript(data=>{localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data))},demoApp());
          await page.goto(address,{waitUntil:"domcontentloaded"});
-         await page.locator("#memberList .member").first().waitFor();
          await page.locator('.navbtn[data-view="members"]').click();
+         await page.locator("#memberList .member").first().waitFor();
          const metrics=await page.evaluate(()=>{
            const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,top:r.top,right:r.right,bottom:r.bottom}};
            const member=document.querySelector("#memberList .member");
