@@ -86,3 +86,67 @@ test("reload with saved played day restores profiles and members",()=>{
    assert.ok(reload.d.querySelector("#planDays .edit-day"));
  }finally{reload.close()}
 });
+
+test("mobile RH picker opens a bounded grid from RH19 downward and saves selection",()=>{
+ const c=boot(sample());
+ try{
+   assert.deepEqual(c.errors,[]);
+   c.d.querySelector("#memberList .member-edit-toggle").click();
+   c.d.querySelector("#memberList .member-th-picker").click();
+   const modal=c.d.getElementById("townHallPickerModal");
+   assert.ok(modal.classList.contains("open"));
+   const choices=Array.from(c.d.querySelectorAll("#townHallPickerGrid .townhall-choice"));
+   assert.equal(choices[0].textContent,"RH –");
+   assert.equal(choices[1].textContent,"RH 19");
+   assert.equal(choices[choices.length-1].textContent,"RH 3");
+   assert.ok(!choices.some(button=>button.textContent==="RH 20"));
+   c.d.querySelector('#townHallPickerGrid [data-rh="19"]').click();
+   assert.ok(!modal.classList.contains("open"));
+   assert.equal(c.d.querySelector("#memberList .member-brief-mobile").textContent.includes("RH19"),true);
+   const saved=JSON.parse(c.w.localStorage.getItem("cwl_planer_mobile_v9"));
+   assert.equal(saved.profiles[0].members[0].townHall,19);
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("RH20 already saved remains available without becoming the new first option",()=>{
+ const data=sample();data.profiles[0].members[0].townHall=20;
+ const c=boot(data);
+ try{
+   c.d.querySelector("#memberList .member-edit-toggle").click();
+   const select=c.d.querySelector("#memberList .member-th");
+   assert.equal(select.value,"20");
+   c.d.querySelector("#memberList .member-th-picker").click();
+   const choices=Array.from(c.d.querySelectorAll("#townHallPickerGrid .townhall-choice"));
+   assert.equal(choices[1].textContent,"RH 19");
+   assert.equal(choices[choices.length-1].textContent,"RH 20");
+   c.d.getElementById("townHallPickerClose").click();
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("show lineup on one day expands all days until switched off",()=>{
+ const c=boot(sample());
+ try{
+   assert.equal(c.d.querySelectorAll("#planDays .day-card").length,7);
+   c.d.querySelector("#planDays .mobile-lineup-toggle").click();
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,7);
+   const dayTabs=c.d.querySelectorAll("#mobileDayTabs button");
+   dayTabs[4].click();
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,7);
+   assert.equal(c.d.querySelectorAll("#planDays .day-card.mobile-day-hidden").length,6);
+   c.d.querySelectorAll("#planDays .mobile-lineup-toggle")[4].click();
+   assert.equal(c.d.querySelectorAll("#planDays .mobile-lineup-expanded").length,0);
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
+test("simplified planning has no optional day goals or compact mode buttons",()=>{
+ const c=boot(sample());
+ try{
+   assert.equal(c.d.getElementById("goalsModal"),null);
+   assert.equal(c.d.querySelector("#planDays .goal-day-btn"),null);
+   assert.equal(c.d.getElementById("compactPlanBtn"),null);
+   assert.ok(c.d.querySelector("#memberList .member-strength"));
+   assert.ok(c.d.querySelector("#memberList .member-th"));
+   assert.ok(c.d.querySelector("#helpModal .help-item"));
+   assert.deepEqual(c.errors,[]);
+ }finally{c.close()}
+});
