@@ -548,11 +548,11 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
   #view-members>.card>.section-title{margin:0 0 6px!important;align-items:center}
   #view-members>.card>.section-title h3{font-size:18px;line-height:1.2}
   #view-members>.card>.section-title .statusline{display:none}
-  #view-members .member-actionbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px!important;gap:6px;margin:0 0 6px}
-  #view-members .member-actionbar>.btn{min-height:34px!important;width:100%;padding:5px 6px!important;font-size:12px}
-  #view-members .member-actionbar .member-extra-toggle{grid-column:3;min-width:0}
-  #view-members .member-additional-actions{grid-column:1/-1;gap:6px}
-  #view-members .member-additional-actions.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-members .member-actionbar{display:flex!important;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+  #view-members .member-actionbar>.btn{min-height:34px!important;width:auto!important;flex:0 0 auto;padding:5px 11px!important;font-size:12px}
+  #view-members .member-actionbar .member-extra-toggle{width:36px!important;min-width:36px;padding:4px!important}
+  #view-members .member-additional-actions{display:none!important;flex:1 0 100%;gap:6px}
+  #view-members .member-additional-actions.open{display:flex!important;flex-wrap:wrap}
   #view-members .list-management{margin:0 0 6px!important;padding:0!important;border:0!important;border-radius:0;background:transparent!important}
   #view-members .list-management-head{display:none!important}
   #view-members .list-management-actions{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
