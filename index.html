@@ -406,7 +406,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
     <div class="member-actionbar">
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
       <button class="btn small addmany" id="multiAddBtn">+ Mehrere Mitglieder</button>
-      <button class="btn small member-extra-toggle" id="memberExtraToggle" type="button" aria-expanded="false" aria-controls="memberAdditionalActions" title="Weitere Aktionen">•••</button>
+      <button class="btn small member-extra-toggle" id="memberExtraToggle" type="button" aria-label="Weitere Aktionen anzeigen" aria-expanded="false" aria-controls="memberAdditionalActions" title="Weitere Aktionen">•••</button>
       <div class="member-additional-actions" id="memberAdditionalActions">
         <button class="btn small" id="membersImportBtn">Mitgliederliste importieren</button>
         <button class="btn small" id="membersTemplateBtn">Leere Mitglieder-Vorlage</button>
@@ -711,7 +711,7 @@ document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);d
   const button=document.getElementById("memberExtraToggle");
   const open=area.classList.toggle("open");
   button.setAttribute("aria-expanded",String(open));
-  button.textContent=open?"Schließen":"•••";
+  button.textContent=open?"×":"•••";button.setAttribute("aria-label",open?"Weitere Aktionen schließen":"Weitere Aktionen anzeigen");
 };
 document.getElementById("memberSearch").oninput=e=>{memberSearch=e.target.value;renderMembers()};document.getElementById("memberFilter").onchange=e=>{memberFilter=e.target.value;renderMembers()};
 document.getElementById("memberSortSelect").onchange=e=>{state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
