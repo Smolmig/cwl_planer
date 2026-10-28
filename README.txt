@@ -142,3 +142,19 @@ v9.5.0 – Mobile Mitgliederliste, zweiter UI-Durchgang:
 - Die Aktionen Mitgliederimport und CSV-Vorlage sind am Handy hinter einem kleinen „Weitere Aktionen“-Menü erreichbar; die Hauptaktionen Hinzufügen/Mehrere bleiben direkt sichtbar.
 - Sortier- und Suchleiste wurden auf Mobil verdichtet, die PC-Mitgliederansicht bleibt weitgehend unverändert.
 - Keine Änderung der Berechnungslogik, Profile, Datenversion oder des lokalen Speicherschlüssels.
+
+Update v9.6.0 (gemeinsamer Release-Kandidat, inklusive aller v9.5-UX-Änderungen):
+- Fairere CWL-Rotation: bei freien Plätzen zuerst Spieler mit weniger bisherigen Einsätzen; bei Gleichstand erhalten Spieler mit weniger zukünftigen Einsatzgelegenheiten Vorrang. Erst danach wirken optionale RH-/3★-Tagesziele und Priorität. FIX/MUSS/RAUS und bereits gespielte Line-ups bleiben harte Regeln.
+- Bereits bestätigte tatsächliche Aufstellungen werden für die folgenden Tage neu berücksichtigt. Erklärung der Tagesauswahl über ⓘ an jeder Tageskarte.
+- Ab jetzt werden bestätigte Tagesaufstellungen zusammen mit Namen, RH, 3★-Stärke, Fixstatus und Player-Tags als Snapshots gespeichert. Änderungen im aktuellen Kader verändern diese gespielte Tageshistorie anschließend nicht mehr.
+- Entfernte eingesetzte Spieler behalten ihren historischen Fixstatus; sie sind beim nachträglichen Korrigieren eines gespielten Line-ups wieder als Kandidaten verfügbar.
+- CWL-Archive enthalten alle damaligen Teilnehmer, inklusive Spieler mit 0 Einsätzen, und speichern die verfügbaren historischen Line-up-Snapshots. Alte Archive bleiben lesbar; Daten, die vor diesem Update nie historisch gespeichert wurden, können nicht rückwirkend rekonstruiert werden.
+- Einsatzübersicht: tatsächliche gespielte und zukünftige geplante Einsätze getrennt anzeigen. Rotationsspanne bleibt als unbereinigter Rohwert gekennzeichnet.
+- Bei vollem/gesperrtem lokalen Speicher blockiert ein fehlgeschlagener Recovery-Snapshot nicht die primäre Speicherung. Misslingt die eigentliche Speicherung, pausieren weitere Schreibversuche und ein Notfall-JSON-Export sowie ein erneuter Speicherversuch werden angeboten.
+- iPhone-Querformat (Landscape): niedrigerer Header und Bottom-Navigation, ein einzelner sichtbarer Kriegstag, flachere Tagesleiste und vollhöhenoptimierter Bestätigungsdialog. Mitgliedertab im Querformat kompakter.
+- Lange Namen auf mobilen Geräten besser lesbar.
+- Version und Service-Worker-Cache auf v9.6.0 angehoben. Datenformat bleibt v9, Speicher-Schlüssel bleibt cwl_planer_mobile_v9.
+- Neue Node-Regressionsprüfungen in tests/plan-regression.test.cjs; GitHub Actions führt sie bei Branch-Änderungen/PRs aus. Lokal: node --test tests/*.test.cjs
+
+Vor Freigabe zwingend am echten iPhone als Homescreen-PWA prüfen: Statusleisten-Fade, Landscape, Scrollen/Auswahl mit 15/30 Spielern, Speichern-Button und Offline/Update-Verhalten. Außerdem mit einem separaten Testprofil Fix/MUSS/RAUS, echte gespielte Tage, Korrektur von Tag 1, Archiv inkl. 0 Einsätzen und Backup-Wiederherstellung prüfen.
+Wichtig: Bestehende Profile/Archive bleiben kompatibel, aber ohne Backup kein Browserwechsel oder Neuinstallieren der PWA durchführen.
