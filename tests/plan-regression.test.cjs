@@ -118,7 +118,7 @@ test("failed primary save pauses further writes and flags emergency export",()=>
     app:{profiles:[]},state:{},suspendWrites:false,startupStorageIssue:null,
     safeParse:JSON.parse,document:{getElementById(){return{textContent:"",className:""}}},
     localStorage:{getItem(){return null},setItem(){throw new Error("Quota exceeded")}},
-    renderRecoveryBanner(){this.called=true}});
+    renderRecoveryBanner(){}});
   vm.runInContext(extract("saveApp"),c);
   vm.runInContext("saveApp()",c);
   assert.equal(c.suspendWrites,true);
