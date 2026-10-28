@@ -366,6 +366,14 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
  #view-members .member-details .rule-panel{padding:8px}
  #view-members .member-details .rulebtn{font-size:10px;padding:7px 2px}
 }
+
+/* v9.6: long names remain readable, even on narrow iPhones */
+@media(max-width:699px){
+  #view-plan .player-chip{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;line-height:1.35;min-height:47px}
+  #view-members .member-top .member-name{min-height:32px;text-overflow:clip}
+  .summary-row{min-width:0;overflow-wrap:anywhere}
+  .summary-row .statusline{line-height:1.5}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -388,7 +396,7 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 </div>
 <main class="content">
 <section id="view-plan" class="view active">
-  <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
+  <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryExportBtn">JSON-Backup jetzt sichern</button><button class="btn hidden" id="recoveryRetryBtn">Speichern erneut versuchen</button><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
   <div class="card plan-overview" id="planOverview">
     <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
@@ -555,7 +563,7 @@ function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:1
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
 function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
-function saveUiSettings(){localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}
+function saveUiSettings(){try{localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}catch(e){/* UI preferences are non-critical */}}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
 function normalizeMember(m){m=m&&typeof m==="object"?m:freshMember();m.id||=uid();m.name=String(m.name||"").trim();m.playerTag=normalizePlayerTag(m.playerTag);m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.threeStar=Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown";const th=Number(m.townHall);m.townHall=(Number.isFinite(th)&&th>=3&&th<=20)?th:null;m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");m.firstDay=(Number(m.firstDay)>=1&&Number(m.firstDay)<=7)?Number(m.firstDay):null;m.outFromDay=(Number(m.outFromDay)>=1&&Number(m.outFromDay)<=7)?Number(m.outFromDay):null;return m}
 function normalizeArchive(a){
@@ -580,9 +588,9 @@ function canonicalProfileName(name){return String(name||"").trim().replace(/\s+/
 function normalizeApp(a){if(!a||typeof a!=="object")return defaultApp();a.profiles=Array.isArray(a.profiles)?a.profiles.map(normalizeProfile):[];if(!a.profiles.length)a.profiles=[freshProfile()];const seen=new Set();for(const p of a.profiles){let base=p.name||"Neuer Clan",candidate=base,n=2;while(seen.has(canonicalProfileName(candidate)))candidate=`${base} (${n++})`;p.name=candidate;seen.add(canonicalProfileName(candidate))}if(!a.profiles.some(p=>p.id===a.activeProfileId))a.activeProfileId=a.profiles[0].id;a.version=DATA_VERSION;a.dataVersion=DATA_VERSION;return a}
 function safeParse(raw){try{return JSON.parse(raw)}catch(e){return null}}
 function loadApp(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(raw){const parsed=safeParse(raw);if(parsed)return normalizeApp(parsed);const recovery=localStorage.getItem(RECOVERY_KEY),rp=safeParse(recovery);startupStorageIssue=rp?"recovery":"corrupt";suspendWrites=true;return rp?normalizeApp(rp):defaultApp()}
-  for(const key of LEGACY_KEYS){const old=localStorage.getItem(key);if(!old)continue;const parsed=safeParse(old);if(!parsed)continue;if(Array.isArray(parsed.profiles))return normalizeApp(parsed);if(parsed.members||parsed.config){const p=normalizeProfile(parsed);p.id=uid("p");p.name=(p.name||"Mein Clan").trim()||"Mein Clan";return normalizeApp({version:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()})}}
+  let raw;try{raw=localStorage.getItem(STORAGE_KEY)}catch(e){startupStorageIssue="save";suspendWrites=true;return defaultApp()}
+  if(raw){const parsed=safeParse(raw);if(parsed)return normalizeApp(parsed);let recovery;try{recovery=localStorage.getItem(RECOVERY_KEY)}catch(e){}const rp=safeParse(recovery);startupStorageIssue=rp?"recovery":"corrupt";suspendWrites=true;return rp?normalizeApp(rp):defaultApp()}
+  for(const key of LEGACY_KEYS){let old;try{old=localStorage.getItem(key)}catch(e){continue}if(!old)continue;const parsed=safeParse(old);if(!parsed)continue;if(Array.isArray(parsed.profiles))return normalizeApp(parsed);if(parsed.members||parsed.config){const p=normalizeProfile(parsed);p.id=uid("p");p.name=(p.name||"Mein Clan").trim()||"Mein Clan";return normalizeApp({version:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()})}}
   return defaultApp()
 }
 let app=loadApp();
@@ -596,7 +604,22 @@ function allKnownMembers(){return [...state.members,...state.archivedMembers]}
 function profileNameExists(name,excludeId=null){const key=canonicalProfileName(name);return app.profiles.some(p=>p.id!==excludeId&&canonicalProfileName(p.name)===key)}
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
 function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;mobileSelectedDay=null;mobileLineupExpanded.clear();openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";expandedCompactDays.clear();renderAll()}
-function saveApp(){const b=document.getElementById("saveBadge");if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}state.updatedAt=Date.now();app.updatedAt=Date.now();app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;try{const prev=localStorage.getItem(STORAGE_KEY);if(prev&&safeParse(prev))localStorage.setItem(RECOVERY_KEY,prev);localStorage.setItem(STORAGE_KEY,JSON.stringify(app));if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}}catch(e){if(b){b.textContent="Speicherfehler";b.className="badge err"}}}
+function saveApp(){
+  const b=document.getElementById("saveBadge");
+  if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}
+  state.updatedAt=Date.now();app.updatedAt=Date.now();app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;
+  try{
+    const serialized=JSON.stringify(app),prev=localStorage.getItem(STORAGE_KEY);
+    // Recovery is best effort: a full storage quota must never prevent saving the actual data.
+    if(prev&&safeParse(prev)){try{localStorage.setItem(RECOVERY_KEY,prev)}catch(e){/* previous backup retained */}}
+    localStorage.setItem(STORAGE_KEY,serialized);
+    if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}
+  }catch(e){
+    suspendWrites=true;startupStorageIssue="save";
+    if(b){b.textContent="Speicherfehler – Backup sichern";b.className="badge err"}
+    renderRecoveryBanner();
+  }
+}
 function showToast(message){const t=document.getElementById("toast");if(!t)return;t.textContent=message;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
 let inlineActionResolve=null;
 function closeInlineAction(result={value:"cancel",input:""}){const p=document.getElementById("inlineActionPanel");if(p){p.classList.remove("open","error");p.setAttribute("aria-hidden","true")}const resolve=inlineActionResolve;inlineActionResolve=null;if(resolve)resolve(result)}
@@ -805,8 +828,17 @@ function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElem
 async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
 function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
 function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');if(apple)apple.content=resolved==="light"||resolved==="cyberlight"?"default":"black";if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
-function renderRecoveryBanner(){const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);if(!startupStorageIssue)return;document.getElementById("recoveryMessage").textContent=startupStorageIssue==="recovery"?"Die aktuellen lokalen Daten waren nicht lesbar. Ein vorheriger funktionierender Stand wurde geladen. Automatisches Speichern bleibt pausiert, bis du ihn übernimmst.":"Die gespeicherten lokalen Daten konnten nicht gelesen werden. Automatisches Speichern ist pausiert, damit nichts überschrieben wird.";document.getElementById("recoveryAcceptBtn").classList.toggle("hidden",startupStorageIssue!=="recovery")}
-async function checkForUpdate(){if(!navigator.onLine){showToast("Offline · Update derzeit nicht möglich");return}try{if(!swRegistration&&"serviceWorker" in navigator)swRegistration=await navigator.serviceWorker.getRegistration();if(swRegistration)await swRegistration.update();showToast("Update geprüft · App wird neu geladen");setTimeout(()=>location.reload(),650)}catch(e){showToast("Update-Prüfung fehlgeschlagen")}}
+function renderRecoveryBanner(){
+  const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
+  if(!startupStorageIssue)return;
+  document.getElementById("recoveryMessage").textContent=
+    startupStorageIssue==="recovery"?"Die aktuellen lokalen Daten waren nicht lesbar. Ein vorheriger funktionierender Stand wurde geladen. Automatisches Speichern bleibt pausiert, bis du ihn übernimmst.":
+    startupStorageIssue==="save"?"Der Browser konnte die Änderungen nicht mehr speichern (z. B. zu wenig Speicherplatz). Deine aktuellen Änderungen sind nur im offenen Fenster vorhanden. Bitte zuerst ein vollständiges JSON-Backup exportieren. Danach kannst du Speicherplatz freigeben und das Speichern erneut versuchen.":
+    "Die gespeicherten lokalen Daten konnten nicht gelesen werden. Automatisches Speichern ist pausiert, damit nichts überschrieben wird.";
+  document.getElementById("recoveryAcceptBtn").classList.toggle("hidden",startupStorageIssue!=="recovery");
+  document.getElementById("recoveryRetryBtn").classList.toggle("hidden",startupStorageIssue!=="save");
+  document.getElementById("recoveryExportBtn").classList.toggle("hidden",startupStorageIssue!=="save");
+}
 function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.classList.toggle("hidden",navigator.onLine);if(!navigator.onLine)b.textContent="Offline – gespeicherte App-Version"}
 
 // Navigation
@@ -817,6 +849,8 @@ document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanTex
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
 document.getElementById("allDaysMode").onclick=()=>{uiSettings.dayViewMode="all";saveUiSettings();renderMobileDays()};
 document.getElementById("mobileOverviewToggle").onclick=()=>{const card=document.getElementById("planOverview"),button=document.getElementById("mobileOverviewToggle"),opened=card.classList.toggle("overview-open");button.setAttribute("aria-expanded",String(opened));button.textContent=opened?"Aktionen ▴":"Aktionen ▾"};
+document.getElementById("recoveryExportBtn").onclick=()=>{downloadFile(`CWL_Notfall_Backup_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:APP_VERSION,dataVersion:DATA_VERSION,app},null,2));showToast("Notfall-Backup erstellt ✓")};
+document.getElementById("recoveryRetryBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderRecoveryBanner();if(!suspendWrites)showToast("Speicherung wiederhergestellt ✓")};
 document.getElementById("compactPlanBtn").onclick=()=>{uiSettings.compactPlan=!uiSettings.compactPlan;saveUiSettings();document.body.classList.toggle("compact-plan",uiSettings.compactPlan);expandedCompactDays.clear();renderAll(uiSettings.compactPlan?"Kompaktansicht aktiviert":"Normalansicht aktiviert")};
 document.getElementById("manageCwlBtn").onclick=handleCwlManage;document.getElementById("nextDayBtn").onclick=()=>{const d=Math.min(playedPrefixLength(),state.config.days-1);mobileSelectedDay=d;renderMobileDays();document.getElementById(`day-card-${d}`)?.scrollIntoView({behavior:"smooth",block:"start"})};
 document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);document.getElementById("addMemberBottomBtn").onclick=()=>openInlineMemberAdd(true);document.getElementById("inlineMemberSave").onclick=commitInlineMemberAdd;document.getElementById("inlineMemberCancel").onclick=closeInlineMemberAdd;document.getElementById("inlineMemberName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitInlineMemberAdd()}else if(e.key==="Escape")closeInlineMemberAdd()});document.getElementById("multiAddBtn").onclick=openBulkModal;document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();document.getElementById("membersTemplateBtn").onclick=downloadTemplate;document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};document.getElementById("memberExtraToggle").onclick=()=>{
