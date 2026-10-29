@@ -99,7 +99,7 @@ async function chooseClan(epoch=accountEpoch){
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;resetRoster();
- if(!clanId){await leaveCloud();showSignedIn();msg("Melde dich an und verknüpfe deinen Clan, oder löse einen Einladungscode ein.");return}
+ if(!clanId){cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
