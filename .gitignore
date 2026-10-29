@@ -1,0 +1,6 @@
+# Never commit local keys/secrets or Supabase temporary data
+.env
+.env.*
+!.env.example
+supabase/functions/.env
+supabase/.temp/
