@@ -133,8 +133,7 @@ async function chooseClan(epoch=accountEpoch){
    }
  }).subscribe();
  cloud.afterRender();
- msg("Verbunden: "+(clans.find(c=>c.id===clanId)?.name||"Clan")+
-   ". Alle bearbeiteten Daten gehören zu diesem Cloud-Clan, nicht zum lokalen Profil.");
+ msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
 async function loadCloudProfile(automatic=false){
  if(!clanId)return;
@@ -199,7 +198,7 @@ async function createClan(){
  const {data,error:err}=await sb.from("cwl_clans")
   .insert({name,clash_tag:tag,owner_user_id:user.id}).select("id").single();
  if(err)throw err;
- msg("Neuer Clanbereich eingerichtet.");
+ msg("Clan hinzugefügt.");
  await listClans(accountEpoch,data.id);
 }
 async function saveAlias(){
@@ -220,7 +219,7 @@ async function createInvite(){
 async function joinInvite(){
  if(clanId)await ensureSaved();
  const code=$("cloudJoinCode").value.trim();
- if(!/^[a-zA-Z0-9_-]{12}$/.test(code))throw Error("Bitte den zwölfstelligen Einladungscode eingeben.");
+ if(!/^[a-zA-Z0-9_-]{12}$/.test(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
  const {data,error:err}=await sb.rpc("cwl_redeem_short_invite",{p_code:code});
  if(err)throw err;
  history.replaceState(null,"",location.pathname);
@@ -378,6 +377,7 @@ bind("cloudMembersSyncBtn","click",getRoster);
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
+bind("cloudManualSelect","click",()=>{ $("selectMembersBtn").click(); });
 $("memberList").addEventListener("click",event=>{
   if(!cloud.active||role==="viewer")return;
   const row=event.target.closest(".member[data-id]");if(!row)return;
