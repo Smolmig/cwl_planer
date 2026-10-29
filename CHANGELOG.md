@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+### In Entwicklung
+- Gemeinsamer Cloud-Modus und Clanmitgliederabgleich (v1.1.0 Alpha).
+
+## [1.0.1] - 2026-10-30
+
+### Behoben
+- Service-Worker verwechselt ergänzende HTML-Seiten nicht mehr mit dem lokalen Offline-Fallback der Haupt-App. Datenformat und lokale Profile unverändert.
+
 ### Geplant
 - Gemeinsame, geschützte Clanprofile mit Supabase, Benutzerrollen und Synchronisierung.
 - Optionaler Mitgliederabgleich über die offizielle Clash-of-Clans-API.
