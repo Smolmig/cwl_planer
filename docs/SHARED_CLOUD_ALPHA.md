@@ -44,3 +44,15 @@ Die **integrierte Cloud-Testversion** ist unter `https://smolmig.github.io/cwl_p
 - Haupt-App: `v1.0.1` (PWA-Cache-Fix: weitere HTML-Seiten überschreiben nicht mehr den Offline-Fallback).
 - Integrierte Cloud-Alpha: `v1.1.0-alpha.1` (noch nicht die normale Homepage).
 - Datenformat: unverändert `9`, lokaler Schlüssel unverändert.
+
+## Feedback-Runde: Alpha.2 (30.10.2026)
+
+- API-Fehler beim ersten Mitgliederabgleich: Authentisierte Edge Function hatte die falsche User-ID-Eigenschaft gelesen (`ctx.userClaims.sub` statt `ctx.userClaims.id`). Der Zugriff wird weiterhin per Benutzer-Session + Clanmitgliedschaft geprüft.
+- Im angemeldeten Mitglieder-Tab steht **Mitglieder importieren / aktualisieren** im Vordergrund; manuelle Aktionen liegen unter **Mitglieder manuell verwalten**.
+- Noch nicht vorhandene Cloud-Mitglieder erhalten beim Import die Markierung **NEU**; sie verschwindet bei der ersten Interaktion mit der Spielerzeile. Die Kennzeichnung wird mit dem Cloud-Profil synchronisiert.
+- Spieler, die beim nächsten Abgleich nicht mehr im Clan sind, werden nicht gelöscht. Sie bleiben als **AUSGETRETEN** ausgegraut am Ende der Liste und werden vorsichtshalber auf Pause gesetzt. Kommen sie zurück, wird ihre Markierung beim Abgleich entfernt.
+- Unveränderte ausgetretene Spieler werden nicht bei jedem weiteren Abgleich erneut als „gerade gegangen“ gemeldet.
+- Kontozugriff über **Clan ▾**; zusätzliche Clanverknüpfung in einem aufklappbaren Bereich. Keine doppelten lokalen Profilaktionen im Cloud-Modus.
+- Bei einer API-Antwort mit Fehlerstatus zeigt die Testoberfläche möglichst die tatsächliche Fehlermeldung statt nur `Edge Function returned a non-2xx status code`.
+
+Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getrennt. Backend-Funktion `coc-clan-members` ist bereits auf die korrigierte Fassung deployed; der echte Browserabruf nach der Korrektur muss durch einen angemeldeten Clanleiter bestätigt werden.
