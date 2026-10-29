@@ -188,6 +188,7 @@ async function ensureSaved(){
  if(saving||changedSerial)throw Error("Nicht alle Änderungen sind in der Cloud gespeichert.");
 }
 async function createClan(){
+ if(clanId)await ensureSaved();
  const name=$("cloudClanName").value.trim(),tag=cleanTag($("cloudClanTag").value);
  if(!name||!/^#[0289PYLQGRJCUV]{3,15}$/.test(tag))throw Error("Bitte Clanname und gültigen Clash-Clan-Tag angeben.");
  const {data,error:err}=await sb.from("cwl_clans")
@@ -212,6 +213,7 @@ async function createInvite(){
  toggle("cloudCopyInvite",true);
 }
 async function joinInvite(){
+ if(clanId)await ensureSaved();
  const code=$("cloudJoinCode").value.trim();
  if(!/^[a-zA-Z0-9_-]{12}$/.test(code))throw Error("Bitte den zwölfstelligen Einladungscode eingeben.");
  const {data,error:err}=await sb.rpc("cwl_redeem_short_invite",{p_code:code});
@@ -316,7 +318,7 @@ function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.pr
 bind("cloudOpen","click",open);bind("cloudClose","click",close);
 bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign("signup"));
 bind("cloudLogout","click",logout);
-bind("cloudClanSelect","change",()=>chooseClan());
+bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",async()=>{if(clanId)await loadCloudProfile();await audit();msg("Cloud-Stand neu geladen.")});
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
