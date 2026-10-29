@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.1";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.2";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -35,10 +35,29 @@ test("Cloud frontend JS syntax and separation of browser secrets",()=>{
   assert.match(mod,/\.from\("cwl_change_events"\)/);
   assert.match(mod,/m\.participating=false/);
 });
+test("Member import is prominent and manual controls remain accessible",()=>{
+ assert.match(preview,/id="cloudMembersSyncBtn"/);
+ assert.match(preview,/id="cloudManualMembers"/);
+ assert.match(preview,/id="cloudManualOne"/);
+ assert.match(preview,/id="cloudManualSelect"/);
+ assert.match(preview,/id="localProfileCard"/);
+ assert.match(preview,/\.cloud-mode #memberList \.member-former/);
+ assert.match(preview,/cloud-roster-flag/);
+ assert.match(preview,/cocSyncState==="former"/);
+ assert.match(mod,/m\.cocSyncState="new"/);
+ assert.match(mod,/m\.cocSyncState="former"/);
+ assert.match(mod,/delete member\.cocSyncState/);
+ assert.match(mod,/m\.participating=false/);
+ assert.match(mod,/\.eq\("revision",expectedRevision\)/);
+ assert.match(mod,/role!=="viewer"/);
+ assert.match(mod,/\.functions\.invoke\("coc-clan-members"/);
+});
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
   assert.match(fn,/cocproxy\.royaleapi\.dev/);
   assert.match(fn,/\.eq\("clan_id",clanId\)/);
+  assert.match(fn,/\.eq\("user_id",ctx\.userClaims\.id\)/);
+  assert.doesNotMatch(fn,/userClaims\.sub/);
   assert.match(fn,/\.select\("clash_tag"\)/);
   assert.doesNotMatch(fn,/req\.body\.apiKey|body\.tag|body\.url/);
 });
