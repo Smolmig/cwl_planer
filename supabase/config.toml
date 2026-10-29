@@ -1,0 +1,4 @@
+# Internal proof of concept only. Supabase secret-key authentication is enforced
+# inside the function via @supabase/server auth: "secret".
+[functions.coc-members-test]
+verify_jwt = false
