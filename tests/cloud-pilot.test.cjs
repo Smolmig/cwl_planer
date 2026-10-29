@@ -36,3 +36,12 @@ test("Cloud database has RLS on every public table and a private privileged rede
   assert.match(wrapper, /create function private\.cwl_redeem_invite_internal/);
   assert.match(wrapper, /language sql security invoker/);
 });
+
+test("newly created clans are readable by their owner before membership bootstrap, not by strangers", () => {
+  const sql = fs.readFileSync(path.join(root, "supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql"), "utf8");
+  assert.match(sql, /create policy cwl_clans_read on public\.cwl_clans/);
+  assert.match(sql, /for select to authenticated/);
+  assert.match(sql, /owner_user_id = \(select auth\.uid\(\)\)/);
+  assert.match(sql, /or private\.cwl_is_member\(id\)/);
+  assert.doesNotMatch(sql, /to anon|using\s*\(\s*true\s*\)/i);
+});
