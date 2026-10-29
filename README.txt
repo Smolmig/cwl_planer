@@ -1,5 +1,14 @@
 Site: https://smolmig.github.io/cwl_planer/
 
+AKTUELLE VERSIONIERUNG (seit v1.0.0):
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Aktuelle Release-Basis: v1.0.0.
+- Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
+  Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
+- Die chronologische Zuordnung ab Projektbeginn, Release-Regeln und der Umgang mit
+  Datenformat/Offline-Cache stehen in VERSIONING.md; neue Releases in CHANGELOG.md.
+- Datenformat bleibt 9. Lokale Speicherschlüssel, alte Profile, Archive und Backups
+  werden durch die Umstellung der App-Version nicht umbenannt oder zurückgesetzt.
+
 Hinweise:
 - Die App speichert Daten lokal auf dem jeweiligen Gerät.
 - In der App kannst du ein JSON-Backup exportieren/importieren.
