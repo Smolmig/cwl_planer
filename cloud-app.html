@@ -650,6 +650,25 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
 .cloud-audit{max-height:240px;overflow:auto}
 .cloud-warn{color:var(--red);font-weight:800}
 
+
+/* Cloud-specific information hierarchy: importing is the primary member action. */
+.cloud-mode .member-actionbar,.cloud-mode .add-member-bottom,.cloud-mode #memberList .empty-actions{display:none!important}
+.cloud-member-tools{margin:10px 0 16px}
+.cloud-member-tools .btn.primary{width:100%;min-height:46px}
+.cloud-members-hint{font-size:12px;color:var(--muted);margin:8px 2px 12px}
+.cloud-minor{border-top:1px solid var(--line);margin-top:14px;padding:12px 0 4px}
+.cloud-minor summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px}
+.cloud-minor[open] summary{color:var(--text)}
+.cloud-minor .actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.cloud-role-viewer #cloudManualMembers{display:none!important}
+.cloud-mode #memberList .member-former{opacity:.58;background:var(--card);border-style:dashed}
+.cloud-mode #memberList .member-former .member-status-chip{filter:grayscale(1)}
+.cloud-roster-flag{display:inline-flex;align-items:center;font-size:10px;font-weight:800;line-height:1;padding:4px 6px;white-space:nowrap;border-radius:6px;border:1px solid #63bdfc;color:#9bd9ff;background:rgba(32,117,183,.15);margin-left:5px;vertical-align:middle}
+.cloud-roster-flag.former{border-color:var(--line);color:var(--muted);background:transparent}
+.cloud-mode #memberList .member-former .cloud-roster-flag{opacity:1}
+.cloud-mode #memberList .member-new{border-left:3px solid #4fb3ec}
+@media(max-width:520px){.cloud-mode #cloudMembersTools{margin-top:6px}.cloud-mode .member-actionbar{display:none!important}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -666,7 +685,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
       <div class="subtitle">7 Tage fair verteilen · Sonderfälle · Live-Anpassungen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button">☁️ Konto</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
+    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
   </div>
 </div>
 <main class="content">
@@ -688,6 +707,13 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
   <div class="card">
     <div class="section-title">
       <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
+    </div>
+    <div id="cloudMembersTools" class="cloud-member-tools" hidden>
+      <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Mitglieder importieren</button>
+      <div class="cloud-members-hint">Mit dem Clash-Clan abgleichen · neue und ausgetretene Spieler prüfen</div>
+      <details id="cloudManualMembers" class="cloud-minor"><summary>Mitglieder manuell verwalten</summary>
+        <div class="actions"><button class="btn small" type="button" id="cloudManualOne">+ Mitglied</button><button class="btn small" type="button" id="cloudManualMany">+ Mehrere</button><button class="btn small" type="button" id="cloudManualFile">CSV importieren</button></div>
+      </details>
     </div>
     <div class="member-actionbar">
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
@@ -836,7 +862,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 
 <div class="cloud-overlay" id="cloudOverlay" role="dialog" aria-modal="true" aria-labelledby="cloudTitle" aria-hidden="true">
  <div class="cloud-panel">
- <div class="section-title"><h2 id="cloudTitle">☁️ CWL-Konto & Clanverwaltung</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
+ <div class="section-title"><h2 id="cloudTitle">Clan & Konto</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
  <div class="cloud-msg" id="cloudMsg">Ohne Anmeldung arbeitest du lokal. Bei Anmeldung werden nur die gemeinsamen Cloud-Clans geladen.</div>
  <section id="cloudAuth">
   <h3>Anmelden oder registrieren</h3>
@@ -849,17 +875,18 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div id="cloudIdentity" class="statusline"></div>
   <div class="actions"><button class="btn" id="cloudLogout">Abmelden → lokaler Planer</button><button class="btn" id="cloudReload">Cloud neu laden</button></div>
   <div class="cloud-section">
-    <h3>Meine verknüpften Clans</h3>
+    <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline"></div>
     <label for="cloudAlias">Dein Anzeigename (für Änderungsverlauf)</label>
     <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
   </div>
   <div class="cloud-section">
-    <h3>Clan verknüpfen</h3><p>Als Besitzer einen neuen Clanbereich mit einem Clash-Clan-Tag verbinden. Vorhandene Clanbereiche erhältst du per Einladung.</p>
+    <h3>Mit einem Clan verbinden</h3><p>Für einen bestehenden Clan gibst du den Einladungscode ein. Für deinen eigenen Clan kannst du die Verbindung selbst erstellen.</p>
+    <details id="cloudNewClanDetails" class="cloud-minor"><summary>Eigenen oder weiteren Clan hinzufügen</summary><p>Einmalig den Clash-Clan-Tag eingeben. Danach findest du den Clan oben unter „Meine Clans“.</p>
     <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
-    <div class="actions"><button class="btn primary" id="cloudCreateClan">Clanbereich erstellen</button></div>
+    <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
     <label for="cloudJoinCode">Einladungscode (12 Zeichen)</label><input id="cloudJoinCode" maxlength="12" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
@@ -873,7 +900,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div id="cloudInviteBox" class="cloud-section" hidden>
     <h3>Zugriff teilen</h3><p>Einmalige Einladung, sieben Tage gültig.</p>
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
-    <button class="btn" id="cloudMakeInvite">Kurzen Einladungscode erstellen</button>
+    <button class="btn" id="cloudMakeInvite">Einladungscode erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
   </div>
