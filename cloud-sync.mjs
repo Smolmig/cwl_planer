@@ -287,10 +287,30 @@ async function audit(){
   const item=document.createElement("div");item.className="cloud-actor";
   const head=document.createElement("b");head.textContent=(e.actor_id===user.id?"Du":aliases.get(e.actor_id)||"Ehemaliges Clanmitglied")+" · "+new Date(e.created_at).toLocaleString("de-AT");
   const detail=document.createElement("span");const d=e.details||{};
+  const label={name:"Name",participating:"Dabei",fixed:"FIX",priority:"Priorität",
+    townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",
+    firstDay:"Erst ab",outFromDay:"Raus ab"};
+  const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):String(v);
+  const pieces=[];
+  for(const entry of (d.spieleraenderungen||[])){
+    const fields=entry.felder||{};
+    if(fields.hinzugefuegt){pieces.push(entry.name+" hinzugefügt");continue}
+    if(fields.entfernt){pieces.push(entry.name+" entfernt");continue}
+    for(const [key,pair] of Object.entries(fields)){
+      if(!Array.isArray(pair))continue;
+      if(key==="statuses" && Array.isArray(pair[0]) && Array.isArray(pair[1])){
+        const changed=pair[1].map((v,i)=>v!==pair[0][i]?"Tag "+(i+1)+": "+fmt(pair[0][i])+" → "+fmt(v):null).filter(Boolean);
+        pieces.push(entry.name+": "+changed.join(", "));continue;
+      }
+      pieces.push(entry.name+": "+(label[key]||key)+" "+fmt(pair[0])+" → "+fmt(pair[1]));
+    }
+  }
+  if(d.plan_geaendert)pieces.push("Gespielte Aufstellungen / Tagesspeicher geändert");
+  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert");
+  if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
+  if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
   detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
-   " · Revision "+e.revision+" · "+(d.mitglieder??"?")+" Mitglieder"+
-   (d.aenderungen_mitglieder?.length?" · Betroffen: "+d.aenderungen_mitglieder.join(", "):"")+
-   " · Gespielte Tage: "+(d.kriege_gespielt??"?");
+    " · Rev. "+e.revision+(pieces.length?" · "+pieces.join(" · "):"");
   item.append(head,detail);root.append(item);
  }
 }
