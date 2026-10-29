@@ -25,7 +25,10 @@ const cloud={
  afterRender(){
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
-  $("cloudOpen").textContent=this.active?"☁️ "+(role==="viewer"?"Nur Lesen":"Online"):"☁️ Konto";
+  $("cloudOpen").textContent=this.active?"☁️ Clan ▾":"👤 Anmelden";
+  $("cloudOpen").title=this.active?"Clan und Konto verwalten":"Anmelden oder registrieren";
+  $("cloudOpen").setAttribute("aria-label",this.active?"Clan und Konto verwalten":"Anmelden oder registrieren");
+  const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
@@ -99,7 +102,7 @@ async function chooseClan(epoch=accountEpoch){
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;resetRoster();
- if(!clanId){cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
+ if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
@@ -108,6 +111,8 @@ async function chooseClan(epoch=accountEpoch){
  $("cloudAlias").value=data.display_name||"";
  toggle("cloudInviteBox",role==="owner");
  toggle("cloudRosterBox",true);
+ toggle("cloudMembersTools",true);
+ $("cloudNewClanDetails").open=false;
  toggle("cloudImportProfile",role!=="viewer");
  toggle("cloudImportFile",role!=="viewer");
  // Switch modes before rendering so cloud records never enter localStorage.
@@ -225,19 +230,35 @@ async function joinInvite(){
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
 async function getRoster(){
  if(!clanId)throw Error("Bitte Clan auswählen");
- resetRoster();msg("Clash-Mitglieder werden geladen …");
+ await ensureSaved();
+ resetRoster();open();
+ $("cloudRosterBox").scrollIntoView({behavior:"smooth",block:"start"});
+ msg("Mitglieder werden aus Clash of Clans geladen …");
  const {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
- if(err)throw err;
+ if(err){
+   let reason=err.message||"unknown_error";
+   if(err.context?.json)try{const info=await err.context.json();reason=info?.error||reason}catch{}
+   const descriptions={
+     not_a_member:"Kein Zugriff auf diesen Clan. Bitte erneut anmelden und den Clan auswählen.",
+     missing_server_configuration:"Die API-Verbindung ist noch nicht vollständig eingerichtet.",
+     missing_linked_clan_tag:"Dieser Clan hat noch keinen hinterlegten Clan-Tag.",
+     upstream_timeout:"Die Clash-API antwortet gerade zu langsam. Bitte erneut versuchen.",
+     upstream_unreachable:"Die Clash-API ist derzeit nicht erreichbar.",
+     unexpected_response:"Die Clash-API hat unerwartete Daten geliefert."
+   };
+   if(reason.startsWith("supercell_status_"))reason="Supercell meldet HTTP "+reason.split("_").pop()+". Bitte API-Verbindung prüfen.";
+   throw Error(descriptions[reason]||reason+" (API-Anfrage fehlgeschlagen)");
+ }
  if(!data?.ok)throw Error(data?.error||"Abruf fehlgeschlagen.");
  const incoming=data.members||[];
  const rosterMap=new Map(incoming.filter(m=>/^#[0-9A-Z]+$/.test(normalizeTag(m.tag))).map(m=>[normalizeTag(m.tag),m]));
  const existing=storage.getProfile().members;
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
- const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag)));
+ const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former");
  const updated=[...rosterMap.values()].filter(m=>{
    const current=existingMap.get(normalizeTag(m.tag));
-   return current&&(current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
+   return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
  roster=incoming;rosterDiff={added,departed,updated,received:incoming.length};
  const diff=$("cloudRosterDiff");diff.replaceChildren();
@@ -246,31 +267,40 @@ async function getRoster(){
   for(const x of items.slice(0,50)){const line=document.createElement("p");line.textContent="• "+x.name+" "+(x.tag||x.playerTag||"");diff.append(line)}
  }
  group("NEU IM CLAN",added);group("NAMEN/RH GEÄNDERT",updated);group("NICHT MEHR IM CLAN",departed);
- toggle("cloudRosterDiff",true);toggle("cloudDepartedWrap",departed.length>0);
+ toggle("cloudRosterDiff",true);toggle("cloudDepartedWrap",false);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
  msg("Abgleich: "+incoming.length+" Mitglieder · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" nicht mehr dabei. Noch nichts übernommen.");
 }
-function applyRoster(){
+async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
+ await ensureSaved();
+ const currentRoster=roster;
  const p=storage.getProfile(),members=p.members;
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const remoteTags=new Set();
- for(const r of roster){
+ for(const r of currentRoster){
   const tag=normalizeTag(r.tag);if(!tag)continue;remoteTags.add(tag);
   let m=map.get(tag);
   if(!m){
     m=storage.newMember(r.name);
     m.playerTag=tag;m.participating=false;m.fixed=false;m.priority=0;
+    m.cocSyncState="new"; // disappears once the user interacts with this player
     members.push(m);map.set(tag,m);
+  } else if(m.cocSyncState==="former") {
+    delete m.cocSyncState; // rejoined the clan
   }
   m.name=r.name;
   if(Number.isInteger(r.townHallLevel)&&r.townHallLevel>=3&&r.townHallLevel<=20)m.townHall=r.townHallLevel;
  }
- if($("cloudPauseDeparted").checked){
-  for(const m of members)if(m.playerTag&&!remoteTags.has(normalizeTag(m.playerTag)))m.participating=false;
+ for(const m of members){
+  if(m.playerTag&&!remoteTags.has(normalizeTag(m.playerTag))){
+    m.cocSyncState="former";
+    m.participating=false; // retain player/history, but do not schedule automatically
+  }
  }
  storage.rerender();
- msg("Mitglieder abgeglichen. Die Änderungen werden in der Cloud gespeichert. Frühere CWL-Snapshots und manuelle Regeln bleiben erhalten.");
+ await ensureSaved();
+ msg("Mitgliederliste aktualisiert. Neue Spieler sind markiert und ausgetretene Spieler stehen ausgegraut am Listenende.");
  resetRoster();close();
 }
 async function audit(){
@@ -344,6 +374,19 @@ bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAli
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
 bind("cloudCopyInvite","click",async()=>{if(inviteLink){await navigator.clipboard.writeText(inviteLink);msg("Einladungslink kopiert.")}});
 bind("cloudFetchRoster","click",getRoster);bind("cloudApplyRoster","click",applyRoster);
+bind("cloudMembersSyncBtn","click",getRoster);
+bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
+bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
+bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
+$("memberList").addEventListener("click",event=>{
+  if(!cloud.active||role==="viewer")return;
+  const row=event.target.closest(".member[data-id]");if(!row)return;
+  const member=storage.getProfile().members.find(m=>m.id===row.dataset.id);
+  if(!member||member.cocSyncState!=="new")return;
+  delete member.cocSyncState; row.classList.remove("member-new");
+  row.querySelector(".cloud-roster-flag")?.remove();
+  cloud.onLocalChange();
+});
 bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click",importCloud);
 $("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
