@@ -21,7 +21,7 @@ test("Cloud pilot module is syntactically valid and has required controls", () =
 test("only a publishable key is used by the browser; JSON profiles require data format 9", () => {
   assert.match(html, /sb_publishable_/);
   assert.doesNotMatch(html, /sb_secret_|SUPABASE_SERVICE_ROLE_KEY|COC_API_KEY/);
-  assert.match(html, /obj\.dataVersion\)!==9/);
+  assert.match(html, /Number\(obj\?\.dataVersion\)!==9/);
   assert.match(html, /\.eq\("revision",currentRow\.revision\)/);
   assert.match(html, /hasRemoteUpdate/);
   assert.match(html, /if\(!confirm\(text\)\)return/);
