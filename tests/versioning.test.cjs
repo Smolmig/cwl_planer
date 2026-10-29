@@ -9,7 +9,7 @@ const worker=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 const readme=fs.readFileSync(path.join(root,"README.txt"),"utf8");
 
 test("SemVer app version matches PWA cache, separately from persistent data format",()=>{
-  const m=html.match(/const APP_VERSION="(v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?)";/);
+  const m=html.match(/const APP_VERSION="(v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)";/);
   assert.ok(m,"APP_VERSION must use vMAJOR.MINOR.PATCH");
   const appVersion=m[1];
   const cache=worker.match(/const CACHE="([^"]+)";/);
