@@ -14,7 +14,7 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
  const clanId=String(body?.clanId||"");
  if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(clanId))return fail("invalid_clan",400);
  const {data:membership,error:roleErr}=await ctx.supabase.from("cwl_clan_memberships")
- .select("role").eq("clan_id",clanId).eq("user_id",ctx.userClaims.id).maybeSingle();
+ .select("role").eq("clan_id",clanId).eq("user_id",ctx.userClaims.sub).maybeSingle();
  if(roleErr||!membership||!["owner","editor","viewer"].includes(membership.role))return fail("not_a_member",403);
  const {data:clan,error:clanErr}=await ctx.supabase.from("cwl_clans")
  .select("clash_tag").eq("id",clanId).single();
