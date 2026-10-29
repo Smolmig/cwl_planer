@@ -601,11 +601,32 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 /* Contrast-conscious theme accents, including the light Cyberpunk theme. */
 html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary{background:linear-gradient(105deg,#087486 0%,#184eab 46%,#59259f 72%,#9a1c61 100%);border-color:#268ab1;color:#fff;text-shadow:none}
 
+
+/* v9.6.1 – iOS 27 Home Screen PWA
+   Recent iOS versions paint a native status-bar blur which extends a little
+   below the system status bar. It cannot be disabled from CSS. Reserve a
+   small clearance ONLY in portrait standalone iOS, keeping title and profile
+   controls below that blur without changing Safari or Android layouts.
+   Keep the header opaque so scrolling cannot be seen through the top area.
+*/
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) and (orientation: portrait) and (max-width:699px) {
+    .topbar{
+      padding-top:calc(42px + env(safe-area-inset-top))!important;
+      background-image:none!important;
+      backdrop-filter:none!important;
+      -webkit-backdrop-filter:none!important;
+    }
+    html[data-theme="cyber"] .topbar{background:#08101d!important}
+    html[data-theme="cyberlight"] .topbar{background:#f7fcff!important}
+    html[data-theme="dark"] .topbar{background:#0b1220!important}
+    html[data-theme="light"] .topbar{background:#f4f7fb!important}
+  }
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="CWL Planer">
 <meta name="mobile-web-app-capable" content="yes">
 </head>
@@ -787,7 +808,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v9.6.0";
+const APP_VERSION="v9.6.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1131,7 +1152,7 @@ async function createProfilePrompt(){const raw=await promptInline("Neues Profil 
 function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
 async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
 function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
-function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');if(apple)apple.content=resolved==="light"||resolved==="cyberlight"?"default":"black";if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
+function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
 function renderRecoveryBanner(){
   const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
   if(!startupStorageIssue)return;

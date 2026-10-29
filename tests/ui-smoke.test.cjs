@@ -278,3 +278,20 @@ test("landscape styles compact the management panels and center confirmation",()
    assert.ok(style.includes(selector),"CSS missing: "+selector);
  }
 });
+
+
+test("iOS Home Screen status bar uses no deprecated standalone style override",()=>{
+ assert.ok(!html.includes('name="apple-mobile-web-app-status-bar-style"'));
+ assert.ok(!html.includes("apple.content="));
+ assert.ok(html.includes('name="apple-mobile-web-app-capable" content="yes"'));
+ assert.ok(html.includes('name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"'));
+});
+test("native iOS status-bar blur clearance applies only to standalone portrait",()=>{
+ const css=html.split("<style>")[1]?.split("</style>")[0]||"";
+ const hotfix=css.slice(css.indexOf("/* v9.6.1 – iOS 27 Home Screen PWA"));
+ assert.ok(hotfix.includes("@supports (-webkit-touch-callout: none)"));
+ assert.ok(hotfix.includes("@media (display-mode: standalone) and (orientation: portrait) and (max-width:699px)"));
+ assert.ok(hotfix.includes("padding-top:calc(42px + env(safe-area-inset-top))!important"));
+ assert.ok(hotfix.includes("html[data-theme=\"cyber\"] .topbar{background:#08101d!important}"));
+ assert.ok(!hotfix.includes("localStorage"));
+});

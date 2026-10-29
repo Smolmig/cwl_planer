@@ -178,3 +178,11 @@ v9.6.0 – Zusatzkorrekturen nach Praxistest (Desktop, Mitglieder-Picker, Einsat
 - Im Smartphone-Querformat enthält die Mitgliederliste zwei Spalten, auch bei Breiten unter 1000px. Aufgeklappte Bearbeitungsfelder passen sich pro Karte an.
 - Automatisierte DOM-Regressionstests decken Desktop-Aufklappen, Auswahl von Priorität und 3★, gefilterte Einsatzstatistik und Querformat-CSS ab.
 - Datenformat unverändert v9, GitHub Pages main nicht geändert. Vorschau vor Release auf echtem iPhone prüfen.
+
+v9.6.1 – iPhone Homescreen-PWA / Statusleisten-Korrektur:
+- iOS 27 zeichnet bei installierten Web-Apps einen systemseitigen Blur im oberen Statusleistenbereich. Die App kann diesen Betriebssystemeffekt nicht vollständig abschalten.
+- Für iPhone-Hochformat im installierten Standalone-Modus wird der Header gezielt um etwa 34 CSS-Pixel weiter nach unten gepolstert, damit Titel/Profil und Hilfe nicht mehr unter dem systemseitigen Verlauf stehen.
+- Der Header bleibt deckend (Cyberpunk, Cyberpunk White, Dark und Light). Safari, Querformat, Android und Desktop bleiben von dieser Sonderregel unberührt.
+- Die von WebKit als veraltet bezeichnete apple-mobile-web-app-status-bar-style-Metavorgabe und ihre dynamische Änderung wurden entfernt; die Theme-Color-Einstellung bleibt erhalten.
+- App-Version und Offline-Cache v9.6.1; Datenformat v9, bestehende Profile und Backups unverändert.
+- Nach dem Update auf einem bereits installierten iPhone Homescreen-App testen; iOS kann installierte Statusleisten-Eigenschaften unabhängig vom aktualisierten HTML zwischenspeichern. Keine Website-Daten löschen und die App nicht ohne vollständiges Backup entfernen.
