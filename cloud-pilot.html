@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101724">
+<title>CWL Planer – Cloud-Labor (Alpha)</title>
+<style>
+:root{color-scheme:dark;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:#101724;color:#edf4ff}
+*{box-sizing:border-box}body{margin:0;padding:18px 16px 80px}main{max-width:750px;margin:auto}
+h1{margin:0;font-size:25px}h2{font-size:18px;margin:0 0 13px}p{color:#b2c2d7}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:24px}
+.card{background:#192537;border:1px solid #35465c;border-radius:17px;padding:18px;margin:15px 0}
+label{display:block;font-size:13px;color:#c5d6eb;margin:12px 0 5px}
+input,select{width:100%;min-height:42px;padding:10px 12px;border:1px solid #52677e;background:#111b2b;color:#fff;border-radius:9px;font:inherit}
+button,.link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid #688ab4;background:#29466a;color:white;border-radius:10px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+button.primary{background:#1673a8;border-color:#2993c7}button:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.row>*{flex:1}
+.notice{background:#12314c;border:1px solid #35678a;border-radius:10px;padding:12px;color:#d7ecff;margin:14px 0}
+.warn{border-color:#9c6630;background:#342613;color:#ffe0b8}
+.small{font-size:12px;color:#aebed1}.stat{padding:10px 0;border-bottom:1px solid #32465c}
+code{color:#bfe6ff;word-break:break-all}
+#feedback{white-space:pre-wrap}section[hidden],div[hidden]{display:none!important}
+footer{color:#839cb8;font-size:12px;text-align:center;padding-top:18px}
+</style>
+</head>
+<body><main>
+<header>
+ <div><div class="small">EXPERIMENTELL · NICHT DIE LIVE-APP</div><h1>CWL Cloud-Labor</h1></div>
+ <a class="link" href="./">Zur normalen App</a>
+</header>
+<div class="notice warn"><b>Alpha-Test</b><div>Diese Oberfläche ist nur für die Einrichtung. Deine lokale CWL-App bleibt getrennt. Daten werden ausschließlich durch die ausdrücklich beschriftete Import-Aktion hochgeladen. Vorher vollständiges JSON-Backup sichern.</div></div>
+<div id="feedback" class="notice" role="status" aria-live="polite">Cloud-Verbindung wird geladen …</div>
+<section id="authSection" class="card" hidden>
+ <h2>Anmelden</h2>
+ <p>Eigener Login für Besitzer und Vize-Anführer. Es wird kein Discord- oder Supercell-Login benötigt.</p>
+ <label for="email">E-Mail</label><input id="email" type="email" autocomplete="email" placeholder="du@beispiel.at">
+ <label for="password">Passwort (mindestens 8 Zeichen)</label><input id="password" type="password" autocomplete="current-password" minlength="8">
+ <div class="row"><button id="loginBtn" class="primary">Anmelden</button><button id="signupBtn">Registrieren</button></div>
+ <p class="small">Bei der Registrierung ist möglicherweise eine E-Mail-Bestätigung erforderlich. In Supabase Auth → URL Configuration muss die Adresse dieser Testseite als Redirect URL erlaubt sein.</p>
+</section>
+<section id="workspace" hidden>
+ <div class="card">
+  <div class="row"><div id="who" class="small"></div><button id="logoutBtn">Abmelden</button></div>
+  <h2>Clanbereich</h2>
+  <label for="clanSelect">Mein Clan</label><select id="clanSelect"></select>
+  <div class="row"><button id="refreshBtn">Aktualisieren</button></div>
+  <div id="roleInfo" class="stat"></div>
+ </div>
+ <div class="card">
+  <h2>Clan erstellen oder beitreten</h2>
+  <label for="newClanName">Neuer Clanname</label><input id="newClanName" maxlength="100" placeholder="United Fighters">
+  <label for="newClanTag">Clan-Tag (optional)</label><input id="newClanTag" placeholder="#99JP2RL2">
+  <button id="createClanBtn" class="primary">Eigenen Clan erstellen</button>
+  <hr>
+  <label for="inviteCode">Einladungscode erhalten?</label><input id="inviteCode" placeholder="UUID aus Einladung">
+  <button id="joinBtn">Mit Einladung beitreten</button>
+ </div>
+ <div class="card" id="ownerBox" hidden>
+  <h2>Vize-Anführer einladen</h2>
+  <p>Einmalige Einladungen sind sieben Tage gültig.</p>
+  <label for="inviteRole">Berechtigung</label>
+  <select id="inviteRole"><option value="editor">Bearbeiten (Vize)</option><option value="viewer">Nur ansehen</option></select>
+  <button id="makeInviteBtn">Einladungscode erstellen</button>
+  <div id="inviteResult" class="small" aria-live="polite"></div>
+ </div>
+ <div class="card">
+  <h2>Gemeinsames CWL-Profil</h2>
+  <div id="profileStatus" class="stat">Noch kein Clan ausgewählt.</div>
+  <div class="row"><button id="loadProfileBtn">Cloud-Stand laden</button><button id="exportProfileBtn">Cloud-JSON exportieren</button></div>
+  <div id="editBox" hidden>
+   <label for="backupFile">Lokales JSON-Backup als Cloud-Profil auswählen</label>
+   <input id="backupFile" type="file" accept=".json,application/json">
+   <div id="importPreview" class="small"></div>
+   <button id="uploadProfileBtn" class="primary" disabled>Ausgewähltes Profil in die Cloud hochladen</button>
+   <p class="small">Der Upload ersetzt nur den aktuellen Cloud-Profilstand, niemals deine lokalen Browserdaten. Bei einer inzwischen geänderten Cloud-Revision wird er abgelehnt.</p>
+  </div>
+ </div>
+</section>
+<footer>Cloud-Labor · Datenformat 9 · Erste Tests getrennt von v1.0.0</footer>
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+const sb = createClient("https://yjldnvfwposfwmzmcsow.supabase.co","sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+});
+const $=id=>document.getElementById(id);
+let session=null,clanId=null,role=null,currentRow=null,localProfile=null,channel=null,hasRemoteUpdate=false;
+function show(message,warning=false){$("feedback").textContent=message;$("feedback").classList.toggle("warn",warning)}
+function fail(err){show(err?.message||String(err),true)}
+function setHidden(id,hidden){$(id).hidden=hidden}
+async function refreshSession(){
+  const {data:{session:next},error}=await sb.auth.getSession();if(error)throw error;
+  session=next;setHidden("authSection",!!next);setHidden("workspace",!next);
+  if(next){$("who").textContent=next.user.email||next.user.id;await loadClans();}
+}
+async function sign(type){
+ const email=$("email").value.trim(),password=$("password").value;
+ if(!email||password.length<8){show("E-Mail und Passwort mit mindestens 8 Zeichen eingeben.",true);return}
+ const opts={email,password};
+ const res=type==="signup"?await sb.auth.signUp({...opts,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword(opts);
+ if(res.error)throw res.error;
+ show(type==="signup"?"Registrierung gesendet. Bitte ggf. E-Mail bestätigen.":"Erfolgreich angemeldet.");
+ if(res.data.session)await refreshSession();
+}
+async function loadClans(preselect){
+ if(!session)return;
+ const {data,error}=await sb.from("cwl_clans").select("id,name,clash_tag").order("name");
+ if(error)throw error;
+ const s=$("clanSelect"),wanted=preselect||clanId;s.replaceChildren(new Option("Bitte wählen",""));
+ for(const c of data)s.add(new Option(c.name+(c.clash_tag?" · "+c.clash_tag:""),c.id));
+ s.value=data.some(c=>c.id===wanted)?wanted:(data[0]?.id||"");
+ await selectClan();
+}
+async function selectClan(){
+ clanId=$("clanSelect").value||null;role=null;currentRow=null;localProfile=null;hasRemoteUpdate=false;
+ $("backupFile").value="";$("importPreview").textContent="";$("uploadProfileBtn").disabled=true;
+ if(channel){await sb.removeChannel(channel);channel=null}
+ if(!clanId){$("roleInfo").textContent="Noch keinem Clan beigetreten.";setHidden("ownerBox",true);setHidden("editBox",true);$("profileStatus").textContent="Noch kein Clan vorhanden.";return}
+ const {data,error}=await sb.from("cwl_clan_memberships").select("role").eq("clan_id",clanId).eq("user_id",session.user.id).single();
+ if(error)throw error;
+ role=data.role;$("roleInfo").textContent="Deine Rolle: "+({owner:"Besitzer",editor:"Bearbeiter",viewer:"Nur Lesen"}[role]||role);
+ setHidden("ownerBox",role!=="owner");setHidden("editBox",role==="viewer");
+ await loadProfile();
+ channel=sb.channel("cwl-profile-"+clanId).on("postgres_changes",
+ {event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId},
+ payload=>{
+  if(payload.new?.revision && Number(payload.new.revision)>Number(currentRow?.revision||0)){
+    hasRemoteUpdate=true;
+    show("Ein anderer Clanführer hat den Cloud-Stand geändert. Bitte Cloud-Stand neu laden, bevor du etwas hochlädst.",true);
+    $("uploadProfileBtn").disabled=true;
+  }
+ }).subscribe();
+}
+async function createClan(){
+ if(!session)throw Error("Nicht angemeldet.");
+ const name=$("newClanName").value.trim(),tag=$("newClanTag").value.trim().toUpperCase();
+ if(!name)throw Error("Clanname fehlt.");
+ if(tag && !/^#[0-9A-Z]{3,15}$/.test(tag))throw Error("Clan-Tag ist ungültig.");
+ const {data,error}=await sb.from("cwl_clans").insert({name,clash_tag:tag||null,owner_user_id:session.user.id}).select("id").single();
+ if(error)throw error;
+ show("Clan erstellt. Du bist Besitzer.");await loadClans(data.id);
+}
+async function makeInvite(){
+ if(role!=="owner")return;
+ const {data,error}=await sb.from("cwl_clan_invites").insert({clan_id:clanId,created_by:session.user.id,role:$("inviteRole").value,expires_at:new Date(Date.now()+7*86400000).toISOString()}).select("id").single();
+ if(error)throw error;
+ $("inviteResult").replaceChildren();
+ const code=document.createElement("code");code.textContent=data.id;$("inviteResult").append("Einladungscode: ",code);
+ try{await navigator.clipboard.writeText(data.id);$("inviteResult").append(" · kopiert");}catch{}
+ show("Einmalige Einladung erstellt. Code privat an den Vize weitergeben.");
+}
+async function join(){
+ const token=$("inviteCode").value.trim();
+ if(!/^[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,}$/.test(token))throw Error("Einladungscode ist keine gültige UUID.");
+ const {data,error}=await sb.rpc("cwl_redeem_invite",{p_invite_id:token});
+ if(error)throw error;show("Einladung eingelöst. Gemeinsamer Clanbereich ist verfügbar.");await loadClans(data);
+}
+async function loadProfile(){
+ if(!clanId)return;
+ const {data,error}=await sb.from("cwl_cloud_profiles").select("profile_json,data_version,revision,updated_at").eq("clan_id",clanId).maybeSingle();
+ if(error)throw error;
+ currentRow=data;hasRemoteUpdate=false;
+ const p=data?.profile_json;
+ $("profileStatus").textContent=data
+   ?"Cloud-Revision "+data.revision+" · "+(p?.name||"Clanprofil")+" · "+(p?.members?.length||0)+" Mitglieder · aktualisiert "+new Date(data.updated_at).toLocaleString("de-AT")
+   :"Noch kein Cloud-Profil vorhanden. Vorhandenes JSON-Backup kann einmalig übernommen werden.";
+ $("uploadProfileBtn").disabled=!(localProfile&&role!=="viewer");
+}
+function unpackBackup(obj){
+ if(Number(obj?.dataVersion)!==9)throw Error("Nur Backups mit Datenformat 9 sind unterstützt.");
+ let p;
+ if(obj.kind==="cwl-profile")p=obj.profile;
+ else if(obj.kind==="cwl-app-backup"){p=obj.app?.profiles?.find(x=>x.id===obj.app?.activeProfileId)||obj.app?.profiles?.[0];}
+ else throw Error("Bitte eine originale CWL-Profil- oder Komplett-Backup-JSON auswählen.");
+ if(!p||typeof p.name!=="string"||!Array.isArray(p.members)||!Array.isArray(p.locks)||!Array.isArray(p.archives))throw Error("Ungültiges CWL-Profilformat.");
+ return p;
+}
+async function chooseFile(){
+ localProfile=null;$("uploadProfileBtn").disabled=true;
+ const f=$("backupFile").files[0];if(!f)return;
+ const obj=JSON.parse(await f.text());localProfile=unpackBackup(obj);
+ const size=new TextEncoder().encode(JSON.stringify(localProfile)).length;
+ if(size>5242880){localProfile=null;throw Error("Profil überschreitet 5 MB Cloud-Limit.");}
+ $("importPreview").textContent="Bereit: "+localProfile.name+" · "+localProfile.members.length+" Mitglieder · "+localProfile.archives.length+" Archive · "+Math.round(size/1024)+" KB";
+ $("uploadProfileBtn").disabled=hasRemoteUpdate||role==="viewer";
+}
+async function saveProfile(){
+ if(!localProfile||!clanId||!["owner","editor"].includes(role))throw Error("Kein bearbeitbares Profil ausgewählt.");
+ if(hasRemoteUpdate)throw Error("Cloud hat sich geändert. Bitte zuerst neu laden.");
+ const text=currentRow?"Cloud-Revision "+currentRow.revision+" wird durch deine importierte Datei ersetzt. Fortfahren?":"Profil wird erstmals in diesem Clan in der Cloud gespeichert. Fortfahren?";
+ if(!confirm(text))return;
+ let error;
+ if(currentRow){
+  const result=await sb.from("cwl_cloud_profiles").update({profile_json:localProfile})
+    .eq("clan_id",clanId).eq("revision",currentRow.revision).select("revision");
+  error=result.error;if(!error&&result.data.length!==1)throw Error("Versionskonflikt: bitte erst Cloud-Stand neu laden.");
+ }else{
+  const result=await sb.from("cwl_cloud_profiles").insert({clan_id:clanId,profile_json:localProfile}).select("revision");
+  error=result.error;
+ }
+ if(error)throw error;
+ show("Cloud-Profil gesichert. Die lokale CWL-App blieb unverändert.");
+ await loadProfile();
+}
+function exportProfile(){
+ if(!currentRow)throw Error("Kein Cloud-Profil vorhanden.");
+ const data={kind:"cwl-profile",version:"v1.0.0",dataVersion:9,profile:currentRow.profile_json};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+ const a=document.createElement("a");a.href=url;a.download="CWL_Cloud_Profil_Backup.json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function bind(id,event,fn){$(id).addEventListener(event,async e=>{e.preventDefault();try{await fn(e);}catch(err){fail(err);}})}
+bind("loginBtn","click",()=>sign("login"));bind("signupBtn","click",()=>sign("signup"));
+bind("logoutBtn","click",async()=>{const {error}=await sb.auth.signOut();if(error)throw error;session=null;await refreshSession();show("Abgemeldet.")});
+bind("clanSelect","change",selectClan);bind("refreshBtn","click",loadClans);
+bind("createClanBtn","click",createClan);bind("makeInviteBtn","click",makeInvite);bind("joinBtn","click",join);
+bind("backupFile","change",chooseFile);bind("uploadProfileBtn","click",saveProfile);
+bind("loadProfileBtn","click",loadProfile);bind("exportProfileBtn","click",exportProfile);
+sb.auth.onAuthStateChange((_event,s)=>{if(Boolean(s)!==Boolean(session))queueMicrotask(()=>refreshSession().catch(fail));});
+refreshSession().then(()=>show("Cloud-Labor bereit.")).catch(fail);
+</script>
+</main></body></html>
