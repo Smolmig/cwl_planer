@@ -650,6 +650,25 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
 .cloud-audit{max-height:240px;overflow:auto}
 .cloud-warn{color:var(--red);font-weight:800}
 
+
+/* Cloud-specific information hierarchy: importing is the primary member action. */
+.cloud-mode .member-actionbar,.cloud-mode .add-member-bottom,.cloud-mode #memberList .empty-actions,.cloud-mode #localProfileCard,.cloud-mode #selectMembersBtn{display:none!important}
+.cloud-member-tools{margin:10px 0 16px}
+.cloud-member-tools .btn.primary{width:100%;min-height:46px}
+.cloud-members-hint{font-size:12px;color:var(--muted);margin:8px 2px 12px}
+.cloud-minor{border-top:1px solid var(--line);margin-top:14px;padding:12px 0 4px}
+.cloud-minor summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px}
+.cloud-minor[open] summary{color:var(--text)}
+.cloud-minor .actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.cloud-role-viewer #cloudManualMembers{display:none!important}
+.cloud-mode #memberList .member-former{opacity:.58;background:var(--card);border-style:dashed}
+.cloud-mode #memberList .member-former .member-status-chip{filter:grayscale(1)}
+.cloud-roster-flag{display:inline-flex;align-items:center;font-size:10px;font-weight:800;line-height:1;padding:4px 6px;white-space:nowrap;border-radius:6px;border:1px solid #63bdfc;color:#9bd9ff;background:rgba(32,117,183,.15);margin-left:5px;vertical-align:middle}
+.cloud-roster-flag.former{border-color:var(--line);color:var(--muted);background:transparent}
+.cloud-mode #memberList .member-former .cloud-roster-flag{opacity:1}
+.cloud-mode #memberList .member-new{border-left:3px solid #4fb3ec}
+@media(max-width:520px){.cloud-mode #cloudMembersTools{margin-top:6px}.cloud-mode .member-actionbar{display:none!important}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -666,7 +685,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
       <div class="subtitle">7 Tage fair verteilen · Sonderfälle · Live-Anpassungen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button">☁️ Konto</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
+    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
   </div>
 </div>
 <main class="content">
@@ -688,6 +707,13 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
   <div class="card">
     <div class="section-title">
       <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
+    </div>
+    <div id="cloudMembersTools" class="cloud-member-tools" hidden>
+      <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Mitglieder importieren</button>
+      <div class="cloud-members-hint">Mit dem Clash-Clan abgleichen · neue und ausgetretene Spieler prüfen</div>
+      <details id="cloudManualMembers" class="cloud-minor"><summary>Mitglieder manuell verwalten</summary>
+        <div class="actions"><button class="btn small" type="button" id="cloudManualOne">+ Mitglied</button><button class="btn small" type="button" id="cloudManualMany">+ Mehrere</button><button class="btn small" type="button" id="cloudManualFile">CSV importieren</button><button class="btn small" type="button" id="cloudManualSelect">Mehrere auswählen</button></div>
+      </details>
     </div>
     <div class="member-actionbar">
       <button class="btn small primary" id="addMemberBtn">+ Mitglied</button>
@@ -756,7 +782,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
 </div><div class="summary-legend">G = gespielt · P = noch geplant · Gesamt = beide zusammen</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
   <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
-  <div class="card">
+  <div class="card" id="localProfileCard">
     <div class="section-title"><h3>Profile / Clans</h3><span class="badge ok" id="profileCountBadge">1 Profil</span></div>
     <div class="profile-active"><b id="activeProfileName">Neuer Clan</b><div class="statusline">Jedes Profil hat eine eigene Mitgliederliste, Regeln, aktuelle CWL und CWL-Archive.</div></div>
     <div class="profile-actions"><button class="btn" id="newProfileBtn">+ Neues Profil</button><button class="btn" id="copyProfileBtn">Profil duplizieren</button><button class="btn" id="renameProfileBtn">Umbenennen</button><button class="btn danger" id="deleteProfileBtn">Profil löschen</button></div>
@@ -836,7 +862,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 
 <div class="cloud-overlay" id="cloudOverlay" role="dialog" aria-modal="true" aria-labelledby="cloudTitle" aria-hidden="true">
  <div class="cloud-panel">
- <div class="section-title"><h2 id="cloudTitle">☁️ CWL-Konto & Clanverwaltung</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
+ <div class="section-title"><h2 id="cloudTitle">Clan & Konto</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
  <div class="cloud-msg" id="cloudMsg">Ohne Anmeldung arbeitest du lokal. Bei Anmeldung werden nur die gemeinsamen Cloud-Clans geladen.</div>
  <section id="cloudAuth">
   <h3>Anmelden oder registrieren</h3>
@@ -849,18 +875,19 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div id="cloudIdentity" class="statusline"></div>
   <div class="actions"><button class="btn" id="cloudLogout">Abmelden → lokaler Planer</button><button class="btn" id="cloudReload">Cloud neu laden</button></div>
   <div class="cloud-section">
-    <h3>Meine verknüpften Clans</h3>
+    <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline"></div>
     <label for="cloudAlias">Dein Anzeigename (für Änderungsverlauf)</label>
     <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
   </div>
   <div class="cloud-section">
-    <h3>Clan verknüpfen</h3><p>Als Besitzer einen neuen Clanbereich mit einem Clash-Clan-Tag verbinden. Vorhandene Clanbereiche erhältst du per Einladung.</p>
+    <h3>Mit einem Clan verbinden</h3><p>Für einen bestehenden Clan gibst du den Einladungscode ein. Für deinen eigenen Clan kannst du die Verbindung selbst erstellen.</p>
+    <details id="cloudNewClanDetails" class="cloud-minor"><summary>Eigenen oder weiteren Clan hinzufügen</summary><p>Einmalig den Clash-Clan-Tag eingeben. Danach findest du den Clan oben unter „Meine Clans“.</p>
     <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
-    <div class="actions"><button class="btn primary" id="cloudCreateClan">Clanbereich erstellen</button></div>
-    <label for="cloudJoinCode">Einladungscode (12 Zeichen)</label><input id="cloudJoinCode" maxlength="12" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
+    <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
+    <label for="cloudJoinCode">Einladungscode</label><input id="cloudJoinCode" maxlength="12" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
   <div id="cloudRosterBox" class="cloud-section" hidden>
@@ -873,7 +900,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div id="cloudInviteBox" class="cloud-section" hidden>
     <h3>Zugriff teilen</h3><p>Einmalige Einladung, sieben Tage gültig.</p>
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
-    <button class="btn" id="cloudMakeInvite">Kurzen Einladungscode erstellen</button>
+    <button class="btn" id="cloudMakeInvite">Einladungscode erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
   </div>
@@ -882,17 +909,17 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
   <div class="cloud-section">
-    <h3>Cloud-Profil & Backup</h3>
-    <p>Neuer Clan startet mit einer leeren Cloud-Planung. Optional kannst du ein bestehendes JSON-Profil bewusst hochladen. Vorhandene Cloud-Daten werden nicht unbemerkt überschrieben.</p>
+    <h3>Bestehendes Profil übernehmen</h3>
+    <p>Optional kannst du ein lokales CWL-Backup in diesen Clan übernehmen. Deine bisherigen lokalen Daten bleiben erhalten.</p>
     <input type="file" id="cloudImportFile" accept="application/json,.json">
-    <div class="actions"><button class="btn" id="cloudImportProfile">JSON-Profil in Cloud übernehmen</button><button class="btn" id="cloudExportProfile">Cloud-Profil exportieren</button></div>
+    <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
   </div>
  </section>
  </div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.1";
+const APP_VERSION="v1.1.0-alpha.2";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1068,8 +1095,8 @@ function renderMobileDays(){
 function getDisplayMembers(){const list=[...state.members],mode=state.config.memberSort||"manual";if(mode==="manual")return list;if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));return list}
 function availabilityLabel(m){const start=m.firstDay||1,end=(m.outFromDay||state.config.days+1)-1;if(!m.firstDay&&!m.outFromDay)return"";if(start>end)return"Keine verfügbaren Tage";return`Verfügbar: T${start}${end!==start?`–T${Math.min(end,state.config.days)}`:""}`}
 function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;document.getElementById("selectMembersBtn").textContent=selectionMode?"Mehrfachbearbeitung beenden":"Mehrere auswählen";document.getElementById("deleteAllBtn").disabled=!!memberSearch||memberFilter!=="all";document.getElementById("deleteAllBtn").title=memberSearch||memberFilter!=="all"?"Filter zurücksetzen, um den gesamten Kader löschen zu können":"";["bulkParticipatingOnBtn","bulkParticipatingOffBtn","bulkFixedOnBtn","bulkFixedOffBtn","bulkPrioritySelect","bulkTownHallSelect","bulkTownHallPicker","bulkStrengthSelect","deleteSelectedBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=count===0})}
-function getVisibleMembers(){const q=memberSearch.trim().toLocaleLowerCase("de");return getDisplayMembers().filter(m=>(memberFilter==="all"||memberFilter==="participating"&&m.participating||memberFilter==="paused"&&!m.participating||memberFilter==="fixed"&&m.fixed)&&(!q||m.name.toLocaleLowerCase("de").includes(q)||(m.playerTag||"").toLocaleLowerCase("de").includes(q)))}
-function renderMembers(){const root=document.getElementById("memberList");updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Füge einen Namen hinzu, mehrere Namen untereinander ein oder importiere eine Liste.</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();return}const display=getVisibleMembers();document.getElementById("memberVisibleCount").textContent=`${display.length} von ${state.members.length}`;if(!display.length){root.innerHTML='<div class="empty">Keine Spieler gefunden. Suche oder Filter ändern.</div>';return}const manual=(state.config.memberSort||"manual")==="manual",dups=duplicateNameKeys();root.innerHTML=display.map(m=>{const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay),played=!!state.locks[d]?.locked,disabled=quickOut||played,title=played?"Tag bereits gespielt – vergangene Line-ups im Plan ändern":quickOut?"Durch Erst-ab/Raus-ab-Regel nicht verfügbar":"Tippen wechselt AUTO → MUSS → RAUS";return`<button class="rulebtn ${eff}" data-day="${d}" ${disabled?`disabled title="${esc(title)}"`:""}>T${d+1}<br>${played?"🔒":eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");const thOpts=`<option value="">RH –</option>`+Array.from({length:17},(_,i)=>19-i).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("")+(m.townHall===20?`<option value="20" selected>RH20 (bestehend)</option>`:"");const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");const idx=state.members.findIndex(x=>x.id===m.id),orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"",dup=dups.has(m.name.trim().toLocaleLowerCase("de")),avail=availabilityLabel(m);return`<div class="member${openMemberDetails.has(m.id)?" member-expanded":""}${selectionMode?" member-selecting":""}" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><div class="name-wrap"><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name">${dup?`<button class="dup-warning" type="button" title="Doppelter Spielername" aria-label="Doppelter Spielername – Player-Tag öffnen">!</button>`:""}</div><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-snapshot"><span class="member-brief"><span class="member-brief-desktop">${m.townHall?`RH${m.townHall}`:"RH –"} · Prio ${m.priority} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span><span class="member-brief-mobile">${m.townHall?`RH${m.townHall}`:"RH –"} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} · P${m.priority}</span></span><span class="member-snapshot-actions"><span class="member-status-chip ${m.participating?"in":"off"}">${m.participating?"Dabei":"Pause"}</span>${m.fixed?`<span class="member-status-chip fixed">FIX</span>`:""}<button class="btn small member-edit-toggle" type="button" aria-label="${esc(m.name)} ${openMemberDetails.has(m.id)?"schließen":"bearbeiten"}" aria-expanded="${openMemberDetails.has(m.id)}">${openMemberDetails.has(m.id)?"Schließen ▴":"Bearbeiten ▾"}</button></span></div>${dup?`<div class="duplicate-panel ${openDuplicatePanels.has(m.id)?"":"hidden"}"><div class="duplicate-text"><b>Doppelter Spielername:</b> Dieser Name kommt mehrfach vor. Das ist in Clash möglich. Zur eindeutigen Zuordnung wird ein Player-Tag empfohlen.</div><div class="duplicate-tag-row"><input class="name-input player-tag" value="${esc(m.playerTag||"")}" placeholder="#ABC123"><button class="btn small close-duplicate" type="button">Schließen</button></div></div>`:""}<div class="member-details ${openMemberDetails.has(m.id)?"":"hidden"}"><div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><button type="button" class="btn member-th-picker" aria-label="Rathaus für ${esc(m.name)} auswählen">RH ${m.townHall??"–"} ▾</button><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><button type="button" class="btn member-field-picker member-prio-picker" aria-label="Priorität für ${esc(m.name)} auswählen">Prio ${m.priority} ▾</button><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select><button type="button" class="btn member-field-picker member-strength-picker" aria-label="3-Sterne-Stärke für ${esc(m.name)} auswählen">${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} ▾</button>${orderBtns}<button class="btn small toggle-rules">Tage & Verfügbarkeit</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span>${avail?`<span class="availability-pill ${avail.startsWith("Keine")?"bad":""}">${esc(avail)}</span>`:""}</div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="rule-explain"><b>Tippen:</b> AUTO → MUSS → RAUS. Gespielte Tage sind gesperrt.</div><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div></div></div></div>`}).join("");root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");el.querySelector(".member-edit-toggle").onclick=()=>{
+function getVisibleMembers(){const q=memberSearch.trim().toLocaleLowerCase("de");return getDisplayMembers().filter(m=>(memberFilter==="all"||memberFilter==="participating"&&m.participating||memberFilter==="paused"&&!m.participating||memberFilter==="fixed"&&m.fixed)&&(!q||m.name.toLocaleLowerCase("de").includes(q)||(m.playerTag||"").toLocaleLowerCase("de").includes(q))).sort((a,b)=>window.CWLCloud?.active?Number(a.cocSyncState==='former')-Number(b.cocSyncState==='former'):0)}
+function renderMembers(){const root=document.getElementById("memberList");updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">'+(window.CWLCloud?.active?'Importiere Spieler direkt aus deinem Clan.':'Füge einen Namen hinzu, mehrere Namen untereinander ein oder importiere eine Liste.')+'</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();return}const display=getVisibleMembers();document.getElementById("memberVisibleCount").textContent=`${display.length} von ${state.members.length}`;if(!display.length){root.innerHTML='<div class="empty">Keine Spieler gefunden. Suche oder Filter ändern.</div>';return}const manual=(state.config.memberSort||"manual")==="manual",dups=duplicateNameKeys();root.innerHTML=display.map(m=>{const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay),played=!!state.locks[d]?.locked,disabled=quickOut||played,title=played?"Tag bereits gespielt – vergangene Line-ups im Plan ändern":quickOut?"Durch Erst-ab/Raus-ab-Regel nicht verfügbar":"Tippen wechselt AUTO → MUSS → RAUS";return`<button class="rulebtn ${eff}" data-day="${d}" ${disabled?`disabled title="${esc(title)}"`:""}>T${d+1}<br>${played?"🔒":eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");const thOpts=`<option value="">RH –</option>`+Array.from({length:17},(_,i)=>19-i).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("")+(m.townHall===20?`<option value="20" selected>RH20 (bestehend)</option>`:"");const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");const idx=state.members.findIndex(x=>x.id===m.id),orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"",dup=dups.has(m.name.trim().toLocaleLowerCase("de")),avail=availabilityLabel(m);return`<div class="member${openMemberDetails.has(m.id)?" member-expanded":""}${selectionMode?" member-selecting":""}${window.CWLCloud?.active&&m.cocSyncState==="former"?" member-former":""}${window.CWLCloud?.active&&m.cocSyncState==="new"?" member-new":""}" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><div class="name-wrap"><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name">${window.CWLCloud?.active&&m.cocSyncState==="new"?`<span class="cloud-roster-flag">NEU</span>`:window.CWLCloud?.active&&m.cocSyncState==="former"?`<span class="cloud-roster-flag former">AUSGETRETEN</span>`:""}${dup?`<button class="dup-warning" type="button" title="Doppelter Spielername" aria-label="Doppelter Spielername – Player-Tag öffnen">!</button>`:""}</div><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-snapshot"><span class="member-brief"><span class="member-brief-desktop">${m.townHall?`RH${m.townHall}`:"RH –"} · Prio ${m.priority} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span><span class="member-brief-mobile">${m.townHall?`RH${m.townHall}`:"RH –"} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} · P${m.priority}</span></span><span class="member-snapshot-actions"><span class="member-status-chip ${m.participating?"in":"off"}">${m.participating?"Dabei":"Pause"}</span>${m.fixed?`<span class="member-status-chip fixed">FIX</span>`:""}<button class="btn small member-edit-toggle" type="button" aria-label="${esc(m.name)} ${openMemberDetails.has(m.id)?"schließen":"bearbeiten"}" aria-expanded="${openMemberDetails.has(m.id)}">${openMemberDetails.has(m.id)?"Schließen ▴":"Bearbeiten ▾"}</button></span></div>${dup?`<div class="duplicate-panel ${openDuplicatePanels.has(m.id)?"":"hidden"}"><div class="duplicate-text"><b>Doppelter Spielername:</b> Dieser Name kommt mehrfach vor. Das ist in Clash möglich. Zur eindeutigen Zuordnung wird ein Player-Tag empfohlen.</div><div class="duplicate-tag-row"><input class="name-input player-tag" value="${esc(m.playerTag||"")}" placeholder="#ABC123"><button class="btn small close-duplicate" type="button">Schließen</button></div></div>`:""}<div class="member-details ${openMemberDetails.has(m.id)?"":"hidden"}"><div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><button type="button" class="btn member-th-picker" aria-label="Rathaus für ${esc(m.name)} auswählen">RH ${m.townHall??"–"} ▾</button><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><button type="button" class="btn member-field-picker member-prio-picker" aria-label="Priorität für ${esc(m.name)} auswählen">Prio ${m.priority} ▾</button><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select><button type="button" class="btn member-field-picker member-strength-picker" aria-label="3-Sterne-Stärke für ${esc(m.name)} auswählen">${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} ▾</button>${orderBtns}<button class="btn small toggle-rules">Tage & Verfügbarkeit</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span>${avail?`<span class="availability-pill ${avail.startsWith("Keine")?"bad":""}">${esc(avail)}</span>`:""}</div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="rule-explain"><b>Tippen:</b> AUTO → MUSS → RAUS. Gespielte Tage sind gesperrt.</div><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div></div></div></div>`}).join("");root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");el.querySelector(".member-edit-toggle").onclick=()=>{
   const expanded=!openMemberDetails.has(id);
   if(expanded&&matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches)openMemberDetails.clear();
   expanded?openMemberDetails.add(id):openMemberDetails.delete(id);
@@ -1326,6 +1353,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.1"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.2"></script>
 </body>
 </html>

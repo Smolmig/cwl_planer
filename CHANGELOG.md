@@ -8,6 +8,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ### In Entwicklung
 - Gemeinsamer Cloud-Modus und Clanmitgliederabgleich (v1.1.0 Alpha).
+- v1.1.0-alpha.2: API-Berechtigungsfix beim Mitgliederimport, klare Clannavigation, Mitgliederimport als Hauptaktion und NEW-/Austritts-Kennzeichnung.
 
 ## [1.0.1] - 2026-10-30
 
