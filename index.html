@@ -808,7 +808,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.0.1";
+const APP_VERSION="v1.0.2";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -873,20 +873,33 @@ function profileNameExists(name,excludeId=null){const key=canonicalProfileName(n
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
 function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()}
 function saveApp(){
-  const b=document.getElementById("saveBadge");
-  if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}
-  state.updatedAt=Date.now();app.updatedAt=Date.now();app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;
-  try{
-    const serialized=JSON.stringify(app),prev=localStorage.getItem(STORAGE_KEY);
-    // Recovery is best effort: a full storage quota must never prevent saving the actual data.
-    if(prev&&safeParse(prev)){try{localStorage.setItem(RECOVERY_KEY,prev)}catch(e){/* previous backup retained */}}
-    localStorage.setItem(STORAGE_KEY,serialized);
-    if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}
-  }catch(e){
-    suspendWrites=true;startupStorageIssue="save";
-    if(b){b.textContent="Speicherfehler – Backup sichern";b.className="badge err"}
-    renderRecoveryBanner();
+ const b=document.getElementById("saveBadge");
+ if(suspendWrites){if(b){b.textContent="Speichern pausiert";b.className="badge warn"}return}
+ try{
+  // UI-only renders must not write a new full document to localStorage.
+  const before=JSON.stringify(app);
+  if(before===saveApp.lastSavedJson)return;
+  const now=Date.now();
+  state.updatedAt=now;app.updatedAt=now;app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;
+  const next=JSON.stringify(app);
+  if(next===saveApp.lastSavedJson)return;
+  const needsRecovery=!saveApp.lastRecoveryAt||now-saveApp.lastRecoveryAt>=15*60*1000;
+  if(needsRecovery){
+   const previous=localStorage.getItem(STORAGE_KEY);
+   // Recovery copy is best-effort; do not use quota just to rewrite it every render.
+   if(previous&&previous!==next&&safeParse(previous)){
+    try{localStorage.setItem(RECOVERY_KEY,previous);saveApp.lastRecoveryAt=now}
+    catch(e){/* keep existing recovery; primary save still gets a chance */}
+   }
   }
+  localStorage.setItem(STORAGE_KEY,next);
+  saveApp.lastSavedJson=next;
+  if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}
+ }catch(e){
+  suspendWrites=true;startupStorageIssue="save";
+  if(b){b.textContent="Speicherfehler – Backup sichern";b.className="badge err"}
+  renderRecoveryBanner();
+ }
 }
 function showToast(message){const t=document.getElementById("toast");if(!t)return;t.textContent=message;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
 let inlineActionResolve=null,inlineActionPreviousFocus=null;
@@ -919,6 +932,7 @@ function fairnessCandidateScore(m,d,counts){
 }
 function calculatePlan(){
   const slots=state.config.slots,days=state.config.days,counts=Object.fromEntries(allKnownMembers().map(m=>[m.id,0])),playedCounts={...counts},dayPlans=[];
+  const memberOrder=new Map(state.members.map((m,i)=>[m.id,i]));
   const lockedIds=new Set();
   for(let d=0;d<days;d++)if(state.locks[d]?.locked)for(const id of state.locks[d].lineup||[])lockedIds.add(id);
   for(let d=0;d<days;d++){
@@ -939,7 +953,7 @@ function calculatePlan(){
           if(A.used!==B.used)return A.used-B.used;
           if(A.remaining!==B.remaining)return A.remaining-B.remaining;
           if(A.priority!==B.priority)return B.priority-A.priority;
-          const ia=state.members.indexOf(a),ib=state.members.indexOf(b);
+          const ia=memberOrder.get(a.id)??-1,ib=memberOrder.get(b.id)??-1;
           return (ia*17+d*13)%997-(ib*17+d*13)%997;
         });
         const m=remaining.shift();chosen.push(m)

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.1.0-alpha.9";
 
 const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
  "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
@@ -13,6 +14,14 @@ let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=f
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
+const backups=createCloudBackups({
+ sb,
+ context:()=>({clanId,role,revision,clans}),
+ ensureSaved:()=>ensureSaved(),
+ loadProfile:()=>loadCloudProfile(true),
+ audit:()=>audit(),
+ toast:message=>storage.toast(message)
+});
 const cloud={
  active:false,
  onLocalChange(){
@@ -184,7 +193,7 @@ async function useSession(session){
 }
 async function leaveCloud(){
  clearTimeout(debounce);
- stopPresence();stopRemoteChecks();hideChangeToast();
+ stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
@@ -220,7 +229,7 @@ async function chooseClan(epoch=accountEpoch){
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
- toggle("cloudClanActions",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
+ toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
@@ -237,6 +246,9 @@ async function chooseClan(epoch=accountEpoch){
  toggle("cloudMembersTools",true);
  $("cloudNewClanDetails").open=false;
  await loadAccessList(clanId);
+ toggle("cloudBackupPanel",true);
+ toggle("cloudRestoreSnapshot",role==="owner");
+ backups.reset();
  toggle("cloudImportProfile",role!=="viewer");
  toggle("cloudImportFile",role!=="viewer");
  // Switch modes before rendering so cloud records never enter localStorage.
@@ -869,6 +881,10 @@ $("memberList").addEventListener("click",event=>{
   row.querySelector(".cloud-roster-flag")?.remove();
   cloud.onLocalChange();
 });
+bind("cloudLoadSnapshots","click",()=>backups.list());
+bind("cloudSnapshotSelect","change",()=>backups.buttons());
+bind("cloudDownloadSnapshot","click",()=>backups.download());
+bind("cloudRestoreSnapshot","click",()=>backups.restore());
 bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click",importCloud);
 $("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
@@ -898,7 +914,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.7";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.9";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
