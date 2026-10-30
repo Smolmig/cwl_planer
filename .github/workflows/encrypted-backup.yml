@@ -1,0 +1,76 @@
+name: Encrypted Supabase backup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: cwl-encrypted-db-backup
+  cancel-in-progress: false
+jobs:
+  encrypted-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      CWL_BACKUP_PASSPHRASE: ${{ secrets.CWL_BACKUP_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL}" || -z "${CWL_BACKUP_PASSPHRASE}" ]]; then
+            echo "::error::Missing SUPABASE_DB_URL and/or CWL_BACKUP_PASSPHRASE. Follow docs/BACKUP_AND_PERFORMANCE.md."
+            exit 1
+          fi
+          if [[ ${#CWL_BACKUP_PASSPHRASE} -lt 24 ]]; then
+            echo "::error::CWL_BACKUP_PASSPHRASE must contain at least 24 characters."
+            exit 1
+          fi
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - name: Export schema and data (not in public Git)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/cwl-backup"
+          umask 077
+          supabase db dump --db-url "${SUPABASE_DB_URL}" --role-only -f "${RUNNER_TEMP}/cwl-backup/roles.sql"
+          supabase db dump --db-url "${SUPABASE_DB_URL}" -f "${RUNNER_TEMP}/cwl-backup/schema.sql"
+          supabase db dump --db-url "${SUPABASE_DB_URL}" --data-only --use-copy -f "${RUNNER_TEMP}/cwl-backup/data.sql"
+          # Auth is excluded from the standard CLI dump; preserve it separately.
+          supabase db dump --db-url "${SUPABASE_DB_URL}" --schema auth --data-only --use-copy -f "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
+          test -s "${RUNNER_TEMP}/cwl-backup/schema.sql"
+          test -s "${RUNNER_TEMP}/cwl-backup/data.sql"
+          test -s "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
+          printf 'CWL encrypted daily backup; UTC: %s; source schema: public/private (CLI default), auth-data separate\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "${RUNNER_TEMP}/cwl-backup/README.txt"
+      - name: Encrypt, integrity-check and securely dispose of plaintext
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}"
+          tar -czf cwl-backup.tar.gz cwl-backup
+          # Password is read from stdin, never printed on a command line or in logs.
+          printf '%s' "${CWL_BACKUP_PASSPHRASE}" |
+            gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --symmetric --cipher-algo AES256 --compress-algo none \
+              --output cwl-backup.tar.gz.gpg cwl-backup.tar.gz
+          test -s cwl-backup.tar.gz.gpg
+          printf '%s' "${CWL_BACKUP_PASSPHRASE}" |
+            gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --decrypt cwl-backup.tar.gz.gpg 2>/dev/null | tar -tzf - > /dev/null
+          sha256sum cwl-backup.tar.gz.gpg > cwl-backup.tar.gz.gpg.sha256
+          rm -rf cwl-backup cwl-backup.tar.gz
+      - name: Upload encrypted artifact only (30 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cwl-encrypted-db-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cwl-backup.tar.gz.gpg
+            ${{ runner.temp }}/cwl-backup.tar.gz.gpg.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
