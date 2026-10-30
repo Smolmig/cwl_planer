@@ -1247,7 +1247,6 @@ function allKnownMembers(){return [...state.members,...state.archivedMembers]}
 function profileNameExists(name,excludeId=null){const key=canonicalProfileName(name);return app.profiles.some(p=>p.id!==excludeId&&canonicalProfileName(p.name)===key)}
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
 function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()}
-let lastLocalSavedJson=null,lastLocalRecoveryAt=0;
 function saveApp(){
  if(window.CWLCloud?.active){window.CWLCloud.onLocalChange();return}
  const b=document.getElementById("saveBadge");
@@ -1255,22 +1254,22 @@ function saveApp(){
  try{
   // UI-only renders must not write a new full document to localStorage.
   const before=JSON.stringify(app);
-  if(before===lastLocalSavedJson)return;
+  if(before===saveApp.lastSavedJson)return;
   const now=Date.now();
   state.updatedAt=now;app.updatedAt=now;app.version=DATA_VERSION;app.dataVersion=DATA_VERSION;
   const next=JSON.stringify(app);
-  if(next===lastLocalSavedJson)return;
-  const needsRecovery=lastLocalRecoveryAt===0||now-lastLocalRecoveryAt>=15*60*1000;
+  if(next===saveApp.lastSavedJson)return;
+  const needsRecovery=!saveApp.lastRecoveryAt||now-saveApp.lastRecoveryAt>=15*60*1000;
   if(needsRecovery){
    const previous=localStorage.getItem(STORAGE_KEY);
    // Recovery copy is best-effort; do not use quota just to rewrite it every render.
    if(previous&&previous!==next&&safeParse(previous)){
-    try{localStorage.setItem(RECOVERY_KEY,previous);lastLocalRecoveryAt=now}
+    try{localStorage.setItem(RECOVERY_KEY,previous);saveApp.lastRecoveryAt=now}
     catch(e){/* keep existing recovery; primary save still gets a chance */}
    }
   }
   localStorage.setItem(STORAGE_KEY,next);
-  lastLocalSavedJson=next;
+  saveApp.lastSavedJson=next;
   if(b){b.textContent="automatisch gespeichert";b.className="badge ok"}
  }catch(e){
   suspendWrites=true;startupStorageIssue="save";
