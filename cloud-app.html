@@ -794,6 +794,11 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 #view-members .member-filters .is-filtered:focus{outline:2px solid var(--blue)}
 #view-members .member-filters:has(.is-filtered){border-color:var(--blue)!important}
 #view-members .list-management-actions #selectMembersBtn[aria-pressed="true"]{border-color:var(--blue)!important;background:var(--bluebg)!important;box-shadow:inset 0 0 0 1px var(--blue)}
+
+#cloudResetSent[hidden],#cloudRecovery[hidden]{display:none!important}
+.cloud-auth-helper{display:flex;justify-content:flex-end;margin:7px 0 0}
+.cloud-auth-helper button{font-size:12px;padding:5px 8px;color:var(--muted);font-weight:650}
+.cloud-auth-helper button:hover{color:var(--text)}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1028,7 +1033,18 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <label for="cloudEmail">E-Mail</label><input type="email" id="cloudEmail" autocomplete="email">
   <label for="cloudPassword">Passwort (mindestens 8 Zeichen)</label><input type="password" id="cloudPassword" minlength="8">
   <div class="actions"><button class="btn primary" id="cloudLogin">Anmelden</button><button class="btn" id="cloudSignup">Registrieren</button></div>
+  <div class="cloud-auth-helper"><button class="btn small" type="button" id="cloudForgotPassword">Passwort vergessen?</button></div>
+  <div class="cloud-msg" id="cloudResetSent" hidden role="status">Wenn ein Konto zu dieser E-Mail existiert, erhältst du einen Link zum Zurücksetzen. Prüfe auch den Spamordner.</div>
   <p>Du kannst die App ohne Account weiter lokal nutzen. Nach dem Login gilt ausschließlich der gemeinsame Cloud-Stand; lokale Profile werden nicht automatisch hochgeladen.</p>
+ </section>
+ <section id="cloudRecovery" hidden>
+  <h3>Neues Passwort festlegen</h3>
+  <p>Dein Wiederherstellungslink wurde bestätigt. Vergib jetzt ein neues Passwort.</p>
+  <label for="cloudNewPassword">Neues Passwort (mindestens 8 Zeichen)</label>
+  <input type="password" id="cloudNewPassword" minlength="8" autocomplete="new-password">
+  <label for="cloudConfirmPassword">Neues Passwort wiederholen</label>
+  <input type="password" id="cloudConfirmPassword" minlength="8" autocomplete="new-password">
+  <div class="actions"><button class="btn primary" id="cloudChangePassword" type="button">Passwort speichern</button></div>
  </section>
  <section id="cloudAccount" hidden>
   <div id="cloudIdentity" class="statusline"></div>
