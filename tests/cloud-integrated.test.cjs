@@ -231,11 +231,10 @@ test("Backup v1: automatic checkpoints, secure owner restore and offsite encrypt
 });
 test("Stable and cloud saves reduce localStorage writes and preserve planner results",()=>{
  for(const content of [main,preview]){
-  assert.match(content,/function saveApp()/);
-  assert.match(content,/if\(before===lastLocalSavedJson\)return/);
-  assert.match(content,/lastLocalRecoveryAt>=15\*60\*1000/);
-  assert.match(content,/const memberOrder=new Map\(state\.members\.map/);
-  assert.match(content,/memberOrder\.get\(a\.id\)/);
+  assert.ok(content.includes("if(before===saveApp.lastSavedJson)return;"));
+  assert.ok(content.includes("now-saveApp.lastRecoveryAt>=15*60*1000"));
+  assert.ok(content.includes("const memberOrder=new Map(state.members.map"));
+  assert.ok(content.includes("memberOrder.get(a.id)"));
  }
  const worker=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
  assert.match(worker,/cwl-planer-v1-0-2/);
