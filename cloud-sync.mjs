@@ -9,6 +9,7 @@ const toggle=(id,show)=>{if($(id))$(id).hidden=!show};
 const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
+let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 const cloud={
  active:false,
  onLocalChange(){
@@ -25,7 +26,9 @@ const cloud={
  afterRender(){
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
-  $("cloudOpen").textContent=this.active?"☁️ Clan ▾":"👤 Anmelden";
+  const activeClan=clans.find(c=>c.id===clanId);
+  const label=activeClan?.name||"Clan";
+  $("cloudOpen").textContent=this.active?"☁️ "+(label.length>15?label.slice(0,13)+"…":label)+" ▾":"👤 Anmelden";
   $("cloudOpen").title=this.active?"Clan und Konto verwalten":"Anmelden oder registrieren";
   $("cloudOpen").setAttribute("aria-label",this.active?"Clan und Konto verwalten":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
@@ -55,16 +58,14 @@ const cloud={
 window.CWLCloud=cloud;
 function installNameEditors(){
  for(const wrap of document.querySelectorAll("#memberList .name-wrap")){
-   const input=wrap.querySelector(".member-name");
-   if(!input)continue;
+   const input=wrap.querySelector(".member-name"),button=wrap.querySelector(".member-name-edit");
+   if(!input||!button)continue;
    input.readOnly=true;
-   if(wrap.querySelector(".member-name-edit"))continue;
-   if(cloud.active&&role==="viewer")continue;
-   const button=document.createElement("button");
-   button.className="member-name-edit";
-   button.type="button";button.textContent="✎";
-   button.title="Namen bearbeiten";button.setAttribute("aria-label","Spielernamen bearbeiten");
-   button.addEventListener("click",()=>{
+   if(cloud.active&&role==="viewer"){button.hidden=true;continue}
+   if(button.dataset.editReady==="1")continue;
+   button.dataset.editReady="1";
+   button.addEventListener("click",event=>{
+     event.stopPropagation();
      if(cloud.active&&role==="viewer")return;
      input.readOnly=false;
      input.focus({preventScroll:true});
@@ -73,9 +74,12 @@ function installNameEditors(){
    input.addEventListener("blur",()=>{input.readOnly=true});
    input.addEventListener("keydown",event=>{
      if(event.key==="Enter"){event.preventDefault();input.blur()}
-     if(event.key==="Escape"){event.preventDefault();input.value=storage.getProfile().members.find(m=>m.id===wrap.closest(".member")?.dataset.id)?.name||input.value;input.blur()}
+     if(event.key==="Escape"){
+       event.preventDefault();
+       input.value=storage.getProfile().members.find(m=>m.id===wrap.closest(".member")?.dataset.id)?.name||input.value;
+       input.blur();
+     }
    });
-   wrap.append(button);
  }
 }
 function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")}
@@ -107,6 +111,7 @@ async function useSession(session){
 }
 async function leaveCloud(){
  clearTimeout(debounce);
+ stopPresence();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
