@@ -869,7 +869,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
    <p>Über „☁️ Clan ▾“ verwaltest du deinen Clan, Einladungen und Änderungen. Sobald du angemeldet bist, wird nur der gemeinsame Cloud-Stand bearbeitet – lokale Profile bleiben davon getrennt.</p>
    <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene bleiben ausgegraut erhalten, damit frühere Einsätze nicht verloren gehen.</p>
    <p>„Mehrfachauswahl“ erlaubt Änderungen für mehrere Spieler gleichzeitig. Mit „Fertig“ verlässt du den Modus. Namen bearbeitest du über das Stift-Symbol.</p>
-   <p>Bei einem Speicherkonflikt wird nicht automatisch überschrieben. Der Cloud-Modus benötigt eine Internetverbindung.</p>
+   <p>Über „Meine Clans“ wechselst du zwischen eigenen und geteilten Clanbereichen. Als Vize/Beobachter kannst du einen Clan verlassen. Als Besitzer kannst du deinen eigenen Clanbereich erst nach doppelter Bestätigung dauerhaft löschen.</p>
+   <p>„Aktiv“ bedeutet, dass ein Clanmitglied innerhalb der letzten zwei Minuten in der App verbunden war; es zeigt nicht, welche Eingabe gerade bearbeitet wird.</p>
+   <p>Bei einem Speicherkonflikt wird nicht automatisch überschrieben. „Jetzt aktualisieren“ zeigt, ob du den aktuellen Cloud-Stand hast. Neue App-Versionen werden bei aktiver Verbindung automatisch erkannt; offene Bearbeitungen werden dabei nicht unterbrochen.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -1410,8 +1412,8 @@ if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
 renderAll();
 window.CWLLegacy={
  getProfile:()=>state,
- switchToCloud:(profile)=>{const p=normalizeProfile(structuredClone(profile));app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};state=p;mobileSelectedDay=null;renderAll()},
- restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];renderAll()},
+ switchToCloud:(profile)=>{const p=normalizeProfile(structuredClone(profile));app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
+ restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
  blank:(name)=>freshProfile(name),
  newMember:(name)=>freshMember(name),
  normalize:(p)=>normalizeProfile(p),
