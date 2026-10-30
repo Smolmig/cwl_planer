@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.1.0-alpha.9";
 
 const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
  "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
