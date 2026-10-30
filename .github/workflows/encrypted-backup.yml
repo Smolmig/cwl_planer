@@ -46,11 +46,9 @@ jobs:
           test -s "${RUNNER_TEMP}/cwl-backup/schema.sql"
           test -s "${RUNNER_TEMP}/cwl-backup/data.sql"
           test -s "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
-          # A successful exit with empty auth user data is NOT an acceptable full backup.
-          if ! grep -Eq '^COPY (auth\\.)?users([[:space:]]|[[:space:]]*\\()' "${RUNNER_TEMP}/cwl-backup/auth-data.sql"; then
-            echo "::error::Auth users were not included; do not treat this artifact as a complete backup."
-            exit 1
-          fi
+          # Verify actual auth.users data, not just an empty COPY header.
+          # The separate script avoids shell-regex escaping errors and prints no private rows.
+          python3 scripts/verify_auth_dump.py "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
           printf 'CWL encrypted daily backup; UTC: %s; source schema: public/private (CLI default), auth-data separate\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "${RUNNER_TEMP}/cwl-backup/README.txt"
       - name: Encrypt, integrity-check and securely dispose of plaintext
         shell: bash
