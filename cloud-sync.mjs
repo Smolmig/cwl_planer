@@ -10,6 +10,7 @@ const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
+let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const cloud={
  active:false,
@@ -99,8 +100,44 @@ function error(e){msg(e?.message||String(e),true);
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
-function showSignedIn(){toggle("cloudAuth",!user);toggle("cloudAccount",!!user);text("cloudIdentity",user?user.email:"")}
+function showSignedIn(){
+ toggle("cloudAuth",!user&&!recoveryMode);
+ toggle("cloudAccount",!!user&&!recoveryMode);
+ toggle("cloudRecovery",recoveryMode);
+ text("cloudIdentity",user?user.email:"");
+}
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
+async function sendPasswordReset(){
+ const email=$("cloudEmail").value.trim();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error("Bitte zuerst eine gültige E-Mail-Adresse eingeben.");
+ const {error:err}=await sb.auth.resetPasswordForEmail(email,{
+  redirectTo:location.origin+location.pathname
+ });
+ if(err)throw err;
+ toggle("cloudResetSent",true);
+ storage.toast("✓ Wiederherstellungsanfrage gesendet");
+}
+function beginRecovery(){
+ recoveryMode=true;
+ showSignedIn();
+ open();
+ $("cloudNewPassword").focus({preventScroll:true});
+}
+async function completeRecovery(){
+ if(!recoveryMode)throw Error("Kein Wiederherstellungslink aktiv.");
+ const first=$("cloudNewPassword").value,second=$("cloudConfirmPassword").value;
+ if(first.length<8)throw Error("Bitte ein Passwort mit mindestens 8 Zeichen eingeben.");
+ if(first!==second)throw Error("Die beiden Passwörter stimmen nicht überein.");
+ const {error:err}=await sb.auth.updateUser({password:first});
+ if(err)throw err;
+ recoveryMode=false;
+ $("cloudNewPassword").value="";$("cloudConfirmPassword").value="";
+ const {error:signoutError}=await sb.auth.signOut();
+ if(signoutError)throw signoutError;
+ await useSession(null);
+ showSignedIn();open();
+ storage.toast("✓ Passwort geändert. Bitte neu anmelden.");
+}
 async function sign(kind){
  const email=$("cloudEmail").value.trim(),password=$("cloudPassword").value;
  if(!email||password.length<8)throw Error("Bitte E-Mail und mindestens 8 Zeichen Passwort eingeben.");
@@ -748,6 +785,8 @@ async function importCloud(){
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("cloudOpen","click",async()=>{open();if(clanId)await loadAccessList(clanId)});bind("cloudClose","click",close);
 bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign("signup"));
+bind("cloudForgotPassword","click",sendPasswordReset);
+bind("cloudChangePassword","click",completeRecovery);
 bind("cloudLogout","click",logout);
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",refreshCloud);
@@ -841,11 +880,17 @@ setTimeout(()=>checkForAppUpdate().catch(console.warn),0);
 
 const linkCode=new URLSearchParams(location.search).get("invite");
 if(linkCode){$("cloudJoinCode").value=linkCode;open()}
+sb.auth.onAuthStateChange((event,session)=>{
+ if(event==="PASSWORD_RECOVERY"){
+  queueMicrotask(beginRecovery);
+  return;
+ }
+ if(event==="SIGNED_OUT"&&user)queueMicrotask(()=>useSession(null).catch(error));
+ if(event==="SIGNED_IN"&&session?.user?.id!==user?.id&&!recoveryMode)
+  queueMicrotask(()=>useSession(session).catch(error));
+});
 const {data:{session},error:sessionErr}=await sb.auth.getSession();
 if(sessionErr)error(sessionErr);
+else if(recoveryMode)beginRecovery();
 else if(session)try{await useSession(session)}catch(e){error(e)}
 else{showSignedIn();cloud.afterRender()}
-sb.auth.onAuthStateChange((event,session)=>{
- if(event==="SIGNED_OUT"&&user)queueMicrotask(()=>useSession(null).catch(error));
- if(event==="SIGNED_IN"&&session?.user?.id!==user?.id)queueMicrotask(()=>useSession(session).catch(error));
-});
