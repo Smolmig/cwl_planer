@@ -799,6 +799,13 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .cloud-auth-helper{display:flex;justify-content:flex-end;margin:7px 0 0}
 .cloud-auth-helper button{font-size:12px;padding:5px 8px;color:var(--muted);font-weight:650}
 .cloud-auth-helper button:hover{color:var(--text)}
+
+.cloud-help h4{font-size:15px;margin:0 0 7px}
+.cloud-help-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.cloud-help-grid>div{border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--card)}
+.cloud-help-grid b{font-size:13px}
+.cloud-help-grid p{font-size:12px;margin:5px 0 0;line-height:1.55}
+.cloud-help-note{border-top:1px solid var(--line);padding-top:10px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -969,15 +976,18 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
   <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe und Ergebnisse werden derzeit noch nicht automatisch übernommen.</b></div>
-  <div id="cloudHelpSection" hidden class="helpbox">
-   <b>Cloud-Modus und Clanverwaltung</b>
-   <p>Über „☁️ Clan ▾“ verwaltest du deinen Clan, Einladungen und Änderungen. Sobald du angemeldet bist, wird nur der gemeinsame Cloud-Stand bearbeitet – lokale Profile bleiben davon getrennt.</p>
-   <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene ohne aktuelle Aufstellung bleiben unten ausgegraut. Ist ein Spieler noch für einen CWL-Tag eingeplant, zeigt die App eine Warnung und verlangt eine Entscheidung; er wird nicht automatisch pausiert.</p>
-   <p>Unter „Personen mit Zugriff“ siehst du Besitzer, Vize und Beobachter. Besitzer und Vize können Einladungslinks erstellen. Wer über einen solchen Link beitritt, gibt seinen Ingame-Namen an. Beobachter können nur ansehen und nicht einladen.</p>
-   <p>„Mehrfachauswahl“ erlaubt Änderungen für mehrere Spieler gleichzeitig. Mit „Fertig“ verlässt du den Modus. Namen bearbeitest du über das Stift-Symbol.</p>
-   <p>Über „Meine Clans“ wechselst du zwischen eigenen und geteilten Clanbereichen. Als Vize/Beobachter kannst du einen Clan verlassen. Als Besitzer kannst du deinen eigenen Clanbereich erst nach doppelter Bestätigung dauerhaft löschen.</p>
-   <p>„Aktiv“ bedeutet, dass ein Clanmitglied innerhalb der letzten zwei Minuten in der App verbunden war; es zeigt nicht, welche Eingabe gerade bearbeitet wird.</p>
-   <p>Bei einem Speicherkonflikt wird nicht automatisch überschrieben. „Jetzt aktualisieren“ zeigt, ob du den aktuellen Cloud-Stand hast. Neue App-Versionen werden bei aktiver Verbindung automatisch erkannt; offene Bearbeitungen werden dabei nicht unterbrochen.</p>
+  <div id="cloudHelpSection" hidden class="helpbox cloud-help">
+   <h4>Gemeinsam planen</h4>
+   <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
+   <div class="cloud-help-grid">
+    <div><b>Clans und Zugriffe</b><p>Öffne oben „Clan & Konto“, um den Clan zu wechseln. Besitzer können Personen entfernen, Vize- und Beobachterrechte ändern und Einladungen zurückziehen. Vizes können weitere Personen einladen; Beobachter können nur lesen.</p></div>
+    <div><b>Mitglieder aktualisieren</b><p>Im Tab „Mitglieder“ findest du „Mitglieder aktualisieren“. Prüfe neue, veränderte oder ausgetretene Spieler vor der Übernahme. Bereits eingeplante Spieler werden nicht ohne Entscheidung pausiert.</p></div>
+    <div><b>Mitglieder bearbeiten</b><p>„Dabei“ und „Fix“ kannst du direkt in jeder Spielerzeile ändern. Für Name, Rathaus, Stärke und Tagesregeln stehen Stift bzw. „Bearbeiten“ bereit. „Mehrfachauswahl“ markiert mehrere Spieler; mit „Fertig“ verlässt du den Modus.</p></div>
+    <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
+    <div><b>Einladungen</b><p>Einmalige Einladungslinks gelten sieben Tage. Wer beitritt, gibt seinen Ingame-Namen an. Offene Einladungen können zurückgezogen werden; der Link ist danach ungültig.</p></div>
+    <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
+   </div>
+   <p class="cloud-help-note">Noch nicht automatisch: Gegnerdaten, Angriffsergebnisse und CWL-Tagesabschlüsse. Bis zur späteren API-Integration bestätigst du gespielte Kriegstage selbst.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
