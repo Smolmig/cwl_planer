@@ -62,7 +62,8 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(preview,/if\(day===mobileSelectedDay && uiSettings\.dayViewMode==="single"\)return/);
  assert.match(mod,/function installNameEditors\(\)/);
  assert.match(mod,/input\.readOnly=true/);
- assert.match(mod,/role==="viewer"\)continue/);
+ assert.ok(mod.includes('if(cloud.active&&role==="viewer"){button.hidden=true;continue}'));
+
  assert.match(mod,/initialImport=existing\.length===0/);
  assert.match(mod,/if\(!rosterDiff\.initialImport\)m\.cocSyncState="new"/);
  assert.match(mod,/m\.cocOrder=i/);
