@@ -446,25 +446,56 @@ async function getRoster(){
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
  const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former");
+ const planDays=storage.getPlannedLineups();
+ const critical=departed.map(m=>({member:m,days:planDays.filter(d=>d.lineup.includes(m.id)).map(d=>d.day)}))
+   .filter(item=>item.days.length>0);
+ const criticalTags=new Set(critical.map(item=>normalizeTag(item.member.playerTag)));
+ const normalDeparted=departed.filter(m=>!criticalTags.has(normalizeTag(m.playerTag)));
  const updated=[...rosterMap.values()].filter(m=>{
    const current=existingMap.get(normalizeTag(m.tag));
    return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
- roster=incoming;rosterDiff={added,departed,updated,received:incoming.length,initialImport};
+ roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,received:incoming.length,initialImport};
  const diff=$("cloudRosterDiff");diff.replaceChildren();
  function group(title,items){
   const head=document.createElement("p");head.textContent=title+" ("+items.length+")";head.style.fontWeight="bold";diff.append(head);
   for(const x of items.slice(0,50)){const line=document.createElement("p");line.textContent="• "+x.name+" "+(x.tag||x.playerTag||"");diff.append(line)}
  }
- group("NEU IM CLAN",added);group("NAMEN/RH GEÄNDERT",updated);group("NICHT MEHR IM CLAN",departed);
- toggle("cloudRosterDiff",true);toggle("cloudDepartedWrap",false);
+ group("NEU IM CLAN",added);
+ group("NAMEN/RH GEÄNDERT",updated);
+ group("NICHT MEHR IM CLAN · OHNE AUFSTELLUNG",normalDeparted);
+ const warn=$("cloudDepartedWarnings");warn.replaceChildren();
+ if(critical.length){
+  const title=document.createElement("strong");
+  title.textContent="⚠️ "+critical.length+" Spieler nicht mehr im Clan, aber noch in der CWL-Aufstellung";
+  const description=document.createElement("p");
+  description.textContent="Diese Spieler werden nicht automatisch pausiert oder entfernt. Bitte für jeden entscheiden:";
+  warn.append(title,description);
+  for(const item of critical){
+   const label=document.createElement("label");
+   label.textContent=item.member.name+" · Tag "+item.days.join(", ");
+   const select=document.createElement("select");
+   select.className="cloud-missing-choice";select.dataset.playerId=item.member.id;
+   select.add(new Option("Bitte auswählen",""));
+   select.add(new Option("Vorerst nichts ändern","defer"));
+   select.add(new Option("Weiterhin als Dabei bestätigen","keep"));
+   label.append(select);warn.append(label);
+  }
+ }
+ toggle("cloudDepartedWarnings",critical.length>0);
+ toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
- msg("Abgleich: "+incoming.length+" Mitglieder · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" nicht mehr dabei. Noch nichts übernommen.");
+ msg("Abgleich: "+incoming.length+" Mitglieder · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" nicht mehr im Clan."+(critical.length?" ⚠️ Bitte Aufstellungs-Konflikte entscheiden.":"")+" Noch nichts übernommen.");
 }
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
  await ensureSaved();
  const currentRoster=roster;
+ const decisions=new Map([...document.querySelectorAll("#cloudDepartedWarnings .cloud-missing-choice")]
+   .map(select=>[select.dataset.playerId,select.value]));
+ if(rosterDiff.critical.some(item=>!decisions.get(item.member.id)))
+  throw Error("Bitte für alle Spieler in einer Aufstellung entscheiden, bevor du den Abgleich übernimmst.");
+ const protectedIds=new Set(rosterDiff.critical.map(item=>item.member.id));
  const p=storage.getProfile(),members=p.members;
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const remoteTags=new Set();
@@ -476,7 +507,7 @@ async function applyRoster(){
     m.playerTag=tag;m.participating=false;m.fixed=false;m.priority=0;
     if(!rosterDiff.initialImport)m.cocSyncState="new"; // no NEW badges on first complete import
     members.push(m);map.set(tag,m);
-  } else if(m.cocSyncState==="former") {
+  } else if(m.cocSyncState==="former"||m.cocSyncState==="kept") {
     delete m.cocSyncState; // rejoined the clan
   }
   m.name=r.name;
@@ -484,14 +515,22 @@ async function applyRoster(){
   if(Number.isInteger(r.townHallLevel)&&r.townHallLevel>=3&&r.townHallLevel<=20)m.townHall=r.townHallLevel;
  }
  for(const m of members){
-  if(m.playerTag&&!remoteTags.has(normalizeTag(m.playerTag))){
-    m.cocSyncState="former";
-    m.participating=false; // retain player/history, but do not schedule automatically
+  if(!m.playerTag||remoteTags.has(normalizeTag(m.playerTag)))continue;
+  if(protectedIds.has(m.id)){
+    if(decisions.get(m.id)==="keep"){
+      m.participating=true;
+      m.cocSyncState="kept"; // expressly retain a missing member's eligibility
+    }
+    // "defer" means preserve everything and review again at the next import.
+    continue;
   }
+  if(m.cocSyncState==="kept")continue; // explicit user decision remains in force
+  m.cocSyncState="former";
+  m.participating=false; // no planned lineups reference this person
  }
  storage.rerender();
  await ensureSaved();
- msg("Mitgliederliste aktualisiert. Neue Spieler sind markiert und ausgetretene Spieler stehen ausgegraut am Listenende.");
+ msg("Mitgliederliste aktualisiert. Spieler ohne Aufstellung sind unten archiviert; Spieler mit Aufstellung wurden nur nach deiner Entscheidung geändert.");
  resetRoster();close();
 }
 async function audit(){
