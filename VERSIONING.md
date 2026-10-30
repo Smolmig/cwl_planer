@@ -67,3 +67,10 @@ Für nicht freigegebene Builds `1.1.0-alpha.1`, `1.1.0-beta.1` oder `1.1.0-rc.1`
 - Erst ein notwendiger Kompatibilitätsbruch würde einen Sprung auf `v2.0.0` rechtfertigen.
 
 Diese Roadmap ist keine Zusage einer vorhandenen Funktion; der aktuelle stabile Planer arbeitet weiterhin mit lokalem Speicher.
+
+## 30.10.2026 – Wartungsrelease
+
+- Stabile Offline-PWA: **v1.0.2**, weiterhin Datenformat **v9** und unveränderter `localStorage`-Schlüssel.
+- Cloud-Pilot: **v1.1.0-alpha.9** mit Sicherungspunkten, gesondertem Cloud-Modul `cloud-backups.mjs`, unverändertem Backend-Profilformat v9.
+- Versionsmanifest `cloud-version.json` und Service-Worker-Cache `cwl-planer-v1-0-2` passend angepasst.
+- Backup-Workflow für GitHub Actions ist erst nach zwei Secret-Einträgen und einem erfolgreichen manuellen Lauf betriebsbereit; siehe `docs/BACKUP_AND_PERFORMANCE.md`.
