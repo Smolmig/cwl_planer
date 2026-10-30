@@ -97,3 +97,22 @@ Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getre
 - **Hilfe:** Cloud-Hilfe nach den Aufgaben Clan verwalten, importieren, planen, Zugriffe, Konflikte und Passwort sortiert. Der kurze letzte Changelog ist bei der App-Version in drei verständlichen Punkten formatiert.
 - **Passwort zurücksetzen:** „Passwort vergessen?“ unter der Anmeldung. Supabase sendet einen E-Mail-Link, danach kann ein neues Passwort eingegeben und bestätigt werden. Redirect-URL `https://smolmig.github.io/cwl_planer/cloud-app.html` muss in Supabase erlaubt sein. Auf Free-Projekten können E-Mail-Ratenlimits gelten; Zustellung/Link müssen mit einem echten Benutzer geprüft werden.
 - **Sicherheit:** SQL-Migration `cwl_owner_role_management_vize_invite_revoke` ist bereits angewendet; bestehende Cloud-Profile und Datenformat v9 bleiben unverändert. Stabile Offline-Haupt-App weiterhin v1.0.1.
+
+## Alpha 8 – Bedienungsrunde (30.10.2026)
+
+- **Namensstift:** Die alte Befestigung des Klick-Handlers an jede einzelne Spielerkarte konnte nach Suche/Filter- oder Detailwechsel verloren gehen. Jetzt Delegation am dauerhaften Listencontainer: funktioniert auch nach DOM-Neurendern; Stift macht Namen editierbar, Verlassen der Eingabe wieder schreibgeschützt.
+- **FIX-Farbe:** Neutrales Theme-Blau anstatt Rot/Pink. FIX ist eine Einteilungsregel, kein Fehler oder gefährlicher Status.
+- **Such-/Sortierfelder:** Auf Touch-Geräten keine störende neonfarbene Fokussierung oder verzögerte Rahmen-Effekte; aktive Filter behalten ihren sinnvollen Zustand, aber kein Fokus-Rechteck um die ganze Filtergruppe.
+- **Gast-Kopfzeile:** Profil-Auswahl auf eine eigene vollständige Zeile; bei schmalem iPhone werden Konto und Hilfe sauber darunter statt über den Clan-Namen gelegt.
+- **Einladungen:** Einzige Anzeige „Offene Einladungen“ ist direkt unter „Personen mit Zugriff“, mit Anzahl, Gültigkeit und Zurückziehen. Doppelte Count-Zeile im späteren Einladungsteil entfernt.
+- **Passwort vergessen:** Eigenständiger Dialogabschnitt mit E-Mail-Feld, Link anfordern, zurück zum Login. Bestätigung direkt dort; erst beim tatsächlichen Recovery-Link ein neues Passwort vergeben.
+- **Kleiner Versionshinweis:** Alpha 8 mit konkret benannten Änderungen im Abschnitt „App-Version“ und in `cloud-version.json`.
+
+## Betrieb und Limits des geschlossenen Tests
+
+- Frontend über GitHub Pages, Backend Supabase Free (Postgres, Auth, RLS, Realtime, Edge Function) – keine eigene Serverinstanz.
+- Stand am 30.10.2026: gesamte Postgres-Datenbank etwa 12 MB; ein Cloud-Profil in 13,7 KB JSON und 82 Protokollereignisse. Das ist **keine** regelmäßig aktualisierte Verbrauchsmessung, sondern eine Momentaufnahme.
+- Supabase Free: 500 MB Datenbank, 50.000 monatlich aktive Nutzer, 5 GB uncached plus 5 GB cached Egress, 500.000 Edge-Function-Aufrufe/Monat, 2 Mio. Realtime-Nachrichten/Monat und maximal 200 gleichzeitige Realtime-Verbindungen. Onlinezugriff wird durch Browseraktivität und 15-s-Revisionskontrolle beeinflusst.
+- GitHub Pages: veröffentlichte Website bis 1 GB und ca. 100 GB/Monat weiches Bandbreitenlimit.
+- **Wichtig vor echtem Regelbetrieb:** Free Supabase pausiert Projekte bei Inaktivität und stellt keine automatischen Backups bereit. Für den produktiven Clanbetrieb regelmäßige Datenbank-Exporte und Speicher-/Trafficmonitoring einplanen; JSON-Profilexport als kurzfristige zusätzliche Rückfallebene.
+- Der komplette Ende-zu-Ende-Test auf mehreren iPhones und der echte Passwort-Reset-Mailversand stehen noch aus.
