@@ -71,27 +71,22 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(mod,/table:"cwl_change_events"/);
 });
 
-test("Alpha 4: real member pencils, consistent controls, clan roles, presence and refresh",()=>{
- assert.match(preview,/const APP_VERSION="v1\\.1\\.0-alpha\\.4"/);
- assert.match(preview,/class="member-name-edit"/);
- assert.match(preview,/placeholder="Name" readonly/);
- assert.match(preview,/id="cloudClanActions"/);
- assert.match(preview,/id="cloudLeaveBtn"/);
- assert.match(preview,/id="cloudDeleteBtn"/);
- assert.match(preview,/id="cloudActiveMembers"/);
- assert.match(preview,/id="cloudSyncFeedback"/);
- assert.match(preview,/id="autoUpdateStatus"/);
- assert.match(preview,/#view-members \\.list-management-actions\\{display:grid/);
- assert.match(mod,/function installNameEditors\\(/);
- assert.match(mod,/button\\.addEventListener\\("click"/);
- assert.match(mod,/input\\.readOnly=false/);
- assert.match(mod,/cwl_touch_presence/);
- assert.match(mod,/leaveSharedClan/);
- assert.match(mod,/deleteOwnedClan/);
- assert.match(mod,/\.eq\\("id",id\\)/);
- assert.match(mod,/\.from\\("cwl_clan_presence"\\)/);
- assert.match(mod,/new Date\\(\\)\\.toLocaleTimeString/);
- assert.match(mod,/checkForAppUpdate/);
+test("Alpha 4: names, presence, clan management and reload feedback",()=>{
+ const requiredHtml=[
+  'const APP_VERSION="v1.1.0-alpha.4"',
+  'class="member-name-edit"','placeholder="Name" readonly',
+  'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
+  'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
+  '#view-members .list-management-actions{display:grid'
+ ];
+ const requiredJs=[
+  'function installNameEditors(','button.addEventListener("click"',
+  'input.readOnly=false','cwl_touch_presence','leaveSharedClan','deleteOwnedClan',
+  '.from("cwl_clan_presence")','checkForAppUpdate','refreshCloud()',
+  'clanRoles=new Map'
+ ];
+ for(const fragment of requiredHtml)assert.ok(preview.includes(fragment),"Missing HTML fragment: "+fragment);
+ for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
