@@ -30,6 +30,9 @@ const cloud={
   $("cloudOpen").setAttribute("aria-label",this.active?"Clan und Konto verwalten":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
   $("cloudOpen").classList.toggle("cloud-on",this.active);
+  toggle("cloudMembersTools",!!this.active&&!!clanId);
+  toggle("guestMembersTools",!this.active);
+  installNameEditors();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
@@ -49,6 +52,31 @@ const cloud={
  }
 };
 window.CWLCloud=cloud;
+function installNameEditors(){
+ for(const wrap of document.querySelectorAll("#memberList .name-wrap")){
+   const input=wrap.querySelector(".member-name");
+   if(!input)continue;
+   input.readOnly=true;
+   if(wrap.querySelector(".member-name-edit"))continue;
+   if(cloud.active&&role==="viewer")continue;
+   const button=document.createElement("button");
+   button.className="member-name-edit";
+   button.type="button";button.textContent="✎";
+   button.title="Namen bearbeiten";button.setAttribute("aria-label","Spielernamen bearbeiten");
+   button.addEventListener("click",()=>{
+     if(cloud.active&&role==="viewer")return;
+     input.readOnly=false;
+     input.focus({preventScroll:true});
+     input.setSelectionRange(input.value.length,input.value.length);
+   });
+   input.addEventListener("blur",()=>{input.readOnly=true});
+   input.addEventListener("keydown",event=>{
+     if(event.key==="Enter"){event.preventDefault();input.blur()}
+     if(event.key==="Escape"){event.preventDefault();input.value=storage.getProfile().members.find(m=>m.id===wrap.closest(".member")?.dataset.id)?.name||input.value;input.blur()}
+   });
+   wrap.append(button);
+ }
+}
 function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")}
 function msg(value,isError=false){text("cloudMsg",value);$("cloudMsg").classList.toggle("error",isError)}
 function error(e){msg(e?.message||String(e),true);console.warn("Cloud alpha:",e)}
@@ -78,6 +106,8 @@ async function useSession(session){
 }
 async function leaveCloud(){
  clearTimeout(debounce);
+ toggle("cloudMembersTools",false);
+ toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
  blocked=false;hydrating=false;resetRoster();
@@ -131,7 +161,10 @@ async function chooseClan(epoch=accountEpoch){
      }else loadCloudProfile(true).catch(error);
      audit().catch(console.warn);
    }
- }).subscribe();
+ }).on("postgres_changes",{
+    event:"INSERT",schema:"public",table:"cwl_change_events",filter:"clan_id=eq."+clanId
+ },()=>{audit().catch(console.warn)})
+ .subscribe();
  cloud.afterRender();
  msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
@@ -174,6 +207,7 @@ async function writeCloud(){
   revision=out.data.revision;lastSerial=snapshot;
   if(changedSerial===snapshot)changedSerial=null;
   status(changedSerial?"Cloud: neue Änderungen offen":"Cloud: gespeichert");
+  audit().catch(console.warn);
  }catch(e){
   if(/duplicate key|23505|revision|Konflikt/i.test(String(e.message)))blocked=true;
   status("Cloud: nicht gespeichert",true);
@@ -252,6 +286,7 @@ async function getRoster(){
  const incoming=data.members||[];
  const rosterMap=new Map(incoming.filter(m=>/^#[0-9A-Z]+$/.test(normalizeTag(m.tag))).map(m=>[normalizeTag(m.tag),m]));
  const existing=storage.getProfile().members;
+ const initialImport=existing.length===0;
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
  const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former");
@@ -259,7 +294,7 @@ async function getRoster(){
    const current=existingMap.get(normalizeTag(m.tag));
    return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
- roster=incoming;rosterDiff={added,departed,updated,received:incoming.length};
+ roster=incoming;rosterDiff={added,departed,updated,received:incoming.length,initialImport};
  const diff=$("cloudRosterDiff");diff.replaceChildren();
  function group(title,items){
   const head=document.createElement("p");head.textContent=title+" ("+items.length+")";head.style.fontWeight="bold";diff.append(head);
@@ -277,18 +312,19 @@ async function applyRoster(){
  const p=storage.getProfile(),members=p.members;
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const remoteTags=new Set();
- for(const r of currentRoster){
+ for(const [i,r] of currentRoster.entries()){
   const tag=normalizeTag(r.tag);if(!tag)continue;remoteTags.add(tag);
   let m=map.get(tag);
   if(!m){
     m=storage.newMember(r.name);
     m.playerTag=tag;m.participating=false;m.fixed=false;m.priority=0;
-    m.cocSyncState="new"; // disappears once the user interacts with this player
+    if(!rosterDiff.initialImport)m.cocSyncState="new"; // no NEW badges on first complete import
     members.push(m);map.set(tag,m);
   } else if(m.cocSyncState==="former") {
     delete m.cocSyncState; // rejoined the clan
   }
   m.name=r.name;
+  m.cocOrder=i;
   if(Number.isInteger(r.townHallLevel)&&r.townHallLevel>=3&&r.townHallLevel<=20)m.townHall=r.townHallLevel;
  }
  for(const m of members){
@@ -305,7 +341,7 @@ async function applyRoster(){
 async function audit(){
  if(!clanId)return;
  const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
-  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at").eq("clan_id",clanId).order("id",{ascending:false}).limit(30),
+  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at").eq("clan_id",clanId).order("id",{ascending:false}).limit(100),
   sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",clanId)
  ]);
  if(err)throw err;if(e2)throw e2;
@@ -377,6 +413,10 @@ bind("cloudMembersSyncBtn","click",getRoster);
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
+bind("guestImportMembersBtn","click",()=>{ $("membersFile").click(); });
+bind("guestManualOne","click",()=>{ $("addMemberBtn").click(); });
+bind("guestManualMany","click",()=>{ $("multiAddBtn").click(); });
+bind("bulkDoneBtn","click",()=>{ if($("bulkBar").classList.contains("hidden"))return; $("selectMembersBtn").click(); });
 bind("cloudManualSelect","click",()=>{ $("selectMembersBtn").click(); });
 $("memberList").addEventListener("click",event=>{
   if(!cloud.active||role==="viewer")return;
