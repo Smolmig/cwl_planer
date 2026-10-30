@@ -87,7 +87,7 @@ function status(value,isError=false){text("saveBadge",value);$("saveBadge").clas
 function msg(value,isError=false){text("cloudMsg",value);$("cloudMsg").classList.toggle("error",isError)}
 function error(e){msg(e?.message||String(e),true);console.warn("Cloud alpha:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
-function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true")}
+function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWrap",false)}
 function showSignedIn(){toggle("cloudAuth",!user);toggle("cloudAccount",!!user);text("cloudIdentity",user?user.email:"")}
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
@@ -631,33 +631,55 @@ bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click"
 $("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
 
+let pendingRelease=null;
+function safeForReload(){
+ return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
+   !document.querySelector(".cloud-overlay.open")&&
+   !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
+}
+function installPendingRelease(){
+ if(!pendingRelease||!safeForReload()||document.hidden||!navigator.onLine)return false;
+ const next=new URL(location.href);
+ if(next.searchParams.get("appv")===pendingRelease)return false;
+ next.searchParams.set("appv",pendingRelease);
+ text("autoUpdateStatus","Neue Version erkannt · wird jetzt geladen …");
+ location.replace(next.toString());
+ return true;
+}
 async function checkForAppUpdate(){
- if(document.hidden||Date.now()-lastVersionCheck<90000)return;
+ if(document.hidden||!navigator.onLine)return;
+ if(pendingRelease){installPendingRelease();return}
+ if(Date.now()-lastVersionCheck<9000)return;
  lastVersionCheck=Date.now();
  try{
-  const response=await fetch("./cloud-app.html?check="+Date.now(),{cache:"no-store"});
+  const response=await fetch("./cloud-version.json?check="+Date.now(),{cache:"no-store"});
   if(!response.ok)return;
-  const remote=(await response.text()).match(/const APP_VERSION="([^"]+)";/);
-  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.4";
-  if(!remote||remote[1]===installed)return;
-  const unsafe=Boolean(changedSerial||saving||blocked||editingDialog()||
-    document.querySelector(".cloud-overlay.open")||
-    document.activeElement?.matches("input,textarea,select,[contenteditable='true']"));
-  if(unsafe){
-   appUpdatePending=true;
-   text("autoUpdateStatus","Neue Version verfügbar – wird nach der Bearbeitung automatisch geladen");
-   return;
-  }
-  text("autoUpdateStatus","Neue Version erkannt – wird geladen …");
-  location.reload();
+  const payload=await response.json();
+  const remote=typeof payload?.version==="string"?payload.version:null;
+  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.5";
+  if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$/.test(remote)||
+     remote===installed)return;
+  pendingRelease=remote;appUpdatePending=true;
+  if(!installPendingRelease())
+    text("autoUpdateStatus","Update auf "+remote+" verfügbar · nach Bearbeitung automatisch laden");
  }catch(err){console.warn("Updateprüfung nicht erreichbar:",err)}
 }
-setInterval(()=>checkForAppUpdate().catch(console.warn),5*60*1000);
+setInterval(()=>checkForAppUpdate().catch(console.warn),60000);
+window.addEventListener("pageshow",()=>checkForAppUpdate().catch(console.warn));
 document.addEventListener("visibilitychange",()=>{
- if(!document.hidden){checkForAppUpdate().catch(console.warn);heartbeat().catch(console.warn)}
+ if(!document.hidden){
+  checkForAppUpdate().catch(console.warn);
+  heartbeat().catch(console.warn);
+  checkRemoteChanges("foreground").catch(console.warn);
+ }
 });
-window.addEventListener("focus",()=>checkForAppUpdate().catch(console.warn));
-setTimeout(()=>checkForAppUpdate().catch(console.warn),15000);
+window.addEventListener("focus",()=>{
+ checkForAppUpdate().catch(console.warn);
+ checkRemoteChanges("focus").catch(console.warn);
+});
+document.addEventListener("pointerdown",()=>checkForAppUpdate().catch(console.warn),{passive:true});
+document.addEventListener("keydown",()=>checkForAppUpdate().catch(console.warn));
+setTimeout(()=>checkForAppUpdate().catch(console.warn),0);
 
 const linkCode=new URLSearchParams(location.search).get("invite");
 if(linkCode){$("cloudJoinCode").value=linkCode;open()}
