@@ -39,7 +39,7 @@ test("Member import is prominent and manual controls remain accessible",()=>{
  assert.match(preview,/id="cloudMembersSyncBtn"/);
  assert.match(preview,/id="cloudManualMembers"/);
  assert.match(preview,/id="cloudManualOne"/);
- assert.match(preview,/id="cloudManualSelect"/);
+ assert.match(preview,/id="selectMembersBtn"/);
  assert.match(preview,/id="localProfileCard"/);
  assert.match(preview,/\.cloud-mode #memberList \.member-former/);
  assert.match(preview,/cloud-roster-flag/);
