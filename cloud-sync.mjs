@@ -304,7 +304,29 @@ async function checkRemoteChanges(reason="poll"){
  if(!cloud.active||!id||!user||syncInFlight||!navigator.onLine)return;
  syncInFlight=true;
  try{
-  const {data,error:err}=await sb.from("cwl_cloud_profiles")
+  const {data:myAccess,error:accessError}=await sb.from("cwl_clan_memberships")
+   .select("role").eq("clan_id",id).eq("user_id",user.id).maybeSingle();
+  if(accessError)throw accessError;
+  if(id!==clanId||epoch!==accountEpoch)return;
+  if(!myAccess){
+   stopRemoteChecks();stopPresence();
+   await listClans(accountEpoch);
+   storage.toast("Dein Zugriff auf den bisherigen Clan wurde beendet.");
+   return;
+  }
+  if(myAccess.role!==role){
+   role=myAccess.role;
+   const label=role==="owner"?"Mein Clan · Besitzer":role==="editor"?
+    "Gemeinsamer Clan · Vize (Bearbeiten)":"Gemeinsamer Clan · Beobachter (Lesen)";
+   text("cloudRole",label);
+   toggle("cloudInviteBox",role==="owner"||role==="editor");
+   toggle("cloudImportProfile",role!=="viewer");
+   toggle("cloudImportFile",role!=="viewer");
+   cloud.afterRender();
+   loadAccessList(id).catch(console.warn);
+   storage.toast("Deine Berechtigung wurde geändert: "+(role==="editor"?"Vize":role==="viewer"?"Beobachter":"Besitzer"));
+  }
+ const {data,error:err}=await sb.from("cwl_cloud_profiles")
    .select("revision").eq("clan_id",id).maybeSingle();
   if(err)throw err;
   if(id!==clanId||epoch!==accountEpoch)return;
@@ -436,7 +458,7 @@ async function loadAccessList(expected=clanId){
    select.value=m.role;
    select.onchange=async()=>{
     const previous=m.role;select.disabled=true;
-    try{await changeAccessRole(expected,m,select.value)}
+    try{const changed=await changeAccessRole(expected,m,select.value);if(!changed)select.value=previous}
     catch(e){select.value=previous;error(e)}
     finally{select.disabled=false}
    };
@@ -476,11 +498,12 @@ async function loadAccessList(expected=clanId){
 }
 async function changeAccessRole(expected,m,next){
  if(role!=="owner"||m.role==="owner"||!["editor","viewer"].includes(next))throw Error("Keine Berechtigung.");
- if(!confirm("Berechtigung von "+(m.display_name||"Clanmitglied")+" auf "+(next==="editor"?"Vize":"Beobachter")+" ändern?"))return;
+ if(!confirm("Berechtigung von "+(m.display_name||"Clanmitglied")+" auf "+(next==="editor"?"Vize":"Beobachter")+" ändern?"))return false;
  const {data,error:e}=await sb.from("cwl_clan_memberships").update({role:next})
  .eq("clan_id",expected).eq("user_id",m.user_id).neq("role","owner").select("user_id");
  if(e)throw e;if(!data?.length)throw Error("Änderung nicht übernommen. Bitte neu laden.");
  if(expected===clanId){storage.toast("✓ Berechtigung geändert");await loadAccessList(expected)}
+ return true;
 }
 async function removeAccessMember(expected,m){
  if(role!=="owner"||m.role==="owner"||m.user_id===user.id)throw Error("Keine Berechtigung.");
