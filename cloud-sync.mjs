@@ -88,7 +88,7 @@ function msg(value,isError=false){text("cloudMsg",value);$("cloudMsg").classList
 function error(e){msg(e?.message||String(e),true);console.warn("Cloud alpha:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
-function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWrap",false)}
+function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
 function showSignedIn(){toggle("cloudAuth",!user);toggle("cloudAccount",!!user);text("cloudIdentity",user?user.email:"")}
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
 async function sign(kind){
@@ -109,6 +109,10 @@ async function useSession(session){
   return;
  }
  await listClans(epoch);
+ if($("cloudJoinCode").value.trim()){
+   open();msg("Einladung erkannt: Bitte deinen Ingame-Namen eintragen und „Mit Code beitreten“ wählen.");
+   $("cloudJoinName").focus({preventScroll:true});
+ }
 }
 async function leaveCloud(){
  clearTimeout(debounce);
@@ -176,6 +180,8 @@ async function chooseClan(epoch=accountEpoch){
  channel=sb.channel("cloud-profile-"+clanId)
  .on("postgres_changes",{event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId},
    ()=>{checkRemoteChanges("realtime").catch(error)})
+ .on("postgres_changes",{event:"*",schema:"public",table:"cwl_clan_memberships",filter:"clan_id=eq."+clanId},
+   ()=>{loadAccessList(clanId).catch(console.warn)})
  .on("postgres_changes",{event:"INSERT",schema:"public",table:"cwl_change_events",filter:"clan_id=eq."+clanId},
    ()=>{checkRemoteChanges("activity").catch(error);audit().catch(console.warn)})
  .subscribe((state,err)=>{
@@ -445,7 +451,7 @@ async function getRoster(){
  const initialImport=existing.length===0;
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
- const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former");
+ const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former"&&m.cocSyncState!=="kept");
  const planDays=storage.getPlannedLineups();
  const critical=departed.map(m=>({member:m,days:planDays.filter(d=>d.lineup.includes(m.id)).map(d=>d.day)}))
    .filter(item=>item.days.length>0);
@@ -599,6 +605,7 @@ async function heartbeat(expected=clanId){
  const {error:err}=await sb.rpc("cwl_touch_presence",{p_clan:expected});
  if(err)throw err;
  await refreshPresence(expected);
+ await loadAccessList(expected).catch(console.warn);
 }
 async function startPresence(){
  stopPresence();
@@ -677,7 +684,7 @@ async function importCloud(){
  await writeCloud();close();
 }
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
-bind("cloudOpen","click",open);bind("cloudClose","click",close);
+bind("cloudOpen","click",async()=>{open();if(clanId)await loadAccessList(clanId)});bind("cloudClose","click",close);
 bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign("signup"));
 bind("cloudLogout","click",logout);
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
