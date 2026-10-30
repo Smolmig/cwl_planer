@@ -711,6 +711,10 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 @media(max-width:520px){#view-members .list-management-actions{gap:7px}#view-members .list-management-actions #memberSortSelect,
 #view-members .list-management-actions #selectMembersBtn{font-size:12px!important;padding:7px!important}}
 
+
+/* Archive delete: explicit, compact and read-only aware */
+.archive-row .archive-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cloud-role-viewer .delete-archive{display:none!important}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -984,7 +988,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.4";
+const APP_VERSION="v1.1.0-alpha.5";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1245,7 +1249,17 @@ function archiveCurrentCwl(){
   return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,
     playedCount:played,complete:played===state.config.days,players,lineups,counts};
 }
-function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge");badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><button class="btn small view-archive" data-id="${a.id}">Ansehen</button></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id))}
+function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge");badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button><button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button></div></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
+ root.querySelectorAll(".delete-archive").forEach(b=>b.onclick=async()=>{
+  if(window.CWLCloud?.active && document.body.classList.contains("cloud-role-viewer"))return;
+  const archive=state.archives.find(a=>a.id===b.dataset.id);if(!archive)return;
+  const approved=await confirmInline('„'+archive.label+'“ wird aus dem CWL-Archiv entfernt. Die aktuelle Planung und Mitglieder bleiben erhalten. Diese Aktion lässt sich nur über ein vorheriges Backup rückgängig machen.',{
+   title:"Archiv wirklich löschen?",confirmText:"Archiv löschen",danger:true
+  });
+  if(!approved)return;
+  state.archives=state.archives.filter(a=>a.id!==archive.id);
+  renderAll("Archiv gelöscht ✓");
+ });}
 function openArchiveModal(id){
   const a=state.archives.find(x=>x.id===id);if(!a)return;
   const map=new Map(a.players.map(p=>[p.id,p]));
@@ -1422,6 +1436,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.4"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.5"></script>
 </body>
 </html>
