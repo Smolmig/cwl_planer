@@ -985,11 +985,11 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.1.0-alpha.8</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.1.0-alpha.9</strong><span>Cloud-Update</span></div>
       <ul>
-        <li><b>Namensbearbeitung:</b> Stift funktioniert auch nach Suchen und Filtern.</li>
-        <li><b>Oberfläche:</b> Ruhigere Auswahlfelder, neutrale FIX-Markierung und mobile Kopfzeile ohne Überlappung.</li>
-        <li><b>Konto:</b> Einladungen gemeinsam verwalten und Passwort über einen eigenen Dialog zurücksetzen.</li>
+        <li><b>Sicherheit:</b> Automatische Cloud-Sicherungspunkte mit Wiederherstellung und Export.</li>
+        <li><b>Datenschutz:</b> Verschlüsselte externe Backups vorbereitet, ohne geheime Schlüssel in der App.</li>
+        <li><b>Tempo:</b> Weniger unnötige lokale Speichervorgänge und schnellere Plan-Sortierung.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1024,6 +1024,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div><b>Mitglieder aktualisieren</b><p>Im Tab „Mitglieder“ findest du „Mitglieder aktualisieren“. Prüfe neue, veränderte oder ausgetretene Spieler vor der Übernahme. Bereits eingeplante Spieler werden nicht ohne Entscheidung pausiert.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“ und „Fix“ kannst du direkt in jeder Spielerzeile ändern. Für Name, Rathaus, Stärke und Tagesregeln stehen Stift bzw. „Bearbeiten“ bereit. „Mehrfachauswahl“ markiert mehrere Spieler; mit „Fertig“ verlässt du den Modus.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
+    <div><b>Sicherungen</b><p>Unter „Clan & Konto“ kannst du Cloud-Sicherungspunkte herunterladen. Nur Besitzer können einen älteren Stand wiederherstellen. Sichere zusätzlich regelmäßig das vollständige Datenbank-Backup außerhalb von Supabase.</p></div>
     <div><b>Einladungen</b><p>Einmalige Einladungslinks gelten sieben Tage. Wer beitritt, gibt seinen Ingame-Namen an. Offene Einladungen können zurückgezogen werden; der Link ist danach ungültig.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
@@ -1160,6 +1161,18 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <p>Optional kannst du ein lokales CWL-Backup in diesen Clan übernehmen. Deine bisherigen lokalen Daten bleiben erhalten.</p>
     <input type="file" id="cloudImportFile" accept="application/json,.json">
     <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
+    <details id="cloudBackupPanel" class="cloud-minor" hidden>
+      <summary>Sicherungspunkte und Wiederherstellung</summary>
+      <p class="small">Automatisch angelegte ältere Cloud-Stände dieses Clans. Bis zu 24 Sicherungspunkte; sie ersetzen kein externes Datenbank-Backup.</p>
+      <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
+      <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
+      <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
+      <div class="actions">
+        <button class="btn small" id="cloudDownloadSnapshot" type="button" disabled>Als JSON herunterladen</button>
+        <button class="btn small danger" id="cloudRestoreSnapshot" type="button" hidden disabled>Stand wiederherstellen</button>
+      </div>
+      <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
+    </details>
   </div>
  </section>
  </div>
@@ -1170,7 +1183,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.8";
+const APP_VERSION="v1.1.0-alpha.9";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1627,6 +1640,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.8"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.9"></script>
 </body>
 </html>
