@@ -76,3 +76,14 @@ Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getre
 - **App-Updates:** Kleine Versionsmanifest-Datei `cloud-version.json` ermöglicht schnelle Prüfung beim Seitenstart, Zurückwechseln und der ersten Interaktion, zusätzlich periodisch. Neue Versionen laden automatisch über eine eindeutige URL; offene Dialoge, Editoren und ungespeicherte Cloud-Daten werden nicht unterbrochen. Für die erste Umstellung von alten Alpha-Versionen kann einmaliges manuelles Aktualisieren nötig sein.
 - **Changelog in der App:** Direkt bei „App-Version“ steht nur die kurze Zusammenfassung der aktuellen Version. Bei jeder neuen Alpha/Release muss dieser Text und die Versionsmanifest-Datei gemeinsam aktualisiert werden.
 - Geschlossener Pilotlink bleibt `cloud-app.html`. Nicht als öffentlich fertige Version deklarieren, bis tatsächlicher Mehrbenutzer-Abgleich und UI getestet sind.
+
+## Alpha 6 – Einladungen & Kaderabgleich (30.10.2026)
+
+- Unter **Clan & Konto → Personen mit Zugriff** werden alle angenommenen Benutzer einschließlich Rollen und Anzeigenamen sichtbar. Besitzer und Vize sehen außerdem die Anzahl offener/angenommener Einladungen (zuletzt max. 50). Manuelles Aktualisieren und Echtzeit-Änderung sowie eine regelmäßige Abfrage sind vorhanden.
+- Ein neuer Benutzer muss beim Einlösen einer Einladung einen **Ingame-Namen** angeben. Der Name wird in der Clanmitgliedschaft gespeichert und später in der Zugriffsliste und im Änderungsprotokoll verwendet. Einladungen ohne Namen werden serverseitig nicht mehr angenommen.
+- **Besitzer und Vize** dürfen für Vizes und Beobachter einladen. **Beobachter** sehen die Einladungsfunktion nicht und haben auch keine Datenbankberechtigung dazu.
+- Beim erfolgreichen **Einladungslink kopieren** erscheint eine kurz eingeblendete Bestätigung. Einmalcodes gelten weiter sieben Tage und nur für eine Person.
+- Der bisherige pauschale Schalter „Nicht mehr vorhandene Spieler auf Pause setzen“ wurde entfernt. Vor Übernahme des API-Abgleichs werden aktuell fehlende Mitglieder gegen alle berechneten und gespeicherten aktuellen CWL-Tagesaufstellungen verglichen: **Wer in einer Aufstellung steht, wird niemals automatisch auf Pause gesetzt.** Für jeden solchen Spieler muss explizit „vorerst unverändert“ oder „weiterhin dabei“ gewählt werden. Spieler ohne aktuellen Aufstellungseintrag werden ausgegraut als ausgetreten markiert und auf Pause gesetzt, historische Archivdaten bleiben erhalten.
+- Beitritte und Berechtigungen nicht mit der Teilnahme-/CWL-Mitgliederliste verwechseln. Die App verwaltet künftig getrennt Clash-Spieler und Personen mit App-Zugriff.
+- Unveränderte stabile lokale App v1.0.1, Cloud-Alpha unter gleichem Testlink.
+- **Zu testen:** neuen Vize über Einladungslink registrieren, Ingame-Namen bestätigen, Zugriffsliste auf anderem Gerät aktualisieren; fehlenden Spieler mit und ohne aktuelle Aufstellung nachstellen.
