@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.0-alpha.8",
+  "version": "v1.1.0-alpha.9",
   "released": "2026-10-30",
-  "summary": "Namensstift nach Filterwechsel repariert, mobil übersichtlicher, Passwort-Reset im eigenen Fenster und Einladungen an einem Ort."
+  "summary": "Cloud-Wiederherstellungspunkte, verschlüsselte Datenbank-Backups vorbereitet und schnellere lokale Speicherung."
 }
