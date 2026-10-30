@@ -715,6 +715,15 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 /* Archive delete: explicit, compact and read-only aware */
 .archive-row .archive-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .cloud-role-viewer .delete-archive{display:none!important}
+
+/* Live collaboration notification — compact and non-blocking */
+.cloud-change-notice{position:fixed;z-index:350;bottom:calc(94px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(510px,calc(100vw - 26px));padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 12px 35px rgba(0,0,0,.35);color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cloud-change-notice[hidden]{display:none!important}
+.cloud-change-content{min-width:0;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:1.4}
+.cloud-change-content strong{font-size:13px}
+.cloud-change-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.cloud-change-notice .btn.small{min-height:34px;font-size:11px}
+.archive-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -985,6 +994,10 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   </div>
  </section>
  </div>
+</div>
+<div class="cloud-change-notice" id="cloudChangeNotice" role="status" aria-live="polite" hidden>
+ <div class="cloud-change-content"><strong>Gemeinsamer Plan aktualisiert</strong><span id="cloudChangeText"></span></div>
+ <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Ansehen</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
