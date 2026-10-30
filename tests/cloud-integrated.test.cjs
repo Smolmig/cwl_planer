@@ -143,7 +143,7 @@ test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7"/);
  assert.match(preview,/id="selectMembersBtn" type="button" aria-pressed="false"/);
  assert.match(preview,/id="selectAllBtn">Alle angezeigten auswählen/);
- assert.match(preview,/class="member-part"/);
+ assert.match(preview,/class="switch member-part"/);
  assert.match(preview,/id="latestChangelog"/);
  assert.match(preview,/role="status"/);
  assert.match(mod,/function loadAccessList/);
