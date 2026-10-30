@@ -146,7 +146,7 @@ async function chooseClan(epoch=accountEpoch){
  stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
- lastSerial=null;changedSerial=null;blocked=false;remotePending=false;resetRoster();
+ lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
  toggle("cloudClanActions",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
@@ -531,7 +531,12 @@ async function startPresence(){
   if(clanId===current)heartbeat(current).catch(console.warn);
  },45000);
 }
-function editingDialog(){return Boolean(document.querySelector(".modal.open,.inline-action-panel.open"))}
+function editingDialog(){
+ if(document.querySelector(".modal.open,.inline-action-panel.open"))return true;
+ const active=document.activeElement;
+ return Boolean(active?.matches("input:not([readonly]),textarea,select,[contenteditable='true']")&&
+  active.closest("#view-members,#view-plan,#view-summary"));
+}
 async function refreshCloud(){
  hideChangeToast();
  if(!clanId){msg("Noch kein Clan ausgewählt.");return}
