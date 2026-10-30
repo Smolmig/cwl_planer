@@ -876,7 +876,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.5";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.7";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
