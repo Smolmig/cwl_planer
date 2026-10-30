@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.8";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -62,7 +62,7 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(preview,/if\(day===mobileSelectedDay && uiSettings\.dayViewMode==="single"\)return/);
  assert.match(mod,/function installNameEditors\(\)/);
  assert.match(mod,/input\.readOnly=true/);
- assert.ok(mod.includes('if(cloud.active&&role==="viewer"){button.hidden=true;continue}'));
+ assert.ok(mod.includes('if(cloud.active&&role==="viewer")return;'));
 
  assert.match(mod,/initialImport=existing\.length===0/);
  assert.match(mod,/if\(!rosterDiff\.initialImport\)m\.cocSyncState="new"/);
@@ -74,14 +74,14 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
-  'const APP_VERSION="v1.1.0-alpha.7"',
+  'const APP_VERSION="v1.1.0-alpha.8"',
   'class="member-name-edit"','placeholder="Name" readonly',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
   '#view-members .list-management-actions{display:grid'
  ];
  const requiredJs=[
-  'function installNameEditors(','button.addEventListener("click"',
+  'function installNameEditors(','list.addEventListener("click"',
   'input.readOnly=false','cwl_touch_presence','leaveSharedClan','deleteOwnedClan',
   '.from("cwl_clan_presence")','checkForAppUpdate','refreshCloud()',
   'clanRoles=new Map'
@@ -90,7 +90,7 @@ test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and last release notes",()=>{
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.8";/);
   assert.match(preview,/id="cloudChangeNotice"/);
   assert.match(preview,/id="cloudChangeDetails"/);
   assert.match(preview,/id="cloudChangeDismiss"/);
@@ -111,7 +111,7 @@ test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and
   assert.match(mod,/window\.addEventListener\("pageshow"/);
   assert.match(mod,/document\.addEventListener\("pointerdown"/);
   const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
-  assert.equal(meta.version,"v1.1.0-alpha.7");
+  assert.equal(meta.version,"v1.1.0-alpha.8");
 });
 test("Alpha 6: accepted membership roster, named invite and safe departed-lineup decisions",()=>{
  for(const id of ["cloudAccessList","cloudAccessCount","cloudAccessRefresh","cloudJoinName","cloudDepartedWarnings"])
@@ -140,7 +140,7 @@ test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
   "cloudForgotPassword","cloudRecovery","cloudNewPassword","cloudConfirmPassword",
   "cloudResetSent","cloudRosterStatus","cloudAccessList"])
   assert.ok(preview.includes('id="'+id+'"'),"Missing "+id);
- assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7"/);
+ assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.8"/);
  assert.match(preview,/id="selectMembersBtn" type="button" aria-pressed="false"/);
  assert.match(preview,/id="selectAllBtn">Alle angezeigten auswählen/);
  assert.match(preview,/class="switch member-part"/);
@@ -160,7 +160,45 @@ test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
  assert.match(mod,/updateUser\(\{password:first\}\)/);
  assert.match(mod,/toggle\("cloudRosterBox",true\)/);
  const manifest=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
- assert.equal(manifest.version,"v1.1.0-alpha.7");
+ assert.equal(manifest.version,"v1.1.0-alpha.8");
+});
+test("Alpha 8: name pencil continues working after list re-render",()=>{
+ const start=mod.indexOf("function installNameEditors(){");
+ const end=mod.indexOf("function status(value,isError=false)",start);
+ assert.ok(start>=0&&end>start);
+ const source=mod.slice(start,end);
+ const dom=new JSDOM('<div id="memberList"></div>',{pretendToBeVisual:true});
+ const render=()=>{dom.window.document.querySelector("#memberList").innerHTML=
+  '<div class="member" data-id="p1"><div class="name-wrap"><input class="member-name" readonly value="Test"><button type="button" class="member-name-edit">✎</button></div></div>'};
+ try{
+  const maker=new dom.window.Function("$","cloud","role","storage",source+";return installNameEditors;");
+  const init=maker(id=>dom.window.document.getElementById(id),{active:true},"owner",
+   {getProfile:()=>({members:[{id:"p1",name:"Test"}]})});
+  render();init();
+  let input=dom.window.document.querySelector(".member-name");
+  dom.window.document.querySelector(".member-name-edit").click();
+  assert.equal(input.readOnly,false,"first pencil click unlocks name");
+  input.blur();assert.equal(input.readOnly,true,"blur returns to readonly");
+  render();init(); // like a search/filter change, the list DOM was replaced
+  input=dom.window.document.querySelector(".member-name");
+  dom.window.document.querySelector(".member-name-edit").click();
+  assert.equal(input.readOnly,false,"pencil still works after a list refresh");
+ }finally{dom.window.close()}
+});
+test("Alpha 8: invitation summary and password reset are single-purpose panels",()=>{
+ assert.equal((preview.match(/id="cloudPendingDetails"/g)||[]).length,1);
+ const access=preview.indexOf('id="cloudAccessList"');
+ const pending=preview.indexOf('id="cloudPendingDetails"');
+ const invite=preview.indexOf('id="cloudInviteBox"');
+ assert.ok(access<pending&&pending<invite,"pending invites live with access list, not invite form");
+ assert.doesNotMatch(preview,/id="cloudInviteStats"/);
+ for(const id of ["cloudForgotRequest","cloudRecoveryEmail","cloudSendReset","cloudBackToLogin"])
+  assert.ok(preview.includes('id="'+id+'"'),id);
+ assert.ok(mod.includes('const email=$("cloudRecoveryEmail").value.trim()'));
+ assert.ok(mod.includes('list.dataset.editorDelegated="1"'));
+ assert.ok(preview.includes("body:not(.cloud-mode) .topbar .profilebar"));
+ const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
+ assert.equal(meta.version,"v1.1.0-alpha.8");
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);

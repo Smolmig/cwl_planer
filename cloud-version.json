@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.0-alpha.7",
+  "version": "v1.1.0-alpha.8",
   "released": "2026-10-30",
-  "summary": "Berechtigungen und Einladungen verwalten, bessere Mitgliederansicht, Passwort zurücksetzen."
+  "summary": "Namensstift nach Filterwechsel repariert, mobil übersichtlicher, Passwort-Reset im eigenen Fenster und Einladungen an einem Ort."
 }

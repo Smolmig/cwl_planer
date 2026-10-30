@@ -11,6 +11,7 @@ let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,chang
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
+let forgotOpen=false;
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const cloud={
  active:false,
@@ -58,31 +59,40 @@ const cloud={
  }
 };
 window.CWLCloud=cloud;
+/* Delegate to the persistent list, not individual cards. Search, filters and
+   expanding a card re-create card DOM without re-running the cloud bootstrap. */
 function installNameEditors(){
- for(const wrap of document.querySelectorAll("#memberList .name-wrap")){
-   const input=wrap.querySelector(".member-name"),button=wrap.querySelector(".member-name-edit");
-   if(!input||!button)continue;
-   input.readOnly=true;
-   if(cloud.active&&role==="viewer"){button.hidden=true;continue}
-   if(button.dataset.editReady==="1")continue;
-   button.dataset.editReady="1";
-   button.addEventListener("click",event=>{
-     event.stopPropagation();
-     if(cloud.active&&role==="viewer")return;
-     input.readOnly=false;
-     input.focus({preventScroll:true});
-     input.setSelectionRange(input.value.length,input.value.length);
-   });
-   input.addEventListener("blur",()=>{input.readOnly=true});
-   input.addEventListener("keydown",event=>{
-     if(event.key==="Enter"){event.preventDefault();input.blur()}
-     if(event.key==="Escape"){
-       event.preventDefault();
-       input.value=storage.getProfile().members.find(m=>m.id===wrap.closest(".member")?.dataset.id)?.name||input.value;
-       input.blur();
-     }
-   });
- }
+ const list=$("memberList");
+ if(!list||list.dataset.editorDelegated==="1")return;
+ list.dataset.editorDelegated="1";
+ list.addEventListener("click",event=>{
+  const pencil=event.target.closest(".member-name-edit");
+  if(!pencil)return;
+  event.preventDefault();event.stopPropagation();
+  if(cloud.active&&role==="viewer")return;
+  const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
+  if(!input)return;
+  input.readOnly=false;
+  pencil.setAttribute("aria-pressed","true");
+  input.focus({preventScroll:true});
+  try{input.setSelectionRange(input.value.length,input.value.length)}catch{}
+ });
+ list.addEventListener("focusout",event=>{
+  const input=event.target;
+  if(!input.matches?.(".member-name"))return;
+  input.readOnly=true;
+  input.closest(".name-wrap")?.querySelector(".member-name-edit")?.setAttribute("aria-pressed","false");
+ },true);
+ list.addEventListener("keydown",event=>{
+  const input=event.target;
+  if(!input.matches?.(".member-name"))return;
+  if(event.key==="Enter"){event.preventDefault();input.blur()}
+  if(event.key==="Escape"){
+   event.preventDefault();
+   input.value=storage.getProfile().members.find(m=>m.id===input.closest(".member")?.dataset.id)?.name||input.value;
+   input.blur();
+  }
+ });
 }
 function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")}
 function msg(value,isError=false){
@@ -101,14 +111,24 @@ function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
 function showSignedIn(){
- toggle("cloudAuth",!user&&!recoveryMode);
+ toggle("cloudAuth",!user&&!recoveryMode&&!forgotOpen);
+ toggle("cloudForgotRequest",!user&&!recoveryMode&&forgotOpen);
  toggle("cloudAccount",!!user&&!recoveryMode);
  toggle("cloudRecovery",recoveryMode);
  text("cloudIdentity",user?user.email:"");
 }
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
+function showForgotPassword(){
+ forgotOpen=true;recoveryMode=false;
+ $("cloudRecoveryEmail").value=$("cloudEmail").value.trim();
+ toggle("cloudResetSent",false);
+ showSignedIn();open();$("cloudRecoveryEmail").focus({preventScroll:true});
+}
+function backToLogin(){
+ forgotOpen=false;showSignedIn();toggle("cloudResetSent",false);
+}
 async function sendPasswordReset(){
- const email=$("cloudEmail").value.trim();
+ const email=$("cloudRecoveryEmail").value.trim();
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error("Bitte zuerst eine gültige E-Mail-Adresse eingeben.");
  const {error:err}=await sb.auth.resetPasswordForEmail(email,{
   redirectTo:location.origin+location.pathname
@@ -118,6 +138,7 @@ async function sendPasswordReset(){
  storage.toast("✓ Wiederherstellungsanfrage gesendet");
 }
 function beginRecovery(){
+ forgotOpen=false;
  recoveryMode=true;
  showSignedIn();
  open();
@@ -476,11 +497,10 @@ async function loadAccessList(expected=clanId){
  if(!members?.length)list.textContent="Noch keine Personen mit Zugriff.";
  text("cloudAccessCount","("+(members||[]).length+")");
  const pending=invites||[];
- toggle("cloudInviteStats",canInvite);
- if(canInvite)text("cloudInviteStats",pending.length+" offene Einladung"+(pending.length===1?"":"en"));
- toggle("cloudPendingDetails",canInvite&&pending.length>0);
+ toggle("cloudPendingDetails",canInvite);
  text("cloudPendingCount","("+pending.length+")");
  const root=$("cloudPendingList");root.replaceChildren();
+ if(canInvite&&!pending.length)root.textContent="Keine offenen Einladungen.";
  for(const inv of pending){
   const row=document.createElement("div");row.className="cloud-invite-row";
   const details=document.createElement("div"),title=document.createElement("strong"),date=document.createElement("span");
@@ -808,7 +828,9 @@ async function importCloud(){
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("cloudOpen","click",async()=>{open();if(clanId)await loadAccessList(clanId)});bind("cloudClose","click",close);
 bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign("signup"));
-bind("cloudForgotPassword","click",sendPasswordReset);
+bind("cloudForgotPassword","click",showForgotPassword);
+bind("cloudSendReset","click",sendPasswordReset);
+bind("cloudBackToLogin","click",backToLogin);
 bind("cloudChangePassword","click",completeRecovery);
 bind("cloudLogout","click",logout);
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});

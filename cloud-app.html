@@ -806,6 +806,46 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .cloud-help-grid b{font-size:13px}
 .cloud-help-grid p{font-size:12px;margin:5px 0 0;line-height:1.55}
 .cloud-help-note{border-top:1px solid var(--line);padding-top:10px}
+
+/* Alpha 8: mobile-first header without overlapping profile and login actions */
+@media(max-width:699px){
+ body:not(.cloud-mode) .topbar .toprow{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;gap:7px!important;align-items:center!important}
+ body:not(.cloud-mode) .topbar .titleblock{display:contents!important}
+ body:not(.cloud-mode) .topbar .titleblock h1{grid-column:1;grid-row:1;min-width:0;margin:0;font-size:17px!important}
+ body:not(.cloud-mode) .topbar .top-actions{grid-column:2;grid-row:1;justify-self:end;min-width:0;max-width:100%;flex-direction:row!important;align-items:center!important;gap:6px!important}
+ body:not(.cloud-mode) .topbar .top-actions #helpBtn,
+ body:not(.cloud-mode) .topbar .top-actions #cloudOpen{min-height:36px!important;width:auto!important;font-size:12px!important;padding:6px 8px!important}
+ body:not(.cloud-mode) .topbar .profilebar{grid-column:1/-1;grid-row:2;display:flex!important;margin:0!important;min-width:0;max-width:none!important;gap:8px}
+ body:not(.cloud-mode) .topbar .profilebar span{display:inline!important;flex:0 0 auto;font-size:12px}
+ body:not(.cloud-mode) .topbar .profilebar select{width:100%!important;max-width:none!important;min-width:0!important;flex:1 1 auto;height:38px!important}
+}
+@media(max-width:430px){
+ body:not(.cloud-mode) .topbar .top-actions{grid-column:1/-1;grid-row:2;width:100%;justify-content:flex-start!important}
+ body:not(.cloud-mode) .topbar .profilebar{grid-column:1/-1;grid-row:3}
+}
+/* Selection and text-input focus on touchscreens should not look like an active filter */
+#view-members .member-filters,#view-members .member-filters:focus-within{box-shadow:none!important;border-color:var(--line)!important}
+#view-members .member-filters input,#view-members .member-filters select,
+#view-members .list-management-actions select{transition:none!important;box-shadow:none!important}
+#view-members .member-filters:has(.is-filtered){border-color:var(--line)!important}
+#view-members .member-filters .is-filtered{border-color:var(--primary)!important;background:var(--card)!important}
+@media(hover:none) and (pointer:coarse){
+ #view-members .member-filters input:focus,#view-members .member-filters select:focus,
+ #view-members .list-management-actions select:focus,#view-members .member-filters :focus-visible,
+ #view-members .list-management-actions :focus-visible{outline:none!important;box-shadow:none!important}
+}
+/* FIX is a planning preference, not an error or a warning. */
+#view-members .member-top .member-fixed input{accent-color:var(--primary)!important}
+#view-members .member-top .member-fixed:has(input:checked){border-color:var(--primary)!important}
+#view-members .member-fixed input:checked{background-color:var(--primary)!important;border-color:var(--primary)!important}
+#view-members .member-fixed{color:var(--text)!important}
+/* Pencil is always an explicit independent target. */
+#view-members .member-top .name-wrap .member-name-edit{position:relative;z-index:2;cursor:pointer;touch-action:manipulation}
+#view-members .member-top .name-wrap .member-name[readonly]{pointer-events:none!important;user-select:none}
+#view-members .member-top .name-wrap .member-name:not([readonly]){pointer-events:auto!important}
+#cloudForgotRequest[hidden],#cloudResetSent[hidden]{display:none!important}
+#cloudForgotRequest .cloud-recovery-result{padding:11px;border-radius:10px;border:1px solid var(--line);line-height:1.5;color:var(--muted)}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -945,11 +985,11 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.1.0-alpha.7</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.1.0-alpha.8</strong><span>Cloud-Update</span></div>
       <ul>
-        <li><b>Zugriffe:</b> Rollen ändern, Personen entfernen und offene Einladungen zurückziehen.</li>
-        <li><b>Mitglieder:</b> Dabei/Fix direkt umschalten und Clanabgleich in der Liste prüfen.</li>
-        <li><b>Bedienung:</b> Klarere Mehrfachauswahl, Filter und Rückmeldungen.</li>
+        <li><b>Namensbearbeitung:</b> Stift funktioniert auch nach Suchen und Filtern.</li>
+        <li><b>Oberfläche:</b> Ruhigere Auswahlfelder, neutrale FIX-Markierung und mobile Kopfzeile ohne Überlappung.</li>
+        <li><b>Konto:</b> Einladungen gemeinsam verwalten und Passwort über einen eigenen Dialog zurücksetzen.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1044,8 +1084,18 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <label for="cloudPassword">Passwort (mindestens 8 Zeichen)</label><input type="password" id="cloudPassword" minlength="8">
   <div class="actions"><button class="btn primary" id="cloudLogin">Anmelden</button><button class="btn" id="cloudSignup">Registrieren</button></div>
   <div class="cloud-auth-helper"><button class="btn small" type="button" id="cloudForgotPassword">Passwort vergessen?</button></div>
-  <div class="cloud-msg" id="cloudResetSent" hidden role="status">Wenn ein Konto zu dieser E-Mail existiert, erhältst du einen Link zum Zurücksetzen. Prüfe auch den Spamordner.</div>
   <p>Du kannst die App ohne Account weiter lokal nutzen. Nach dem Login gilt ausschließlich der gemeinsame Cloud-Stand; lokale Profile werden nicht automatisch hochgeladen.</p>
+ </section>
+ <section id="cloudForgotRequest" hidden>
+  <h3>Passwort zurücksetzen</h3>
+  <p>Gib die E-Mail-Adresse deines CWL-Kontos ein. Du erhältst einen Link, über den du ein neues Passwort festlegen kannst.</p>
+  <label for="cloudRecoveryEmail">E-Mail-Adresse</label>
+  <input type="email" id="cloudRecoveryEmail" autocomplete="email" inputmode="email" placeholder="name@beispiel.at">
+  <div class="actions">
+   <button class="btn primary" type="button" id="cloudSendReset">Link anfordern</button>
+   <button class="btn" type="button" id="cloudBackToLogin">Zurück zur Anmeldung</button>
+  </div>
+  <p class="cloud-recovery-result" id="cloudResetSent" hidden role="status">Falls zu dieser E-Mail-Adresse ein Konto besteht, wird ein Wiederherstellungslink gesendet. Bitte auch den Spamordner prüfen.</p>
  </section>
  <section id="cloudRecovery" hidden>
   <h3>Neues Passwort festlegen</h3>
@@ -1069,7 +1119,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
       <summary>Personen mit Zugriff <span id="cloudAccessCount"></span></summary>
       <p class="small">Hier siehst du, wer dem Clan beigetreten ist und welche Rechte die Person hat.</p>
       <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Zugriffe werden geladen …</div>
-      <div id="cloudInviteStats" class="small" hidden></div>
+      <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Offene Einladungen <span id="cloudPendingCount"></span></summary>
+      <div id="cloudPendingList" class="cloud-access-list" aria-live="polite"></div>
+    </details>
       <button class="btn small" id="cloudAccessRefresh" type="button">↻ Zugriffe aktualisieren</button>
     </details>
     <div id="cloudClanActions" class="cloud-clan-actions" hidden>
@@ -1096,9 +1148,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
     <button class="btn" id="cloudMakeInvite">Einladungscode erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
-    <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Offene Einladungen <span id="cloudPendingCount"></span></summary>
-      <div id="cloudPendingList" class="cloud-access-list" aria-live="polite"></div>
-    </details>
+    
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
   </div>
   <div class="cloud-section">
@@ -1120,7 +1170,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.7";
+const APP_VERSION="v1.1.0-alpha.8";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1577,6 +1627,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.7"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.8"></script>
 </body>
 </html>
