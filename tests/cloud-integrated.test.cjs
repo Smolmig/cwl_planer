@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.6";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -74,7 +74,7 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
-  'const APP_VERSION="v1.1.0-alpha.6"',
+  'const APP_VERSION="v1.1.0-alpha.7"',
   'class="member-name-edit"','placeholder="Name" readonly',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
@@ -90,7 +90,7 @@ test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and last release notes",()=>{
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.6";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7";/);
   assert.match(preview,/id="cloudChangeNotice"/);
   assert.match(preview,/id="cloudChangeDetails"/);
   assert.match(preview,/id="cloudChangeDismiss"/);
@@ -111,7 +111,7 @@ test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and
   assert.match(mod,/window\.addEventListener\("pageshow"/);
   assert.match(mod,/document\.addEventListener\("pointerdown"/);
   const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
-  assert.equal(meta.version,"v1.1.0-alpha.6");
+  assert.equal(meta.version,"v1.1.0-alpha.7");
 });
 test("Alpha 6: accepted membership roster, named invite and safe departed-lineup decisions",()=>{
  for(const id of ["cloudAccessList","cloudAccessCount","cloudAccessRefresh","cloudJoinName","cloudDepartedWarnings"])
@@ -134,6 +134,33 @@ test("Alpha 6: accepted membership roster, named invite and safe departed-lineup
  assert.match(sql,/display_name\)/);
  assert.match(sql,/cwl_redeem_named_invite/);
  assert.match(sql,/revoke execute on function public\.cwl_redeem_short_invite/);
+});
+test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
+ for(const id of ["cloudPendingList","cloudPendingCount","cloudPendingDetails",
+  "cloudForgotPassword","cloudRecovery","cloudNewPassword","cloudConfirmPassword",
+  "cloudResetSent","cloudRosterStatus","cloudAccessList"])
+  assert.ok(preview.includes('id="'+id+'"'),"Missing "+id);
+ assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.7"/);
+ assert.match(preview,/id="selectMembersBtn" type="button" aria-pressed="false"/);
+ assert.match(preview,/id="selectAllBtn">Alle angezeigten auswählen/);
+ assert.match(preview,/class="member-part"/);
+ assert.match(preview,/id="latestChangelog"/);
+ assert.match(preview,/role="status"/);
+ assert.match(mod,/function loadAccessList/);
+ assert.match(mod,/async function changeAccessRole/);
+ assert.match(mod,/async function removeAccessMember/);
+ assert.match(mod,/async function revokeInvite/);
+ assert.match(mod,/\.update\(\{role:next\}\)/);
+ assert.match(mod,/\.eq\("user_id",m\.user_id\)/);
+ assert.match(mod,/\.from\("cwl_clan_invites"\)\.delete/);
+ assert.match(mod,/async function sendPasswordReset/);
+ assert.match(mod,/resetPasswordForEmail/);
+ assert.match(mod,/async function completeRecovery/);
+ assert.match(mod,/PASSWORD_RECOVERY/);
+ assert.match(mod,/updateUser\(\{password:first\}\)/);
+ assert.match(mod,/toggle\("cloudRosterBox",true\)/);
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
+ assert.equal(manifest.version,"v1.1.0-alpha.7");
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
