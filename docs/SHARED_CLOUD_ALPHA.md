@@ -56,3 +56,14 @@ Die **integrierte Cloud-Testversion** ist unter `https://smolmig.github.io/cwl_p
 - Bei einer API-Antwort mit Fehlerstatus zeigt die Testoberfläche möglichst die tatsächliche Fehlermeldung statt nur `Edge Function returned a non-2xx status code`.
 
 Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getrennt. Backend-Funktion `coc-clan-members` ist bereits auf die korrigierte Fassung deployed; der echte Browserabruf nach der Korrektur muss durch einen angemeldeten Clanleiter bestätigt werden.
+
+## Feedback-Runde v1.1.0-alpha.4 (30.10.2026)
+
+- Sortierung und „Mehrfachauswahl“ sind auf Mobilgeräten einheitlich hoch und breit; die Namen werden als **schreibgeschützte Beschriftung plus sichtbarer Stift** gerendert. Erst ein Stift-Tipp öffnet die Tastatur.
+- Im Clanmenü erkennt man **Mein Clan · Besitzer** vs. **Gemeinsamer Clan · Vize/Beobachter**. Beim Wechsel werden Plan, Mitglieder, Auswahlmodus und Filter passend zurückgesetzt.
+- Eine Aktivitätsanzeige zeigt pro Clan, wer innerhalb der letzten zwei Minuten eine Anmeldung in der App aktiv hatte. **Das ist keine Live-Cursoranzeige:** „aktiv“ kann bis zu zwei Minuten nach Schließen noch angezeigt werden.
+- Vize/Beobachter können einen geteilten Clan selbst verlassen (ohne fremde Daten zu löschen). Besitzer dürfen ihren eigenen Cloud-Clan nur nach doppelter Bestätigung dauerhaft löschen. Bei der Löschung gehen alle zugehörigen Cloud-Profile, Einladungen, Änderungsereignisse und Mitgliedschaften verloren – vorher JSON-Backup erstellen!
+- Der Button „Jetzt aktualisieren“ zeigt deutlich, ob der Cloud-Stand bereits aktuell ist oder eine neue Revision geladen wurde; andere bearbeitete/gespeicherte Änderungen kommen weiterhin über Realtime.
+- Cloud-Alpha-Versionen werden bei aktiver Verbindung periodisch und beim Wiederöffnen geprüft und bei sicherem Zustand automatisch geladen. Während offener Eingaben, Dialoge, Speichervorgänge und Konflikte wird keine automatische Neuladung erzwungen. iOS kann die Hintergrundausführung einer geschlossenen/suspendierten Web-App pausieren.
+- Die unveränderte Offline-Haupt-App bleibt separat. Der Browser-Synchronisationstest mit zwei echten Accounts und iPhone-Zoomtests steht weiterhin aus.
+- Migrationen sind im verbundenen Supabase-Projekt bereits aktiv: `cwl_clan_presence_and_self_leave`, `cwl_touch_presence_rpc`. Keine manuelle Zweitausführung.

@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.3";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.4";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -62,13 +62,32 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(preview,/if\(day===mobileSelectedDay && uiSettings\.dayViewMode==="single"\)return/);
  assert.match(mod,/function installNameEditors\(\)/);
  assert.match(mod,/input\.readOnly=true/);
- assert.match(mod,/role==="viewer"\)continue/);
+ assert.ok(mod.includes('if(cloud.active&&role==="viewer"){button.hidden=true;continue}'));
+
  assert.match(mod,/initialImport=existing\.length===0/);
  assert.match(mod,/if\(!rosterDiff\.initialImport\)m\.cocSyncState="new"/);
  assert.match(mod,/m\.cocOrder=i/);
  assert.match(mod,/toggle\("guestMembersTools",!this\.active\)/);
  assert.match(mod,/\.limit\(100\)/);
  assert.match(mod,/table:"cwl_change_events"/);
+});
+
+test("Alpha 4: names, presence, clan management and reload feedback",()=>{
+ const requiredHtml=[
+  'const APP_VERSION="v1.1.0-alpha.4"',
+  'class="member-name-edit"','placeholder="Name" readonly',
+  'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
+  'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
+  '#view-members .list-management-actions{display:grid'
+ ];
+ const requiredJs=[
+  'function installNameEditors(','button.addEventListener("click"',
+  'input.readOnly=false','cwl_touch_presence','leaveSharedClan','deleteOwnedClan',
+  '.from("cwl_clan_presence")','checkForAppUpdate','refreshCloud()',
+  'clanRoles=new Map'
+ ];
+ for(const fragment of requiredHtml)assert.ok(preview.includes(fragment),"Missing HTML fragment: "+fragment);
+ for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
