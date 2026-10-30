@@ -761,10 +761,10 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 #view-members .member-filters{border:1px solid var(--line);background:var(--card);border-radius:11px;padding:7px!important}
 #view-members .member-filters select{border-left:3px solid var(--line)}
 #view-members .member-filters select:not([value="all"]){font-weight:750}
-#view-members #selectMembersBtn[aria-pressed="true"]{background:var(--bluebg)!important;color:var(--text)!important;border:2px solid var(--blue)!important}
-#view-members .bulkbar{border:2px solid var(--blue);border-radius:13px}
+#view-members #selectMembersBtn[aria-pressed="true"]{background:var(--bluebg)!important;color:var(--text)!important;border:2px solid var(--primary)!important}
+#view-members .bulkbar{border:2px solid var(--primary);border-radius:13px}
 #view-members .list-management-actions select{background:var(--card)}
-#view-members .member-filters:focus-within{border-color:var(--blue)}
+#view-members .member-filters:focus-within{border-color:var(--primary)}
 .cloud-access-row{flex-wrap:wrap;gap:8px}
 .cloud-access-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .cloud-access-controls select{width:auto;max-width:170px;min-height:38px;padding:8px;font-size:12px}
@@ -790,10 +790,10 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
  #view-members .member-top .member-fixed:has(input:checked){border-color:var(--red)}
 }
 
-#view-members .member-filters .is-filtered{border-color:var(--blue)!important;background:var(--bluebg)!important;color:var(--text)!important;font-weight:750!important}
-#view-members .member-filters .is-filtered:focus{outline:2px solid var(--blue)}
-#view-members .member-filters:has(.is-filtered){border-color:var(--blue)!important}
-#view-members .list-management-actions #selectMembersBtn[aria-pressed="true"]{border-color:var(--blue)!important;background:var(--bluebg)!important;box-shadow:inset 0 0 0 1px var(--blue)}
+#view-members .member-filters .is-filtered{border-color:var(--primary)!important;background:var(--bluebg)!important;color:var(--text)!important;font-weight:750!important}
+#view-members .member-filters .is-filtered:focus{outline:2px solid var(--primary)}
+#view-members .member-filters:has(.is-filtered){border-color:var(--primary)!important}
+#view-members .list-management-actions #selectMembersBtn[aria-pressed="true"]{border-color:var(--primary)!important;background:var(--bluebg)!important;box-shadow:inset 0 0 0 1px var(--primary)}
 
 #cloudResetSent[hidden],#cloudRecovery[hidden]{display:none!important}
 .cloud-auth-helper{display:flex;justify-content:flex-end;margin:7px 0 0}
