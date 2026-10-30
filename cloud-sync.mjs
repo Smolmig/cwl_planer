@@ -10,6 +10,7 @@ const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
+let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const cloud={
  active:false,
  onLocalChange(){
@@ -86,7 +87,7 @@ function status(value,isError=false){text("saveBadge",value);$("saveBadge").clas
 function msg(value,isError=false){text("cloudMsg",value);$("cloudMsg").classList.toggle("error",isError)}
 function error(e){msg(e?.message||String(e),true);console.warn("Cloud alpha:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
-function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true")}
+function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWrap",false)}
 function showSignedIn(){toggle("cloudAuth",!user);toggle("cloudAccount",!!user);text("cloudIdentity",user?user.email:"")}
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
@@ -111,7 +112,7 @@ async function useSession(session){
 }
 async function leaveCloud(){
  clearTimeout(debounce);
- stopPresence();
+ stopPresence();stopRemoteChecks();hideChangeToast();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
@@ -142,10 +143,10 @@ async function listClans(epoch=accountEpoch,selected){
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
  clearTimeout(debounce);
- stopPresence();
+ stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
- lastSerial=null;changedSerial=null;blocked=false;resetRoster();
+ lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
  toggle("cloudClanActions",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
@@ -171,28 +172,118 @@ async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
  text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Cloud-Stand geladen · Revision "+revision)+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
  await audit();
- channel=sb.channel("cloud-profile-"+clanId).on("postgres_changes",{
-    event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId
- },payload=>{
-   if(!cloud.active||payload.new?.clan_id!==clanId)return;
-   const newer=Number(payload.new.revision)>Number(revision||0);
-   if(newer&&!saving){
-     if(changedSerial||editingDialog()){blocked=true;status("Cloud: fremde Änderung – neu laden",true);
-       msg("Ein anderer Nutzer hat den Clan verändert. Deine offenen Änderungen wurden nicht überschrieben. Exportiere ggf. den Stand und lade dann die Cloud neu.",true);
-     }else loadCloudProfile(true).then(applied=>{
-       if(applied){text("cloudSyncFeedback","✓ Änderungen von einem Clanmitglied übernommen · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
-         msg("Der gemeinsame Clanplan wurde automatisch aktualisiert.");}
-     }).catch(error);
-     audit().catch(console.warn);
+ channel=sb.channel("cloud-profile-"+clanId)
+ .on("postgres_changes",{event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId},
+   ()=>{checkRemoteChanges("realtime").catch(error)})
+ .on("postgres_changes",{event:"INSERT",schema:"public",table:"cwl_change_events",filter:"clan_id=eq."+clanId},
+   ()=>{checkRemoteChanges("activity").catch(error);audit().catch(console.warn)})
+ .subscribe((state,err)=>{
+   if(state==="SUBSCRIBED"){
+     checkRemoteChanges("reconnected").catch(error);
+   }else if(state==="CHANNEL_ERROR"||state==="TIMED_OUT"){
+     text("cloudSyncFeedback","Verbindung unterbrochen · automatische Abgleichprüfung bleibt aktiv");
+     console.warn("CWL Realtime",state,err);
    }
- }).on("postgres_changes",{
-    event:"INSERT",schema:"public",table:"cwl_change_events",filter:"clan_id=eq."+clanId
- },()=>{audit().catch(console.warn)})
- .subscribe();
+ });
+ startRemoteChecks();
  cloud.afterRender();
  await startPresence();
  msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
+
+function stopRemoteChecks(){
+ if(pollTimer!==null){clearInterval(pollTimer);pollTimer=null}
+ remotePending=false;
+}
+function startRemoteChecks(){
+ stopRemoteChecks();
+ pollTimer=setInterval(()=>{
+  if(cloud.active&&clanId&&navigator.onLine&&!document.hidden)
+   checkRemoteChanges("interval").catch(error);
+ },15000);
+}
+function hideChangeToast(){
+ if(notifyTimer!==null){clearTimeout(notifyTimer);notifyTimer=null}
+ toggle("cloudChangeNotice",false);
+}
+function showChangeToast(message,sticky=false){
+ if(!cloud.active)return;
+ hideChangeToast();
+ text("cloudChangeText",message);
+ toggle("cloudChangeNotice",true);
+ if(!sticky)notifyTimer=setTimeout(()=>toggle("cloudChangeNotice",false),9500);
+}
+function formatChangeSummary(entry){
+ const changes=entry?.details||{};
+ if(changes.archiv_geaendert)return "das CWL-Archiv geändert";
+ if(changes.plan_geaendert)return "eine gespielte Aufstellung geändert";
+ if(changes.config_geaendert)return "die CWL-Einstellungen geändert";
+ const affected=changes.spieleraenderungen||[];
+ if(affected.length){
+  const target=affected[0];
+  const fields=Object.keys(target.felder||{});
+  const field=fields[0];
+  const terms={fixed:"FIX-Status",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
+  if(field==="hinzugefuegt")return target.name+" hinzugefügt";
+  if(field==="entfernt")return target.name+" entfernt";
+  return (target.name||"einen Spieler")+" · "+(terms[field]||"Spielerdaten")+" geändert"+(affected.length>1?" (und weitere)":"");
+ }
+ return "den gemeinsamen CWL-Plan geändert";
+}
+async function remoteChangeMessage(id,oldRevision){
+ const {data:events,error:err}=await sb.from("cwl_change_events")
+  .select("actor_id,revision,details,event_type")
+  .eq("clan_id",id).gt("revision",oldRevision)
+  .order("revision",{ascending:false}).limit(5);
+ if(err)throw err;
+ const foreign=(events||[]).find(e=>e.actor_id!==user?.id);
+ if(!foreign)return null;
+ const {data:member,error:memberError}=await sb.from("cwl_clan_memberships")
+  .select("display_name,role").eq("clan_id",id).eq("user_id",foreign.actor_id).maybeSingle();
+ if(memberError)throw memberError;
+ const byRole={owner:"Clanführer",editor:"Vize",viewer:"Beobachter"};
+ const actor=member?.display_name||byRole[member?.role]||"Ein Clanmitglied";
+ return actor+" hat "+formatChangeSummary(foreign);
+}
+async function checkRemoteChanges(reason="poll"){
+ const id=clanId,epoch=accountEpoch;
+ if(!cloud.active||!id||!user||syncInFlight||!navigator.onLine)return;
+ syncInFlight=true;
+ try{
+  const {data,error:err}=await sb.from("cwl_cloud_profiles")
+   .select("revision").eq("clan_id",id).maybeSingle();
+  if(err)throw err;
+  if(id!==clanId||epoch!==accountEpoch)return;
+  const remoteRev=Number(data?.revision||0),localRev=Number(revision||0);
+  if(remoteRev<=localRev)return;
+  const isConflict=Boolean(changedSerial||saving||blocked);
+  const isEditing=editingDialog();
+  if(isConflict||isEditing){
+   remotePending=true;
+   if(isConflict){blocked=true;status("Cloud: gemeinsame Änderung – Konflikt",true)}
+   if(remoteRev>lastNotifiedRevision){
+    lastNotifiedRevision=remoteRev;
+    const message=await remoteChangeMessage(id,localRev).catch(()=>null);
+    if(id===clanId)showChangeToast((message||"Der Clanplan wurde auf einem anderen Gerät geändert")+
+      (isConflict?" · Deine offenen Änderungen bleiben geschützt.":" · Nach der Bearbeitung aktualisieren."),true);
+   }
+   text("cloudSyncFeedback",isConflict?"Konflikt: Ein anderer Stand liegt vor":"Neuer Stand verfügbar · Bearbeitung zuerst schließen");
+   return;
+  }
+  const fromRevision=localRev;
+  const applied=await loadCloudProfile(true);
+  if(!applied||id!==clanId||epoch!==accountEpoch)return;
+  remotePending=false;
+  const message=await remoteChangeMessage(id,fromRevision).catch(()=>null);
+  if(Number(revision||0)>lastNotifiedRevision){
+   lastNotifiedRevision=Number(revision||0);
+   showChangeToast(message||"Der gemeinsame CWL-Plan wurde aktualisiert");
+  }
+  text("cloudSyncFeedback","✓ Automatisch synchronisiert · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
+  await audit();
+ }finally{syncInFlight=false}
+}
+
 async function loadCloudProfile(automatic=false){
  if(!clanId)return;
  if(changedSerial&&automatic)return;
@@ -440,13 +531,20 @@ async function startPresence(){
   if(clanId===current)heartbeat(current).catch(console.warn);
  },45000);
 }
-function editingDialog(){return Boolean(document.querySelector(".modal.open,.inline-action-panel.open"))}
+function editingDialog(){
+ if(document.querySelector(".modal.open,.inline-action-panel.open"))return true;
+ const active=document.activeElement;
+ return Boolean(active?.matches("input:not([readonly]),textarea,select,[contenteditable='true']")&&
+  active.closest("#view-members,#view-plan,#view-summary"));
+}
 async function refreshCloud(){
+ hideChangeToast();
  if(!clanId){msg("Noch kein Clan ausgewählt.");return}
  if(editingDialog()){msg("Bitte zuerst die offene Bearbeitung schließen, dann aktualisieren.",true);return}
  const prior=revision;
  const loaded=await loadCloudProfile();
  if(!loaded){msg("Aktualisierung abgebrochen, deine Änderungen bleiben bestehen.");return}
+ remotePending=false;lastNotifiedRevision=Math.max(lastNotifiedRevision,Number(revision||0));
  await Promise.all([audit(),refreshPresence()]);
  const stamp=new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
  const message=prior===revision?"✓ Alles aktuell · keine neuen Änderungen · "+stamp:
@@ -506,6 +604,10 @@ bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign
 bind("cloudLogout","click",logout);
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",refreshCloud);
+bind("cloudChangeDismiss","click",hideChangeToast);
+bind("cloudChangeDetails","click",()=>{
+ hideChangeToast();open();$("cloudAudit").scrollIntoView({behavior:"smooth",block:"center"});
+});
 bind("cloudLeaveBtn","click",leaveSharedClan);
 bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
@@ -534,33 +636,55 @@ bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click"
 $("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
 
+let pendingRelease=null;
+function safeForReload(){
+ return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
+   !document.querySelector(".cloud-overlay.open")&&
+   !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
+}
+function installPendingRelease(){
+ if(!pendingRelease||!safeForReload()||document.hidden||!navigator.onLine)return false;
+ const next=new URL(location.href);
+ if(next.searchParams.get("appv")===pendingRelease)return false;
+ next.searchParams.set("appv",pendingRelease);
+ text("autoUpdateStatus","Neue Version erkannt · wird jetzt geladen …");
+ location.replace(next.toString());
+ return true;
+}
 async function checkForAppUpdate(){
- if(document.hidden||Date.now()-lastVersionCheck<90000)return;
+ if(document.hidden||!navigator.onLine)return;
+ if(pendingRelease){installPendingRelease();return}
+ if(Date.now()-lastVersionCheck<9000)return;
  lastVersionCheck=Date.now();
  try{
-  const response=await fetch("./cloud-app.html?check="+Date.now(),{cache:"no-store"});
+  const response=await fetch("./cloud-version.json?check="+Date.now(),{cache:"no-store"});
   if(!response.ok)return;
-  const remote=(await response.text()).match(/const APP_VERSION="([^"]+)";/);
-  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.4";
-  if(!remote||remote[1]===installed)return;
-  const unsafe=Boolean(changedSerial||saving||blocked||editingDialog()||
-    document.querySelector(".cloud-overlay.open")||
-    document.activeElement?.matches("input,textarea,select,[contenteditable='true']"));
-  if(unsafe){
-   appUpdatePending=true;
-   text("autoUpdateStatus","Neue Version verfügbar – wird nach der Bearbeitung automatisch geladen");
-   return;
-  }
-  text("autoUpdateStatus","Neue Version erkannt – wird geladen …");
-  location.reload();
+  const payload=await response.json();
+  const remote=typeof payload?.version==="string"?payload.version:null;
+  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.5";
+  if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$/.test(remote)||
+     remote===installed)return;
+  pendingRelease=remote;appUpdatePending=true;
+  if(!installPendingRelease())
+    text("autoUpdateStatus","Update auf "+remote+" verfügbar · nach Bearbeitung automatisch laden");
  }catch(err){console.warn("Updateprüfung nicht erreichbar:",err)}
 }
-setInterval(()=>checkForAppUpdate().catch(console.warn),5*60*1000);
+setInterval(()=>checkForAppUpdate().catch(console.warn),60000);
+window.addEventListener("pageshow",()=>checkForAppUpdate().catch(console.warn));
 document.addEventListener("visibilitychange",()=>{
- if(!document.hidden){checkForAppUpdate().catch(console.warn);heartbeat().catch(console.warn)}
+ if(!document.hidden){
+  checkForAppUpdate().catch(console.warn);
+  heartbeat().catch(console.warn);
+  checkRemoteChanges("foreground").catch(console.warn);
+ }
 });
-window.addEventListener("focus",()=>checkForAppUpdate().catch(console.warn));
-setTimeout(()=>checkForAppUpdate().catch(console.warn),15000);
+window.addEventListener("focus",()=>{
+ checkForAppUpdate().catch(console.warn);
+ checkRemoteChanges("focus").catch(console.warn);
+});
+document.addEventListener("pointerdown",()=>checkForAppUpdate().catch(console.warn),{passive:true});
+document.addEventListener("keydown",()=>checkForAppUpdate().catch(console.warn));
+setTimeout(()=>checkForAppUpdate().catch(console.warn),0);
 
 const linkCode=new URLSearchParams(location.search).get("invite");
 if(linkCode){$("cloudJoinCode").value=linkCode;open()}
