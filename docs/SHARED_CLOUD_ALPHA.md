@@ -87,3 +87,13 @@ Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getre
 - Beitritte und Berechtigungen nicht mit der Teilnahme-/CWL-Mitgliederliste verwechseln. Die App verwaltet künftig getrennt Clash-Spieler und Personen mit App-Zugriff.
 - Unveränderte stabile lokale App v1.0.1, Cloud-Alpha unter gleichem Testlink.
 - **Zu testen:** neuen Vize über Einladungslink registrieren, Ingame-Namen bestätigen, Zugriffsliste auf anderem Gerät aktualisieren; fehlenden Spieler mit und ohne aktuelle Aufstellung nachstellen.
+
+## Alpha 7 – Oberfläche, Rechte, Wiederherstellung (30.10.2026)
+
+- **Clan & Konto:** Besitzer dürfen die Rollen von Vizes und Beobachtern ändern und ihre Zugänge entfernen. Die Besitzerrolle bleibt geschützt. Vizes dürfen nur selbst erstellte Einladungen zurückziehen, Besitzer alle offenen Einladungen. RLS sichert diese Rechte in der Datenbank.
+- **Mitglieder:** Der Clash-Abgleich bleibt vollständig im Tab „Mitglieder“; die Unterschiede werden dort angezeigt und nicht mehr in einem extra Kontodialog. Dabei und Fix sind direkt sichtbar. Manuelle Aktionen bleiben unter einem dezenten Aufklappbereich, eine getrennte Infozeile erklärt die Felder.
+- **Mehrfachauswahl:** Sichtbar aktiver Zustand, eindeutige „Alle auswählen“-Bezeichnung ohne Filter und „Alle gefilterten auswählen“ bei aktiver Suche/Filter. Eine sichtbare Schaltfläche „Fertig“ zum Beenden. Aktive Filter werden visuell gekennzeichnet.
+- **Rückmeldung:** Kurze Statusmeldungen/Toasts vor dem Konto-Dialog statt unsichtbare Nachrichten am Seitenanfang. Fehler bleiben im Dialog sichtbar; wichtige Abgleichergebnisse erscheinen neben der Importaktion.
+- **Hilfe:** Cloud-Hilfe nach den Aufgaben Clan verwalten, importieren, planen, Zugriffe, Konflikte und Passwort sortiert. Der kurze letzte Changelog ist bei der App-Version in drei verständlichen Punkten formatiert.
+- **Passwort zurücksetzen:** „Passwort vergessen?“ unter der Anmeldung. Supabase sendet einen E-Mail-Link, danach kann ein neues Passwort eingegeben und bestätigt werden. Redirect-URL `https://smolmig.github.io/cwl_planer/cloud-app.html` muss in Supabase erlaubt sein. Auf Free-Projekten können E-Mail-Ratenlimits gelten; Zustellung/Link müssen mit einem echten Benutzer geprüft werden.
+- **Sicherheit:** SQL-Migration `cwl_owner_role_management_vize_invite_revoke` ist bereits angewendet; bestehende Cloud-Profile und Datenformat v9 bleiben unverändert. Stabile Offline-Haupt-App weiterhin v1.0.1.
