@@ -176,7 +176,7 @@ async function chooseClan(epoch=accountEpoch){
    if(!cloud.active||payload.new?.clan_id!==clanId)return;
    const newer=Number(payload.new.revision)>Number(revision||0);
    if(newer&&!saving){
-     if(changedSerial){blocked=true;status("Cloud: fremde Änderung – neu laden",true);
+     if(changedSerial||editingDialog()){blocked=true;status("Cloud: fremde Änderung – neu laden",true);
        msg("Ein anderer Nutzer hat den Clan verändert. Deine offenen Änderungen wurden nicht überschrieben. Exportiere ggf. den Stand und lade dann die Cloud neu.",true);
      }else loadCloudProfile(true).then(applied=>{
        if(applied){text("cloudSyncFeedback","✓ Änderungen von einem Clanmitglied übernommen · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
@@ -439,8 +439,10 @@ async function startPresence(){
   if(clanId===current)heartbeat(current).catch(console.warn);
  },45000);
 }
+function editingDialog(){return Boolean(document.querySelector(".modal.open,.inline-action-panel.open"))}
 async function refreshCloud(){
  if(!clanId){msg("Noch kein Clan ausgewählt.");return}
+ if(editingDialog()){msg("Bitte zuerst die offene Bearbeitung schließen, dann aktualisieren.",true);return}
  const prior=revision;
  const loaded=await loadCloudProfile();
  if(!loaded){msg("Aktualisierung abgebrochen, deine Änderungen bleiben bestehen.");return}
@@ -530,6 +532,35 @@ $("memberList").addEventListener("click",event=>{
 bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click",importCloud);
 $("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
+
+async function checkForAppUpdate(){
+ if(document.hidden||Date.now()-lastVersionCheck<90000)return;
+ lastVersionCheck=Date.now();
+ try{
+  const response=await fetch("./cloud-app.html?check="+Date.now(),{cache:"no-store"});
+  if(!response.ok)return;
+  const remote=(await response.text()).match(/const APP_VERSION="([^"]+)";/);
+  const installed=$("appVersion")?.textContent?.trim()||"v1.1.0-alpha.4";
+  if(!remote||remote[1]===installed)return;
+  const unsafe=Boolean(changedSerial||saving||blocked||editingDialog()||
+    document.querySelector(".cloud-overlay.open")||
+    document.activeElement?.matches("input,textarea,select,[contenteditable='true']"));
+  if(unsafe){
+   appUpdatePending=true;
+   text("autoUpdateStatus","Neue Version verfügbar – wird nach der Bearbeitung automatisch geladen");
+   return;
+  }
+  text("autoUpdateStatus","Neue Version erkannt – wird geladen …");
+  location.reload();
+ }catch(err){console.warn("Updateprüfung nicht erreichbar:",err)}
+}
+setInterval(()=>checkForAppUpdate().catch(console.warn),5*60*1000);
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden){checkForAppUpdate().catch(console.warn);heartbeat().catch(console.warn)}
+});
+window.addEventListener("focus",()=>checkForAppUpdate().catch(console.warn));
+setTimeout(()=>checkForAppUpdate().catch(console.warn),15000);
+
 const linkCode=new URLSearchParams(location.search).get("invite");
 if(linkCode){$("cloudJoinCode").value=linkCode;open()}
 const {data:{session},error:sessionErr}=await sb.auth.getSession();
