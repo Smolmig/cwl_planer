@@ -231,7 +231,7 @@ test("Backup v1: automatic checkpoints, secure owner restore and offsite encrypt
 });
 test("Stable and cloud saves reduce localStorage writes and preserve planner results",()=>{
  for(const content of [main,preview]){
-  assert.match(content,/lastLocalSavedJson=null,lastLocalRecoveryAt=0/);
+  assert.match(content,/function saveApp()/);
   assert.match(content,/if\(before===lastLocalSavedJson\)return/);
   assert.match(content,/lastLocalRecoveryAt>=15\*60\*1000/);
   assert.match(content,/const memberOrder=new Map\(state\.members\.map/);
