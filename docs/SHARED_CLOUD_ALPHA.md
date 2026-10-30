@@ -67,3 +67,12 @@ Die normale App bleibt weiterhin auf v1.0.1 und von dieser Alpha-Iteration getre
 - Cloud-Alpha-Versionen werden bei aktiver Verbindung periodisch und beim Wiederöffnen geprüft und bei sicherem Zustand automatisch geladen. Während offener Eingaben, Dialoge, Speichervorgänge und Konflikte wird keine automatische Neuladung erzwungen. iOS kann die Hintergrundausführung einer geschlossenen/suspendierten Web-App pausieren.
 - Die unveränderte Offline-Haupt-App bleibt separat. Der Browser-Synchronisationstest mit zwei echten Accounts und iPhone-Zoomtests steht weiterhin aus.
 - Migrationen sind im verbundenen Supabase-Projekt bereits aktiv: `cwl_clan_presence_and_self_leave`, `cwl_touch_presence_rpc`. Keine manuelle Zweitausführung.
+
+## Alpha 5 – 30.10.2026
+
+- **Änderungshinweise:** Popup über der unteren Navigation, das die letzte von einer anderen Person gespeicherte Cloud-Änderung nennt. „Ansehen“ öffnet das Änderungsprotokoll. Es werden nur im Backend bestätigte Änderungen angezeigt.
+- **Synchronisierung:** Ergänzend zu Supabase Realtime prüft die geöffnete Cloud-App alle 15 Sekunden die Profilrevision. Damit werden auch verpasste Push-Nachrichten abgefangen. Bei lokalen ungespeicherten Änderungen oder offenen Bearbeitungsdialogen erfolgt niemals stilles Überschreiben; Hinweis/Konflikt bleiben sichtbar.
+- **Archiv:** Archivierte CWLs lassen sich nach eindeutiger Bestätigung entfernen. Dieser Vorgang löscht weder aktuelle Mitglieder noch die aktive CWL. Bei Cloud-Nutzern speichert die Änderung in der gemeinsamen Datenbank und ist jetzt auch als Archivänderung im Protokoll erkennbar.
+- **App-Updates:** Kleine Versionsmanifest-Datei `cloud-version.json` ermöglicht schnelle Prüfung beim Seitenstart, Zurückwechseln und der ersten Interaktion, zusätzlich periodisch. Neue Versionen laden automatisch über eine eindeutige URL; offene Dialoge, Editoren und ungespeicherte Cloud-Daten werden nicht unterbrochen. Für die erste Umstellung von alten Alpha-Versionen kann einmaliges manuelles Aktualisieren nötig sein.
+- **Changelog in der App:** Direkt bei „App-Version“ steht nur die kurze Zusammenfassung der aktuellen Version. Bei jeder neuen Alpha/Release muss dieser Text und die Versionsmanifest-Datei gemeinsam aktualisiert werden.
+- Geschlossener Pilotlink bleibt `cloud-app.html`. Nicht als öffentlich fertige Version deklarieren, bis tatsächlicher Mehrbenutzer-Abgleich und UI getestet sind.
