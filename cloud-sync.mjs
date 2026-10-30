@@ -169,6 +169,7 @@ async function chooseClan(epoch=accountEpoch){
  cloud.active=true;hydrating=true;
  await loadCloudProfile(false);
  if(epoch!==accountEpoch)return;
+ text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Cloud-Stand geladen · Revision "+revision)+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
  await audit();
  channel=sb.channel("cloud-profile-"+clanId).on("postgres_changes",{
     event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId
