@@ -418,7 +418,7 @@ bind("guestImportMembersBtn","click",()=>{ $("membersFile").click(); });
 bind("guestManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("guestManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("bulkDoneBtn","click",()=>{ if($("bulkBar").classList.contains("hidden"))return; $("selectMembersBtn").click(); });
-bind("cloudManualSelect","click",()=>{ $("selectMembersBtn").click(); });
+
 $("memberList").addEventListener("click",event=>{
   if(!cloud.active||role==="viewer")return;
   const row=event.target.closest(".member[data-id]");if(!row)return;
