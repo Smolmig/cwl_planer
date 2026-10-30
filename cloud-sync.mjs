@@ -32,6 +32,7 @@ const cloud={
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
   toggle("guestMembersTools",!this.active);
+  toggle("cloudHelpSection",this.active);
   installNameEditors();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
