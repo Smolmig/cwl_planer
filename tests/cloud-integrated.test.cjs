@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.4";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.5";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -74,7 +74,7 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
-  'const APP_VERSION="v1.1.0-alpha.4"',
+  'const APP_VERSION="v1.1.0-alpha.5"',
   'class="member-name-edit"','placeholder="Name" readonly',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
@@ -88,6 +88,30 @@ test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  ];
  for(const fragment of requiredHtml)assert.ok(preview.includes(fragment),"Missing HTML fragment: "+fragment);
  for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
+});
+test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and last release notes",()=>{
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.5";/);
+  assert.match(preview,/id="cloudChangeNotice"/);
+  assert.match(preview,/id="cloudChangeDetails"/);
+  assert.match(preview,/id="cloudChangeDismiss"/);
+  assert.match(preview,/id="latestChangelog"/);
+  assert.match(preview,/class="btn small danger delete-archive"/);
+  assert.match(preview,/title:"Archiv wirklich löschen\?"/);
+  assert.match(preview,/state\.archives=state\.archives\.filter/);
+  assert.match(mod,/function checkRemoteChanges\(reason=/);
+  assert.match(mod,/checkRemoteChanges\("realtime"\)/);
+  assert.match(mod,/checkRemoteChanges\("interval"\)/);
+  assert.match(mod,/function showChangeToast/);
+  assert.match(mod,/remoteChangeMessage/);
+  assert.match(mod,/\.select\("revision"\)/);
+  assert.match(mod,/\.gt\("revision",oldRevision\)/);
+  assert.match(mod,/\.from\("cwl_cloud_profiles"\)/);
+  assert.match(mod,/function installPendingRelease/);
+  assert.match(mod,/location\.replace\(next\.toString\(\)\)/);
+  assert.match(mod,/window\.addEventListener\("pageshow"/);
+  assert.match(mod,/document\.addEventListener\("pointerdown"/);
+  const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
+  assert.equal(meta.version,"v1.1.0-alpha.5");
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
