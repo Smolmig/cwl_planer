@@ -687,6 +687,11 @@ body:not(.cloud-mode) #cloudMembersTools,body.cloud-mode #guestMembersTools{disp
 #view-members .member-new .cloud-roster-flag{flex:0 0 auto}
 @media(max-width:520px){.bottomnav{padding-bottom:calc(9px + env(safe-area-inset-bottom));touch-action:manipulation}.navbtn{touch-action:manipulation}}
 
+/* Keep bottom navigation usable at narrow widths and with zoom where supported. */
+html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+.bottomnav{max-width:100vw;overflow:hidden;touch-action:manipulation}
+.navinner,.navbtn{min-width:0}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -840,7 +845,14 @@ Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
-  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe oder Ergebnisse liest die App nicht automatisch aus Clash of Clans aus.</b></div>
+  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe und Ergebnisse werden derzeit noch nicht automatisch übernommen.</b></div>
+  <div id="cloudHelpSection" hidden class="helpbox">
+   <b>Cloud-Modus und Clanverwaltung</b>
+   <p>Über „☁️ Clan ▾“ verwaltest du deinen Clan, Einladungen und Änderungen. Sobald du angemeldet bist, wird nur der gemeinsame Cloud-Stand bearbeitet – lokale Profile bleiben davon getrennt.</p>
+   <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene bleiben ausgegraut erhalten, damit frühere Einsätze nicht verloren gehen.</p>
+   <p>„Mehrfachauswahl“ erlaubt Änderungen für mehrere Spieler gleichzeitig. Mit „Fertig“ verlässt du den Modus. Namen bearbeitest du über das Stift-Symbol.</p>
+   <p>Bei einem Speicherkonflikt wird nicht automatisch überschrieben. Der Cloud-Modus benötigt eine Internetverbindung.</p>
+  </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
     <div><b>1</b><span><strong>Mitglieder eintragen</strong> – Im Tab „Mitglieder“ Spieler hinzufügen und bei allen CWL-Teilnehmern „Dabei“ aktivieren.</span></div>
@@ -931,7 +943,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
   </div>
   <div class="cloud-section">
-    <h3>Änderungsverlauf</h3><p>Zeigt, welcher Account das gemeinsame Profil verändert hat. Die Liste ist auf die letzten 30 Ereignisse begrenzt.</p>
+    <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
   <div class="cloud-section">
