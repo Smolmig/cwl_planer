@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.3";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.4";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -69,6 +69,29 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(mod,/toggle\("guestMembersTools",!this\.active\)/);
  assert.match(mod,/\.limit\(100\)/);
  assert.match(mod,/table:"cwl_change_events"/);
+});
+
+test("Alpha 4: real member pencils, consistent controls, clan roles, presence and refresh",()=>{
+ assert.match(preview,/const APP_VERSION="v1\\.1\\.0-alpha\\.4"/);
+ assert.match(preview,/class="member-name-edit"/);
+ assert.match(preview,/placeholder="Name" readonly/);
+ assert.match(preview,/id="cloudClanActions"/);
+ assert.match(preview,/id="cloudLeaveBtn"/);
+ assert.match(preview,/id="cloudDeleteBtn"/);
+ assert.match(preview,/id="cloudActiveMembers"/);
+ assert.match(preview,/id="cloudSyncFeedback"/);
+ assert.match(preview,/id="autoUpdateStatus"/);
+ assert.match(preview,/#view-members \\.list-management-actions\\{display:grid/);
+ assert.match(mod,/function installNameEditors\\(/);
+ assert.match(mod,/button\\.addEventListener\\("click"/);
+ assert.match(mod,/input\\.readOnly=false/);
+ assert.match(mod,/cwl_touch_presence/);
+ assert.match(mod,/leaveSharedClan/);
+ assert.match(mod,/deleteOwnedClan/);
+ assert.match(mod,/\.eq\\("id",id\\)/);
+ assert.match(mod,/\.from\\("cwl_clan_presence"\\)/);
+ assert.match(mod,/new Date\\(\\)\\.toLocaleTimeString/);
+ assert.match(mod,/checkForAppUpdate/);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
