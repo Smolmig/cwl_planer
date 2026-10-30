@@ -724,6 +724,9 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 .cloud-change-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
 .cloud-change-notice .btn.small{min-height:34px;font-size:11px}
 .archive-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+.latest-changelog{margin-top:9px;border-top:1px solid var(--line);padding-top:9px;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:1.45}
+.latest-changelog strong{color:var(--text);font-size:12px}.latest-changelog span{color:var(--muted)}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -853,7 +856,11 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
   <div class="card">
     <div class="section-title"><h3>Einstellungen & Daten</h3></div>
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
-    <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div></div></div></div>
+    <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
+    <div class="latest-changelog" id="latestChangelog">
+      <strong>Neu in v1.1.0-alpha.5</strong>
+      <span>Änderungen anderer Clanführer als Hinweis, zuverlässigerer Live-Abgleich, Archive löschen und schnellere App-Updates.</span>
+    </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
