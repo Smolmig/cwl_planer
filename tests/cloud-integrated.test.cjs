@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.5";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.6";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -30,7 +30,7 @@ test("Cloud frontend JS syntax and separation of browser secrets",()=>{
   assert.match(mod,/cloud\.active=true;role="viewer";hydrating=true/);
   assert.match(mod,/changedSerial/);
   assert.match(mod,/\.rpc\("cwl_create_short_invite"/);
-  assert.match(mod,/\.rpc\("cwl_redeem_short_invite"/);
+  assert.match(mod,/\.rpc\("cwl_redeem_named_invite"/);
   assert.match(mod,/sb\.functions\.invoke\("coc-clan-members"/);
   assert.match(mod,/\.from\("cwl_change_events"\)/);
   assert.match(mod,/m\.participating=false/);
@@ -74,7 +74,7 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
-  'const APP_VERSION="v1.1.0-alpha.5"',
+  'const APP_VERSION="v1.1.0-alpha.6"',
   'class="member-name-edit"','placeholder="Name" readonly',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
@@ -90,7 +90,7 @@ test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and last release notes",()=>{
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.5";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.6";/);
   assert.match(preview,/id="cloudChangeNotice"/);
   assert.match(preview,/id="cloudChangeDetails"/);
   assert.match(preview,/id="cloudChangeDismiss"/);
@@ -111,7 +111,29 @@ test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and
   assert.match(mod,/window\.addEventListener\("pageshow"/);
   assert.match(mod,/document\.addEventListener\("pointerdown"/);
   const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
-  assert.equal(meta.version,"v1.1.0-alpha.5");
+  assert.equal(meta.version,"v1.1.0-alpha.6");
+});
+test("Alpha 6: accepted membership roster, named invite and safe departed-lineup decisions",()=>{
+ for(const id of ["cloudAccessList","cloudAccessCount","cloudAccessRefresh","cloudJoinName","cloudDepartedWarnings"])
+   assert.ok(preview.includes('id="'+id+'"'),"Missing "+id);
+ assert.doesNotMatch(preview,/id="cloudPauseDeparted"/);
+ assert.match(mod,/async function loadAccessList/);
+ assert.match(mod,/role==="owner"\|\|role==="editor"/);
+ assert.match(mod,/\.rpc\("cwl_redeem_named_invite",\{p_code:code,p_name:name\}\)/);
+ assert.match(mod,/storage\.toast\("✓ Einladungslink kopiert"\)/);
+ assert.match(mod,/storage\.getPlannedLineups\(\)/);
+ assert.match(mod,/cloud-missing-choice/);
+ assert.match(mod,/Vorerst nichts ändern/);
+ assert.match(mod,/Weiterhin als Dabei bestätigen/);
+ assert.match(mod,/protectedIds\.has\(m\.id\)/);
+ assert.match(mod,/if\(decisions\.get\(m\.id\)==="keep"\)/);
+ assert.match(mod,/m\.cocSyncState="kept"/);
+ assert.match(preview,/getPlannedLineups:\(\)=>lastPlan\?\.dayPlans/);
+ const sql=fs.readFileSync(path.join(root,"supabase/migrations/20261030015542_cwl_vize_invites_named_join.sql"),"utf8");
+ assert.match(sql,/role in \('owner','editor'\)/);
+ assert.match(sql,/display_name\)/);
+ assert.match(sql,/cwl_redeem_named_invite/);
+ assert.match(sql,/revoke execute on function public\.cwl_redeem_short_invite/);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);

@@ -727,6 +727,16 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 
 .latest-changelog{margin-top:9px;border-top:1px solid var(--line);padding-top:9px;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:1.45}
 .latest-changelog strong{color:var(--text);font-size:12px}.latest-changelog span{color:var(--muted)}
+
+.cloud-access-list{margin:10px 0 12px;display:grid;gap:7px}
+.cloud-access-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:13px;min-width:0}
+.cloud-access-row strong{min-width:0;overflow-wrap:anywhere}
+.cloud-access-row span{font-size:12px;color:var(--muted);flex:0 0 auto}
+.cloud-compare-warn{margin:10px 0;border:1px solid #cb9940;background:rgba(177,119,30,.13);border-radius:11px;padding:12px}
+.cloud-compare-warn[hidden]{display:none!important}
+.cloud-compare-warn strong{display:block;margin-bottom:6px;color:var(--text)}
+.cloud-compare-warn label{margin-top:9px;display:block;color:var(--text)}
+.cloud-compare-warn select{width:100%;margin-top:5px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -858,8 +868,8 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog">
-      <strong>Neu in v1.1.0-alpha.5</strong>
-      <span>Änderungen anderer Clanführer als Hinweis, zuverlässigerer Live-Abgleich, Archive löschen und schnellere App-Updates.</span>
+      <strong>Neu in v1.1.0-alpha.6</strong>
+      <span>Clanmitglieder mit Zugriff anzeigen, Ingame-Namen beim Beitritt, Vize-Einladungen und sichere Warnungen beim Mitgliederabgleich.</span>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
@@ -888,7 +898,8 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div id="cloudHelpSection" hidden class="helpbox">
    <b>Cloud-Modus und Clanverwaltung</b>
    <p>Über „☁️ Clan ▾“ verwaltest du deinen Clan, Einladungen und Änderungen. Sobald du angemeldet bist, wird nur der gemeinsame Cloud-Stand bearbeitet – lokale Profile bleiben davon getrennt.</p>
-   <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene bleiben ausgegraut erhalten, damit frühere Einsätze nicht verloren gehen.</p>
+   <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene ohne aktuelle Aufstellung bleiben unten ausgegraut. Ist ein Spieler noch für einen CWL-Tag eingeplant, zeigt die App eine Warnung und verlangt eine Entscheidung; er wird nicht automatisch pausiert.</p>
+   <p>Unter „Personen mit Zugriff“ siehst du Besitzer, Vize und Beobachter. Besitzer und Vize können Einladungslinks erstellen. Wer über einen solchen Link beitritt, gibt seinen Ingame-Namen an. Beobachter können nur ansehen und nicht einladen.</p>
    <p>„Mehrfachauswahl“ erlaubt Änderungen für mehrere Spieler gleichzeitig. Mit „Fertig“ verlässt du den Modus. Namen bearbeitest du über das Stift-Symbol.</p>
    <p>Über „Meine Clans“ wechselst du zwischen eigenen und geteilten Clanbereichen. Als Vize/Beobachter kannst du einen Clan verlassen. Als Besitzer kannst du deinen eigenen Clanbereich erst nach doppelter Bestätigung dauerhaft löschen.</p>
    <p>„Aktiv“ bedeutet, dass ein Clanmitglied innerhalb der letzten zwei Minuten in der App verbunden war; es zeigt nicht, welche Eingabe gerade bearbeitet wird.</p>
@@ -959,6 +970,13 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div id="cloudRole" class="statusline" aria-live="polite"></div>
     <div id="cloudSyncFeedback" class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
     <div id="cloudActiveMembers" class="cloud-active-members" aria-live="polite"></div>
+    <details class="cloud-minor" id="cloudAccessDetails" open>
+      <summary>Personen mit Zugriff <span id="cloudAccessCount"></span></summary>
+      <p class="small">Hier siehst du, wer dem Clan beigetreten ist und welche Rechte die Person hat.</p>
+      <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Mitglieder werden geladen …</div>
+      <div id="cloudInviteStats" class="small" hidden></div>
+      <button class="btn small" id="cloudAccessRefresh" type="button">↻ Zugriffe aktualisieren</button>
+    </details>
     <div id="cloudClanActions" class="cloud-clan-actions" hidden>
       <button class="btn small" id="cloudLeaveBtn" hidden>Gemeinsamen Clan verlassen</button>
       <button class="btn small danger" id="cloudDeleteBtn" hidden>Eigenen Cloud-Clan löschen</button>
@@ -973,17 +991,20 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
     <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
     <label for="cloudJoinCode">Einladungscode</label><input id="cloudJoinCode" maxlength="12" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
+    <label for="cloudJoinName">Dein Ingame-Name (für den Beitritt erforderlich)</label>
+    <input id="cloudJoinName" maxlength="60" autocomplete="nickname" placeholder="Dein Name in Clash of Clans">
+    <p class="small" id="cloudJoinHint">Dieser Name wird den Clanführern bei deinen Berechtigungen angezeigt.</p>
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
   <div id="cloudRosterBox" class="cloud-section" hidden>
     <h3>Mitglieder aus Clash of Clans</h3><p>Aktuelle Mitglieder abrufen. Zuerst wird ein Vergleich gezeigt: neu, geändert, nicht mehr im Clan. FIX, Priorität, Tagesregeln und gespielte Aufstellungen bleiben erhalten.</p>
     <button class="btn" id="cloudFetchRoster">↻ Mitglieder abgleichen</button>
     <div id="cloudRosterDiff" class="cloud-compare" hidden></div>
-    <label id="cloudDepartedWrap" hidden><input type="checkbox" id="cloudPauseDeparted" checked style="width:auto"> Nicht mehr vorhandene Spieler auf Pause setzen (nicht löschen)</label>
+    <div class="cloud-compare-warn" id="cloudDepartedWarnings" hidden aria-live="polite"></div>
     <button class="btn primary" id="cloudApplyRoster" hidden>Änderungen übernehmen</button>
   </div>
   <div id="cloudInviteBox" class="cloud-section" hidden>
-    <h3>Zugriff teilen</h3><p>Einmalige Einladung, sieben Tage gültig.</p>
+    <h3>Zugriff teilen</h3><p>Als Besitzer oder Vize kannst du Einladungen erstellen. Ein Code gilt einmalig und sieben Tage.</p>
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
     <button class="btn" id="cloudMakeInvite">Einladungscode erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
@@ -1008,7 +1029,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.5";
+const APP_VERSION="v1.1.0-alpha.6";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1447,6 +1468,8 @@ if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
 renderAll();
 window.CWLLegacy={
  getProfile:()=>state,
+ getPlannedLineups:()=>lastPlan?.dayPlans||[],
+ toast:(message)=>showToast(message),
  switchToCloud:(profile)=>{const p=normalizeProfile(structuredClone(profile));app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
  restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
  blank:(name)=>freshProfile(name),
@@ -1456,6 +1479,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.5"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.6"></script>
 </body>
 </html>
