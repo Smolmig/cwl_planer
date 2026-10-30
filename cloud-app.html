@@ -669,6 +669,29 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
 .cloud-mode #memberList .member-new{border-left:3px solid #4fb3ec}
 @media(max-width:520px){.cloud-mode #cloudMembersTools{margin-top:6px}.cloud-mode .member-actionbar{display:none!important}}
 
+
+/* Unified guest/online member controls, including after signed-out navigation. */
+#cloudMembersTools[hidden],#guestMembersTools[hidden]{display:none!important}
+body:not(.cloud-mode) #cloudMembersTools,body.cloud-mode #guestMembersTools{display:none!important}
+#view-members .member-actionbar,#view-members .add-member-bottom,#view-members #memberList .empty-actions{display:none!important}
+#view-members .cloud-member-tools{display:block}
+#view-members #selectMembersBtn{display:inline-flex!important}
+#view-members .bulk-head{align-items:flex-start}
+#view-members #bulkDoneBtn{flex:0 0 auto;white-space:nowrap}
+#view-members .member-top .name-wrap{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;overflow:hidden}
+#view-members .member-top .name-wrap .member-name{min-width:0;width:100%;flex:1 1 0;font-size:16px!important;overflow:hidden;text-overflow:ellipsis}
+#view-members .member-top .name-wrap .member-name[readonly]{pointer-events:none;outline:0;caret-color:transparent}
+#view-members .member-top .member-name-edit{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;min-height:32px;padding:0;border:1px solid var(--line);border-radius:9px;color:var(--muted);background:transparent;font-size:17px}
+#view-members .member-top .name-wrap:focus-within{overflow:visible}
+#view-members .member-top .name-wrap:focus-within .member-name:not([readonly]){min-width:0;outline:2px solid var(--primary);border-radius:6px}
+#view-members .member-new .cloud-roster-flag{flex:0 0 auto}
+@media(max-width:520px){.bottomnav{padding-bottom:calc(9px + env(safe-area-inset-bottom));touch-action:manipulation}.navbtn{touch-action:manipulation}}
+
+/* Keep bottom navigation usable at narrow widths and with zoom where supported. */
+html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+.bottomnav{max-width:100vw;overflow:hidden;touch-action:manipulation}
+.navinner,.navbtn{min-width:0}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -708,11 +731,19 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
     <div class="section-title">
       <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
     </div>
+    <div id="guestMembersTools" class="cloud-member-tools">
+      <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
+      <div class="cloud-members-hint">Ohne Anmeldung: manuelle Liste oder CSV auf diesem Gerät verwalten.</div>
+      <details class="cloud-minor"><summary>Mitglieder manuell hinzufügen</summary><div class="actions">
+        <button class="btn small" id="guestManualOne" type="button">+ Mitglied</button>
+        <button class="btn small" id="guestManualMany" type="button">+ Mehrere Mitglieder</button>
+      </div></details>
+    </div>
     <div id="cloudMembersTools" class="cloud-member-tools" hidden>
       <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Mitglieder importieren</button>
       <div class="cloud-members-hint">Mit dem Clash-Clan abgleichen · neue und ausgetretene Spieler prüfen</div>
       <details id="cloudManualMembers" class="cloud-minor"><summary>Mitglieder manuell verwalten</summary>
-        <div class="actions"><button class="btn small" type="button" id="cloudManualOne">+ Mitglied</button><button class="btn small" type="button" id="cloudManualMany">+ Mehrere</button><button class="btn small" type="button" id="cloudManualFile">CSV importieren</button><button class="btn small" type="button" id="cloudManualSelect">Mehrere auswählen</button></div>
+        <div class="actions"><button class="btn small" type="button" id="cloudManualOne">+ Mitglied</button><button class="btn small" type="button" id="cloudManualMany">+ Mehrere</button><button class="btn small" type="button" id="cloudManualFile">CSV importieren</button></div>
       </details>
     </div>
     <div class="member-actionbar">
@@ -738,7 +769,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
       <div class="list-management-head"><div><div class="list-management-title">Vorhandene Mitglieder bearbeiten</div><div class="list-management-sub">Mitglieder sortieren oder mehrere gleichzeitig bearbeiten.</div></div></div>
       <div class="list-management-actions">
         <select id="memberSortSelect" class="sort-select" aria-label="Mitglieder sortieren">
-          <option value="manual">Eigene Reihenfolge</option>
+          <option value="manual">Eigene Reihenfolge</option><option value="coc-order">Clash-Reihenfolge</option>
           <option value="name">Name A–Z</option>
           <option value="th-desc">Rathaus hoch → niedrig</option>
           <option value="th-asc">Rathaus niedrig → hoch</option>
@@ -746,7 +777,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
           <option value="strength">3★-Stärke hoch → niedrig</option>
           <option value="participating">Dabei zuerst</option>
         </select>
-        <button class="btn small" id="selectMembersBtn">Mehrere auswählen</button>
+        <button class="btn small" id="selectMembersBtn">☑ Mehrfachauswahl</button>
       </div>
     </div>
     <div class="member-filters" role="search">
@@ -757,7 +788,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
       <span id="memberVisibleCount" class="member-visible-count" aria-live="polite"></span>
     </div>
     <div class="bulkbar hidden" id="bulkBar">
-      <div class="bulk-head"><div><div class="bulk-title">Mehrfachbearbeitung</div><div class="bulk-count"><b id="selectedCount">0</b> Mitglieder ausgewählt</div><div class="bulk-guide">1. Spieler markieren · 2. gemeinsame Änderung auswählen</div></div></div>
+      <div class="bulk-head"><div><div class="bulk-title">Mehrfachbearbeitung</div><div class="bulk-count"><b id="selectedCount">0</b> Mitglieder ausgewählt</div><div class="bulk-guide">1. Spieler markieren · 2. gemeinsame Änderung auswählen</div></div><button class="btn small" id="bulkDoneBtn" type="button">Fertig ✕</button></div>
       <div class="bulk-groups">
         <div class="bulk-group"><span class="bulk-label">Auswahl</span><div class="bulk-buttons"><button class="btn small" id="selectAllBtn">Sichtbare auswählen</button><button class="btn small" id="selectNoneBtn">Auswahl aufheben</button></div></div>
         <div class="bulk-group"><span class="bulk-label">CWL-Teilnahme</span><div class="bulk-buttons"><button class="btn small" id="bulkParticipatingOnBtn">Als Dabei markieren</button><button class="btn small" id="bulkParticipatingOffBtn">Auf Pause setzen</button></div></div>
@@ -814,7 +845,14 @@ Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
-  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe oder Ergebnisse liest die App nicht automatisch aus Clash of Clans aus.</b></div>
+  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe und Ergebnisse werden derzeit noch nicht automatisch übernommen.</b></div>
+  <div id="cloudHelpSection" hidden class="helpbox">
+   <b>Cloud-Modus und Clanverwaltung</b>
+   <p>Über „☁️ Clan ▾“ verwaltest du deinen Clan, Einladungen und Änderungen. Sobald du angemeldet bist, wird nur der gemeinsame Cloud-Stand bearbeitet – lokale Profile bleiben davon getrennt.</p>
+   <p>Mit „Mitglieder importieren/aktualisieren“ gleichst du den Clash-Kader ab. Neue Spieler starten auf Pause. Ausgetretene bleiben ausgegraut erhalten, damit frühere Einsätze nicht verloren gehen.</p>
+   <p>„Mehrfachauswahl“ erlaubt Änderungen für mehrere Spieler gleichzeitig. Mit „Fertig“ verlässt du den Modus. Namen bearbeitest du über das Stift-Symbol.</p>
+   <p>Bei einem Speicherkonflikt wird nicht automatisch überschrieben. Der Cloud-Modus benötigt eine Internetverbindung.</p>
+  </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
     <div><b>1</b><span><strong>Mitglieder eintragen</strong> – Im Tab „Mitglieder“ Spieler hinzufügen und bei allen CWL-Teilnehmern „Dabei“ aktivieren.</span></div>
@@ -905,7 +943,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
   </div>
   <div class="cloud-section">
-    <h3>Änderungsverlauf</h3><p>Zeigt, welcher Account das gemeinsame Profil verändert hat. Die Liste ist auf die letzten 30 Ereignisse begrenzt.</p>
+    <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
   <div class="cloud-section">
@@ -919,7 +957,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.2";
+const APP_VERSION="v1.1.0-alpha.3";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -958,7 +996,7 @@ function normalizeArchive(a){
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
-  p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","participating"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
+  p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","participating","coc-order"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
   p.members=Array.isArray(p.members)?p.members.map(normalizeMember):[];p.archivedMembers=Array.isArray(p.archivedMembers)?p.archivedMembers.map(normalizeMember):[];
   p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=3&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});
   p.locks=Array.from({length:7},(_,i)=>({locked:!!p.locks?.[i]?.locked,lineup:Array.isArray(p.locks?.[i]?.lineup)?p.locks[i].lineup:[],snapshots:normalizeSnapshots(p.locks?.[i]?.snapshots)}));p.archives=(Array.isArray(p.archives)?p.archives.map(normalizeArchive).filter(Boolean):[]);return p
@@ -1085,16 +1123,20 @@ function renderMobileDays(){
     return `<button type="button" class="mobile-day-tab${active?" active":""}${played?" played":""}" data-day="${d}" aria-label="Tag ${d+1}${played?", gespielt":""}" aria-pressed="${active}"><span class="day-no">${d+1}</span><span class="day-state">${status}</span></button>`;
   }).join("");
   root.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
-    mobileSelectedDay=Number(btn.dataset.day);
+    const day=Number(btn.dataset.day);
+    if(day===mobileSelectedDay && uiSettings.dayViewMode==="single")return;
+    mobileSelectedDay=day;
     uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays();
-    document.getElementById("mobileDaySwitcher")?.scrollIntoView({block:"start",behavior:"smooth"});
+    // Avoid animated scrolling on every tab switch; it feels like delayed selection.
+    const nav=document.getElementById("mobileDaySwitcher");
+    if(nav && nav.getBoundingClientRect().top<0)nav.scrollIntoView({block:"start",behavior:"auto"});
   });
   document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",d!==mobileSelectedDay));
 }
 
-function getDisplayMembers(){const list=[...state.members],mode=state.config.memberSort||"manual";if(mode==="manual")return list;if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));return list}
+function getDisplayMembers(){const list=[...state.members],mode=state.config.memberSort||"manual";if(mode==="manual")return list;if(mode==="coc-order")return list.sort((a,b)=>(a.cocOrder??999)-(b.cocOrder??999));if(mode==="name")return list.sort((a,b)=>a.name.localeCompare(b.name,"de",{sensitivity:"base"}));if(mode==="th-desc")return list.sort((a,b)=>(b.townHall||0)-(a.townHall||0)||a.name.localeCompare(b.name,"de"));if(mode==="th-asc")return list.sort((a,b)=>((a.townHall??99)-(b.townHall??99))||a.name.localeCompare(b.name,"de"));if(mode==="priority")return list.sort((a,b)=>b.priority-a.priority||a.name.localeCompare(b.name,"de"));if(mode==="strength")return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||a.name.localeCompare(b.name,"de"));if(mode==="participating")return list.sort((a,b)=>Number(b.participating)-Number(a.participating)||Number(b.fixed)-Number(a.fixed)||a.name.localeCompare(b.name,"de"));return list}
 function availabilityLabel(m){const start=m.firstDay||1,end=(m.outFromDay||state.config.days+1)-1;if(!m.firstDay&&!m.outFromDay)return"";if(start>end)return"Keine verfügbaren Tage";return`Verfügbar: T${start}${end!==start?`–T${Math.min(end,state.config.days)}`:""}`}
-function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;document.getElementById("selectMembersBtn").textContent=selectionMode?"Mehrfachbearbeitung beenden":"Mehrere auswählen";document.getElementById("deleteAllBtn").disabled=!!memberSearch||memberFilter!=="all";document.getElementById("deleteAllBtn").title=memberSearch||memberFilter!=="all"?"Filter zurücksetzen, um den gesamten Kader löschen zu können":"";["bulkParticipatingOnBtn","bulkParticipatingOffBtn","bulkFixedOnBtn","bulkFixedOffBtn","bulkPrioritySelect","bulkTownHallSelect","bulkTownHallPicker","bulkStrengthSelect","deleteSelectedBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=count===0})}
+function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;document.getElementById("selectMembersBtn").textContent=selectionMode?"✓ Fertig":"☑ Mehrfachauswahl";document.getElementById("deleteAllBtn").disabled=!!memberSearch||memberFilter!=="all";document.getElementById("deleteAllBtn").title=memberSearch||memberFilter!=="all"?"Filter zurücksetzen, um den gesamten Kader löschen zu können":"";["bulkParticipatingOnBtn","bulkParticipatingOffBtn","bulkFixedOnBtn","bulkFixedOffBtn","bulkPrioritySelect","bulkTownHallSelect","bulkTownHallPicker","bulkStrengthSelect","deleteSelectedBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=count===0})}
 function getVisibleMembers(){const q=memberSearch.trim().toLocaleLowerCase("de");return getDisplayMembers().filter(m=>(memberFilter==="all"||memberFilter==="participating"&&m.participating||memberFilter==="paused"&&!m.participating||memberFilter==="fixed"&&m.fixed)&&(!q||m.name.toLocaleLowerCase("de").includes(q)||(m.playerTag||"").toLocaleLowerCase("de").includes(q))).sort((a,b)=>window.CWLCloud?.active?Number(a.cocSyncState==='former')-Number(b.cocSyncState==='former'):0)}
 function renderMembers(){const root=document.getElementById("memberList");updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel)sortSel.value=state.config.memberSort||"manual";if(!state.members.length){root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">'+(window.CWLCloud?.active?'Importiere Spieler direkt aus deinem Clan.':'Füge einen Namen hinzu, mehrere Namen untereinander ein oder importiere eine Liste.')+'</div><div class="empty-actions"><button class="btn small primary" id="emptyMultiAdd">+ Mehrere Mitglieder</button><button class="btn small" id="emptyImport">Mitgliederliste importieren</button></div></div>';document.getElementById("emptyMultiAdd").onclick=openBulkModal;document.getElementById("emptyImport").onclick=()=>document.getElementById("membersFile").click();return}const display=getVisibleMembers();document.getElementById("memberVisibleCount").textContent=`${display.length} von ${state.members.length}`;if(!display.length){root.innerHTML='<div class="empty">Keine Spieler gefunden. Suche oder Filter ändern.</div>';return}const manual=(state.config.memberSort||"manual")==="manual",dups=duplicateNameKeys();root.innerHTML=display.map(m=>{const rules=Array.from({length:state.config.days},(_,d)=>{const eff=effectiveStatus(m,d),quickOut=(m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay),played=!!state.locks[d]?.locked,disabled=quickOut||played,title=played?"Tag bereits gespielt – vergangene Line-ups im Plan ändern":quickOut?"Durch Erst-ab/Raus-ab-Regel nicht verfügbar":"Tippen wechselt AUTO → MUSS → RAUS";return`<button class="rulebtn ${eff}" data-day="${d}" ${disabled?`disabled title="${esc(title)}"`:""}>T${d+1}<br>${played?"🔒":eff==="auto"?"AUTO":eff==="must"?"MUSS":"RAUS"}</button>`}).join("");const firstOpts=`<option value="">Erst ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.firstDay===d+1?"selected":""}>Erst ab Tag ${d+1}</option>`).join("");const outOpts=`<option value="">Raus ab Tag …</option>`+Array.from({length:state.config.days},(_,d)=>`<option value="${d+1}" ${m.outFromDay===d+1?"selected":""}>Raus ab Tag ${d+1}</option>`).join("");const thOpts=`<option value="">RH –</option>`+Array.from({length:17},(_,i)=>19-i).map(v=>`<option value="${v}" ${m.townHall===v?"selected":""}>RH ${v}</option>`).join("")+(m.townHall===20?`<option value="20" selected>RH20 (bestehend)</option>`:"");const strengthOpts=Object.entries(STRENGTH_LABELS).map(([k,label])=>`<option value="${k}" ${m.threeStar===k?"selected":""}>${label}</option>`).join("");const idx=state.members.findIndex(x=>x.id===m.id),orderBtns=manual?`<span class="member-order"><button class="btn small order-btn move-up" ${idx===0?"disabled":""} title="Nach oben">↑</button><button class="btn small order-btn move-down" ${idx===state.members.length-1?"disabled":""} title="Nach unten">↓</button></span>`:"",dup=dups.has(m.name.trim().toLocaleLowerCase("de")),avail=availabilityLabel(m);return`<div class="member${openMemberDetails.has(m.id)?" member-expanded":""}${selectionMode?" member-selecting":""}${window.CWLCloud?.active&&m.cocSyncState==="former"?" member-former":""}${window.CWLCloud?.active&&m.cocSyncState==="new"?" member-new":""}" data-id="${m.id}"><div class="member-top"><input type="checkbox" class="member-select ${selectionMode?"":"hidden"}" ${selectedMembers.has(m.id)?"checked":""}><div class="name-wrap"><input class="name-input member-name" value="${esc(m.name)}" placeholder="Name">${window.CWLCloud?.active&&m.cocSyncState==="new"?`<span class="cloud-roster-flag">NEU</span>`:window.CWLCloud?.active&&m.cocSyncState==="former"?`<span class="cloud-roster-flag former">AUSGETRETEN</span>`:""}${dup?`<button class="dup-warning" type="button" title="Doppelter Spielername" aria-label="Doppelter Spielername – Player-Tag öffnen">!</button>`:""}</div><label class="switch member-part"><input type="checkbox" ${m.participating?"checked":""}> Dabei</label><label class="switch member-fixed"><input type="checkbox" ${m.fixed?"checked":""}> Fix</label></div><div class="member-snapshot"><span class="member-brief"><span class="member-brief-desktop">${m.townHall?`RH${m.townHall}`:"RH –"} · Prio ${m.priority} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</span><span class="member-brief-mobile">${m.townHall?`RH${m.townHall}`:"RH –"} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} · P${m.priority}</span></span><span class="member-snapshot-actions"><span class="member-status-chip ${m.participating?"in":"off"}">${m.participating?"Dabei":"Pause"}</span>${m.fixed?`<span class="member-status-chip fixed">FIX</span>`:""}<button class="btn small member-edit-toggle" type="button" aria-label="${esc(m.name)} ${openMemberDetails.has(m.id)?"schließen":"bearbeiten"}" aria-expanded="${openMemberDetails.has(m.id)}">${openMemberDetails.has(m.id)?"Schließen ▴":"Bearbeiten ▾"}</button></span></div>${dup?`<div class="duplicate-panel ${openDuplicatePanels.has(m.id)?"":"hidden"}"><div class="duplicate-text"><b>Doppelter Spielername:</b> Dieser Name kommt mehrfach vor. Das ist in Clash möglich. Zur eindeutigen Zuordnung wird ein Player-Tag empfohlen.</div><div class="duplicate-tag-row"><input class="name-input player-tag" value="${esc(m.playerTag||"")}" placeholder="#ABC123"><button class="btn small close-duplicate" type="button">Schließen</button></div></div>`:""}<div class="member-details ${openMemberDetails.has(m.id)?"":"hidden"}"><div class="member-tools"><select class="name-input townhall member-th" title="Rathaus-Level (optional)">${thOpts}</select><button type="button" class="btn member-th-picker" aria-label="Rathaus für ${esc(m.name)} auswählen">RH ${m.townHall??"–"} ▾</button><select class="name-input priority member-priority" title="Priorität">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${m.priority===v?"selected":""}>Prio ${v}</option>`).join("")}</select><button type="button" class="btn member-field-picker member-prio-picker" aria-label="Priorität für ${esc(m.name)} auswählen">Prio ${m.priority} ▾</button><select class="name-input strength member-strength" title="3★-Stärke">${strengthOpts}</select><button type="button" class="btn member-field-picker member-strength-picker" aria-label="3-Sterne-Stärke für ${esc(m.name)} auswählen">${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")} ▾</button>${orderBtns}<button class="btn small toggle-rules">Tage & Verfügbarkeit</button><button class="btn small danger delete-member">Löschen</button><span class="badge ${m.participating?"ok":"warn"}">${m.participating?"CWL":"Pause"}</span>${avail?`<span class="availability-pill ${avail.startsWith("Keine")?"bad":""}">${esc(avail)}</span>`:""}</div><div class="rule-panel ${openRulePanels.has(m.id)?"open":""}"><div class="rule-explain"><b>Tippen:</b> AUTO → MUSS → RAUS. Gespielte Tage sind gesperrt.</div><div class="dayrules">${rules}</div><div class="quickrow"><select class="first-day">${firstOpts}</select><select class="out-from">${outOpts}</select></div></div></div></div>`}).join("");root.querySelectorAll(".member").forEach(el=>{const id=el.dataset.id,m=memberById(id),sel=el.querySelector(".member-select");el.querySelector(".member-edit-toggle").onclick=()=>{
   const expanded=!openMemberDetails.has(id);
@@ -1353,6 +1395,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.2"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.3"></script>
 </body>
 </html>

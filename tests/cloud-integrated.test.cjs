@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.1";/);
-  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.2";/);
+  assert.match(preview,/const APP_VERSION="v1\.1\.0-alpha\.3";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -39,7 +39,7 @@ test("Member import is prominent and manual controls remain accessible",()=>{
  assert.match(preview,/id="cloudMembersSyncBtn"/);
  assert.match(preview,/id="cloudManualMembers"/);
  assert.match(preview,/id="cloudManualOne"/);
- assert.match(preview,/id="cloudManualSelect"/);
+ assert.match(preview,/id="selectMembersBtn"/);
  assert.match(preview,/id="localProfileCard"/);
  assert.match(preview,/\.cloud-mode #memberList \.member-former/);
  assert.match(preview,/cloud-roster-flag/);
@@ -51,6 +51,24 @@ test("Member import is prominent and manual controls remain accessible",()=>{
  assert.match(mod,/\.eq\("revision",expectedRevision\)/);
  assert.match(mod,/role!=="viewer"/);
  assert.match(mod,/\.functions\.invoke\("coc-clan-members"/);
+});
+test("Alpha 3: guest UX, pencil editing, multi-select and initial import are safe",()=>{
+ assert.match(preview,/id="guestMembersTools"/);
+ assert.match(preview,/id="guestImportMembersBtn"/);
+ assert.match(preview,/id="bulkDoneBtn"/);
+ assert.match(preview,/value="coc-order"/);
+ assert.match(preview,/member-name-edit/);
+ assert.match(preview,/id="cloudHelpSection"/);
+ assert.match(preview,/if\(day===mobileSelectedDay && uiSettings\.dayViewMode==="single"\)return/);
+ assert.match(mod,/function installNameEditors\(\)/);
+ assert.match(mod,/input\.readOnly=true/);
+ assert.match(mod,/role==="viewer"\)continue/);
+ assert.match(mod,/initialImport=existing\.length===0/);
+ assert.match(mod,/if\(!rosterDiff\.initialImport\)m\.cocSyncState="new"/);
+ assert.match(mod,/m\.cocOrder=i/);
+ assert.match(mod,/toggle\("guestMembersTools",!this\.active\)/);
+ assert.match(mod,/\.limit\(100\)/);
+ assert.match(mod,/table:"cwl_change_events"/);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
