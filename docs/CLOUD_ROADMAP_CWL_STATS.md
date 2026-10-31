@@ -45,3 +45,14 @@ Geplante Architektur:
 - Ladezustände, Fehler und Wiederholversuche; API-Ratenlimits; bei Proxy-Ausfall lokaler/Cloud-Kader weiterhin nutzbar.
 - Sicherheit: RLS/rollenbasierten Zugriff und Einladungen erneut testen; Supabase meldet aktuell optional deaktivierten Passwort-Leak-Check.
 - Hilfe und Changelog bei jeder neuen Funktion aktualisieren.
+
+
+## Umsetzung 31.10.2026: CWL-Live-Integration v1.2.0
+
+- Im authentifizierten Cloud-Modus lädt eine neue Supabase Edge Function \`coc-cwl-status\` die CWL-Ligagruppe und Kriegsdetails. Token bleibt ausschließlich serverseitig. Auf der Plan-Startseite werden pro Tag Gegner, Anzahl der jeweiligen RH-Stufen, Kriegsstatus und tatsächliche Spielerangriffe mit Ziel, Sternen und Zerstörung angezeigt.
+- Zukünftige Runden mit \`#0\` oder nicht erhältlichen Kriegsdetails bleiben ausdrücklich „noch nicht freigegeben“. Es gibt keine erfundenen Vorab-Gegner.
+- Nur bei \`warEnded\`, gültigem War-Tag, verifiziertem Endzeitpunkt, passender Kriegsgröße und vollständigem tatsächlichem Line-up wird ein bislang offener Tag nach chronologischer Reihenfolge bestätigt. API-Spieler ohne bestehenden Eintrag werden ausschließlich als historische Spieler aufgenommen. Bereits gespielte/manuell gesperrte Tage werden nicht verändert.
+- Ergebnis-/Gegnerdaten werden als optionale \`cwlLive\`-Metadaten im Cloud-Profil gespeichert, beim Archivieren übernommen und nach einem bewussten CWL-Reset für die zurückgesetzte Saison nicht erneut automatisch abgeschlossen.
+- Die Cloud-App fragt beim Öffnen und anschließend regelmäßig während der Nutzung nach. **Noch kein serverseitiger unbeaufsichtigter 24/7-Abschluss**: Wenn niemand die App geöffnet hat, erfolgt die Übernahme beim nächsten erfolgreichen Aufruf.
+- Die lokale Offline-PWA und der normale Cloud-Planer bleiben ohne sichtbare Liga-Gruppe unverändert nutzbar; bei Supercell-Ausfall werden keine Tage abgeschlossen.
+- Die erste echte CWL nach Freigabe ist der notwendige End-to-End-Test von API-Antworten, Berechtigungen, Echtzeit-Aufstellungen und Übergang zur Folgerunde. Das ersetzt nicht die spätere vollständige Statistik-Historie über mehrere Saisons.
