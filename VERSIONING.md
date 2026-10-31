@@ -83,3 +83,8 @@ Diese Roadmap ist keine Zusage einer vorhandenen Funktion; der aktuelle stabile 
 - Neu: Geschützter CWL-Statusabruf (Gegner, RH-Verteilungen, tatsächliche Angriffe), optionale automatische Bestätigung beendeter Tage bei geöffnetem/erneut geöffnetem Cloud-Planer.
 - **Nicht als garantiert verkaufen:** CWL-Livefunktionen konnten mangels laufender CWL noch nicht mit echten laufenden Kriegstagen end-to-end getestet werden; nur der defensive Algorithmus und die Offline-Regressionsszenarien. Unbekannte zukünftige Runden bleiben unbekannt.
 - \`DATA_VERSION=9\`, lokaler Speicherkey, Archiv-Snapshots und vorhandene gespielte Tage bleiben kompatibel; API-Metadaten sind optional.
+
+
+## 31.10.2026 – Cloud v1.3.0 · Statistik
+
+Neuer eigenständiger, clanprivater Statistik-Tab, ohne Änderung des lokalen PWA-Planers oder des Datenformats 9. Historische Angriffsdaten werden über eine separat bereitgestellte JSON-Datei in RLS-geschützte Cloud-Tabellen importiert. Die Excel-Rohdaten verbleiben außerhalb des öffentlichen Repositories. Automatische Ergänzung beendeter Kriege nur bei geöffnetem Cloud-Planer und aktueller Clash-API-Verfügbarkeit. Historische Fehlangriffe ohne komplette Kriegsaufstellungen bleiben unbekannt.
