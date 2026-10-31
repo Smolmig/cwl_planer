@@ -28,6 +28,7 @@ function townHallSummary(members) {
 }
 export function createCwlLive({sb,context,storage,notify}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false;
+  const expandedDays=new Set();
   const effective=()=>{
     const ctx=context();
     if (!ctx.active || !ctx.clanId || !ctx.hasClanTag)return null;
@@ -40,7 +41,7 @@ export function createCwlLive({sb,context,storage,notify}) {
     return diff>=0&&diff<=1?prior:null;
   };
   function renderDay(round,dayCard,profile) {
-    const wasOpen=!!dayCard.querySelector(".cwl-live-details[open]");
+    const wasOpen=expandedDays.has(round.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
     const section=document.createElement("section");
     section.className="cwl-live-day";
@@ -101,6 +102,10 @@ export function createCwlLive({sb,context,storage,notify}) {
       "<span class='cwl-live-attack-count'>"+(round.state==="preparation"?"Bereit":missing+" offen · "+(own.length-missing)+" erledigt")+
       "</span></summary>"+
       (players||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>";
+    section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
+      if(event.target.open)expandedDays.add(round.day);
+      else expandedDays.delete(round.day);
+    });
     section.querySelectorAll("img.cwl-live-badge").forEach(img=>{
       img.addEventListener("error",()=>{
         const fallback=document.createElement("span");
@@ -186,6 +191,7 @@ export function createCwlLive({sb,context,storage,notify}) {
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
     activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;
+    expandedDays.clear();
     render();
   }
   function start(){
