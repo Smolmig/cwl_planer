@@ -82,21 +82,31 @@ export function cwlSeasonOf(war) {
   const date=new Date(war.started_at);
   return Number.isFinite(date.getTime())?date.toISOString().slice(0,7):null;
 }
-export function selectStatWars(wars,{type="all",last=25,cwlSeasons=null}={}){
-  const available=[...wars].filter(w=>type==="all"||w.war_type===type)
+// Keep statistics as rolling windows while retaining older raw records
+// for safe recovery. Only finalized CW/CWL wars count as performance data.
+export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
+  const sorted=[...wars].filter(w=>w.finalized!==false)
     .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
       String(a.war_key).localeCompare(String(b.war_key)));
-  if(type!=="cwl"||cwlSeasons===null||cwlSeasons===undefined)
-    return available.slice(0,Math.max(1,Math.min(50,last)));
-  const seasons=[...new Set(available.map(cwlSeasonOf).filter(Boolean))];
+  const normal=sorted.filter(w=>w.war_type==="normal");
+  const league=sorted.filter(w=>w.war_type==="cwl");
+  const cap=Math.max(1,Math.min(50,last));
+  if(type==="normal")return normal.slice(0,cap);
+  const seasons=[...new Set(league.map(cwlSeasonOf).filter(Boolean))];
   const limit=cwlSeasons==="all"?seasons.length:
-    Number.isInteger(cwlSeasons)&&cwlSeasons>=1?Math.min(cwlSeasons,seasons.length):1;
-  const selectedMonths=new Set(seasons.slice(0,limit));
-  return available.filter(w=>selectedMonths.has(cwlSeasonOf(w)));
+    Number.isInteger(cwlSeasons)&&cwlSeasons>=1?Math.min(cwlSeasons,seasons.length):3;
+  const included=new Set(seasons.slice(0,limit));
+  const selectedLeague=league.filter(w=>included.has(cwlSeasonOf(w)));
+  if(type==="cwl")return selectedLeague;
+  // Combined: recent 50 normal CWs + last 3 league seasons.
+  return [...normal.slice(0,50),...league.filter(w=>
+    new Set(seasons.slice(0,3)).has(cwlSeasonOf(w)))].sort((a,b)=>
+    Date.parse(b.started_at)-Date.parse(a.started_at)||
+    String(a.war_key).localeCompare(String(b.war_key)));
 }
 // A missed log is independent of the hit-rate TH filter. Exact historical
 // CWL missed entries are usable, but they do not prove complete coverage.
-export function computeWarStats(wars,attacks,{type="all",last=25,cwlSeasons=null,sameHigher=false,showFormer=true,
+export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,
   memberTags=[],minAttacks=0,missedEvents=[]}={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});
   const lookup=new Map(selected.map(w=>[w.war_key,w]));
