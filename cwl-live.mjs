@@ -80,6 +80,14 @@ export function createCwlLive({sb,context,storage,notify}) {
       attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":"")+"</div>"+
       "<details class='cwl-live-details'><summary>Spieler und Angriffe anzeigen</summary>"+
       (players||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>";
+    section.querySelectorAll("img.cwl-live-badge").forEach(img=>{
+      img.addEventListener("error",()=>{
+        const fallback=document.createElement("span");
+        fallback.className="cwl-live-badge-placeholder";
+        fallback.setAttribute("aria-hidden","true");fallback.textContent="🛡️";
+        img.replaceWith(fallback);
+      },{once:true});
+    });
     dayCard.querySelector(".day-head")?.after(section);
   }
   function render() {
