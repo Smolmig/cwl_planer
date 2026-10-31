@@ -62,6 +62,7 @@ export function canFinalize(round,expectedSlots,now=Date.now()) {
 export function reconcileCwl(profile,payload,createMember,now=Date.now()) {
   const snapshot=sanitizeSnapshot(payload);
   if (!snapshot || !profile || !Array.isArray(profile.locks)) return {changed:false,lockedDays:[],reason:"no_live_cwl"};
+  if (profile.cwlLiveIgnoredSeason===snapshot.season) return {changed:false,lockedDays:[],reason:"season_explicitly_reset"};
   const previous=profile.cwlLive;
   const played=profile.locks.some(l=>l?.locked);
   if (previous?.season && previous.season!==snapshot.season && played)
