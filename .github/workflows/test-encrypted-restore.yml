@@ -63,6 +63,63 @@ jobs:
           echo 'Note: roles.sql will NOT be replayed in this local app-data restore test.'
           echo 'Full role migration is a separate unverified disaster-recovery step.'
 
+      - name: Reconcile overlapping auth COPY sections in the two SQL exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os, re
+          root = Path(os.environ['WORK']) / 'unpacked/cwl-backup'
+          header = re.compile(
+              r'^COPY\s+((?:"?[A-Za-z_][A-Za-z_0-9]*"?\.)?"?[A-Za-z_][A-Za-z_0-9]*"?)'
+              r'\s+\(([^)]*)\)\s+FROM\s+stdin;\s*$', re.I)
+          def load(path):
+              lines = path.read_text(encoding='utf-8').splitlines(keepends=True)
+              info = {}
+              sections = []
+              i = 0
+              while i < len(lines):
+                  match = header.match(lines[i])
+                  if not match:
+                      i += 1
+                      continue
+                  table = match.group(1).replace('"', '').lower()
+                  columns = re.sub(r'\s+', '', match.group(2)).lower()
+                  start = i
+                  i += 1
+                  rows = []
+                  while i < len(lines) and lines[i].rstrip('\r\n') != r'\.':
+                      rows.append(lines[i])
+                      i += 1
+                  if i >= len(lines):
+                      raise SystemExit(f'::error::Incomplete COPY block for {table}.')
+                  i += 1
+                  if table in info:
+                      raise SystemExit(f'::error::Repeated COPY block for {table} inside one dump.')
+                  fingerprint = hashlib.sha256(''.join(sorted(rows)).encode('utf-8')).hexdigest()
+                  info[table] = (columns, len(rows), fingerprint)
+                  sections.append((table, start, i))
+              return lines, info, sections
+          _, auth, _ = load(root / 'auth-data.sql')
+          data_lines, data, data_sections = load(root / 'data.sql')
+          assert 'auth.users' in auth, 'Separate auth export has no auth.users COPY'
+          duplicated = auth.keys() & data.keys()
+          for table in duplicated:
+              if auth[table] != data[table]:
+                  raise SystemExit(
+                      f'::error::Overlapping auth data differs for {table}; restore aborted rather than lose records.')
+          skip = set()
+          for table, first, end in data_sections:
+              if table in duplicated:
+                  skip.update(range(first, end))
+          (root / 'data-local.sql').write_text(
+              ''.join(line for i, line in enumerate(data_lines) if i not in skip),
+              encoding='utf-8')
+          print(f'Auth consistency verified. Identical COPY blocks skipped from second dump: {len(duplicated)}.')
+          print(f'Unique COPY blocks retained from data.sql: {len(data) - len(duplicated)}.')
+          PY
+
       - uses: supabase/setup-cli@v1
         with:
           version: 2.122.0
@@ -88,7 +145,7 @@ jobs:
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
             -c 'SET session_replication_role = replica;' \
             -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
-            -f "$WORK/unpacked/cwl-backup/data.sql" \
+            -f "$WORK/unpacked/cwl-backup/data-local.sql" \
             -c 'SET session_replication_role = origin;' \
             >"$WORK/restore.log" 2>&1; then
             # Emit a sanitized SQLSTATE and SQL file only; never print raw database errors.
