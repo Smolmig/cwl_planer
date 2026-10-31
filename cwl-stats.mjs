@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.3";
+import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.4";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.0";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -6,7 +6,7 @@ const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 export function createCloudStats({sb,context,notify}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
-  let type="all",last=25,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
+  let type="all",last=25,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   function render(){
     const ctx=context(),view=$("view-stats");
@@ -19,7 +19,7 @@ export function createCloudStats({sb,context,notify}) {
       $("statsRows").innerHTML="";
       return;
     }
-    const summary=computeWarStats(wars,attacks,{type,last,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+    const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons:type==="cwl"?cwlSeasons:null,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"≥"+summary.missesKnown:"–");
     $("statsSummary").innerHTML=[
@@ -28,8 +28,24 @@ export function createCloudStats({sb,context,notify}) {
       ["Angriffe verpasst",label],
       ["Beste Hit Rate",summary.best?pct(summary.best.hitRate):"–"]
     ].map(([title,value])=>"<div class='stats-kpi'><span>"+esc(title)+"</span><strong>"+esc(value)+"</strong></div>").join("");
-    const count=$("statsDataCount");if(count)count.textContent=summary.wars+
-      " von "+summary.totalWars+" gespeicherten Kriegen · "+summary.attacks+" Angriffe";
+    const count=$("statsDataCount");
+    const seasonDetails=$("statsSeasonDetails");
+    if(type==="cwl"){
+      if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
+        " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
+        " von "+summary.totalCwlSeasons+" Saisons · "+summary.attacks+" Angriffe";
+      if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({season,days})=>{
+        const date=new Date(season+"-01T12:00:00Z");
+        return date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"})+
+          ": "+days+" von 7 Kriegstagen gespeichert";
+      }).join(" · ");
+    }else{
+      if(count)count.textContent=summary.wars+" von "+
+        (type==="normal"?wars.filter(w=>w.war_type==="normal").length:summary.totalWars)+
+        (type==="normal"?" gespeicherten normalen CWs":" gespeicherten Kriegen")+
+        " · "+summary.attacks+" Angriffe";
+      if(seasonDetails)seasonDetails.textContent="";
+    }
     const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?summary.best.name+
       " · "+summary.best.attacks+" Angriffe (mindestens 5)":"Mindestens 5 Angriffe erforderlich";
     const note=$("statsMissingNote");if(note)note.textContent=summary.complete?
@@ -198,8 +214,16 @@ export function createCloudStats({sb,context,notify}) {
   }
   function bind(){
     const e=id=>$(id);
-    e("statsType")?.addEventListener("change",ev=>{type=ev.target.value;render()});
-    e("statsRange")?.addEventListener("change",ev=>{last=Number(ev.target.value)||25;render()});
+    e("statsType")?.addEventListener("change",ev=>{
+      type=ev.target.value;
+      syncPeriodChoices();
+      render();
+    });
+    e("statsRange")?.addEventListener("change",ev=>{
+      if(type==="cwl")cwlSeasons=ev.target.value==="all"?"all":Number(ev.target.value)||3;
+      else last=Number(ev.target.value)||25;
+      render();
+    });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
     e("statsFormer")?.addEventListener("change",ev=>{showFormer=ev.target.checked;render()});
     e("statsSearch")?.addEventListener("input",ev=>{search=ev.target.value;render()});
@@ -212,6 +236,19 @@ export function createCloudStats({sb,context,notify}) {
     });
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
   }
+  function syncPeriodChoices(){
+    const picker=$("statsRange"),periodLabel=$("statsPeriodLabel");
+    if(!picker)return;
+    if(periodLabel)periodLabel.textContent=type==="cwl"?"CWL-Saisons":"Zeitraum";
+    const options=type==="cwl"?
+      [["1","Letzte 1 CWL"],["2","Letzte 2 CWLs"],["3","Letzte 3 CWLs"],["all","Alle CWLs"]]:
+      [["10","Letzte 10 Kriege"],["25","Letzte 25 Kriege"],["50","Letzte 50 Kriege"]];
+    picker.replaceChildren(...options.map(([value,label])=>{
+      const o=document.createElement("option");o.value=value;o.textContent=label;return o;
+    }));
+    picker.value=type==="cwl"?String(cwlSeasons):String(last);
+  }
+  syncPeriodChoices();
   bind();
   return {load,reset,render,captureCwl};
 }
