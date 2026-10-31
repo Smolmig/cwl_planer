@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { createCloudBackups } from "./cloud-backups.mjs?v=1.1.0-alpha.9";
+import { createCwlLive } from "./cwl-live.mjs";
 
 const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
  "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
@@ -49,6 +50,7 @@ const cloud={
   toggle("guestMembersTools",!this.active);
   toggle("cloudHelpSection",this.active);
   installNameEditors();
+  live.render();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
@@ -68,6 +70,11 @@ const cloud={
  }
 };
 window.CWLCloud=cloud;
+const live=createCwlLive({
+ sb,storage,notify:message=>storage.toast(message),
+ context:()=>({active:cloud.active,clanId,role,profile:storage.getProfile(),
+   canApply:!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+});
 /* Delegate to the persistent list, not individual cards. Search, filters and
    expanding a card re-create card DOM without re-running the cloud bootstrap. */
 function installNameEditors(){
@@ -193,7 +200,7 @@ async function useSession(session){
 }
 async function leaveCloud(){
  clearTimeout(debounce);
- stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
+ live.stop();stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
@@ -224,7 +231,7 @@ async function listClans(epoch=accountEpoch,selected){
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
  clearTimeout(debounce);
- stopPresence();stopRemoteChecks();hideChangeToast();
+ live.stop();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
@@ -275,6 +282,7 @@ async function chooseClan(epoch=accountEpoch){
  startRemoteChecks();
  cloud.afterRender();
  await startPresence();
+ live.start();
  msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
 
