@@ -1,3 +1,14 @@
+
+CLOUD-RELEASE 31.10.2026:
+- Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.2.0 (offiziell; CWL-Livedaten optional).
+- Separate installierbare lokale Offline-PWA \`index.html\`: weiterhin v1.0.2.
+- Cloud: Gegner und RH-Verteilung je freigegebenem Kriegstag, live Angriffe/Sterne und
+  sicherer automatischer Abschluss beendeter Kriege beim Cloud-Abgleich.
+- Ohne aktive CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar.
+- Datenformat v9, Profile, lokale Schlüssel und Archivbestände bleiben kompatibel.
+- Vollständige Details und technische Grenzen stehen in CHANGELOG.md und
+  docs/CLOUD_ROADMAP_CWL_STATS.md.
+
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
