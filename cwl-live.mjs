@@ -22,7 +22,7 @@ export function createCwlLive({sb,context,storage,notify}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false;
   const effective=()=>{
     const ctx=context();
-    if (!ctx.active || !ctx.clanId)return null;
+    if (!ctx.active || !ctx.clanId || !ctx.hasClanTag)return null;
     if (current && activeClan===ctx.clanId && current.active && ctx.profile?.cwlLiveIgnoredSeason!==current.season)return sanitizeSnapshot(current);
     if (confirmedNoCwl)return null;
     const prior=ctx.profile?.cwlLive;
@@ -66,7 +66,7 @@ export function createCwlLive({sb,context,storage,notify}) {
     const ctx=context(),view=document.getElementById("view-plan");
     const old=document.getElementById("cwlLiveOverview");
     const button=document.getElementById("cwlLiveRefresh");
-    if(!ctx.active || !ctx.clanId || !view){
+    if(!ctx.active || !ctx.clanId || !ctx.hasClanTag || !view){
       old?.remove();button?.remove();
       document.querySelectorAll(".cwl-live-day").forEach(n=>n.remove());return;
     }
@@ -104,7 +104,7 @@ export function createCwlLive({sb,context,storage,notify}) {
   }
   async function refreshNow(manual=false) {
     const ctx=context();
-    if(!ctx.active||!ctx.clanId||!navigator.onLine||fetching)return;
+    if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||!navigator.onLine||fetching)return;
     const req=++requestId,id=ctx.clanId;
     fetching=true;render();
     try {
@@ -141,7 +141,7 @@ export function createCwlLive({sb,context,storage,notify}) {
   }
   function start(){
     stop();const ctx=context();
-    if(!ctx.active||!ctx.clanId)return;
+    if(!ctx.active||!ctx.clanId||!ctx.hasClanTag)return;
     activeClan=ctx.clanId;
     refreshNow();
     interval=setInterval(()=>{if(!document.hidden&&navigator.onLine)refreshNow()},300000);
