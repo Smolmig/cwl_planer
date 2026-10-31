@@ -1,6 +1,6 @@
 // Current normal Clan War, shown only in the existing Cloud Overview.
 // Read-only data from the authenticated, clan-scoped proxy.
-import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.3.5";
+import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const star=n=>Number.isInteger(n)?String(n):"–";
 const badge=side=>{

@@ -1,11 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.5";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.5";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.5";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.5";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.6";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.6";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.6";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.6";
 
-const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
- "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
+const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
+const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,
  {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
 const text=(id,value)=>{if($(id))$(id).textContent=value};
@@ -608,12 +609,49 @@ async function joinInvite(){
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
 async function getRoster(){
+ let stage="Vorbereitung";
+ try{
  if(!clanId)throw Error("Bitte Clan auswählen");
  await ensureSaved();
  resetRoster();toggle("cloudRosterBox",true);
  const status=$("cloudRosterStatus");status.textContent="Clanmitglieder werden verglichen …";status.classList.remove("error");
  $("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
- const {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
+ stage="Clash-Daten abrufen";
+ let {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
+ if(err && (err.name==="FunctionsFetchError" ||
+    (err.name==="TypeError" && /type error|failed to fetch|load failed/i.test(err.message||"")))){
+   // Read-only fallback for WebKit when the SDK cannot finish reading the
+   // response. The server always checks this user's JWT and clan membership.
+   const original=err;
+   try{
+     const {data:auth,error:authError}=await sb.auth.getSession();
+     if(authError)throw authError;
+     if(!auth?.session?.access_token)
+       throw Error("Bitte erneut anmelden und den Clanvergleich wiederholen.");
+     const res=await fetch(SUPABASE_URL+"/functions/v1/coc-clan-members",{
+       method:"POST",cache:"no-store",
+       headers:{
+         "Authorization":"Bearer "+auth.session.access_token,
+         "apikey":SUPABASE_PUBLISHABLE_KEY,
+         "Content-Type":"application/json"
+       },
+       body:JSON.stringify({clanId})
+     });
+     const payload=await res.text();
+     let json;
+     try{json=JSON.parse(payload)}catch{
+       throw Error("Die Clash-Antwort konnte nicht gelesen werden (HTTP "+res.status+").");
+     }
+     data=json;err=res.ok?null:{name:"FunctionsHttpError",message:json?.error||"HTTP "+res.status};
+   }catch(fallbackError){
+     console.warn("Safari-Clanvergleich: Alternativer Abruf fehlgeschlagen",{
+       original:original?.name||"Transportfehler",
+       fallback:fallbackError?.name||"Unbekannt"
+     });
+     throw Error("Die Clanmitglieder konnten nicht geladen werden. Bitte Safari neu öffnen und erneut versuchen. (Verbindung/Antwort)");
+   }
+ }
+ stage="Serverantwort prüfen";
  if(err){
    let reason=err.message||"unknown_error";
    if(err.context?.json)try{const info=await err.context.json();reason=info?.error||reason}catch{}
@@ -630,7 +668,9 @@ async function getRoster(){
  }
  if(!data?.ok)throw Error(data?.error||"Abruf fehlgeschlagen.");
  text("cloudRosterStatus","Vergleich abgeschlossen. Bitte die Unterschiede prüfen.");
- const incoming=data.members||[];
+ stage="Mitglieder vergleichen";
+ if(!Array.isArray(data.members))throw Error("Die Clan-Mitgliederliste wurde nicht vollständig übertragen.");
+ const incoming=data.members.filter(m=>m&&typeof m==="object");
  const rosterMap=new Map(incoming.filter(m=>/^#[0-9A-Z]+$/.test(normalizeTag(m.tag))).map(m=>[normalizeTag(m.tag),m]));
  const existing=storage.getProfile().members;
  const initialImport=existing.length===0;
@@ -638,7 +678,8 @@ async function getRoster(){
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
  const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former"&&m.cocSyncState!=="kept");
  const planDays=storage.getPlannedLineups();
- const critical=departed.map(m=>({member:m,days:planDays.filter(d=>d.lineup.includes(m.id)).map(d=>d.day)}))
+ const safeDays=Array.isArray(planDays)?planDays:[];
+ const critical=departed.map(m=>({member:m,days:safeDays.filter(d=>Array.isArray(d?.lineup)&&d.lineup.includes(m.id)).map(d=>d.day)}))
    .filter(item=>item.days.length>0);
  const criticalTags=new Set(critical.map(item=>normalizeTag(item.member.playerTag)));
  const normalDeparted=departed.filter(m=>!criticalTags.has(normalizeTag(m.playerTag)));
@@ -647,6 +688,7 @@ async function getRoster(){
    return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
  roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,received:incoming.length,initialImport};
+ stage="Unterschiede anzeigen";
  const diff=$("cloudRosterDiff");diff.replaceChildren();
  function group(title,items){
   const head=document.createElement("p");head.textContent=title+" ("+items.length+")";head.style.fontWeight="bold";diff.append(head);
@@ -677,6 +719,14 @@ async function getRoster(){
  toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
  text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(critical.length?" · ⚠️ Aufstellungen prüfen":""));
+ }catch(err){
+   console.warn("Clanvergleich fehlgeschlagen",{
+     stage,name:err?.name||"Fehler",message:String(err?.message||err).slice(0,200)
+   });
+   if(err instanceof TypeError || /^(type error|load failed)$/i.test(String(err?.message||"")))
+     throw Error("Der Mitgliedervergleich konnte bei „"+stage+"“ nicht abgeschlossen werden. Bitte Seite neu laden und erneut versuchen.");
+   throw err;
+ }
 }
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
@@ -956,7 +1006,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.5";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.6";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;

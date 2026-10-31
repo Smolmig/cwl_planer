@@ -13,7 +13,7 @@ const fn=fs.readFileSync(path.join(root,"supabase/functions/coc-clan-members/ind
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261029232620_cwl_shared_alpha_invitations_activity.sql"),"utf8");
 test("Cloud alpha is a separate copy of the complete existing CWL planner",()=>{
   assert.match(main,/const APP_VERSION="v1\.0\.2";/);
-  assert.match(preview,/const APP_VERSION="v1\.3\.5";/);
+  assert.match(preview,/const APP_VERSION="v1\.3\.6";/);
   assert.match(preview,/const DATA_VERSION=9;/);
   assert.match(preview,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
   for(const id of ["view-plan","view-members","view-summary","planDays","memberList","archiveList","cloudOverlay","cloudRosterDiff","cloudAudit","cloudInviteRole"]){
@@ -74,7 +74,7 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
-  'const APP_VERSION="v1.3.5"',
+  'const APP_VERSION="v1.3.6"',
   'class="member-name-edit"','placeholder="Name" readonly',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
@@ -90,7 +90,7 @@ test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  for(const fragment of requiredJs)assert.ok(mod.includes(fragment),"Missing JS fragment: "+fragment);
 });
 test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and last release notes",()=>{
-  assert.match(preview,/const APP_VERSION="v1\.3\.5";/);
+  assert.match(preview,/const APP_VERSION="v1\.3\.6";/);
   assert.match(preview,/id="cloudChangeNotice"/);
   assert.match(preview,/id="cloudChangeDetails"/);
   assert.match(preview,/id="cloudChangeDismiss"/);
@@ -111,7 +111,7 @@ test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and
   assert.match(mod,/window\.addEventListener\("pageshow"/);
   assert.match(mod,/document\.addEventListener\("pointerdown"/);
   const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
-  assert.equal(meta.version,"v1.3.5");
+  assert.equal(meta.version,"v1.3.6");
 });
 test("Alpha 6: accepted membership roster, named invite and safe departed-lineup decisions",()=>{
  for(const id of ["cloudAccessList","cloudAccessCount","cloudAccessRefresh","cloudJoinName","cloudDepartedWarnings"])
@@ -140,7 +140,7 @@ test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
   "cloudForgotPassword","cloudRecovery","cloudNewPassword","cloudConfirmPassword",
   "cloudResetSent","cloudRosterStatus","cloudAccessList"])
   assert.ok(preview.includes('id="'+id+'"'),"Missing "+id);
- assert.match(preview,/const APP_VERSION="v1\.3\.5"/);
+ assert.match(preview,/const APP_VERSION="v1\.3\.6"/);
  assert.match(preview,/id="selectMembersBtn" type="button" aria-pressed="false"/);
  assert.match(preview,/id="selectAllBtn">Alle angezeigten auswählen/);
  assert.match(preview,/class="switch member-part"/);
@@ -160,7 +160,7 @@ test("Alpha 7: access controls, inline roster and accessible feedback",()=>{
  assert.match(mod,/updateUser\(\{password:first\}\)/);
  assert.match(mod,/toggle\("cloudRosterBox",true\)/);
  const manifest=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
- assert.equal(manifest.version,"v1.3.5");
+ assert.equal(manifest.version,"v1.3.6");
 });
 test("Alpha 8: name pencil continues working after list re-render",()=>{
  const start=mod.indexOf("function installNameEditors(){");
@@ -198,7 +198,7 @@ test("Alpha 8: invitation summary and password reset are single-purpose panels",
  assert.ok(mod.includes('list.dataset.editorDelegated="1"'));
  assert.ok(preview.includes("body:not(.cloud-mode) .topbar .profilebar"));
  const meta=JSON.parse(fs.readFileSync(path.join(root,"cloud-version.json"),"utf8"));
- assert.equal(meta.version,"v1.3.5");
+ assert.equal(meta.version,"v1.3.6");
 });
 test("Backup v1: automatic checkpoints, secure owner restore and offsite encryption",()=>{
  const backup=fs.readFileSync(path.join(root,"cloud-backups.mjs"),"utf8");
