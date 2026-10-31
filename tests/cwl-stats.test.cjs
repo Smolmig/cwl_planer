@@ -122,7 +122,7 @@ test("Missed log is grouped by actual war and player, excluding unknown CWL miss
  const cross=structuredClone(history);cross.missed[0].war_key="cp:102";
  const cwEvent=validateHistoryFile(cross,history.clanTag);
  assert.equal(cwEvent.missed[0].war_key,"cp:102","A CWL missed event is valid partial evidence");
- assert.equal(cwEvent.wars[1].missed_log_complete,undefined);
+ assert.equal(cwEvent.wars[1].missed_log_complete,false,"Unknown CWL coverage must be explicitly false, not NULL");
  assert.throws(()=>validateHistoryFile(history,"#2JGC2J8VG"),/falscher Clan-Tag/);
 });
 test("New missed log table uses per-clan RLS with editor write and viewer read",()=>{
