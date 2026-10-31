@@ -100,7 +100,7 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
   if(type==="cwl")return selectedLeague;
   // Combined: recent 50 normal CWs + last 3 league seasons.
   const recentThree=new Set(seasons.slice(0,3));
-  return [...normal.slice(0,50),...league.filter(w=>
+  return [...normal.slice(0,cap),...league.filter(w=>
     recentThree.has(cwlSeasonOf(w)))].sort((a,b)=>
     Date.parse(b.started_at)-Date.parse(a.started_at)||
     String(a.war_key).localeCompare(String(b.war_key)));
