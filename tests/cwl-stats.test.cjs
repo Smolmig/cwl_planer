@@ -120,7 +120,9 @@ test("Missed log is grouped by actual war and player, excluding unknown CWL miss
  const duplicated=structuredClone(history);duplicated.missed.push({...duplicated.missed[0]});
  assert.throws(()=>validateHistoryFile(duplicated,history.clanTag),/doppelter Missed-Attacks-Eintrag/);
  const cross=structuredClone(history);cross.missed[0].war_key="cp:102";
- assert.throws(()=>validateHistoryFile(cross,history.clanTag),/Missed-Attacks-Eintrag/);
+ const cwEvent=validateHistoryFile(cross,history.clanTag);
+ assert.equal(cwEvent.missed[0].war_key,"cp:102","A CWL missed event is valid partial evidence");
+ assert.equal(cwEvent.wars[1].missed_log_complete,undefined);
  assert.throws(()=>validateHistoryFile(history,"#2JGC2J8VG"),/falscher Clan-Tag/);
 });
 test("New missed log table uses per-clan RLS with editor write and viewer read",()=>{
@@ -180,8 +182,8 @@ test("Cloud statistics show native normal CWs independently of manual CWL planni
 test("Logout removes cloud-only Statistics and returns to Plan",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
- assert.match(html,/body\.cloud-mode \.navinner\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)\}/);
- assert.match(html,/\.navinner\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/);
+ assert.ok(html.includes("body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}"));
+ assert.ok(html.includes(".navinner{grid-template-columns:repeat(3,minmax(0,1fr))}"));
  assert.match(sync,/async function leaveCloud\(\)\{[\s\S]*?toggle\("statsNav",false\)/);
  assert.match(sync,/document\.querySelector\('\.navbtn\[data-view="plan"\]'\)\?\.click\(\)/);
 });
