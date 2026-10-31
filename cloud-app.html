@@ -874,6 +874,31 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .cwl-live-score-caption{font-size:10px;letter-spacing:.02em;color:var(--muted)}
 .cwl-live-score-detail{text-align:center;font-size:11px;color:var(--muted);margin-top:-3px;margin-bottom:4px}
 @media(max-width:370px){.cwl-live-scoreboard{gap:4px}.cwl-live-badge,.cwl-live-badge-placeholder{width:36px;height:36px;font-size:27px}.cwl-live-score{font-size:26px;gap:3px}.cwl-live-score-middle{min-width:72px}.cwl-live-clan-name{font-size:11px}}
+
+/* Compact CWL attack overview inspired by a scan-friendly battle log. */
+.cwl-live-details summary{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;list-style:revert}
+.cwl-live-attack-count{display:inline-block;margin-left:auto;font-size:11px;font-weight:550;color:var(--muted)}
+.cwl-live-attack{display:grid;grid-template-columns:140px minmax(0,1fr);align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.cwl-live-attack:last-child{border-bottom:0}
+.cwl-live-attack-result{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}
+.cwl-live-stars{font-size:19px;line-height:1.1;letter-spacing:1px;font-variant-emoji:text;color:#f0bb50}
+.cwl-live-stars.no-attack{color:var(--muted);opacity:.65}
+.cwl-live-percent{display:inline-flex;min-width:54px;justify-content:center;padding:3px 5px;border-radius:7px;background:var(--surface,rgba(127,127,127,.13));border:1px solid var(--line);font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+.cwl-live-percent.no-attack{opacity:.65}
+.cwl-live-fight{display:flex;min-width:0;flex-wrap:wrap;column-gap:7px;row-gap:2px;align-items:center;font-size:12px}
+.cwl-live-player,.cwl-live-target{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.cwl-live-player b,.cwl-live-target span:last-child{overflow-wrap:anywhere;min-width:0}
+.cwl-live-target{color:var(--muted)}
+.cwl-live-vs{font-size:10px;font-weight:750;color:var(--muted);text-transform:uppercase}
+.cwl-live-rh{display:inline-flex;flex:0 0 auto;padding:2px 4px;border-radius:4px;color:var(--text);font-size:10px;background:var(--surface,rgba(127,127,127,.12));border:1px solid var(--line)}
+.cwl-live-attack-pending{color:var(--muted);font-size:11px}
+.cwl-live-attack.pending{background:rgba(127,127,127,.035)}
+.cwl-live-attack-empty{padding:13px 0 5px;color:var(--muted);font-size:12px}
+@media(max-width:699px){
+ .cwl-live-attack{grid-template-columns:minmax(0,1fr);gap:5px;padding:10px 0}
+ .cwl-live-attack-result{justify-content:flex-start}
+ .cwl-live-fight{font-size:12px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
