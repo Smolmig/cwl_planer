@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.3",
+  "version": "v1.3.4",
   "released": "2026-10-31",
-  "summary": "Statistik-Historienimport: fehlende Missed-Log-Abdeckung wird als false gesendet; redundantes Hit-Rate-Badge entfernt."
+  "summary": "CWL-Statistik nach tatsächlichen Saisons (1/2/3/alle) mit sichtbaren enthaltenen Kriegstagen pro Monat."
 }

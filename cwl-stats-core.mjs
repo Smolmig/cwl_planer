@@ -73,14 +73,32 @@ export function validateHistoryFile(input,expectedTag){
   }
   return {wars,attacks,missed};
 }
-// A missed log is independent of the hit-rate TH filter. The historical log
-// covers regular CWs only; CWL misses stay unknown without a full API roster.
-export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=false,showFormer=true,
-  memberTags=[],minAttacks=0,missedEvents=[]}={}){
-  const selected=[...wars].filter(w=>type==="all"||w.war_type===type)
+// Clash league seasons have seven individual wars, not one aggregate war.
+// Group by UTC start month (e.g. 2026-08), rather than assuming every
+// imported season contains exactly seven days. An incomplete import must
+// remain visibly incomplete.
+export function cwlSeasonOf(war) {
+  if(war?.war_type!=="cwl")return null;
+  const date=new Date(war.started_at);
+  return Number.isFinite(date.getTime())?date.toISOString().slice(0,7):null;
+}
+export function selectStatWars(wars,{type="all",last=25,cwlSeasons=null}={}){
+  const available=[...wars].filter(w=>type==="all"||w.war_type===type)
     .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
-      String(a.war_key).localeCompare(String(b.war_key)))
-    .slice(0,Math.max(1,Math.min(50,last)));
+      String(a.war_key).localeCompare(String(b.war_key)));
+  if(type!=="cwl"||cwlSeasons===null||cwlSeasons===undefined)
+    return available.slice(0,Math.max(1,Math.min(50,last)));
+  const seasons=[...new Set(available.map(cwlSeasonOf).filter(Boolean))];
+  const limit=cwlSeasons==="all"?seasons.length:
+    Number.isInteger(cwlSeasons)&&cwlSeasons>=1?Math.min(cwlSeasons,seasons.length):1;
+  const selectedMonths=new Set(seasons.slice(0,limit));
+  return available.filter(w=>selectedMonths.has(cwlSeasonOf(w)));
+}
+// A missed log is independent of the hit-rate TH filter. Exact historical
+// CWL missed entries are usable, but they do not prove complete coverage.
+export function computeWarStats(wars,attacks,{type="all",last=25,cwlSeasons=null,sameHigher=false,showFormer=true,
+  memberTags=[],minAttacks=0,missedEvents=[]}={}){
+  const selected=selectStatWars(wars,{type,last,cwlSeasons});
   const lookup=new Map(selected.map(w=>[w.war_key,w]));
   const chosen=attacks.filter(a=>lookup.has(a.war_key));
   const filtered=chosen.filter(a=>!sameHigher||
@@ -159,8 +177,19 @@ export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=fals
   const complete=selected.length>0&&selected.every(covered);
   const attackSlots=selected.reduce((sum,w)=>sum+w.team_size*(w.war_type==="cwl"?1:2),0);
   const totalHits=filtered.filter(a=>a.stars===3).length;
+  const allCwl= wars.filter(w=>w.war_type==="cwl");
+  const allSeasons=[...new Set(allCwl.map(cwlSeasonOf).filter(Boolean))];
+  const seasonTotals=new Map();
+  for(const w of selected){
+    const key=cwlSeasonOf(w);
+    if(key)seasonTotals.set(key,(seasonTotals.get(key)||0)+1);
+  }
+  const cwlSeasonBreakdown=[...seasonTotals.entries()].sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([season,days])=>({season,days}));
   return {
-    wars:selected.length,totalWars:wars.length,attacks:filtered.length,
+    wars:selected.length,totalWars:wars.length,totalCwlDays:allCwl.length,
+    totalCwlSeasons:allSeasons.length,cwlSeasonBreakdown,
+    attacks:filtered.length,
     allAttacksUsed:chosen.length,possibleAttacks:attackSlots,
     hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
     misses:complete?totalMissedKnown:null,missesKnown:totalMissedKnown,

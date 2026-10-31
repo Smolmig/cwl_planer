@@ -210,3 +210,67 @@ test("Historical import always produces a concrete boolean for every war",async(
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  assert.doesNotMatch(html,/<span class="badge ok">3★ Hit Rate<\/span>/);
 });
+
+
+test("CWL season selection groups 21 league days into Aug/Sep/Oct, never 10 seasons",async()=>{
+ const {computeWarStats,selectStatWars,cwlSeasonOf}=await load();
+ const months=["2026-08","2026-09","2026-10"];
+ const wars=months.flatMap(month=>Array.from({length:7},(_,i)=>({
+   war_key:"league:"+month+":"+i,war_type:"cwl",
+   started_at:month+"-"+String(i+4).padStart(2,"0")+"T06:00:00Z",
+   team_size:15,finalized:false,missed_log_complete:false,roster_tags:null
+ })));
+ const attacks=wars.map(w=>({
+   war_key:w.war_key,attacker_tag:"#L9RR0YP28",attacker_name:"UF Weiss",
+   attacker_th:18,defender_th:18,stars:3,destruction:100,attack_order:1
+ }));
+ const one=computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:1});
+ assert.equal(one.wars,7);
+ assert.equal(one.attacks,7);
+ assert.deepEqual(one.cwlSeasonBreakdown,[{season:"2026-10",days:7}]);
+ const two=computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:2});
+ assert.equal(two.wars,14);
+ assert.equal(two.attacks,14);
+ const three=computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:3});
+ assert.equal(three.wars,21);
+ assert.equal(three.attacks,21);
+ assert.equal(three.rows[0].hitRate,100);
+ assert.equal(three.rows[0].attacks,21);
+ assert.equal(three.totalCwlSeasons,3);
+ assert.equal(three.totalCwlDays,21);
+ assert.deepEqual(three.cwlSeasonBreakdown,[
+   {season:"2026-08",days:7},{season:"2026-09",days:7},{season:"2026-10",days:7}
+ ]);
+ assert.equal(computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:"all"}).wars,21);
+ assert.equal(computeWarStats(wars,attacks,{type:"cwl",last:10}).wars,10,
+   "Legacy last-N selection means days, not seasons");
+ assert.equal(selectStatWars(wars,{type:"cwl",cwlSeasons:1}).length,7);
+ assert.equal(cwlSeasonOf(wars[0]),"2026-08");
+});
+test("Partial league seasons are not silently expanded to seven days",async()=>{
+ const {computeWarStats}=await load();
+ const full=Array.from({length:7},(_,i)=>({
+   war_key:"sept:"+i,war_type:"cwl",started_at:"2026-09-"+String(i+4).padStart(2,"0")+"T12:00:00Z",team_size:15
+ }));
+ const partial=Array.from({length:3},(_,i)=>({
+   war_key:"oct:"+i,war_type:"cwl",started_at:"2026-10-"+String(i+4).padStart(2,"0")+"T12:00:00Z",team_size:15
+ }));
+ const r=computeWarStats([...full,...partial],[],{type:"cwl",cwlSeasons:1});
+ assert.equal(r.wars,3);
+ assert.deepEqual(r.cwlSeasonBreakdown,[{season:"2026-10",days:3}]);
+ assert.equal(r.totalCwlDays,10);
+ assert.equal(r.totalCwlSeasons,2);
+});
+test("Statistics UI explicitly labels CWL season period and shows included months",()=>{
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
+ assert.match(html,/id="statsPeriodLabel"/);
+ assert.match(html,/id="statsSeasonDetails"/);
+ assert.match(ui,/cwlSeasons=3/);
+ assert.match(ui,/Letzte 1 CWL/);
+ assert.match(ui,/Letzte 3 CWLs/);
+ assert.match(ui,/Alle CWLs/);
+ assert.match(ui,/gespeicherten CWL-Kriegstagen/);
+ assert.match(ui,/von 7 Kriegstagen gespeichert/);
+ assert.match(ui,/cwlSeasons:type==="cwl"\?cwlSeasons:null/);
+});
