@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows } from "./cwl-live-core.mjs?v=1.2.2";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows } from "./cwl-live-core.mjs?v=1.3.0";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -26,7 +26,7 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify}) {
+export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false;
   const expandedDays=new Set();
   const effective=()=>{
@@ -170,6 +170,8 @@ export function createCwlLive({sb,context,storage,notify}) {
       }
       if(req!==requestId||id!==context().clanId)return;
       current=data;offlineReason="";confirmedNoCwl=!data.active;
+      // Optional statistics sink only; a failed stats save must never break planning.
+      if(onSnapshot)Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
       if(data.active && ctx.role!=="viewer" && context().canApply) {
         const result=reconcileCwl(storage.getProfile(),data,name=>storage.newMember(name));
         if(result.changed) {
