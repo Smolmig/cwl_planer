@@ -72,3 +72,12 @@ Geplante Architektur:
 - Während des Krieges offene Angriffe priorisieren; nach Kriegsende natürliche Aufstellungsreihenfolge anzeigen. Details bleiben beim Aktualisieren geöffnet.
 - Beide CWL-Oberflächen nutzen denselben renderer: reale Cloud-App und vollständig isolierte Simulation. Die Original-Planerübersicht mit Rein/Raus bleibt in der Cloud-App erhalten.
 - Keine Änderungen an Supercell-API-Key-Verwaltung, Speicherung, vorhandenen Locks, Datenformat oder öffentlichen Gastfunktionen.
+
+
+## 31.10.2026 – Umsetzung Statistik v1.3.0
+
+- **Cloud → Statistik:** KPI-Karten und Spieler-Tabelle analog zu ClashPerk, Filter 10/25/50 Kriege, normal/CWL, Angriff auf gleiches/höheres RH, ehemalige Spieler sowie Suche/Sortierung.
+- **Import:** Das bereitgestellte Excel `Geronimo [Attack Log].xlsx` enthält 50 Kriege (29 CWs, 21 CWLs; 4.8.–29.10.2026). 1.244 Zeilen für eigene Angriffe; 105 davon exakt doppelte CWL-Angriffe. Bereinigte JSON-Historie: 1.139 eindeutige Angriffe. Quelle wird privat als Nutzerdatei bereitgestellt und nicht öffentlich im GitHub-Repository gespeichert.
+- **Sicherheit:** `cwl_stat_wars` und `cwl_stat_attacks` haben strikte Clanmitgliedschafts-RLS. Nur Besitzer und Editor dürfen importieren. Ein Export für einen anderen Clan-Tag wird abgewiesen; Upload wiederholbar und nach `clan_id` sowie `war_key` idempotent.
+- **Live:** Nach verifiziertem `warEnded` speichert die Cloud-App komplette CWL-Aufstellungen und über den `currentwar`-Endpunkt den zuletzt abrufbaren regulären CW; pro Spieler mit Sternen und TH-Informationen. Abschlüsse mit nicht vollständigen Aufstellungen werden für „Missed“ nicht als verlässlich gewertet.
+- **Grenzen:** Fehlende historische 0-Angriffs-Spieler sind aus dem Angriffsexport nicht rekonstruierbar. Die offizielle Supercell-API garantiert keinen vollständigen Langzeitkriegsverlauf. Ohne geöffnete App und ohne erreichbare API kann eine beendete normale CW aus der aktuellen API verschwinden, bevor sie erfasst wird. Später kann ein optionaler Serverzeitplan dieses Risiko mindern.
