@@ -38,60 +38,118 @@ export function validateHistoryFile(input,expectedTag){
       defender_name:String(a.defender_name||"").slice(0,80),
       defender_th:a.defender_th,stars:a.stars,destruction:a.destruction};
   });
-  return {wars,attacks};
+  const missedInput=input.missed===undefined?[]:input.missed;
+  if(!Array.isArray(missedInput)||missedInput.length>3000)
+    throw Error("Ungültige Missed-Attacks-Liste.");
+  const warByKey=new Map(wars.map(w=>[w.war_key,w]));
+  const missedIds=new Set();
+  const missed=missedInput.map(e=>{
+    const tag=cleanTag(e.player_tag),key=e.war_key+"/"+tag;
+    const war=warByKey.get(e.war_key);
+    if(!war||war.war_type!=="normal"||!validTag(tag)||
+       !int(e.missed_count,1,2)||missedIds.has(key))
+      throw Error("Ungültiger oder doppelter Missed-Attacks-Eintrag.");
+    missedIds.add(key);
+    return {war_key:e.war_key,player_tag:tag,
+      player_name:String(e.player_name||"").slice(0,80),
+      missed_count:e.missed_count};
+  });
+  for(let i=0;i<wars.length;i++){
+    const flagged=input.wars[i].missed_log_complete;
+    if(flagged===undefined||flagged===false)continue;
+    if(flagged!==true||wars[i].war_type!=="normal")
+      throw Error("Missed-Log-Abdeckung ist nur für reguläre Kriege erlaubt.");
+    wars[i].missed_log_complete=true;
+  }
+  for(const m of missed){
+    if(!warByKey.get(m.war_key).missed_log_complete)
+      throw Error("Missed-Eintrag ohne bestätigten Kriegszeitraum.");
+  }
+  return {wars,attacks,missed};
 }
+// A missed log is independent of the hit-rate TH filter. The historical log
+// covers regular CWs only; CWL misses stay unknown without a full API roster.
 export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=false,showFormer=true,
-  memberTags=[],minAttacks=0}={}){
+  memberTags=[],minAttacks=0,missedEvents=[]}={}){
   const selected=[...wars].filter(w=>type==="all"||w.war_type===type)
-    .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||String(a.war_key).localeCompare(String(b.war_key)))
+    .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
+      String(a.war_key).localeCompare(String(b.war_key)))
     .slice(0,Math.max(1,Math.min(50,last)));
   const lookup=new Map(selected.map(w=>[w.war_key,w]));
-  const filtered=attacks.filter(a=>lookup.has(a.war_key) && (
-    !sameHigher || Number.isInteger(a.attacker_th)&&Number.isInteger(a.defender_th)&&a.defender_th>=a.attacker_th));
+  const chosen=attacks.filter(a=>lookup.has(a.war_key));
+  const filtered=chosen.filter(a=>!sameHigher||
+    Number.isInteger(a.attacker_th)&&Number.isInteger(a.defender_th)&&a.defender_th>=a.attacker_th);
+  const knownMissed=missedEvents.filter(m=>lookup.has(m.war_key));
+  const missesByWar=new Map();
+  for(const m of knownMissed){
+    const key=m.war_key+"/"+cleanTag(m.player_tag);
+    missesByWar.set(key,(missesByWar.get(key)||0)+m.missed_count);
+  }
   const currentTags=new Set(memberTags.map(cleanTag).filter(Boolean));
-  const totalHits=filtered.filter(a=>a.stars===3).length;
   const players=new Map();
   function player(tag,name="",th=null){
-    if(!players.has(tag))players.set(tag,{tag,name,th,attacks:0,threes:0,missedKnown:0,
+    const key=cleanTag(tag);
+    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,missedKnown:0,
       missComplete:true,participated:new Set()});
-    return players.get(tag);
+    const p=players.get(key);
+    if(!p.name&&name)p.name=name;
+    if(p.th===null&&Number.isInteger(th))p.th=th;
+    return p;
   }
-  // Preserve current/last-known player names by war chronology instead of old aliases.
-  for(const w of selected){
-    for(const a of filtered.filter(x=>x.war_key===w.war_key)){
-      const p=player(a.attacker_tag,a.attacker_name,a.attacker_th);
-      if(!p.name){p.name=a.attacker_name;p.th=a.attacker_th;}
-      p.attacks++;if(a.stars===3)p.threes++;p.participated.add(w.war_key);
-    }
+  for(const w of selected)for(const a of filtered.filter(x=>x.war_key===w.war_key)){
+    const p=player(a.attacker_tag,a.attacker_name,a.attacker_th);
+    p.attacks++;if(a.stars===3)p.threes++;p.participated.add(w.war_key);
   }
-  // Reliable missed counts require the complete war roster, which the attached
-  // attack-only export does NOT contain. Unknown must never display as zero.
+  // Players who missed every attack still belong in the ranking, with no
+  // fabricated hit-rate percentage.
+  for(const m of knownMissed){
+    const p=player(m.player_tag,m.player_name);
+    p.participated.add(m.war_key);
+  }
   const hasFullRoster=w=>w.finalized&&Array.isArray(w.roster_tags)&&
-    w.roster_tags.length===w.team_size&&new Set(w.roster_tags.map(cleanTag)).size===w.team_size;
+    w.roster_tags.length===w.team_size&&
+    new Set(w.roster_tags.map(cleanTag)).size===w.team_size;
+  const covered=w=>w.missed_log_complete===true||hasFullRoster(w);
+  let totalMissedKnown=0;
   for(const w of selected){
-    if(!hasFullRoster(w)){
-      // Players who attacked in an import war have incomplete missed history.
+    if(w.missed_log_complete===true){
+      for(const m of knownMissed.filter(m=>m.war_key===w.war_key)){
+        const p=player(m.player_tag,m.player_name);
+        p.missedKnown+=m.missed_count;
+        totalMissedKnown+=m.missed_count;
+      }
+    }else if(hasFullRoster(w)){
+      const max=w.war_type==="cwl"?1:2;
+      for(const rawTag of w.roster_tags){
+        const tag=cleanTag(rawTag);if(!validTag(tag))continue;
+        const p=player(tag);
+        p.participated.add(w.war_key);
+        const used=chosen.filter(a=>a.war_key===w.war_key&&cleanTag(a.attacker_tag)===tag).length;
+        const misses=Math.max(0,max-used);
+        p.missedKnown+=misses;totalMissedKnown+=misses;
+      }
+    }else{
       for(const p of players.values())if(p.participated.has(w.war_key))p.missComplete=false;
-      continue;
-    }
-    const max=w.war_type==="cwl"?1:2;
-    for(const rawTag of w.roster_tags){
-      const tag=cleanTag(rawTag);if(!validTag(tag))continue;
-      const p=player(tag);
-      const used=attacks.filter(a=>a.war_key===w.war_key&&a.attacker_tag===tag).length;
-      p.missedKnown+=Math.max(0,max-used);
     }
   }
   const rows=[...players.values()].map(p=>({
-    tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,
-    threes:p.threes,missed:p.missComplete?p.missedKnown:null,former:currentTags.size>0&&!currentTags.has(p.tag)
-  })).filter(p=>p.attacks>=minAttacks &&(showFormer||!p.former))
-    .sort((a,b)=>(b.hitRate??-1)-(a.hitRate??-1)||b.attacks-a.attacks||a.name.localeCompare(b.name,"de"));
+    tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,
+    hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,threes:p.threes,
+    missed:p.missComplete?p.missedKnown:null,missedKnown:p.missedKnown,
+    missedComplete:p.missComplete,
+    former:currentTags.size>0&&!currentTags.has(p.tag)
+  })).filter(p=>p.attacks>=minAttacks&&(showFormer||!p.former))
+    .sort((a,b)=>(b.hitRate??-1)-(a.hitRate??-1)||b.attacks-a.attacks||
+      a.name.localeCompare(b.name,"de"));
   const best=rows.find(r=>r.attacks>=5&&r.hitRate!==null)||null;
-  const complete=selected.length>0&&selected.every(hasFullRoster);
+  const complete=selected.length>0&&selected.every(covered);
   const attackSlots=selected.reduce((sum,w)=>sum+w.team_size*(w.war_type==="cwl"?1:2),0);
-  return {wars:selected.length,totalWars:wars.length,attacks:filtered.length,allAttacksUsed:attacks.filter(a=>lookup.has(a.war_key)).length,
-    possibleAttacks:attackSlots,hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
-    misses:complete?attackSlots-attacks.filter(a=>lookup.has(a.war_key)).length:null,
-    best,rows,complete};
+  const totalHits=filtered.filter(a=>a.stars===3).length;
+  return {
+    wars:selected.length,totalWars:wars.length,attacks:filtered.length,
+    allAttacksUsed:chosen.length,possibleAttacks:attackSlots,
+    hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
+    misses:complete?totalMissedKnown:null,missesKnown:totalMissedKnown,
+    missingCoverage:!complete,best,rows,complete
+  };
 }

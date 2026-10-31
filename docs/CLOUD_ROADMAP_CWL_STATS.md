@@ -81,3 +81,12 @@ Geplante Architektur:
 - **Sicherheit:** `cwl_stat_wars` und `cwl_stat_attacks` haben strikte Clanmitgliedschafts-RLS. Nur Besitzer und Editor dürfen importieren. Ein Export für einen anderen Clan-Tag wird abgewiesen; Upload wiederholbar und nach `clan_id` sowie `war_key` idempotent.
 - **Live:** Nach verifiziertem `warEnded` speichert die Cloud-App komplette CWL-Aufstellungen und über den `currentwar`-Endpunkt den zuletzt abrufbaren regulären CW; pro Spieler mit Sternen und TH-Informationen. Abschlüsse mit nicht vollständigen Aufstellungen werden für „Missed“ nicht als verlässlich gewertet.
 - **Grenzen:** Fehlende historische 0-Angriffs-Spieler sind aus dem Angriffsexport nicht rekonstruierbar. Die offizielle Supercell-API garantiert keinen vollständigen Langzeitkriegsverlauf. Ohne geöffnete App und ohne erreichbare API kann eine beendete normale CW aus der aktuellen API verschwinden, bevor sie erfasst wird. Später kann ein optionaler Serverzeitplan dieses Risiko mindern.
+
+
+## Nachtrag 31.10.2026 – zweite ClashPerk-Datei „Geronimo [Missed Attacks].xlsx“
+
+- Quelle umfasst 171 Einträge: 95 United Fighters, 76 UF 2. Die 95 United-Fighters-Einträge entsprechen 125 verpassten Angriffen aus regulären Clankriegen über Mai–Oktober 2026.
+- In den letzten 50 Kriegen des bisherigen Statistikimports sind 29 normale CWs und 21 CWL-Kriege enthalten. Für 22 der 29 normalen CWs existieren 42 passende Fehlangriffszeilen (57 Missed); die sieben anderen regulären CWs haben in dem zeitlich umfassenden Missed-Export keine Fehlangriffseinträge.
+- Historische CWL-Angriffe sind in der Missed-Quelle nicht enthalten. Deren Fehlangriffe sind weiterhin unbekannt. Bei gemischten Statistiken wird eine belegte Untergrenze angezeigt, keine erfundene vollständige Zahl.
+- Der einmalige private JSON-Import enthält `missed` mit (war_key, player_tag, player_name, missed_count) und die War-Abdeckung `missed_log_complete`. Die Originaldateien und personenbezogenen Spielerlisten werden **nicht** ins öffentliche Git-Repository übernommen.
+- Private Tabelle `public.cwl_stat_missed` (RLS wie `cwl_stat_wars` und `cwl_stat_attacks`) speichert die per Kriegs-ID verknüpften Fälle. Die Hilfsspalte `missed_log_complete` sagt explizit, wo die Abwesenheit eines Missed-Eintrags als Null gewertet werden darf.

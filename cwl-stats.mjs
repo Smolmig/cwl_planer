@@ -1,11 +1,11 @@
-import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.0";
+import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.0";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 export function createCloudStats({sb,context,notify}) {
-  let scope=null,wars=[],attacks=[],loading=false,importing=false,version=0,lastCapture=new Set();
+  let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=25,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   function render(){
@@ -19,8 +19,9 @@ export function createCloudStats({sb,context,notify}) {
       $("statsRows").innerHTML="";
       return;
     }
-    const summary=computeWarStats(wars,attacks,{type,last,sameHigher,showFormer,memberTags:ctx.memberTags||[]});
-    const label=summary.complete?String(summary.misses):"–";
+    const summary=computeWarStats(wars,attacks,{type,last,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+    const label=summary.complete?String(summary.misses):
+      (summary.missesKnown>0?"≥"+summary.missesKnown:"–");
     $("statsSummary").innerHTML=[
       ["Clan Hit Rate",pct(summary.hitRate)],
       ["Angriffe erfasst",String(summary.attacks)],
@@ -32,8 +33,8 @@ export function createCloudStats({sb,context,notify}) {
     const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?summary.best.name+
       " · "+summary.best.attacks+" Angriffe (mindestens 5)":"Mindestens 5 Angriffe erforderlich";
     const note=$("statsMissingNote");if(note)note.textContent=summary.complete?
-      "Verpasste Angriffe aus den vollständigen Kriegsaufstellungen berechnet.":
-      "Verpasste Angriffe (Missed) sind für exportierte Kriege ohne vollständige Kriegsaufstellung nicht zuverlässig bestimmbar. Deshalb zeigen wir – statt falscher Nullen.";
+      "Verpasste Angriffe aus dem importierten Missed Log oder vollständigen Kriegsaufstellungen ermittelt. Der RH-Filter beeinflusst nur die Hit Rate.":
+      "≥ bedeutet: mindestens so viele verpasste Angriffe sind belegt. Der Missed-Export deckt normale CWs ab; historische CWL-Fehlangriffe bleiben unbekannt. – bedeutet nicht automatisch null. Der RH-Filter ändert Missed nicht.";
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
@@ -43,18 +44,18 @@ export function createCloudStats({sb,context,notify}) {
       });
     $("statsRows").innerHTML=visible.length?visible.map(p=>{
       const hitColor=p.hitRate===null?"":p.hitRate>=80?" great":p.hitRate<60?" low":"";
-      const missedColor=p.missed>0?" warn":"";
+      const missedColor=p.missedKnown>0?" warn":"";
       return "<div class='stats-player-row'>"+
         "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-th' aria-hidden='true'>"+
           (p.th?"RH"+p.th:"RH?")+"</span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
         "<strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
         "<span class='stats-number'>"+p.attacks+"</span>"+
-        "<span class='stats-number"+missedColor+"'>"+(p.missed===null?"–":p.missed)+"</span></div>";
+        "<span class='stats-number"+missedColor+"'>"+(p.missed===null?(p.missedKnown>0?"≥"+p.missedKnown:"–"):p.missed)+"</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
   }
   function reset(){
-    scope=null;wars=[];attacks=[];version++;lastCapture.clear();loading=false;importing=false;
+    scope=null;wars=[];attacks=[];missedEvents=[];version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
   async function load(){
@@ -73,8 +74,16 @@ export function createCloudStats({sb,context,notify}) {
         collected.push(...(aa||[]));
         if(!aa||aa.length<800)break;
       }
+      const missedRows=[];
+      for(let offset=0;offset<5000;offset+=800){
+        const {data:mm,error:e3}=await sb.from("cwl_stat_missed").select("*")
+          .eq("clan_id",id).order("war_key").order("player_tag").range(offset,offset+799);
+        if(e3)throw e3;
+        missedRows.push(...(mm||[]));
+        if(!mm||mm.length<800)break;
+      }
       if(epoch!==version||context().clanId!==id)return;
-      scope=id;wars=ww||[];attacks=collected;
+      scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;
       notice(wars.length?"Statistik aktuell · "+wars.length+" Kriege gespeichert":
         "Noch keine Angriffsdaten. Importiere die vorbereitete Historie.");
     }catch(e){
@@ -87,8 +96,9 @@ export function createCloudStats({sb,context,notify}) {
     if(importing)throw Error("Import läuft bereits.");
     if(!file||file.size>4000000)throw Error("Bitte die vorbereitete JSON-Datei auswählen (maximal 4 MB).");
     const parsed=validateHistoryFile(JSON.parse(await file.text()),ctx.clanTag);
-    const message="Importiere "+parsed.wars.length+" historische Kriege und "+
-      parsed.attacks.length+" eindeutige Angriffe in den Cloud-Clan? Wiederholter Import ist möglich; der CWL-Plan wird nicht verändert.";
+    const message="Importiere "+parsed.wars.length+" historische Kriege, "+
+      parsed.attacks.length+" eindeutige Angriffe und "+parsed.missed.length+
+      " Missed-Einträge? Bereits importierte Daten werden anhand von Kriegs-ID und Player-Tag aktualisiert, nicht doppelt angelegt. Der CWL-Plan bleibt unverändert.";
     if(!confirm(message))return;
     const id=ctx.clanId;importing=true;$("statsImportButton").disabled=true;
     try{
@@ -105,8 +115,14 @@ export function createCloudStats({sb,context,notify}) {
           {onConflict:"clan_id,war_key,attacker_tag,attack_order"});if(error)throw error;
         done+=batch.length;notice("Import: "+done+" / "+parsed.attacks.length+" Angriffe …");
       }
+      for(const batch of chunks(parsed.missed,80)){
+        if(context().clanId!==id)throw Error("Clan wurde gewechselt; Import abgebrochen.");
+        const {error}=await sb.from("cwl_stat_missed").upsert(batch.map(m=>({...m,clan_id:id})),
+          {onConflict:"clan_id,war_key,player_tag"});if(error)throw error;
+      }
       await load();
-      notice("✓ Historie importiert: "+parsed.wars.length+" Kriege, "+parsed.attacks.length+" eindeutige Angriffe.");
+      notice("✓ Historie importiert: "+parsed.wars.length+" Kriege, "+parsed.attacks.length+
+        " Angriffe, "+parsed.missed.length+" Missed-Einträge.");
       notify("✓ Historische CW-Statistik importiert");
     }finally{importing=false;$("statsImportButton").disabled=false}
   }

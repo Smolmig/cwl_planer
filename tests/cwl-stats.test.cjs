@@ -73,3 +73,62 @@ test("Stats UI, migration and data version are independent from the manual plann
  assert.match(migration,/private\.cwl_is_member/);
  assert.match(migration,/private\.cwl_can_edit/);
 });
+
+
+test("Missed log is grouped by actual war and player, excluding unknown CWL misses",async()=>{
+ const {validateHistoryFile,computeWarStats}=await load();
+ const history={kind:"cwl-stats-history",format:1,clanTag:"#99JP2RL2",
+  wars:[
+    {war_key:"cp:101",war_type:"normal",started_at:"2026-10-20T00:00:00Z",
+      team_size:15,opponent_name:"Test CW",missed_log_complete:true},
+    {war_key:"cp:102",war_type:"cwl",started_at:"2026-10-19T00:00:00Z",
+      team_size:15,opponent_name:"Test CWL"}
+  ],
+  attacks:[
+    {war_key:"cp:101",attacker_tag:"#2PYL",attack_order:1,attacker_name:"One",
+      attacker_th:18,defender_th:18,stars:3,destruction:100},
+    {war_key:"cp:102",attacker_tag:"#2PYL",attack_order:1,attacker_name:"One",
+      attacker_th:18,defender_th:18,stars:2,destruction:75}
+  ],
+  missed:[
+    {war_key:"cp:101",player_tag:"#2PYL",player_name:"One",missed_count:1},
+    {war_key:"cp:101",player_tag:"#8PY",player_name:"Only missed",missed_count:2}
+  ]
+ };
+ const parsed=validateHistoryFile(history,history.clanTag);
+ assert.equal(parsed.missed.length,2);
+ const opts={type:"normal",last:25,missedEvents:parsed.missed};
+ const normal=computeWarStats(parsed.wars,parsed.attacks,opts);
+ assert.equal(normal.complete,true);
+ assert.equal(normal.misses,3);
+ assert.equal(normal.missesKnown,3);
+ assert.equal(normal.rows.find(p=>p.tag==="#2PYL").missed,1);
+ const absent=normal.rows.find(p=>p.tag==="#8PY");
+ assert.equal(absent.attacks,0);
+ assert.equal(absent.hitRate,null);
+ assert.equal(absent.missed,2);
+ const all=computeWarStats(parsed.wars,parsed.attacks,{type:"all",missedEvents:parsed.missed});
+ assert.equal(all.complete,false,"No CWL missed log");
+ assert.equal(all.misses,null);
+ assert.equal(all.missesKnown,3);
+ assert.equal(all.rows.find(p=>p.tag==="#2PYL").missedKnown,1);
+ assert.equal(all.rows.find(p=>p.tag==="#2PYL").missed,null);
+ const cwl=computeWarStats(parsed.wars,parsed.attacks,{type:"cwl",missedEvents:parsed.missed});
+ assert.equal(cwl.missesKnown,0);assert.equal(cwl.misses,null);
+ const restricted=computeWarStats(parsed.wars,parsed.attacks,{...opts,sameHigher:true});
+ assert.equal(restricted.misses,normal.misses,"TH filter must not alter logged misses");
+ const duplicated=structuredClone(history);duplicated.missed.push({...duplicated.missed[0]});
+ assert.throws(()=>validateHistoryFile(duplicated,history.clanTag),/doppelter Missed-Attacks-Eintrag/);
+ const cross=structuredClone(history);cross.missed[0].war_key="cp:102";
+ assert.throws(()=>validateHistoryFile(cross,history.clanTag),/Missed-Attacks-Eintrag/);
+ assert.throws(()=>validateHistoryFile(history,"#2JGC2J8VG"),/falscher Clan-Tag/);
+});
+test("New missed log table uses per-clan RLS with editor write and viewer read",()=>{
+ const sql=fs.readFileSync(path.join(root,
+   "supabase/migrations/20261031133000_cwl_statistics_missed_attack_log.sql"),"utf8");
+ assert.match(sql,/missed_log_complete/);
+ assert.match(sql,/cwl_stat_missed/);
+ assert.match(sql,/enable row level security/);
+ assert.match(sql,/private\.cwl_is_member/);
+ assert.match(sql,/private\.cwl_can_edit/);
+});
