@@ -154,7 +154,7 @@ jobs:
           from pathlib import Path
           log = (Path(os.environ['WORK']) / 'restore.log').read_text(errors='replace')
           match = re.search(
-              r'psql:.*?/((?:roles-local|roles)|schema|auth-data|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
+              r'psql:.*?/(roles-local|roles|schema|auth-data|data-local|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
               log, re.I)
           if match:
               filename, error_line, sqlstate = match.group(1), int(match.group(2)), match.group(3)
@@ -164,7 +164,7 @@ jobs:
                   found = re.search(r'\b' + field + r':\s*([A-Za-z_][A-Za-z0-9_]*)', log)
                   if found:
                       print(f'{field}: {found.group(1)}')
-              if filename in ('data', 'auth-data'):
+              if filename in ('data', 'data-local', 'auth-data'):
                   sql_lines = (Path(os.environ['WORK']) / 'unpacked/cwl-backup' /
                                (filename + '.sql')).read_text(errors='replace').splitlines()
                   copy_header = re.compile(
