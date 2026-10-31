@@ -237,7 +237,7 @@ test("Stable and cloud saves reduce localStorage writes and preserve planner res
   assert.ok(content.includes("memberOrder.get(a.id)"));
  }
  const worker=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
- assert.match(worker,/cwl-planer-v1-0-3/);
+ assert.match(worker,/cwl-planer-v1-0-2/);
 });
 test("CoC function never accepts attacker-supplied API URL/key/tag",()=>{
   assert.match(fn,/withSupabase\(\{auth:"user"\}/);
