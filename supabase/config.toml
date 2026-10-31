@@ -2,3 +2,7 @@
 # inside the function via @supabase/server auth: "secret".
 [functions.coc-members-test]
 verify_jwt = false
+
+# CWL read-only status proxy checks Supabase user JWT and clan membership internally.
+[functions.coc-cwl-status]
+verify_jwt = false
