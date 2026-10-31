@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.1";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.1";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.1";
 
 const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
  "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
@@ -931,7 +931,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.0";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.1";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
