@@ -113,6 +113,40 @@ export function createCloudStats({sb,context,notify}) {
   async function captureCwl(payload){
     const ctx=context();
     if(!ctx.active||!ctx.clanId||!["owner","editor"].includes(ctx.role))return;
+    // Current normal-war snapshot is available only while Supercell still serves it.
+    const normal=payload?.currentWar;
+    if(normal?.state==="warEnded"&&Array.isArray(normal.clan?.members)&&
+       normal.clan.members.length===normal.teamSize&&
+       cleanTag(normal.clan.tag)===cleanTag(ctx.clanTag)&&
+       Number.isFinite(clashTime(normal.startTime))&&
+       Number.isFinite(clashTime(normal.endTime))&&
+       clashTime(normal.endTime)<Date.now()-60000){
+      const id=ctx.clanId;
+      const key="normal:"+normal.startTime+":"+cleanTag(normal.opponent?.tag);
+      if(key.length<=100&&!lastCapture.has(id+":"+key)){
+        const war={clan_id:id,war_key:key,war_type:"normal",
+          started_at:new Date(clashTime(normal.startTime)).toISOString(),
+          team_size:normal.teamSize,opponent_tag:normal.opponent.tag,
+          opponent_name:String(normal.opponent.name||""),source:"api",finalized:true,
+          roster_tags:normal.clan.members.map(m=>m.tag)};
+        const {error:e1}=await sb.from("cwl_stat_wars").upsert(war,{onConflict:"clan_id,war_key"});
+        if(e1)throw e1;
+        const targets=new Map((normal.opponent.members||[]).map(m=>[cleanTag(m.tag),m]));
+        const rows=normal.clan.members.flatMap(m=>(m.attacks||[]).map((a,i)=>{
+          const d=targets.get(cleanTag(a.defenderTag));
+          return {clan_id:id,war_key:key,attacker_tag:m.tag,attack_order:i+1,
+            attacker_name:m.name,attacker_th:m.townHallLevel,defender_tag:a.defenderTag,
+            defender_name:d?.name||"",defender_th:d?.townHallLevel||null,
+            stars:a.stars,destruction:Math.round(a.destructionPercentage)};
+        }));
+        for(const batch of chunks(rows,80)){
+          const {error}=await sb.from("cwl_stat_attacks").upsert(batch,
+            {onConflict:"clan_id,war_key,attacker_tag,attack_order"});if(error)throw error;
+        }
+        lastCapture.add(id+":"+key);
+        if(scope===id)await load();
+      }
+    }
     const snap=sanitizeSnapshot(payload);
     if(!snap || cleanTag(snap.clanTag)!==cleanTag(ctx.clanTag))return;
     const id=ctx.clanId;
