@@ -23,7 +23,7 @@ export function createCwlLive({sb,context,storage,notify}) {
   const effective=()=>{
     const ctx=context();
     if (!ctx.active || !ctx.clanId)return null;
-    if (current && activeClan===ctx.clanId && current.active)return sanitizeSnapshot(current);
+    if (current && activeClan===ctx.clanId && current.active && ctx.profile?.cwlLiveIgnoredSeason!==current.season)return sanitizeSnapshot(current);
     if (confirmedNoCwl)return null;
     const prior=ctx.profile?.cwlLive;
     if (!prior?.season)return null;
