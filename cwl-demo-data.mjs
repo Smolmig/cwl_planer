@@ -61,16 +61,20 @@ export function demoResponse(sim,now=Date.now()){
         tag:m.tag,name:m.name,townHallLevel:m.townHallLevel,
         attacks:attack && (!ended||i<14)?[{
           attackerTag:m.tag,defenderTag:opponents[i].tag,
-          stars:i%5===0?1:i%3===0?2:3,
-          destructionPercentage:i%5===0?56:i%3===0?82:100
+          stars:i%5===0?2:i%3===0?2:3,
+          destructionPercentage:i%5===0?83:i%3===0?82:100
         }]:[]
       };
     });
+    const ourStars=members.reduce((sum,m)=>sum+(m.attacks?.[0]?.stars||0),0);
+    const enemyStars=state==="preparation"?0:ended?27:Math.max(0,ourStars-5);
     return {
       day,available:true,warTag:fakeTag(700+day),
       state,teamSize:15,startTime:gameTime(end-86400000),endTime:gameTime(end),
-      clan:{tag:DEMO_CLAN_TAG,name:DEMO_CLAN_NAME,members},
-      opponent:{tag:fakeTag(600+day),name:DEMO_OPPONENTS[i],members:opponents}
+      clan:{tag:DEMO_CLAN_TAG,name:DEMO_CLAN_NAME,members,stars:ourStars,
+        destructionPercentage:state==="preparation"?0:ended?92.4:73.1,badgeUrl:null},
+      opponent:{tag:fakeTag(600+day),name:DEMO_OPPONENTS[i],members:opponents,
+        stars:enemyStars,destructionPercentage:state==="preparation"?0:ended?81.6:66.8,badgeUrl:null}
     };
   });
   return {ok:true,active:true,clanTag:DEMO_CLAN_TAG,season:"2026-11",rounds};
