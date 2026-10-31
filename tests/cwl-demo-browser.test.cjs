@@ -40,10 +40,24 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   await page.locator("#day-card-0 .cwl-live-attack").first().waitFor({state:"attached"});
   assert.match(await page.locator("#day-card-0 .cwl-live-day").innerText(),/Krieg läuft/);
   assert.match(await page.locator("#day-card-0 .cwl-live-day").innerText(),/8\/15 Angriffe/);
+  const details=page.locator("#day-card-0 .cwl-live-details");
+  await details.locator("summary").click();
+  assert.equal(await details.locator(".cwl-live-attack").count(),15);
+  assert.equal(await details.locator(".cwl-live-attack.pending").count(),7);
+  assert.match(await details.locator(".cwl-live-attack").first().innerText(),/Angriff offen/);
+  assert.match(await details.locator(".cwl-live-attack").first().innerText(),/Spieler 09/);
+  assert.equal(await details.locator(".cwl-live-attack").nth(7).locator(".cwl-live-stars").innerText(),"★★☆");
+  assert.match(await details.locator(".cwl-live-attack").nth(7).locator(".cwl-live-percent").innerText(),/83/);
+  assert.match(await details.locator(".cwl-live-attack").nth(7).innerText(),/Gegner 01/);
   assert.equal((await page.locator("#day-card-0 .cwl-live-score").innerText()).replace(/\s/g,""),"20:15");
   await page.locator("#demoNext").click();
   await page.waitForFunction(()=>document.getElementById("demoCompleted").textContent.includes("1 / 7"));
   assert.match(await page.locator("#day-card-0").innerText(),/GESPIELT/);
+  assert.equal(await page.locator("#day-card-0 .cwl-live-details[open]").count(),1,
+    "Expanded attack details should stay expanded after a live refresh");
+  assert.equal(await page.locator("#day-card-0 .cwl-live-attack.pending").count(),1);
+  assert.match(await page.locator("#day-card-0 .cwl-live-attack").first().innerText(),/Spieler 01/);
+  assert.match(await page.locator("#day-card-0 .cwl-live-attack").last().innerText(),/Kein Angriff erfasst/);
   assert.equal((await page.locator("#day-card-0 .cwl-live-score").innerText()).replace(/\s/g,""),"35:27");
   assert.match(await page.locator("#day-card-0 .cwl-live-score-detail").innerText(),/Zerstörung/);
   assert.match(await page.locator("#day-card-0").innerText(),/Automatisch abgeschlossen/);
