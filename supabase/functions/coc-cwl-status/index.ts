@@ -20,8 +20,29 @@ const safeMember=m=>({
     stars:a?.stars,destructionPercentage:a?.destructionPercentage
   }))
 });
-const safeSide=s=>({
+// Official CWL war fields: war stars are *not* the sum of all attacks.
+const safeStars=value=>Number.isInteger(value)&&value>=0&&value<=150?value:null;
+const safeDestruction=value=>typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=100
+  ?Math.round(value*100)/100:null;
+// Restrict external artwork to the official Clash asset host.
+const safeBadge=raw=>{
+  for(const size of ["medium","small","large"]){
+    const value=raw?.[size];
+    if(typeof value!=="string")continue;
+    try{
+      const url=new URL(value);
+      if(url.protocol==="https:"&&url.hostname==="api-assets.clashofclans.com"&&
+         url.pathname.startsWith("/badges/")&&url.username===""&&url.password==="")
+        return url.href;
+    }catch{/* Malformed URLs are ignored. */}
+  }
+  return null;
+};
+const safeSide=(s,fromGroup)=>({
   tag:tag(s?.tag),name:String(s?.name||"").slice(0,80),
+  stars:safeStars(s?.stars),
+  destructionPercentage:safeDestruction(s?.destructionPercentage),
+  badgeUrl:safeBadge(s?.badgeUrls)||safeBadge(fromGroup?.badgeUrls),
   members:(Array.isArray(s?.members)?s.members:[]).slice(0,50).map(safeMember)
 });
 async function getGame(path,key) {
@@ -40,6 +61,9 @@ async function loadStatus(clanTag,key) {
   if(!/^\d{4}-\d{2}$/.test(season)||!Array.isArray(group.rounds))
     throw Error("unexpected_group_response");
   // CWL wars contain both clans; the requested clan is not always in the "clan" field.
+  const groupClans=new Map((Array.isArray(group.clans)?group.clans:[])
+    .filter(clan=>valid(tag(clan?.tag)))
+    .map(clan=>[tag(clan.tag),clan]));
   const rawRounds=group.rounds.slice(0,7);
   const tags=[...new Set(rawRounds.flatMap(r=>Array.isArray(r?.warTags)?r.warTags:[])
     .map(tag).filter(t=>valid(t)))].slice(0,32);
@@ -69,7 +93,8 @@ async function loadStatus(clanTag,key) {
     return {day:index+1,available:true,warTag,
       state:String(match.state||""),teamSize:match.teamSize,
       startTime:String(match.startTime||""),endTime:String(match.endTime||""),
-      clan:safeSide(our),opponent:safeSide(enemy)};
+      clan:safeSide(our,groupClans.get(tag(our?.tag))),
+      opponent:safeSide(enemy,groupClans.get(tag(enemy?.tag)))};
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
   return {ok:true,active:true,season,clanTag,rounds};
