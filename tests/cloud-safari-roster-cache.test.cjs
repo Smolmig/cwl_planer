@@ -23,7 +23,7 @@ test("Cloud version and entrypoint cache token must always match",()=>{
 });
 test("Offline service worker never serves stale Cloud JavaScript",()=>{
   assert.match(worker,/cwl-planer-v1-0-3/);
-  assert.match(worker,/cloud-sync\\\.mjs/);
+  assert.match(worker,/cloud-sync\.mjs/);
   assert.match(worker,/cwl-stats/);
   assert.match(worker,/cloudModule/);
   assert.match(worker,/if\(url.origin===self.location.origin && cloudModule\)/);
