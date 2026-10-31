@@ -116,7 +116,7 @@ jobs:
           from pathlib import Path
           log = (Path(os.environ['WORK']) / 'restore.log').read_text(errors='replace')
           match = re.search(
-              r'psql:.*?/(roles|schema|auth-data|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
+              r'psql:.*?/((?:roles-local|roles)|schema|auth-data|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
               log, re.I)
           if match:
               print(f'::error::Restore failed in {match.group(1)}.sql line {match.group(2)}; SQLSTATE {match.group(3)}.')
