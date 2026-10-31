@@ -66,8 +66,10 @@ export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=fals
   }
   // Reliable missed counts require the complete war roster, which the attached
   // attack-only export does NOT contain. Unknown must never display as zero.
+  const hasFullRoster=w=>w.finalized&&Array.isArray(w.roster_tags)&&
+    w.roster_tags.length===w.team_size&&new Set(w.roster_tags.map(cleanTag)).size===w.team_size;
   for(const w of selected){
-    if(!w.finalized||!Array.isArray(w.roster_tags)){
+    if(!hasFullRoster(w)){
       // Players who attacked in an import war have incomplete missed history.
       for(const p of players.values())if(p.participated.has(w.war_key))p.missComplete=false;
       continue;
@@ -86,7 +88,7 @@ export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=fals
   })).filter(p=>p.attacks>=minAttacks &&(showFormer||!p.former))
     .sort((a,b)=>(b.hitRate??-1)-(a.hitRate??-1)||b.attacks-a.attacks||a.name.localeCompare(b.name,"de"));
   const best=rows.find(r=>r.attacks>=5&&r.hitRate!==null)||null;
-  const complete=selected.length>0&&selected.every(w=>w.finalized&&Array.isArray(w.roster_tags));
+  const complete=selected.length>0&&selected.every(hasFullRoster);
   const attackSlots=selected.reduce((sum,w)=>sum+w.team_size*(w.war_type==="cwl"?1:2),0);
   return {wars:selected.length,totalWars:wars.length,attacks:filtered.length,allAttacksUsed:attacks.filter(a=>lookup.has(a.war_key)).length,
     possibleAttacks:attackSlots,hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
