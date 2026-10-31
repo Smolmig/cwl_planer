@@ -110,9 +110,19 @@ jobs:
                   raise SystemExit(
                       f'::error::Overlapping auth data differs for {table}; restore aborted rather than lose records.')
           skip = set()
+          # Supabase documents these as platform-managed vector storage tables
+          # that can be excluded from a normal SQL restore. Do not silently
+          # discard nonempty user data; stop if either table has any rows.
+          managed_vector = {'storage.buckets_vectors', 'storage.vector_indexes'}
+          for table in managed_vector & data.keys():
+              if data[table][1] != 0:
+                  raise SystemExit(
+                      f'::error::{table} contains {data[table][1]} rows; cannot safely skip it.')
           for table, first, end in data_sections:
-              if table in duplicated:
+              if table in duplicated or table in managed_vector:
                   skip.update(range(first, end))
+          skipped_empty_vectors = managed_vector & data.keys()
+          print(f'Empty Supabase-managed vector COPY blocks skipped: {len(skipped_empty_vectors)}.')
           (root / 'data-local.sql').write_text(
               ''.join(line for i, line in enumerate(data_lines) if i not in skip),
               encoding='utf-8')
