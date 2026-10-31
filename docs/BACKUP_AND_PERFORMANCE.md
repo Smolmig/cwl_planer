@@ -1,5 +1,5 @@
 # CWL Planer – Backup- und Optimierungskonzept
-Stand: 30.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
+Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
 
 ## 1. Drei Ebenen, unterschiedliche Ausfälle
 
@@ -19,9 +19,9 @@ Der **Besitzer** kann einen älteren Stand nach doppelter Bestätigung zurückho
 
 Die App ist kein vollständiges Datenbank-Backup: Der JSON-Export enthält nur den gewählten Clanplan, nicht die Supabase-Accounts, Einladungen, Berechtigungen anderer Clans oder die Serverkonfiguration.
 
-## 3. Externe tägliche Datenbank-Backups AKTIVIEREN
+## 3. Externe tägliche Datenbank-Backups – AKTIV
 
-Die Datei `.github/workflows/encrypted-backup.yml` ist im Repository vorhanden, aber **bis zum erfolgreichen Hinterlegen der Geheimnisse und einem verifizierten manuellen Test nicht als aktiviert betrachten**.
+**Stand 31.10.2026:** Der verschlüsselte Backup-Workflow wurde manuell erfolgreich ausgeführt (Lauf #2). Das Artifact wurde heruntergeladen und der isolierte Wiederherstellungstest #10 hat Schema, Auth- und CWL-Anwendungsdaten eingespielt sowie Datensatzzahlen und RLS geprüft. Nachfolgend bleibt die Einrichtung als Anleitung für spätere Neuinstallationen dokumentiert.
 
 1. In GitHub `Smolmig/cwl_planer` → **Settings → Secrets and variables → Actions → New repository secret**.
 2. `SUPABASE_DB_URL`: Supabase Dashboard → Projekt → **Connect** → **Session pooler** (Transaktions-Pooler vermeiden, weil `pg_dump` eine längere Session benötigt). Die vollständige URL inklusive DB-Passwort dort kopieren. Sonderzeichen im Passwort korrekt URL-encodieren. **Niemals in einen Chat, in HTML, Commit, Screenshot oder in ein Issue kopieren.**
@@ -29,7 +29,9 @@ Die Datei `.github/workflows/encrypted-backup.yml` ist im Repository vorhanden, 
 4. GitHub → **Actions → Encrypted Supabase backup → Run workflow**. Erst wenn der Lauf grün ist und ein nichtleeres `cwl-encrypted-db-<run-id>`-Artifact vorhanden ist, gilt der externe Backup-Job als erfolgreich eingerichtet. Danach folgt der tägliche Zeitplan 02:17 UTC. Ein fehlendes Secret führt bewusst zu einem fehlschlagenden Lauf mit klarer Fehlermeldung.
 5. Monatlich mindestens ein verschlüsseltes Artifact **zusätzlich außerhalb GitHub** in einem geschützten Speicher sichern, beispielsweise verschlüsselter Tresor/Cloud oder externe Festplatte. Ein wiederholt fehlgeschlagener Actions-Lauf muss aktiv untersucht werden.
 
-GitHub Actions erhält nur `contents: read`. Es werden **keine** SQL-Dumps ins öffentliche Git-Repository committed. Artefakte verlassen den Runner ausschließlich **nach** GPG-Verschlüsselung. Der Workflow testet nach der Verschlüsselung die Entschlüsselbarkeit des TAR-Archivs und speichert eine SHA-256-Prüfsumme.
+Der Backup-Workflow erhält nur `contents: read`; der Restore-Test zusätzlich `actions: read`, um das verschlüsselte Artifact herunterladen zu können. Es werden **keine** SQL-Dumps ins öffentliche Git-Repository committed. Artefakte verlassen den Runner ausschließlich **nach** GPG-Verschlüsselung. Der Workflow testet nach der Verschlüsselung die Entschlüsselbarkeit des TAR-Archivs und speichert eine SHA-256-Prüfsumme.
+
+**Automatischer Restore-Test:** `.github/workflows/test-encrypted-restore.yml` startet nach jedem erfolgreichen Lauf von `Encrypted Supabase backup` auf `main` automatisch (GitHub-Event `workflow_run`). Er übernimmt die Run-ID des gerade erstellten Backups, entschlüsselt das Artifact nur auf dem temporären GitHub-Runner, spielt die Anwendungsdaten in eine isolierte lokale Supabase-Datenbank ein und prüft Zeilenzahlen und RLS. Bei fehlgeschlagenem Backup wird der Restore-Job übersprungen. Der bisherige manuelle Test über `workflow_dispatch` bleibt erhalten. **Diese neue automatische Verkettung wurde noch nicht mit einem nachfolgenden Backup-Lauf praktisch getestet.**
 
 **Achtung:** Der kostenlose Supabase-Plan enthält keine täglich abrufbaren Plattform-Backups. Ein grüner Backup-Workflow ersetzt keine echte Wiederherstellungsprobe.
 
@@ -44,7 +46,9 @@ Für einen Supabase-Totalausfall:
 4. Prüfen: Auth-Benutzer vorhanden; `public.cwl_clans`, `public.cwl_clan_memberships`, `public.cwl_cloud_profiles`, `public.cwl_change_events` und `public.cwl_profile_snapshots` korrekt; Zugriffsrechte/RLS aktiv. Supabase Edge-Functions und ihre **Secrets** sowie die öffentliche Frontend-Projektkonfiguration müssen separat wiederhergestellt werden. Fehlende Auth-/Storage-Anpassungen und Migrationshistorie separat beachten.
 5. Erst nach erfolgreicher Probe und vollständiger Validierung eine Produktions-Umschaltung durchführen.
 
-**Nicht getan:** Eine vollständige Wiederherstellung der verschlüsselten Dumps in einem zweiten Supabase-Projekt ist noch nicht getestet (hierzu braucht es einen erfolgreich erstellten echten Export und eine Testinstanz). Das gilt daher noch nicht als bewiesener Disaster-Recovery-Pfad.
+**Nachgewiesen:** Am 31.10.2026 hat der manuelle isolierte Restore-Test #10 das verschlüsselte Artifact aus Backup-Lauf #2 entschlüsselt und das Schema, Auth- und CWL-Daten erfolgreich in eine lokale Testdatenbank importiert. Für die fünf zentralen CWL-Tabellen sowie `auth.users` stimmen die Zeilenzahlen mit dem Backup überein; RLS ist bei den geprüften CWL-Tabellen aktiv. Überschneidende Auth-COPY-Blöcke werden nur bei identischem Inhalt dedupliziert; leere plattformverwaltete Storage-Vector-Tabellen werden beim lokalen Test übersprungen.
+
+**Weiterhin offen:** `roles.sql` wird im lokalen Test nicht importiert, weil die lokale Supabase-Instanz ihre Systemrollen bereits selbst provisioniert. Ein vollständiger Disaster-Recovery-Test in einem frischen gehosteten Supabase-Projekt (einschließlich Rollen, Secrets, Edge Functions, externen Storage-Objekten und End-to-End-Anmeldung) wurde noch nicht durchgeführt. Ein grüner lokaler Restore-Test darf daher nicht als vollständig bewiesene Produktionswiederherstellung missverstanden werden.
 
 ## 5. Speicher- und Performance-Optimierungen
 
