@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.4",
+  "version": "v1.3.5",
   "released": "2026-10-31",
-  "summary": "CWL-Statistik nach tatsächlichen Saisons (1/2/3/alle) mit sichtbaren enthaltenen Kriegstagen pro Monat."
+  "summary": "Laufender normaler Clan War in Übersicht, letzte 50 normale CWs plus drei CWL-Saisons in Statistik, iPhone-Mitgliederabgleich und verständlichere Hilfetexte."
 }
