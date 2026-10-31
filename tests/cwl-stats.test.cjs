@@ -132,3 +132,56 @@ test("New missed log table uses per-clan RLS with editor write and viewer read",
  assert.match(sql,/private\.cwl_is_member/);
  assert.match(sql,/private\.cwl_can_edit/);
 });
+
+
+test("Exact CWL misses count as proven lower bound without assuming full league coverage",async()=>{
+ const {validateHistoryFile,computeWarStats}=await load();
+ const raw={kind:"cwl-stats-history",format:1,clanTag:"#99JP2RL2",
+   wars:[{war_key:"cp:101",war_type:"normal",started_at:"2026-10-29T00:00:00Z",
+      team_size:15,opponent_name:"CW",missed_log_complete:true},
+     {war_key:"cp:102",war_type:"cwl",started_at:"2026-10-28T00:00:00Z",
+      team_size:15,opponent_name:"CWL"}],
+   attacks:[{war_key:"cp:101",attacker_tag:"#2PYL",attack_order:1,attacker_name:"Alpha",
+      attacker_th:18,defender_th:18,stars:3,destruction:100},
+     {war_key:"cp:102",attacker_tag:"#8PY",attack_order:1,attacker_name:"Bravo",
+      attacker_th:19,defender_th:18,stars:2,destruction:86}],
+   missed:[{war_key:"cp:101",player_tag:"#2PYL",player_name:"Alpha",missed_count:1},
+     {war_key:"cp:102",player_tag:"#8PY",player_name:"Bravo",missed_count:1}]};
+ const parsed=validateHistoryFile(raw,raw.clanTag);
+ const opts={type:"all",last:25,missedEvents:parsed.missed};
+ const combined=computeWarStats(parsed.wars,parsed.attacks,opts);
+ assert.equal(combined.missesKnown,2,"Both logs are counted exactly once");
+ assert.equal(combined.misses,null,"Uncovered CWLs prohibit complete totals");
+ assert.equal(combined.rows.find(p=>p.tag==="#8PY").missedKnown,1);
+ assert.equal(combined.rows.find(p=>p.tag==="#8PY").missed,null);
+ const onlyCwl=computeWarStats(parsed.wars,parsed.attacks,{...opts,type:"cwl"});
+ assert.equal(onlyCwl.missesKnown,1);
+ assert.equal(onlyCwl.misses,null);
+ assert.equal(onlyCwl.hitRate,0);
+ const bad=structuredClone(raw);bad.missed[1].missed_count=2;
+ assert.throws(()=>validateHistoryFile(bad,bad.clanTag),/Missed-Attacks-Eintrag/);
+ const normal=computeWarStats(parsed.wars,parsed.attacks,{...opts,type:"normal"});
+ assert.equal(normal.misses,1);
+ assert.equal(normal.complete,true);
+});
+test("Cloud statistics show native normal CWs independently of manual CWL planning",()=>{
+ const src=fs.readFileSync(path.join(root,"supabase/functions/coc-cwl-status/index.ts"),"utf8");
+ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
+ const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
+ assert.match(src,/currentNormalWar/);
+ assert.match(src,/\/"\)\+\/currentwar"/); // directly queries the game's current-war endpoint
+ assert.match(src,/attacksPerMember/);
+ assert.match(ui,/const normal=payload\?\.currentWar/);
+ assert.match(ui,/war_type:"normal"/);
+ assert.match(ui,/source:"api",finalized:true/);
+ assert.match(ui,/const snap=sanitizeSnapshot\(payload\)/);
+ assert.match(sync,/onSnapshot:data=>stats\.captureCwl\(data\)/);
+});
+test("Logout removes cloud-only Statistics and returns to Plan",()=>{
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
+ assert.match(html,/body\.cloud-mode \.navinner\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)\}/);
+ assert.match(html,/\.navinner\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/);
+ assert.match(sync,/async function leaveCloud\(\)\{[\s\S]*?toggle\("statsNav",false\)/);
+ assert.match(sync,/document\.querySelector\('\.navbtn\[data-view="plan"\]'\)\?\.click\(\)/);
+});
