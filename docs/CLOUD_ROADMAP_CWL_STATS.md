@@ -106,3 +106,12 @@ Geplante Architektur:
 - Auswahl 1 / 2 / 3 / alle gespeicherten CWL-Saisons. Der tatsächliche Monatsbestand wird pro Saison ausgewiesen; für unvollständige Saisons werden fehlende Kriegstage nicht automatisch ergänzt oder mit null gewertet.
 - Reale Historie: `#L9RR0YP28` (UF⚡Weiss) besitzt in allen drei Monaten je sieben ausgeführte Angriffe, davon je sieben Drei-Sterne-Angriffe. Letzte 10 CWL-Kriegstage = zehn dieser 21 Attacken, nicht die volle Drei-Saisons-Bilanz.
 - Die übrigen Filter (normal/alle, 10/25/50, RH-Vergleich, ehemalige Spieler) funktionieren unverändert. Keine Migration oder neues Datenformat erforderlich.
+
+
+## 31.10.2026 – Aktuelle Clanübersicht und rollierende Spielerbewertungen (v1.3.5)
+
+- Eigene Übersichtskarte für einen aktiven normalen CW, gespeist aus dem authentifizierten `/clans/{tag}/currentwar`-Endpunkt im vorhandenen Supabase-Proxy. Dort sind Spielstand, Gegner, Zeit und offene Angriffe jederzeit während des geöffneten Cloud-Planers sichtbar; keine CWL-Platzbelegung.
+- Statistik: **letzte 50 reguläre Clankriege plus drei CWL-Saisons**. Die Fenster-Auswahl erfolgt anhand abgeschlossener Kriege und der CWL-Monate. Archivierte ältere Kriege werden nicht gelöscht, sondern außerhalb der Standardauswertung aufbewahrt. Die vorhandenen 50 importierten Kriege werden nicht migriert.
+- 3-Sterne-Quote = nur 3-Sterne-Angriffe / nur tatsächlich ausgeführte Angriffe. Nicht eingeplant zu sein ist kein Fehlschlag; verpasste Angriffe werden separat aus belegten Listen und vollständigen Kriegsaufstellungen ausgewiesen.
+- Safari-Mitgliederabgleich: `scrollIntoView`-Fehler behoben. Zusätzliche Fehlermeldung, wenn die API nicht erreichbar ist. Übernahme weiterhin erst nach manueller Prüfung; CWL-Regeln bleiben bestehen.
+- Die Benutzertexte wurden aus Sicht eines neuen Clanleiters überarbeitet: einfache Erklärungen statt technischer Workflow-Hinweise. Regressionstests decken Rollenwechsel, normalen CW und Ausschnittsberechnung ab.
