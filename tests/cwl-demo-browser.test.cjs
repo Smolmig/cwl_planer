@@ -35,7 +35,7 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   assert.match(await page.locator("#day-card-2 .cwl-live-day").innerText(),/Noch nicht von Clash freigegeben/);
   assert.match(await page.locator("#demoCompleted").innerText(),/0 \/ 7/);
   await page.locator("#demoNext").click();
-  await page.locator("#day-card-0 .cwl-live-attack").first().waitFor();
+  await page.locator("#day-card-0 .cwl-live-attack").first().waitFor({state:"attached"});
   assert.match(await page.locator("#day-card-0 .cwl-live-day").innerText(),/Krieg läuft/);
   assert.match(await page.locator("#day-card-0 .cwl-live-day").innerText(),/8\/15 Angriffe/);
   await page.locator("#demoNext").click();
@@ -56,7 +56,7 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   assert.match(await page.locator("#demoCompleted").innerText(),/1 \/ 7/);
   await page.locator("#demoNoCwl").uncheck();
   await page.locator("#demoAll").click();
-  await page.waitForFunction(()=>document.getElementById("demoCompleted").textContent.includes("7 / 7"),{timeout:20000});
+  await page.waitForFunction(()=>document.getElementById("demoCompleted").textContent.includes("7 / 7"),undefined,{timeout:20000});
   assert.equal(await page.locator(".day-card.locked").count(),7);
   assert.match(await page.locator("#day-card-6").innerText(),/GESPIELT/);
   assert.equal(await page.locator("#demoNext").isDisabled(),true);
