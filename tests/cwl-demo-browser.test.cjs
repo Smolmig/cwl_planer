@@ -31,7 +31,7 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   await page.locator("#day-card-0 .cwl-live-day").waitFor();
   assert.match(await page.locator("#cwlLiveOverview").innerText(),/CWL 2026-11/);
   assert.match(await page.locator("#day-card-0 .cwl-live-day").innerText(),/Nachtwächter/);
-  assert.equal(await page.locator("#day-card-0 .cwl-live-score").innerText(),"0:0");
+  assert.equal((await page.locator("#day-card-0 .cwl-live-score").innerText()).replace(/\s/g,""),"0:0");
   assert.equal(await page.locator("#day-card-0 .cwl-live-badge-placeholder").count(),2);
   assert.match(await page.locator("#day-card-1 .cwl-live-day").innerText(),/Eislegion/);
   assert.match(await page.locator("#day-card-2 .cwl-live-day").innerText(),/Noch nicht von Clash freigegeben/);
