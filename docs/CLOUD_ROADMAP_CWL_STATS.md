@@ -98,3 +98,11 @@ Geplante Architektur:
 - Eine CWL-Missed-Meldung ist ein belegter Einzelfall, aber **kein Nachweis vollständiger Kriegsteilnehmer- oder Fehlangriffsdaten**. Deshalb `≥` als Mindestzahl bei unvollständig abgedeckten CWL-Kriegen.
 - Die Tab-Leiste zeigt alle vier Cloud-Navigationsziele in einer Reihe; nach Abmeldung wird die private Statistikansicht geschlossen und der lokale Plan gezeigt.
 - Der Abruf normaler CWs ist unabhängig von der CWL-Planung: `coc-cwl-status` liefert bei fehlender aktiver CWL zusätzlich den aktuellen normalen Krieg; `cwl-stats.mjs` speichert **beendete** Kriege mit Angriffen und vollständiger Aufstellung im getrennten Statistikarchiv. Kein serverseitiger 24/7-History-Dienst; Supabase/Clash-API muss die Daten beim Cloud-Abgleich noch liefern.
+
+
+## 31.10.2026 – CWL-Saisonfilter und nachvollziehbare Datenabdeckung
+
+- CWL-Angriffe nach **CWL-Saisons**, nicht nach einem unbeschrifteten „Letzte N Kriege“-Limit. Die 21 War-IDs aus August, September und Oktober 2026 zählen als drei Ligawettbewerbe mit je sieben Kriegstagen.
+- Auswahl 1 / 2 / 3 / alle gespeicherten CWL-Saisons. Der tatsächliche Monatsbestand wird pro Saison ausgewiesen; für unvollständige Saisons werden fehlende Kriegstage nicht automatisch ergänzt oder mit null gewertet.
+- Reale Historie: `#L9RR0YP28` (UF⚡Weiss) besitzt in allen drei Monaten je sieben ausgeführte Angriffe, davon je sieben Drei-Sterne-Angriffe. Letzte 10 CWL-Kriegstage = zehn dieser 21 Attacken, nicht die volle Drei-Saisons-Bilanz.
+- Die übrigen Filter (normal/alle, 10/25/50, RH-Vergleich, ehemalige Spieler) funktionieren unverändert. Keine Migration oder neues Datenformat erforderlich.
