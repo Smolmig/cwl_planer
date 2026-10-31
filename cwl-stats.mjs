@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.4";
+import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.5";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.0";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -6,7 +6,7 @@ const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 export function createCloudStats({sb,context,notify}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
-  let type="all",last=25,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
+  let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   function render(){
     const ctx=context(),view=$("view-stats");
@@ -23,10 +23,10 @@ export function createCloudStats({sb,context,notify}) {
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"≥"+summary.missesKnown:"–");
     $("statsSummary").innerHTML=[
-      ["Clan Hit Rate",pct(summary.hitRate)],
-      ["Angriffe erfasst",String(summary.attacks)],
-      ["Angriffe verpasst",label],
-      ["Beste Hit Rate",summary.best?pct(summary.best.hitRate):"–"]
+      ["3-Sterne-Quote",pct(summary.hitRate)],
+      ["Angriffe",String(summary.attacks)],
+      ["Nicht genutzt",label],
+      ["Beste 3-Sterne-Quote",summary.best?pct(summary.best.hitRate):"–"]
     ].map(([title,value])=>"<div class='stats-kpi'><span>"+esc(title)+"</span><strong>"+esc(value)+"</strong></div>").join("");
     const count=$("statsDataCount");
     const seasonDetails=$("statsSeasonDetails");
@@ -40,17 +40,27 @@ export function createCloudStats({sb,context,notify}) {
           ": "+days+" von 7 Kriegstagen gespeichert";
       }).join(" · ");
     }else{
-      if(count)count.textContent=summary.wars+" von "+
-        (type==="normal"?wars.filter(w=>w.war_type==="normal").length:summary.totalWars)+
-        (type==="normal"?" gespeicherten normalen CWs":" gespeicherten Kriegen")+
-        " · "+summary.attacks+" Angriffe";
-      if(seasonDetails)seasonDetails.textContent="";
+      const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
+      const normalDays=summary.wars-leagueDays;
+      if(type==="all"){
+        if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
+          " CWL-Kriegstage · "+summary.attacks+" Angriffe";
+        if(seasonDetails)seasonDetails.textContent="Berücksichtigt werden die letzten "+last+
+          " normalen Clankriege und bis zu 3 CWL-Saisons. Ältere Daten bleiben sicher gespeichert.";
+      }else{
+        if(count)count.textContent=summary.wars+" von "+
+          wars.filter(w=>w.war_type==="normal").length+
+          " gespeicherten normalen CWs · "+summary.attacks+" Angriffe";
+        if(seasonDetails)seasonDetails.textContent="Die zuletzt gespielten "+last+
+          " normalen Clankriege werden ausgewertet.";
+      }
     }
-    const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?summary.best.name+
-      " · "+summary.best.attacks+" Angriffe (mindestens 5)":"Mindestens 5 Angriffe erforderlich";
+    const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?
+      summary.best.name+" · "+summary.best.attacks+" Angriffe":
+      "Noch kein Spieler mit mindestens 5 Angriffen";
     const note=$("statsMissingNote");if(note)note.textContent=summary.complete?
-      "Verpasste Angriffe aus dem importierten Missed Log oder vollständigen Kriegsaufstellungen ermittelt. Der RH-Filter beeinflusst nur die Hit Rate.":
-      "≥ bedeutet: mindestens so viele verpasste Angriffe sind belegt. Der Missed-Export deckt normale CWs ab; historische CWL-Fehlangriffe bleiben unbekannt. – bedeutet nicht automatisch null. Der RH-Filter ändert Missed nicht.";
+      "Die Zahl nicht genutzter Angriffe stammt aus den erfassten Kriegsaufstellungen. Die 3-Sterne-Quote berücksichtigt nur tatsächlich ausgeführte Angriffe.":
+      "Bei einigen älteren Kriegen sind nicht alle fehlenden Angriffe bekannt. ≥ zeigt die mindestens nachgewiesene Anzahl, – bedeutet unbekannt. Die 3-Sterne-Quote zählt nur ausgeführte Angriffe, nicht Tage ohne Teilnahme.";
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
@@ -239,10 +249,12 @@ export function createCloudStats({sb,context,notify}) {
   function syncPeriodChoices(){
     const picker=$("statsRange"),periodLabel=$("statsPeriodLabel");
     if(!picker)return;
-    if(periodLabel)periodLabel.textContent=type==="cwl"?"CWL-Saisons":"Zeitraum";
+    if(periodLabel)periodLabel.textContent=type==="cwl"?"CWL-Saisons":type==="all"?"Normale CWs + CWL":"Zeitraum";
     const options=type==="cwl"?
       [["1","Letzte 1 CWL"],["2","Letzte 2 CWLs"],["3","Letzte 3 CWLs"],["all","Alle CWLs"]]:
-      [["10","Letzte 10 Kriege"],["25","Letzte 25 Kriege"],["50","Letzte 50 Kriege"]];
+      type==="all"?
+      [["10","10 CWs + 3 CWLs"],["25","25 CWs + 3 CWLs"],["50","50 CWs + 3 CWLs"]]:
+      [["10","Letzte 10 CWs"],["25","Letzte 25 CWs"],["50","Letzte 50 CWs"]];
     picker.replaceChildren(...options.map(([value,label])=>{
       const o=document.createElement("option");o.value=value;o.textContent=label;return o;
     }));
