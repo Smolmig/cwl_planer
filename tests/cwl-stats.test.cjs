@@ -122,7 +122,7 @@ test("Missed log is grouped by actual war and player, excluding unknown CWL miss
  const cross=structuredClone(history);cross.missed[0].war_key="cp:102";
  const cwEvent=validateHistoryFile(cross,history.clanTag);
  assert.equal(cwEvent.missed[0].war_key,"cp:102","A CWL missed event is valid partial evidence");
- assert.equal(cwEvent.wars[1].missed_log_complete,undefined);
+ assert.equal(cwEvent.wars[1].missed_log_complete,false,"Unknown CWL coverage must be explicitly false, not NULL");
  assert.throws(()=>validateHistoryFile(history,"#2JGC2J8VG"),/falscher Clan-Tag/);
 });
 test("New missed log table uses per-clan RLS with editor write and viewer read",()=>{
@@ -186,4 +186,27 @@ test("Logout removes cloud-only Statistics and returns to Plan",()=>{
  assert.ok(html.includes(".navinner{grid-template-columns:repeat(3,minmax(0,1fr));"));
  assert.match(sync,/async function leaveCloud\(\)\{[\s\S]*?toggle\("statsNav",false\)/);
  assert.match(sync,/document\.querySelector\('\.navbtn\[data-view="plan"\]'\)\?\.click\(\)/);
+});
+
+
+test("Historical import always produces a concrete boolean for every war",async()=>{
+ const {validateHistoryFile}=await load();
+ const history={kind:"cwl-stats-history",format:1,clanTag:"#99JP2RL2",
+   wars:[
+     {war_key:"cp:123",war_type:"normal",started_at:"2026-10-29T00:00:00Z",team_size:15,
+      missed_log_complete:true},
+     {war_key:"cp:124",war_type:"cwl",started_at:"2026-10-28T00:00:00Z",team_size:15,
+      missed_log_complete:false},
+     {war_key:"cp:125",war_type:"cwl",started_at:"2026-10-27T00:00:00Z",team_size:15}
+   ],attacks:[],missed:[]};
+ const result=validateHistoryFile(history,history.clanTag);
+ assert.deepEqual(result.wars.map(w=>w.missed_log_complete),[true,false,false]);
+ for(const w of result.wars){
+   assert.equal(typeof w.missed_log_complete,"boolean");
+   assert.notEqual(w.missed_log_complete,null);
+ }
+ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
+ assert.match(ui,/missed_log_complete:w\.missed_log_complete===true/);
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ assert.doesNotMatch(html,/<span class="badge ok">3★ Hit Rate<\/span>/);
 });
