@@ -48,10 +48,10 @@ test("Hit rate uses 3 stars/attacks and same-or-higher TH filter only counts eli
 });
 test("Historical missed attacks never display fake zeros and proven API lineups count misses",async()=>{
  const {computeWarStats}=await load();
- const w=[war("cwl:ok","cwl","2026-11-01T00:00:00Z",["#2PYL","#8PY"],true)];
+ const w=[{...war("cwl:ok","cwl","2026-11-01T00:00:00Z",["#2PYL","#8PY"],true),team_size:2}];
  const a=[attack("cwl:ok","#2PYL",3,18,18)];
  const stats=computeWarStats(w,a,{});
- assert.equal(stats.misses,14); // A standard 15-player CWL, 1 observed attack.
+ assert.equal(stats.misses,1); // Two roster positions, one observed attack.
  const absent=stats.rows.find(r=>r.tag==="#8PY");
  assert.equal(absent.missed,1);
  assert.equal(absent.attacks,0);
