@@ -115,3 +115,8 @@ Geplante Architektur:
 - 3-Sterne-Quote = nur 3-Sterne-Angriffe / nur tatsächlich ausgeführte Angriffe. Nicht eingeplant zu sein ist kein Fehlschlag; verpasste Angriffe werden separat aus belegten Listen und vollständigen Kriegsaufstellungen ausgewiesen.
 - Safari-Mitgliederabgleich: `scrollIntoView`-Fehler behoben. Zusätzliche Fehlermeldung, wenn die API nicht erreichbar ist. Übernahme weiterhin erst nach manueller Prüfung; CWL-Regeln bleiben bestehen.
 - Die Benutzertexte wurden aus Sicht eines neuen Clanleiters überarbeitet: einfache Erklärungen statt technischer Workflow-Hinweise. Regressionstests decken Rollenwechsel, normalen CW und Ausschnittsberechnung ab.
+
+
+## 31.10.2026 – Navigationseinstellungen v1.3.7
+
+Im Tab „Übersicht“ stehen jetzt nur noch inhaltliche Übersichten (CW, Einsatzverteilung, Archive). Über das Zahnrad neben dem Clannamen öffnet sich eine eigene Einstellungsseite für Profile, CWL-Grunddaten, Theme und lokale Sicherung. Der Bereich „Clan & Konto“ des verbundenen Cloud-Clans bleibt erhalten und ist von dort aus ebenfalls erreichbar. Kein zusätzlicher Bottom-Tab und keine Datenmigration.

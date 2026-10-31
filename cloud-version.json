@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.6",
+  "version": "v1.3.7",
   "released": "2026-10-31",
-  "summary": "Safari-Mitgliederabgleich mit aktualisierten Modulen, Offline-Cache-Fix, sicherem Zweitabruf und klarer Diagnose."
+  "summary": "Einstellungen und Profilverwaltung per Zahnrad neben der Clan-Auswahl statt in der Übersicht."
 }

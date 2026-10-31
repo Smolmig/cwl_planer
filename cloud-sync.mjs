@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.6";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.6";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.6";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.6";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.7";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.7";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.7";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.7";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -59,8 +59,8 @@ const cloud={
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
     "mobileOverviewToggle","cwlLiveRefresh","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
-    "exportProfileBtn","exportAllBtn"]);
-  for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select")){
+    "exportProfileBtn","exportAllBtn","settingsCloudManage"]);
+  for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select")){
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
     if(role==="viewer" && !keep.has(el.id) && !el.closest(".mobile-day-tabs") && !el.closest(".archive-list")){
       el.disabled=true;el.dataset.cloudDisabled="1";
@@ -1006,7 +1006,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.6";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.7";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
