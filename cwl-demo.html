@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>CWL Planer – sichere CWL-Simulation</title>
+<style>
+:root{color-scheme:dark;--bg:#0c1422;--card:#172336;--text:#eef5ff;--muted:#a3b1c4;--line:#34435b;--primary:#568aff;--green:#3edd93;--amber:#f0b34c;--surface:#111b2e}
+*{box-sizing:border-box}body{margin:0;padding:0 0 90px;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer}
+a{color:#9cbeff}h1{font-size:21px;margin:0}h2{font-size:17px;margin:0}h3{font-size:15px;margin:0}.app{max-width:1010px;margin:auto;padding:0 16px}
+.topbar{position:sticky;top:0;z-index:10;background:#111b2ef0;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 0 12px}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.subtitle,.statusline{color:var(--muted);font-size:12px}.badge{display:inline-block;padding:4px 8px;border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge.ok{color:#86efac;background:#123a30}.badge.warn{color:#fce1ac;background:#40301c}.badge.demo{color:#ffdfa1;background:#44351d;border:1px solid #eab35f}
+.card{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:17px;margin-top:13px;box-shadow:0 6px 18px #03091230}
+.demo-banner{padding:11px 13px;border-radius:11px;border:1px solid #8c6029;background:#302416;color:#ffe6b5;margin-top:14px}
+.demo-banner strong{display:block}.demo-banner small{color:#f8d69e}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn{border:1px solid var(--line);background:#1b2a42;color:var(--text);border-radius:9px;padding:9px 12px;min-height:38px}
+.btn.primary{background:#3160d9;color:#fff;border-color:#4477ef}.btn.small{padding:6px 10px;min-height:30px;font-size:12px}
+.btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.48;cursor:default}
+.controls label{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer}
+.controls input{accent-color:var(--primary)}.phase{font-size:14px;font-weight:700;margin:11px 0 4px}
+.tip{font-size:12px;color:var(--muted);margin:8px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.kpi{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:11px}
+.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{font-size:21px}
+.plan-overview .row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.plan-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.day-tabs{display:flex;gap:6px;overflow:auto;padding:13px 0 4px}
+.day-tab{flex:1 0 50px;min-width:50px;border:1px solid var(--line);background:#172438;color:var(--muted);border-radius:9px;padding:8px 6px;min-height:39px}
+.day-tab.active{color:#fff;background:#2b4d95;border-color:#568aff}.day-tab.played{color:#92e9bd}
+.day-head{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.day-title{font-size:17px;font-weight:750}.day-card.locked{border-color:#247653}
+.day-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}
+.player-chip{background:#111c2d;border:1px solid #34445e;border-radius:8px;padding:8px 9px}
+.player-chip .player-meta{color:var(--muted);display:block;font-size:11px}
+.change-row{color:var(--muted);font-size:12px;margin-top:10px}
+.day-card.mobile-day-hidden{display:none}
+.cwl-live-overview{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.cwl-live-overview[hidden]{display:none}
+.cwl-live-day{margin:10px 0 4px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:13px}
+.cwl-live-header{display:flex;gap:12px;justify-content:space-between;align-items:center}
+.cwl-live-header small{color:var(--muted)}
+.cwl-live-label{display:inline-block;font-size:11px;letter-spacing:.025em;color:var(--muted);margin-bottom:3px}
+.cwl-live-ths{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
+.cwl-live-th{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:7px;padding:3px 7px}
+.cwl-live-details{margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
+.cwl-live-details summary{cursor:pointer;font-weight:600}
+.cwl-live-attack{display:flex;gap:10px;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.cwl-live-attack:last-child{border-bottom:0}
+.cwl-live-attack small{font-size:11px;color:var(--muted)}
+.cwl-live-attack strong{white-space:nowrap}
+.cwl-live-attack span{min-width:0}
+.notice{margin-top:12px;color:var(--muted);font-size:12px}
+#demoMessage{color:#8ae9b9;min-height:22px;font-weight:600;margin-top:10px}
+[hidden]{display:none!important}
+@media(max-width:699px){.toprow{align-items:flex-start}.lineup{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:13px}.controls>.btn{flex:1 1 130px}.day-card{padding:13px}.cwl-live-attack{font-size:12px}}
+@media(max-width:360px){.lineup{grid-template-columns:1fr}.cwl-live-header{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="app toprow">
+ <div><h1>⚔️ CWL Planer</h1><div class="subtitle">Interaktive Vorschau der Live-CWL-Funktionen aus v1.2.0</div></div>
+ <span class="badge demo">SIMULATION</span>
+</div></header>
+<div class="app">
+ <div class="demo-banner" role="note"><strong>🧪 Geschützte Testumgebung</strong>
+ <small>Alle Clans, Spieler, RH-Aufstellungen und Angriffe sind erfunden. Diese Seite verwendet die echte CWL-Anzeige und den Tagesabschluss-Code, aber keine Anmeldung, keine Clash-API, kein Supabase und keine gespeicherten Clan-Daten. Nach dem Schließen ist die Simulation weg.</small></div>
+ <section class="card" aria-label="CWL-Simulation steuern">
+  <div class="toprow"><h2>7 Kriegstage durchspielen</h2><span id="phaseBadge" class="badge warn">Vorbereitung</span></div>
+  <div class="phase" id="demoPhase">Tag 1 / 7 · Vorbereitung</div>
+  <p class="statusline">Mit „Nächste Phase“ beginnt ein Krieg, danach endet er. Beim Kriegsende übernimmt derselbe Code wie in der Cloud-App das tatsächliche Line-up.</p>
+  <div class="controls">
+   <button id="demoNext" class="btn primary" type="button">⚔ Krieg starten</button>
+   <button id="demoAll" class="btn" type="button">⏩ Alle 7 Tage simulieren</button>
+   <button id="demoReset" class="btn" type="button">↺ Zurücksetzen</button>
+  </div>
+  <div class="controls">
+   <label><input id="demoNoCwl" type="checkbox"> Keine CWL simulieren</label>
+   <label><input id="demoError" type="checkbox"> API-Ausfall simulieren</label>
+  </div>
+  <div class="tip">Ein API-Ausfall darf keine geplanten oder bereits gespielten Tage überschreiben. „Keine CWL“ zeigt, wie der Planer ohne Ligadaten weiter funktioniert.</div>
+  <div id="demoMessage" role="status" aria-live="polite"></div>
+  <div class="kpis" aria-label="Simulationsfortschritt">
+   <div class="kpi"><span>Tage abgeschlossen</span><b id="demoCompleted">0 / 7</b></div>
+   <div class="kpi"><span>Bestätigte Aufstellungen</span><b id="demoLineups">0</b></div>
+   <div class="kpi"><span>Spieler im Testkader</span><b id="demoRoster">22</b></div>
+   <div class="kpi"><span>API-Modus</span><b id="demoApiState">Demo</b></div>
+  </div>
+ </section>
+ <main id="view-plan">
+  <section class="card plan-overview">
+   <div class="row"><div><h2>Plan · Demo Fighters</h2><div class="statusline">15 vs. 15 · Musterrotation mit 22 Spielern</div></div>
+   <span class="badge demo">TESTDATEN</span></div>
+   <div class="plan-actions">
+     <button id="demoViewAll" class="btn small" type="button">Alle Tage</button>
+     <button id="demoViewOne" class="btn small" type="button">Einzelansicht</button>
+   </div>
+  </section>
+  <nav id="demoDayTabs" class="day-tabs" aria-label="Kriegstag auswählen"></nav>
+  <div id="planDays"></div>
+ </main>
+ <p class="notice">Testseite: <a href="./cloud-app.html">Zur echten Cloud-App</a> · Es werden ausschließlich simulierte Daten verwendet. Die Vorschau garantiert noch nicht die Verfügbarkeit zukünftiger Gegner in der echten Supercell-API.</p>
+</div>
+<script type="module">
+import {createCwlLive} from "./cwl-live.mjs";
+import {freshDemoProfile,demoResponse,advanceDemo,demoStageLabel,DEMO_CLAN_TAG,DEMO_MEMBERS} from "./cwl-demo-data.mjs";
+const $=id=>document.getElementById(id);
+const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let profile=freshDemoProfile();
+let sim={day:1,phase:"preparation",active:true,apiFails:false,baseTime:Date.now()};
+let selected=0,viewAll=true,refreshCount=0;
+const sb={functions:{async invoke(name,{body}={}){
+  if(name!=="coc-cwl-status"||body?.clanId!=="fictional-demo")
+    throw Error("Unsupported demo request");
+  if(sim.apiFails)return {data:null,error:{message:"Simulierter API-Ausfall"}};
+  return {data:demoResponse(sim,sim.baseTime),error:null};
+}}};
+const storage={
+ getProfile:()=>profile,
+ newMember:name=>({id:"demo-history-"+(++refreshCount),name,threeStar:"unknown"}),
+ rerender:()=>renderAll()
+};
+const live=createCwlLive({
+ sb,storage,notify:message=>{$("demoMessage").textContent=message},
+ context:()=>({active:true,clanId:"fictional-demo",hasClanTag:true,role:"owner",
+   profile,canApply:true})
+});
+function plannedIds(day){
+ if(profile.locks[day]?.locked)return profile.locks[day].lineup||[];
+ const roster=profile.members;
+ // Only a visual example of an unplayed plan; actual API lineups replace it on completion.
+ const uses=new Map(roster.map(m=>[m.id,0]));
+ profile.locks.forEach(l=>{if(l.locked)l.lineup.forEach(id=>uses.set(id,(uses.get(id)||0)+1))});
+ return [...roster].sort((a,b)=>uses.get(a.id)-uses.get(b.id)||
+   ((Number(a.id.slice(-2))*17+day*13)%97)-((Number(b.id.slice(-2))*17+day*13)%97))
+   .slice(0,15).map(m=>m.id);
+}
+function renderAll(){
+ const root=$("planDays");
+ const all=[...profile.members,...profile.archivedMembers];
+ const lookup=new Map(all.map(m=>[m.id,m]));
+ root.innerHTML=Array.from({length:7},(_,d)=>{
+  const lock=profile.locks[d],ids=plannedIds(d),names=ids.map(id=>lookup.get(id)).filter(Boolean);
+  return '<article class="card day-card'+(lock.locked?' locked':'')+(!viewAll&&d!==selected?' mobile-day-hidden':'')+
+    '" id="day-card-'+d+'"><div class="day-head"><div><div class="day-title">Tag '+(d+1)+
+    '</div><div class="statusline">'+ids.length+'/15 Spieler · '+
+    (lock.locked?'tatsächlich eingesetzt':'Beispielplanung, noch nicht bestätigt')+
+    '</div></div><div class="day-status"><span class="badge '+(lock.locked?'ok':'warn')+'">'+
+    (lock.locked?'✓ GESPIELT':'GEPLANT')+'</span></div></div>'+
+    '<div class="lineup">'+names.map(m=>'<div class="player-chip"><b>'+escapeHtml(m.name)+
+    '</b><span class="player-meta">RH '+escapeHtml(m.townHall||"?")+
+    (lock.locked?' · API bestätigt':' · geplant')+'</span></div>').join('')+'</div>'+
+    (lock.locked?'<div class="change-row">🔒 Automatisch abgeschlossen · Kriegs-Tag '+escapeHtml(lock.warTag||"")+'</div>':'')+
+    '</article>';
+ }).join("");
+ $("demoDayTabs").innerHTML=Array.from({length:7},(_,d)=>
+  '<button type="button" class="day-tab'+(selected===d?' active':'')+
+  (profile.locks[d]?.locked?' played':'')+'" data-day="'+d+'" aria-pressed="'+(d===selected)+
+  '">Tag '+(d+1)+(profile.locks[d]?.locked?' ✓':'')+'</button>').join("");
+ $("demoDayTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  selected=Number(b.dataset.day);viewAll=false;renderAll();
+ });
+ $("demoCompleted").textContent=profile.locks.filter(l=>l.locked).length+" / 7";
+ $("demoLineups").textContent=profile.locks.filter(l=>l.locked).length;
+ $("demoRoster").textContent=profile.members.length;
+ $("demoApiState").textContent=sim.apiFails?"Fehler":sim.active?"Demo":"Aus";
+ live.render();
+}
+function controlState(){
+ const ended=sim.phase==="warEnded"&&sim.day===7;
+ $("demoPhase").textContent=demoStageLabel(sim);
+ $("phaseBadge").textContent=!sim.active?"Keine CWL":ended?"Abgeschlossen":
+   {preparation:"Vorbereitung",inWar:"Läuft",warEnded:"Beendet"}[sim.phase];
+ $("phaseBadge").className="badge "+(ended?"ok":"warn");
+ $("demoNext").disabled=!sim.active||sim.apiFails||ended;
+ $("demoAll").disabled=!sim.active||sim.apiFails||ended;
+ $("demoNext").textContent=sim.phase==="preparation"?"⚔ Krieg starten":
+   sim.phase==="inWar"?"✓ Krieg beenden":sim.day<7?"→ Zu Tag "+(sim.day+1):"Alle Tage abgeschlossen";
+ $("demoNoCwl").checked=!sim.active;
+ $("demoError").checked=sim.apiFails;
+}
+async function update(){
+ controlState();renderAll();await live.refresh();renderAll();controlState();
+}
+$("demoNext").onclick=async()=>{
+ if(!sim.active||sim.apiFails)return;
+ advanceDemo(sim);selected=sim.day-1;
+ $("demoMessage").textContent="";
+ await update();
+};
+$("demoAll").onclick=async()=>{
+ if(!sim.active||sim.apiFails)return;
+ let attempts=0;
+ while(!(sim.day===7&&sim.phase==="warEnded")&&attempts++<22){
+   advanceDemo(sim);await live.refresh();
+ }
+ selected=6;controlState();renderAll();
+ $("demoMessage").textContent="✓ Alle sieben simulierten Kriegstage durchgespielt.";
+};
+$("demoReset").onclick=async()=>{
+ profile=freshDemoProfile();
+ sim={day:1,phase:"preparation",active:true,apiFails:false,baseTime:Date.now()};
+ selected=0;viewAll=true;refreshCount=0;
+ $("demoMessage").textContent="Simulation zurückgesetzt. Keine echten Daten geändert.";
+ live.stop();live.start();controlState();renderAll();
+};
+$("demoNoCwl").onchange=async e=>{sim.active=!e.target.checked;await update()};
+$("demoError").onchange=async e=>{sim.apiFails=e.target.checked;await update()};
+$("demoViewAll").onclick=()=>{viewAll=true;renderAll()};
+$("demoViewOne").onclick=()=>{viewAll=false;renderAll()};
+renderAll();controlState();live.start();
+</script>
+</body>
+</html>
