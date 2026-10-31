@@ -1,0 +1,40 @@
+name: Publish official Cloud release
+on:
+  workflow_run:
+    workflows: [CWL Planer regression]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Create official version tag and release if missing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./cloud-version.json').version")"
+          [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "No stable SemVer version – skipping release"; exit 0;
+          }
+          grep -Fq "const APP_VERSION=\"$VERSION\"" cloud-app.html || {
+            echo "::error::Cloud HTML and version manifest disagree"; exit 1;
+          }
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $VERSION exists; nothing to do"
+          else
+            gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$SHA" \
+              --title "CWL Planer Cloud $VERSION" \
+              --notes "Offizieller Cloud-Planer: gemeinsame Clanführung, verschlüsselte Backups mit Restore-Test und optionale CWL-Gegner-/Angriffsdaten. Die separate Offline-PWA bleibt v1.0.2. Details, API-Grenzen und Prüfhinweise: CHANGELOG.md und docs/CLOUD_ROADMAP_CWL_STATS.md."
+          fi
