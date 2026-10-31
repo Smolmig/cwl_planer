@@ -153,3 +153,38 @@ test("Server-side CWL API maps official war stars, image URLs, and group fallbac
  assert.match(proxy,/groupClans/);
  assert.match(proxy,/hostname==="api-assets\.clashofclans\.com"/);
 });
+
+
+test("Live attack rows prioritize open attacks only during battle and retain target RH",async()=>{
+ const {sanitizeSnapshot,cwlAttackRows}=await load();
+ const data=snapshot();
+ data.rounds[0].state="inWar";
+ // Alpha has one 3-star attack against a known RH20 opponent; Bravo is open.
+ let round=sanitizeSnapshot(data).rounds[0];
+ let rows=cwlAttackRows(round);
+ assert.equal(rows.length,2);
+ assert.equal(rows[0].player.name,"Bravo");
+ assert.equal(rows[0].attack,null);
+ assert.equal(rows[1].player.name,"Alpha");
+ assert.equal(rows[1].attack.stars,3);
+ assert.equal(rows[1].attack.destructionPercentage,100);
+ assert.equal(rows[1].target.name,"Gegner A");
+ assert.equal(rows[1].target.townHallLevel,20);
+ data.rounds[0].state="warEnded";
+ round=sanitizeSnapshot(data).rounds[0];
+ rows=cwlAttackRows(round);
+ assert.deepEqual(rows.map(x=>x.player.name),["Alpha","Bravo"]);
+});
+test("Unknown targets and multiple attacks are displayed separately, without guesswork",async()=>{
+ const {sanitizeSnapshot,cwlAttackRows}=await load();
+ const data=snapshot();
+ data.rounds[0].clan.members[0].attacks.push({
+   attackerTag:"#2PYL",defenderTag:"#PGV",stars:2,destructionPercentage:82
+ });
+ const rows=cwlAttackRows(sanitizeSnapshot(data).rounds[0]);
+ assert.equal(rows.length,3);
+ assert.equal(rows[0].attack.stars,3);
+ assert.equal(rows[1].attack.stars,2);
+ assert.equal(rows[1].target,null);
+ assert.equal(rows[2].player.name,"Bravo");
+});
