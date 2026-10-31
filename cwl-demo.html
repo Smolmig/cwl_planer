@@ -119,8 +119,8 @@ a{color:#9cbeff}h1{font-size:21px;margin:0}h2{font-size:17px;margin:0}h3{font-si
  <p class="notice">Testseite: <a href="./cloud-app.html">Zur echten Cloud-App</a> · Es werden ausschließlich simulierte Daten verwendet. Die Vorschau garantiert noch nicht die Verfügbarkeit zukünftiger Gegner in der echten Supercell-API.</p>
 </div>
 <script type="module">
-import {createCwlLive} from "./cwl-live.mjs";
-import {freshDemoProfile,demoResponse,advanceDemo,demoStageLabel,DEMO_CLAN_TAG,DEMO_MEMBERS} from "./cwl-demo-data.mjs";
+import {createCwlLive} from "./cwl-live.mjs?v=1.2.1";
+import {freshDemoProfile,demoResponse,advanceDemo,demoStageLabel,DEMO_CLAN_TAG,DEMO_MEMBERS} from "./cwl-demo-data.mjs?v=1.2.1";
 const $=id=>document.getElementById(id);
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let profile=freshDemoProfile();
