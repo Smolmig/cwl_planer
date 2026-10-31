@@ -1,6 +1,12 @@
 name: Test encrypted DB restore (isolated)
 
 on:
+  # After an encrypted backup completes, automatically verify its artifact.
+  # The job itself runs only for successful backups from this repo on main.
+  workflow_run:
+    workflows: [Encrypted Supabase backup]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       backup_run_id:
@@ -15,6 +21,7 @@ permissions:
 
 jobs:
   restore-check:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -25,7 +32,8 @@ jobs:
       - name: Download encrypted artifact (never access production database)
         env:
           GH_TOKEN: ${{ github.token }}
-          BACKUP_RUN_ID: ${{ inputs.backup_run_id }}
+          # Auto: download artifact from triggering backup. Manual: use chosen run ID.
+          BACKUP_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.backup_run_id }}
         shell: bash
         run: |
           set -euo pipefail
