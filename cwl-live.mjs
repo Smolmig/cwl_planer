@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl } from "./cwl-live-core.mjs?v=1.2.1";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows } from "./cwl-live-core.mjs?v=1.2.2";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -40,6 +40,7 @@ export function createCwlLive({sb,context,storage,notify}) {
     return diff>=0&&diff<=1?prior:null;
   };
   function renderDay(round,dayCard,profile) {
+    const wasOpen=!!dayCard.querySelector(".cwl-live-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
     const section=document.createElement("section");
     section.className="cwl-live-day";
@@ -51,15 +52,33 @@ export function createCwlLive({sb,context,storage,notify}) {
     const own=round.clan?.members||[],enemy=round.opponent?.members||[];
     const opponentMap=new Map(enemy.map(m=>[tagOf(m.tag),m]));
     const attacks=own.reduce((sum,m)=>sum+(m.attacks?.length||0),0);
-    const players=own.map(m=>{
-      const at=m.attacks?.[0];
-      const target=at?opponentMap.get(tagOf(at.defenderTag)):null;
-      const score=at?esc(String(at.stars))+"★ · "+esc(String(at.destructionPercentage))+" %":
-        round.state==="preparation"?"–":"Noch kein Angriff";
-      return "<div class='cwl-live-attack'><span><b>"+esc(m.name)+"</b> <small>RH"+esc(m.townHallLevel||"?")+
-        (target?" → "+esc(target.name)+" (RH"+esc(target.townHallLevel||"?")+")":"")+
-        "</small></span><strong>"+score+"</strong></div>";
-    }).join("");
+    const missing=own.filter(m=>!m.attacks?.length).length;
+    const attackRows=cwlAttackRows(round);
+    const players=round.state==="preparation"
+      ?"<div class='cwl-live-attack-empty'>Die Angriffe erscheinen mit Kriegsbeginn.</div>"
+      :attackRows.map(({player,attack,target})=>{
+        const didAttack=!!attack;
+        const stars=didAttack?attack.stars:null;
+        const starIcons=didAttack?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";
+        const targetName=target?.name||"Ziel unbekannt";
+        const targetLevel=target?.townHallLevel??null;
+        return "<div class='cwl-live-attack"+(didAttack?"":" pending")+"'>"+
+          "<div class='cwl-live-attack-result'>"+
+          "<span class='cwl-live-stars"+(didAttack?"":" no-attack")+"' aria-label='"+
+          (didAttack?stars+" von 3 Sternen":"Noch nicht angegriffen")+"'>"+
+          starIcons+"</span>"+
+          "<span class='cwl-live-percent"+(didAttack?"":" no-attack")+"'>"+
+          (didAttack?pctText(attack.destructionPercentage):"–")+"</span></div>"+
+          "<div class='cwl-live-fight'><div class='cwl-live-player'>"+
+          "<span class='cwl-live-rh'>RH"+esc(player.townHallLevel??"?")+"</span>"+
+          "<b>"+esc(player.name)+"</b></div>"+
+          (didAttack?"<div class='cwl-live-target'><span class='cwl-live-vs'>vs</span>"+
+            "<span class='cwl-live-rh'>RH"+esc(targetLevel??"?")+"</span>"+
+            "<span>"+esc(targetName)+"</span></div>"
+            :"<div class='cwl-live-attack-pending'>"+(round.state==="warEnded"?
+              "Kein Angriff erfasst":"Angriff offen")+"</div>")+
+          "</div></div>";
+      }).join("");
     const ownScore=scoreText(round.clan?.stars),enemyScore=scoreText(round.opponent?.stars);
     const destruct=round.clan?.destructionPercentage!==null&&round.clan?.destructionPercentage!==undefined&&
       round.opponent?.destructionPercentage!==null&&round.opponent?.destructionPercentage!==undefined
@@ -78,7 +97,9 @@ export function createCwlLive({sb,context,storage,notify}) {
       destruct+"<div class='cwl-live-ths'>"+townHallSummary(enemy)+"</div>"+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":"")+"</div>"+
-      "<details class='cwl-live-details'><summary>Spieler und Angriffe anzeigen</summary>"+
+      "<details class='cwl-live-details'"+(wasOpen?" open":"")+"><summary>Spieler und Angriffe anzeigen"+
+      "<span class='cwl-live-attack-count'>"+(round.state==="preparation"?"Bereit":missing+" offen · "+(own.length-missing)+" erledigt")+
+      "</span></summary>"+
       (players||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>";
     section.querySelectorAll("img.cwl-live-badge").forEach(img=>{
       img.addEventListener("error",()=>{
