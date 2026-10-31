@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.2",
+  "version": "v1.3.3",
   "released": "2026-10-31",
-  "summary": "CWL-Missed-Attacks korrekt als bekannte Mindestanzahl, vier gleich breite untere Tabs und Logout-Rückkehr zum Plan."
+  "summary": "Statistik-Historienimport: fehlende Missed-Log-Abdeckung wird als false gesendet; redundantes Hit-Rate-Badge entfernt."
 }
