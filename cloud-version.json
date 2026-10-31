@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.0-alpha.9",
-  "released": "2026-10-30",
-  "summary": "Cloud-Wiederherstellungspunkte, verschlüsselte Datenbank-Backups vorbereitet und schnellere lokale Speicherung."
+  "version": "v1.2.0",
+  "released": "2026-10-31",
+  "summary": "Offizieller Cloud-Stand mit optionaler CWL-Live-Gegneransicht, RH-Verteilung, Angriffsstatistik und geprüftem API-Tagesabschluss."
 }
