@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.2";
+import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.3";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.0";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -105,7 +105,8 @@ export function createCloudStats({sb,context,notify}) {
       notice("Import: Kriege speichern …");
       for(const batch of chunks(parsed.wars,80)){
         if(context().clanId!==id)throw Error("Clan wurde gewechselt; Import abgebrochen.");
-        const {error}=await sb.from("cwl_stat_wars").upsert(batch.map(w=>({...w,clan_id:id})),
+        const {error}=await sb.from("cwl_stat_wars").upsert(
+          batch.map(w=>({...w,clan_id:id,missed_log_complete:w.missed_log_complete===true})),
           {onConflict:"clan_id,war_key"});if(error)throw error;
       }
       let done=0;
