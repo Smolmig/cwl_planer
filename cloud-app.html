@@ -1013,10 +1013,10 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.2.0</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.2.1</strong><span>Cloud-Update</span></div>
       <ul>
         <li><b>Offizielle Cloud-Version:</b> Gemeinsamer Planer mit Mitgliedern, Einladungen und Sicherungspunkten.</li>
-        <li><b>CWL-Live:</b> Bekannte Gegner, RH-Verteilung und tatsächliche Angriffe mit Sternen direkt bei jedem Kriegstag.</li>
+        <li><b>CWL-Live:</b> Offizielle Kriegssterne groß als Spielstand zwischen beiden Clanwappen; Gegner, RH-Verteilung und Angriffe weiterhin pro Tag sichtbar.</li>
         <li><b>Automatischer Abschluss:</b> Beendete API-Kriege werden nach sicherem Abgleich mit den tatsächlich eingesetzten Spielern bestätigt, sobald die Cloud-App geöffnet ist.</li>
         <li><b>Weiterhin manuell:</b> Ohne CWL oder bei fehlenden API-Daten funktioniert die gewohnte Planung unverändert.</li>
       </ul>
@@ -1212,7 +1212,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.2.0";
+const APP_VERSION="v1.2.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1683,6 +1683,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.2.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.2.1"></script>
 </body>
 </html>
