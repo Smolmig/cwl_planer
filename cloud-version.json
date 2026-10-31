@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.0",
+  "version": "v1.3.1",
   "released": "2026-10-31",
-  "summary": "Neuer privater Clan-Statistik-Tab mit CW/CWL-Hit-Rate, Spielern, Filtern und historischem JSON-Import."
+  "summary": "Historische Missed-Attacks-Logs im privaten Clan-Statistik-Tab mit korrekter CWL-Datenlückenkennzeichnung."
 }
