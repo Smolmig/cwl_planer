@@ -109,3 +109,8 @@ test("Cloud only: server endpoint is authenticated and app retains local planner
  assert.match(cloud,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
  assert.match(guest,/const APP_VERSION="v1\.0\.2";/);
 });
+
+test("CWL presentation module parses and exports the live UI factory",async()=>{
+ const live=await import(pathToFileURL(path.join(root,"cwl-live.mjs")).href);
+ assert.equal(typeof live.createCwlLive,"function");
+});
