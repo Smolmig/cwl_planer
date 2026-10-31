@@ -862,6 +862,18 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .cwl-live-attack:last-child{border-bottom:0}
 .cwl-live-attack small{font-size:11px;color:var(--muted)}
 .cwl-live-attack strong{white-space:nowrap}
+
+/* Official Clash war scoreboard. Clan images come from validated Supercell CDN URLs. */
+.cwl-live-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:9px;align-items:center;margin:10px 0 11px;min-width:0}
+.cwl-live-side{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;min-width:0}
+.cwl-live-badge,.cwl-live-badge-placeholder{display:flex;width:46px;height:46px;object-fit:contain;justify-content:center;align-items:center;font-size:34px;line-height:1}
+.cwl-live-clan-name{font-size:12px;line-height:1.25;font-weight:750;overflow-wrap:anywhere;max-width:100%}
+.cwl-live-score-middle{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:91px}
+.cwl-live-score{display:flex;align-items:baseline;gap:5px;font-size:clamp(25px,5vw,36px);line-height:1.15;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cwl-live-score-colon{font-size:.72em;color:var(--muted);font-weight:500}
+.cwl-live-score-caption{font-size:10px;letter-spacing:.02em;color:var(--muted)}
+.cwl-live-score-detail{text-align:center;font-size:11px;color:var(--muted);margin-top:-3px;margin-bottom:4px}
+@media(max-width:370px){.cwl-live-scoreboard{gap:4px}.cwl-live-badge,.cwl-live-badge-placeholder{width:36px;height:36px;font-size:27px}.cwl-live-score{font-size:26px;gap:3px}.cwl-live-score-middle{min-width:72px}.cwl-live-clan-name{font-size:11px}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
