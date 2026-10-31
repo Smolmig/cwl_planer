@@ -21,7 +21,10 @@ export function validateHistoryFile(input,expectedTag){
     return {war_key:w.war_key,war_type:w.war_type,started_at:w.started_at,
       team_size:w.team_size,opponent_tag:String(w.opponent_tag||"").slice(0,30),
       opponent_name:String(w.opponent_name||"").slice(0,80),
-      source:"import",roster_tags:null,finalized:false};
+      source:"import",roster_tags:null,finalized:false,
+      // PostgREST bulk upsert sends absent booleans as NULL. This column is
+      // NOT NULL in Supabase and cannot rely on the SQL DEFAULT here.
+      missed_log_complete:false};
   });
   const attacks=input.attacks.map(a=>{
     const key=[a.war_key,cleanTag(a.attacker_tag),a.attack_order].join("/");
