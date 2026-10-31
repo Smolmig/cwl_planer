@@ -54,9 +54,27 @@ async function getGame(path,key) {
   if(!r.ok)throw Error("supercell_status_"+r.status);
   return r.json();
 }
+async function currentNormalWar(clanTag,key) {
+  try{
+    const war=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar",key);
+    if(!war || !["preparation","inWar","warEnded"].includes(war.state) ||
+       !Number.isInteger(war.teamSize) || war.teamSize<1 || war.teamSize>50)return null;
+    const our=tag(war.clan?.tag)===clanTag?war.clan:
+      tag(war.opponent?.tag)===clanTag?war.opponent:null;
+    const enemy=our===war.clan?war.opponent:war.clan;
+    if(!our || !enemy)return null;
+    return {state:war.state,teamSize:war.teamSize,
+      attacksPerMember:Number.isInteger(war.attacksPerMember)?war.attacksPerMember:2,
+      preparationStartTime:String(war.preparationStartTime||""),
+      startTime:String(war.startTime||""),endTime:String(war.endTime||""),
+      clan:safeSide(our),opponent:safeSide(enemy)};
+  }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
+}
 async function loadStatus(clanTag,key) {
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
-  if(!group || group.state==="notInWar")return {ok:true,active:false,clanTag,rounds:[]};
+  if(!group || group.state==="notInWar")return {
+    ok:true,active:false,clanTag,rounds:[],currentWar:await currentNormalWar(clanTag,key)
+  };
   const season=String(group.season||"");
   if(!/^\d{4}-\d{2}$/.test(season)||!Array.isArray(group.rounds))
     throw Error("unexpected_group_response");
