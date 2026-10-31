@@ -1,7 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.4";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.4";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.4";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.5";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.5";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.5";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.5";
 
 const sb=createClient("https://yjldnvfwposfwmzmcsow.supabase.co",
  "sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy",
@@ -77,11 +78,19 @@ const stats=createCloudStats({
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
   memberTags:storage.getProfile()?.members?.map(m=>m.playerTag).filter(Boolean)||[]})
 });
+let currentWarOverview=null;
 const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
- onSnapshot:data=>stats.captureCwl(data),
+ onSnapshot:data=>{
+  currentWarOverview?.update(data);
+  return stats.captureCwl(data);
+ },
  context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+});
+currentWarOverview=createCurrentWarOverview({
+ context:()=>({active:cloud.active,clanId,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag}),
+ refresh:()=>live.refresh()
 });
 /* Delegate to the persistent list, not individual cards. Search, filters and
    expanding a card re-create card DOM without re-running the cloud bootstrap. */
@@ -130,7 +139,7 @@ function error(e){msg(e?.message||String(e),true);
  if($("cloudRosterBox")&&!$("cloudRosterBox").hidden){
   text("cloudRosterStatus",e?.message||String(e));$("cloudRosterStatus").classList.add("error")
  }
- console.warn("Cloud alpha:",e)}
+ console.warn("Cloud Planner:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
@@ -212,7 +221,7 @@ async function leaveCloud(){
  toggle("statsNav",false);
  document.querySelector('.navbtn[data-view="plan"]')?.click();
  clearTimeout(debounce);
- live.stop();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
+ live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
@@ -243,7 +252,7 @@ async function listClans(epoch=accountEpoch,selected){
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
  clearTimeout(debounce);
- live.stop();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
+ live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
@@ -603,7 +612,7 @@ async function getRoster(){
  await ensureSaved();
  resetRoster();toggle("cloudRosterBox",true);
  const status=$("cloudRosterStatus");status.textContent="Clanmitglieder werden verglichen …";status.classList.remove("error");
- $("cloudRosterBox").scrollIntoView({behavior:"nearest",block:"nearest"});
+ $("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
  const {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
  if(err){
    let reason=err.message||"unknown_error";
@@ -883,8 +892,20 @@ bind("cloudCopyInvite","click",async()=>{
  storage.toast("✓ Einladungslink kopiert");
  
 });
-bind("cloudFetchRoster","click",getRoster);bind("cloudApplyRoster","click",applyRoster);
-bind("cloudMembersSyncBtn","click",getRoster);
+async function safeRosterRefresh(){
+ try{await getRoster()}catch(err){
+  const status=$("cloudRosterStatus");
+  if(status){
+   status.textContent=err instanceof TypeError?
+     "Die Mitglieder konnten nicht geladen werden. Bitte die Seite neu laden und erneut versuchen.":
+     (err?.message||"Die Mitglieder konnten nicht abgerufen werden. Bitte erneut versuchen.");
+   status.classList.add("error");
+  }
+  throw err;
+ }
+}
+bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
+bind("cloudMembersSyncBtn","click",safeRosterRefresh);
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
@@ -935,7 +956,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.4";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.5";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
