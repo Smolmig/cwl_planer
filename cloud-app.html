@@ -943,6 +943,23 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
 .stats-season-details{font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+
+/* Current normal clan war: optional read-only card in Overview. */
+#currentWarCard[hidden]{display:none!important}
+.cw-now-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:10px 0}
+.cw-now-clan{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;overflow-wrap:anywhere;font-size:12px}
+.cw-now-badge,.cw-now-shield{width:40px;height:40px;object-fit:contain;display:flex;align-items:center;justify-content:center;font-size:28px}
+.cw-now-score{font-size:clamp(24px,5vw,35px);font-weight:800;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;white-space:nowrap;max-width:136px}
+.cw-now-score>span{color:var(--muted)}
+.cw-now-score small{width:100%;text-align:center;font-size:10px;color:var(--muted);font-weight:500}
+.cw-now-meta{display:flex;justify-content:center;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--muted);text-align:center;padding:8px 0}
+.cw-now-details{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+.cw-now-details summary{font-weight:700;cursor:pointer;font-size:12px}
+.cw-now-player{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+.cw-now-player>span:last-child{text-align:right;max-width:60%}
+.cw-now-player small{color:var(--muted)}
+.cw-now-stars{color:#e7ad32}
+@media(max-width:360px){.cw-now-head{gap:4px}.cw-now-score{font-size:24px}.cw-now-clan{font-size:11px}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1063,6 +1080,13 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
   </div>
 </section>
 <section id="view-summary" class="view">
+  <div class="card cw-now-card" id="currentWarCard" hidden>
+    <div class="section-title">
+      <div><h3>Aktueller Clankrieg</h3><div class="statusline">Spielstand und Angriffe deines Clans</div></div>
+      <button class="btn small" type="button" id="currentWarRefresh">↻ Aktualisieren</button>
+    </div>
+    <div id="currentWarContent"></div>
+  </div>
   <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
@@ -1082,12 +1106,12 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.3.4</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.3.5</strong><span>Cloud-Update</span></div>
       <ul>
-        <li><b>Offizielle Cloud-Version:</b> Gemeinsamer Planer mit Mitgliedern, Einladungen und Sicherungspunkten.</li>
-        <li><b>CWL-Statistik:</b> Auswertung nach 1, 2, 3 oder allen CWL-Saisons statt einer verwirrenden Anzahl einzelner Kriegstage. Enthaltene Monate und Kriegsanzahl werden angezeigt.</li>
-        <li><b>Automatischer Abschluss:</b> Beendete API-Kriege werden nach sicherem Abgleich mit den tatsächlich eingesetzten Spielern bestätigt, sobald die Cloud-App geöffnet ist.</li>
-        <li><b>Weiterhin manuell:</b> Ohne CWL oder bei fehlenden API-Daten funktioniert die gewohnte Planung unverändert.</li>
+        <li><b>Gemeinsam planen:</b> Die Clanführung kann Mitglieder, Kriegsaufstellungen und Regeln zusammen verwalten.</li>
+        <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
+        <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
+        <li><b>Planung bleibt flexibel:</b> Auch ohne laufende CWL kannst du Mitglieder einteilen und Aufstellungen vorbereiten.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1099,18 +1123,18 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
-    <div class="section-title"><div><h3>Clankrieg-Statistik</h3><div class="statusline">Angriffe aus CW und CWL · geschütztes Clanarchiv</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <div class="section-title"><div><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel" for="statsRange">Zeitraum</label><select id="statsRange"><option value="10">Letzte 10 Kriege</option><option value="25" selected>Letzte 25 Kriege</option><option value="50">Letzte 50 Kriege</option></select></div>
+      <div class="field"><label id="statsPeriodLabel" for="statsRange">Normale CWs + CWL</label><select id="statsRange"><option value="10">10 CWs + 3 CWLs</option><option value="25">25 CWs + 3 CWLs</option><option value="50" selected>50 CWs + 3 CWLs</option></select></div>
     </div>
     <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
-    <div class="statusline">Beste Hit Rate: <strong id="statsBestPlayer">–</strong></div>
+    <div class="statusline">Bester Spieler (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
-    <div class="section-title"><h3>Spieler</h3></div>
+    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">Die 3-Sterne-Quote zeigt, wie oft ein Spieler mit seinen ausgeführten Angriffen drei Sterne erreicht. Tage ohne Einsatz senken die Quote nicht.</p>
     <div class="stats-toggles">
       <label><input type="checkbox" id="statsSameTH"> Nur gleiches oder höheres RH</label>
       <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
@@ -1123,10 +1147,10 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
       <div class="stats-player-head"><span>Spieler</span><span>Hit Rate</span><span>Angriffe</span><span>Verpasst</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
-    <p class="stats-note" id="statsMissingNote">Fehlende Angriffe lassen sich nur aus vollständigen Kriegsaufstellungen ermitteln.</p>
-    <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Historie (JSON) importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
+    <p class="stats-note" id="statsMissingNote">Nicht alle älteren Kriege haben vollständige Angaben zu nicht genutzten Angriffen.</p>
+    <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
-    <p class="stats-note" id="statsNoCloud">Die Statistik steht für einen angemeldeten Cloud-Clan zur Verfügung. Die lokale Planung bleibt unverändert.</p>
+    <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </div>
 </section>
 </main></div>
@@ -1146,7 +1170,7 @@ Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
-  <div class="helpbox help-intro">Der Planer verteilt deine Clanmitglieder auf die Kriegstage. Du entscheidest, wer teilnehmen darf und wer fest eingeplant werden muss. <b>Angriffe und Ergebnisse werden derzeit noch nicht automatisch übernommen.</b></div>
+  <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf die sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
   <div id="cloudHelpSection" hidden class="helpbox cloud-help">
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
@@ -1159,7 +1183,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div><b>Einladungen</b><p>Einmalige Einladungslinks gelten sieben Tage. Wer beitritt, gibt seinen Ingame-Namen an. Offene Einladungen können zurückgezogen werden; der Link ist danach ungültig.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
-   <p class="cloud-help-note">Neu: CWL-Gegner, Rathaus-Verteilung und Angriffe mit Sternen erscheinen im gemeinsamen Clanmodus, sobald Clash die Kriegsdaten freigibt. Abgeschlossene Kriege werden beim nächsten erfolgreichen Cloud-Abgleich automatisch mit der tatsächlichen Aufstellung bestätigt. Ohne CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar. Für automatische Updates muss die Cloud-App auf mindestens einem Gerät geöffnet oder später erneut geöffnet werden. <a href="./cwl-demo.html">🧪 7-Tage-CWL gefahrlos simulieren</a> – vollständig ohne echte Clan-Daten.</p>
+   <p class="cloud-help-note">Während einer CWL zeigt der Plan die bekannten Gegner, Rathaus-Verteilung und Angriffe. Nach Kriegsende übernimmt die App die tatsächliche Aufstellung, sobald sie erneut geöffnet und mit Clash verbunden wird. Normale Clankriege findest du unter „Übersicht“, ihre Ergebnisse fließen in die Statistik ein. Ohne aktuelle Kriegsdaten bleibt die manuelle Planung nutzbar. <a href="./cwl-demo.html">CWL mit Beispieldaten ausprobieren</a>.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -1314,7 +1338,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.3.4";
+const APP_VERSION="v1.3.5";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
