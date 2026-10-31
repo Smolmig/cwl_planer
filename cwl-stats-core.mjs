@@ -46,8 +46,8 @@ export function validateHistoryFile(input,expectedTag){
   const missed=missedInput.map(e=>{
     const tag=cleanTag(e.player_tag),key=e.war_key+"/"+tag;
     const war=warByKey.get(e.war_key);
-    if(!war||war.war_type!=="normal"||!validTag(tag)||
-       !int(e.missed_count,1,2)||missedIds.has(key))
+    if(!war||!validTag(tag)||
+       !int(e.missed_count,1,war.war_type==="cwl"?1:2)||missedIds.has(key))
       throw Error("Ungültiger oder doppelter Missed-Attacks-Eintrag.");
     missedIds.add(key);
     return {war_key:e.war_key,player_tag:tag,
@@ -62,7 +62,10 @@ export function validateHistoryFile(input,expectedTag){
     wars[i].missed_log_complete=true;
   }
   for(const m of missed){
-    if(!warByKey.get(m.war_key).missed_log_complete)
+    const war=warByKey.get(m.war_key);
+    // Exact individual CWL misses are valid evidence even when the export
+    // does not cover all seven days or all participants.
+    if(war.war_type==="normal"&&!war.missed_log_complete)
       throw Error("Missed-Eintrag ohne bestätigten Kriegszeitraum.");
   }
   return {wars,attacks,missed};
@@ -129,7 +132,15 @@ export function computeWarStats(wars,attacks,{type="all",last=25,sameHigher=fals
         p.missedKnown+=misses;totalMissedKnown+=misses;
       }
     }else{
-      for(const p of players.values())if(p.participated.has(w.war_key))p.missComplete=false;
+      // A partially available Missed Log still proves individual missed
+      // attacks. It does NOT prove there were zero other missed attacks.
+      for(const m of knownMissed.filter(m=>m.war_key===w.war_key)){
+        const p=player(m.player_tag,m.player_name);
+        p.missedKnown+=m.missed_count;totalMissedKnown+=m.missed_count;
+      }
+      for(const p of players.values()){
+        if(p.participated.has(w.war_key))p.missComplete=false;
+      }
     }
   }
   const rows=[...players.values()].map(p=>({
