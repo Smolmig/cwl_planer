@@ -64,3 +64,11 @@ Geplante Architektur:
 - Relevante Supercell-Felder der Kriegsantwort: `clan.stars`, `opponent.stars`, `destructionPercentage`, `badgeUrls.medium/small/large`. Wappen lassen sich für den Gegner bei Bedarf auch aus `leaguegroup.clans[].badgeUrls` ergänzen.
 - Keine Addition der Einzelangriffe als Ersatz für Kriegssterne. Bei unvollständigen API-Werten sichtbar `–`, bei fehlender Badge-Datei neutrales Schild. Nicht freigegebene `#0`-Runden bleiben weiterhin unbekannt.
 - Die browserseitige Wappen-URL wird erneut auf HTTPS und die originale Clash-Badge-Domain geprüft. Es gibt keine neue Anforderung an die Supabase-RLS-Berechtigungen und keinen zusätzlichen Schlüssel im Browser.
+
+
+## 31.10.2026 · Angriffsliste im ClashPerk-Stil (v1.2.2)
+
+- Pro Angriff: gut sichtbare `★★☆`, Zerstörung in Prozent und `RH18 Eigener Spieler vs RH17 Gegner`; bei fehlenden Angreifern drei ungefüllte Sterne und ausdrücklich offener Status.
+- Während des Krieges offene Angriffe priorisieren; nach Kriegsende natürliche Aufstellungsreihenfolge anzeigen. Details bleiben beim Aktualisieren geöffnet.
+- Beide CWL-Oberflächen nutzen denselben renderer: reale Cloud-App und vollständig isolierte Simulation. Die Original-Planerübersicht mit Rein/Raus bleibt in der Cloud-App erhalten.
+- Keine Änderungen an Supercell-API-Key-Verwaltung, Speicherung, vorhandenen Locks, Datenformat oder öffentlichen Gastfunktionen.

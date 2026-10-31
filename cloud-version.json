@@ -1,5 +1,5 @@
 {
-  "version": "v1.2.1",
+  "version": "v1.2.2",
   "released": "2026-10-31",
-  "summary": "CWL-Tageskarten mit offiziellen Kriegssternen und Clanwappen, dazu Gegner-, RH- und Angriffsinformationen."
+  "summary": "CWL-Angriffsliste im kompakten Stern-/Prozent-Format mit RH-Gegnervergleich; offene Angriffe zuerst."
 }

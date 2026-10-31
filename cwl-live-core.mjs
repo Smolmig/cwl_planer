@@ -125,3 +125,21 @@ export function reconcileCwl(profile,payload,createMember,now=Date.now()) {
   }
   return {changed,lockedDays,reason:lockedDays.length?"finished_wars":changed?"updated_live_status":"unchanged"};
 }
+
+// Keep each CWL attack distinct. During the battle put players who have
+// not attacked first; after the battle preserve the actual lineup order.
+export function cwlAttackRows(round) {
+  const targets=new Map((round?.opponent?.members||[]).map(m=>[tagOf(m.tag),m]));
+  const rows=(round?.clan?.members||[]).flatMap((player,playerIndex)=>{
+    const attacks=Array.isArray(player?.attacks)?player.attacks:[];
+    if(attacks.length===0)return [{player,target:null,attack:null,playerIndex,attackIndex:0}];
+    return attacks.map((attack,attackIndex)=>({
+      player,target:targets.get(tagOf(attack.defenderTag))||null,
+      attack,playerIndex,attackIndex
+    }));
+  });
+  if(round?.state==="inWar")rows.sort((a,b)=>
+    Number(!!a.attack)-Number(!!b.attack)||
+    a.playerIndex-b.playerIndex||a.attackIndex-b.attackIndex);
+  return rows;
+}
