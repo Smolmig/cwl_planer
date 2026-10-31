@@ -72,7 +72,7 @@ const cloud={
 window.CWLCloud=cloud;
 const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
- context:()=>({active:cloud.active,clanId,role,profile:storage.getProfile(),
+ context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
 });
 /* Delegate to the persistent list, not individual cards. Search, filters and
