@@ -1,7 +1,15 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf } from "./cwl-live-core.mjs";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl } from "./cwl-live-core.mjs?v=1.2.1";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
+const badgeArt=side=>{
+  const src=safeBadgeUrl(side?.badgeUrl);
+  return src
+    ?"<img class='cwl-live-badge' src='"+esc(src)+"' alt='Clanwappen "+esc(side?.name||"Clan")+"' loading='lazy' decoding='async' referrerpolicy='no-referrer'>"
+    :"<span class='cwl-live-badge-placeholder' aria-hidden='true'>🛡️</span>";
+};
+const scoreText=value=>Number.isInteger(value)?String(value):"–";
+const pctText=value=>typeof value==="number"?value.toLocaleString("de-AT",{maximumFractionDigits:2})+" %":"–";
 const stateDate=s=>{
   const m=/^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)(?:\.\d+)?Z$/.exec(String(s||""));
   if(!m)return "";
@@ -52,14 +60,34 @@ export function createCwlLive({sb,context,storage,notify}) {
         (target?" → "+esc(target.name)+" (RH"+esc(target.townHallLevel||"?")+")":"")+
         "</small></span><strong>"+score+"</strong></div>";
     }).join("");
-    section.innerHTML="<div class='cwl-live-header'><div><span class='cwl-live-label'>⚔️ Gegner · Tag "+round.day+
-      "</span><div><b>"+esc(round.opponent?.name||"Unbekannt")+"</b> <small>"+esc(round.opponent?.tag)+"</small></div></div>"+
-      "<span class='badge "+(round.state==="warEnded"?"ok":"warn")+"'>"+esc(statusLabel[round.state]||round.state)+"</span></div>"+
-      "<div class='cwl-live-ths'>"+townHallSummary(enemy)+"</div>"+
+    const ownScore=scoreText(round.clan?.stars),enemyScore=scoreText(round.opponent?.stars);
+    const destruct=round.clan?.destructionPercentage!==null&&round.clan?.destructionPercentage!==undefined&&
+      round.opponent?.destructionPercentage!==null&&round.opponent?.destructionPercentage!==undefined
+      ?"<div class='cwl-live-score-detail'>Zerstörung: "+pctText(round.clan.destructionPercentage)+
+        " : "+pctText(round.opponent.destructionPercentage)+"</div>":"";
+    const sideHtml=side=>"<div class='cwl-live-side'>"+badgeArt(side)+
+      "<b class='cwl-live-clan-name'>"+esc(side?.name||"Unbekannt")+"</b></div>";
+    section.innerHTML="<div class='cwl-live-header'><span class='cwl-live-label'>⚔️ CWL · Tag "+round.day+
+      "</span><span class='badge "+(round.state==="warEnded"?"ok":"warn")+"'>"+
+      esc(statusLabel[round.state]||round.state)+"</span></div>"+
+      "<div class='cwl-live-scoreboard' role='group' aria-label='Kriegssterne "+esc(round.clan?.name||"Clan")+" "+
+      ownScore+" zu "+enemyScore+" "+esc(round.opponent?.name||"Gegner")+"'>"+
+      sideHtml(round.clan)+"<div class='cwl-live-score-middle'><div class='cwl-live-score' aria-hidden='true'>"+
+      "<span>"+ownScore+"</span><span class='cwl-live-score-colon'>:</span><span>"+enemyScore+"</span></div>"+
+      "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+sideHtml(round.opponent)+"</div>"+
+      destruct+"<div class='cwl-live-ths'>"+townHallSummary(enemy)+"</div>"+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":"")+"</div>"+
       "<details class='cwl-live-details'><summary>Spieler und Angriffe anzeigen</summary>"+
       (players||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>";
+    section.querySelectorAll("img.cwl-live-badge").forEach(img=>{
+      img.addEventListener("error",()=>{
+        const fallback=document.createElement("span");
+        fallback.className="cwl-live-badge-placeholder";
+        fallback.setAttribute("aria-hidden","true");fallback.textContent="🛡️";
+        img.replaceWith(fallback);
+      },{once:true});
+    });
     dayCard.querySelector(".day-head")?.after(section);
   }
   function render() {

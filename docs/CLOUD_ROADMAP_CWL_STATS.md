@@ -56,3 +56,11 @@ Geplante Architektur:
 - Die Cloud-App fragt beim Öffnen und anschließend regelmäßig während der Nutzung nach. **Noch kein serverseitiger unbeaufsichtigter 24/7-Abschluss**: Wenn niemand die App geöffnet hat, erfolgt die Übernahme beim nächsten erfolgreichen Aufruf.
 - Die lokale Offline-PWA und der normale Cloud-Planer bleiben ohne sichtbare Liga-Gruppe unverändert nutzbar; bei Supercell-Ausfall werden keine Tage abgeschlossen.
 - Die erste echte CWL nach Freigabe ist der notwendige End-to-End-Test von API-Antworten, Berechtigungen, Echtzeit-Aufstellungen und Übergang zur Folgerunde. Das ersetzt nicht die spätere vollständige Statistik-Historie über mehrere Saisons.
+
+
+## 31.10.2026 · CWL-Anzeige: Spielstand und Clanabzeichen
+
+- Auf jedem bekannten CWL-Kriegstag steht jetzt der gut lesbare, offizielle Sternestand zwischen den Clannamen und den Clanabzeichen. Die bisherigen Aufstellungen, Rein/Raus-Wechsel und RH-/Angriffsdaten bleiben separat zugänglich.
+- Relevante Supercell-Felder der Kriegsantwort: `clan.stars`, `opponent.stars`, `destructionPercentage`, `badgeUrls.medium/small/large`. Wappen lassen sich für den Gegner bei Bedarf auch aus `leaguegroup.clans[].badgeUrls` ergänzen.
+- Keine Addition der Einzelangriffe als Ersatz für Kriegssterne. Bei unvollständigen API-Werten sichtbar `–`, bei fehlender Badge-Datei neutrales Schild. Nicht freigegebene `#0`-Runden bleiben weiterhin unbekannt.
+- Die browserseitige Wappen-URL wird erneut auf HTTPS und die originale Clash-Badge-Domain geprüft. Es gibt keine neue Anforderung an die Supabase-RLS-Berechtigungen und keinen zusätzlichen Schlüssel im Browser.

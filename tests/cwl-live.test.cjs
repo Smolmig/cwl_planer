@@ -114,3 +114,42 @@ test("CWL presentation module parses and exports the live UI factory",async()=>{
  const live=await import(pathToFileURL(path.join(root,"cwl-live.mjs")).href);
  assert.equal(typeof live.createCwlLive,"function");
 });
+
+
+test("Official war stars are distinct from player attack totals; badges use the Clash asset host",async()=>{
+ const {sanitizeSnapshot,safeBadgeUrl}=await load();
+ const snap=snapshot();
+ snap.rounds[0].clan.stars=35;
+ snap.rounds[0].opponent.stars=27;
+ snap.rounds[0].clan.destructionPercentage=91.75;
+ snap.rounds[0].opponent.destructionPercentage=85.12;
+ snap.rounds[0].clan.badgeUrl="https://api-assets.clashofclans.com/badges/200/clan.png";
+ snap.rounds[0].opponent.badgeUrl="https://api-assets.clashofclans.com/badges/200/opponent.png";
+ const round=sanitizeSnapshot(snap).rounds[0];
+ assert.equal(round.clan.stars,35);
+ assert.equal(round.opponent.stars,27);
+ assert.equal(round.clan.members[0].attacks[0].stars,3);
+ assert.equal(round.clan.destructionPercentage,91.75);
+ assert.equal(round.opponent.destructionPercentage,85.12);
+ assert.match(round.clan.badgeUrl,/api-assets\.clashofclans\.com\/badges/);
+ assert.match(round.opponent.badgeUrl,/api-assets\.clashofclans\.com\/badges/);
+ assert.equal(safeBadgeUrl("javascript:alert(1)"),null);
+ assert.equal(safeBadgeUrl("https://evil.example/badges/200/x.png"),null);
+ assert.equal(safeBadgeUrl("http://api-assets.clashofclans.com/badges/200/x.png"),null);
+ assert.equal(safeBadgeUrl("https://api-assets.clashofclans.com.evil.example/badges/200/x.png"),null);
+ assert.equal(safeBadgeUrl("https://api-assets.clashofclans.com/else/x.png"),null);
+ snap.rounds[0].clan.stars=null;
+ snap.rounds[0].clan.badgeUrl="https://evil.example/x.png";
+ const missing=sanitizeSnapshot(snap).rounds[0].clan;
+ assert.equal(missing.stars,null,"Missing score cannot become zero");
+ assert.equal(missing.badgeUrl,null,"Untrusted image origins are discarded");
+ snap.rounds[0].clan.stars=0;
+ assert.equal(sanitizeSnapshot(snap).rounds[0].clan.stars,0,"Real zero score must remain visible");
+});
+test("Server-side CWL API maps official war stars, image URLs, and group fallback",()=>{
+ const proxy=fs.readFileSync(path.join(root,"supabase/functions/coc-cwl-status/index.ts"),"utf8");
+ assert.match(proxy,/stars:safeStars\(s\?\.stars\)/);
+ assert.match(proxy,/badgeUrl:safeBadge\(s\?\.badgeUrls\)\|\|safeBadge\(fromGroup\?\.badgeUrls\)/);
+ assert.match(proxy,/groupClans/);
+ assert.match(proxy,/hostname==="api-assets\.clashofclans\.com"/);
+});
