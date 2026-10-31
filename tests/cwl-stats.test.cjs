@@ -169,7 +169,7 @@ test("Cloud statistics show native normal CWs independently of manual CWL planni
  const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
  const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
  assert.match(src,/currentNormalWar/);
- assert.match(src,/\/"\)\+\/currentwar"/); // directly queries the game's current-war endpoint
+ assert.match(src,/currentwar",key\)/); // official current-war endpoint
  assert.match(src,/attacksPerMember/);
  assert.match(ui,/const normal=payload\?\.currentWar/);
  assert.match(ui,/war_type:"normal"/);
