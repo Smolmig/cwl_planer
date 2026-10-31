@@ -84,7 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
-            -v ON_ERROR_STOP=1 -v VERBOSITY=sqlstate --single-transaction \
+            -v ON_ERROR_STOP=1 -v VERBOSITY=verbose --single-transaction \
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
             -c 'SET session_replication_role = replica;' \
             -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
@@ -100,7 +100,31 @@ jobs:
               r'psql:.*?/((?:roles-local|roles)|schema|auth-data|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
               log, re.I)
           if match:
-              print(f'::error::Restore failed in {match.group(1)}.sql line {match.group(2)}; SQLSTATE {match.group(3)}.')
+              filename, error_line, sqlstate = match.group(1), int(match.group(2)), match.group(3)
+              print(f'::error::Restore failed in {filename}.sql line {error_line}; SQLSTATE {sqlstate}.')
+              # Only print safe SQL identifiers, never raw SQL, unique-key values, or rows.
+              for field in ('SCHEMA NAME', 'TABLE NAME', 'CONSTRAINT NAME'):
+                  found = re.search(r'\b' + field + r':\s*([A-Za-z_][A-Za-z0-9_]*)', log)
+                  if found:
+                      print(f'{field}: {found.group(1)}')
+              if filename in ('data', 'auth-data'):
+                  sql_lines = (Path(os.environ['WORK']) / 'unpacked/cwl-backup' /
+                               (filename + '.sql')).read_text(errors='replace').splitlines()
+                  copy_header = re.compile(
+                      r'^COPY\s+((?:"?[A-Za-z_][A-Za-z_0-9]*"?\.)?"?[A-Za-z_][A-Za-z_0-9]*"?)\s*\(.*\)\s+FROM\s+stdin;\s*$',
+                      re.IGNORECASE)
+                  active_table = None
+                  start = None
+                  for i, sql_line in enumerate(sql_lines[:error_line], 1):
+                      header = copy_header.match(sql_line)
+                      if header:
+                          active_table, start = header.group(1).replace('"', ''), i
+                      elif sql_line == r'\.' and i < error_line:
+                          active_table, start = None, None
+                  if active_table is not None:
+                      print(f'Import COPY section: {active_table}, header line {start}.')
+                  else:
+                      print('No active COPY section found at failure line.')
           else:
               code = re.search(r'(?:ERROR|FATAL):\s*([A-Z0-9]{5})', log, re.I)
               print(f'::error::Restore failed; SQLSTATE {code.group(1) if code else "unavailable"}. Private SQL log was not published.')
