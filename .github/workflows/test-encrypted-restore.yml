@@ -54,32 +54,14 @@ jobs:
           python3 scripts/verify_auth_dump.py "$WORK/unpacked/cwl-backup/auth-data.sql"
           echo 'Decryption and mandatory dump files verified.'
 
-      - name: Prepare roles for local restore (official Supabase special-role workaround)
+      - name: Confirm role dump is present (Supabase local roles are pre-provisioned)
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, re
-          root = Path(os.environ['WORK']) / 'unpacked/cwl-backup'
-          original = root / 'roles.sql'
-          lines = original.read_text(encoding='utf-8').splitlines(keepends=True)
-          # Official Supabase restore guidance: skip exactly this internal privilege grant.
-          grant = re.compile(
-              r'^\s*GRANT\s+"?postgres"?\s+TO\s+"?cli_login_postgres"?'
-              r'\s+WITH\s+INHERIT\s+FALSE\s+GRANTED\s+BY\s+"?supabase_admin"?\s*;\s*$',
-              re.IGNORECASE)
-          affected = [i for i, line in enumerate(lines) if grant.fullmatch(line)]
-          if len(affected) > 1:
-              raise SystemExit('::error::Multiple privileged role grants found; manual review required.')
-          if affected:
-              i = affected[0]
-              lines[i] = '-- Internal cli_login_postgres grant omitted for local restore.\n'
-              print(f'Supabase internal grant at roles.sql line {i+1} omitted per restore guidance.')
-          else:
-              print('Known Supabase grant not present; roles imported without changes.')
-          (root / 'roles-local.sql').write_text(''.join(lines), encoding='utf-8')
-          PY
+          test -s "$WORK/unpacked/cwl-backup/roles.sql"
+          echo 'Role dump present. Local Supabase initializes its own privileged roles.'
+          echo 'Note: roles.sql will NOT be replayed in this local app-data restore test.'
+          echo 'Full role migration is a separate unverified disaster-recovery step.'
 
       - uses: supabase/setup-cli@v1
         with:
@@ -97,13 +79,12 @@ jobs:
           PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -qAt -c 'SELECT 1' | grep -qx 1
 
-      - name: Restore roles, schema, auth data and app data in one transaction
+      - name: Restore schema, auth data and app data in one transaction
         shell: bash
         run: |
           set -euo pipefail
           if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -v VERBOSITY=sqlstate --single-transaction \
-            -f "$WORK/unpacked/cwl-backup/roles-local.sql" \
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
             -c 'SET session_replication_role = replica;' \
             -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
