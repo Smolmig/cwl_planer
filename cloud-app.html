@@ -899,6 +899,37 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
  .cwl-live-attack-result{justify-content:flex-start}
  .cwl-live-fight{font-size:12px}
 }
+
+/* Statistics keep the compact table readable on 320px iPhones. */
+.stats-header,.stats-table-card{overflow:hidden}
+.stats-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.stats-filters .field{min-width:0}
+.stats-filters label{display:block;font-size:11px;color:var(--muted);margin:0 0 5px}
+.stats-filters select,.stats-filters input{width:100%;min-width:0}
+.stats-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.stats-kpi{padding:13px;border:1px solid var(--line);border-radius:12px;min-width:0}
+.stats-kpi span{font-size:11px;color:var(--muted);display:block}
+.stats-kpi strong{display:block;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.4}
+.stats-toggles{display:grid;gap:8px;margin:12px 0;font-size:13px;color:var(--muted)}
+.stats-toggles label{display:flex;gap:9px;align-items:center;cursor:pointer}
+.stats-toggles input{accent-color:var(--primary);width:18px;height:18px;flex:none}
+.stats-player-table{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats-player-head,.stats-player-row{display:grid;grid-template-columns:minmax(105px,1fr) 70px 59px 55px;align-items:center;gap:5px;padding:10px 9px}
+.stats-player-head{font-size:10px;color:var(--muted);background:var(--bg);font-weight:750}
+.stats-player-row{min-height:61px;border-top:1px solid var(--line)}
+.stats-player-head>*:not(:first-child),.stats-player-row>*:not(:first-child){text-align:right}
+.stats-player{display:flex;align-items:center;gap:8px;min-width:0}
+.stats-th{display:flex;align-items:center;justify-content:center;width:33px;height:33px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:10px;font-weight:800;flex:none;color:var(--text)}
+.stats-name{min-width:0;overflow-wrap:anywhere}
+.stats-name b{display:block;font-size:12px}
+.stats-name small{color:var(--muted);font-size:10px}
+.stats-rate{font-variant-numeric:tabular-nums}
+.stats-rate.great{color:#10b981}.stats-rate.low,.stats-number.warn{color:#ef4444}
+.stats-number{font-variant-numeric:tabular-nums}
+.stats-empty{padding:22px 12px;color:var(--muted)}
+.stats-note{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 0}
+.stats-import-actions{margin:10px 0}
+@media(max-width:380px){.stats-player-head,.stats-player-row{grid-template-columns:minmax(87px,1fr) 56px 50px 48px;gap:3px;padding:10px 6px}.stats-name b{font-size:11px}.stats-th{width:27px;height:28px;font-size:9px}.stats-player{gap:5px}.stats-player-head{font-size:9px}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1052,8 +1083,40 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
     <p class="footer-note">Änderungen werden automatisch lokal auf diesem Gerät gespeichert. Für Gerätewechsel oder als zusätzliche Sicherheit regelmäßig ein Backup erstellen.</p>
   </div>
 </section>
+
+<section id="view-stats" class="view" aria-label="Clankrieg Statistik">
+  <div class="card stats-header">
+    <div class="section-title"><div><h3>Clankrieg-Statistik</h3><div class="statusline">Angriffe aus CW und CWL · geschütztes Clanarchiv</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <div class="stats-filters">
+      <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
+      <div class="field"><label for="statsRange">Zeitraum</label><select id="statsRange"><option value="10">Letzte 10</option><option value="25" selected>Letzte 25</option><option value="50">Letzte 50</option></select></div>
+    </div>
+    <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
+    <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
+    <div class="statusline">Beste Hit Rate: <strong id="statsBestPlayer">–</strong></div>
+  </div>
+  <div class="card stats-table-card">
+    <div class="section-title"><h3>Spieler</h3><span class="badge ok">3★ Hit Rate</span></div>
+    <div class="stats-toggles">
+      <label><input type="checkbox" id="statsSameTH"> Nur gleiches oder höheres RH</label>
+      <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
+    </div>
+    <div class="stats-filters">
+      <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">Hit Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
+    </div>
+    <div class="stats-player-table">
+      <div class="stats-player-head"><span>Spieler</span><span>Hit Rate</span><span>Angriffe</span><span>Verpasst</span></div>
+      <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
+    </div>
+    <p class="stats-note" id="statsMissingNote">Fehlende Angriffe lassen sich nur aus vollständigen Kriegsaufstellungen ermitteln.</p>
+    <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Historie (JSON) importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
+    <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
+    <p class="stats-note" id="statsNoCloud">Die Statistik steht für einen angemeldeten Cloud-Clan zur Verfügung. Die lokale Planung bleibt unverändert.</p>
+  </div>
+</section>
 </main></div>
-<nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button></div></nav>
+<nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button><button class="navbtn" id="statsNav" data-view="stats" hidden>📈<br>Statistik</button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
