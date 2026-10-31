@@ -90,3 +90,11 @@ Geplante Architektur:
 - Historische CWL-Angriffe sind in der Missed-Quelle nicht enthalten. Deren Fehlangriffe sind weiterhin unbekannt. Bei gemischten Statistiken wird eine belegte Untergrenze angezeigt, keine erfundene vollständige Zahl.
 - Der einmalige private JSON-Import enthält `missed` mit (war_key, player_tag, player_name, missed_count) und die War-Abdeckung `missed_log_complete`. Die Originaldateien und personenbezogenen Spielerlisten werden **nicht** ins öffentliche Git-Repository übernommen.
 - Private Tabelle `public.cwl_stat_missed` (RLS wie `cwl_stat_wars` und `cwl_stat_attacks`) speichert die per Kriegs-ID verknüpften Fälle. Die Hilfsspalte `missed_log_complete` sagt explizit, wo die Abwesenheit eines Missed-Eintrags als Null gewertet werden darf.
+
+
+## Ergänzung 31.10.2026 – CWL-Missed und Cloud-Navigation (v1.3.2)
+
+- Zweiter ClashPerk-Missed-Export für CWL nachgereicht. Nur **zwei eindeutige United-Fighters-CWL-Einträge** passen zur bestehenden 50-Kriege-Historie; die **42 bereits vorhandenen normalen CW-Einträge** bleiben unverändert. Somit 44 Ereignisse / **59 belegte Fehlangriffe** in der kombinierten privaten Importdatei.
+- Eine CWL-Missed-Meldung ist ein belegter Einzelfall, aber **kein Nachweis vollständiger Kriegsteilnehmer- oder Fehlangriffsdaten**. Deshalb `≥` als Mindestzahl bei unvollständig abgedeckten CWL-Kriegen.
+- Die Tab-Leiste zeigt alle vier Cloud-Navigationsziele in einer Reihe; nach Abmeldung wird die private Statistikansicht geschlossen und der lokale Plan gezeigt.
+- Der Abruf normaler CWs ist unabhängig von der CWL-Planung: `coc-cwl-status` liefert bei fehlender aktiver CWL zusätzlich den aktuellen normalen Krieg; `cwl-stats.mjs` speichert **beendete** Kriege mit Angriffen und vollständiger Aufstellung im getrennten Statistikarchiv. Kein serverseitiger 24/7-History-Dienst; Supabase/Clash-API muss die Daten beim Cloud-Abgleich noch liefern.

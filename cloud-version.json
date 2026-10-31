@@ -1,5 +1,5 @@
 {
-  "version": "v1.3.1",
+  "version": "v1.3.2",
   "released": "2026-10-31",
-  "summary": "Historische Missed-Attacks-Logs im privaten Clan-Statistik-Tab mit korrekter CWL-Datenlückenkennzeichnung."
+  "summary": "CWL-Missed-Attacks korrekt als bekannte Mindestanzahl, vier gleich breite untere Tabs und Logout-Rückkehr zum Plan."
 }
