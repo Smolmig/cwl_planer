@@ -85,7 +85,7 @@ export function cwlSeasonOf(war) {
 // Keep statistics as rolling windows while retaining older raw records
 // for safe recovery. Only finalized CW/CWL wars count as performance data.
 export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
-  const sorted=[...wars].filter(w=>w.finalized!==false)
+  const sorted=[...wars].filter(w=>w.source!=="api"||w.finalized===true)
     .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
       String(a.war_key).localeCompare(String(b.war_key)));
   const normal=sorted.filter(w=>w.war_type==="normal");
@@ -99,8 +99,9 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
   const selectedLeague=league.filter(w=>included.has(cwlSeasonOf(w)));
   if(type==="cwl")return selectedLeague;
   // Combined: recent 50 normal CWs + last 3 league seasons.
+  const recentThree=new Set(seasons.slice(0,3));
   return [...normal.slice(0,50),...league.filter(w=>
-    new Set(seasons.slice(0,3)).has(cwlSeasonOf(w)))].sort((a,b)=>
+    recentThree.has(cwlSeasonOf(w)))].sort((a,b)=>
     Date.parse(b.started_at)-Date.parse(a.started_at)||
     String(a.war_key).localeCompare(String(b.war_key)));
 }
