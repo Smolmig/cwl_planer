@@ -1,0 +1,156 @@
+name: Test encrypted DB restore (isolated)
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_run_id:
+        description: 'Successful backup run ID (e.g. 41154402398)'
+        type: string
+        required: true
+        default: '41154402398'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  restore-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      WORK: ${{ runner.temp }}/cwl-restore-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download encrypted artifact (never access production database)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BACKUP_RUN_ID: ${{ inputs.backup_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BACKUP_RUN_ID" =~ ^[0-9]+$ ]] || { echo '::error::Invalid run ID'; exit 1; }
+          umask 077
+          mkdir -p "$WORK/download" "$WORK/unpacked" "$WORK/local"
+          gh run download "$BACKUP_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "cwl-encrypted-db-$BACKUP_RUN_ID" --dir "$WORK/download"
+          (cd "$WORK/download" && sha256sum --check cwl-backup.tar.gz.gpg.sha256)
+
+      - name: Decrypt and check archive contents (no plaintext in logs)
+        shell: bash
+        env:
+          CWL_BACKUP_PASSPHRASE: ${{ secrets.CWL_BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+          [[ -n "$CWL_BACKUP_PASSPHRASE" ]] || { echo '::error::Passphrase secret missing'; exit 1; }
+          printf '%s' "$CWL_BACKUP_PASSPHRASE" |
+            gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --decrypt "$WORK/download/cwl-backup.tar.gz.gpg" 2>/dev/null |
+            tar -xz --no-same-owner -C "$WORK/unpacked" -f -
+          for required in roles.sql schema.sql data.sql auth-data.sql README.txt; do
+            test -s "$WORK/unpacked/cwl-backup/$required" || { echo "::error::Missing $required"; exit 1; }
+          done
+          python3 scripts/verify_auth_dump.py "$WORK/unpacked/cwl-backup/auth-data.sql"
+          echo 'Decryption and mandatory dump files verified.'
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+
+      - name: Start disposable local Supabase Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$WORK/local"
+          supabase init --yes
+          supabase db start
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 -qAt -c 'SELECT 1' | grep -qx 1
+
+      - name: Restore roles, schema, auth data and app data in one transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 --single-transaction \
+            -f "$WORK/unpacked/cwl-backup/roles.sql" \
+            -f "$WORK/unpacked/cwl-backup/schema.sql" \
+            -c 'SET session_replication_role = replica;' \
+            -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
+            -f "$WORK/unpacked/cwl-backup/data.sql" \
+            -c 'SET session_replication_role = origin;' \
+            >"$WORK/restore.log" 2>&1; then
+            echo '::error::SQL restore failed on isolated Postgres. SQL log suppressed to protect user data.'
+            echo 'Possible causes: existing Supabase auth records or version/schema incompatibility.'
+            exit 1
+          fi
+          echo 'All SQL dumps restored without errors.'
+
+      - name: Compare recovered row counts and RLS with backup
+        shell: bash
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, subprocess
+          from pathlib import Path
+          root = Path(os.environ['WORK']) / 'unpacked/cwl-backup'
+          counts = {}
+          pattern = re.compile(r'^COPY\s+(?:"?(public|auth)"?)\.(?:"?([a-zA-Z_][\w]*)"?)\s*\(', re.I)
+          for filename in ('data.sql', 'auth-data.sql'):
+              active = None
+              for line in (root / filename).open(encoding='utf-8'):
+                  if active:
+                      if line.rstrip('\r\n') == r'\.':
+                          active = None
+                      else:
+                          counts[active] += 1
+                  else:
+                      found = pattern.match(line)
+                      if found:
+                          active = f'{found.group(1)}.{found.group(2)}'
+                          counts[active] = 0
+              if active:
+                  raise SystemExit(f'Incomplete COPY section in {filename}')
+          tables = ['auth.users', 'public.cwl_clans', 'public.cwl_clan_memberships',
+                    'public.cwl_cloud_profiles', 'public.cwl_change_events',
+                    'public.cwl_profile_snapshots']
+          def sql(query):
+              p = subprocess.run(['psql', '-X', '-qAt', '-h', '127.0.0.1', '-p', '54322',
+                                  '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
+                                  '-c', query], text=True, capture_output=True)
+              if p.returncode:
+                  raise SystemExit('A restored table is unavailable or cannot be queried.')
+              return p.stdout.strip()
+          for table in tables:
+              if table not in counts:
+                  raise SystemExit(f'Backup missing data section for {table}')
+              actual = int(sql(f'SELECT count(*) FROM {table};'))
+              expected = counts[table]
+              if actual != expected:
+                  raise SystemExit(f'Row mismatch for {table}: expected {expected}, got {actual}')
+              print(f'{table}: {actual} rows, verified')
+          if counts['auth.users'] < 1:
+              raise SystemExit('No auth users found in the backup.')
+          for table in tables[1:]:
+              name = table.split('.')[1]
+              enabled = sql("SELECT c.relrowsecurity FROM pg_class c JOIN pg_namespace n "
+                            "ON n.oid = c.relnamespace WHERE n.nspname = 'public' "
+                            f"AND c.relname = '{name}';")
+              if enabled != 't':
+                  raise SystemExit(f'RLS disabled after restore: {table}')
+          print('PASS: restored row counts and RLS match the encrypted backup.')
+          PY
+
+      - name: Remove disposable database and decrypted files
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d "$WORK/local/supabase" ]]; then
+            (cd "$WORK/local" && supabase stop --no-backup) || true
+          fi
+          rm -rf "$WORK"
