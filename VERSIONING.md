@@ -74,3 +74,12 @@ Diese Roadmap ist keine Zusage einer vorhandenen Funktion; der aktuelle stabile 
 - Cloud-Pilot: **v1.1.0-alpha.9** mit Sicherungspunkten, gesondertem Cloud-Modul `cloud-backups.mjs`, unverändertem Backend-Profilformat v9.
 - Versionsmanifest `cloud-version.json` und Service-Worker-Cache `cwl-planer-v1-0-2` passend angepasst.
 - Backup-Workflow für GitHub Actions ist erst nach zwei Secret-Einträgen und einem erfolgreichen manuellen Lauf betriebsbereit; siehe `docs/BACKUP_AND_PERFORMANCE.md`.
+
+
+## 31.10.2026 – Cloud offiziell v1.2.0
+
+- Die bisherige Cloud-Funktionsbasis aus \`v1.1.0-alpha.9\` ist nach dem erfolgreich getesteten automatischen verschlüsselten Backup/Restore für reguläre Nutzung freigegeben. Die Versionierung der Cloud-Anwendung wird als \`v1.2.0\` weitergeführt; dies ist eine kompatible MINOR-Version.
+- \`cloud-app.html\`, \`cloud-sync.mjs\`, \`cloud-version.json\` und die optionale CWL-Live-Komponente verwenden denselben Versionsstand. \`index.html\` bleibt die eigenständige stabile lokale PWA \`v1.0.2\`.
+- Neu: Geschützter CWL-Statusabruf (Gegner, RH-Verteilungen, tatsächliche Angriffe), optionale automatische Bestätigung beendeter Tage bei geöffnetem/erneut geöffnetem Cloud-Planer.
+- **Nicht als garantiert verkaufen:** CWL-Livefunktionen konnten mangels laufender CWL noch nicht mit echten laufenden Kriegstagen end-to-end getestet werden; nur der defensive Algorithmus und die Offline-Regressionsszenarien. Unbekannte zukünftige Runden bleiben unbekannt.
+- \`DATA_VERSION=9\`, lokaler Speicherkey, Archiv-Snapshots und vorhandene gespielte Tage bleiben kompatibel; API-Metadaten sind optional.

@@ -846,6 +846,22 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 #cloudForgotRequest[hidden],#cloudResetSent[hidden]{display:none!important}
 #cloudForgotRequest .cloud-recovery-result{padding:11px;border-radius:10px;border:1px solid var(--line);line-height:1.5;color:var(--muted)}
 
+
+/* Optional read-only live CWL data, injected only in an authenticated cloud clan. */
+.cwl-live-overview{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.cwl-live-overview[hidden]{display:none}
+.cwl-live-day{margin:10px 0 4px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface,transparent);font-size:13px}
+.cwl-live-header{display:flex;gap:12px;justify-content:space-between;align-items:center}
+.cwl-live-header small{color:var(--muted)}
+.cwl-live-label{display:inline-block;font-size:11px;letter-spacing:.025em;color:var(--muted);margin-bottom:3px}
+.cwl-live-ths{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
+.cwl-live-th{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:7px;padding:3px 7px}
+.cwl-live-details{margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
+.cwl-live-details summary{cursor:pointer;font-weight:600}
+.cwl-live-attack{display:flex;gap:10px;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.cwl-live-attack:last-child{border-bottom:0}
+.cwl-live-attack small{font-size:11px;color:var(--muted)}
+.cwl-live-attack strong{white-space:nowrap}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -985,11 +1001,12 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.1.0-alpha.9</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.2.0</strong><span>Cloud-Update</span></div>
       <ul>
-        <li><b>Sicherheit:</b> Automatische Cloud-Sicherungspunkte mit Wiederherstellung und Export.</li>
-        <li><b>Datenschutz:</b> Verschlüsselte externe Backups vorbereitet, ohne geheime Schlüssel in der App.</li>
-        <li><b>Tempo:</b> Weniger unnötige lokale Speichervorgänge und schnellere Plan-Sortierung.</li>
+        <li><b>Offizielle Cloud-Version:</b> Gemeinsamer Planer mit Mitgliedern, Einladungen und Sicherungspunkten.</li>
+        <li><b>CWL-Live:</b> Bekannte Gegner, RH-Verteilung und tatsächliche Angriffe mit Sternen direkt bei jedem Kriegstag.</li>
+        <li><b>Automatischer Abschluss:</b> Beendete API-Kriege werden nach sicherem Abgleich mit den tatsächlich eingesetzten Spielern bestätigt, sobald die Cloud-App geöffnet ist.</li>
+        <li><b>Weiterhin manuell:</b> Ohne CWL oder bei fehlenden API-Daten funktioniert die gewohnte Planung unverändert.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1028,7 +1045,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div><b>Einladungen</b><p>Einmalige Einladungslinks gelten sieben Tage. Wer beitritt, gibt seinen Ingame-Namen an. Offene Einladungen können zurückgezogen werden; der Link ist danach ungültig.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
-   <p class="cloud-help-note">Noch nicht automatisch: Gegnerdaten, Angriffsergebnisse und CWL-Tagesabschlüsse. Bis zur späteren API-Integration bestätigst du gespielte Kriegstage selbst.</p>
+   <p class="cloud-help-note">Neu: CWL-Gegner, Rathaus-Verteilung und Angriffe mit Sternen erscheinen im gemeinsamen Clanmodus, sobald Clash die Kriegsdaten freigibt. Abgeschlossene Kriege werden beim nächsten erfolgreichen Cloud-Abgleich automatisch mit der tatsächlichen Aufstellung bestätigt. Ohne CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar. Für automatische Updates muss die Cloud-App auf mindestens einem Gerät geöffnet oder später erneut geöffnet werden.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -1183,7 +1200,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.1.0-alpha.9";
+const APP_VERSION="v1.2.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1218,14 +1235,14 @@ function normalizeArchive(a){
   return{id:a.id||uid("a"),label:String(a.label||"Archivierte CWL"),createdAt:Number(a.createdAt)||Date.now(),
     slots:Math.max(1,Math.min(50,Number(a.slots)||15)),days:Math.max(1,Math.min(7,Number(a.days)||7)),
     playedCount:Math.max(0,Math.min(7,Number(a.playedCount)||lineups.length)),complete:!!a.complete,
-    players,lineups,counts};
+    players,lineups,counts,cwlLive:a.cwlLive&&typeof a.cwlLive==="object"?a.cwlLive:null};
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
   p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","participating","coc-order"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
   p.members=Array.isArray(p.members)?p.members.map(normalizeMember):[];p.archivedMembers=Array.isArray(p.archivedMembers)?p.archivedMembers.map(normalizeMember):[];
   p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=3&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});
-  p.locks=Array.from({length:7},(_,i)=>({locked:!!p.locks?.[i]?.locked,lineup:Array.isArray(p.locks?.[i]?.lineup)?p.locks[i].lineup:[],snapshots:normalizeSnapshots(p.locks?.[i]?.snapshots)}));p.archives=(Array.isArray(p.archives)?p.archives.map(normalizeArchive).filter(Boolean):[]);return p
+  p.locks=Array.from({length:7},(_,i)=>{const l=p.locks?.[i]||{};return{locked:!!l.locked,lineup:Array.isArray(l.lineup)?l.lineup:[],snapshots:normalizeSnapshots(l.snapshots),...(l.source==="coc-api"?{source:"coc-api",warTag:String(l.warTag||"").slice(0,30),season:String(l.season||"").slice(0,20),endTime:String(l.endTime||"").slice(0,40)}:{})}});p.archives=(Array.isArray(p.archives)?p.archives.map(normalizeArchive).filter(Boolean):[]);return p
 }
 function canonicalProfileName(name){return String(name||"").trim().replace(/\s+/g," ").toLocaleLowerCase("de")}
 function normalizeApp(a){if(!a||typeof a!=="object")return defaultApp();a.profiles=Array.isArray(a.profiles)?a.profiles.map(normalizeProfile):[];if(!a.profiles.length)a.profiles=[freshProfile()];const seen=new Set();for(const p of a.profiles){let base=p.name||"Neuer Clan",candidate=base,n=2;while(seen.has(canonicalProfileName(candidate)))candidate=`${base} (${n++})`;p.name=candidate;seen.add(canonicalProfileName(candidate))}if(!a.profiles.some(p=>p.id===a.activeProfileId))a.activeProfileId=a.profiles[0].id;a.version=DATA_VERSION;a.dataVersion=DATA_VERSION;return a}
@@ -1463,7 +1480,7 @@ function archiveCurrentCwl(){
   const played=lineups.length,date=new Date(),base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric"}),
     same=state.archives.filter(a=>a.label.startsWith(base)).length,label=same?`${base} · ${same+1}`:base;
   return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,
-    playedCount:played,complete:played===state.config.days,players,lineups,counts};
+    playedCount:played,complete:played===state.config.days,players,lineups,counts,cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
 }
 function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge");badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button><button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button></div></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
  root.querySelectorAll(".delete-archive").forEach(b=>b.onclick=async()=>{
@@ -1484,7 +1501,7 @@ function openArchiveModal(id){
   document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Tag ${l.day} · GESPIELT</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsatz-Verteilung</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
   openModal("archiveModal");
 }
-function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];}
+function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null}state.archivedMembers=[];state.cwlLiveIgnoredSeason=state.cwlLive?.season||state.cwlLiveIgnoredSeason||null;delete state.cwlLive;}
 async function handleCwlManage(){const played=playedCount();if(!played){if(!await confirmInline("MUSS/RAUS sowie Erst-ab/Raus-ab werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
 function buildFullPlanText(){const lines=[`⚔️ CWL Plan – ${state.name}`,""];lastPlan.dayPlans.forEach(dp=>{lines.push(`Tag ${dp.day} · ${dp.locked?"🔒 GESPIELT":"GEPLANT"}`);if(dp.day>1){const ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push(`Aufstellung · ${dp.lineup.length} Spieler:`);dp.lineup.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean).forEach(m=>lines.push(`• ${displayMemberName(m,true)}`));lines.push("")});return lines.join("\n").trim()}
 async function copyText(text,message){try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}showToast(message)}
@@ -1654,6 +1671,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.1.0-alpha.9"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.2.0"></script>
 </body>
 </html>
