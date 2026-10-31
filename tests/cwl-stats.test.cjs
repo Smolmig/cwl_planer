@@ -67,7 +67,7 @@ test("Stats UI, migration and data version are independent from the manual plann
  assert.match(source,/id="statsSameTH"/);
  assert.match(source,/const DATA_VERSION=9/);
  assert.match(client,/createCloudStats/);
- assert.match(client,/onSnapshot:data=>stats.captureCwl/);
+ assert.match(client,/return stats\.captureCwl\(data\)/);
  assert.match(stats,/validateHistoryFile/);
  assert.match(migration,/enable row level security/);
  assert.match(migration,/private\.cwl_is_member/);
@@ -177,7 +177,7 @@ test("Cloud statistics show native normal CWs independently of manual CWL planni
  assert.match(ui,/war_type:"normal"/);
  assert.match(ui,/source:"api",finalized:true/);
  assert.match(ui,/const snap=sanitizeSnapshot\(payload\)/);
- assert.match(sync,/onSnapshot:data=>stats\.captureCwl\(data\)/);
+ assert.match(sync,/return stats\.captureCwl\(data\)/);
 });
 test("Logout removes cloud-only Statistics and returns to Plan",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
@@ -242,8 +242,8 @@ test("CWL season selection groups 21 league days into Aug/Sep/Oct, never 10 seas
    {season:"2026-08",days:7},{season:"2026-09",days:7},{season:"2026-10",days:7}
  ]);
  assert.equal(computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:"all"}).wars,21);
- assert.equal(computeWarStats(wars,attacks,{type:"cwl",last:10}).wars,10,
-   "Legacy last-N selection means days, not seasons");
+ assert.equal(computeWarStats(wars,attacks,{type:"cwl",last:10}).wars,21,
+   "CWL always groups by seasons; last-N no longer truncates individual days");
  assert.equal(selectStatWars(wars,{type:"cwl",cwlSeasons:1}).length,7);
  assert.equal(cwlSeasonOf(wars[0]),"2026-08");
 });
