@@ -960,6 +960,35 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 .cw-now-player small{color:var(--muted)}
 .cw-now-stars{color:#e7ad32}
 @media(max-width:360px){.cw-now-head{gap:4px}.cw-now-score{font-size:24px}.cw-now-clan{font-size:11px}}
+
+/* Settings are reached from the gear beside the clan selector, not from Overview. */
+.settings-gear{display:inline-grid;place-items:center;flex:0 0 auto;min-width:36px;min-height:36px;padding:4px 8px!important;font-size:20px!important;line-height:1;white-space:nowrap}
+.settings-gear.active{border-color:var(--primary);background:var(--bluebg);color:var(--primary)}
+.settings-intro .section-title{margin-bottom:0}
+.settings-cloud-account{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.cloud-mode .settings-cloud-account{display:block}
+.settings-cloud-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.settings-cloud-row strong{font-size:14px}
+.settings-cloud-row .statusline{max-width:410px}
+.settings-cloud-note{display:none}
+.cloud-mode .settings-cloud-note{display:inline}
+.cloud-mode .settings-local-note{display:none}
+#view-settings>.card{margin-bottom:13px}
+@media(max-width:520px){
+  .top-actions{gap:4px}
+  .top-actions .settings-gear{width:36px;min-width:36px;height:36px;min-height:36px!important;padding:0!important}
+  .cloud-mode .top-actions #cloudOpen{max-width:135px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .cloud-mode .top-actions #helpBtn{min-width:42px;padding-inline:5px!important}
+}
+@media(max-width:380px){
+  .cloud-mode .topbar .toprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+  .cloud-mode .topbar .titleblock{min-width:0}
+  .cloud-mode .topbar .titleblock h1{font-size:15px}
+  .cloud-mode .topbar .top-actions{gap:3px;min-width:0}
+  .cloud-mode .top-actions #cloudOpen{max-width:105px;font-size:11px;padding-inline:5px}
+  .cloud-mode .top-actions #helpBtn{font-size:11px;min-width:35px;padding-inline:3px!important}
+  .cloud-mode .top-actions .settings-gear{min-width:32px;width:32px;height:34px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -976,7 +1005,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
       <div class="subtitle">7 Tage fair verteilen · Sonderfälle · Live-Anpassungen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
+    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
   </div>
 </div>
 <main class="content">
@@ -1096,6 +1125,17 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 </div><div class="summary-legend">G = gespielt · P = noch geplant · Gesamt = beide zusammen</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
   <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
+
+</section>
+
+<section id="view-settings" class="view" aria-label="Einstellungen">
+  <div class="card settings-intro">
+    <div class="section-title"><div><h3>⚙ Einstellungen</h3><div class="statusline">Deine Clan- und Planereinstellungen an einem Ort.</div></div></div>
+    <div id="settingsCloudAccount" class="settings-cloud-account">
+      <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln, Berechtigungen verwalten und Cloud-Sicherungen ansehen.</p></div>
+      <button class="btn" type="button" id="settingsCloudManage">Clan & Konto öffnen</button></div>
+    </div>
+  </div>
   <div class="card" id="localProfileCard">
     <div class="section-title"><h3>Profile / Clans</h3><span class="badge ok" id="profileCountBadge">1 Profil</span></div>
     <div class="profile-active"><b id="activeProfileName">Neuer Clan</b><div class="statusline">Jedes Profil hat eine eigene Mitgliederliste, Regeln, aktuelle CWL und CWL-Archive.</div></div>
@@ -1106,9 +1146,9 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.3.6</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.3.7</strong><span>Cloud-Update</span></div>
       <ul>
-        <li><b>Mitgliederabgleich:</b> Die Clanliste wird auch in Safari zuverlässiger geladen und Änderungen vor der Übernahme angezeigt.</li>
+        <li><b>Einstellungen:</b> Clanprofile, CWL-Grunddaten, Farbschema und Sicherungen erreichst du jetzt über das Zahnrad oben beim Clan.</li>
         <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
         <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
         <li><b>Planung bleibt flexibel:</b> Auch ohne laufende CWL kannst du Mitglieder einteilen und Aufstellungen vorbereiten.</li>
@@ -1117,7 +1157,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
-    <p class="footer-note">Änderungen werden automatisch lokal auf diesem Gerät gespeichert. Für Gerätewechsel oder als zusätzliche Sicherheit regelmäßig ein Backup erstellen.</p>
+    <p class="footer-note"><span class="settings-local-note">Im lokalen Planer werden Änderungen auf diesem Gerät gespeichert. Für einen Gerätewechsel empfiehlt sich ein Backup.</span><span class="settings-cloud-note">Im gemeinsamen Clan werden Änderungen online gespeichert. Erstelle bei Bedarf zusätzlich eine eigene Sicherung.</span></p>
   </div>
 </section>
 
@@ -1338,7 +1378,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.3.6";
+const APP_VERSION="v1.3.7";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1737,7 +1777,17 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 
 // Navigation
 applyTheme();
-document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-"+b.dataset.view).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})});
+function showPlannerView(view){
+ document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
+ document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));
+ const gear=document.getElementById("settingsOpen");
+ gear.classList.toggle("active",view==="settings");
+ gear.setAttribute("aria-pressed",String(view==="settings"));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showPlannerView(b.dataset.view));
+document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
+document.getElementById("settingsCloudManage").onclick=()=>document.getElementById("cloudOpen").click();
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
@@ -1809,6 +1859,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.3.6"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.3.7"></script>
 </body>
 </html>
