@@ -10,7 +10,17 @@ export function clashTime(value) {
   return Date.parse(m[1]+"-"+m[2]+"-"+m[3]+"T"+m[4]+":"+m[5]+":"+m[6]+"Z");
 }
 const validTag = tag => /^#[0289PYLQGRJCUV]{3,15}$/.test(tag);
-const num = (n,min,max) => Number.isInteger(Number(n)) && Number(n)>=min && Number(n)<=max ? Number(n) : null;
+const num = (n,min,max) => n!==null && n!==undefined && n!=="" &&
+  Number.isInteger(Number(n)) && Number(n)>=min && Number(n)<=max ? Number(n) : null;
+const safeDestruction=n=>typeof n==="number"&&Number.isFinite(n)&&n>=0&&n<=100?Math.round(n*100)/100:null;
+export function safeBadgeUrl(value) {
+  if(typeof value!=="string")return null;
+  try{
+    const url=new URL(value);
+    return url.protocol==="https:"&&url.hostname==="api-assets.clashofclans.com"&&
+      url.pathname.startsWith("/badges/")&&url.username===""&&url.password===""?url.href:null;
+  }catch{return null}
+}
 function sanitizeMember(m) {
   const tag=tagOf(m?.tag);
   if (!validTag(tag)) return null;
@@ -40,8 +50,12 @@ export function sanitizeSnapshot(payload) {
     return {day:i+1,available:true,warTag,state,
       startTime:String(r.startTime||""),endTime:String(r.endTime||""),
       teamSize:num(r.teamSize,1,50),
-      clan:{tag,name:String(r.clan?.name||"").slice(0,80),members:clanMembers},
-      opponent:{tag:opponentTag,name:String(r.opponent?.name||"Unbekannt").slice(0,80),members:opponentMembers}};
+      clan:{tag,name:String(r.clan?.name||"").slice(0,80),members:clanMembers,
+        stars:num(r.clan?.stars,0,150),destructionPercentage:safeDestruction(r.clan?.destructionPercentage),
+        badgeUrl:safeBadgeUrl(r.clan?.badgeUrl)},
+      opponent:{tag:opponentTag,name:String(r.opponent?.name||"Unbekannt").slice(0,80),members:opponentMembers,
+        stars:num(r.opponent?.stars,0,150),destructionPercentage:safeDestruction(r.opponent?.destructionPercentage),
+        badgeUrl:safeBadgeUrl(r.opponent?.badgeUrl)}};
   });
   return {season,clanTag,rounds};
 }
