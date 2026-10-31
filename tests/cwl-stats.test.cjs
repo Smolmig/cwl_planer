@@ -183,7 +183,7 @@ test("Logout removes cloud-only Statistics and returns to Plan",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
  assert.ok(html.includes("body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}"));
- assert.ok(html.includes(".navinner{grid-template-columns:repeat(3,minmax(0,1fr))}"));
+ assert.ok(html.includes(".navinner{grid-template-columns:repeat(3,minmax(0,1fr));"));
  assert.match(sync,/async function leaveCloud\(\)\{[\s\S]*?toggle\("statsNav",false\)/);
  assert.match(sync,/document\.querySelector\('\.navbtn\[data-view="plan"\]'\)\?\.click\(\)/);
 });
