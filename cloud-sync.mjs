@@ -542,9 +542,9 @@ async function loadAccessList(expected=clanId){
  const canInvite=["owner","editor"].includes(role);
  const [{data:members,error:e1},{data:invites,error:e2}]=await Promise.all([
   sb.from("cwl_clan_memberships").select("user_id,role,display_name,joined_at").eq("clan_id",expected).order("joined_at"),
-  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at,reusable")
+  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at,reusable,link_label,use_count")
    .eq("clan_id",expected).is("used_at",null)
-   .or("reusable.eq.true,expires_at.gt."+new Date().toISOString())
+   .or("expires_at.is.null,expires_at.gt."+new Date().toISOString())
    .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null})
  ]);
  if(e1)throw e1;if(e2)throw e2;if(expected!==clanId)return;
@@ -554,20 +554,25 @@ async function loadAccessList(expected=clanId){
   const name=document.createElement("strong");
   name.textContent=(m.display_name||({owner:"Besitzer",editor:"Vize",viewer:"Beobachter"}[m.role]||"Clanmitglied"))+(m.user_id===user.id?" (du)":"");
   row.append(name);
-  if(role==="owner"&&m.role!=="owner"&&m.user_id!==user.id){
+  const canRemove=m.role!=="owner"&&m.user_id!==user.id&&
+    (role==="owner"||(role==="editor"&&m.role==="viewer"));
+  if(canRemove){
    const actions=document.createElement("div");actions.className="cloud-access-controls";
-   const select=document.createElement("select");select.setAttribute("aria-label","Berechtigung für "+name.textContent);
-   select.add(new Option("Vize · Bearbeiten","editor"));select.add(new Option("Beobachter · Lesen","viewer"));
-   select.value=m.role;
-   select.onchange=async()=>{
-    const previous=m.role;select.disabled=true;
-    try{const changed=await changeAccessRole(expected,m,select.value);if(!changed)select.value=previous}
-    catch(e){select.value=previous;error(e)}
-    finally{select.disabled=false}
-   };
+   if(role==="owner"){
+    const select=document.createElement("select");select.setAttribute("aria-label","Berechtigung für "+name.textContent);
+    select.add(new Option("Vize · Bearbeiten","editor"));select.add(new Option("Beobachter · Lesen","viewer"));
+    select.value=m.role;
+    select.onchange=async()=>{
+     const previous=m.role;select.disabled=true;
+     try{const changed=await changeAccessRole(expected,m,select.value);if(!changed)select.value=previous}
+     catch(e){select.value=previous;error(e)}
+     finally{select.disabled=false}
+    };
+    actions.append(select);
+   }
    const remove=document.createElement("button");remove.className="btn small danger";remove.type="button";remove.textContent="Entfernen";
    remove.onclick=()=>removeAccessMember(expected,m).catch(error);
-   actions.append(select,remove);row.append(actions);
+   actions.append(remove);row.append(actions);
   }else{
    const label=document.createElement("span");
    label.textContent=m.role==="owner"?"Besitzer · volle Rechte":
@@ -586,15 +591,22 @@ async function loadAccessList(expected=clanId){
  for(const inv of pending){
   const row=document.createElement("div");row.className="cloud-invite-row";
   const details=document.createElement("div"),title=document.createElement("strong"),date=document.createElement("span");
-  title.textContent=(inv.reusable?"Gruppenlink · ":"Einmalige Einladung · ")+(inv.role==="editor"?"Vize":"Beobachter");
-  date.textContent=(inv.reusable?"Beliebig viele Beitritte · gültig bis Widerruf":
-    "Gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+
+  title.textContent=(inv.link_label?inv.link_label+" · ":"")+
+   (inv.reusable?"Gruppenlink":"Einmaliger Link")+" · "+(inv.role==="editor"?"Vize":"Beobachter");
+  date.textContent=(inv.reusable?"Beliebig viele Beitritte"+(inv.use_count?" · "+inv.use_count+" beigetreten":""):
+    "Einmalige Einladung")+
+    (inv.expires_at?" · gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):" · gültig bis Widerruf")+
    (inv.created_by===user.id?" · von dir":" · anderer Clanführer");
   details.append(title,date);row.append(details);
-  if(role==="owner"||inv.created_by===user.id){
-   const button=document.createElement("button");button.type="button";button.className="btn small danger";button.textContent="Zurückziehen";
+  if(role==="owner"||role==="editor"&&inv.created_by===user.id){
+   const actions=document.createElement("div");actions.className="cloud-access-controls";
+   if(inv.reusable){
+    const edit=document.createElement("button");edit.type="button";edit.className="btn small";edit.textContent="Bearbeiten";
+    edit.onclick=()=>editReusableInvite(expected,inv).catch(error);actions.append(edit);
+   }
+   const button=document.createElement("button");button.type="button";button.className="btn small danger";button.textContent="Widerrufen";
    button.onclick=()=>revokeInvite(expected,inv).catch(error);
-   row.append(button);
+   actions.append(button);row.append(actions);
   }
   root.append(row);
  }
@@ -609,12 +621,40 @@ async function changeAccessRole(expected,m,next){
  return true;
 }
 async function removeAccessMember(expected,m){
- if(role!=="owner"||m.role==="owner"||m.user_id===user.id)throw Error("Keine Berechtigung.");
+ if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))throw Error("Keine Berechtigung.");
  if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen? Der Zugang wird entzogen; der Clanplan bleibt erhalten.",{title:"Zugang entfernen",confirmText:"Entfernen",danger:true}))return;
  const {data,error:e}=await sb.from("cwl_clan_memberships").delete()
- .eq("clan_id",expected).eq("user_id",m.user_id).neq("role","owner").select("user_id");
+ .eq("clan_id",expected).eq("user_id",m.user_id).eq("role",role==="editor"?"viewer":m.role).select("user_id");
  if(e)throw e;if(!data?.length)throw Error("Person konnte nicht entfernt werden.");
  if(expected===clanId){storage.toast("✓ Zugang entfernt");await loadAccessList(expected)}
+}
+async function editReusableInvite(expected,inv){
+ if(!inv.reusable||!(role==="owner"||role==="editor"&&inv.created_by===user.id))
+  throw Error("Nur der Besitzer oder der erstellende Vize darf diesen Link bearbeiten.");
+ const name=await storage.askAction({
+  title:"Gruppenlink bearbeiten",message:"Bezeichnung des Links ändern. Danach legst du Berechtigung und Gültigkeit fest.",
+  inputLabel:"Bezeichnung (maximal 60 Zeichen)",inputValue:inv.link_label||"",
+  buttons:[{value:"confirm",text:"Weiter",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(name.value!=="confirm")return;
+ const label=name.input.trim();
+ if(label.length>60)throw Error("Bezeichnung darf maximal 60 Zeichen haben.");
+ const rights=await storage.askAction({
+  title:"Berechtigung für neue Beitritte",
+  message:"Bereits beigetretene Personen behalten ihre Rolle.",
+  buttons:[{value:"editor",text:"Vize"},{value:"viewer",text:"Beobachter",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["editor","viewer"].includes(rights.value))return;
+ const expiry=await storage.askAction({
+  title:"Gültigkeit ab jetzt",
+  message:"Die neue Gültigkeit beginnt ab dem Speichern.",
+  buttons:[{value:"24h",text:"24 Stunden"},{value:"7d",text:"7 Tage"},{value:"never",text:"Bis Widerruf",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["24h","7d","never"].includes(expiry.value))return;
+ const {error:e}=await sb.rpc("cwl_update_reusable_invite",
+  {p_id:inv.id,p_role:rights.value,p_duration:expiry.value,p_label:label||null});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Gruppenlink aktualisiert");await loadAccessList(expected)}
 }
 async function revokeInvite(expected,inv){
  if(!["owner","editor"].includes(role)||role==="editor"&&inv.created_by!==user.id)throw Error("Keine Berechtigung.");
@@ -627,13 +667,18 @@ async function revokeInvite(expected,inv){
 async function createInvite(){
  if(!["owner","editor"].includes(role))throw Error("Nur Besitzer und Vize können einladen.");
  const reusable=$("cloudInviteKind").value==="reusable";
- const {data,error:err}=await sb.rpc(reusable?"cwl_create_reusable_invite":"cwl_create_short_invite",
-  {p_clan:clanId,p_role:$("cloudInviteRole").value});
+ const label=$("cloudInviteLabel").value.trim();
+ if(label.length>60)throw Error("Die Bezeichnung darf maximal 60 Zeichen haben.");
+ const {data,error:err}=reusable?
+  await sb.rpc("cwl_create_reusable_invite",{
+   p_clan:clanId,p_role:$("cloudInviteRole").value,
+   p_duration:$("cloudInviteDuration").value,p_label:label||null
+  }):await sb.rpc("cwl_create_short_invite",{p_clan:clanId,p_role:$("cloudInviteRole").value});
  if(err)throw err;
  inviteLink=location.origin+location.pathname+"?invite="+encodeURIComponent(data);
  toggle("cloudInviteOutput",true);
  text("cloudInviteOutput",reusable?
-  "Gruppenlink erstellt · beliebig viele Beitritte bis zum Widerruf. Link jetzt kopieren und teilen.":
+  "Gruppenlink erstellt · beliebig viele Beitritte während der eingestellten Gültigkeit. Link jetzt kopieren und teilen.":
   "Einmaliger Einladungslink erstellt · 7 Tage gültig. Link jetzt kopieren.");
  toggle("cloudCopyInvite",true);
  await loadAccessList(clanId);
