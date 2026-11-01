@@ -1249,7 +1249,7 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.0</strong><span>Gemeinsam planen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.4.1</strong><span>Gemeinsam planen</span></div>
       <ul>
         <li><b>Einheitliche Dialoge:</b> Bestätigungen und Löschaktionen erscheinen jetzt direkt in der App.</li>
         <li><b>Mehr Kriegsdetails:</b> Ø Sterne pro Angriff, Einzelangriffe und ein Archiv vergangener Kriege.</li><li><b>Mitglieder:</b> Im Cloud-Planer siehst du echte Angriffswerte und kannst den automatischen Clanabgleich steuern.</li><li><b>Zusammenarbeit:</b> Entfernen und Sperren sind getrennt.</li>
@@ -1528,7 +1528,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.0";
+const APP_VERSION="v1.4.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2034,6 +2034,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.4.1"></script>
 </body>
 </html>
