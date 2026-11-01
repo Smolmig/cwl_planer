@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.8";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.8";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.8";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.8";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.9";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.9";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.9";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.9";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -46,9 +46,11 @@ const cloud={
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
   const label=activeClan?.name||"Clan";
-  $("cloudOpen").textContent=this.active?"☁️ "+(label.length>15?label.slice(0,13)+"…":label)+" ▾":"👤 Anmelden";
-  $("cloudOpen").title=this.active?"Clan und Konto verwalten":"Anmelden oder registrieren";
-  $("cloudOpen").setAttribute("aria-label",this.active?"Clan und Konto verwalten":"Anmelden oder registrieren");
+  const accountBtn=$("cloudOpen");
+  accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
+  accountBtn.querySelector(".cloud-toggle-label").textContent=this.active?"Clan":"Login";
+  accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
+  accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
@@ -1016,7 +1018,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.8";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.9";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
