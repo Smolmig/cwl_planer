@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
-export function createCloudStats({sb,context,notify}) {
+export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
@@ -122,10 +122,9 @@ export function createCloudStats({sb,context,notify}) {
     if(importing)throw Error("Import läuft bereits.");
     if(!file||file.size>4000000)throw Error("Bitte die vorbereitete JSON-Datei auswählen (maximal 4 MB).");
     const parsed=validateHistoryFile(JSON.parse(await file.text()),ctx.clanTag);
-    const message="Importiere "+parsed.wars.length+" historische Kriege, "+
-      parsed.attacks.length+" eindeutige Angriffe und "+parsed.missed.length+
-      " Missed-Einträge? Bereits importierte Daten werden anhand von Kriegs-ID und Player-Tag aktualisiert, nicht doppelt angelegt. Der CWL-Plan bleibt unverändert.";
-    if(!confirm(message))return;
+    const message=parsed.wars.length+" Kriege, "+parsed.attacks.length+" Angriffe und "+
+      parsed.missed.length+" nicht genutzte Angriffe übernehmen? Bereits vorhandene Einträge werden aktualisiert statt doppelt angelegt. Der CWL-Plan bleibt unverändert.";
+    if(!await confirmAction(message,{title:"Kampfverlauf importieren",confirmText:"Importieren"}))return;
     const id=ctx.clanId;importing=true;$("statsImportButton").disabled=true;
     try{
       notice("Import: Kriege speichern …");
