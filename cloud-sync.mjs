@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.7";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.7";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.7";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.7";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.8";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.8";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.8";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.8";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -24,7 +24,9 @@ const backups=createCloudBackups({
  ensureSaved:()=>ensureSaved(),
  loadProfile:()=>loadCloudProfile(true),
  audit:()=>audit(),
- toast:message=>storage.toast(message)
+ toast:message=>storage.toast(message),
+ confirmAction:(message,options)=>storage.confirmAction(message,options),
+ askAction:options=>storage.askAction(options)
 });
 const cloud={
  active:false,
@@ -76,6 +78,7 @@ const cloud={
 window.CWLCloud=cloud;
 const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
+ confirmAction:(message,options)=>storage.confirmAction(message,options),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
   memberTags:storage.getProfile()?.members?.map(m=>m.playerTag).filter(Boolean)||[]})
 });
@@ -284,7 +287,7 @@ async function chooseClan(epoch=accountEpoch){
  cloud.active=true;hydrating=true;
  await loadCloudProfile(false);
  if(epoch!==accountEpoch)return;
- text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Cloud-Stand geladen · Revision "+revision)+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
+ text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Gemeinsamer Stand geladen")+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
  await audit();
  channel=sb.channel("cloud-profile-"+clanId)
  .on("postgres_changes",{event:"*",schema:"public",table:"cwl_cloud_profiles",filter:"clan_id=eq."+clanId},
@@ -432,7 +435,7 @@ async function loadCloudProfile(automatic=false){
   .select("profile_json,revision").eq("clan_id",target).maybeSingle();
  if(err)throw err;
  if(target!==clanId)return false;
- if(!automatic && changedSerial && !confirm("Nicht gespeicherte Änderungen verwerfen und Cloud-Stand laden?"))return false;
+ if(!automatic && changedSerial && !await storage.confirmAction("Nicht gespeicherte Änderungen verwerfen und Cloud-Stand laden?",{title:"Änderungen verwerfen?",confirmText:"Cloud-Stand laden",danger:true}))return false;
  const profile=data?.profile_json||storage.blank(clans.find(c=>c.id===clanId)?.name||"Neuer Clan");
  revision=data?.revision??null;
  blocked=false;changedSerial=null;hydrating=true;
@@ -561,7 +564,7 @@ async function loadAccessList(expected=clanId){
 }
 async function changeAccessRole(expected,m,next){
  if(role!=="owner"||m.role==="owner"||!["editor","viewer"].includes(next))throw Error("Keine Berechtigung.");
- if(!confirm("Berechtigung von "+(m.display_name||"Clanmitglied")+" auf "+(next==="editor"?"Vize":"Beobachter")+" ändern?"))return false;
+ if(!await storage.confirmAction("Berechtigung von "+(m.display_name||"Clanmitglied")+" auf "+(next==="editor"?"Vize":"Beobachter")+" ändern?",{title:"Berechtigung ändern",confirmText:"Ändern"}))return false;
  const {data,error:e}=await sb.from("cwl_clan_memberships").update({role:next})
  .eq("clan_id",expected).eq("user_id",m.user_id).neq("role","owner").select("user_id");
  if(e)throw e;if(!data?.length)throw Error("Änderung nicht übernommen. Bitte neu laden.");
@@ -570,7 +573,7 @@ async function changeAccessRole(expected,m,next){
 }
 async function removeAccessMember(expected,m){
  if(role!=="owner"||m.role==="owner"||m.user_id===user.id)throw Error("Keine Berechtigung.");
- if(!confirm((m.display_name||"Diese Person")+" entfernen? Der Zugang wird entzogen; der Clanplan bleibt erhalten."))return;
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen? Der Zugang wird entzogen; der Clanplan bleibt erhalten.",{title:"Zugang entfernen",confirmText:"Entfernen",danger:true}))return;
  const {data,error:e}=await sb.from("cwl_clan_memberships").delete()
  .eq("clan_id",expected).eq("user_id",m.user_id).neq("role","owner").select("user_id");
  if(e)throw e;if(!data?.length)throw Error("Person konnte nicht entfernt werden.");
@@ -578,7 +581,7 @@ async function removeAccessMember(expected,m){
 }
 async function revokeInvite(expected,inv){
  if(!["owner","editor"].includes(role)||role==="editor"&&inv.created_by!==user.id)throw Error("Keine Berechtigung.");
- if(!confirm("Diese offene Einladung zurückziehen? Der Link wird sofort ungültig."))return;
+ if(!await storage.confirmAction("Diese offene Einladung zurückziehen? Der Link wird sofort ungültig.",{title:"Einladung zurückziehen",confirmText:"Zurückziehen",danger:true}))return;
  const {data,error:e}=await sb.from("cwl_clan_invites").delete().eq("id",inv.id)
  .eq("clan_id",expected).is("used_at",null).select("id");
  if(e)throw e;if(!data?.length)throw Error("Einladung bereits eingelöst oder nicht mehr verfügbar.");
@@ -867,14 +870,14 @@ async function refreshCloud(){
  await Promise.all([audit(),refreshPresence()]);
  const stamp=new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
  const message=prior===revision?"✓ Alles aktuell · keine neuen Änderungen · "+stamp:
-  "✓ Neuer Cloud-Stand übernommen · Revision "+(revision??"–")+" · "+stamp;
+  "✓ Neueste Änderungen übernommen · "+stamp;
  text("cloudSyncFeedback",message);
  msg(message);
 }
 async function leaveSharedClan(){
  if(!clanId||role==="owner")throw Error("Nur Vize oder Beobachter können den Clan verlassen.");
  const name=clans.find(c=>c.id===clanId)?.name||"diesen Clan";
- if(!confirm("Möchtest du "+name+" verlassen? Der Clan und seine Daten bleiben für die anderen erhalten."))return;
+ if(!await storage.confirmAction("Möchtest du "+name+" verlassen? Der Clan und seine Daten bleiben für die anderen erhalten.",{title:"Clan verlassen",confirmText:"Clan verlassen",danger:true}))return;
  await ensureSaved();
  const id=clanId;
  const {error:err}=await sb.from("cwl_clan_memberships").delete().eq("clan_id",id).eq("user_id",user.id);
@@ -886,9 +889,16 @@ async function deleteOwnedClan(){
  if(!clanId||role!=="owner")throw Error("Nur der Besitzer darf seinen eigenen Clan löschen.");
  const name=clans.find(c=>c.id===clanId)?.name;
  if(!name)return;
- const typed=prompt("Dauerhaft löschen: alle Cloud-Profile, Einladungen, Mitgliederzugänge und der Verlauf dieses Clans gehen verloren.\n\nZur Bestätigung den Clannamen exakt eingeben:", "");
+ const answer=await storage.askAction({
+  title:"Cloud-Clan löschen",
+  message:"Alle gemeinsamen Profile, Zugänge, Einladungen und der Änderungsverlauf von „"+name+"“ gehen dauerhaft verloren. Zur Bestätigung den Clannamen genau eingeben.",
+  inputLabel:"Clanname",inputValue:"",
+  buttons:[{value:"confirm",text:"Weiter",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(answer.value!=="confirm")return;
+ const typed=answer.input;
  if(typed!==name){if(typed!==null)msg("Löschen abgebrochen – Clanname stimmt nicht überein.");return}
- if(!confirm("Letzte Bestätigung: den gesamten Cloud-Clan „"+name+"“ und alle zugehörigen gemeinsamen Daten UNWIDERRUFLICH löschen? Vorher JSON-Backup empfohlen."))return;
+ if(!await storage.confirmAction("Den gesamten gemeinsamen Clan „"+name+"“ und alle zugehörigen Daten endgültig löschen? Vorher ein JSON-Backup erstellen.",{title:"Clan endgültig löschen",confirmText:"Clan löschen",danger:true}))return;
  await ensureSaved();
  const id=clanId;
  const {error:err}=await sb.from("cwl_clans").delete().eq("id",id);
@@ -911,7 +921,7 @@ async function importCloud(){
  const b=JSON.parse(await f.text());if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
  const p=b.kind==="cwl-profile"?b.profile:b.kind==="cwl-app-backup"?(b.app?.profiles?.find(x=>x.id===b.app?.activeProfileId)||b.app?.profiles?.[0]):null;
  if(!p||!Array.isArray(p.members)||!Array.isArray(p.locks)||!Array.isArray(p.archives))throw Error("Kein gültiges CWL-Profil in dieser Datei.");
- if(!confirm("Dieses JSON-Profil wird den aktuellen gemeinsamen Clanstand ersetzen. Wirklich fortfahren?"))return;
+ if(!await storage.confirmAction("Dieses Backup ersetzt den aktuellen gemeinsamen Clanplan für alle Mitglieder.",{title:"Gemeinsamen Plan ersetzen?",confirmText:"Plan ersetzen",danger:true}))return;
  await ensureSaved();hydrating=true;
  try{storage.switchToCloud(p)}finally{hydrating=false}
  cloud.onLocalChange();
@@ -1006,7 +1016,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.7";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.8";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
