@@ -20,3 +20,5 @@ body::before{content:"";position:fixed;top:-180px;left:-220px;width:650px;height
 @media(max-width:699px){#view-plan #planDays .day-card:not(.mobile-lineup-expanded) .lineup{display:none!important}#view-plan #planDays .mobile-lineup-toggle{display:inline-flex!important;align-items:center;justify-content:center;width:100%;margin-top:10px}}
 /* On phones the current lineup takes priority over secondary KPIs/actions. */
 @media(max-width:699px){#view-plan.active{display:flex;flex-direction:column}#view-plan:not(.active){display:none!important}#view-plan>#recoveryBanner{order:0}#view-plan>.arena-hero{order:1}#view-plan>#mobileDaySwitcher{order:2}#view-plan>#planDays{order:3}#view-plan>#planOverview{order:4;margin-top:7px!important}#view-plan .day-switcher-header{display:flex;justify-content:space-between;align-items:center;gap:8px}#view-plan .desktop-day-mode{flex:0 0 auto}#view-plan .mobile-day-tab{min-width:84px}}
+/* A visible TEST marker prevents mistaking the preview for the live planner. */
+@media(max-width:900px){.arena-preview-label{display:inline-flex!important;font-size:9px!important;letter-spacing:.01em!important;padding:5px 6px!important}}
