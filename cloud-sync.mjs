@@ -15,8 +15,13 @@ const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
 const INVITE_TOKEN_KEY="cwl_pending_invite_v1",INVITE_ALIAS_KEY="cwl_pending_invite_name_v1";
 const isInviteCode=v=>/^(?:[a-zA-Z0-9_-]{12}|[a-zA-Z0-9_-]{24})$/.test(String(v||""));
-const storedInvite=(key)=>{try{return sessionStorage.getItem(key)||""}catch{return""}};
-const saveInvite=(key,value)=>{try{if(value)sessionStorage.setItem(key,value);else sessionStorage.removeItem(key)}catch{/* private mode */}};
+// Keep an invitation across the new tab opened by email confirmation.
+const storedInvite=(key)=>{try{return localStorage.getItem(key)||sessionStorage.getItem(key)||""}catch{return""}};
+const saveInvite=(key,value)=>{
+ for(const area of [localStorage,sessionStorage]){
+  try{if(value)area.setItem(key,value);else area.removeItem(key)}catch{/* private mode */}
+ }
+};
 const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode")?.value?.trim();
  const query=new URLSearchParams(location.search).get("invite");
  const code=input||query||storedInvite(INVITE_TOKEN_KEY);
@@ -540,14 +545,17 @@ async function saveAlias(){
 async function loadAccessList(expected=clanId){
  if(!expected||!user)return;
  const canInvite=["owner","editor"].includes(role);
- const [{data:members,error:e1},{data:invites,error:e2}]=await Promise.all([
+ const [{data:members,error:e1},{data:invites,error:e2},{data:blocks,error:e3}]=await Promise.all([
   sb.from("cwl_clan_memberships").select("user_id,role,display_name,joined_at").eq("clan_id",expected).order("joined_at"),
   canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at,reusable,link_label,use_count")
    .eq("clan_id",expected).is("used_at",null)
    .or("expires_at.is.null,expires_at.gt."+new Date().toISOString())
-   .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null})
+   .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null}),
+  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at")
+   .eq("clan_id",expected).order("blocked_at",{ascending:false}).limit(100):
+   Promise.resolve({data:[],error:null})
  ]);
- if(e1)throw e1;if(e2)throw e2;if(expected!==clanId)return;
+ if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;if(expected!==clanId)return;
  const list=$("cloudAccessList");list.replaceChildren();
  for(const m of members||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
@@ -610,6 +618,25 @@ async function loadAccessList(expected=clanId){
   }
   root.append(row);
  }
+ toggle("cloudBlockedDetails",canInvite);
+ text("cloudBlockedCount","("+(blocks||[]).length+")");
+ const blockedList=$("cloudBlockedList");blockedList.replaceChildren();
+ if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine gesperrten Personen.";
+ for(const item of blocks||[]){
+  const row=document.createElement("div");row.className="cloud-access-row";
+  const label=document.createElement("strong");
+  label.textContent=item.display_name||"Ehemaliges Clanmitglied";
+  const meta=document.createElement("span");
+  meta.textContent=" · "+(item.blocked_role==="editor"?"ehemaliger Vize":"ehemaliger Beobachter");
+  row.append(label,meta);
+  if(role==="owner"||(role==="editor"&&item.blocked_by===user.id&&item.blocked_role==="viewer")){
+   const undo=document.createElement("button");undo.className="btn small";undo.type="button";
+   undo.textContent="Sperre aufheben";
+   undo.onclick=()=>unblockAccessMember(expected,item).catch(error);
+   row.append(undo);
+  }
+  blockedList.append(row);
+ }
 }
 async function changeAccessRole(expected,m,next){
  if(role!=="owner"||m.role==="owner"||!["editor","viewer"].includes(next))throw Error("Keine Berechtigung.");
@@ -622,11 +649,18 @@ async function changeAccessRole(expected,m,next){
 }
 async function removeAccessMember(expected,m){
  if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))throw Error("Keine Berechtigung.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen? Der Zugang wird entzogen; der Clanplan bleibt erhalten.",{title:"Zugang entfernen",confirmText:"Entfernen",danger:true}))return;
- const {data,error:e}=await sb.from("cwl_clan_memberships").delete()
- .eq("clan_id",expected).eq("user_id",m.user_id).eq("role",role==="editor"?"viewer":m.role).select("user_id");
- if(e)throw e;if(!data?.length)throw Error("Person konnte nicht entfernt werden.");
- if(expected===clanId){storage.toast("✓ Zugang entfernt");await loadAccessList(expected)}
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen und für erneute Beitritte sperren? Die Person kann auch über aktive Gruppenlinks nicht wieder beitreten, bis die Sperre aufgehoben wird.",{title:"Zugang entfernen und sperren",confirmText:"Entfernen",danger:true}))return;
+ const {error:e}=await sb.rpc("cwl_remove_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Zugang entfernt und gesperrt");await loadAccessList(expected)}
+}
+async function unblockAccessMember(expected,m){
+ if(!(role==="owner"||(role==="editor"&&m.blocked_role==="viewer"&&m.blocked_by===user.id)))
+   throw Error("Keine Berechtigung zum Entsperren.");
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Die Person erhält dadurch noch keinen Zugang und muss erneut einem gültigen Einladungslink folgen.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
+ const {error:e}=await sb.rpc("cwl_unblock_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Sperre aufgehoben");await loadAccessList(expected)}
 }
 async function editReusableInvite(expected,inv){
  if(!inv.reusable||!(role==="owner"||role==="editor"&&inv.created_by===user.id))
