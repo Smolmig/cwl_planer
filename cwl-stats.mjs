@@ -118,7 +118,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];version++;lastCapture.clear();loading=false;importing=false;
+    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
   async function load(){
