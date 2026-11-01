@@ -1145,6 +1145,17 @@ async function safeRosterRefresh(){
 }
 bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
 bind("cloudMembersSyncBtn","click",safeRosterRefresh);
+bind("settingsRosterRefresh","click",async()=>{
+ $("settingsClose").click();
+ document.querySelector('.navbtn[data-view="members"]')?.click();
+ await safeRosterRefresh();
+});
+$("settingsAutoRoster").addEventListener("change",ev=>{
+ if(!clanId)return;
+ try{localStorage.setItem("cwl_auto_roster_"+clanId,ev.target.checked?"on":"off")}catch{}
+ if(ev.target.checked){autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn)}
+ else text("autoRosterStatus","Automatischer Abgleich deaktiviert · manuelle Prüfung weiterhin möglich.");
+});
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
