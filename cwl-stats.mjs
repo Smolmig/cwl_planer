@@ -23,6 +23,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       return;
     }
     const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+    cachedPlayerStats=new Map(summary.rows.map(p=>[cleanTag(p.tag),p]));
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"mind. "+summary.missesKnown:"k. A.");
     $("statsSummary").innerHTML=[
