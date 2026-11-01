@@ -1022,7 +1022,8 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #cloudAuthInvite[hidden],#cloudAuthNameWrap[hidden]{display:none!important}
 #cloudAuthNameWrap{display:block;margin:10px 0 6px}
 #cloudAuthInvite{margin:8px 0 10px}
-#cloudInviteKind,#cloudInviteRole{width:100%}
+#cloudInviteKind,#cloudInviteRole,#cloudInviteDuration,#cloudInviteLabel{width:100%}
+#cloudInviteReusableOptions[hidden]{display:none!important}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1388,7 +1389,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
     <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
-    <label for="cloudJoinCode">Einladungscode</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
+    <label for="cloudJoinCode">Einladungscode oder Gruppenlink</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <label for="cloudJoinName">Dein Ingame-Name (für den Beitritt erforderlich)</label>
     <input id="cloudJoinName" maxlength="60" autocomplete="nickname" placeholder="Dein Name in Clash of Clans">
     <p class="small" id="cloudJoinHint">Dieser Name wird den Clanführern bei deinen Berechtigungen angezeigt.</p>
@@ -1398,6 +1399,16 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <h3>Zugriff teilen</h3><p>Teile einen Gruppenlink mit allen, die den Clanplan sehen oder mitbearbeiten sollen. Der Link bleibt bis zu deinem Widerruf gültig.</p>
     <label for="cloudInviteKind">Einladung</label>
     <select id="cloudInviteKind"><option value="reusable">Gruppenlink · beliebig viele Beitritte</option><option value="single">Einmaliger Link · 7 Tage</option></select>
+    <div id="cloudInviteReusableOptions">
+      <label for="cloudInviteLabel">Bezeichnung (optional)</label>
+      <input id="cloudInviteLabel" maxlength="60" placeholder="z. B. Clan-Discord">
+      <label for="cloudInviteDuration">Gültigkeit</label>
+      <select id="cloudInviteDuration">
+        <option value="never" selected>Bis zum Widerruf</option>
+        <option value="7d">7 Tage</option>
+        <option value="24h">24 Stunden</option>
+      </select>
+    </div>
     <label for="cloudInviteRole">Berechtigung für neue Mitglieder</label>
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
     <button class="btn primary" id="cloudMakeInvite">Einladungslink erstellen</button>
