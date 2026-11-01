@@ -56,7 +56,7 @@ test("Invitations have 24h, 7d, indefinite and a strict role hierarchy",()=>{
   assert.ok(sync.includes(fn),fn);
  assert.match(sync,/inv\.created_by===user\.id/);
  assert.match(sync,/role==="editor"&&m\.role==="viewer"/);
- assert.match(migrations[0],/p_duration in \('24h','7d','never'\)/);
+ assert.match(migrations[0],/p_duration not in \('24h','7d','never'\)/);
  assert.match(migrations[1],/v_blocked|v_invite\.created_by=v_user|v_invite\.created_by=v_user|v_invite\.created_by/);
  assert.match(migrations[2],/private\.cwl_prevent_blocked_membership/);
  assert.match(migrations[2],/v_target\.role<>'viewer'/);
