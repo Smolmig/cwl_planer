@@ -993,6 +993,32 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
 @media(max-width:390px){.stats-player-head,.stats-player-row{grid-template-columns:minmax(70px,1fr) 64px 48px 52px;gap:4px;padding:9px 6px}.stats-player-head{font-size:9px}.stats-player{gap:5px}.stats-th{width:29px;height:29px}}
+
+/* Independent, progressive statistics filters without a permanent third control. */
+.stats-period{position:relative;min-width:0}
+.stats-period summary{display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:43px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-weight:700;font-size:12px;cursor:pointer;list-style:none;user-select:none}
+.stats-period summary::-webkit-details-marker{display:none}
+.stats-period summary::after{content:"⌄";font-size:16px;color:var(--muted);flex:none;transition:transform .15s ease}
+.stats-period[open] summary::after{transform:rotate(180deg)}
+.stats-period[open] summary{border-color:var(--primary);border-bottom-left-radius:0;border-bottom-right-radius:0}
+.stats-period-options{display:grid;gap:10px;padding:11px;border:1px solid var(--primary);border-top:0;border-bottom-left-radius:11px;border-bottom-right-radius:11px;background:var(--card)}
+.stats-period-options [hidden]{display:none!important}
+.stats-period-options label{margin-bottom:5px}
+.stats-asset-credit{font-size:10px;line-height:1.45;color:var(--muted);margin:9px 0 0}
+.stats-asset-credit a{color:inherit;text-decoration:underline}
+.stats-th{flex-direction:column;gap:0;width:38px;min-height:38px;height:auto;padding:2px 1px}
+.stats-th img{display:block;max-width:100%;max-height:27px;object-fit:contain;flex:none}
+.stats-th small{display:block;font-size:8px;line-height:11px;font-weight:800;white-space:nowrap}
+@media(max-width:390px){.stats-th{width:33px;min-height:36px;height:auto}.stats-th img{max-height:23px}}
+/* Fixed account access button: never cut off a clan name. */
+#cloudOpen{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;min-width:0}
+#cloudOpen .cloud-toggle-icon{font-size:17px;line-height:1}
+#cloudOpen .cloud-toggle-label{font-weight:800}
+@media(max-width:699px){
+  .topbar #cloudOpen{max-width:none!important;min-width:38px!important;width:38px!important;height:36px!important;min-height:36px!important;padding:4px!important;font-size:14px!important}
+  #cloudOpen .cloud-toggle-label{display:none}
+}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1009,7 +1035,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
       <div class="subtitle">CWL planen · Einsätze fair verteilen · Überblick behalten</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
+    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
   </div>
 </div>
 <main class="content">
@@ -1150,10 +1176,10 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.3.8</strong><span>Bedienung verbessert</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.3.9</strong><span>Statistik &amp; Navigation</span></div>
       <ul>
         <li><b>Einheitliche Dialoge:</b> Bestätigungen und Löschaktionen erscheinen jetzt direkt in der App.</li>
-        <li><b>Klare Statistik:</b> Statt „Hit Rate“ wird die 3★-Quote angezeigt.</li>
+        <li><b>Statistik:</b> Die 3★-Hit-Rate und verpasste Angriffe sind klarer erklärt. CWs und CWLs lassen sich unabhängig auswählen.</li>
         <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
         <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
         <li><b>Planung bleibt flexibel:</b> Auch ohne laufende CWL kannst du Mitglieder einteilen und Aufstellungen vorbereiten.</li>
@@ -1171,7 +1197,22 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="section-title"><div><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel" for="statsRange">Normale CWs + CWL</label><select id="statsRange"><option value="10">10 CWs + 3 CWLs</option><option value="25">25 CWs + 3 CWLs</option><option value="50" selected>50 CWs + 3 CWLs</option></select></div>
+      <div class="field"><label id="statsPeriodLabel">Zeitraum</label>
+        <details class="stats-period" id="statsPeriodConfig">
+          <summary id="statsPeriodSummary" aria-label="Auswertungszeitraum ändern">50 CWs + 3 CWLs</summary>
+          <div class="stats-period-options">
+            <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
+              <option value="1">Letzter 1 CW</option><option value="2">Letzte 2 CWs</option>
+              <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
+              <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
+              <option value="50" selected>Letzte 50 CWs</option>
+            </select></div>
+            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Saisons</label><select id="statsCwlRange">
+              <option value="1">Letzte 1 CWL</option><option value="2">Letzte 2 CWLs</option>
+              <option value="3" selected>Letzte 3 CWLs</option><option value="all">Alle verfügbaren CWLs</option>
+            </select></div>
+          </div>
+        </details></div>
     </div>
     <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
@@ -1179,22 +1220,23 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="statusline">Bester Spieler (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
-    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">Die 3-Sterne-Quote zeigt, wie oft ein Spieler mit seinen ausgeführten Angriffen drei Sterne erreicht. Tage ohne Einsatz senken die Quote nicht.</p>
+    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">Die 3★-Hit-Rate zeigt, bei wie vielen ausgeführten Angriffen ein Spieler drei Sterne erzielt. Kriegstage ohne Einsatz zählen nicht mit.</p>
     <div class="stats-toggles">
       <label><input type="checkbox" id="statsSameTH"> Nur gleiches oder höheres RH</label>
       <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Quote ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Nicht genutzt ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Hit-Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
     </div>
-    <div class="stats-player-table">
-      <div class="stats-player-head"><span>Spieler</span><span>3★-Quote</span><span>Angriffe</span><span>Nicht genutzt</span></div>
+    <div class="stats-player-table" aria-label="Spielerstatistik">
+      <div class="stats-player-head"><span>Spieler</span><span>3★-Hit-Rate</span><span>Angriffe</span><span>Verpasst</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
-    <p class="stats-note" id="statsMissingNote">Nicht alle älteren Kriege haben vollständige Angaben zu nicht genutzten Angriffen.</p>
+    <p class="stats-note" id="statsMissingNote">Verpasst heißt: Nicht ausgeführt. Ob ein Angriff vergessen wurde, lässt sich nicht feststellen.</p>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
+    <p class="stats-asset-credit">Rathausbilder: <a href="https://github.com/ClashKingInc/ClashKingAssets" target="_blank" rel="noopener noreferrer">ClashKingAssets</a> · inoffizielle Fan-App, nicht von Supercell unterstützt.</p>
     <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </div>
 </section>
@@ -1383,7 +1425,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.3.8";
+const APP_VERSION="v1.3.9";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1866,6 +1908,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.3.8"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.3.9"></script>
 </body>
 </html>
