@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.1";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.1";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.1";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.1";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.2";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.2";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.2";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.2";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -24,13 +24,14 @@ const saveInvite=(key,value)=>{
 };
 const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode")?.value?.trim();
  const query=new URLSearchParams(location.search).get("invite");
- const code=input||query||storedInvite(INVITE_TOKEN_KEY);
+ const code=query||input||storedInvite(INVITE_TOKEN_KEY);
  return isInviteCode(code)?code:"";
 };
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
+let invitePreview=null,inviteAuthMode="login",invitePreviewRequest=0,inviteSubmitting=false;
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const backups=createCloudBackups({
  sb,
@@ -162,6 +163,121 @@ function error(e){msg(e?.message||String(e),true);
  console.warn("Cloud Planner:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
+function inviteFeedback(message,isError=false){
+ const target=$("inviteWelcomeError");if(!target)return;
+ target.hidden=!message;target.textContent=message||"";
+ target.classList.toggle("error",isError);
+}
+function closeInviteDialog(discard=false){
+ const box=$("inviteWelcome");
+ box.classList.remove("open");box.setAttribute("aria-hidden","true");
+ if(discard){
+  saveInvite(INVITE_TOKEN_KEY,"");saveInvite(INVITE_ALIAS_KEY,"");
+  $("cloudJoinCode").value="";$("inviteWelcomeName").value="";
+  const next=new URL(location.href);next.searchParams.delete("invite");
+  history.replaceState(null,"",next.pathname+next.search+next.hash);
+ }
+}
+async function suggestedInviteName(){
+ if($("inviteWelcomeName").value.trim())return;
+ const localName=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+ if(localName){$("inviteWelcomeName").value=localName;return}
+ if(!user)return;
+ const meta=String(user.user_metadata?.display_name||user.user_metadata?.name||"").trim();
+ try{
+  const {data,error:err}=await sb.from("cwl_clan_memberships")
+   .select("display_name").eq("user_id",user.id)
+   .order("joined_at",{ascending:false}).limit(1);
+  if(!err&&data?.[0]?.display_name&&!$("inviteWelcomeName").value.trim()){
+   $("inviteWelcomeName").value=data[0].display_name;return;
+  }
+ }catch{/* Existing user may not yet belong to a planner. */}
+ if(meta&&!$("inviteWelcomeName").value.trim())$("inviteWelcomeName").value=meta.slice(0,60);
+}
+function updateInviteGuestView(){
+ const active=!!user&&!recoveryMode;
+ toggle("inviteWelcomeSigned",active);
+ toggle("inviteWelcomeGuest",!active);
+ if(active){
+  $("inviteWelcomeAuthForm").hidden=true;
+  $("inviteWelcomeAuthChoices").hidden=false;
+ }
+}
+async function showInviteDialog(code=pendingInviteCode()){
+ if(!isInviteCode(code)||recoveryMode)return;
+ const seq=++invitePreviewRequest;
+ $("cloudJoinCode").value=code;
+ saveInvite(INVITE_TOKEN_KEY,code);
+ const box=$("inviteWelcome");box.classList.add("open");box.setAttribute("aria-hidden","false");
+ text("inviteWelcomeTitle","Einladung wird geladen …");
+ text("inviteWelcomeIntro","Wir prüfen den Einladungslink.");
+ toggle("inviteWelcomeRole",false);toggle("inviteWelcomeActions",false);
+ inviteFeedback("");
+ updateInviteGuestView();
+ try{
+  const {data,error:err}=await sb.rpc("cwl_preview_invite",{p_code:code});
+  if(seq!==invitePreviewRequest)return;
+  if(err)throw err;
+  const row=Array.isArray(data)?data[0]:null;
+  if(!row){invitePreview=null;
+   text("inviteWelcomeTitle","Einladung nicht verfügbar");
+   text("inviteWelcomeIntro","Dieser Link ist abgelaufen, wurde zurückgezogen oder ist nicht mehr gültig. Bitte die Clanführung um eine neue Einladung.");
+   return;
+  }
+  invitePreview=row;
+  text("inviteWelcomeTitle",row.planner_name);
+  text("inviteWelcomeIntro","Du hast eine Einladung erhalten, diesen CWL-Planer gemeinsam zu nutzen.");
+  const title=row.invited_role==="editor"?"Vize · Planung bearbeiten":"Beobachter · Plan ansehen";
+  const until=row.valid_until?" · Gültig bis "+new Date(row.valid_until).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):" · Ohne Ablaufdatum";
+  text("inviteWelcomeRole","Dein Zugang: "+title+until);
+  toggle("inviteWelcomeRole",true);toggle("inviteWelcomeActions",true);
+  await suggestedInviteName();
+  if(seq!==invitePreviewRequest)return;
+  updateInviteGuestView();
+ }catch(err){
+  if(seq!==invitePreviewRequest)return;
+  text("inviteWelcomeTitle","Einladung kann nicht geprüft werden");
+  text("inviteWelcomeIntro","Die Einladung konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.");
+  inviteFeedback(err?.message||"Bitte später erneut versuchen.",true);
+ }
+}
+async function confirmInviteJoin(){
+ if(inviteSubmitting||!user)return;
+ const code=pendingInviteCode();
+ const name=$("inviteWelcomeName").value.trim();
+ if(!isInviteCode(code))return inviteFeedback("Bitte öffne einen gültigen Einladungslink.",true);
+ if(!name||name.length>60)return inviteFeedback("Bitte gib deinen Namen für den Planer ein.",true);
+ inviteSubmitting=true;
+ $("inviteWelcomeJoin").disabled=true;
+ inviteFeedback("");
+ try{
+  $("cloudJoinCode").value=code;$("cloudJoinName").value=name;
+  saveInvite(INVITE_ALIAS_KEY,name);
+  await joinInvite();
+  closeInviteDialog();
+  close();
+  document.querySelector('.navbtn[data-view="plan"]')?.click();
+  storage.toast("✓ Beitritt erfolgreich · gemeinsamer Planer geöffnet");
+ }catch(err){inviteFeedback("Beitritt nicht möglich: "+(err?.message||err),true)}
+ finally{inviteSubmitting=false;$("inviteWelcomeJoin").disabled=false}
+}
+async function submitInviteAuth(){
+ if(inviteSubmitting)return;
+ inviteSubmitting=true;
+ $("inviteWelcomeAuthSubmit").disabled=true;
+ inviteFeedback("");
+ try{
+  $("cloudEmail").value=$("inviteWelcomeEmail").value.trim();
+  $("cloudPassword").value=$("inviteWelcomePassword").value;
+  const chosen=$("inviteWelcomeName").value.trim();
+  if(chosen.length>60)throw Error("Der Name darf höchstens 60 Zeichen haben.");
+  if(chosen){$("cloudJoinName").value=chosen;$("cloudAuthName").value=chosen}
+  await sign(inviteAuthMode);
+  if(!user&&inviteAuthMode==="signup")
+   inviteFeedback("Konto erstellt. Prüfe jetzt deine E-Mails und bestätige die Registrierung. Danach kannst du über die Einladung beitreten.");
+ }catch(err){inviteFeedback(err?.message||"Anmeldung fehlgeschlagen.",true)}
+ finally{inviteSubmitting=false;$("inviteWelcomeAuthSubmit").disabled=false}
+}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
 function showSignedIn(){
  toggle("cloudAuth",!user&&!recoveryMode&&!forgotOpen);
@@ -220,11 +336,11 @@ async function sign(kind){
  if(!email||password.length<8)throw Error("Bitte E-Mail und mindestens 8 Zeichen Passwort eingeben.");
  const invite=pendingInviteCode();
  if(invite){
-  const name=$("cloudAuthName").value.trim()||$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
-  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben, damit du dem Clan beitreten kannst.");
-  $("cloudJoinName").value=name;
+  const name=$("inviteWelcomeName").value.trim()||$("cloudAuthName").value.trim()||
+   $("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(name.length>60)throw Error("Der Anzeigename darf maximal 60 Zeichen haben.");
+  if(name){$("cloudJoinName").value=name;saveInvite(INVITE_ALIAS_KEY,name)}
   saveInvite(INVITE_TOKEN_KEY,invite);
-  saveInvite(INVITE_ALIAS_KEY,name);
  }
  const redirect=new URL(location.pathname,location.origin);
  if(invite)redirect.searchParams.set("invite",invite);
@@ -232,7 +348,7 @@ async function sign(kind){
   await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect.href}}):
   await sb.auth.signInWithPassword({email,password});
  if(out.error)throw out.error;
- if(!out.data.session){msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
+ if(!out.data.session){if(!$("inviteWelcome").classList.contains("open"))msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
  await useSession(out.data.session);
 }
 async function useSession(session){
@@ -245,18 +361,8 @@ async function useSession(session){
  await listClans(epoch);
  const code=pendingInviteCode();
  if(code){
-  $("cloudJoinCode").value=code;
-  const name=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
-  if(name){
-   $("cloudJoinName").value=name;
-   try{await joinInvite()}catch(e){
-    open();msg("Beitritt noch nicht abgeschlossen: "+(e.message||e),true);
-    $("cloudJoinName").focus({preventScroll:true});
-   }
-  }else{
-   open();msg("Einladung erkannt: Bitte noch deinen Ingame-Namen eintragen und „Clan beitreten“ wählen.");
-   $("cloudJoinName").focus({preventScroll:true});
-  }
+  close();
+  await showInviteDialog(code);
  }
 }
 async function leaveCloud(){
@@ -301,7 +407,7 @@ async function chooseClan(epoch=accountEpoch){
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
- toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
+ toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
@@ -729,7 +835,7 @@ async function createInvite(){
 }
 async function joinInvite(){
  if(clanId)await ensureSaved();
- const code=$("cloudJoinCode").value.trim();
+ const code=pendingInviteCode();
  if(!isInviteCode(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
  const name=$("cloudJoinName").value.trim();
  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben.");
@@ -744,8 +850,8 @@ async function joinInvite(){
  $("cloudAuthName").value="";
  saveInvite(INVITE_TOKEN_KEY,"");
  saveInvite(INVITE_ALIAS_KEY,"");
- msg("Du bist "+name+" und hast jetzt Zugriff auf den Clan.");
- storage.toast("✓ Dem Clan beigetreten");
+ msg("Du bist "+name+" und hast jetzt Zugriff auf den gemeinsamen Planer.");
+ storage.toast("✓ Dem Planer beigetreten");
  await listClans(accountEpoch,data);
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
@@ -1122,6 +1228,36 @@ bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
 
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
+bind("inviteWelcomeClose","click",()=>closeInviteDialog(true));
+bind("inviteWelcomeJoin","click",confirmInviteJoin);
+function selectInviteAuth(mode){
+ inviteAuthMode=mode;
+ toggle("inviteWelcomeAuthChoices",false);toggle("inviteWelcomeAuthForm",true);
+ text("inviteWelcomeAuthTitle",mode==="signup"?"Konto erstellen":"Anmelden");
+ text("inviteWelcomeAuthSubmit",mode==="signup"?"Konto erstellen":"Anmelden");
+ $("inviteWelcomePassword").setAttribute("autocomplete",mode==="signup"?"new-password":"current-password");
+ $("inviteWelcomeEmail").focus({preventScroll:true});
+}
+bind("inviteWelcomeLoginChoice","click",()=>selectInviteAuth("login"));
+bind("inviteWelcomeSignupChoice","click",()=>selectInviteAuth("signup"));
+bind("inviteWelcomeAuthBack","click",()=>{
+ toggle("inviteWelcomeAuthChoices",true);toggle("inviteWelcomeAuthForm",false);inviteFeedback("");
+});
+bind("inviteWelcomeAuthSubmit","click",submitInviteAuth);
+$("inviteWelcomeName").addEventListener("input",()=>{
+ const value=$("inviteWelcomeName").value.trim();
+ $("cloudJoinName").value=value;
+ saveInvite(INVITE_ALIAS_KEY,value);
+});
+$("inviteWelcome").addEventListener("click",e=>{
+ if(e.target===$("inviteWelcome"))closeInviteDialog(true);
+});
+$("inviteWelcome").addEventListener("keydown",e=>{
+ if(e.key==="Escape"){e.stopPropagation();closeInviteDialog(true)}
+ if(e.key==="Enter"&&e.target.matches("#inviteWelcomeEmail,#inviteWelcomePassword")){
+  e.preventDefault();submitInviteAuth().catch(err=>inviteFeedback(err?.message||String(err),true));
+ }
+});
 function toggleInviteKind(){
  const box=$("cloudInviteReusableOptions");
  if(box)box.hidden=$("cloudInviteKind").value!=="reusable";
@@ -1187,7 +1323,7 @@ window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder onlin
 let pendingRelease=null;
 function safeForReload(){
  return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
-   !document.querySelector(".cloud-overlay.open")&&
+   !document.querySelector(".cloud-overlay.open,.invite-welcome.open")&&
    !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
 }
 function installPendingRelease(){
@@ -1209,7 +1345,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.4.1";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.4.2";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
@@ -1242,8 +1378,7 @@ const resumedInvite=isInviteCode(linkCode)?linkCode:storedInvite(INVITE_TOKEN_KE
 if(isInviteCode(resumedInvite)){
  $("cloudJoinCode").value=resumedInvite;
  const alias=storedInvite(INVITE_ALIAS_KEY);
- if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias}
- open();
+ if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias;$("inviteWelcomeName").value=alias}
 }
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){
@@ -1258,4 +1393,4 @@ const {data:{session},error:sessionErr}=await sb.auth.getSession();
 if(sessionErr)error(sessionErr);
 else if(recoveryMode)beginRecovery();
 else if(session)try{await useSession(session)}catch(e){error(e)}
-else{showSignedIn();cloud.afterRender()}
+else{showSignedIn();cloud.afterRender();if(!recoveryMode&&isInviteCode(resumedInvite))await showInviteDialog(resumedInvite)}

@@ -1086,6 +1086,37 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
  #view-settings .settings-window>.card{padding:16px}
  #view-settings .settings-window>.settings-dialog-head{padding:11px 16px}
 }
+
+/* Invitation links have their own focused entry flow, not the clan administration screen. */
+.invite-welcome{position:fixed;inset:0;z-index:380;display:none;align-items:center;justify-content:center;overflow:auto;
+ padding:calc(20px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));background:rgba(2,8,18,.83)}
+.invite-welcome.open{display:flex}
+.invite-welcome [hidden]{display:none!important}
+.invite-welcome-panel{box-sizing:border-box;width:100%;max-width:420px;max-height:calc(100dvh - 38px);overflow-y:auto;
+ background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:23px;
+ box-shadow:0 25px 70px rgba(0,0,0,.45);overscroll-behavior:contain}
+.invite-welcome-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.invite-welcome-icon{display:flex;align-items:center;justify-content:center;background:var(--bluebg);border:1px solid var(--line);border-radius:13px;width:43px;height:43px;font-size:24px}
+.invite-welcome-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.invite-welcome-panel h2{font-size:22px;margin:8px 0 8px;overflow-wrap:anywhere}
+.invite-welcome-intro{font-size:13px;line-height:1.55;color:var(--muted);margin:0 0 14px}
+.invite-welcome-role{background:var(--bluebg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:13px;margin-bottom:17px}
+.invite-welcome-role strong{color:var(--text)}
+.invite-welcome-panel label{display:block;font-size:12px;font-weight:750;margin:13px 0 6px}
+.invite-welcome-panel input{box-sizing:border-box;width:100%;min-height:43px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-size:15px}
+.invite-welcome-caption,.invite-welcome-footnote{font-size:11px;line-height:1.5;color:var(--muted);margin:7px 0 13px}
+.invite-welcome-footnote{margin:17px 0 0}
+.invite-welcome-primary{width:100%;min-height:44px;margin-top:8px}
+.invite-welcome-auth-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.invite-welcome-auth-buttons .btn{min-height:43px}
+.invite-welcome-login{padding-top:5px}
+.invite-welcome-login h3{margin:5px 0 9px;font-size:16px}
+.invite-welcome-back{display:block;margin:12px auto 0;border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;cursor:pointer}
+.invite-welcome-alert{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin:10px 0}
+body:has(#inviteWelcome.open) .inline-action-backdrop{z-index:520}
+body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
+@media(max-width:390px){.invite-welcome-panel{padding:17px}.invite-welcome-panel h2{font-size:20px}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1249,9 +1280,9 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.1</strong><span>Gemeinsam planen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.4.2</strong><span>Gemeinsam planen</span></div>
       <ul>
-        <li><b>Einheitliche Dialoge:</b> Bestätigungen und Löschaktionen erscheinen jetzt direkt in der App.</li>
+        <li><b>Einladungen:</b> Einladungslinks öffnen jetzt direkt ein Beitrittsfenster mit Clanname, Rolle und einfacher Anmeldung.</li>
         <li><b>Mehr Kriegsdetails:</b> Ø Sterne pro Angriff, Einzelangriffe und ein Archiv vergangener Kriege.</li><li><b>Mitglieder:</b> Im Cloud-Planer siehst du echte Angriffswerte und kannst den automatischen Clanabgleich steuern.</li><li><b>Zusammenarbeit:</b> Entfernen und Sperren sind getrennt.</li>
         <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
         <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
@@ -1342,7 +1373,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“ und „Fix“ lassen sich direkt ändern. Name, Rathaus und Tagesregeln findest du über den Stift bzw. „Bearbeiten“. Im Cloud-Planer kommen Hit-Rate und durchschnittliche Sterne aus gespeicherten Kriegsangriffen; offline bleibt die manuelle Einschätzung bestehen.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
     <div><b>Wiederherstellung</b><p>Die letzten fünf automatischen Sicherungen enthalten nur den gemeinsamen CWL-Plan, nicht die Angriffshistorie und Konten. Nur der Besitzer darf einen alten Stand zurückholen. Sichere wichtige Pläne zusätzlich als JSON-Datei.</p></div>
-    <div><b>Einladungen</b><p>Gruppenlinks können 24 Stunden, sieben Tage oder bis zum Widerruf gelten. Der Link legt fest, ob jemand Vize oder Beobachter wird. Entfernen macht ältere Links für die Person ungültig; Sperren verhindert neue Beitritte vollständig. Auch nach einer Anmeldung bleibt die gewählte Einladung erhalten.</p></div>
+    <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
    <p class="cloud-help-note">Während einer CWL zeigt der Plan die bekannten Gegner, Rathaus-Verteilung und Angriffe. Nach Kriegsende übernimmt die App die tatsächliche Aufstellung, sobald sie erneut geöffnet und mit Clash verbunden wird. Normale Clankriege findest du unter „Übersicht“, ihre Ergebnisse fließen in die Statistik ein. Ohne aktuelle Kriegsdaten bleibt die manuelle Planung nutzbar. <a href="./cwl-demo.html">CWL mit Beispieldaten ausprobieren</a>.</p>
@@ -1392,6 +1423,45 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div class="inline-action-buttons" id="inlineActionButtons"></div>
 </div>
 
+
+<div class="invite-welcome" id="inviteWelcome" role="dialog" aria-modal="true" aria-labelledby="inviteWelcomeTitle" aria-hidden="true">
+ <div class="invite-welcome-panel">
+  <div class="invite-welcome-heading">
+   <span class="invite-welcome-icon" aria-hidden="true">⚔️</span>
+   <button class="btn small" id="inviteWelcomeClose" type="button" aria-label="Einladung schließen">✕</button>
+  </div>
+  <div class="invite-welcome-eyebrow">Einladung zum CWL-Planer</div>
+  <h2 id="inviteWelcomeTitle">Du wurdest eingeladen</h2>
+  <p class="invite-welcome-intro" id="inviteWelcomeIntro">Einladung wird geprüft …</p>
+  <div class="invite-welcome-role" id="inviteWelcomeRole" hidden></div>
+  <div class="invite-welcome-alert" id="inviteWelcomeError" role="alert" hidden></div>
+  <div id="inviteWelcomeActions" hidden>
+   <label for="inviteWelcomeName">Dein Name im Planer</label>
+   <input id="inviteWelcomeName" maxlength="60" autocomplete="nickname" placeholder="So sehen dich die anderen Mitplaner">
+   <p class="invite-welcome-caption">Dieser Name wird den anderen Personen mit Zugriff angezeigt.</p>
+   <div id="inviteWelcomeSigned" hidden>
+    <button class="btn primary invite-welcome-primary" id="inviteWelcomeJoin" type="button">Beitreten</button>
+   </div>
+   <div id="inviteWelcomeGuest" hidden>
+    <p class="invite-welcome-caption">Zum Beitreten benötigst du ein kostenloses CWL-Planer-Konto.</p>
+    <div class="invite-welcome-auth-buttons" id="inviteWelcomeAuthChoices">
+     <button class="btn primary" type="button" id="inviteWelcomeLoginChoice">Anmelden</button>
+     <button class="btn" type="button" id="inviteWelcomeSignupChoice">Konto erstellen</button>
+    </div>
+    <div class="invite-welcome-login" id="inviteWelcomeAuthForm" hidden>
+     <h3 id="inviteWelcomeAuthTitle">Anmelden</h3>
+     <label for="inviteWelcomeEmail">E-Mail-Adresse</label>
+     <input id="inviteWelcomeEmail" type="email" autocomplete="email">
+     <label for="inviteWelcomePassword">Passwort</label>
+     <input id="inviteWelcomePassword" type="password" minlength="8" autocomplete="current-password">
+     <button class="btn primary invite-welcome-primary" type="button" id="inviteWelcomeAuthSubmit">Anmelden</button>
+     <button class="invite-welcome-back" type="button" id="inviteWelcomeAuthBack">Andere Option wählen</button>
+    </div>
+   </div>
+  </div>
+  <p class="invite-welcome-footnote">Der Link gibt Zugriff auf den gemeinsamen Planer, nicht auf deinen Clash-of-Clans-Account.</p>
+ </div>
+</div>
 <div class="cloud-overlay" id="cloudOverlay" role="dialog" aria-modal="true" aria-labelledby="cloudTitle" aria-hidden="true">
  <div class="cloud-panel">
  <div class="section-title"><h2 id="cloudTitle">Clan & Konto</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
@@ -1528,7 +1598,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.1";
+const APP_VERSION="v1.4.2";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2034,6 +2104,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.1"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.4.2"></script>
 </body>
 </html>

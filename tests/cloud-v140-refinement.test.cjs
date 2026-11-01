@@ -46,5 +46,5 @@ test("Only five previous plan snapshots remain and help explains current feature
  assert.match(sql,/offset 5/);
  assert.match(backups,/limit\(5\)/);
  assert.match(html,/Die letzten fünf automatischen Sicherungen/);
- assert.match(html,/Gruppenlinks können 24 Stunden/);
+ assert.match(html,/Ein Link öffnet direkt ein kleines Beitrittsfenster/);
 });

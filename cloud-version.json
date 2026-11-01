@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.1",
+  "version": "v1.4.2",
   "released": "2026-11-01",
-  "summary": "Klar beschriftete Mitgliedsstatistik mit Sterneschnitt aus höchstens sieben Angriffen und einheitliches Einstellungsfenster."
+  "summary": "Einladungslinks öffnen einen eigenen Beitrittsdialog mit Planername und Rolle; Anmeldung und Registrierung behalten die Einladung."
 }

@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.2] - 2026-11-01
+
+### Einladungen
+- Einladungslinks öffnen ein eigenes, mobilfreundliches Beitrittsfenster mit dem Namen des Planers, der eingeladenen Rolle und dem Ablaufdatum.
+- Bestehende Konten sehen nach Möglichkeit ihren bisherigen Anzeigenamen vorausgefüllt und treten erst nach ausdrücklichem Klick auf „Beitreten“ bei.
+- Anmeldung und Registrierung erfolgen direkt aus der Einladung; die Einladung bleibt auch über die E-Mail-Bestätigung erhalten.
+- Abgelaufene, widerrufene oder ungültige Einladungen erhalten eine eindeutige Meldung statt eines versteckten Formulars in „Clan & Konto“.
+- Eine stark eingeschränkte, nur lesende Vorschaufunktion liefert ausschließlich Planername, Rolle und Gültigkeit zu einem gültigen, zufälligen Token.
+
 ## [1.4.1] - 2026-11-01
 
 ### Mitglieder
