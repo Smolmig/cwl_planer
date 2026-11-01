@@ -747,14 +747,17 @@ async function joinInvite(){
  await listClans(accountEpoch,data);
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
-async function getRoster(){
+async function getRoster({automatic=false}={}){
  let stage="Vorbereitung";
  try{
  if(!clanId)throw Error("Bitte Clan auswählen");
+ if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy))return;
  await ensureSaved();
- resetRoster();toggle("cloudRosterBox",true);
+ if(automatic)rosterAutoBusy=true;
+ resetRoster();
+ if(!automatic)toggle("cloudRosterBox",true);
  const status=$("cloudRosterStatus");status.textContent="Clanmitglieder werden verglichen …";status.classList.remove("error");
- $("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
+ if(!automatic)$("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
  stage="Clash-Daten abrufen";
  let {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
  if(err && (err.name==="FunctionsFetchError" ||
