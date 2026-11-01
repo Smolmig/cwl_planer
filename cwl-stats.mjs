@@ -20,6 +20,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(!enabled){
       $("statsSummary").innerHTML="";
       $("statsRows").innerHTML="";
+      $("statsWarHistory").innerHTML="";
       return;
     }
     const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
@@ -82,7 +83,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         .sort((a,b)=>a.attack_order-b.attack_order):[];
       const starChips=oneWar?"<small class='stats-attack-chips' aria-label='Einzelangriffe'>"+
         (recent.length?recent.map(a=>"<span title='"+esc((a.defender_name||"Gegner")+" · "+a.destruction+"% Zerstörung")+
-          "'>"+(a.stars?"★".repeat(a.stars):"☆")+"<sup>"+a.attack_order+"</sup></span>").join(""):
+          "'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"<sup>"+a.attack_order+"</sup></span>").join(""):
           "<span>Kein Angriff</span>")+"</small>":"";
       return "<div class='stats-player-row'>"+
         "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-th' aria-hidden='true'>"+
@@ -108,7 +109,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const kind=w.war_type==="cwl"?"CWL":"CW";
       const rows=entries.length?entries.map(a=>"<div class='war-history-attack'><span>"+
         esc(a.attacker_name)+" <small>RH"+esc(a.attacker_th??"?")+"</small></span><span>"+
-        "<strong class='war-history-stars'>"+("★".repeat(a.stars)||"☆")+"</strong> "+
+        "<strong class='war-history-stars'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"</strong> "+
         esc(a.destruction)+"% <small>gegen "+esc(a.defender_name||"Gegner")+" · RH"+
         esc(a.defender_th??"?")+"</small></span></div>").join(""):
         "<p class='stats-note'>Keine Einzelangriffe hinterlegt.</p>";
