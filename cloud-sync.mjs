@@ -336,11 +336,11 @@ async function sign(kind){
  if(!email||password.length<8)throw Error("Bitte E-Mail und mindestens 8 Zeichen Passwort eingeben.");
  const invite=pendingInviteCode();
  if(invite){
-  const name=$("cloudAuthName").value.trim()||$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
-  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben, damit du dem Clan beitreten kannst.");
-  $("cloudJoinName").value=name;
+  const name=$("inviteWelcomeName").value.trim()||$("cloudAuthName").value.trim()||
+   $("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(name.length>60)throw Error("Der Anzeigename darf maximal 60 Zeichen haben.");
+  if(name){$("cloudJoinName").value=name;saveInvite(INVITE_ALIAS_KEY,name)}
   saveInvite(INVITE_TOKEN_KEY,invite);
-  saveInvite(INVITE_ALIAS_KEY,name);
  }
  const redirect=new URL(location.pathname,location.origin);
  if(invite)redirect.searchParams.set("invite",invite);
@@ -348,7 +348,7 @@ async function sign(kind){
   await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect.href}}):
   await sb.auth.signInWithPassword({email,password});
  if(out.error)throw out.error;
- if(!out.data.session){msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
+ if(!out.data.session){if(!$("inviteWelcome").classList.contains("open"))msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
  await useSession(out.data.session);
 }
 async function useSession(session){
@@ -361,18 +361,8 @@ async function useSession(session){
  await listClans(epoch);
  const code=pendingInviteCode();
  if(code){
-  $("cloudJoinCode").value=code;
-  const name=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
-  if(name){
-   $("cloudJoinName").value=name;
-   try{await joinInvite()}catch(e){
-    open();msg("Beitritt noch nicht abgeschlossen: "+(e.message||e),true);
-    $("cloudJoinName").focus({preventScroll:true});
-   }
-  }else{
-   open();msg("Einladung erkannt: Bitte noch deinen Ingame-Namen eintragen und „Clan beitreten“ wählen.");
-   $("cloudJoinName").focus({preventScroll:true});
-  }
+  close();
+  await showInviteDialog(code);
  }
 }
 async function leaveCloud(){
@@ -417,7 +407,7 @@ async function chooseClan(epoch=accountEpoch){
  clanId=$("cloudClanSelect").value||null;revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
- toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
+ toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
@@ -845,7 +835,7 @@ async function createInvite(){
 }
 async function joinInvite(){
  if(clanId)await ensureSaved();
- const code=$("cloudJoinCode").value.trim();
+ const code=pendingInviteCode();
  if(!isInviteCode(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
  const name=$("cloudJoinName").value.trim();
  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben.");
@@ -860,8 +850,8 @@ async function joinInvite(){
  $("cloudAuthName").value="";
  saveInvite(INVITE_TOKEN_KEY,"");
  saveInvite(INVITE_ALIAS_KEY,"");
- msg("Du bist "+name+" und hast jetzt Zugriff auf den Clan.");
- storage.toast("✓ Dem Clan beigetreten");
+ msg("Du bist "+name+" und hast jetzt Zugriff auf den gemeinsamen Planer.");
+ storage.toast("✓ Dem Planer beigetreten");
  await listClans(accountEpoch,data);
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
