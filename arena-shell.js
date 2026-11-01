@@ -16,6 +16,10 @@
   more.innerHTML='<div class="arena-page-head"><div><div class="arena-eyebrow">Verwaltung</div><h2>Mehr</h2><p>Clanprofile, vergangene CWLs, Einstellungen und Datensicherung.</p></div></div>';
   document.querySelector('main.content').append(more);
   [...summary.querySelectorAll(':scope > .card')].slice(1).forEach(card=>more.appendChild(card));
+  const helpCard=document.createElement('div');helpCard.className='card';
+  helpCard.innerHTML='<div class="section-title"><h3>Hilfe</h3></div><p class="statusline">Erklärungen zu Planung, Tagesregeln und Datensicherung.</p><button type="button" class="btn" id="arenaHelpFromMore">Hilfe zum CWL Planer öffnen</button>';
+  more.appendChild(helpCard);
+  helpCard.querySelector('button').addEventListener('click',()=>document.getElementById('helpBtn').click());
   const moreBtn=document.createElement('button');moreBtn.type='button';moreBtn.className='navbtn';moreBtn.dataset.view='more';moreBtn.innerHTML=svg(icon('more'))+'<span>Mehr</span>';
   nav.querySelector('.navinner').appendChild(moreBtn);
   for(const btn of nav.querySelectorAll('.navbtn')){
