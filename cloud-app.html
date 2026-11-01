@@ -1030,6 +1030,19 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #view-settings .settings-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 16px}
 html[data-theme="dark"] .topbar{background:#0b1220!important;backdrop-filter:none}
 html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:none}
+
+.stats-attack-chips{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;font-size:11px;color:var(--primary)}
+.stats-attack-chips span{display:inline-flex;align-items:center;gap:1px}
+.stats-attack-chips sup{font-size:8px;color:var(--muted)}
+.war-history-item{border:1px solid var(--line);border-radius:10px;margin-top:7px;overflow:hidden}
+.war-history-item>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;cursor:pointer;font-size:12px}
+.war-history-item>summary>span:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.war-history-item summary small{color:var(--muted);font-size:11px}
+.war-history-detail{padding:3px 10px 10px;border-top:1px solid var(--line)}
+.war-history-attack{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px}
+.war-history-attack>span:last-child{text-align:right}
+.war-history-attack small{color:var(--muted)}
+.war-history-stars{color:var(--primary)}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1231,25 +1244,26 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
     <div class="statusline">Bester Spieler (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
-    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">Die 3★-Hit-Rate zeigt, bei wie vielen ausgeführten Angriffen ein Spieler drei Sterne erzielt. Kriegstage ohne Einsatz zählen nicht mit.</p>
+    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">3★-Hit-Rate: Anteil der Angriffe mit drei Sternen. Ø Sterne: durchschnittlich erreichte Sterne pro Angriff.</p>
     <div class="stats-toggles">
-      <label><input type="checkbox" id="statsSameTH"> Nur gleiches oder höheres RH</label>
+      <label><input type="checkbox" id="statsSameTH"> Nur Angriffe gegen gleiches oder höheres RH</label>
       <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Hit-Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Hit-Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
     </div>
     <div class="stats-player-table" aria-label="Spielerstatistik">
       <div class="stats-player-head"><span>Spieler</span><span>3★-Hit-Rate</span><span>Angriffe</span><span>Verpasst</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
-    <p class="stats-note" id="statsMissingNote">Verpasst heißt: Nicht ausgeführt. Ob ein Angriff vergessen wurde, lässt sich nicht feststellen.</p>
+    <p class="stats-note" id="statsMissingNote" hidden></p>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
     <p class="stats-asset-credit">Rathausbilder: <a href="https://github.com/ClashKingInc/ClashKingAssets" target="_blank" rel="noopener noreferrer">ClashKingAssets</a> · inoffizielle Fan-App, nicht von Supercell unterstützt.</p>
     <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </div>
+  <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
 <nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button><button class="navbtn" id="statsNav" data-view="stats" hidden>📈<br>Statistik</button></div></nav>
