@@ -747,6 +747,26 @@ async function joinInvite(){
  await listClans(accountEpoch,data);
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
+const autoRosterChecks=new Map();
+function isAutoRosterEnabled(){
+ if(!clanId)return false;
+ try{return localStorage.getItem("cwl_auto_roster_"+clanId)!=="off"}catch{return true}
+}
+function syncAutoRosterSetting(){
+ const toggle=$("settingsAutoRoster"),hint=$("autoRosterStatus");
+ if(toggle){toggle.checked=isAutoRosterEnabled();toggle.disabled=!["owner","editor"].includes(role)}
+ if(hint&&!["owner","editor"].includes(role))hint.textContent="Automatischer Import ist für die Clanführung verfügbar.";
+}
+async function maybeAutoRoster(force=false){
+ if(!clanId||!user||!cloud.active||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
+    !navigator.onLine||document.hidden||rosterAutoBusy||blocked||changedSerial||saving)return;
+ const now=Date.now();
+ if(!force&&now-(autoRosterChecks.get(clanId)||0)<900000)return;
+ autoRosterChecks.set(clanId,now);
+ try{await getRoster({automatic:true})}
+ catch(e){text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Manuell erneut prüfen.");
+  console.warn("Automatischer Mitgliederabgleich:",e?.message||e)}
+}
 async function getRoster({automatic=false}={}){
  let stage="Vorbereitung";
  try{
