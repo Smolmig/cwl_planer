@@ -27,7 +27,7 @@ const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode"
  const code=input||query||storedInvite(INVITE_TOKEN_KEY);
  return isInviteCode(code)?code:"";
 };
-let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
+let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
