@@ -79,8 +79,8 @@ function makeHarness({invokeError=false,malformed=false,crashAtPlanning=false}={
   },
   Error,TypeError,Map,Set,Array,JSON,String,Number,RegExp
  };
- const source=cloud.slice(cloud.indexOf("async function getRoster(){"),cloud.indexOf("async function applyRoster()"));
- assert.ok(source.startsWith("async function getRoster(){"));
+ const source=cloud.slice(cloud.indexOf("async function getRoster({automatic=false}={}){"),cloud.indexOf("async function applyRoster()"));
+ assert.ok(source.startsWith("async function getRoster({automatic=false}={}){"));
  vm.createContext(rootEnv);
  vm.runInContext(source+"; globalThis.getRosterTest=getRoster;",rootEnv);
  return {state,doc,run:()=>rootEnv.getRosterTest()};
