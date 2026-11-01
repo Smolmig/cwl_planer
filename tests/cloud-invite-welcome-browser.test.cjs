@@ -9,6 +9,7 @@ const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20261101145612_cwl_invitation_link_preview.sql"),"utf8");
+const hardening=fs.readFileSync(path.join(root,"supabase/migrations/20261101150323_cwl_secure_private_invite_preview.sql"),"utf8");
 
 test("Invitation links have a first-class accessible modal, not an auto-scrolling account section",()=>{
  const dom=new JSDOM(html);
@@ -38,6 +39,9 @@ test("Invite link can show plan name and role before login without exposing priv
  assert.match(migration,/i\.expires_at is null or i\.expires_at>now\(\)/);
  assert.match(migration,/grant execute on function public\.cwl_preview_invite\(text\) to anon,authenticated/);
  assert.doesNotMatch(migration,/select .*display_name/);
+ assert.match(hardening,/create function private\.cwl_preview_invite/);
+ assert.match(hardening,/language sql security invoker/);
+ assert.match(hardening,/grant execute on function private\.cwl_preview_invite\(text\) to anon,authenticated/);
 });
 test("Sign-in and email confirmation retain the invitation without automatically joining",()=>{
  assert.match(sync,/saveInvite\(INVITE_TOKEN_KEY,invite\)/);
