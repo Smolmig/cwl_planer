@@ -8,6 +8,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
+  let cachedPlayerStats=new Map();
+  function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
+  window.CWLCloudStats={getPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
   function render(){
     const ctx=context(),view=$("view-stats");
     if(!view)return;
