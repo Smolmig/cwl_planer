@@ -1052,6 +1052,13 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
 .settings-auto-roster{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:750}
 .settings-auto-roster input{width:19px;height:19px;accent-color:var(--primary)}
 #settingsAutoRosterBox .btn{min-height:38px}
+
+#cloudInviteBox>label,#cloudInviteReusableOptions>label{display:block;margin:12px 0 6px}
+#cloudInviteBox>select,#cloudInviteReusableOptions>select,#cloudInviteReusableOptions>input{display:block;width:100%;min-height:43px}
+#cloudMakeInvite{display:block;margin:16px 0 12px;min-height:43px}
+#cloudInviteOutput{margin:8px 0 10px}
+#cloudCopyInvite{display:block;margin:9px 0 14px;min-height:42px}
+.cloud-active-members{font-weight:750;line-height:1.5}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1911,7 +1918,7 @@ document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("view-settings").classList.contains("active"))showPlannerView(window.__previousPlannerView||"plan")});
-document.getElementById("settingsCloudManage").onclick=()=>document.getElementById("cloudOpen").click();
+document.getElementById("settingsCloudManage").onclick=()=>{showPlannerView(window.__previousPlannerView||"plan");document.getElementById("cloudOpen").click()};
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
