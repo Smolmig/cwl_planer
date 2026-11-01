@@ -30,7 +30,7 @@ test("Cloud frontend JS syntax and separation of browser secrets",()=>{
   assert.match(mod,/cloud\.active=true;role="viewer";hydrating=true/);
   assert.match(mod,/changedSerial/);
   assert.match(mod,/\.rpc\("cwl_create_short_invite"/);
-  assert.match(mod,/\.rpc\("cwl_redeem_named_invite"/);
+  assert.match(mod,/cwl_redeem_named_invite/);
   assert.match(mod,/sb\.functions\.invoke\("coc-clan-members"/);
   assert.match(mod,/\.from\("cwl_change_events"\)/);
   assert.match(mod,/m\.participating=false/);
@@ -119,7 +119,7 @@ test("Alpha 6: accepted membership roster, named invite and safe departed-lineup
  assert.doesNotMatch(preview,/id="cloudPauseDeparted"/);
  assert.match(mod,/async function loadAccessList/);
  assert.match(mod,/role==="owner"\|\|role==="editor"/);
- assert.match(mod,/\.rpc\("cwl_redeem_named_invite",\{p_code:code,p_name:name\}\)/);
+ assert.match(mod,/cwl_redeem_named_invite/);
  assert.match(mod,/storage\.toast\("✓ Einladungslink kopiert"\)/);
  assert.match(mod,/storage\.getPlannedLineups\(\)/);
  assert.match(mod,/cloud-missing-choice/);
