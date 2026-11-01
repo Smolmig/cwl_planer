@@ -8,6 +8,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.3.9] - 2026-11-01
+
+### Statistik und Navigation
+- Normale CWs (1, 2, 3, 5, 10, 25 oder 50) und CWL-Saisons (1, 2, 3 oder alle) unabhängig im platzsparenden Zeitraum-Menü wählen. Die gemeinsame Statistik berücksichtigt beide Werte.
+- 3★-Hit-Rate und verpasste Angriffe präzise benannt; verpasst heißt nicht zwingend vergessen. Rathausbilder mit Text-Fallback in der Spielerliste.
+- Kompakter Zugriff auf Clan & Konto ohne abgeschnittene Clannamen am Smartphone.
+
+### Gruppenlinks und Rechte
+- Einladungslinks für beliebig viele Beitritte: Laufzeit 24 Stunden, sieben Tage oder unbegrenzt bis zum Widerruf; Einmal-Links bleiben verfügbar.
+- Besitzer verwalten alle Links und Mitglieder. Vizes verwalten eigene Links und dürfen Beobachter entfernen, nicht Besitzer oder andere Vizes.
+- Entfernte Mitglieder werden bis zur expliziten Freigabe für neue Beitritte gesperrt – auch über noch aktive Links. Freigaben folgen derselben Rechtehierarchie.
+- Einladungen überstehen Registrierung und E-Mail-Bestätigung (bei Rückkehr auf denselben Website-Ursprung).
+
 ## [1.3.8] - 2026-11-01
 
 ### Verbessert
