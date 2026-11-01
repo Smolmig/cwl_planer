@@ -918,6 +918,7 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .stats-player-table{border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .stats-player-head,.stats-player-row{display:grid;grid-template-columns:minmax(105px,1fr) 70px 59px 55px;align-items:center;gap:5px;padding:10px 9px}
 .stats-player-head{font-size:10px;color:var(--muted);background:var(--bg);font-weight:750}
+@media(max-width:390px){.stats-player-head,.stats-player-row{grid-template-columns:minmax(70px,1fr) 64px 48px 52px;gap:4px;padding:9px 6px}.stats-player-head{font-size:9px}.stats-player{gap:5px}.stats-th{width:29px;height:29px}}
 .stats-player-row{min-height:61px;border-top:1px solid var(--line)}
 .stats-player-head>*:not(:first-child),.stats-player-row>*:not(:first-child){text-align:right}
 .stats-player{display:flex;align-items:center;gap:8px;min-width:0}
