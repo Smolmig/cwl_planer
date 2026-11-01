@@ -122,7 +122,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   const players=new Map();
   function player(tag,name="",th=null){
     const key=cleanTag(tag);
-    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,missedKnown:0,
+    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,starsTotal:0,missedKnown:0,
       missComplete:true,participated:new Set()});
     const p=players.get(key);
     if(!p.name&&name)p.name=name;
@@ -131,7 +131,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   }
   for(const w of selected)for(const a of filtered.filter(x=>x.war_key===w.war_key)){
     const p=player(a.attacker_tag,a.attacker_name,a.attacker_th);
-    p.attacks++;if(a.stars===3)p.threes++;p.participated.add(w.war_key);
+    p.attacks++;p.starsTotal+=a.stars;if(a.stars===3)p.threes++;p.participated.add(w.war_key);
   }
   // Players who missed every attack still belong in the ranking, with no
   // fabricated hit-rate percentage.
@@ -176,6 +176,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   const rows=[...players.values()].map(p=>({
     tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,
     hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,threes:p.threes,
+    averageStars:p.attacks?Math.round(p.starsTotal/p.attacks*100)/100:null,
     missed:p.missComplete?p.missedKnown:null,missedKnown:p.missedKnown,
     missedComplete:p.missComplete,
     former:currentTags.size>0&&!currentTags.has(p.tag)
@@ -201,6 +202,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     attacks:filtered.length,
     allAttacksUsed:chosen.length,possibleAttacks:attackSlots,
     hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
+    averageStars:filtered.length?Math.round(filtered.reduce((n,a)=>n+a.stars,0)/filtered.length*100)/100:null,
     misses:complete?totalMissedKnown:null,missesKnown:totalMissedKnown,
     missingCoverage:!complete,best,rows,complete
   };
