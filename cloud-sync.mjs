@@ -627,7 +627,7 @@ async function loadAccessList(expected=clanId){
   const label=document.createElement("strong");
   label.textContent=(item.permanent?"Gesperrt: ":"Entfernt: ")+(item.display_name||"Unbekannte Person");
   const meta=document.createElement("span");
-  meta.textContent=" · "+(item.blocked_role==="editor"?"ehemaliger Vize":"ehemaliger Beobachter");
+  meta.textContent=" · "+(item.permanent?"Alle künftigen Einladungen gesperrt":"Vorherige Einladungen ungültig");
   row.append(label,meta);
   if(role==="owner"||(role==="editor"&&item.blocked_by===user.id&&item.blocked_role==="viewer")){
    const undo=document.createElement("button");undo.className="btn small";undo.type="button";
@@ -665,7 +665,7 @@ async function removeAccessMember(expected,m){
 async function unblockAccessMember(expected,m){
  if(!(role==="owner"||(role==="editor"&&m.blocked_role==="viewer"&&m.blocked_by===user.id)))
    throw Error("Keine Berechtigung zum Entsperren.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Die Person erhält dadurch noch keinen Zugang und muss erneut einem gültigen Einladungslink folgen.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Danach kann sie einen gültigen Einladungslink verwenden.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
  const {error:e}=await sb.rpc("cwl_unblock_clan_member",{p_clan:expected,p_user:m.user_id});
  if(e)throw e;
  if(expected===clanId){storage.toast("✓ Sperre aufgehoben");await loadAccessList(expected)}
@@ -949,7 +949,7 @@ async function audit(){
   if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
   if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
   detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
-    " · Rev. "+e.revision+(pieces.length?" · "+pieces.join(" · "):"");
+    (pieces.length?" · "+pieces.join(" · "):"");
   item.append(head,detail);root.append(item);
  }
 }
