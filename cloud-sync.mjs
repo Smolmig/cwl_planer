@@ -1228,6 +1228,36 @@ bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
 
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
+bind("inviteWelcomeClose","click",()=>closeInviteDialog(true));
+bind("inviteWelcomeJoin","click",confirmInviteJoin);
+function selectInviteAuth(mode){
+ inviteAuthMode=mode;
+ toggle("inviteWelcomeAuthChoices",false);toggle("inviteWelcomeAuthForm",true);
+ text("inviteWelcomeAuthTitle",mode==="signup"?"Konto erstellen":"Anmelden");
+ text("inviteWelcomeAuthSubmit",mode==="signup"?"Konto erstellen":"Anmelden");
+ $("inviteWelcomePassword").setAttribute("autocomplete",mode==="signup"?"new-password":"current-password");
+ $("inviteWelcomeEmail").focus({preventScroll:true});
+}
+bind("inviteWelcomeLoginChoice","click",()=>selectInviteAuth("login"));
+bind("inviteWelcomeSignupChoice","click",()=>selectInviteAuth("signup"));
+bind("inviteWelcomeAuthBack","click",()=>{
+ toggle("inviteWelcomeAuthChoices",true);toggle("inviteWelcomeAuthForm",false);inviteFeedback("");
+});
+bind("inviteWelcomeAuthSubmit","click",submitInviteAuth);
+$("inviteWelcomeName").addEventListener("input",()=>{
+ const value=$("inviteWelcomeName").value.trim();
+ $("cloudJoinName").value=value;
+ saveInvite(INVITE_ALIAS_KEY,value);
+});
+$("inviteWelcome").addEventListener("click",e=>{
+ if(e.target===$("inviteWelcome"))closeInviteDialog(true);
+});
+$("inviteWelcome").addEventListener("keydown",e=>{
+ if(e.key==="Escape"){e.stopPropagation();closeInviteDialog(true)}
+ if(e.key==="Enter"&&e.target.matches("#inviteWelcomeEmail,#inviteWelcomePassword")){
+  e.preventDefault();submitInviteAuth().catch(err=>inviteFeedback(err?.message||String(err),true));
+ }
+});
 function toggleInviteKind(){
  const box=$("cloudInviteReusableOptions");
  if(box)box.hidden=$("cloudInviteKind").value!=="reusable";
@@ -1293,7 +1323,7 @@ window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder onlin
 let pendingRelease=null;
 function safeForReload(){
  return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
-   !document.querySelector(".cloud-overlay.open")&&
+   !document.querySelector(".cloud-overlay.open,.invite-welcome.open")&&
    !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
 }
 function installPendingRelease(){
@@ -1348,8 +1378,7 @@ const resumedInvite=isInviteCode(linkCode)?linkCode:storedInvite(INVITE_TOKEN_KE
 if(isInviteCode(resumedInvite)){
  $("cloudJoinCode").value=resumedInvite;
  const alias=storedInvite(INVITE_ALIAS_KEY);
- if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias}
- open();
+ if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias;$("inviteWelcomeName").value=alias}
 }
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){
@@ -1364,4 +1393,4 @@ const {data:{session},error:sessionErr}=await sb.auth.getSession();
 if(sessionErr)error(sessionErr);
 else if(recoveryMode)beginRecovery();
 else if(session)try{await useSession(session)}catch(e){error(e)}
-else{showSignedIn();cloud.afterRender()}
+else{showSignedIn();cloud.afterRender();if(!recoveryMode&&isInviteCode(resumedInvite))await showInviteDialog(resumedInvite)}
