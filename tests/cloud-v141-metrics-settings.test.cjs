@@ -22,7 +22,7 @@ test("Compact member star average is limited to the last seven individual attack
  ];
  const recent=computeRecentAttackStats(wars,attacks);
  assert.equal(recent.get("#2PYL").attacks,7);
- assert.equal(recent.get("#2PYL").averageStars,18/7===2.57?2.57:Math.round(18/7*100)/100);
+ assert.equal(recent.get("#2PYL").averageStars,2.57);
  assert.equal(recent.get("#2PYL").hitRate,86);
  assert.equal(recent.get("#8PYL").attacks,1);
  assert.equal(recent.get("#8PYL").averageStars,2);
