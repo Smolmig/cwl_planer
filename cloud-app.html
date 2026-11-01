@@ -1024,6 +1024,12 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #cloudAuthInvite{margin:8px 0 10px}
 #cloudInviteKind,#cloudInviteRole,#cloudInviteDuration,#cloudInviteLabel{width:100%}
 #cloudInviteReusableOptions[hidden]{display:none!important}
+
+#view-settings.active{position:fixed;inset:0;z-index:310;overflow:auto;overscroll-behavior:contain;display:block;background:rgba(2,8,21,.78);padding:16px max(12px,calc((100vw - 760px)/2)) calc(80px + env(safe-area-inset-bottom))}
+#view-settings .card{max-width:760px;margin:0 auto 12px}
+#view-settings .settings-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 16px}
+html[data-theme="dark"] .topbar{background:#0b1220!important;backdrop-filter:none}
+html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:none}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1851,7 +1857,7 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 
 // Navigation
 applyTheme();
-function showPlannerView(view){
+function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));
  const gear=document.getElementById("settingsOpen");
@@ -1861,6 +1867,9 @@ function showPlannerView(view){
 }
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showPlannerView(b.dataset.view));
 document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
+document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
+document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("view-settings").classList.contains("active"))showPlannerView(window.__previousPlannerView||"plan")});
 document.getElementById("settingsCloudManage").onclick=()=>document.getElementById("cloudOpen").click();
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
