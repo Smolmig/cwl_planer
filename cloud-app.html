@@ -1416,10 +1416,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
       </details>
       <p class="small">Zugänge und Berechtigungen werden beim Öffnen automatisch aktualisiert.</p>
     </details>
-    <div id="cloudClanActions" class="cloud-clan-actions" hidden>
-      <button class="btn small" id="cloudLeaveBtn" hidden>Gemeinsamen Clan verlassen</button>
-      <button class="btn small danger" id="cloudDeleteBtn" hidden>Gemeinsamen Planer löschen</button>
-    </div>
+
     <label for="cloudAlias">Dein Anzeigename (für Änderungsverlauf)</label>
     <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
   </div>
@@ -1478,6 +1475,14 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
       <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
     </details>
   </div>
+  <details class="cloud-minor" id="cloudDangerZone">
+   <summary>Erweiterte Zugriffsverwaltung</summary>
+   <p class="small">Hier kannst du den gemeinsam genutzten Planer verlassen oder als Besitzer endgültig löschen. Beim Löschen gehen alle gemeinsamen Planungsdaten und Zugänge verloren.</p>
+   <div id="cloudClanActions" class="cloud-clan-actions" hidden>
+    <button class="btn small" id="cloudLeaveBtn" hidden>Planer verlassen</button>
+    <button class="btn small danger" id="cloudDeleteBtn" hidden>Gemeinsamen Planer endgültig löschen</button>
+   </div>
+  </details>
  </section>
  </div>
 </div>
