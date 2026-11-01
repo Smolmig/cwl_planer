@@ -1882,8 +1882,9 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 // Navigation
 applyTheme();
 function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
- document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
- document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));
+ const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
+ document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===visible));
+ document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
  gear.classList.toggle("active",view==="settings");
  gear.setAttribute("aria-pressed",String(view==="settings"));
