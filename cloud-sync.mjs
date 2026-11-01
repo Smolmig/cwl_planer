@@ -861,6 +861,18 @@ async function getRoster({automatic=false}={}){
  toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
  text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(critical.length?" · ⚠️ Aufstellungen prüfen":""));
+ if(automatic){
+  if(critical.length){
+   toggle("cloudRosterBox",true);
+   text("autoRosterStatus","Aufstellung prüfen: "+critical.length+" ausgetretene Spieler sind noch eingeplant.");
+   storage.toast("⚠ Mitgliederabgleich: Aufstellungen prüfen");
+  }else{
+   const changes=added.length+updated.length+normalDeparted.length;
+   if(changes)await applyRoster();
+   text("autoRosterStatus","Letzter Abgleich: "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"})+
+     (changes?" · "+changes+" Änderungen übernommen":" · aktuell"));
+  }
+ }
  }catch(err){
    console.warn("Clanvergleich fehlgeschlagen",{
      stage,name:err?.name||"Fehler",message:String(err?.message||err).slice(0,200)
