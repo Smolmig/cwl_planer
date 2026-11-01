@@ -40,8 +40,8 @@ test("UX release metadata and cloud app references agree without changing offlin
  const version=JSON.parse(read("cloud-version.json"));
  assert.equal(version.version,"v1.4.2");
  assert.match(html,/const APP_VERSION="v1\.4\.2";/);
- assert.match(html,/cloud-sync\.mjs\?v=1\.4\.1/);
- assert.match(sync,/cloud-backups\.mjs\?v=1\.4\.1/);
+ assert.match(html,/cloud-sync\.mjs\?v=1\.4\.2/);
+ assert.match(sync,/cloud-backups\.mjs\?v=1\.4\.2/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
  assert.match(read("CHANGELOG.md"),/\[1\.3\.8\]/);
 });
