@@ -207,3 +207,31 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     missingCoverage:!complete,best,rows,complete
   };
 }
+
+/**
+ * Compact member cards deliberately use at most seven individual attacks
+ * (normal CW and CWL together), independent of the statistics period filter.
+ * History stores war start time and attack order, not individual attack times.
+ */
+export function computeRecentAttackStats(wars,attacks,maxAttacks=7){
+ const limit=Math.min(7,Math.max(1,Math.trunc(Number(maxAttacks))||7));
+ const byWar=new Map((wars||[]).filter(w=>w.source!=="api"||w.finalized===true)
+   .map(w=>[w.war_key,Date.parse(w.started_at)]));
+ const recent=(attacks||[]).filter(a=>byWar.has(a.war_key)&&
+   Number.isInteger(a.stars)&&a.stars>=0&&a.stars<=3)
+   .sort((a,b)=>(byWar.get(b.war_key)||0)-(byWar.get(a.war_key)||0)||
+     b.attack_order-a.attack_order||String(a.war_key).localeCompare(String(b.war_key)));
+ const groups=new Map();
+ for(const a of recent){
+  const tag=cleanTag(a.attacker_tag);
+  if(!validTag(tag))continue;
+  if(!groups.has(tag))groups.set(tag,[]);
+  const group=groups.get(tag);
+  if(group.length<limit)group.push(a);
+ }
+ return new Map([...groups].map(([tag,items])=>[tag,{
+  attacks:items.length,
+  averageStars:Math.round(items.reduce((sum,a)=>sum+a.stars,0)/items.length*100)/100,
+  hitRate:Math.round(items.filter(a=>a.stars===3).length/items.length*100)
+ }]));
+}
