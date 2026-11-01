@@ -1918,7 +1918,7 @@ document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("view-settings").classList.contains("active"))showPlannerView(window.__previousPlannerView||"plan")});
-document.getElementById("settingsCloudManage").onclick=()=>{showPlannerView(window.__previousPlannerView||"plan");document.getElementById("cloudOpen").click()};
+document.getElementById("settingsCloudManage").onclick=()=>void (showPlannerView(window.__previousPlannerView||"plan"),document.getElementById("cloudOpen").click());
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
