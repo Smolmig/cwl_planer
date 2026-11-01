@@ -349,6 +349,8 @@ async function chooseClan(epoch=accountEpoch){
  await startPresence();
  live.start();
  stats.load().catch(console.warn);
+ syncAutoRosterSetting();
+ setTimeout(()=>maybeAutoRoster().catch(console.warn),1500);
  msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
 
