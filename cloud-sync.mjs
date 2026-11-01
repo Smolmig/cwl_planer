@@ -880,7 +880,7 @@ async function getRoster({automatic=false}={}){
    if(err instanceof TypeError || /^(type error|load failed)$/i.test(String(err?.message||"")))
      throw Error("Der Mitgliedervergleich konnte bei „"+stage+"“ nicht abgeschlossen werden. Bitte Seite neu laden und erneut versuchen.");
    throw err;
- }
+ }finally{if(automatic)rosterAutoBusy=false}
 }
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
