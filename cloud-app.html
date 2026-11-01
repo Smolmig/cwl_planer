@@ -1019,6 +1019,10 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
   #cloudOpen .cloud-toggle-label{display:none}
 }
 
+#cloudAuthInvite[hidden],#cloudAuthNameWrap[hidden]{display:none!important}
+#cloudAuthNameWrap{display:block;margin:10px 0 6px}
+#cloudAuthInvite{margin:8px 0 10px}
+#cloudInviteKind,#cloudInviteRole{width:100%}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1323,6 +1327,10 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-msg" id="cloudMsg" role="alert" hidden></div>
  <section id="cloudAuth">
   <h3>Anmelden oder registrieren</h3>
+  <p id="cloudAuthInvite" class="helpbox" hidden>Du wurdest zu einem gemeinsamen Clan eingeladen. Melde dich an oder erstelle ein Konto. Nach der Anmeldung wirst du dem Clan hinzugefügt.</p>
+  <label id="cloudAuthNameWrap" for="cloudAuthName" hidden>Dein Ingame-Name für den Clan
+    <input id="cloudAuthName" maxlength="60" autocomplete="nickname" placeholder="Dein Name in Clash of Clans">
+  </label>
   <label for="cloudEmail">E-Mail</label><input type="email" id="cloudEmail" autocomplete="email">
   <label for="cloudPassword">Passwort (mindestens 8 Zeichen)</label><input type="password" id="cloudPassword" minlength="8">
   <div class="actions"><button class="btn primary" id="cloudLogin">Anmelden</button><button class="btn" id="cloudSignup">Registrieren</button></div>
@@ -1380,19 +1388,22 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
     <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
-    <label for="cloudJoinCode">Einladungscode</label><input id="cloudJoinCode" maxlength="12" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
+    <label for="cloudJoinCode">Einladungscode</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <label for="cloudJoinName">Dein Ingame-Name (für den Beitritt erforderlich)</label>
     <input id="cloudJoinName" maxlength="60" autocomplete="nickname" placeholder="Dein Name in Clash of Clans">
     <p class="small" id="cloudJoinHint">Dieser Name wird den Clanführern bei deinen Berechtigungen angezeigt.</p>
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
   <div id="cloudInviteBox" class="cloud-section" hidden>
-    <h3>Zugriff teilen</h3><p>Als Besitzer oder Vize kannst du Einladungen erstellen. Ein Code gilt einmalig und sieben Tage.</p>
+    <h3>Zugriff teilen</h3><p>Teile einen Gruppenlink mit allen, die den Clanplan sehen oder mitbearbeiten sollen. Der Link bleibt bis zu deinem Widerruf gültig.</p>
+    <label for="cloudInviteKind">Einladung</label>
+    <select id="cloudInviteKind"><option value="reusable">Gruppenlink · beliebig viele Beitritte</option><option value="single">Einmaliger Link · 7 Tage</option></select>
+    <label for="cloudInviteRole">Berechtigung für neue Mitglieder</label>
     <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
-    <button class="btn" id="cloudMakeInvite">Einladungscode erstellen</button>
+    <button class="btn primary" id="cloudMakeInvite">Einladungslink erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
     
-    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button>
+    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Jeder mit einem aktiven Gruppenlink kann beitreten. Offene Links kannst du unter „Personen mit Zugriff → Offene Einladungen“ widerrufen.</p>
   </div>
   <div class="cloud-section">
     <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
