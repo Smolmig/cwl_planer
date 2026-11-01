@@ -267,10 +267,10 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  assert.match(html,/id="statsPeriodLabel"/);
  assert.match(html,/id="statsSeasonDetails"/);
  assert.match(ui,/cwlSeasons=3/);
- assert.match(ui,/Letzte 1 CWL/);
- assert.match(ui,/Letzte 3 CWLs/);
- assert.match(ui,/Alle CWLs/);
+ assert.match(html,/Letzte 1 CWL/);
+ assert.match(html,/Letzte 3 CWLs/);
+ assert.match(html,/Alle verfügbaren CWLs/);
  assert.match(ui,/gespeicherten CWL-Kriegstagen/);
  assert.match(ui,/von 7 Kriegstagen gespeichert/);
- assert.match(ui,/cwlSeasons:type==="cwl"\?cwlSeasons:null/);
+ assert.match(ui,/type,last,cwlSeasons,sameHigher/);
 });
