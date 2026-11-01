@@ -1215,10 +1215,12 @@ async function checkForAppUpdate(){
  }catch(err){console.warn("Updateprüfung nicht erreichbar:",err)}
 }
 setInterval(()=>checkForAppUpdate().catch(console.warn),60000);
+setInterval(()=>maybeAutoRoster().catch(console.warn),900000);
 window.addEventListener("pageshow",()=>checkForAppUpdate().catch(console.warn));
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){
   checkForAppUpdate().catch(console.warn);
+  maybeAutoRoster().catch(console.warn);
   heartbeat().catch(console.warn);
   checkRemoteChanges("foreground").catch(console.warn);
  }
