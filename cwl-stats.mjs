@@ -75,7 +75,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       return "<div class='stats-player-row'>"+
         "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-th' aria-hidden='true'>"+
           (p.th&&Number.isInteger(p.th)&&p.th>=1&&p.th<=18?
-           "<img src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+p.th+".webp' width='29' height='26' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
+           "<img src='https://raw.githubusercontent.com/ClashKingInc/ClashKingAssets/main/assets/buildings/home-village/town_hall/level_"+p.th+".webp' width='29' height='26' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
           "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
         "<strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
