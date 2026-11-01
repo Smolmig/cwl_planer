@@ -1066,6 +1066,26 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
 .cloud-mode #view-members .member-average{display:block;color:var(--muted);font-weight:500}
 .cloud-mode #view-members .member-rate{font-weight:650}
 .cloud-mode #view-members .member-snapshot{align-items:flex-end}
+
+/* One continuous, scrollable settings sheet rather than independent cards. */
+#view-settings.active{display:flex!important;align-items:flex-start;justify-content:center;
+ overflow:hidden;box-sizing:border-box;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+#view-settings .settings-window{width:100%;max-width:760px;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+ overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:19px;box-shadow:0 22px 50px rgba(0,0,0,.35)}
+#view-settings .settings-window>.settings-dialog-head{position:sticky;top:0;z-index:4;max-width:none;margin:0;
+ background:var(--card);border:0;border-bottom:1px solid var(--line);border-radius:0;padding:14px 20px}
+#view-settings .settings-window>.card{max-width:none;margin:0;padding:20px;border:0;
+ border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+#view-settings .settings-window>.card:last-child{border-bottom:0}
+#view-settings .settings-intro{display:none}
+.cloud-mode #view-settings .settings-intro{display:block}
+#view-settings .settings-cloud-account{margin:0;padding:0;border-top:0}
+#view-settings .settings-window .settings-subcard{margin-top:14px}
+@media(max-width:520px){
+ #view-settings .settings-window>.card{padding:16px}
+ #view-settings .settings-window>.settings-dialog-head{padding:11px 16px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1205,9 +1225,9 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
 
 </section>
 
-<section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
+<section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
   <div class="card settings-intro">
-    <div class="section-title"><div><h3>App-Einstellungen</h3><div class="statusline">Planung, Darstellung und Datensicherung.</div></div></div>
+    
     <div id="settingsCloudAccount" class="settings-cloud-account">
       <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln, Berechtigungen verwalten und Cloud-Sicherungen ansehen.</p></div>
       <button class="btn" type="button" id="settingsCloudManage">Clan & Konto öffnen</button></div>
@@ -1219,7 +1239,7 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
     <div class="profile-actions"><button class="btn" id="newProfileBtn">+ Neues Profil</button><button class="btn" id="copyProfileBtn">Profil duplizieren</button><button class="btn" id="renameProfileBtn">Umbenennen</button><button class="btn danger" id="deleteProfileBtn">Profil löschen</button></div>
   </div>
   <div class="card">
-    <div class="section-title"><h3>Einstellungen & Daten</h3></div>
+    <div class="section-title"><h3>Planung & Daten</h3></div>
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard" id="settingsAutoRosterBox">
   <h4>Clash-Mitglieder</h4>
@@ -1243,6 +1263,7 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
     <p class="footer-note"><span class="settings-local-note">Im lokalen Planer werden Änderungen auf diesem Gerät gespeichert. Für einen Gerätewechsel empfiehlt sich ein Backup.</span><span class="settings-cloud-note">Im gemeinsamen Clan werden Änderungen online gespeichert. Erstelle bei Bedarf zusätzlich eine eigene Sicherung.</span></p>
   </div>
+</div>
 </section>
 
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
