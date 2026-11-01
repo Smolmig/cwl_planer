@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,cleanTag} from "./cwl-stats-core.mjs?v=1.4.0";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.4.1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -8,9 +8,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
-  let cachedPlayerStats=new Map(),lastMetricSignature="";
+  let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
-  window.CWLCloudStats={getPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
+  function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
+  window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
   function render(){
     const ctx=context(),view=$("view-stats");
     if(!view)return;
@@ -122,7 +123,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();lastMetricSignature="";version++;lastCapture.clear();loading=false;importing=false;
+    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();lastMetricSignature="";version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
   async function load(){
@@ -151,6 +152,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       }
       if(epoch!==version||context().clanId!==id)return;
       scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;
+      cachedRecentStats=computeRecentAttackStats(wars,attacks,7);
       notice(wars.length?"Statistik aktuell · "+wars.length+" Kriege gespeichert":
         "Noch keine Angriffsdaten. Importiere die vorbereitete Historie.");
     }catch(e){
