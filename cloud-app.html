@@ -1091,9 +1091,9 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
       </div></details>
     </div>
     <div id="cloudMembersTools" class="cloud-member-tools" hidden>
-      <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Mitglieder importieren</button>
+      <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Jetzt abgleichen</button>
       <div class="cloud-members-hint">Mit dem Clash-Clan abgleichen · neue und ausgetretene Spieler prüfen</div>
-      <details id="cloudManualMembers" class="cloud-minor"><summary><span aria-hidden="true">＋</span> Spieler manuell hinzufügen</summary>
+      <details id="cloudManualMembers" class="cloud-minor"><summary>Spieler manuell hinzufügen</summary>
         <div class="actions"><button class="btn small" type="button" id="cloudManualOne">+ Mitglied</button><button class="btn small" type="button" id="cloudManualMany">+ Mehrere</button><button class="btn small" type="button" id="cloudManualFile">CSV importieren</button></div>
       </details>
   <div id="cloudRosterBox" class="cloud-section" hidden>
@@ -1115,8 +1115,8 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
       </div>
     </div>
     <div class="inline-member-add hidden" id="inlineMemberAdd"><input class="name-input" id="inlineMemberName" type="text" autocomplete="off" placeholder="Name des neuen Mitglieds"><button class="btn small primary" id="inlineMemberSave">Hinzufügen</button><button class="btn small" id="inlineMemberCancel">Abbrechen</button></div>
-    <details class="member-help-details"><summary><span aria-hidden="true">ⓘ</span> Was bedeuten Dabei, Fix und Priorität?</summary>
-    <div class="member-hint"><b>Schnellstart:</b> Namen hinzufügen, die CWL-Teilnehmer auf <b>Dabei</b> setzen und bekannte Fix-/MUSS-/RAUS-Fälle eintragen. RH und 3★-Stärke sind optionale Richtwerte. Prio entscheidet bei ansonsten vergleichbaren Spielern.</div>
+    <details class="member-help-details"><summary>Dabei, Fix und Priorität erklärt</summary>
+    <div class="member-hint"><b>Schnellstart:</b> Setze CWL-Teilnehmer auf <b>Dabei</b>. <b>Fix</b> hält Spieler jeden Kriegstag in der Aufstellung. <b>Priorität</b> entscheidet bei ähnlich vielen Einsätzen. MUSS/RAUS regeln einzelne Kriegstage. Im gemeinsamen Planer zeigt die Statistik echte Angriffswerte.</div>
     <div class="info-strip">
       <span class="info-pill"><b>Dabei</b> = nimmt an der aktuellen CWL teil</span>
       <span class="info-pill"><b>Fix</b> = wird an jedem verfügbaren Tag gesetzt</span>
@@ -1184,7 +1184,7 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
 
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
   <div class="card settings-intro">
-    <div class="section-title"><div><h3>⚙ Einstellungen</h3><div class="statusline">Deine Clan- und Planereinstellungen an einem Ort.</div></div></div>
+    <div class="section-title"><div><h3>App-Einstellungen</h3><div class="statusline">Planung, Darstellung und Datensicherung.</div></div></div>
     <div id="settingsCloudAccount" class="settings-cloud-account">
       <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln, Berechtigungen verwalten und Cloud-Sicherungen ansehen.</p></div>
       <button class="btn" type="button" id="settingsCloudManage">Clan & Konto öffnen</button></div>
@@ -1380,7 +1380,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  </section>
  <section id="cloudAccount" hidden>
   <div id="cloudIdentity" class="statusline"></div>
-  <div class="actions"><button class="btn" id="cloudLogout">Abmelden → lokaler Planer</button><button class="btn" id="cloudReload">↻ Jetzt aktualisieren</button></div>
+  <div class="actions"><button class="btn" id="cloudLogout">Abmelden → lokaler Planer</button><button class="btn" id="cloudReload" title="Lädt den aktuellen gemeinsamen Plan und die neuen Änderungen anderer Personen.">↻ Plan neu laden</button></div>
   <div class="cloud-section">
     <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
@@ -1388,8 +1388,8 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div id="cloudSyncFeedback" class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
     <div id="cloudActiveMembers" class="cloud-active-members" aria-live="polite"></div>
     <details class="cloud-minor" id="cloudAccessDetails" open>
-      <summary>Personen mit Zugriff <span id="cloudAccessCount"></span></summary>
-      <p class="small">Hier siehst du, wer dem Clan beigetreten ist und welche Rechte die Person hat.</p>
+      <summary>Planer-Zugänge <span id="cloudAccessCount"></span></summary>
+      <p class="small">Diese Personen haben Zugriff auf den gemeinsamen CWL-Planer. Ihre Rollen gelten nur in der App, nicht in Clash of Clans.</p>
       <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Zugriffe werden geladen …</div>
       <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Aktive Einladungslinks <span id="cloudPendingCount"></span></summary>
       <div id="cloudPendingList" class="cloud-access-list" aria-live="polite"></div>
@@ -1399,11 +1399,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
         <p class="small">Wer entfernt wurde, kann auch über bestehende Gruppenlinks nicht erneut beitreten. Besitzer können alle Sperren, Vizes ihre eigenen Beobachter-Sperren aufheben.</p>
         <div id="cloudBlockedList" class="cloud-access-list"></div>
       </details>
-      <button class="btn small" id="cloudAccessRefresh" type="button">↻ Zugriffe aktualisieren</button>
+      <p class="small">Zugänge und Berechtigungen werden beim Öffnen automatisch aktualisiert.</p>
     </details>
     <div id="cloudClanActions" class="cloud-clan-actions" hidden>
       <button class="btn small" id="cloudLeaveBtn" hidden>Gemeinsamen Clan verlassen</button>
-      <button class="btn small danger" id="cloudDeleteBtn" hidden>Eigenen Cloud-Clan löschen</button>
+      <button class="btn small danger" id="cloudDeleteBtn" hidden>Gemeinsamen Planer löschen</button>
     </div>
     <label for="cloudAlias">Dein Anzeigename (für Änderungsverlauf)</label>
     <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
@@ -1421,7 +1421,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
   <div id="cloudInviteBox" class="cloud-section" hidden>
-    <h3>Zugriff teilen</h3><p>Teile einen Gruppenlink mit beliebig vielen Clanmitgliedern. Wähle die Gültigkeit und Rechte. Vizes verwalten eigene Links; der Besitzer alle.</p>
+    <h3>Zugriff teilen</h3><p>Teile einen Link zum gemeinsamen CWL-Planer. Bestimme, wie lange er gilt und ob neue Personen nur lesen oder mitplanen dürfen.</p>
     <label for="cloudInviteKind">Einladung</label>
     <select id="cloudInviteKind"><option value="reusable">Gruppenlink · beliebig viele Beitritte</option><option value="single">Einmaliger Link · 7 Tage</option></select>
     <div id="cloudInviteReusableOptions">
@@ -1452,7 +1452,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
     <details id="cloudBackupPanel" class="cloud-minor" hidden>
       <summary>Sicherungspunkte und Wiederherstellung</summary>
-      <p class="small">Automatisch angelegte ältere Cloud-Stände dieses Clans. Bis zu 24 Sicherungspunkte; sie ersetzen kein externes Datenbank-Backup.</p>
+      <p class="small">Bis zu fünf ältere Versionen eures gemeinsamen CWL-Plans. Du kannst einen Stand wiederherstellen, falls jemand versehentlich etwas verändert. Angriffsstatistik, Benutzerkonten und Rollen sind nicht Teil dieser Sicherungen.</p>
       <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
       <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
       <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
