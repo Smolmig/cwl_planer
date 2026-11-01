@@ -13,6 +13,15 @@ const text=(id,value)=>{if($(id))$(id).textContent=value};
 const toggle=(id,show)=>{if($(id))$(id).hidden=!show};
 const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
+const INVITE_TOKEN_KEY="cwl_pending_invite_v1",INVITE_ALIAS_KEY="cwl_pending_invite_name_v1";
+const isInviteCode=v=>/^(?:[a-zA-Z0-9_-]{12}|[a-zA-Z0-9_-]{24})$/.test(String(v||""));
+const storedInvite=(key)=>{try{return sessionStorage.getItem(key)||""}catch{return""}};
+const saveInvite=(key,value)=>{try{if(value)sessionStorage.setItem(key,value);else sessionStorage.removeItem(key)}catch{/* private mode */}};
+const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode")?.value?.trim();
+ const query=new URLSearchParams(location.search).get("invite");
+ const code=input||query||storedInvite(INVITE_TOKEN_KEY);
+ return isInviteCode(code)?code:"";
+};
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
@@ -155,6 +164,9 @@ function showSignedIn(){
  toggle("cloudAccount",!!user&&!recoveryMode);
  toggle("cloudRecovery",recoveryMode);
  text("cloudIdentity",user?user.email:"");
+ const invited=!user&&!!pendingInviteCode();
+ toggle("cloudAuthInvite",invited);
+ toggle("cloudAuthNameWrap",invited);
 }
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
 function showForgotPassword(){
@@ -201,11 +213,21 @@ async function completeRecovery(){
 async function sign(kind){
  const email=$("cloudEmail").value.trim(),password=$("cloudPassword").value;
  if(!email||password.length<8)throw Error("Bitte E-Mail und mindestens 8 Zeichen Passwort eingeben.");
+ const invite=pendingInviteCode();
+ if(invite){
+  const name=$("cloudAuthName").value.trim()||$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben, damit du dem Clan beitreten kannst.");
+  $("cloudJoinName").value=name;
+  saveInvite(INVITE_TOKEN_KEY,invite);
+  saveInvite(INVITE_ALIAS_KEY,name);
+ }
+ const redirect=new URL(location.pathname,location.origin);
+ if(invite)redirect.searchParams.set("invite",invite);
  const out=kind==="signup"?
-  await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):
+  await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect.href}}):
   await sb.auth.signInWithPassword({email,password});
  if(out.error)throw out.error;
- if(!out.data.session){msg("Registrierung angelegt. Bitte Bestätigungs-Mail öffnen, danach anmelden.");return}
+ if(!out.data.session){msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
  await useSession(out.data.session);
 }
 async function useSession(session){
@@ -216,9 +238,20 @@ async function useSession(session){
   return;
  }
  await listClans(epoch);
- if($("cloudJoinCode").value.trim()){
-   open();msg("Einladung erkannt: Bitte deinen Ingame-Namen eintragen und „Mit Code beitreten“ wählen.");
+ const code=pendingInviteCode();
+ if(code){
+  $("cloudJoinCode").value=code;
+  const name=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(name){
+   $("cloudJoinName").value=name;
+   try{await joinInvite()}catch(e){
+    open();msg("Beitritt noch nicht abgeschlossen: "+(e.message||e),true);
+    $("cloudJoinName").focus({preventScroll:true});
+   }
+  }else{
+   open();msg("Einladung erkannt: Bitte noch deinen Ingame-Namen eintragen und „Clan beitreten“ wählen.");
    $("cloudJoinName").focus({preventScroll:true});
+  }
  }
 }
 async function leaveCloud(){
@@ -509,8 +542,9 @@ async function loadAccessList(expected=clanId){
  const canInvite=["owner","editor"].includes(role);
  const [{data:members,error:e1},{data:invites,error:e2}]=await Promise.all([
   sb.from("cwl_clan_memberships").select("user_id,role,display_name,joined_at").eq("clan_id",expected).order("joined_at"),
-  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at")
-   .eq("clan_id",expected).is("used_at",null).gt("expires_at",new Date().toISOString())
+  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at,reusable")
+   .eq("clan_id",expected).is("used_at",null)
+   .or("reusable.eq.true,expires_at.gt."+new Date().toISOString())
    .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null})
  ]);
  if(e1)throw e1;if(e2)throw e2;if(expected!==clanId)return;
@@ -552,8 +586,9 @@ async function loadAccessList(expected=clanId){
  for(const inv of pending){
   const row=document.createElement("div");row.className="cloud-invite-row";
   const details=document.createElement("div"),title=document.createElement("strong"),date=document.createElement("span");
-  title.textContent=inv.role==="editor"?"Vize-Einladung":"Beobachter-Einladung";
-  date.textContent="Gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+
+  title.textContent=(inv.reusable?"Gruppenlink · ":"Einmalige Einladung · ")+(inv.role==="editor"?"Vize":"Beobachter");
+  date.textContent=(inv.reusable?"Beliebig viele Beitritte · gültig bis Widerruf":
+    "Gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+
    (inv.created_by===user.id?" · von dir":" · anderer Clanführer");
   details.append(title,date);row.append(details);
   if(role==="owner"||inv.created_by===user.id){
@@ -591,21 +626,26 @@ async function revokeInvite(expected,inv){
 }
 async function createInvite(){
  if(!["owner","editor"].includes(role))throw Error("Nur Besitzer und Vize können einladen.");
- const {data,error:err}=await sb.rpc("cwl_create_short_invite",{p_clan:clanId,p_role:$("cloudInviteRole").value});
+ const reusable=$("cloudInviteKind").value==="reusable";
+ const {data,error:err}=await sb.rpc(reusable?"cwl_create_reusable_invite":"cwl_create_short_invite",
+  {p_clan:clanId,p_role:$("cloudInviteRole").value});
  if(err)throw err;
  inviteLink=location.origin+location.pathname+"?invite="+encodeURIComponent(data);
  toggle("cloudInviteOutput",true);
- text("cloudInviteOutput","Einladungscode: "+data+" · gültig 7 Tage, einmal verwendbar.");
+ text("cloudInviteOutput",reusable?
+  "Gruppenlink erstellt · beliebig viele Beitritte bis zum Widerruf. Link jetzt kopieren und teilen.":
+  "Einmaliger Einladungslink erstellt · 7 Tage gültig. Link jetzt kopieren.");
  toggle("cloudCopyInvite",true);
  await loadAccessList(clanId);
 }
 async function joinInvite(){
  if(clanId)await ensureSaved();
  const code=$("cloudJoinCode").value.trim();
- if(!/^[a-zA-Z0-9_-]{12}$/.test(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
+ if(!isInviteCode(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
  const name=$("cloudJoinName").value.trim();
  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben.");
- const {data,error:err}=await sb.rpc("cwl_redeem_named_invite",{p_code:code,p_name:name});
+ const {data,error:err}=await sb.rpc(code.length===24?"cwl_redeem_reusable_invite":"cwl_redeem_named_invite",
+  {p_code:code,p_name:name});
  if(err)throw err;
  history.replaceState(null,"",location.pathname);
  msg("Du bist "+name+" und hast jetzt Zugriff auf den Clan.");
