@@ -1040,6 +1040,12 @@ bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
 bind("cloudAccessRefresh","click",()=>loadAccessList(clanId));
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
+function toggleInviteKind(){
+ const box=$("cloudInviteReusableOptions");
+ if(box)box.hidden=$("cloudInviteKind").value!=="reusable";
+}
+$("cloudInviteKind").addEventListener("change",toggleInviteKind);
+toggleInviteKind();
 bind("cloudCopyInvite","click",async()=>{
  if(!inviteLink)throw Error("Bitte zuerst eine Einladung erstellen.");
  await navigator.clipboard.writeText(inviteLink);
