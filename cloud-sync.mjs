@@ -551,7 +551,7 @@ async function loadAccessList(expected=clanId){
    .eq("clan_id",expected).is("used_at",null)
    .or("expires_at.is.null,expires_at.gt."+new Date().toISOString())
    .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null}),
-  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at")
+  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at,permanent")
    .eq("clan_id",expected).order("blocked_at",{ascending:false}).limit(100):
    Promise.resolve({data:[],error:null})
  ]);
@@ -621,17 +621,17 @@ async function loadAccessList(expected=clanId){
  toggle("cloudBlockedDetails",canInvite);
  text("cloudBlockedCount","("+(blocks||[]).length+")");
  const blockedList=$("cloudBlockedList");blockedList.replaceChildren();
- if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine gesperrten Personen.";
+ if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine entfernten oder gesperrten Zugänge.";
  for(const item of blocks||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
   const label=document.createElement("strong");
-  label.textContent=item.display_name||"Ehemaliges Clanmitglied";
+  label.textContent=(item.permanent?"Gesperrt: ":"Entfernt: ")+(item.display_name||"Unbekannte Person");
   const meta=document.createElement("span");
   meta.textContent=" · "+(item.blocked_role==="editor"?"ehemaliger Vize":"ehemaliger Beobachter");
   row.append(label,meta);
   if(role==="owner"||(role==="editor"&&item.blocked_by===user.id&&item.blocked_role==="viewer")){
    const undo=document.createElement("button");undo.className="btn small";undo.type="button";
-   undo.textContent="Sperre aufheben";
+   undo.textContent=item.permanent?"Sperre aufheben":"Frühere Links freigeben";
    undo.onclick=()=>unblockAccessMember(expected,item).catch(error);
    row.append(undo);
   }
