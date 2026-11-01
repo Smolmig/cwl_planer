@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,cleanTag} from "./cwl-stats-core.mjs?v=1.3.9";
+import {validateHistoryFile,computeWarStats,selectStatWars,cleanTag} from "./cwl-stats-core.mjs?v=1.4.0";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
