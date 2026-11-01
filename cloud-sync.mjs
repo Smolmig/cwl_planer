@@ -1007,8 +1007,11 @@ async function refreshPresence(expected=clanId){
  const names=new Map((people||[]).map(x=>[x.user_id,x.display_name||({owner:"Besitzer",editor:"Vize",viewer:"Beobachter"}[x.role]||"Clanmitglied")]));
  const others=(recent||[]).filter(x=>x.user_id!==user.id);
  const count=(recent||[]).length;
- text("cloudActiveMembers",(count?"● "+count+" im Clan aktiv (letzte 2 Min.)":"Niemand kürzlich aktiv")+
-  (others.length?" · Mit dir: "+others.map(x=>names.get(x.user_id)||"Clanmitglied").join(", "):" · Nur du"));
+ text("cloudActiveMembers",count?
+  (others.length?"● Du und "+others.length+" weitere Person"+(others.length===1?"":"en")+" gerade im Planer · "+
+    others.map(x=>names.get(x.user_id)||"Anderes Teammitglied").join(", "):
+    "● Du bist gerade im Planer · sonst niemand online"):
+    "○ Online-Status wird geprüft");
 }
 async function heartbeat(expected=clanId){
  if(!user||!expected||expected!==clanId||document.hidden)return;
@@ -1040,7 +1043,7 @@ async function refreshCloud(){
  const loaded=await loadCloudProfile();
  if(!loaded){msg("Aktualisierung abgebrochen, deine Änderungen bleiben bestehen.");return}
  remotePending=false;lastNotifiedRevision=Math.max(lastNotifiedRevision,Number(revision||0));
- await Promise.all([audit(),refreshPresence()]);
+ await Promise.all([audit(),refreshPresence(),loadAccessList(clanId)]);
  const stamp=new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
  const message=prior===revision?"✓ Alles aktuell · keine neuen Änderungen · "+stamp:
   "✓ Neueste Änderungen übernommen · "+stamp;
