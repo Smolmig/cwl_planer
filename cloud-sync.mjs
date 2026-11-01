@@ -647,7 +647,14 @@ async function joinInvite(){
  const {data,error:err}=await sb.rpc(code.length===24?"cwl_redeem_reusable_invite":"cwl_redeem_named_invite",
   {p_code:code,p_name:name});
  if(err)throw err;
- history.replaceState(null,"",location.pathname);
+ const current=new URL(location.href);
+ current.searchParams.delete("invite");
+ history.replaceState(null,"",current.pathname+current.search+current.hash);
+ $("cloudJoinCode").value="";
+ $("cloudJoinName").value="";
+ $("cloudAuthName").value="";
+ saveInvite(INVITE_TOKEN_KEY,"");
+ saveInvite(INVITE_ALIAS_KEY,"");
  msg("Du bist "+name+" und hast jetzt Zugriff auf den Clan.");
  storage.toast("✓ Dem Clan beigetreten");
  await listClans(accountEpoch,data);
@@ -1084,7 +1091,14 @@ document.addEventListener("keydown",()=>checkForAppUpdate().catch(console.warn))
 setTimeout(()=>checkForAppUpdate().catch(console.warn),0);
 
 const linkCode=new URLSearchParams(location.search).get("invite");
-if(linkCode){$("cloudJoinCode").value=linkCode;open()}
+if(linkCode&&isInviteCode(linkCode))saveInvite(INVITE_TOKEN_KEY,linkCode);
+const resumedInvite=isInviteCode(linkCode)?linkCode:storedInvite(INVITE_TOKEN_KEY);
+if(isInviteCode(resumedInvite)){
+ $("cloudJoinCode").value=resumedInvite;
+ const alias=storedInvite(INVITE_ALIAS_KEY);
+ if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias}
+ open();
+}
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){
   queueMicrotask(beginRecovery);
