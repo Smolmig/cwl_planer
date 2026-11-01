@@ -782,6 +782,8 @@ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 .latest-changelog ul{margin:0 0 0 16px;padding:0;display:grid;gap:5px;font-size:12px;line-height:1.5;color:var(--muted)}
 .latest-changelog li b{color:var(--text)}
 /* Toast must be visible above an open cloud dialog and close to the user's action. */
+body:has(#cloudOverlay.open) .inline-action-backdrop{z-index:510}
+body:has(#cloudOverlay.open) .inline-action-panel{z-index:515}
 body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area-inset-bottom));max-width:min(560px,calc(100vw - 24px));border-radius:12px}
 @media(max-width:520px){
  #view-members .member-top .name-wrap{flex:1 1 100%;max-width:100%}
@@ -989,6 +991,8 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
   .cloud-mode .top-actions #helpBtn{font-size:11px;min-width:35px;padding-inline:3px!important}
   .cloud-mode .top-actions .settings-gear{min-width:32px;width:32px;height:34px}
 }
+
+@media(max-width:390px){.stats-player-head,.stats-player-row{grid-template-columns:minmax(70px,1fr) 64px 48px 52px;gap:4px;padding:9px 6px}.stats-player-head{font-size:9px}.stats-player{gap:5px}.stats-th{width:29px;height:29px}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1002,7 +1006,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
   <div class="toprow">
     <div class="titleblock">
       <h1>⚔️ CWL Planer</h1>
-      <div class="subtitle">7 Tage fair verteilen · Sonderfälle · Live-Anpassungen</div>
+      <div class="subtitle">CWL planen · Einsätze fair verteilen · Überblick behalten</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
     <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Anmelden und Clans verwalten" aria-label="Clan und Konto öffnen">☁️ Clan ▾</button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
@@ -1146,9 +1150,10 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.3.7</strong><span>Cloud-Update</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.3.8</strong><span>Bedienung verbessert</span></div>
       <ul>
-        <li><b>Einstellungen:</b> Clanprofile, CWL-Grunddaten, Farbschema und Sicherungen erreichst du jetzt über das Zahnrad oben beim Clan.</li>
+        <li><b>Einheitliche Dialoge:</b> Bestätigungen und Löschaktionen erscheinen jetzt direkt in der App.</li>
+        <li><b>Klare Statistik:</b> Statt „Hit Rate“ wird die 3★-Quote angezeigt.</li>
         <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
         <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
         <li><b>Planung bleibt flexibel:</b> Auch ohne laufende CWL kannst du Mitglieder einteilen und Aufstellungen vorbereiten.</li>
@@ -1181,10 +1186,10 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">Hit Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Quote ↓</option><option value="attacks">Angriffe ↓</option><option value="missed">Nicht genutzt ↓</option><option value="name">Name</option></select></div>
     </div>
     <div class="stats-player-table">
-      <div class="stats-player-head"><span>Spieler</span><span>Hit Rate</span><span>Angriffe</span><span>Verpasst</span></div>
+      <div class="stats-player-head"><span>Spieler</span><span>3★-Quote</span><span>Angriffe</span><span>Nicht genutzt</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
     <p class="stats-note" id="statsMissingNote">Nicht alle älteren Kriege haben vollständige Angaben zu nicht genutzten Angriffen.</p>
@@ -1210,16 +1215,16 @@ Spieler Bravo
 Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spieler Alpha&#10;Spieler Bravo&#10;Spieler Charlie"></textarea><div class="detected-count" id="bulkDetectedCount">0 Namen erkannt</div><div class="helpbox">Neue Mitglieder werden hier standardmäßig als <b>Dabei</b>, nicht als Fixspieler, mit <b>Prio 0</b>, ohne Rathausangabe, mit unbekannter 3★-Stärke und AUTO an allen Tagen angelegt.</div><div class="actions"><button class="btn primary" id="bulkSave">Mitglieder hinzufügen</button><button class="btn" id="bulkCancel">Abbrechen</button></div></div></div>
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="modalbox help-modal-box">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Schließen</button></div>
-  <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf die sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
+  <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf bis zu sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
   <div id="cloudHelpSection" hidden class="helpbox cloud-help">
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Clans und Zugriffe</b><p>Öffne oben „Clan & Konto“, um den Clan zu wechseln. Besitzer können Personen entfernen, Vize- und Beobachterrechte ändern und Einladungen zurückziehen. Vizes können weitere Personen einladen; Beobachter können nur lesen.</p></div>
-    <div><b>Mitglieder aktualisieren</b><p>Im Tab „Mitglieder“ findest du „Mitglieder aktualisieren“. Prüfe neue, veränderte oder ausgetretene Spieler vor der Übernahme. Bereits eingeplante Spieler werden nicht ohne Entscheidung pausiert.</p></div>
+    <div><b>Mitglieder aktualisieren</b><p>Im Tab „Mitglieder“ findest du „Mit dem Clash-Clan abgleichen“. Prüfe neue, veränderte oder ausgetretene Spieler vor der Übernahme. Bereits eingeplante Spieler werden nicht ohne Entscheidung pausiert.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“ und „Fix“ kannst du direkt in jeder Spielerzeile ändern. Für Name, Rathaus, Stärke und Tagesregeln stehen Stift bzw. „Bearbeiten“ bereit. „Mehrfachauswahl“ markiert mehrere Spieler; mit „Fertig“ verlässt du den Modus.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
-    <div><b>Sicherungen</b><p>Unter „Clan & Konto“ kannst du Cloud-Sicherungspunkte herunterladen. Nur Besitzer können einen älteren Stand wiederherstellen. Sichere zusätzlich regelmäßig das vollständige Datenbank-Backup außerhalb von Supabase.</p></div>
+    <div><b>Sicherungen</b><p>Unter „Clan & Konto“ kannst du Cloud-Sicherungspunkte herunterladen. Nur Besitzer können einen älteren Stand wiederherstellen. Zusätzlich kannst du unter „Einstellungen“ ein JSON-Backup deines Plans erstellen.</p></div>
     <div><b>Einladungen</b><p>Einmalige Einladungslinks gelten sieben Tage. Wer beitritt, gibt seinen Ingame-Namen an. Offene Einladungen können zurückgezogen werden; der Link ist danach ungültig.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
@@ -1378,7 +1383,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.3.7";
+const APP_VERSION="v1.3.8";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -1850,6 +1855,8 @@ window.CWLLegacy={
  getProfile:()=>state,
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  toast:(message)=>showToast(message),
+  confirmAction:(message,options)=>confirmInline(message,options),
+  askAction:(options)=>askInlineAction(options),
  switchToCloud:(profile)=>{const p=normalizeProfile(structuredClone(profile));app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
  restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
  blank:(name)=>freshProfile(name),
@@ -1859,6 +1866,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.3.7"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.3.8"></script>
 </body>
 </html>

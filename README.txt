@@ -1,7 +1,8 @@
 
-CLOUD-RELEASE 31.10.2026:
+CLOUD-RELEASE 01.11.2026:
 - Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.2.0 (offiziell; CWL-Livedaten optional).
 - Separate installierbare lokale Offline-PWA \`index.html\`: weiterhin v1.0.2.
+- Einheitliche Bestätigungsdialoge, klarere 3★-Quote und verständlichere Cloud-Bedienung.
 - Cloud: Gegner und RH-Verteilung je freigegebenem Kriegstag, live Angriffe/Sterne und
   sicherer automatischer Abschluss beendeter Kriege beim Cloud-Abgleich.
 - Ohne aktive CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar.
