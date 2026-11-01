@@ -648,11 +648,19 @@ async function changeAccessRole(expected,m,next){
  return true;
 }
 async function removeAccessMember(expected,m){
- if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))throw Error("Keine Berechtigung.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen und für erneute Beitritte sperren? Die Person kann auch über aktive Gruppenlinks nicht wieder beitreten, bis die Sperre aufgehoben wird.",{title:"Zugang entfernen und sperren",confirmText:"Entfernen",danger:true}))return;
- const {error:e}=await sb.rpc("cwl_remove_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))
+  throw Error("Keine Berechtigung.");
+ const choice=await storage.askAction({
+  title:"Planer-Zugang verwalten",
+  message:(m.display_name||"Diese Person")+" hat danach keinen Zugriff mehr. Beim Entfernen funktionieren bisherige Links für diese Person nicht mehr. Mit einer neu erstellten Einladung kann sie wieder beitreten. Sperren verhindert auch neue Einladungen.",
+  buttons:[{value:"remove",text:"Zugriff entfernen",primary:true},
+   {value:"ban",text:"Dauerhaft sperren",danger:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["remove","ban"].includes(choice.value))return;
+ const {error:e}=await sb.rpc(choice.value==="ban"?"cwl_ban_clan_member":"cwl_remove_clan_member",
+  {p_clan:expected,p_user:m.user_id});
  if(e)throw e;
- if(expected===clanId){storage.toast("✓ Zugang entfernt und gesperrt");await loadAccessList(expected)}
+ if(expected===clanId){storage.toast(choice.value==="ban"?"✓ Person gesperrt":"✓ Zugang entfernt");await loadAccessList(expected)}
 }
 async function unblockAccessMember(expected,m){
  if(!(role==="owner"||(role==="editor"&&m.blocked_role==="viewer"&&m.blocked_by===user.id)))
