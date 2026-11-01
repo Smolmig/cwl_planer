@@ -24,13 +24,14 @@ const saveInvite=(key,value)=>{
 };
 const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode")?.value?.trim();
  const query=new URLSearchParams(location.search).get("invite");
- const code=input||query||storedInvite(INVITE_TOKEN_KEY);
+ const code=query||input||storedInvite(INVITE_TOKEN_KEY);
  return isInviteCode(code)?code:"";
 };
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
+let invitePreview=null,inviteAuthMode="login",invitePreviewRequest=0,inviteSubmitting=false;
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const backups=createCloudBackups({
  sb,
@@ -162,6 +163,121 @@ function error(e){msg(e?.message||String(e),true);
  console.warn("Cloud Planner:",e)}
 function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
+function inviteFeedback(message,isError=false){
+ const target=$("inviteWelcomeError");if(!target)return;
+ target.hidden=!message;target.textContent=message||"";
+ target.classList.toggle("error",isError);
+}
+function closeInviteDialog(discard=false){
+ const box=$("inviteWelcome");
+ box.classList.remove("open");box.setAttribute("aria-hidden","true");
+ if(discard){
+  saveInvite(INVITE_TOKEN_KEY,"");saveInvite(INVITE_ALIAS_KEY,"");
+  $("cloudJoinCode").value="";$("inviteWelcomeName").value="";
+  const next=new URL(location.href);next.searchParams.delete("invite");
+  history.replaceState(null,"",next.pathname+next.search+next.hash);
+ }
+}
+async function suggestedInviteName(){
+ if($("inviteWelcomeName").value.trim())return;
+ const localName=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+ if(localName){$("inviteWelcomeName").value=localName;return}
+ if(!user)return;
+ const meta=String(user.user_metadata?.display_name||user.user_metadata?.name||"").trim();
+ try{
+  const {data,error:err}=await sb.from("cwl_clan_memberships")
+   .select("display_name").eq("user_id",user.id)
+   .order("joined_at",{ascending:false}).limit(1);
+  if(!err&&data?.[0]?.display_name&&!$("inviteWelcomeName").value.trim()){
+   $("inviteWelcomeName").value=data[0].display_name;return;
+  }
+ }catch{/* Existing user may not yet belong to a planner. */}
+ if(meta&&!$("inviteWelcomeName").value.trim())$("inviteWelcomeName").value=meta.slice(0,60);
+}
+function updateInviteGuestView(){
+ const active=!!user&&!recoveryMode;
+ toggle("inviteWelcomeSigned",active);
+ toggle("inviteWelcomeGuest",!active);
+ if(active){
+  $("inviteWelcomeAuthForm").hidden=true;
+  $("inviteWelcomeAuthChoices").hidden=false;
+ }
+}
+async function showInviteDialog(code=pendingInviteCode()){
+ if(!isInviteCode(code)||recoveryMode)return;
+ const seq=++invitePreviewRequest;
+ $("cloudJoinCode").value=code;
+ saveInvite(INVITE_TOKEN_KEY,code);
+ const box=$("inviteWelcome");box.classList.add("open");box.setAttribute("aria-hidden","false");
+ text("inviteWelcomeTitle","Einladung wird geladen …");
+ text("inviteWelcomeIntro","Wir prüfen den Einladungslink.");
+ toggle("inviteWelcomeRole",false);toggle("inviteWelcomeActions",false);
+ inviteFeedback("");
+ updateInviteGuestView();
+ try{
+  const {data,error:err}=await sb.rpc("cwl_preview_invite",{p_code:code});
+  if(seq!==invitePreviewRequest)return;
+  if(err)throw err;
+  const row=Array.isArray(data)?data[0]:null;
+  if(!row){invitePreview=null;
+   text("inviteWelcomeTitle","Einladung nicht verfügbar");
+   text("inviteWelcomeIntro","Dieser Link ist abgelaufen, wurde zurückgezogen oder ist nicht mehr gültig. Bitte die Clanführung um eine neue Einladung.");
+   return;
+  }
+  invitePreview=row;
+  text("inviteWelcomeTitle",row.planner_name);
+  text("inviteWelcomeIntro","Du hast eine Einladung erhalten, diesen CWL-Planer gemeinsam zu nutzen.");
+  const title=row.invited_role==="editor"?"Vize · Planung bearbeiten":"Beobachter · Plan ansehen";
+  const until=row.valid_until?" · Gültig bis "+new Date(row.valid_until).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):" · Ohne Ablaufdatum";
+  text("inviteWelcomeRole","Dein Zugang: "+title+until);
+  toggle("inviteWelcomeRole",true);toggle("inviteWelcomeActions",true);
+  await suggestedInviteName();
+  if(seq!==invitePreviewRequest)return;
+  updateInviteGuestView();
+ }catch(err){
+  if(seq!==invitePreviewRequest)return;
+  text("inviteWelcomeTitle","Einladung kann nicht geprüft werden");
+  text("inviteWelcomeIntro","Die Einladung konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.");
+  inviteFeedback(err?.message||"Bitte später erneut versuchen.",true);
+ }
+}
+async function confirmInviteJoin(){
+ if(inviteSubmitting||!user)return;
+ const code=pendingInviteCode();
+ const name=$("inviteWelcomeName").value.trim();
+ if(!isInviteCode(code))return inviteFeedback("Bitte öffne einen gültigen Einladungslink.",true);
+ if(!name||name.length>60)return inviteFeedback("Bitte gib deinen Namen für den Planer ein.",true);
+ inviteSubmitting=true;
+ $("inviteWelcomeJoin").disabled=true;
+ inviteFeedback("");
+ try{
+  $("cloudJoinCode").value=code;$("cloudJoinName").value=name;
+  saveInvite(INVITE_ALIAS_KEY,name);
+  await joinInvite();
+  closeInviteDialog();
+  close();
+  document.querySelector('.navbtn[data-view="plan"]')?.click();
+  storage.toast("✓ Beitritt erfolgreich · gemeinsamer Planer geöffnet");
+ }catch(err){inviteFeedback("Beitritt nicht möglich: "+(err?.message||err),true)}
+ finally{inviteSubmitting=false;$("inviteWelcomeJoin").disabled=false}
+}
+async function submitInviteAuth(){
+ if(inviteSubmitting)return;
+ inviteSubmitting=true;
+ $("inviteWelcomeAuthSubmit").disabled=true;
+ inviteFeedback("");
+ try{
+  $("cloudEmail").value=$("inviteWelcomeEmail").value.trim();
+  $("cloudPassword").value=$("inviteWelcomePassword").value;
+  const chosen=$("inviteWelcomeName").value.trim();
+  if(chosen.length>60)throw Error("Der Name darf höchstens 60 Zeichen haben.");
+  if(chosen){$("cloudJoinName").value=chosen;$("cloudAuthName").value=chosen}
+  await sign(inviteAuthMode);
+  if(!user&&inviteAuthMode==="signup")
+   inviteFeedback("Konto erstellt. Prüfe jetzt deine E-Mails und bestätige die Registrierung. Danach kannst du über die Einladung beitreten.");
+ }catch(err){inviteFeedback(err?.message||"Anmeldung fehlgeschlagen.",true)}
+ finally{inviteSubmitting=false;$("inviteWelcomeAuthSubmit").disabled=false}
+}
 function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
 function showSignedIn(){
  toggle("cloudAuth",!user&&!recoveryMode&&!forgotOpen);
