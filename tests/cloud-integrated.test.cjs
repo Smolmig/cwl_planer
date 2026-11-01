@@ -114,7 +114,7 @@ test("Alpha 5: realtime reconcile, clear collaborator toast, archive removal and
   assert.equal(meta.version,"v1.4.0");
 });
 test("Alpha 6: accepted membership roster, named invite and safe departed-lineup decisions",()=>{
- for(const id of ["cloudAccessList","cloudAccessCount","cloudAccessRefresh","cloudJoinName","cloudDepartedWarnings"])
+ for(const id of ["cloudAccessList","cloudAccessCount","cloudReload","cloudJoinName","cloudDepartedWarnings"])
    assert.ok(preview.includes('id="'+id+'"'),"Missing "+id);
  assert.doesNotMatch(preview,/id="cloudPauseDeparted"/);
  assert.match(mod,/async function loadAccessList/);
