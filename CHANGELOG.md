@@ -8,6 +8,24 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.0] - 2026-11-01
+
+### Oberfläche und Statistik
+- Einstellungen öffnen als eigenständiger Dialog wie „Clan & Konto“; Begrifflichkeiten für Nutzer vereinfacht und Hilfe aktualisiert.
+- Statistik zeigt jetzt Sterne pro Angriff im Durchschnitt, einzelne Ergebnisse für die Auswahl „1 CW“ und einen aufklappbaren Kriegsverlauf je Gegner und Datum.
+- Verpasste Angriffe mit unvollständigen historischen Daten werden als Mindestzahl ausgewiesen, statt eine exakte Zahl vorzutäuschen.
+- Mitglieder im Cloud-Modus zeigen echte 3★-Hit-Rate und durchschnittliche Sterne; die manuelle Stärke bleibt nur im lokalen Offline-Planer.
+- Rathausfilter präzisiert und Bearbeitungsstift neben den Spielernamen gerückt.
+
+### Zusammenarbeit
+- Opt-in/Opt-out für automatischen Clash-Mitgliederabgleich, mit manuellem Knopf. Bereits geplante ausgetretene Spieler benötigen weiterhin eine Entscheidung.
+- Zugriff entziehen unterscheidet sich von dauerhafter Sperre. Alte Einladungen werden beim Entfernen unwirksam; neue Links können eine entfernte Person erneut aufnehmen. Dauerhafte Sperren bleiben bis zur Freigabe erhalten.
+- Online-Status beschreibt aktive Nutzer des gemeinsamen Planers, nicht aktive Clash-Spieler.
+- Gefährliches Löschen des gesamten gemeinsamen Planers in den erweiterten Bereich verlegt.
+
+### Datensicherheit
+- Automatische Wiederherstellungspunkte auf maximal fünf Versionen pro Planer begrenzt. Vollständige externe Sicherungen und Kriegsstatistiken bleiben unabhängig.
+
 ## [1.3.9] - 2026-11-01
 
 ### Statistik und Navigation

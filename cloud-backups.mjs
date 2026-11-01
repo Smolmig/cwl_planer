@@ -17,7 +17,7 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
  async function list(){
   const {clanId}=context();if(!clanId)return;
   const {data,error}=await sb.from("cwl_profile_snapshots").select("id,revision,created_at")
-    .eq("clan_id",clanId).order("created_at",{ascending:false}).order("id",{ascending:false}).limit(24);
+    .eq("clan_id",clanId).order("created_at",{ascending:false}).order("id",{ascending:false}).limit(5);
   if(error)throw error;
   if(clanId!==context().clanId)return;
   entries=data||[];forClan=clanId;
@@ -27,7 +27,7 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
    select.add(new Option(new Date(entry.created_at).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"medium"}),String(entry.id)));
   }
   el("cloudBackupStatus").textContent=entries.length?
-   entries.length+" Sicherungen verfügbar. Du kannst einen Stand herunterladen oder als Clanbesitzer wiederherstellen.":
+   entries.length+" Wiederherstellungspunkte verfügbar. Nur der Planstand wird gesichert; nicht die Kriegsstatistiken oder Benutzerzugänge.":
    "Noch keine Sicherung vorhanden. Sicherungen werden automatisch bei Änderungen angelegt.";
   buttons();
  }

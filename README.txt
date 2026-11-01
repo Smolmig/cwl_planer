@@ -1,5 +1,5 @@
 
-CLOUD-RELEASE 01.11.2026:
+CLOUD-RELEASE 01.11.2026 (v1.4.0):
 - Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.2.0 (offiziell; CWL-Livedaten optional).
 - Separate installierbare lokale Offline-PWA \`index.html\`: weiterhin v1.0.2.
 - Flexible CW/CWL-Statistik, 3★-Hit-Rate, verpasste Angriffe und geschützte Gruppenlinks mit Rollen, Laufzeit und Sperren.

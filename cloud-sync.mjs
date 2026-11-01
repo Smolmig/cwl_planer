@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.9";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.9";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.9";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.9";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -27,7 +27,7 @@ const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode"
  const code=input||query||storedInvite(INVITE_TOKEN_KEY);
  return isInviteCode(code)?code:"";
 };
-let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
+let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
@@ -349,6 +349,8 @@ async function chooseClan(epoch=accountEpoch){
  await startPresence();
  live.start();
  stats.load().catch(console.warn);
+ syncAutoRosterSetting();
+ setTimeout(()=>maybeAutoRoster().catch(console.warn),1500);
  msg((clans.find(c=>c.id===clanId)?.name||"Clan")+" ist verbunden. Deine Änderungen werden gemeinsam gespeichert.");
 }
 
@@ -551,7 +553,7 @@ async function loadAccessList(expected=clanId){
    .eq("clan_id",expected).is("used_at",null)
    .or("expires_at.is.null,expires_at.gt."+new Date().toISOString())
    .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null}),
-  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at")
+  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at,permanent")
    .eq("clan_id",expected).order("blocked_at",{ascending:false}).limit(100):
    Promise.resolve({data:[],error:null})
  ]);
@@ -621,17 +623,17 @@ async function loadAccessList(expected=clanId){
  toggle("cloudBlockedDetails",canInvite);
  text("cloudBlockedCount","("+(blocks||[]).length+")");
  const blockedList=$("cloudBlockedList");blockedList.replaceChildren();
- if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine gesperrten Personen.";
+ if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine entfernten oder gesperrten Zugänge.";
  for(const item of blocks||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
   const label=document.createElement("strong");
-  label.textContent=item.display_name||"Ehemaliges Clanmitglied";
+  label.textContent=(item.permanent?"Gesperrt: ":"Entfernt: ")+(item.display_name||"Unbekannte Person");
   const meta=document.createElement("span");
-  meta.textContent=" · "+(item.blocked_role==="editor"?"ehemaliger Vize":"ehemaliger Beobachter");
+  meta.textContent=" · "+(item.permanent?"Alle künftigen Einladungen gesperrt":"Vorherige Einladungen ungültig");
   row.append(label,meta);
   if(role==="owner"||(role==="editor"&&item.blocked_by===user.id&&item.blocked_role==="viewer")){
    const undo=document.createElement("button");undo.className="btn small";undo.type="button";
-   undo.textContent="Sperre aufheben";
+   undo.textContent=item.permanent?"Sperre aufheben":"Frühere Links freigeben";
    undo.onclick=()=>unblockAccessMember(expected,item).catch(error);
    row.append(undo);
   }
@@ -648,16 +650,24 @@ async function changeAccessRole(expected,m,next){
  return true;
 }
 async function removeAccessMember(expected,m){
- if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))throw Error("Keine Berechtigung.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen und für erneute Beitritte sperren? Die Person kann auch über aktive Gruppenlinks nicht wieder beitreten, bis die Sperre aufgehoben wird.",{title:"Zugang entfernen und sperren",confirmText:"Entfernen",danger:true}))return;
- const {error:e}=await sb.rpc("cwl_remove_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))
+  throw Error("Keine Berechtigung.");
+ const choice=await storage.askAction({
+  title:"Planer-Zugang verwalten",
+  message:(m.display_name||"Diese Person")+" hat danach keinen Zugriff mehr. Beim Entfernen funktionieren bisherige Links für diese Person nicht mehr. Mit einer neu erstellten Einladung kann sie wieder beitreten. Sperren verhindert auch neue Einladungen.",
+  buttons:[{value:"remove",text:"Zugriff entfernen",primary:true},
+   {value:"ban",text:"Dauerhaft sperren",danger:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["remove","ban"].includes(choice.value))return;
+ const {error:e}=await sb.rpc(choice.value==="ban"?"cwl_ban_clan_member":"cwl_remove_clan_member",
+  {p_clan:expected,p_user:m.user_id});
  if(e)throw e;
- if(expected===clanId){storage.toast("✓ Zugang entfernt und gesperrt");await loadAccessList(expected)}
+ if(expected===clanId){storage.toast(choice.value==="ban"?"✓ Person gesperrt":"✓ Zugang entfernt");await loadAccessList(expected)}
 }
 async function unblockAccessMember(expected,m){
  if(!(role==="owner"||(role==="editor"&&m.blocked_role==="viewer"&&m.blocked_by===user.id)))
    throw Error("Keine Berechtigung zum Entsperren.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Die Person erhält dadurch noch keinen Zugang und muss erneut einem gültigen Einladungslink folgen.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Danach kann sie einen gültigen Einladungslink verwenden.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
  const {error:e}=await sb.rpc("cwl_unblock_clan_member",{p_clan:expected,p_user:m.user_id});
  if(e)throw e;
  if(expected===clanId){storage.toast("✓ Sperre aufgehoben");await loadAccessList(expected)}
@@ -739,14 +749,37 @@ async function joinInvite(){
  await listClans(accountEpoch,data);
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
-async function getRoster(){
+const autoRosterChecks=new Map();
+function isAutoRosterEnabled(){
+ if(!clanId)return false;
+ try{return localStorage.getItem("cwl_auto_roster_"+clanId)!=="off"}catch{return true}
+}
+function syncAutoRosterSetting(){
+ const toggle=$("settingsAutoRoster"),hint=$("autoRosterStatus");
+ if(toggle){toggle.checked=isAutoRosterEnabled();toggle.disabled=!["owner","editor"].includes(role)}
+ if(hint&&!["owner","editor"].includes(role))hint.textContent="Automatischer Import ist für die Clanführung verfügbar.";
+}
+async function maybeAutoRoster(force=false){
+ if(!clanId||!user||!cloud.active||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
+    !navigator.onLine||document.hidden||rosterAutoBusy||blocked||changedSerial||saving)return;
+ const now=Date.now();
+ if(!force&&now-(autoRosterChecks.get(clanId)||0)<900000)return;
+ autoRosterChecks.set(clanId,now);
+ try{await getRoster({automatic:true})}
+ catch(e){text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Manuell erneut prüfen.");
+  console.warn("Automatischer Mitgliederabgleich:",e?.message||e)}
+}
+async function getRoster({automatic=false}={}){
  let stage="Vorbereitung";
  try{
  if(!clanId)throw Error("Bitte Clan auswählen");
+ if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy))return;
  await ensureSaved();
- resetRoster();toggle("cloudRosterBox",true);
+ if(automatic)rosterAutoBusy=true;
+ resetRoster();
+ if(!automatic)toggle("cloudRosterBox",true);
  const status=$("cloudRosterStatus");status.textContent="Clanmitglieder werden verglichen …";status.classList.remove("error");
- $("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
+ if(!automatic)$("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
  stage="Clash-Daten abrufen";
  let {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
  if(err && (err.name==="FunctionsFetchError" ||
@@ -850,6 +883,18 @@ async function getRoster(){
  toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
  text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(critical.length?" · ⚠️ Aufstellungen prüfen":""));
+ if(automatic){
+  if(critical.length){
+   toggle("cloudRosterBox",true);
+   text("autoRosterStatus","Aufstellung prüfen: "+critical.length+" ausgetretene Spieler sind noch eingeplant.");
+   storage.toast("⚠ Mitgliederabgleich: Aufstellungen prüfen");
+  }else{
+   const changes=added.length+updated.length+normalDeparted.length;
+   if(changes)await applyRoster();
+   text("autoRosterStatus","Letzter Abgleich: "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"})+
+     (changes?" · "+changes+" Änderungen übernommen":" · aktuell"));
+  }
+ }
  }catch(err){
    console.warn("Clanvergleich fehlgeschlagen",{
      stage,name:err?.name||"Fehler",message:String(err?.message||err).slice(0,200)
@@ -857,7 +902,7 @@ async function getRoster(){
    if(err instanceof TypeError || /^(type error|load failed)$/i.test(String(err?.message||"")))
      throw Error("Der Mitgliedervergleich konnte bei „"+stage+"“ nicht abgeschlossen werden. Bitte Seite neu laden und erneut versuchen.");
    throw err;
- }
+ }finally{if(automatic)rosterAutoBusy=false}
 }
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
@@ -941,7 +986,7 @@ async function audit(){
   if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
   if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
   detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
-    " · Rev. "+e.revision+(pieces.length?" · "+pieces.join(" · "):"");
+    (pieces.length?" · "+pieces.join(" · "):"");
   item.append(head,detail);root.append(item);
  }
 }
@@ -962,8 +1007,11 @@ async function refreshPresence(expected=clanId){
  const names=new Map((people||[]).map(x=>[x.user_id,x.display_name||({owner:"Besitzer",editor:"Vize",viewer:"Beobachter"}[x.role]||"Clanmitglied")]));
  const others=(recent||[]).filter(x=>x.user_id!==user.id);
  const count=(recent||[]).length;
- text("cloudActiveMembers",(count?"● "+count+" im Clan aktiv (letzte 2 Min.)":"Niemand kürzlich aktiv")+
-  (others.length?" · Mit dir: "+others.map(x=>names.get(x.user_id)||"Clanmitglied").join(", "):" · Nur du"));
+ text("cloudActiveMembers",count?
+  (others.length?"● Du und "+others.length+" weitere Person"+(others.length===1?"":"en")+" gerade im Planer · "+
+    others.map(x=>names.get(x.user_id)||"Anderes Teammitglied").join(", "):
+    "● Du bist gerade im Planer · sonst niemand online"):
+    "○ Online-Status wird geprüft");
 }
 async function heartbeat(expected=clanId){
  if(!user||!expected||expected!==clanId||document.hidden)return;
@@ -995,7 +1043,7 @@ async function refreshCloud(){
  const loaded=await loadCloudProfile();
  if(!loaded){msg("Aktualisierung abgebrochen, deine Änderungen bleiben bestehen.");return}
  remotePending=false;lastNotifiedRevision=Math.max(lastNotifiedRevision,Number(revision||0));
- await Promise.all([audit(),refreshPresence()]);
+ await Promise.all([audit(),refreshPresence(),loadAccessList(clanId)]);
  const stamp=new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
  const message=prior===revision?"✓ Alles aktuell · keine neuen Änderungen · "+stamp:
   "✓ Neueste Änderungen übernommen · "+stamp;
@@ -1072,7 +1120,7 @@ bind("cloudChangeDetails","click",()=>{
 bind("cloudLeaveBtn","click",leaveSharedClan);
 bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
-bind("cloudAccessRefresh","click",()=>loadAccessList(clanId));
+
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
 function toggleInviteKind(){
  const box=$("cloudInviteReusableOptions");
@@ -1100,6 +1148,17 @@ async function safeRosterRefresh(){
 }
 bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
 bind("cloudMembersSyncBtn","click",safeRosterRefresh);
+bind("settingsRosterRefresh","click",async()=>{
+ $("settingsClose").click();
+ document.querySelector('.navbtn[data-view="members"]')?.click();
+ await safeRosterRefresh();
+});
+$("settingsAutoRoster").addEventListener("change",ev=>{
+ if(!clanId)return;
+ try{localStorage.setItem("cwl_auto_roster_"+clanId,ev.target.checked?"on":"off")}catch{}
+ if(ev.target.checked){autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn)}
+ else text("autoRosterStatus","Automatischer Abgleich deaktiviert · manuelle Prüfung weiterhin möglich.");
+});
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
@@ -1150,7 +1209,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.9";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.4.0";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
@@ -1159,10 +1218,12 @@ async function checkForAppUpdate(){
  }catch(err){console.warn("Updateprüfung nicht erreichbar:",err)}
 }
 setInterval(()=>checkForAppUpdate().catch(console.warn),60000);
+setInterval(()=>maybeAutoRoster().catch(console.warn),900000);
 window.addEventListener("pageshow",()=>checkForAppUpdate().catch(console.warn));
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){
   checkForAppUpdate().catch(console.warn);
+  maybeAutoRoster().catch(console.warn);
   heartbeat().catch(console.warn);
   checkRemoteChanges("foreground").catch(console.warn);
  }
