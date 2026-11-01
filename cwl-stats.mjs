@@ -8,7 +8,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
-  let cachedPlayerStats=new Map();
+  let cachedPlayerStats=new Map(),lastMetricSignature="";
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
   window.CWLCloudStats={getPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
   function render(){
@@ -25,6 +25,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
     cachedPlayerStats=new Map(summary.rows.map(p=>[cleanTag(p.tag),p]));
+    const metricSignature=[ctx.clanId,version,type,last,cwlSeasons,sameHigher,showFormer].join("|");
+    const metricsChanged=metricSignature!==lastMetricSignature;
+    lastMetricSignature=metricSignature;
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"mind. "+summary.missesKnown:"k. A.");
     $("statsSummary").innerHTML=[
@@ -67,7 +70,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const note=$("statsMissingNote");
     if(note){note.textContent=summary.complete?"": "„mind.“ = nachgewiesene Mindestzahl; „k. A.“ = keine verlässliche Angabe aus älteren Kriegen.";note.hidden=summary.complete;}
     renderWarHistory();
-    window.CWLCloudStats?.onUpdate?.();
+    if(metricsChanged)window.CWLCloudStats?.onUpdate?.();
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
@@ -119,7 +122,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();version++;lastCapture.clear();loading=false;importing=false;
+    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();lastMetricSignature="";version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
   async function load(){
