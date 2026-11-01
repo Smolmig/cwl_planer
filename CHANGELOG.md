@@ -8,6 +8,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.1] - 2026-11-01
+
+### Mitglieder
+- 3★-Hit-Rate ausdrücklich beschriftet. Der durchschnittliche Sternwert verwendet nur die letzten sieben gespeicherten einzelnen Angriffe (oder entsprechend weniger, wenn noch nicht sieben vorliegen).
+- Der zugrunde liegende Zeitraum wird verständlich angezeigt; technische Kürzel wie „P0“ entfallen in der kompakten Cloud-Mitgliederansicht. Priorität bleibt über „Bearbeiten“ verfügbar.
+- Die ausführliche Clan-Statistik bleibt vom neuen gleitenden Sterneschnitt unberührt.
+
+### Einstellungen
+- Alle Einstellungsbereiche teilen sich jetzt ein einziges Fenster mit gemeinsamer Oberfläche, Scrollbereich und feststehender Kopfzeile.
+- Redundante Überschriften und Kartenabstände entfernt. Die Hilfe- und Offline-Funktionen bleiben vorhanden.
+
 ## [1.4.0] - 2026-11-01
 
 ### Oberfläche und Statistik
