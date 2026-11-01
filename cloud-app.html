@@ -1371,9 +1371,14 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
       <summary>Personen mit Zugriff <span id="cloudAccessCount"></span></summary>
       <p class="small">Hier siehst du, wer dem Clan beigetreten ist und welche Rechte die Person hat.</p>
       <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Zugriffe werden geladen …</div>
-      <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Offene Einladungen <span id="cloudPendingCount"></span></summary>
+      <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Aktive Einladungslinks <span id="cloudPendingCount"></span></summary>
       <div id="cloudPendingList" class="cloud-access-list" aria-live="polite"></div>
     </details>
+      <details id="cloudBlockedDetails" class="cloud-minor" hidden>
+        <summary>Gesperrte Zugänge <span id="cloudBlockedCount"></span></summary>
+        <p class="small">Wer entfernt wurde, kann auch über bestehende Gruppenlinks nicht erneut beitreten. Besitzer können alle Sperren, Vizes ihre eigenen Beobachter-Sperren aufheben.</p>
+        <div id="cloudBlockedList" class="cloud-access-list"></div>
+      </details>
       <button class="btn small" id="cloudAccessRefresh" type="button">↻ Zugriffe aktualisieren</button>
     </details>
     <div id="cloudClanActions" class="cloud-clan-actions" hidden>
@@ -1396,7 +1401,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <button class="btn" id="cloudJoin">Mit Code beitreten</button>
   </div>
   <div id="cloudInviteBox" class="cloud-section" hidden>
-    <h3>Zugriff teilen</h3><p>Teile einen Gruppenlink mit allen, die den Clanplan sehen oder mitbearbeiten sollen. Der Link bleibt bis zu deinem Widerruf gültig.</p>
+    <h3>Zugriff teilen</h3><p>Teile einen Gruppenlink mit beliebig vielen Clanmitgliedern. Wähle die Gültigkeit und Rechte. Vizes verwalten eigene Links; der Besitzer alle.</p>
     <label for="cloudInviteKind">Einladung</label>
     <select id="cloudInviteKind"><option value="reusable">Gruppenlink · beliebig viele Beitritte</option><option value="single">Einmaliger Link · 7 Tage</option></select>
     <div id="cloudInviteReusableOptions">
@@ -1404,17 +1409,17 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
       <input id="cloudInviteLabel" maxlength="60" placeholder="z. B. Clan-Discord">
       <label for="cloudInviteDuration">Gültigkeit</label>
       <select id="cloudInviteDuration">
-        <option value="never" selected>Bis zum Widerruf</option>
-        <option value="7d">7 Tage</option>
+        <option value="never">Bis zum Widerruf</option>
+        <option value="7d" selected>7 Tage</option>
         <option value="24h">24 Stunden</option>
       </select>
     </div>
     <label for="cloudInviteRole">Berechtigung für neue Mitglieder</label>
-    <select id="cloudInviteRole"><option value="editor">Vize – bearbeiten</option><option value="viewer">Beobachter – nur ansehen</option></select>
+    <select id="cloudInviteRole"><option value="viewer" selected>Beobachter – nur ansehen</option><option value="editor">Vize – bearbeiten</option></select>
     <button class="btn primary" id="cloudMakeInvite">Einladungslink erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
     
-    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Jeder mit einem aktiven Gruppenlink kann beitreten. Offene Links kannst du unter „Personen mit Zugriff → Offene Einladungen“ widerrufen.</p>
+    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Wer einen aktiven Link hat, kann beitreten, solange keine Zugangssperre besteht. Bereits erstellte Links lassen sich aus Sicherheitsgründen nicht erneut anzeigen – kopiere sie gleich beim Erstellen.</p>
   </div>
   <div class="cloud-section">
     <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
