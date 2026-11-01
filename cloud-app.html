@@ -1086,6 +1086,36 @@ html[data-theme="light"] .topbar{background:#f4f7fb!important;backdrop-filter:no
  #view-settings .settings-window>.card{padding:16px}
  #view-settings .settings-window>.settings-dialog-head{padding:11px 16px}
 }
+
+/* Invitation links have their own focused entry flow, not the clan administration screen. */
+.invite-welcome{position:fixed;inset:0;z-index:380;display:none;align-items:center;justify-content:center;overflow:auto;
+ padding:calc(20px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));background:rgba(2,8,18,.83)}
+.invite-welcome.open{display:flex}
+.invite-welcome-panel{box-sizing:border-box;width:100%;max-width:420px;max-height:calc(100dvh - 38px);overflow-y:auto;
+ background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:23px;
+ box-shadow:0 25px 70px rgba(0,0,0,.45);overscroll-behavior:contain}
+.invite-welcome-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.invite-welcome-icon{display:flex;align-items:center;justify-content:center;background:var(--bluebg);border:1px solid var(--line);border-radius:13px;width:43px;height:43px;font-size:24px}
+.invite-welcome-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.invite-welcome-panel h2{font-size:22px;margin:8px 0 8px;overflow-wrap:anywhere}
+.invite-welcome-intro{font-size:13px;line-height:1.55;color:var(--muted);margin:0 0 14px}
+.invite-welcome-role{background:var(--bluebg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:13px;margin-bottom:17px}
+.invite-welcome-role strong{color:var(--text)}
+.invite-welcome-panel label{display:block;font-size:12px;font-weight:750;margin:13px 0 6px}
+.invite-welcome-panel input{box-sizing:border-box;width:100%;min-height:43px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-size:15px}
+.invite-welcome-caption,.invite-welcome-footnote{font-size:11px;line-height:1.5;color:var(--muted);margin:7px 0 13px}
+.invite-welcome-footnote{margin:17px 0 0}
+.invite-welcome-primary{width:100%;min-height:44px;margin-top:8px}
+.invite-welcome-auth-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.invite-welcome-auth-buttons .btn{min-height:43px}
+.invite-welcome-login{padding-top:5px}
+.invite-welcome-login h3{margin:5px 0 9px;font-size:16px}
+.invite-welcome-back{display:block;margin:12px auto 0;border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;cursor:pointer}
+.invite-welcome-alert{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin:10px 0}
+body:has(#inviteWelcome.open) .inline-action-backdrop{z-index:520}
+body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
+@media(max-width:390px){.invite-welcome-panel{padding:17px}.invite-welcome-panel h2{font-size:20px}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1392,6 +1422,45 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div class="inline-action-buttons" id="inlineActionButtons"></div>
 </div>
 
+
+<div class="invite-welcome" id="inviteWelcome" role="dialog" aria-modal="true" aria-labelledby="inviteWelcomeTitle" aria-hidden="true">
+ <div class="invite-welcome-panel">
+  <div class="invite-welcome-heading">
+   <span class="invite-welcome-icon" aria-hidden="true">⚔️</span>
+   <button class="btn small" id="inviteWelcomeClose" type="button" aria-label="Einladung schließen">✕</button>
+  </div>
+  <div class="invite-welcome-eyebrow">Einladung zum CWL-Planer</div>
+  <h2 id="inviteWelcomeTitle">Du wurdest eingeladen</h2>
+  <p class="invite-welcome-intro" id="inviteWelcomeIntro">Einladung wird geprüft …</p>
+  <div class="invite-welcome-role" id="inviteWelcomeRole" hidden></div>
+  <div class="invite-welcome-alert" id="inviteWelcomeError" role="alert" hidden></div>
+  <div id="inviteWelcomeActions" hidden>
+   <label for="inviteWelcomeName">Dein Name im Planer</label>
+   <input id="inviteWelcomeName" maxlength="60" autocomplete="nickname" placeholder="So sehen dich die anderen Mitplaner">
+   <p class="invite-welcome-caption">Dieser Name wird den anderen Personen mit Zugriff angezeigt.</p>
+   <div id="inviteWelcomeSigned" hidden>
+    <button class="btn primary invite-welcome-primary" id="inviteWelcomeJoin" type="button">Beitreten</button>
+   </div>
+   <div id="inviteWelcomeGuest" hidden>
+    <p class="invite-welcome-caption">Zum Beitreten benötigst du ein kostenloses CWL-Planer-Konto.</p>
+    <div class="invite-welcome-auth-buttons" id="inviteWelcomeAuthChoices">
+     <button class="btn primary" type="button" id="inviteWelcomeLoginChoice">Anmelden</button>
+     <button class="btn" type="button" id="inviteWelcomeSignupChoice">Konto erstellen</button>
+    </div>
+    <div class="invite-welcome-login" id="inviteWelcomeAuthForm" hidden>
+     <h3 id="inviteWelcomeAuthTitle">Anmelden</h3>
+     <label for="inviteWelcomeEmail">E-Mail-Adresse</label>
+     <input id="inviteWelcomeEmail" type="email" autocomplete="email">
+     <label for="inviteWelcomePassword">Passwort</label>
+     <input id="inviteWelcomePassword" type="password" minlength="8" autocomplete="current-password">
+     <button class="btn primary invite-welcome-primary" type="button" id="inviteWelcomeAuthSubmit">Anmelden</button>
+     <button class="invite-welcome-back" type="button" id="inviteWelcomeAuthBack">Andere Option wählen</button>
+    </div>
+   </div>
+  </div>
+  <p class="invite-welcome-footnote">Der Link gibt Zugriff auf den gemeinsamen Planer, nicht auf deinen Clash-of-Clans-Account.</p>
+ </div>
+</div>
 <div class="cloud-overlay" id="cloudOverlay" role="dialog" aria-modal="true" aria-labelledby="cloudTitle" aria-hidden="true">
  <div class="cloud-panel">
  <div class="section-title"><h2 id="cloudTitle">Clan & Konto</h2><button class="btn small" type="button" id="cloudClose">Schließen</button></div>
