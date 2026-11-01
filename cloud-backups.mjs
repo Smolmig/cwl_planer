@@ -1,5 +1,5 @@
 // Isolated cloud backup UI. No secrets or whole-database access in the browser.
-export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toast}){
+export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toast,confirmAction,askAction}){
  const el=id=>document.getElementById(id);
  let entries=[],forClan=null;
  const reset=()=>{
@@ -24,12 +24,11 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   const select=el("cloudSnapshotSelect");
   select.replaceChildren(new Option(entries.length?"Sicherungspunkt auswählen":"Noch keine Sicherung vorhanden",""));
   for(const entry of entries){
-   select.add(new Option(new Date(entry.created_at).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"})+
-     " · Revision "+entry.revision,String(entry.id)));
+   select.add(new Option(new Date(entry.created_at).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"medium"}),String(entry.id)));
   }
   el("cloudBackupStatus").textContent=entries.length?
-   entries.length+" Sicherungspunkt(e) gefunden. Für ein vollständiges Backup zusätzlich den verschlüsselten Datenbankexport verwenden.":
-   "Noch kein Sicherungspunkt. Er wird vor der ersten Änderung und danach etwa alle 30 Minuten oder 20 Revisionen angelegt.";
+   entries.length+" Sicherungen verfügbar. Du kannst einen Stand herunterladen oder als Clanbesitzer wiederherstellen.":
+   "Noch keine Sicherung vorhanden. Sicherungen werden automatisch bei Änderungen angelegt.";
   buttons();
  }
  async function selected(){
@@ -64,9 +63,17 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   const clan=clans.find(x=>x.id===clanId)?.name;
   if(!clan||revision==null||clanId!==ctx.clanId)throw Error("Kein aktueller Clanstand vorhanden.");
   const when=new Date(data.created_at).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"});
-  if(!confirm("Den gesamten gemeinsamen CWL-Stand von „"+clan+"“ auf "+when+
-    " zurücksetzen? Neuere Mitgliederänderungen und Kriegsarchive im aktuellen Profil werden ersetzt. Vorher wird der aktuelle Stand gesichert."))return;
-  if(prompt("Zur Bestätigung den Clannamen exakt eingeben:","")!==clan)return;
+  if(!await confirmAction("Den gemeinsamen CWL-Stand von „"+clan+"“ auf "+when+
+    " zurücksetzen? Neuere Mitgliederänderungen und Kriegsarchive werden ersetzt. Der aktuelle Stand wird vorher gesichert.",
+    {title:"CWL-Sicherung wiederherstellen",confirmText:"Weiter",danger:true}))return;
+  const answer=await askAction({
+    title:"Wiederherstellung bestätigen",
+    message:"Gib den Clannamen „"+clan+"“ exakt ein, um diesen Stand für alle Clanmitglieder wiederherzustellen.",
+    inputLabel:"Clanname",inputValue:"",
+    buttons:[{value:"confirm",text:"Wiederherstellen",danger:true},{value:"cancel",text:"Abbrechen"}]
+  });
+  if(answer.value!=="confirm")return;
+  if(answer.input!==clan){toast("Clanname stimmt nicht überein. Keine Daten geändert.");return;}
   const {error}=await sb.rpc("cwl_restore_profile_snapshot",{
    p_clan:clanId,p_id:Number(id),p_expected_revision:revision
   });
