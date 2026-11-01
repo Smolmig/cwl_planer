@@ -82,6 +82,6 @@ test("Safari member refresh uses valid scrollIntoView and has retry error feedba
  assert.match(html,/id="currentWarCard"/);
  assert.match(html,/id="currentWarContent"/);
  assert.match(html,/id="currentWarRefresh"/);
- assert.match(html,/Tage ohne Einsatz senken die Quote nicht/);
+ assert.match(html,/Kriegstage ohne Einsatz zählen nicht mit/);
  assert.doesNotMatch(html,/Angriffe und Ergebnisse werden derzeit noch nicht automatisch übernommen/);
 });
