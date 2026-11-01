@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.6";
+import {validateHistoryFile,computeWarStats,cleanTag} from "./cwl-stats-core.mjs?v=1.3.9";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -19,14 +19,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       $("statsRows").innerHTML="";
       return;
     }
-    const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons:type==="cwl"?cwlSeasons:null,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+    const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"≥"+summary.missesKnown:"–");
     $("statsSummary").innerHTML=[
-      ["3-Sterne-Quote",pct(summary.hitRate)],
+      ["3★-Hit-Rate",pct(summary.hitRate)],
       ["Angriffe",String(summary.attacks)],
-      ["Nicht genutzt",label],
-      ["Beste 3-Sterne-Quote",summary.best?pct(summary.best.hitRate):"–"]
+      ["Verpasste Angriffe",label],
+      ["Beste 3★-Hit-Rate",summary.best?pct(summary.best.hitRate):"–"]
     ].map(([title,value])=>"<div class='stats-kpi'><span>"+esc(title)+"</span><strong>"+esc(value)+"</strong></div>").join("");
     const count=$("statsDataCount");
     const seasonDetails=$("statsSeasonDetails");
@@ -45,22 +45,23 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(type==="all"){
         if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
           " CWL-Kriegstage · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Berücksichtigt werden die letzten "+last+
-          " normalen Clankriege und bis zu 3 CWL-Saisons. Ältere Daten bleiben sicher gespeichert.";
+        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden die letzten "+last+
+          " normalen Clankriege und "+(cwlSeasons==="all"?"alle verfügbaren CWL-Saisons":
+          "bis zu "+cwlSeasons+" CWL-Saison"+(cwlSeasons===1?"":"s"))+
+          ". Ältere Daten bleiben erhalten.";
       }else{
         if(count)count.textContent=summary.wars+" von "+
           wars.filter(w=>w.war_type==="normal").length+
           " gespeicherten normalen CWs · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Die zuletzt gespielten "+last+
-          " normalen Clankriege werden ausgewertet.";
+        if(seasonDetails)seasonDetails.textContent="Bis zu "+last+" zuletzt gespielte normale Clankriege werden ausgewertet.";
       }
     }
     const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?
       summary.best.name+" · "+summary.best.attacks+" Angriffe":
       "Noch kein Spieler mit mindestens 5 Angriffen";
     const note=$("statsMissingNote");if(note)note.textContent=summary.complete?
-      "Die Zahl nicht genutzter Angriffe stammt aus den erfassten Kriegsaufstellungen. Die 3-Sterne-Quote berücksichtigt nur tatsächlich ausgeführte Angriffe.":
-      "Bei einigen älteren Kriegen sind nicht alle fehlenden Angriffe bekannt. ≥ zeigt die mindestens nachgewiesene Anzahl, – bedeutet unbekannt. Die 3-Sterne-Quote zählt nur ausgeführte Angriffe, nicht Tage ohne Teilnahme.";
+      "Verpasst bedeutet: Ein möglicher Kriegsangriff wurde nicht ausgeführt. Ob er vergessen oder bewusst ausgelassen wurde, ist nicht erkennbar. Die 3★-Hit-Rate zählt nur ausgeführte Angriffe.":
+      "Verpasst bedeutet: Ein möglicher Kriegsangriff wurde nicht ausgeführt – der Grund ist unbekannt. Bei älteren Kriegen fehlen teils Daten: ≥ ist die nachgewiesene Mindestzahl, – bedeutet unbekannt. Die 3★-Hit-Rate zählt nur ausgeführte Angriffe.";
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
@@ -73,7 +74,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const missedColor=p.missedKnown>0?" warn":"";
       return "<div class='stats-player-row'>"+
         "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-th' aria-hidden='true'>"+
-          (p.th?"RH"+p.th:"RH?")+"</span><div class='stats-name'>"+
+          (p.th&&Number.isInteger(p.th)&&p.th>=1&&p.th<=18?
+           "<img src='https://raw.githubusercontent.com/ClashKingInc/ClashKingAssets/main/assets/buildings/home-village/town_hall/level_"+p.th+".webp' width='29' height='26' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
+          "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
         "<strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
         "<span class='stats-number'>"+p.attacks+"</span>"+
@@ -229,9 +232,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       render();
     });
     e("statsRange")?.addEventListener("change",ev=>{
-      if(type==="cwl")cwlSeasons=ev.target.value==="all"?"all":Number(ev.target.value)||3;
-      else last=Number(ev.target.value)||25;
-      render();
+      last=Math.max(1,Math.min(50,Number(ev.target.value)||50));
+      syncPeriodChoices();render();
+    });
+    e("statsCwlRange")?.addEventListener("change",ev=>{
+      cwlSeasons=ev.target.value==="all"?"all":Math.max(1,Math.min(3,Number(ev.target.value)||3));
+      syncPeriodChoices();render();
     });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
     e("statsFormer")?.addEventListener("change",ev=>{showFormer=ev.target.checked;render()});
@@ -246,18 +252,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
   }
   function syncPeriodChoices(){
-    const picker=$("statsRange"),periodLabel=$("statsPeriodLabel");
-    if(!picker)return;
-    if(periodLabel)periodLabel.textContent=type==="cwl"?"CWL-Saisons":type==="all"?"Normale CWs + CWL":"Zeitraum";
-    const options=type==="cwl"?
-      [["1","Letzte 1 CWL"],["2","Letzte 2 CWLs"],["3","Letzte 3 CWLs"],["all","Alle CWLs"]]:
-      type==="all"?
-      [["10","10 CWs + 3 CWLs"],["25","25 CWs + 3 CWLs"],["50","50 CWs + 3 CWLs"]]:
-      [["10","Letzte 10 CWs"],["25","Letzte 25 CWs"],["50","Letzte 50 CWs"]];
-    picker.replaceChildren(...options.map(([value,label])=>{
-      const o=document.createElement("option");o.value=value;o.textContent=label;return o;
-    }));
-    picker.value=type==="cwl"?String(cwlSeasons):String(last);
+    const periodLabel=$("statsPeriodLabel");
+    if(periodLabel)periodLabel.textContent="Zeitraum";
+    const cw=$("statsRange"),league=$("statsCwlRange");
+    if(cw)cw.value=String(last);
+    if(league)league.value=String(cwlSeasons);
+    const cwField=$("statsCwField"),leagueField=$("statsCwlField");
+    if(cwField)cwField.hidden=type==="cwl";
+    if(leagueField)leagueField.hidden=type==="normal";
+    const parts=[];
+    if(type!=="cwl")parts.push(last+" CW"+(last===1?"":"s"));
+    if(type!=="normal")parts.push(cwlSeasons==="all"?"alle CWLs":cwlSeasons+" CWL"+(cwlSeasons===1?"":"s"));
+    const summary=$("statsPeriodSummary");
+    if(summary)summary.textContent=parts.join(" + ");
   }
   syncPeriodChoices();
   bind();

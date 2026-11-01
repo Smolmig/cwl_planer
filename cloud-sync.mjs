@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.8";
-import { createCwlLive } from "./cwl-live.mjs?v=1.3.8";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.3.8";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.8";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.3.9";
+import { createCwlLive } from "./cwl-live.mjs?v=1.3.9";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.3.9";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.3.9";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -13,6 +13,20 @@ const text=(id,value)=>{if($(id))$(id).textContent=value};
 const toggle=(id,show)=>{if($(id))$(id).hidden=!show};
 const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
+const INVITE_TOKEN_KEY="cwl_pending_invite_v1",INVITE_ALIAS_KEY="cwl_pending_invite_name_v1";
+const isInviteCode=v=>/^(?:[a-zA-Z0-9_-]{12}|[a-zA-Z0-9_-]{24})$/.test(String(v||""));
+// Keep an invitation across the new tab opened by email confirmation.
+const storedInvite=(key)=>{try{return localStorage.getItem(key)||sessionStorage.getItem(key)||""}catch{return""}};
+const saveInvite=(key,value)=>{
+ for(const area of [localStorage,sessionStorage]){
+  try{if(value)area.setItem(key,value);else area.removeItem(key)}catch{/* private mode */}
+ }
+};
+const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode")?.value?.trim();
+ const query=new URLSearchParams(location.search).get("invite");
+ const code=input||query||storedInvite(INVITE_TOKEN_KEY);
+ return isInviteCode(code)?code:"";
+};
 let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
@@ -46,9 +60,11 @@ const cloud={
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
   const label=activeClan?.name||"Clan";
-  $("cloudOpen").textContent=this.active?"☁️ "+(label.length>15?label.slice(0,13)+"…":label)+" ▾":"👤 Anmelden";
-  $("cloudOpen").title=this.active?"Clan und Konto verwalten":"Anmelden oder registrieren";
-  $("cloudOpen").setAttribute("aria-label",this.active?"Clan und Konto verwalten":"Anmelden oder registrieren");
+  const accountBtn=$("cloudOpen");
+  accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
+  accountBtn.querySelector(".cloud-toggle-label").textContent=this.active?"Clan":"Login";
+  accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
+  accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
@@ -153,6 +169,9 @@ function showSignedIn(){
  toggle("cloudAccount",!!user&&!recoveryMode);
  toggle("cloudRecovery",recoveryMode);
  text("cloudIdentity",user?user.email:"");
+ const invited=!user&&!!pendingInviteCode();
+ toggle("cloudAuthInvite",invited);
+ toggle("cloudAuthNameWrap",invited);
 }
 function cleanTag(raw){const s=String(raw||"").trim().toUpperCase();return s.startsWith("#")?s:"#"+s}
 function showForgotPassword(){
@@ -199,11 +218,21 @@ async function completeRecovery(){
 async function sign(kind){
  const email=$("cloudEmail").value.trim(),password=$("cloudPassword").value;
  if(!email||password.length<8)throw Error("Bitte E-Mail und mindestens 8 Zeichen Passwort eingeben.");
+ const invite=pendingInviteCode();
+ if(invite){
+  const name=$("cloudAuthName").value.trim()||$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben, damit du dem Clan beitreten kannst.");
+  $("cloudJoinName").value=name;
+  saveInvite(INVITE_TOKEN_KEY,invite);
+  saveInvite(INVITE_ALIAS_KEY,name);
+ }
+ const redirect=new URL(location.pathname,location.origin);
+ if(invite)redirect.searchParams.set("invite",invite);
  const out=kind==="signup"?
-  await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):
+  await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect.href}}):
   await sb.auth.signInWithPassword({email,password});
  if(out.error)throw out.error;
- if(!out.data.session){msg("Registrierung angelegt. Bitte Bestätigungs-Mail öffnen, danach anmelden.");return}
+ if(!out.data.session){msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
  await useSession(out.data.session);
 }
 async function useSession(session){
@@ -214,9 +243,20 @@ async function useSession(session){
   return;
  }
  await listClans(epoch);
- if($("cloudJoinCode").value.trim()){
-   open();msg("Einladung erkannt: Bitte deinen Ingame-Namen eintragen und „Mit Code beitreten“ wählen.");
+ const code=pendingInviteCode();
+ if(code){
+  $("cloudJoinCode").value=code;
+  const name=$("cloudJoinName").value.trim()||storedInvite(INVITE_ALIAS_KEY);
+  if(name){
+   $("cloudJoinName").value=name;
+   try{await joinInvite()}catch(e){
+    open();msg("Beitritt noch nicht abgeschlossen: "+(e.message||e),true);
+    $("cloudJoinName").focus({preventScroll:true});
+   }
+  }else{
+   open();msg("Einladung erkannt: Bitte noch deinen Ingame-Namen eintragen und „Clan beitreten“ wählen.");
    $("cloudJoinName").focus({preventScroll:true});
+  }
  }
 }
 async function leaveCloud(){
@@ -505,33 +545,42 @@ async function saveAlias(){
 async function loadAccessList(expected=clanId){
  if(!expected||!user)return;
  const canInvite=["owner","editor"].includes(role);
- const [{data:members,error:e1},{data:invites,error:e2}]=await Promise.all([
+ const [{data:members,error:e1},{data:invites,error:e2},{data:blocks,error:e3}]=await Promise.all([
   sb.from("cwl_clan_memberships").select("user_id,role,display_name,joined_at").eq("clan_id",expected).order("joined_at"),
-  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at")
-   .eq("clan_id",expected).is("used_at",null).gt("expires_at",new Date().toISOString())
-   .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null})
+  canInvite?sb.from("cwl_clan_invites").select("id,role,created_by,expires_at,reusable,link_label,use_count")
+   .eq("clan_id",expected).is("used_at",null)
+   .or("expires_at.is.null,expires_at.gt."+new Date().toISOString())
+   .order("created_at",{ascending:false}).limit(100):Promise.resolve({data:[],error:null}),
+  canInvite?sb.from("cwl_access_blocks").select("user_id,blocked_by,blocked_role,display_name,blocked_at")
+   .eq("clan_id",expected).order("blocked_at",{ascending:false}).limit(100):
+   Promise.resolve({data:[],error:null})
  ]);
- if(e1)throw e1;if(e2)throw e2;if(expected!==clanId)return;
+ if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;if(expected!==clanId)return;
  const list=$("cloudAccessList");list.replaceChildren();
  for(const m of members||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
   const name=document.createElement("strong");
   name.textContent=(m.display_name||({owner:"Besitzer",editor:"Vize",viewer:"Beobachter"}[m.role]||"Clanmitglied"))+(m.user_id===user.id?" (du)":"");
   row.append(name);
-  if(role==="owner"&&m.role!=="owner"&&m.user_id!==user.id){
+  const canRemove=m.role!=="owner"&&m.user_id!==user.id&&
+    (role==="owner"||(role==="editor"&&m.role==="viewer"));
+  if(canRemove){
    const actions=document.createElement("div");actions.className="cloud-access-controls";
-   const select=document.createElement("select");select.setAttribute("aria-label","Berechtigung für "+name.textContent);
-   select.add(new Option("Vize · Bearbeiten","editor"));select.add(new Option("Beobachter · Lesen","viewer"));
-   select.value=m.role;
-   select.onchange=async()=>{
-    const previous=m.role;select.disabled=true;
-    try{const changed=await changeAccessRole(expected,m,select.value);if(!changed)select.value=previous}
-    catch(e){select.value=previous;error(e)}
-    finally{select.disabled=false}
-   };
+   if(role==="owner"){
+    const select=document.createElement("select");select.setAttribute("aria-label","Berechtigung für "+name.textContent);
+    select.add(new Option("Vize · Bearbeiten","editor"));select.add(new Option("Beobachter · Lesen","viewer"));
+    select.value=m.role;
+    select.onchange=async()=>{
+     const previous=m.role;select.disabled=true;
+     try{const changed=await changeAccessRole(expected,m,select.value);if(!changed)select.value=previous}
+     catch(e){select.value=previous;error(e)}
+     finally{select.disabled=false}
+    };
+    actions.append(select);
+   }
    const remove=document.createElement("button");remove.className="btn small danger";remove.type="button";remove.textContent="Entfernen";
    remove.onclick=()=>removeAccessMember(expected,m).catch(error);
-   actions.append(select,remove);row.append(actions);
+   actions.append(remove);row.append(actions);
   }else{
    const label=document.createElement("span");
    label.textContent=m.role==="owner"?"Besitzer · volle Rechte":
@@ -550,16 +599,43 @@ async function loadAccessList(expected=clanId){
  for(const inv of pending){
   const row=document.createElement("div");row.className="cloud-invite-row";
   const details=document.createElement("div"),title=document.createElement("strong"),date=document.createElement("span");
-  title.textContent=inv.role==="editor"?"Vize-Einladung":"Beobachter-Einladung";
-  date.textContent="Gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+
+  title.textContent=(inv.link_label?inv.link_label+" · ":"")+
+   (inv.reusable?"Gruppenlink":"Einmaliger Link")+" · "+(inv.role==="editor"?"Vize":"Beobachter");
+  date.textContent=(inv.reusable?"Beliebig viele Beitritte"+(inv.use_count?" · "+inv.use_count+" beigetreten":""):
+    "Einmalige Einladung")+
+    (inv.expires_at?" · gültig bis "+new Date(inv.expires_at).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):" · gültig bis Widerruf")+
    (inv.created_by===user.id?" · von dir":" · anderer Clanführer");
   details.append(title,date);row.append(details);
-  if(role==="owner"||inv.created_by===user.id){
-   const button=document.createElement("button");button.type="button";button.className="btn small danger";button.textContent="Zurückziehen";
+  if(role==="owner"||role==="editor"&&inv.created_by===user.id){
+   const actions=document.createElement("div");actions.className="cloud-access-controls";
+   if(inv.reusable){
+    const edit=document.createElement("button");edit.type="button";edit.className="btn small";edit.textContent="Bearbeiten";
+    edit.onclick=()=>editReusableInvite(expected,inv).catch(error);actions.append(edit);
+   }
+   const button=document.createElement("button");button.type="button";button.className="btn small danger";button.textContent="Widerrufen";
    button.onclick=()=>revokeInvite(expected,inv).catch(error);
-   row.append(button);
+   actions.append(button);row.append(actions);
   }
   root.append(row);
+ }
+ toggle("cloudBlockedDetails",canInvite);
+ text("cloudBlockedCount","("+(blocks||[]).length+")");
+ const blockedList=$("cloudBlockedList");blockedList.replaceChildren();
+ if(canInvite&&!(blocks||[]).length)blockedList.textContent="Keine gesperrten Personen.";
+ for(const item of blocks||[]){
+  const row=document.createElement("div");row.className="cloud-access-row";
+  const label=document.createElement("strong");
+  label.textContent=item.display_name||"Ehemaliges Clanmitglied";
+  const meta=document.createElement("span");
+  meta.textContent=" · "+(item.blocked_role==="editor"?"ehemaliger Vize":"ehemaliger Beobachter");
+  row.append(label,meta);
+  if(role==="owner"||(role==="editor"&&item.blocked_by===user.id&&item.blocked_role==="viewer")){
+   const undo=document.createElement("button");undo.className="btn small";undo.type="button";
+   undo.textContent="Sperre aufheben";
+   undo.onclick=()=>unblockAccessMember(expected,item).catch(error);
+   row.append(undo);
+  }
+  blockedList.append(row);
  }
 }
 async function changeAccessRole(expected,m,next){
@@ -572,12 +648,47 @@ async function changeAccessRole(expected,m,next){
  return true;
 }
 async function removeAccessMember(expected,m){
- if(role!=="owner"||m.role==="owner"||m.user_id===user.id)throw Error("Keine Berechtigung.");
- if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen? Der Zugang wird entzogen; der Clanplan bleibt erhalten.",{title:"Zugang entfernen",confirmText:"Entfernen",danger:true}))return;
- const {data,error:e}=await sb.from("cwl_clan_memberships").delete()
- .eq("clan_id",expected).eq("user_id",m.user_id).neq("role","owner").select("user_id");
- if(e)throw e;if(!data?.length)throw Error("Person konnte nicht entfernt werden.");
- if(expected===clanId){storage.toast("✓ Zugang entfernt");await loadAccessList(expected)}
+ if(m.role==="owner"||m.user_id===user.id||!(role==="owner"||role==="editor"&&m.role==="viewer"))throw Error("Keine Berechtigung.");
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" entfernen und für erneute Beitritte sperren? Die Person kann auch über aktive Gruppenlinks nicht wieder beitreten, bis die Sperre aufgehoben wird.",{title:"Zugang entfernen und sperren",confirmText:"Entfernen",danger:true}))return;
+ const {error:e}=await sb.rpc("cwl_remove_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Zugang entfernt und gesperrt");await loadAccessList(expected)}
+}
+async function unblockAccessMember(expected,m){
+ if(!(role==="owner"||(role==="editor"&&m.blocked_role==="viewer"&&m.blocked_by===user.id)))
+   throw Error("Keine Berechtigung zum Entsperren.");
+ if(!await storage.confirmAction((m.display_name||"Diese Person")+" wieder für Einladungen freigeben? Die Person erhält dadurch noch keinen Zugang und muss erneut einem gültigen Einladungslink folgen.",{title:"Sperre aufheben",confirmText:"Freigeben"}))return;
+ const {error:e}=await sb.rpc("cwl_unblock_clan_member",{p_clan:expected,p_user:m.user_id});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Sperre aufgehoben");await loadAccessList(expected)}
+}
+async function editReusableInvite(expected,inv){
+ if(!inv.reusable||!(role==="owner"||role==="editor"&&inv.created_by===user.id))
+  throw Error("Nur der Besitzer oder der erstellende Vize darf diesen Link bearbeiten.");
+ const name=await storage.askAction({
+  title:"Gruppenlink bearbeiten",message:"Bezeichnung des Links ändern. Danach legst du Berechtigung und Gültigkeit fest.",
+  inputLabel:"Bezeichnung (maximal 60 Zeichen)",inputValue:inv.link_label||"",
+  buttons:[{value:"confirm",text:"Weiter",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(name.value!=="confirm")return;
+ const label=name.input.trim();
+ if(label.length>60)throw Error("Bezeichnung darf maximal 60 Zeichen haben.");
+ const rights=await storage.askAction({
+  title:"Berechtigung für neue Beitritte",
+  message:"Bereits beigetretene Personen behalten ihre Rolle.",
+  buttons:[{value:"editor",text:"Vize"},{value:"viewer",text:"Beobachter",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["editor","viewer"].includes(rights.value))return;
+ const expiry=await storage.askAction({
+  title:"Gültigkeit ab jetzt",
+  message:"Die neue Gültigkeit beginnt ab dem Speichern.",
+  buttons:[{value:"24h",text:"24 Stunden"},{value:"7d",text:"7 Tage"},{value:"never",text:"Bis Widerruf",primary:true},{value:"cancel",text:"Abbrechen"}]
+ });
+ if(!["24h","7d","never"].includes(expiry.value))return;
+ const {error:e}=await sb.rpc("cwl_update_reusable_invite",
+  {p_id:inv.id,p_role:rights.value,p_duration:expiry.value,p_label:label||null});
+ if(e)throw e;
+ if(expected===clanId){storage.toast("✓ Gruppenlink aktualisiert");await loadAccessList(expected)}
 }
 async function revokeInvite(expected,inv){
  if(!["owner","editor"].includes(role)||role==="editor"&&inv.created_by!==user.id)throw Error("Keine Berechtigung.");
@@ -589,23 +700,40 @@ async function revokeInvite(expected,inv){
 }
 async function createInvite(){
  if(!["owner","editor"].includes(role))throw Error("Nur Besitzer und Vize können einladen.");
- const {data,error:err}=await sb.rpc("cwl_create_short_invite",{p_clan:clanId,p_role:$("cloudInviteRole").value});
+ const reusable=$("cloudInviteKind").value==="reusable";
+ const label=$("cloudInviteLabel").value.trim();
+ if(label.length>60)throw Error("Die Bezeichnung darf maximal 60 Zeichen haben.");
+ const {data,error:err}=reusable?
+  await sb.rpc("cwl_create_reusable_invite",{
+   p_clan:clanId,p_role:$("cloudInviteRole").value,
+   p_duration:$("cloudInviteDuration").value,p_label:label||null
+  }):await sb.rpc("cwl_create_short_invite",{p_clan:clanId,p_role:$("cloudInviteRole").value});
  if(err)throw err;
  inviteLink=location.origin+location.pathname+"?invite="+encodeURIComponent(data);
  toggle("cloudInviteOutput",true);
- text("cloudInviteOutput","Einladungscode: "+data+" · gültig 7 Tage, einmal verwendbar.");
+ text("cloudInviteOutput",reusable?
+  "Gruppenlink erstellt · beliebig viele Beitritte während der eingestellten Gültigkeit. Link jetzt kopieren und teilen.":
+  "Einmaliger Einladungslink erstellt · 7 Tage gültig. Link jetzt kopieren.");
  toggle("cloudCopyInvite",true);
  await loadAccessList(clanId);
 }
 async function joinInvite(){
  if(clanId)await ensureSaved();
  const code=$("cloudJoinCode").value.trim();
- if(!/^[a-zA-Z0-9_-]{12}$/.test(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
+ if(!isInviteCode(code))throw Error("Bitte einen gültigen Einladungscode eingeben.");
  const name=$("cloudJoinName").value.trim();
  if(!name||name.length>60)throw Error("Bitte zuerst deinen Ingame-Namen eingeben.");
- const {data,error:err}=await sb.rpc("cwl_redeem_named_invite",{p_code:code,p_name:name});
+ const {data,error:err}=await sb.rpc(code.length===24?"cwl_redeem_reusable_invite":"cwl_redeem_named_invite",
+  {p_code:code,p_name:name});
  if(err)throw err;
- history.replaceState(null,"",location.pathname);
+ const current=new URL(location.href);
+ current.searchParams.delete("invite");
+ history.replaceState(null,"",current.pathname+current.search+current.hash);
+ $("cloudJoinCode").value="";
+ $("cloudJoinName").value="";
+ $("cloudAuthName").value="";
+ saveInvite(INVITE_TOKEN_KEY,"");
+ saveInvite(INVITE_ALIAS_KEY,"");
  msg("Du bist "+name+" und hast jetzt Zugriff auf den Clan.");
  storage.toast("✓ Dem Clan beigetreten");
  await listClans(accountEpoch,data);
@@ -946,6 +1074,12 @@ bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
 bind("cloudAccessRefresh","click",()=>loadAccessList(clanId));
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
+function toggleInviteKind(){
+ const box=$("cloudInviteReusableOptions");
+ if(box)box.hidden=$("cloudInviteKind").value!=="reusable";
+}
+$("cloudInviteKind").addEventListener("change",toggleInviteKind);
+toggleInviteKind();
 bind("cloudCopyInvite","click",async()=>{
  if(!inviteLink)throw Error("Bitte zuerst eine Einladung erstellen.");
  await navigator.clipboard.writeText(inviteLink);
@@ -1016,7 +1150,7 @@ async function checkForAppUpdate(){
   if(!response.ok)return;
   const payload=await response.json();
   const remote=typeof payload?.version==="string"?payload.version:null;
-  const installed=$("appVersion")?.textContent?.trim()||"v1.3.8";
+  const installed=$("appVersion")?.textContent?.trim()||"v1.3.9";
   if(!remote||!/^v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[0-9]+)?$/.test(remote)||
      remote===installed)return;
   pendingRelease=remote;appUpdatePending=true;
@@ -1042,7 +1176,14 @@ document.addEventListener("keydown",()=>checkForAppUpdate().catch(console.warn))
 setTimeout(()=>checkForAppUpdate().catch(console.warn),0);
 
 const linkCode=new URLSearchParams(location.search).get("invite");
-if(linkCode){$("cloudJoinCode").value=linkCode;open()}
+if(linkCode&&isInviteCode(linkCode))saveInvite(INVITE_TOKEN_KEY,linkCode);
+const resumedInvite=isInviteCode(linkCode)?linkCode:storedInvite(INVITE_TOKEN_KEY);
+if(isInviteCode(resumedInvite)){
+ $("cloudJoinCode").value=resumedInvite;
+ const alias=storedInvite(INVITE_ALIAS_KEY);
+ if(alias){$("cloudJoinName").value=alias;$("cloudAuthName").value=alias}
+ open();
+}
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){
   queueMicrotask(beginRecovery);
