@@ -1072,7 +1072,7 @@ bind("cloudChangeDetails","click",()=>{
 bind("cloudLeaveBtn","click",leaveSharedClan);
 bind("cloudDeleteBtn","click",deleteOwnedClan);
 bind("cloudCreateClan","click",createClan);bind("cloudSaveAlias","click",saveAlias);
-bind("cloudAccessRefresh","click",()=>loadAccessList(clanId));
+
 bind("cloudJoin","click",joinInvite);bind("cloudMakeInvite","click",createInvite);
 function toggleInviteKind(){
  const box=$("cloudInviteReusableOptions");
