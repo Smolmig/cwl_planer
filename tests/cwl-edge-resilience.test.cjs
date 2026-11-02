@@ -63,6 +63,17 @@ test("A failure of the league-group endpoint is not misreported as an active CWL
  context.getGame=async()=>{throw Error("supercell_status_403")};
  await assert.rejects(()=>loadStatus(ownTag,"mock"),/supercell_status_403/);
 });
+test("Supercell full-date CWL season is normalized for the seven-day planner",async()=>{
+ const {context,loadStatus}=makeContext();
+ context.getGame=async url=>url.endsWith("/leaguegroup")?
+   {...group,season:"2026-11-02"}:null;
+ const result=await loadStatus(ownTag,"mock");
+ assert.equal(result.ok,true);
+ assert.equal(result.active,true);
+ assert.equal(result.season,"2026-11");
+ assert.equal(result.rounds.length,7);
+ assert.equal(result.detailsStatus,"complete");
+});
 test("CWL group shell during preparation is retained without inventing matchups",async()=>{
  const {context,loadStatus}=makeContext();
  context.getGame=async()=>({state:"preparation",season:"2026-11",clans:[{tag:ownTag,name:"Own"}]});
