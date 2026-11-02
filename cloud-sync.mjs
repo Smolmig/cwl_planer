@@ -251,6 +251,21 @@ const cloud={
       const el=$(id);if(el)el.disabled=true;
     }
   }
+  // Proposals may change planning rules, but cannot rewrite played rosters
+  // or destructive account/season data while the owner's approval is active.
+  const restricted=role==="editor"&&planIsLocked();
+  for(const el of document.querySelectorAll(
+    "#manageCwlBtn,#slotsPreset,#slotsCustomInput,#daysInput,#deleteAllBtn,#deleteSelectedBtn,"+
+    "#view-plan .lock-day,#view-plan .edit-day,#view-plan .unlock-day,#memberList .delete-member"
+  )){
+    if(restricted){
+      el.disabled=true;el.dataset.reviewDisabled="1";
+      el.title="Plan freigegeben – diese Aktion ist nur für den Clanführer möglich";
+    }else if(el.dataset.reviewDisabled==="1"){
+      delete el.dataset.reviewDisabled;
+      if(role!=="viewer")el.disabled=false;
+    }
+  }
  }
 };
 window.CWLCloud=cloud;
