@@ -118,7 +118,8 @@ create function public.cwl_submit_plan_suggestion(p_clan uuid,p_base_revision bi
       jsonb_typeof(p_profile->'members')<>'array' or
       p_profile->'id' is distinct from v_profile.profile_json->'id' or
       p_profile->'locks' is distinct from v_profile.profile_json->'locks' or
-      p_profile->'archives' is distinct from v_profile.profile_json->'archives' then
+      p_profile->'archives' is distinct from v_profile.profile_json->'archives' or
+      p_profile->'archivedMembers' is distinct from v_profile.profile_json->'archivedMembers' then
     raise exception 'invalid_plan_suggestion';
   end if;
   insert into public.cwl_plan_suggestions(clan_id,cycle_id,author_id,base_revision,suggested_profile)
@@ -132,18 +133,21 @@ create function public.cwl_resolve_plan_suggestion(p_suggestion uuid,p_accept bo
  as $fn$
  declare v_s public.cwl_plan_suggestions;v_state public.cwl_plan_review_state;v_profile public.cwl_cloud_profiles;
  begin
-  select * into v_s from public.cwl_plan_suggestions where id=p_suggestion for update;
+  select * into v_s from public.cwl_plan_suggestions where id=p_suggestion;
   if v_s.id is null or auth.uid() is null or not private.cwl_is_owner(v_s.clan_id) then
    raise exception 'owner_only' using errcode='42501';end if;
-  if v_s.status<>'pending' then raise exception 'suggestion_already_decided';end if;
+  -- Acquire locks in the same order as plan locking: state, suggestion, profile.
   select * into v_state from public.cwl_plan_review_state where clan_id=v_s.clan_id for share;
+  select * into v_s from public.cwl_plan_suggestions where id=p_suggestion for update;
+  if v_s.status<>'pending' then raise exception 'suggestion_already_decided';end if;
   if not v_state.locked or v_state.cycle_id<>v_s.cycle_id or
      v_state.season<>to_char(now() at time zone 'UTC','YYYY-MM') then raise exception 'suggestion_outdated';end if;
   if p_accept then
     select * into v_profile from public.cwl_cloud_profiles where clan_id=v_s.clan_id for update;
     if v_profile.revision<>v_s.base_revision then raise exception 'stale_revision';end if;
     if v_s.suggested_profile->'locks' is distinct from v_profile.profile_json->'locks' or
-      v_s.suggested_profile->'archives' is distinct from v_profile.profile_json->'archives' then
+      v_s.suggested_profile->'archives' is distinct from v_profile.profile_json->'archives' or
+      v_s.suggested_profile->'archivedMembers' is distinct from v_profile.profile_json->'archivedMembers' then
       raise exception 'played_days_changed';end if;
     update public.cwl_cloud_profiles
      set profile_json=v_s.suggested_profile where clan_id=v_s.clan_id;
