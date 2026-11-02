@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.7",
+  "version": "v1.4.8",
   "released": "2026-11-02",
-  "summary": "Freigabe-Hotfix: geschützte Cloud-Aufstellungen unverändert übernehmen und Vize-Aktionen bei gesperrtem Plan einschränken."
+  "summary": "Mitgliederhilfe mit Statistikquellen, Arena-Theme, Einsatzbalken und bessere Cloud-Konfliktansicht."
 }
