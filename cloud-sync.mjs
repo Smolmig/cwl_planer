@@ -687,10 +687,11 @@ function describeRemoteEvent(event){
      if(key==="entfernt"){lines.push(n+" entfernt");continue}
      if(!Array.isArray(pair)||pair.length<2)continue;
      if(key==="statuses"&&Array.isArray(pair[0])&&Array.isArray(pair[1])){
+       const statusLabel=v=>({auto:"AUTO",must:"MUSS",out:"RAUS"}[v]||String(v||"AUTO").toUpperCase());
        const before=pair[0],after=pair[1];
        for(let i=0;i<Math.max(before.length,after.length);i++)
          if(before[i]!==after[i])lines.push(n+" · Tag "+(i+1)+": "+
-           fmt(before[i]||"auto").toUpperCase()+" → "+fmt(after[i]||"auto").toUpperCase());
+           statusLabel(before[i])+" → "+statusLabel(after[i]));
        continue;
      }
      lines.push(n+" · "+(labels[key]||key)+": "+fmt(pair[0])+" → "+fmt(pair[1]));
