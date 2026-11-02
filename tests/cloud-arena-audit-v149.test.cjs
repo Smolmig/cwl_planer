@@ -71,7 +71,7 @@ test("Audit renderer describes concrete before and after plus changed CWL days",
     plan_geaendert:true,gespielte_tage:[1],bereiche:["members","config","dayGoals","locks","updatedAt"]
   }});
   assert.ok(result.some(x=>x.includes("Alpha · Fix: Nein → Ja")));
-  assert.ok(result.some(x=>x.includes("Tag 2: AUTO → MUST")));
+  assert.ok(result.some(x=>x.includes("Tag 2: AUTO → MUSS")));
   assert.ok(result.some(x=>x.includes("Einsatzziel: – → 3")));
   assert.ok(result.some(x=>x.includes("CWL-Einstellung slots: 15 → 30")));
   assert.ok(result.some(x=>x.includes("Tagesziele verändert (Tag 3)")));
