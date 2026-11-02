@@ -257,12 +257,13 @@ test("short codes and audit log are RLS-protected",()=>{
   assert.match(migration,/short_code_hash/);
 });
 test("Guest experience boots with original planner structure",()=>{
+ const bootErrors=[];const virtualConsole=new VirtualConsole();virtualConsole.on("jsdomError",error=>bootErrors.push(error.stack||error.message));
  const dom=new JSDOM(preview,{runScripts:"dangerously",url:"https://smolmig.github.io/cwl_planer/cloud-app.html",
-  virtualConsole:new VirtualConsole(),pretendToBeVisual:true,beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){},addListener(){}});w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=function(){};}});
+  virtualConsole,pretendToBeVisual:true,beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){},addListener(){}});w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=function(){};}});
  try{
   assert.equal(dom.window.document.querySelectorAll("#planDays").length,1);
   assert.equal(dom.window.document.querySelectorAll("#memberList").length,1);
   assert.equal(dom.window.document.querySelector("#kpiParticipants").textContent,"0");
-  assert.ok(dom.window.CWLLegacy);
+  assert.ok(dom.window.CWLLegacy,bootErrors.join("\n")||"CWLLegacy not initialized");
  }finally{dom.window.close()}
 });
