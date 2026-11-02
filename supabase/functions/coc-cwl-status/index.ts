@@ -103,8 +103,23 @@ async function loadStatus(clanTag,key) {
     ok:true,active:false,clanTag,rounds:[],currentWar:await currentNormalWar(clanTag,key)
   };
   const season=String(group.season||"");
-  if(!/^\d{4}-\d{2}$/.test(season)||!Array.isArray(group.rounds))
-    throw Error("unexpected_group_response");
+  const groupState=String(group.state||"");
+  const validSeason=/^\d{4}-\d{2}$/.test(season);
+  const validState=["preparation","inWar","ended"].includes(groupState);
+  if(!validSeason||!Array.isArray(group.rounds)){
+    // The official API can expose a league-group shell before the draw is
+    // complete. A recognized group without rounds is not a network failure.
+    console.warn("coc-cwl-status: incomplete league group",{
+      state:groupState.slice(0,30),season:season.slice(0,20),
+      roundsType:Array.isArray(group.rounds)?"array":typeof group.rounds,
+      fields:Object.keys(group).slice(0,12)
+    });
+    if(validState&&validSeason&&group.rounds==null)
+      group.rounds=[]; // Matchups have not yet been assigned.
+    else if(validState&&!validSeason)
+      return {ok:true,active:false,pending:true,clanTag,rounds:[]};
+    else throw Error("unexpected_group_response");
+  }
   // CWL wars contain both clans; the requested clan is not always in the "clan" field.
   const groupClans=new Map((Array.isArray(group.clans)?group.clans:[])
     .filter(clan=>valid(tag(clan?.tag)))
@@ -151,7 +166,7 @@ async function loadStatus(clanTag,key) {
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
   return {ok:true,active:true,season,clanTag,rounds,
-    detailsStatus:failures?(success?"partial":"unavailable"):"complete"};
+    detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
 const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(req.method!=="POST")return fail("method_not_allowed",405);
