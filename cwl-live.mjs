@@ -2,6 +2,19 @@ import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows } fr
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
+// Keep user-facing errors actionable while logging the original API reason for diagnosis.
+export function cwlErrorMessage(reason) {
+  const messages={
+    war_details_unavailable:"CWL-Kriegsdetails gerade nicht verfügbar. Dein Plan bleibt gespeichert.",
+    upstream_timeout:"CWL-Abruf dauert gerade zu lange. Bitte später erneut versuchen.",
+    missing_server_configuration:"Die CWL-Verbindung ist noch nicht vollständig eingerichtet.",
+    missing_linked_clan_tag:"Für den CWL-Abruf fehlt der Clan-Tag.",
+    not_a_member:"Du hast keinen Zugriff auf die CWL-Daten dieses Clans.",
+    supercell_status_403:"Clash gibt die CWL-Daten derzeit nicht frei. Dein Plan bleibt gespeichert.",
+    supercell_status_429:"Clash verarbeitet gerade zu viele Anfragen. Bitte später erneut versuchen."
+  };
+  return messages[reason]||"CWL-Daten gerade nicht verfügbar. Dein gespeicherter Plan bleibt erhalten.";
+}
 const badgeArt=side=>{
   const src=safeBadgeUrl(side?.badgeUrl);
   return src
@@ -183,7 +196,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
     }catch(err){
       if(req!==requestId)return;
-      offlineReason="CWL-API nicht erreichbar; gespeicherter Plan bleibt unverändert";
+      offlineReason=cwlErrorMessage(String(err?.message||""));
       if(manual)notify("⚠ "+offlineReason);
       console.warn("CWL status:",String(err?.message||err));
     }finally{
