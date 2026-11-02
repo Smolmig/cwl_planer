@@ -114,3 +114,12 @@ html.arena-reference #view-stats>.card[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){
  html.arena-reference #view-settings .ar4-settings-page,html.arena-reference #view-settings .ar4-settings-home{animation:none!important}
 }
+/* The legacy day cards are a headless compatibility layer: all their meaningful actions
+   now have direct, clean counterparts in the selected day's primary panel. */
+html.arena-reference .ar4-advanced-plan #planDays{display:none!important}
+html.arena-reference .ar4-advanced-plan>summary{color:var(--muted)!important;font-size:12px}
+html.arena-reference .ar4-advanced-plan #planOverview{margin-top:12px!important}
+html.arena-reference .ar4-roster-advanced #addMemberBtn{display:none!important}
+html.arena-reference .ar4-roster-advanced #multiAddBtn{flex:1 1 auto}
+html.arena-reference .ar4-roster-advanced .member-additional-actions{border-color:var(--line)!important;background:transparent!important}
+html.arena-reference #view-members .ar4-roster-heading .ar5-roster-help:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
