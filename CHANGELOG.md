@@ -8,6 +8,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.4] - 2026-11-02
+
+### Mitglieder & Statistik
+- Mitglieder im Cloud-Modus nach Ø Sternen der jeweils letzten sieben erfassten Angriffe sortieren; Spieler ohne Daten stehen unten.
+- Die 3★-Hit-Rate der Mitgliederkarten nutzt nun dieselben letzten sieben Angriffe wie die bereits vorhandene Ø-Sterne-Anzeige. Der Statistik-Tab bleibt bewusst nach ausgewähltem Krieg-/Saisonzeitraum auswertbar.
+- In der Einsatzverteilung lassen sich die einzelnen Tage eines Spielers per Klick aufklappen.
+
+### Darstellung & CWL
+- Die App-Versionshinweise haben am Desktop die ganze Breite unterhalb des Farbschemas.
+- Nach dem Neuaufbau der Plan-Karten werden vorhandene Gegner- und CWL-Live-Daten sofort erneut eingehängt, ohne auf einen API-Refresh zu warten.
+- Fehlt der Status einer Runde, bleibt das CWL-Element statt eines Renderfehlers verfügbar.
+
 ## [1.4.3] - 2026-11-02
 
 ### CWL & Mitgliederabgleich
