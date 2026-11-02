@@ -56,8 +56,18 @@ const detailWrap=e('div','ar4-detail-layout');main.insertBefore(detailWrap,week.
 const lineup=e('section','ar4-panel ar4-lineup');lineup.innerHTML=`<div class="ar4-panel-head"><div><span class="ar4-kicker">AUSGEWÄHLTER KRIEG</span><h2 id="ar4LineupTitle">Line-up · Tag 1</h2><p id="ar4LineupSub"></p></div><button class="btn small" id="ar4DetailEdit">${ic('edit')} Bearbeiten</button></div><div id="ar5Changes" class="ar5-changes" aria-live="polite"></div><div id="ar5Warnings" class="ar5-warnings" aria-live="polite"></div><div id="ar5DayActions" class="ar5-day-actions"></div><details id="ar5LineupDisclosure" class="ar5-lineup-disclosure"><summary><span id="ar5LineupSummary">Spielerliste anzeigen</span>${ic('chevron')}</summary><div id="ar4LineupRows" class="ar4-player-table"></div></details><div class="ar4-lineup-footer"><button class="btn" id="ar4AllPlayers">Weitere CWL-Werkzeuge ${ic('arrow')}</button></div></section>`;
 const insights=e('aside','ar4-panel ar4-insight');insights.innerHTML=`<div class="ar4-kicker">TEAMBERICHT</div><h2 id="ar4InsightTitle">Dein Team im Blick.</h2><p id="ar4InsightText">Überprüfe den ausgewählten Kriegstag und seine Aufstellung.</p><div class="ar4-insight-metrics" id="ar4InsightMetrics"></div><div class="ar4-insight-note"><strong id="ar4InsightNoteTitle">Der Fokus für Tag 1</strong><p id="ar4InsightNoteText">Aufstellung und Tagesregeln berücksichtigen.</p></div><button type="button" class="btn" id="ar4Why">${ic('info')} Warum diese Auswahl?</button></aside>`;
 detailWrap.append(lineup,insights);
-const extended=e('details','ar4-advanced-plan');extended.innerHTML='<summary>Weitere Werkzeuge · Tagesziele, CWL-Verwaltung und Übersicht</summary><div class="ar4-mobile-day-modes"><button type="button" class="btn" id="ar4MobileOne">Einzeltag</button><button type="button" class="btn" id="ar4MobileAll">Alle Tage ansehen</button></div>';
-main.append(extended);extended.append(originalWeek,originalPlan,overview);
+const nativeControls=e('div','ar6-native-controls');nativeControls.setAttribute('aria-hidden','true');
+main.append(nativeControls);nativeControls.append(originalWeek,originalPlan);
+const management=e('section','ar6-management');
+management.innerHTML='<div class="ar6-management-title"><strong>CWL verwalten</strong><span>Planung zurücksetzen, nächste Kriegstage und Sicherungen</span></div>';
+main.append(management);management.append(overview);
+const dayFocus=e('section','ar4-panel ar6-day-focus');
+dayFocus.innerHTML='<div class="ar6-focus-title"><div><div class="ar4-kicker">TAGESPLAN</div><h2 id="ar6FocusTitle">Tag 1 · Wechsel</h2><p id="ar6FocusDesc">Wer kommt rein, wer geht raus?</p></div><button type="button" class="ar6-focus-info" id="ar6FocusInfo" aria-label="Tagesauswahl erklären">'+ic('info')+'</button></div>';
+detailWrap.parentNode.insertBefore(dayFocus,detailWrap);
+dayFocus.append($('ar5Changes'),$('ar5Warnings'),$('ar5DayActions'));
+const dayMode=e('div','ar6-day-modes');
+dayMode.innerHTML='<button class="btn" type="button" id="ar4MobileOne">Einzeltag</button><button class="btn" type="button" id="ar4MobileAll">Alle 7 Tage</button>';
+management.append(dayMode);
 const weekBtns=[];
 function days(){const st=currentState();return Math.min(7,Math.max(1,st?.config?.days||7))}
 function chooseDay(i){selectedDay=Math.max(0,Math.min(days()-1,i));
@@ -66,7 +76,7 @@ function chooseDay(i){selectedDay=Math.max(0,Math.min(days()-1,i));
 function updateModes(){$('ar4One').classList.toggle('active',weekMode==='single');$('ar4All').classList.toggle('active',weekMode==='all');}
 $('ar4One').onclick=()=>{weekMode='single';try{uiSettings.dayViewMode='single';saveUiSettings();renderMobileDays()}catch{}updateModes();renderReference()};
 $('ar4All').onclick=()=>{weekMode='all';try{uiSettings.dayViewMode='all';saveUiSettings();renderMobileDays()}catch{}updateModes();renderReference()};
-$('ar4MobileOne').onclick=()=>$('ar4One').click();$('ar4MobileAll').onclick=()=>{$('ar4All').click();extended.open=false;document.querySelector('.ar4-lineup')?.scrollIntoView({block:'start',behavior:'smooth'})};
+$('ar4MobileOne').onclick=()=>$('ar4One').click();$('ar4MobileAll').onclick=()=>{$('ar4All').click();dayFocus.scrollIntoView({block:'start',behavior:'smooth'})};
 function slotHtml(m,i){const strength=m?.threeStar||'unknown';const skill={high:'Hoch',medium:'Solide',low:'Selten',verylow:'Kaum',unknown:'Unbekannt'}[strength]||'Unbekannt';const name=m?.name||'Unbekannt';return `<div class="ar4-player"><span class="ar4-player-num">${String(i+1).padStart(2,'0')}</span><span class="ar4-avatar">${esc(name.slice(0,1).toUpperCase())}</span><span class="ar4-player-name"><b>${esc(name)}</b><small>${m.fixed?'Fester Einsatz':'Rotationsspieler'}</small></span><span class="ar4-th">RH ${esc(m.townHall||'–')}</span><span class="ar4-skill">${skill}</span><span class="ar4-player-status ${m.fixed?'fixed':''}">${m.fixed?'Fix':'Dabei'}</span></div>`}
 function playerOf(id,index){const st=currentState();try{const p=st.members.find(m=>m.id===id)||st.archivedMembers?.find(m=>m.id===id);return p||((typeof lineupPlayer==='function')?lineupPlayer(id,index):null)}catch{return null}}
 function renderReference(){const st=currentState(),dps=currentPlan();if(!st)return;
@@ -81,6 +91,8 @@ function renderReference(){const st=currentState(),dps=currentPlan();if(!st)retu
  b.classList.toggle('active',i===selectedDay);b.classList.toggle('complete',locked);b.setAttribute('aria-pressed',String(i===selectedDay));
  b.querySelector('.ar4-day-sub').textContent=locked?'Gespielt':i===played?'Nächster Krieg':'Geplant';b.querySelector('.ar4-day-bottom span').textContent=`${c} / ${st.config.slots} Spieler`;});
  const dp=dps[selectedDay]||{lineup:[],warnings:[]};const ids=dp.lineup||[];const names=ids.map(id=>playerOf(id,selectedDay)).filter(Boolean);
+ $('ar6FocusTitle').textContent=weekMode==='all'?'Alle Kriegstage':`Tag ${selectedDay+1} · Wechsel`;
+ $('ar6FocusDesc').textContent=weekMode==='all'?'Tage vergleichen und für die Bearbeitung auswählen.':selectedDay===0?'Startaufstellung und Tagesaktionen':'Ein- und Auswechslungen für diesen Kriegstag';
  $('ar4LineupTitle').textContent=`Line-up · Tag ${selectedDay+1}`;$('ar4LineupSub').textContent=`${ids.length} / ${st.config.slots} eingeplant · ${st.locks?.[selectedDay]?.locked?'gespielt':'automatisch berechnet'}`;
 
  // The actual Rein/Raus delta is the primary daily decision information.
@@ -98,20 +110,15 @@ function renderReference(){const st=currentState(),dps=currentPlan();if(!st)retu
    const issues=dp.warnings||[]; warnings.replaceChildren();
    for(const warn of issues){const p=e('p','ar5-warning');p.textContent='Hinweis: '+warn;warnings.append(p)}
    actions.replaceChildren();
-   const original=$('day-card-'+selectedDay);
-   for(const [selector,caption,kind] of [
-     ['.lock-day','Tag als gespielt speichern','primary'],
-     ['.edit-day','Gespielte Aufstellung bearbeiten','normal'],
-     ['.unlock-day','Tag entsperren','normal'],
-     ['.copy-changes','Wechsel kopieren','normal']
-   ]){
-     const target=original?.querySelector(selector);
-     if(!target)continue;
-     const button=e('button','btn'+(kind==='primary'?' primary':'')+(selector==='.unlock-day'?' ar5-unlock':''),caption);
-     button.type='button';button.disabled=!!target.disabled;
-     button.onclick=()=>{const current=$('day-card-'+selectedDay)?.querySelector(selector);current?.click()};
-     actions.append(button);
-   }
+   const next=typeof playedPrefixLength==='function'?playedPrefixLength():0;
+   const last=typeof lastUnlockableDay==='function'?lastUnlockableDay():-1;
+   const daily=(caption,fn,primary=false)=>{const button=e('button','btn'+(primary?' primary':''),caption);button.type='button';button.onclick=fn;actions.append(button)};
+   if(dp.locked){
+      daily('Gespielte Aufstellung bearbeiten',()=>openLineupModal(selectedDay));
+      if(selectedDay===last)daily('Tag entsperren',()=>unlockDay(selectedDay));
+   } else if(selectedDay===next)daily('Tag als gespielt speichern',()=>openLineupModal(selectedDay),true);
+   else {const wait=e('div','ar6-pending-hint',`Erst Tag ${next+1} abschließen, bevor dieser Krieg gespeichert werden kann.`);actions.append(wait)}
+   if(selectedDay>0)daily('Wechseltext kopieren',()=>copyChanges(selectedDay));
  }
  $('ar5LineupSummary').textContent=weekMode==='all'?( $('ar5LineupDisclosure').open?'Alle Tagesaufstellungen einklappen':'Alle Tagesaufstellungen einblenden'):( $('ar5LineupDisclosure').open?'Spielerliste einklappen':`Spielerliste anzeigen · ${ids.length} Spieler`);
  $('ar4InsightNoteTitle').textContent=`Der Fokus für Tag ${selectedDay+1}`;
@@ -122,19 +129,19 @@ function renderReference(){const st=currentState(),dps=currentPlan();if(!st)retu
  $('ar4InsightNoteText').textContent=(dp.warnings||[]).length?(dp.warnings[0]||'Aufstellung prüfen'):'Verteilung, Verfügbarkeit und individuelle Regeln überprüfen.';
  const rows=$('ar4LineupRows');rows.replaceChildren();if(!names.length){rows.innerHTML='<div class="ar4-empty"><strong>Deine Aufstellung ist noch leer.</strong><span>Füge Mitglieder hinzu, damit der CWL-Plan berechnet werden kann.</span><button type="button" class="btn" id="ar4EmptyAdd">Mitglieder verwalten</button></div>';$('ar4EmptyAdd').onclick=()=>route('members');}
  else {names.forEach((m,i)=>{const row=e('div','',slotHtml(m,i));rows.append(row.firstChild)})}
- $('ar4AllPlayers').textContent='Weitere CWL-Werkzeuge öffnen';
+ $('ar4AllPlayers').textContent='CWL-Verwaltung anzeigen';
  if(weekMode==='all'){$('ar4LineupTitle').textContent=`Woche · ${dlen} Kriegstage`;$('ar4LineupSub').textContent='Alle Tagesaufstellungen im Überblick';rows.replaceChildren();for(let i=0;i<dlen;i++){const d=dps[i]||{lineup:[]};const block=e('div','ar4-day-summary');block.innerHTML=`<button type="button" class="ar4-summary-head">Tag ${i+1} <span>${d.lineup?.length||0}/${st.config.slots} Spieler ${ic('arrow')}</span></button><div class="ar4-summary-names">${(d.lineup||[]).map(id=>esc(playerOf(id,i)?.name||'')).filter(Boolean).join(' · ')||'Noch keine Spieler geplant'}</div>`;block.querySelector('button').onclick=()=>chooseDay(i);rows.append(block)}}
  updateModes();
 }
 const openEditor=()=>{try{const idx=selectedDay;const locked=!!currentState()?.locks?.[idx]?.locked;
  if(typeof openLineupModal==='function')openLineupModal(idx);
- else {extended.open=true;document.getElementById('day-card-'+idx)?.scrollIntoView({behavior:'smooth',block:'center'})}
+ else {const edit=$('day-card-'+idx)?.querySelector('.edit-day,.lock-day');if(edit)edit.click()}
  }catch(err){console.error(err)}};
 $('ar4Edit').onclick=openEditor;$('ar4DetailEdit').onclick=openEditor;
 $('ar4Copy').onclick=()=>$('copyFullPlanBtn')?.click();
 $('ar5LineupDisclosure').addEventListener('toggle',()=>{const label=$('ar5LineupSummary');if(label)label.textContent=$('ar5LineupDisclosure').open?'Spielerliste einklappen':`Spielerliste anzeigen · ${currentPlan()[selectedDay]?.lineup?.length||0} Spieler`});
-$('ar4AllPlayers').onclick=()=>{extended.open=!extended.open;if(extended.open)requestAnimationFrame(()=>extended.scrollIntoView({block:'nearest',behavior:'smooth'}))};
-$('ar4Why').onclick=()=>{try{if(typeof openWhyModal==='function')openWhyModal(selectedDay);else{extended.open=true}}catch{extended.open=true}};
+$('ar4AllPlayers').onclick=()=>{management.scrollIntoView({block:'nearest',behavior:'smooth'})};
+$('ar4Why').onclick=()=>{if(typeof openWhyModal==='function')openWhyModal(selectedDay);else $('day-card-'+selectedDay)?.querySelector('.why-day-btn')?.click()};$('ar6FocusInfo').onclick=$('ar4Why').onclick;
 // ===== MEMBERS: exact reference list geometry, real controls retained in expanded editor =====
 const add=e('button','btn primary ar4-add',`${ic('plus')} Spieler hinzufügen`);add.type='button';add.onclick=()=>$('addMemberBtn')?.click();
 titleHead(members,'KADER VERWALTEN','Mitglieder','Teilnahme, Fixstatus und Spielerstärke zentral pflegen.',add);
@@ -186,7 +193,7 @@ const win=settings.querySelector('.settings-window');if(!win)throw Error('Cloud 
 const origHead=win.querySelector('.settings-dialog-head');if(origHead)origHead.classList.add('ar4-hidden-old-head');
 const home=e('div','ar4-settings-home');const subRoot=e('div','ar4-settings-pages');win.prepend(home);win.append(subRoot);
 const pages={};const subNames={profiles:['Clanprofile','Clans wechseln und Profile verwalten.'],archive:['CWL-Archiv','Vergangene Ligen einsehen.'],planning:['CWL-Grunddaten','Kriegsgröße, Kriegstage und Clanabgleich.'],backup:['Backup & Wiederherstellung','Daten sichern und wiederherstellen.'],display:['Darstellung & Hilfe','Hell- oder Dunkelmodus und App-Informationen.'],account:['Clan & Konto','Cloud-Zugang und Zusammenarbeit.'],advanced:['Weitere Optionen','Erweiterte Einstellungen und Unterstützung.']};
-for(const [id,[name,desc]]of Object.entries(subNames)){const node=e('section','ar4-settings-page');node.dataset.page=id;node.innerHTML=`<button class="ar4-back" type="button">${ic('back')} Clan & Einstellungen</button><h3>${name}</h3><p>${desc}</p>`;node.querySelector('button').onclick=()=>openPage(null);subRoot.append(node);pages[id]=node;}
+for(const [id,[name,desc]]of Object.entries(subNames)){const node=e('section','ar4-settings-page');node.dataset.page=id;node.innerHTML=`<div class="ar6-subnav"><button class="ar4-back" type="button">${ic('back')} Zurück</button><span>Clan & Einstellungen</span></div><h3>${name}</h3><p>${desc}</p>`;node.querySelector('button').onclick=()=>openPage(null);subRoot.append(node);pages[id]=node;}
 function group(label,description,items){const p=e('section','ar4-setting-group',`<h3>${label}</h3><p>${description}</p>`);for(const [name,help,key] of items){const b=e('button','ar4-setting-item',`<span><strong>${name}</strong><small>${help}</small></span><span class="ar4-setting-arrow">${ic('chevron')}</span>`);b.type='button';b.onclick=()=>openPage(key);p.append(b)}return p}
 home.append(group('Clanprofile','Aktives Profil: <span id="ar4ActiveClan">–</span>',[
  ['Profile wechseln','Verschiedene Clans getrennt verwalten','profiles'],
@@ -202,7 +209,7 @@ const util=e('div','ar4-settings-links',`<button type="button" id="ar4OpenAccoun
 $('ar4OpenAccount').onclick=()=>openPage('account');$('ar4Advanced').onclick=()=>openPage('advanced');
 // move original real controls, retaining their original IDs, inputs and event handlers
 const local=$('localProfileCard');if(local)pages.profiles.append(local);
-if(pbar){const wrap=e('div','ar4-panel ar4-profile-picker','<h3>Aktives Profil</h3>');wrap.append(pbar);pages.profiles.prepend(wrap)}
+if(pbar){const wrap=e('div','ar4-panel ar4-profile-picker','<h3>Aktives Profil</h3>');wrap.append(pbar);pages.profiles.append(wrap)}
 const cloudAcc=$('settingsCloudAccount')?.closest('.card');if(cloudAcc)pages.account.append(cloudAcc);
 const archive=$('archiveList')?.closest('.card');if(archive)pages.archive.append(archive);
 const source=[...win.querySelectorAll(':scope > .card')].find(c=>c.querySelector('.settings-subcard'));
