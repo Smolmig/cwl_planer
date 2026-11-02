@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.2",
-  "released": "2026-11-01",
-  "summary": "Einladungslinks öffnen einen eigenen Beitrittsdialog mit Planername und Rolle; Anmeldung und Registrierung behalten die Einladung."
+  "version": "v1.4.3",
+  "released": "2026-11-02",
+  "summary": "Ausgetretene CWL-Spieler behalten oder aus offenen Kriegstagen entfernen; klarere Hinweise bei fehlenden CWL-Daten."
 }
