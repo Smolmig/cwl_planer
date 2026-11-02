@@ -1,5 +1,5 @@
 {
   "version": "v1.4.3",
   "released": "2026-11-02",
-  "summary": "Ausgetretene CWL-Spieler behalten oder aus offenen Kriegstagen entfernen; klarere Hinweise bei fehlenden CWL-Daten."
+  "summary": "CWL-API robuster bei vorübergehend nicht verfügbaren Kriegsdetails; ausgetretene Spieler gezielt weiter einplanen oder entfernen."
 }
