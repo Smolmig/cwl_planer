@@ -260,7 +260,7 @@ const live=createCwlLive({
   return stats.captureCwl(data);
  },
  context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
-   canApply:!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+   canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
 });
 currentWarOverview=createCurrentWarOverview({
  context:()=>({active:cloud.active,clanId,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag}),
@@ -623,7 +623,7 @@ function startRemoteChecks(){
  stopRemoteChecks();
  pollTimer=setInterval(()=>{
   if(cloud.active&&clanId&&navigator.onLine&&!document.hidden)
-   checkRemoteChanges("interval").catch(error);
+   {checkRemoteChanges("interval").catch(error);loadPlanReview(clanId).catch(console.warn);}
  },15000);
 }
 function hideChangeToast(){
@@ -748,6 +748,10 @@ async function loadCloudProfile(automatic=false){
 }
 async function writeCloud(){
  if(!cloud.active||blocked||hydrating||saving||role==="viewer"||!changedSerial||!clanId)return;
+ if(role==="editor"&&planIsLocked()){
+   status("Cloud: Änderungsvorschlag noch nicht eingereicht",true);
+   renderPlanReview();return;
+ }
  if(!navigator.onLine){blocked=true;status("Cloud: offline – nicht gespeichert",true);return}
  const snapshot=changedSerial,id=clanId,expectedRevision=revision;
  saving=true;status("Cloud: speichert …",false);
@@ -782,6 +786,7 @@ async function writeCloud(){
 }
 async function ensureSaved(){
  clearTimeout(debounce);
+ if(role==="editor"&&planIsLocked()&&changedSerial)throw Error("Plan freigegeben: Änderungen bitte als Vorschlag einreichen.");
  if(blocked)throw Error("Speicherkonflikt: bitte Cloud neu laden.");
  if(changedSerial&&!saving)await writeCloud();
  let tries=0;
@@ -1367,6 +1372,16 @@ async function importCloud(){
  await writeCloud();close();
 }
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
+bind("planReviewToggle","click",togglePlanLock);
+bind("planSubmitSuggestion","click",submitPlanSuggestion);
+bind("planRefreshSuggestions","click",()=>loadPlanReview());
+$("planReviewSuggestions").addEventListener("click",event=>{
+ const button=event.target.closest("[data-plan-action][data-suggestion-id]");
+ if(!button)return;
+ button.disabled=true;
+ decidePlanSuggestion(button.dataset.suggestionId,button.dataset.planAction)
+   .catch(error).finally(()=>{button.disabled=false});
+});
 bind("cloudOpen","click",async()=>{open();if(clanId)await loadAccessList(clanId)});bind("cloudClose","click",close);
 bind("cloudLogin","click",()=>sign("login"));bind("cloudSignup","click",()=>sign("signup"));
 bind("cloudForgotPassword","click",showForgotPassword);
