@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.4",
+  "version": "v1.4.5",
   "released": "2026-11-02",
-  "summary": "Mitglieder nach Ø Sternen der letzten sieben Angriffe sortieren, gleiche Zeitbasis der Hit-Rate, Einsatztage pro Spieler und stabilere CWL-Ansicht."
+  "summary": "Einsatzziel pro Spieler, einfache Tagesregeln, sichtbare Sortierpfeile, letzter Clan und klare CWL-Gegnerinfos."
 }
