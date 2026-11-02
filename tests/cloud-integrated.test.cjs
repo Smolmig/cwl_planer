@@ -257,7 +257,7 @@ test("short codes and audit log are RLS-protected",()=>{
   assert.match(migration,/short_code_hash/);
 });
 test("Guest experience boots with original planner structure",()=>{
- const bootErrors=[];const virtualConsole=new VirtualConsole();virtualConsole.on("jsdomError",error=>bootErrors.push(error.stack||error.message));
+ const bootErrors=[];const virtualConsole=new VirtualConsole();virtualConsole.on("jsdomError",error=>bootErrors.push(error.detail?.stack||error.cause?.stack||error.stack||error.message));
  const dom=new JSDOM(preview,{runScripts:"dangerously",url:"https://smolmig.github.io/cwl_planer/cloud-app.html",
   virtualConsole,pretendToBeVisual:true,beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){},addListener(){}});w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=function(){};}});
  try{
