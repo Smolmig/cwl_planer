@@ -195,9 +195,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         data.rounds=data.rounds.map((round,i)=>round?.available?round:
           previous.rounds[i]?.available?previous.rounds[i]:round);
       }
-      current=data;offlineReason="";confirmedNoCwl=!data.active;
+      current=data;offlineReason=data.pending?
+        "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
-      if(onSnapshot && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
+      if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
         Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
       if(data.active && ctx.role!=="viewer" && context().canApply) {
         const result=reconcileCwl(storage.getProfile(),data,name=>storage.newMember(name));
@@ -207,7 +208,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
             notify("✓ CWL-Tag "+result.lockedDays.join(", ")+" automatisch mit tatsächlicher Aufstellung abgeschlossen");
         }
       }
-      if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
+      if(manual && data.pending)notify("Die CWL-Auslosung ist noch nicht vollständig verfügbar. Dein Plan bleibt erhalten.");
+      else if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
     }catch(err){
       if(req!==requestId)return;
       offlineReason=cwlErrorMessage(String(err?.message||""));
