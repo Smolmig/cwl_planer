@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.4";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.4";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.4";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.4";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.5";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.5";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.5";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.5";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -13,6 +13,9 @@ const text=(id,value)=>{if($(id))$(id).textContent=value};
 const toggle=(id,show)=>{if($(id))$(id).hidden=!show};
 const storage=window.CWLLegacy;
 let user=null,clanId=null,clans=[],role=null,revision=null,lastSerial=null,changedSerial=null;
+const LAST_CLAN_PREFIX="cwl_last_clan_";
+const savedClan=()=>{try{return user?localStorage.getItem(LAST_CLAN_PREFIX+user.id):null}catch{return null}};
+const rememberClan=id=>{try{if(user&&id)localStorage.setItem(LAST_CLAN_PREFIX+user.id,id)}catch{/* Storage can be unavailable. */}};
 const INVITE_TOKEN_KEY="cwl_pending_invite_v1",INVITE_ALIAS_KEY="cwl_pending_invite_name_v1";
 const isInviteCode=v=>/^(?:[a-zA-Z0-9_-]{12}|[a-zA-Z0-9_-]{24})$/.test(String(v||""));
 // Keep an invitation across the new tab opened by email confirmation.
@@ -396,7 +399,7 @@ async function listClans(epoch=accountEpoch,selected){
    const kind=clanRoles.get(c.id)==="owner"?"Mein Clan":clanRoles.get(c.id)==="editor"?"Gemeinsam · Vize":"Gemeinsam · Beobachter";
    s.add(new Option(c.name+" · "+kind,c.id));
  });
- const desired=selected||clanId;
+ const desired=selected||clanId||savedClan();
  s.value=clans.find(x=>x.id===desired)?.id||clans[0]?.id||"";
  await chooseClan(epoch);
 }
@@ -405,7 +408,7 @@ async function chooseClan(epoch=accountEpoch){
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
- clanId=$("cloudClanSelect").value||null;revision=null;role=null;
+ clanId=$("cloudClanSelect").value||null;if(clanId)rememberClan(clanId);revision=null;role=null;
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
  toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}

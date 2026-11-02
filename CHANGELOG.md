@@ -8,6 +8,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.5] - 2026-11-02
+
+### Planung & Bedienung
+- Pro Spieler lassen sich gewünschte Einsätze 1–7 festlegen; der Planer berücksichtigt diese Ziele bei der automatischen Rotation, gespielte Tage zählen mit. Fix und MUSS haben Vorrang; unerreichbare Zielwerte werden als Warnung gezeigt.
+- Erst-ab/Raus-ab aus der Mitgliederoberfläche entfernt und beim Laden früherer Profile in direkte RAUS-Tagesregeln überführt.
+- Pfeile für die eigene Mitgliederreihenfolge sind ohne Öffnen der Bearbeitung erreichbar.
+- Die Cloud merkt sich den zuletzt ausgewählten Clan je Account und Gerät.
+- Rathausverteilung im CWL-Gegnerfeld ausdrücklich als Gegner-Aufstellung beschriftet.
+- Button zum manuellen Tagesabschluss als Rückfalloption erklärt; API-Abschluss mit tatsächlicher Aufstellung bleibt aktiv.
+- Einheitlichere Höhen, Abstände und Beschriftungen der oberen Aktionen.
+
 ## [1.4.4] - 2026-11-02
 
 ### Mitglieder & Statistik
