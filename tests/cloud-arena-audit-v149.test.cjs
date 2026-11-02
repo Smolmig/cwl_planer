@@ -56,7 +56,7 @@ test("Pencil attaches to intrinsic name label, editing uses a different input",(
 
 test("Player info is placed in the bottom-right member detail footer",()=>{
   const memberMarkup=html.slice(html.indexOf('function renderMembers(){'),html.indexOf('root.querySelectorAll(".member").forEach(',html.indexOf('function renderMembers(){')));
-  const helpIndex=memberMarkup.indexOf('class="member-config-help"');
+  const helpIndex=memberMarkup.indexOf('member-config-help" title=');
   const footerIndex=memberMarkup.indexOf('class="member-details-footer"');
   const toolsEnd=memberMarkup.indexOf('class="rule-panel');
   assert.ok(helpIndex>footerIndex);
