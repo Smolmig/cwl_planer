@@ -147,6 +147,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     refresh.textContent=fetching?"CWL wird geladen …":"↻ CWL-Daten";
     refresh.disabled=fetching;
     const info=effective();
+    const detailsWarning=current?.detailsStatus==="unavailable"
+      ?" · ⚠ Kriegsdetails derzeit nicht abrufbar"
+      :current?.detailsStatus==="partial"
+        ?" · ⚠ Einige Kriegsdetails fehlen noch":"";
     let node=old;
     if(!node){
       node=document.createElement("section");node.id="cwlLiveOverview";node.className="cwl-live-overview";
@@ -162,7 +166,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const ended=info.rounds.filter(r=>r.state==="warEnded").length;
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
-      (offlineReason?" · ⚠ "+esc(offlineReason):"")+"</span>";
+      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>";
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
@@ -182,9 +186,19 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         throw new Error(msg);
       }
       if(req!==requestId||id!==context().clanId)return;
+      // A temporary failure to fetch individual wars must not wipe previously
+      // confirmed, same-season information saved by another clan leader.
+      const previous=ctx.profile?.cwlLive;
+      if(data.active && data.detailsStatus && data.detailsStatus!=="complete" &&
+         previous?.season===data.season && previous?.clanTag===data.clanTag &&
+         Array.isArray(previous.rounds) && Array.isArray(data.rounds)){
+        data.rounds=data.rounds.map((round,i)=>round?.available?round:
+          previous.rounds[i]?.available?previous.rounds[i]:round);
+      }
       current=data;offlineReason="";confirmedNoCwl=!data.active;
       // Optional statistics sink only; a failed stats save must never break planning.
-      if(onSnapshot)Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
+      if(onSnapshot && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
+        Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
       if(data.active && ctx.role!=="viewer" && context().canApply) {
         const result=reconcileCwl(storage.getProfile(),data,name=>storage.newMember(name));
         if(result.changed) {
