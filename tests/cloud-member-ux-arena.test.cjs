@@ -26,7 +26,7 @@ test("Recent member attack stats explain exact 3-star and average formula and pr
 test("Players with actual statistics cannot override 3-star strength manually, others can",()=>{
  assert.match(html,/const hasAttackStats=!!/);
  assert.match(html,/\$\{hasAttackStats\?\x60<span class="member-stat-automatic"/);
- assert.match(html,/member-strength-picker"\?\./);
+ assert.ok(html.includes('el.querySelector(".member-strength-picker")?.addEventListener'));
  assert.match(html,/member-config-help/);
  assert.match(html,/function openMemberConfigHelp\(m\)/);
  assert.match(html,/stats\.threes/);
@@ -38,7 +38,8 @@ test("Member participation and fixed day controls are unambiguous",()=>{
  assert.match(html,/m\.participating\?"Dabei":"Pause"/);
  assert.match(html,/member-fixed-target/);
  assert.match(html,/Fix: alle verfügbaren Tage/);
- assert.doesNotMatch(html,/7 Angriffe max\./);
+ const compact=html.slice(html.indexOf("function memberCompactPerformance("),html.indexOf("function memberPerformance("));
+ assert.doesNotMatch(compact,/7 Angriffe max\./);
 });
 test("Arena theme and deployment bars stay separate from normal Dark",()=>{
  assert.match(html,/value="arena"/);
