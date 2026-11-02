@@ -1312,12 +1312,14 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.4</strong><span>CWL & Mitglieder</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.4.5</strong><span>Planung & Komfort</span></div>
       <ul>
-        <li><b>Mitglieder:</b> Nach durchschnittlichen Sternen der letzten sieben Angriffe sortieren. 3★-Hit-Rate und Ø Sterne verwenden denselben Zeitraum.</li>
-        <li><b>Übersicht:</b> Spieler antippen, um geplante und bereits gespielte Einsatztage zu sehen.</li>
-        <li><b>Plan:</b> Gegnerdaten bleiben beim Wechseln der Ansicht sichtbar.</li>
-        <li><b>Darstellung:</b> Versionshinweise am Desktop übersichtlicher angeordnet.</li>
+        <li><b>Einsatzziel:</b> Pro Spieler eine gewünschte Anzahl Kriegstage festlegen. Der Planer verteilt sie, soweit die Vorgaben es erlauben.</li>
+        <li><b>Tagesregeln:</b> Erst-ab und Raus-ab durch direkte Tagesregeln ersetzt. Bisherige Einstellungen bleiben als RAUS-Tage erhalten.</li>
+        <li><b>Mitglieder:</b> Pfeile für die eigene Reihenfolge direkt in der Mitgliederliste.</li>
+        <li><b>Cloud:</b> Beim nächsten Besuch wird automatisch der zuletzt verwendete Clan gewählt.</li>
+        <li><b>CWL:</b> Gegnerische Rathausverteilung ausdrücklich gekennzeichnet. Manuelles Abschließen als API-Ersatz erklärt.</li>
+        <li><b>Design:</b> Einheitlichere Aktionen in der Kopfzeile.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1629,7 +1631,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.4";
+const APP_VERSION="v1.4.5";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2189,6 +2191,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.4"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.4.5"></script>
 </body>
 </html>
