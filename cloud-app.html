@@ -1214,6 +1214,190 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
 /* Show deployment counts without mobile ellipsis. */
 @media(max-width:699px){#view-plan .player-meta{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}}
 html[data-theme="arena"] .summary-progress-future{background:linear-gradient(90deg,#c0985b,#e3c580)}
+
+/* Arena, full-system presentation. Use theme-scoped selectors to defeat old
+   hard-coded light surfaces without touching the other selectable themes. */
+html[data-theme="arena"]{color-scheme:dark;
+  --bg:#0a0d14;--card:#151a20;--text:#f6f1e8;--muted:#adb5ba;
+  --line:#3e4850;--primary:#dfbd7a;--green:#9fd7b7;
+  --greenbg:#20352e;--red:#f2a5a4;--redbg:#462a2d;
+  --amber:#ebc57f;--amberbg:#3b3021;--bluebg:#292e32;
+  --shadow:0 12px 32px rgba(0,0,0,.25);
+}
+html[data-theme="arena"] body{
+  color:var(--text);
+  background:radial-gradient(ellipse at 11% 0%,rgba(223,189,122,.095),transparent 35rem),
+   radial-gradient(ellipse at 92% 12%,rgba(149,167,157,.06),transparent 30rem),
+   linear-gradient(145deg,#0b0e13,#10151a 55%,#0a0d14);
+  background-attachment:fixed;min-height:100dvh;
+}
+html[data-theme="arena"] .app{position:relative}
+html[data-theme="arena"] .topbar,
+html[data-theme="arena"] .bottomnav{
+  background:#151b21;border-color:#4a4030;backdrop-filter:none;box-shadow:0 5px 20px rgba(0,0,0,.22);
+}
+html[data-theme="arena"] .card,
+html[data-theme="arena"] .settings-subcard,
+html[data-theme="arena"] .settings-dialog-head,
+html[data-theme="arena"] .modalbox,
+html[data-theme="arena"] .cloud-panel,
+html[data-theme="arena"] .bulkbar,
+html[data-theme="arena"] .list-management,
+html[data-theme="arena"] .profile-active,
+html[data-theme="arena"] .member,
+html[data-theme="arena"] .plan-review-suggestion,
+html[data-theme="arena"] .war-history-item,
+html[data-theme="arena"] .cloud-change-notice{
+  background:linear-gradient(150deg,#1b2227,#151a20 75%);
+  color:var(--text);border-color:#434b50;
+  box-shadow:var(--shadow);
+}
+html[data-theme="arena"] .day-card{border-left-color:#967c52}
+html[data-theme="arena"] .day-card.locked{border-left-color:var(--green)}
+html[data-theme="arena"] .kpi,
+html[data-theme="arena"] .player-chip,
+html[data-theme="arena"] .member-snapshot,
+html[data-theme="arena"] .member-tools,
+html[data-theme="arena"] .member-details,
+html[data-theme="arena"] .member-filters,
+html[data-theme="arena"] .summary-compact-row,
+html[data-theme="arena"] .summary-row,
+html[data-theme="arena"] .stats-kpi,
+html[data-theme="arena"] .stats-player,
+html[data-theme="arena"] .stats-player-row,
+html[data-theme="arena"] .stats-period summary,
+html[data-theme="arena"] .goal-row,
+html[data-theme="arena"] .goal-pill,
+html[data-theme="arena"] .member-hint,
+html[data-theme="arena"] .info-strip,
+html[data-theme="arena"] .helpbox,
+html[data-theme="arena"] .help-item,
+html[data-theme="arena"] .rule-panel,
+html[data-theme="arena"] .cloud-help-grid>div,
+html[data-theme="arena"] .bulk-group,
+html[data-theme="arena"] .cloud-actor,
+html[data-theme="arena"] .cloud-section,
+html[data-theme="arena"] .changebox{
+  background:#20272d;color:var(--text);border-color:#465059;
+}
+html[data-theme="arena"] .summary-progress-track{background:#303a41}
+html[data-theme="arena"] .summary-progress-future{
+  background:linear-gradient(90deg,#bb9258,#e5c886)
+}
+html[data-theme="arena"] :is(h1,h2,h3,h4,.day-title,.section-title strong,.member-name-label){
+  color:#f9f2e5;letter-spacing:.007em;
+}
+html[data-theme="arena"] .subtitle,
+html[data-theme="arena"] .statusline,
+html[data-theme="arena"] .member-brief,
+html[data-theme="arena"] .player-meta,
+html[data-theme="arena"] .summary-compact-meta,
+html[data-theme="arena"] .settings-note,
+html[data-theme="arena"] small{color:#b4bdc2}
+html[data-theme="arena"] :is(input,select,textarea),
+html[data-theme="arena"] .name-input,
+html[data-theme="arena"] .field input,
+html[data-theme="arena"] .field select,
+html[data-theme="arena"] .sort-select,
+html[data-theme="arena"] .bulk-control,
+html[data-theme="arena"] .modal-search,
+html[data-theme="arena"] .profilebar select,
+html[data-theme="arena"] .rulebtn,
+html[data-theme="arena"] .stats-period summary,
+html[data-theme="arena"] .member-target-days{
+  background:#111920;color:var(--text);border-color:#51606a;
+}
+html[data-theme="arena"] :is(input,textarea)::placeholder{color:#9ca9b0;opacity:1}
+html[data-theme="arena"] :is(select,option){color-scheme:dark}
+html[data-theme="arena"] :is(input[type=checkbox],input[type=radio]){accent-color:var(--primary)}
+html[data-theme="arena"] :is(input,select,textarea,button):focus-visible{
+  outline:2px solid var(--primary);outline-offset:2px;
+}
+html[data-theme="arena"] .btn:not(:disabled),
+html[data-theme="arena"] .cloud-toggle:not(:disabled),
+html[data-theme="arena"] .member-name-edit:not(:disabled),
+html[data-theme="arena"] .member-field-picker:not(:disabled),
+html[data-theme="arena"] .member-th-picker:not(:disabled),
+html[data-theme="arena"] #view-members .cloud-member-tools .btn:not(:disabled),
+html[data-theme="arena"] #view-members .list-management-actions .btn:not(:disabled){
+  background:linear-gradient(145deg,#2b3338,#20272d);color:#f5ecdc;
+  border:1px solid #756245;box-shadow:0 1px 0 rgba(255,235,194,.08) inset;
+}
+html[data-theme="arena"] .btn.primary:not(:disabled),
+html[data-theme="arena"] #cloudMembersSyncBtn:not(:disabled),
+html[data-theme="arena"] #view-members #cloudMembersSyncBtn:not(:disabled),
+html[data-theme="arena"] #view-members .cloud-member-tools .btn.primary:not(:disabled),
+html[data-theme="arena"] .cloud-change-actions .btn.primary:not(:disabled){
+  background:linear-gradient(120deg,#e6c989,#c49b5b);
+  border-color:#f0d395;color:#221b11;opacity:1;
+  box-shadow:0 3px 14px rgba(195,151,80,.16);text-shadow:none;
+}
+html[data-theme="arena"] .btn.danger:not(:disabled){color:#ffc4bd;border-color:#905552;background:#34262a}
+html[data-theme="arena"] .btn:disabled,
+html[data-theme="arena"] .member-name-edit:disabled{
+  opacity:.48;cursor:not-allowed;filter:grayscale(.45);box-shadow:none;
+}
+@media(hover:hover){
+ html[data-theme="arena"] .btn:not(:disabled):hover,
+ html[data-theme="arena"] .member-name-edit:not(:disabled):hover{
+  border-color:#ecc982;filter:brightness(1.09);
+ }
+}
+html[data-theme="arena"] .navbtn,
+html[data-theme="arena"] .day-tab,
+html[data-theme="arena"] .mobile-day-tab{color:#c1c7c8;border-color:#4b5660}
+html[data-theme="arena"] .navbtn.active,
+html[data-theme="arena"] .mobile-day-tab.active,
+html[data-theme="arena"] .mobile-day-tab[aria-selected="true"]{
+  background:#423626;color:#f2d293;border-color:#c7a369;
+}
+html[data-theme="arena"] .badge.ok,
+html[data-theme="arena"] .member-status-chip.in{background:#263c33;color:#abebc7;border:1px solid #598d75}
+html[data-theme="arena"] .badge.warn{color:#f5cf83;background:#40351e;border:1px solid #927346}
+html[data-theme="arena"] .member-status-chip.fixed,
+html[data-theme="arena"] .player-fixed-badge{
+  color:#f7d58e;background:#3c3222;border:1px solid #957645;
+}
+html[data-theme="arena"] :is(.member-part,.member-fixed):has(input:checked){border-color:#ba985c}
+html[data-theme="arena"] .member-config-help{color:#efcf8d}
+html[data-theme="arena"] .cloud-roster-flag{color:#f6cf7c;background:#352e21}
+html[data-theme="arena"] .cwl-live-day,
+html[data-theme="arena"] .cwl-live-overview,
+html[data-theme="arena"] .cwl-live-details{
+  background:#121b21;color:var(--text);border-color:#5c655e;
+}
+html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
+/* Contextual member tools: editable name and pencil form a single visual unit. */
+#view-members .member-top .name-wrap{
+  display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:0;
+}
+#view-members .member-top .name-wrap .member-name-label{
+  display:inline-block;flex:0 1 auto;min-width:0;max-width:calc(100% - 44px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;
+  font-weight:800;line-height:1.3;
+}
+#view-members .member-top .name-wrap .member-name-label[hidden],
+#view-members .member-top .name-wrap .member-name[hidden]{display:none!important}
+#view-members .member-top .name-wrap .member-name:not([hidden]){
+  display:block;flex:1 1 auto;min-width:70px;max-width:min(100%,330px)!important;
+  padding:6px 8px!important;outline:2px solid var(--primary);
+}
+#view-members .member-top .name-wrap .member-name-edit{
+  flex:0 0 38px!important;width:38px!important;height:38px!important;
+  min-height:38px!important;margin:0!important;font-size:18px!important;
+}
+#view-members .member-details-footer{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding-top:10px;margin-top:10px;border-top:1px solid var(--line);
+}
+#view-members .member-details-footer .member-config-help{
+  flex:0 0 auto;min-height:36px;
+}
+@media(max-width:520px){
+ #view-members .member-top .name-wrap .member-name-label{max-width:calc(100% - 46px)}
+ #view-members .member-details-footer .member-config-help{min-height:40px}
+}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
