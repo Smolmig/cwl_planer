@@ -63,6 +63,23 @@ test("A failure of the league-group endpoint is not misreported as an active CWL
  context.getGame=async()=>{throw Error("supercell_status_403")};
  await assert.rejects(()=>loadStatus(ownTag,"mock"),/supercell_status_403/);
 });
+test("CWL group shell during preparation is retained without inventing matchups",async()=>{
+ const {context,loadStatus}=makeContext();
+ context.getGame=async()=>({state:"preparation",season:"2026-11",clans:[{tag:ownTag,name:"Own"}]});
+ const result=await loadStatus(ownTag,"mock");
+ assert.equal(result.active,true);
+ assert.equal(result.detailsStatus,"not_released");
+ assert.equal(result.rounds.length,7);
+ assert.equal(result.rounds.every(round=>round.available===false),true);
+});
+test("CWL group without a season is recognized as pending rather than a 502",async()=>{
+ const {context,loadStatus}=makeContext();
+ context.getGame=async()=>({state:"preparation",clans:[{tag:ownTag,name:"Own"}]});
+ const result=await loadStatus(ownTag,"mock");
+ assert.equal(result.ok,true);
+ assert.equal(result.pending,true);
+ assert.equal(result.active,false);
+});
 test("Upstream 5xx requests are retried but permission errors are not",async()=>{
  const {context,getGame}=makeContext();
  let calls=0;
