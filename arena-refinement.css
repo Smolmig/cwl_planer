@@ -1,0 +1,116 @@
+/* ARENA REVIEW: functional refinements after hands-on testing, isolated to sandbox */
+html.arena-reference #view-settings .ar4-settings-home[hidden],
+html.arena-reference #view-settings .ar4-section-head[hidden],
+html.arena-reference #view-settings .ar4-settings-pages[hidden],
+html.arena-reference #view-settings .ar4-settings-page[hidden],
+html.arena-reference [hidden]{display:none!important}
+html.arena-reference #view-settings .ar4-settings-home{overflow:hidden}
+html.arena-reference #view-settings .ar4-settings-pages{overflow:hidden;isolation:isolate;min-height:min(58vh,520px)}
+html.arena-reference #view-settings .ar4-settings-page{width:100%;max-width:760px}
+@keyframes ar5-slide-forward{from{opacity:0;transform:translateX(25px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ar5-slide-back{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+html.arena-reference #view-settings .ar4-back{min-height:42px;padding:10px 0;gap:9px}
+html.arena-reference #view-settings .ar4-settings-page>h3{margin-top:14px}
+html.arena-reference #view-settings .ar4-settings-page .card{margin-top:16px!important}
+html.arena-reference #view-settings .ar4-setting-item{min-height:68px;cursor:pointer}
+html.arena-reference #view-settings .ar4-setting-item:hover{color:var(--primary)}
+html.arena-reference .ar4-daycard,
+html.arena-reference .ar4-daycard:hover,
+html.arena-reference .ar4-daycard:active,
+html.arena-reference .ar4-daycard:focus,
+html.arena-reference .ar4-daycard.active{transform:none!important;scale:1!important;margin:0!important}
+html.arena-reference .ar4-daycard:focus{outline:0!important}
+html.arena-reference .ar4-daycard:focus-visible{box-shadow:inset 0 0 0 2px var(--primary)!important;outline:0!important}
+html.arena-reference .ar4-weekstrip{overflow-x:auto;overflow-y:hidden;padding:8px 2px 14px;scroll-padding-inline:2px;scrollbar-width:none;align-items:stretch}
+html.arena-reference .ar4-weekstrip .ar4-daycard{box-sizing:border-box;min-height:156px!important}
+html.arena-reference .ar4-daycard.active{z-index:1;box-shadow:inset 0 0 0 1px var(--primary)!important}
+html.arena-reference .ar5-changes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 12px}
+html.arena-reference .ar5-change-side{min-width:0;border-radius:12px;padding:12px;border:1px solid var(--line);background:var(--card)}
+html.arena-reference .ar5-change-side.in{border-color:color-mix(in srgb,var(--green) 32%,var(--line));background:color-mix(in srgb,var(--green) 7%,var(--card))}
+html.arena-reference .ar5-change-side.out{border-color:color-mix(in srgb,var(--red) 32%,var(--line));background:color-mix(in srgb,var(--red) 6%,var(--card))}
+html.arena-reference .ar5-change-head{display:flex;justify-content:space-between;gap:5px;align-items:center;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+html.arena-reference .ar5-change-head b{font-size:13px}
+html.arena-reference .ar5-change-head span{font-size:11px;color:var(--muted)}
+html.arena-reference .ar5-change-side.in .ar5-change-head b{color:var(--green)}
+html.arena-reference .ar5-change-side.out .ar5-change-head b{color:var(--red)}
+html.arena-reference .ar5-change-list{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;min-height:32px}
+html.arena-reference .ar5-change-chip{font-size:11px;font-weight:650;border:1px solid var(--line);border-radius:7px;padding:5px 7px;white-space:normal;overflow-wrap:anywhere;color:var(--text);background:var(--card)}
+html.arena-reference .ar5-change-none{font-size:12px;color:var(--muted);padding:4px}
+html.arena-reference .ar5-start-lineup{grid-column:1/-1;display:flex;flex-direction:column;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px}
+html.arena-reference .ar5-start-lineup strong{font-size:13px;color:var(--primary)}
+html.arena-reference .ar5-start-lineup span,html.arena-reference .ar5-change-all{font-size:12px;color:var(--muted)}
+html.arena-reference .ar5-warnings{margin:5px 0}
+html.arena-reference .ar5-warning{background:var(--amberbg);border:1px solid color-mix(in srgb,var(--amber) 26%,var(--line));color:var(--amber)!important;border-radius:9px;padding:9px 11px;font-size:12px!important;margin:8px 0!important}
+html.arena-reference .ar5-day-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
+html.arena-reference .ar5-day-actions:empty{display:none}
+html.arena-reference .ar5-day-actions button{flex:1 1 auto;font-size:12px;min-height:42px;white-space:normal}
+html.arena-reference .ar5-day-actions .ar5-unlock{color:var(--red)!important}
+html.arena-reference .ar5-lineup-disclosure{margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+html.arena-reference .ar5-lineup-disclosure>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px;font-size:13px;color:var(--text);font-weight:750;list-style:none}
+html.arena-reference .ar5-lineup-disclosure>summary::-webkit-details-marker{display:none}
+html.arena-reference .ar5-lineup-disclosure>summary svg{color:var(--primary);width:17px;height:17px;transform:rotate(90deg);transition:transform .18s}
+html.arena-reference .ar5-lineup-disclosure[open]>summary svg{transform:rotate(-90deg)}
+html.arena-reference #ar4LineupRows{padding:0 10px 12px}
+html.arena-reference .ar4-lineup-footer{margin:8px 0 0}
+html.arena-reference #ar4AllPlayers{font-size:12px;min-height:38px;background:transparent!important;color:var(--muted)!important}
+html.arena-reference .ar4-advanced-plan{margin-top:15px}
+html.arena-reference .ar5-roster-quick{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+html.arena-reference .ar5-roster-quick .btn{min-height:37px;font-size:12px;padding:8px 10px}
+html.arena-reference .ar5-roster-quick .btn.active{border-color:var(--primary)!important;color:var(--primary)!important}
+html.arena-reference .ar5-roster-help{display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:var(--card);width:36px;height:36px;color:var(--muted);flex:none}
+html.arena-reference .ar5-roster-help svg{width:18px;height:18px}
+html.arena-reference .ar4-roster-heading{align-items:flex-start}
+html.arena-reference .ar4-roster-advanced{margin:12px 0 8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:11px}
+html.arena-reference .ar4-roster-advanced summary{font-size:12px;font-weight:650;color:var(--muted);cursor:pointer}
+html.arena-reference .ar4-roster-advanced .member-actionbar{margin:12px 0}
+html.arena-reference .ar5-ordering{border:0!important;margin:0!important;padding:0!important;background:transparent!important}
+html.arena-reference .ar5-ordering .list-management-head{display:none!important}
+html.arena-reference .ar5-ordering .list-management-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px}
+html.arena-reference .ar5-ordering #selectMembersBtn{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;opacity:0!important;pointer-events:none}
+html.arena-reference #view-members #bulkBar:not(.hidden){display:block!important;background:var(--card)!important;border:1px solid var(--primary)!important;color:var(--text)!important;border-radius:15px!important;box-shadow:none!important;margin:12px 0!important;padding:15px!important}
+html.arena-reference #view-members #bulkBar .bulk-group{background:transparent!important;border:1px solid var(--line)!important;border-radius:11px!important}
+html.arena-reference #view-members #bulkBar .bulk-buttons button,
+html.arena-reference #view-members #bulkBar select{background:var(--card)!important;border:1px solid var(--line)!important;color:var(--text)!important}
+html.arena-reference #view-members #bulkBar :is(.bulk-head,.bulk-title,.bulk-label,.bulk-count,.bulk-guide){color:var(--text)!important}
+html.arena-reference #view-members #bulkBar .bulk-label,html.arena-reference #view-members #bulkBar .bulk-guide{color:var(--muted)!important}
+html.arena-reference #view-members #bulkBar button:disabled,
+html.arena-reference #view-members #bulkBar select:disabled{opacity:.42!important}
+html.arena-reference #view-stats .arena-demo-history.active{display:block!important;min-width:0}
+html.arena-reference #view-stats .arena-demo-history .ar4-panel{padding:22px!important}
+html.arena-reference #view-stats .arena-demo-history h2{font-size:20px!important;line-height:1.25!important;margin:8px 0 12px!important}
+html.arena-reference #view-stats .arena-demo-stats-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;margin:20px 0!important}
+html.arena-reference #view-stats .arena-demo-stats-grid .stat{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important;padding:14px!important;border:1px solid var(--line)!important;border-radius:12px!important;background:var(--card)!important}
+html.arena-reference #view-stats .arena-demo-stats-grid .stat strong{display:block!important;font-size:25px!important;line-height:1.1!important;letter-spacing:-.03em!important;overflow-wrap:anywhere}
+html.arena-reference #view-stats .arena-demo-stats-grid .stat span{display:block!important;color:var(--muted)!important;font-size:11px!important}
+html.arena-reference #view-stats .arena-demo-filters{display:grid!important;grid-template-columns:1fr 1fr 1.3fr!important;align-items:center;gap:9px!important;margin:18px 0!important}
+html.arena-reference #view-stats .arena-demo-filters>*{min-width:0!important;width:100%!important;max-width:none!important;border:1px solid var(--line)!important;background:var(--card)!important;border-radius:9px!important;min-height:42px!important;padding:8px 11px!important}
+html.arena-reference #view-stats .arena-demo-stat-row{display:grid!important;grid-template-columns:minmax(0,1.4fr) .65fr .5fr .65fr .75fr!important;gap:10px!important;align-items:center!important;min-height:47px!important;padding:9px 8px!important;border-bottom:1px solid var(--line)!important;font-size:12px!important;line-height:1.35!important;color:var(--text)!important}
+html.arena-reference #view-stats .arena-demo-stat-row.header{font-size:11px!important;color:var(--muted)!important}
+html.arena-reference #view-stats .arena-demo-stat-row>*{min-width:0!important;overflow-wrap:anywhere}
+html.arena-reference #view-stats .arena-demo-pct{white-space:nowrap!important;font-variant-numeric:tabular-nums}
+html.arena-reference #view-stats .arena-demo-notice{max-width:780px}
+html.arena-reference #view-stats>.card[hidden]{display:none!important}
+@media(max-width:700px){
+ html.arena-reference .ar4-weekstrip{padding-top:8px;padding-bottom:14px}
+ html.arena-reference .ar4-weekstrip .ar4-daycard{min-height:142px!important}
+ html.arena-reference .ar5-changes{gap:7px}
+ html.arena-reference .ar5-change-side{padding:10px}
+ html.arena-reference .ar5-change-head{align-items:flex-start;flex-direction:column}
+ html.arena-reference .ar5-day-actions .btn{flex:1 1 100%}
+ html.arena-reference .ar4-roster-heading{flex-direction:column;align-items:stretch}
+ html.arena-reference .ar5-roster-quick{justify-content:flex-start}
+ html.arena-reference #view-stats .arena-demo-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html.arena-reference #view-stats .arena-demo-filters{grid-template-columns:1fr 1fr!important}
+ html.arena-reference #view-stats .arena-demo-filters input{grid-column:1/-1}
+ html.arena-reference #view-stats .arena-demo-stat-row{grid-template-columns:minmax(0,1.2fr) .5fr .5fr .7fr!important;gap:6px!important;padding:9px 3px!important}
+ html.arena-reference #view-stats .arena-demo-stat-row .missed,html.arena-reference #view-stats .arena-demo-stat-row.header span:nth-child(4){display:none!important}
+ html.arena-reference #view-stats .arena-demo-stat-row.header span:nth-child(5){grid-column:4}
+}
+@media(max-width:370px){
+ html.arena-reference .ar5-roster-quick .btn{font-size:11px;padding:7px}
+ html.arena-reference .ar5-change-chip{font-size:10px}
+ html.arena-reference #view-stats .arena-demo-stat-row{font-size:11px!important;gap:4px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html.arena-reference #view-settings .ar4-settings-page,html.arena-reference #view-settings .ar4-settings-home{animation:none!important}
+}
