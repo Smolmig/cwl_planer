@@ -1628,14 +1628,20 @@ let memberSearch="",memberFilter="all",summarySearch="",summaryFilter="all",summ
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,verylow:0}}}
-function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
+function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null,targetDays:null}}
 function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],archivedMembers:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[],updatedAt:Date.now()}}
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
 function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
 function saveUiSettings(){try{localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}catch(e){/* UI preferences are non-critical */}}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
-function normalizeMember(m){m=m&&typeof m==="object"?m:freshMember();m.id||=uid();m.name=String(m.name||"").trim();m.playerTag=normalizePlayerTag(m.playerTag);m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.threeStar=Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown";const th=Number(m.townHall);m.townHall=(Number.isFinite(th)&&th>=3&&th<=20)?th:null;m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");m.firstDay=(Number(m.firstDay)>=1&&Number(m.firstDay)<=7)?Number(m.firstDay):null;m.outFromDay=(Number(m.outFromDay)>=1&&Number(m.outFromDay)<=7)?Number(m.outFromDay):null;return m}
+function normalizeMember(m){m=m&&typeof m==="object"?m:freshMember();m.id||=uid();m.name=String(m.name||"").trim();m.playerTag=normalizePlayerTag(m.playerTag);m.participating=!!m.participating;m.fixed=!!m.fixed;m.priority=Math.max(0,Math.min(5,Number(m.priority)||0));m.threeStar=Object.prototype.hasOwnProperty.call(STRENGTH_LABELS,m.threeStar)?m.threeStar:"unknown";const th=Number(m.townHall);m.townHall=(Number.isFinite(th)&&th>=3&&th<=20)?th:null;m.statuses=Array.from({length:7},(_,i)=>["auto","must","out"].includes(m.statuses?.[i])?m.statuses[i]:"auto");m.firstDay=(Number(m.firstDay)>=1&&Number(m.firstDay)<=7)?Number(m.firstDay):null;m.outFromDay=(Number(m.outFromDay)>=1&&Number(m.outFromDay)<=7)?Number(m.outFromDay):null;
+ // Preserve historical Erst-ab/Raus-ab availability as direct day statuses.
+ for(let d=0;d<7;d++)if((m.firstDay&&d+1<m.firstDay)||(m.outFromDay&&d+1>=m.outFromDay))m.statuses[d]="out";
+ m.firstDay=null;m.outFromDay=null;
+ const target=Number(m.targetDays);
+ m.targetDays=Number.isInteger(target)&&target>=1&&target<=7?target:null;
+ return m}
 function normalizeArchive(a){
   if(!a||typeof a!=="object")return null;
   const players=Array.isArray(a.players)?a.players.map(normalizeSnapshot).filter(Boolean):[];
@@ -1720,7 +1726,7 @@ async function confirmInline(message,{title="Bitte bestätigen",confirmText="Bes
 async function promptInline(title,inputLabel,inputValue=""){const r=await askInlineAction({title,inputLabel,inputValue,message:"",buttons:[{value:"confirm",text:"Übernehmen",primary:true},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"?r.input:null}
 
 function renderAll(message=""){lastPlan=calculatePlan();renderProfileUI();renderKpis();renderPlan();renderMembers();renderSummary();renderArchives();syncConfigInputs();renderRecoveryBanner();saveApp();window.CWLCloud?.afterRender?.();if(message)setTimeout(()=>showToast(message),0)}
-function effectiveStatus(m,d){const day=d+1;if(m.firstDay&&day<m.firstDay)return"out";if(m.outFromDay&&day>=m.outFromDay)return"out";return m.statuses[d]||"auto"}
+function effectiveStatus(m,d){return m.statuses[d]||"auto"}
 function playedCount(){return state.locks.slice(0,state.config.days).filter(l=>l.locked).length}
 function playedPrefixLength(){let n=0;for(let i=0;i<state.config.days&&state.locks[i]?.locked;i++)n++;return n}
 function lastUnlockableDay(){for(let i=state.config.days-1;i>=0;i--)if(state.locks[i]?.locked)return i;return-1}
@@ -1744,7 +1750,10 @@ function calculatePlan(){
       lineup=(lock.lineup||[]).filter(id=>memberById(id));
       if(lineup.length!==slots)warnings.push(`Gespielter Tag hat ${lineup.length} statt ${slots} Spieler.`);
     }else{
-      const eligible=state.members.filter(m=>m.participating&&effectiveStatus(m,d)!=="out"&&m.name.trim()),required=[],reqSet=new Set();
+      const eligible=state.members.filter(m=>m.participating&&effectiveStatus(m,d)!=="out"&&m.name.trim() &&
+   (m.fixed||effectiveStatus(m,d)==="must"||!m.targetDays||(counts[m.id]||0)<m.targetDays)),required=[],reqSet=new Set();
+ const overTarget=eligible.filter(m=>m.targetDays&&!m.fixed&&(counts[m.id]||0)>=m.targetDays&&effectiveStatus(m,d)==="must");
+ if(overTarget.length)warnings.push("MUSS überschreitet das Einsatzziel: "+overTarget.map(m=>m.name).join(", "));
       for(const m of eligible)if(effectiveStatus(m,d)==="must"&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}
       for(const m of eligible)if(m.fixed&&!reqSet.has(m.id)){required.push(m);reqSet.add(m.id)}
       if(eligible.length<slots)warnings.push(`Nur ${eligible.length} Spieler verfügbar.`);
@@ -1753,6 +1762,15 @@ function calculatePlan(){
       while(chosen.length<slots&&remaining.length){
         remaining.sort((a,b)=>{
           const A=fairnessCandidateScore(a,d,counts),B=fairnessCandidateScore(b,d,counts);
+          const urgency=m=>{
+            if(!m.targetDays||m.fixed)return -1;
+            const needed=Math.max(0,m.targetDays-(counts[m.id]||0));
+            const future=Array.from({length:days-d},(_,offset)=>d+offset)
+              .filter(day=>effectiveStatus(m,day)!=="out").length;
+            return future?needed/future:0;
+          };
+          const au=urgency(a),bu=urgency(b);
+          if(au!==bu)return bu-au;
           if(A.used!==B.used)return A.used-B.used;
           if(A.remaining!==B.remaining)return A.remaining-B.remaining;
           if(A.priority!==B.priority)return B.priority-A.priority;
@@ -1764,6 +1782,10 @@ function calculatePlan(){
       lineup=chosen.map(m=>m.id);
     }
     for(const id of lineup){counts[id]=(counts[id]||0)+1;if(lock?.locked)playedCounts[id]=(playedCounts[id]||0)+1}
+    if(d===days-1)for(const m of state.members){
+      if(!m.participating||m.fixed||!m.targetDays)continue;
+      if((counts[m.id]||0)!==m.targetDays)warnings.push(m.name+": "+(counts[m.id]||0)+"/"+m.targetDays+" Einsätze – Vorgaben/Plätze prüfen.");
+    }
     const prev=d>0?dayPlans[d-1].lineup:[],
       rein=d>0?lineup.filter(id=>!prev.includes(id)):[],
       raus=d>0?prev.filter(id=>!lineup.includes(id)):[];
@@ -1825,7 +1847,7 @@ function getDisplayMembers(){
    Number(b.fixed)-Number(a.fixed)||byName(a,b));
  return list;
 }
-function availabilityLabel(m){const start=m.firstDay||1,end=(m.outFromDay||state.config.days+1)-1;if(!m.firstDay&&!m.outFromDay)return"";if(start>end)return"Keine verfügbaren Tage";return`Verfügbar: T${start}${end!==start?`–T${Math.min(end,state.config.days)}`:""}`}
+function availabilityLabel(m){return m.targetDays&&!m.fixed?`Ziel: ${Math.min(m.targetDays,state.config.days)} Einsätze`:""}
 function updateBulkBar(){const bar=document.getElementById("bulkBar"),count=selectedMembers.size;bar.classList.toggle("hidden",!selectionMode);bar.classList.toggle("no-selection",count===0);document.getElementById("selectedCount").textContent=count;const choose=document.getElementById("selectMembersBtn");
 choose.textContent=selectionMode?"☑ Auswahl aktiv":"☑ Mehrfachauswahl";
 choose.setAttribute("aria-pressed",String(selectionMode));
