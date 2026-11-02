@@ -123,8 +123,8 @@ test("Alpha 6: accepted membership roster, named invite and safe departed-lineup
  assert.match(mod,/storage\.toast\("✓ Einladungslink kopiert"\)/);
  assert.match(mod,/storage\.getPlannedLineups\(\)/);
  assert.match(mod,/cloud-missing-choice/);
- assert.match(mod,/Vorerst nichts ändern/);
- assert.match(mod,/Weiterhin als Dabei bestätigen/);
+ assert.match(mod,/Aus der CWL-Planung nehmen/);
+ assert.match(mod,/Weiterhin dabei/);
  assert.match(mod,/protectedIds\.has\(m\.id\)/);
  assert.match(mod,/if\(decisions\.get\(m\.id\)==="keep"\)/);
  assert.match(mod,/m\.cocSyncState="kept"/);
