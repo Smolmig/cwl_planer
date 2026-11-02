@@ -26,7 +26,7 @@ const oldHeader=document.querySelector('.topbar');const title=oldHeader?.querySe
 const brand=e('div','ar4-brand',`<span class="ar4-brand-mark">${ic('shield')}</span><span><strong>CWL <em>/ Planer</em></strong><small>ARENA · WEEKVIEW</small></span>`);
 const bar=e('div','ar4-siteheader');const barInner=e('div','ar4-header-inner');const controls=e('div','ar4-header-controls');
 const stage=e('span','ar4-test-label','TEST');stage.title='Nur Testversion – keine Verbindung zur produktiven Cloud';
-const account=e('button','ar4-account',`${ic('cloud')}<span>Clan & Konto</span>`);account.type='button';account.onclick=()=>stageReady()?$('cloudOpen')?.click():openPage('account');
+const account=e('button','ar4-account',`${ic('cloud')}<span>Clan & Konto</span>`);account.type='button';account.onclick=()=>{if(stageReady())$('cloudOpen')?.click();else{route('settings');openPage('account')}};
 const theme=e('button','ar4-theme',ic('sun'));theme.type='button';theme.title='Hell / Dunkel';theme.setAttribute('aria-label','Farbschema wechseln');
 controls.append(account,stage,theme);barInner.append(brand,controls);bar.append(barInner);
 oldHeader?.parentNode?.insertBefore(bar,oldHeader);oldHeader.classList.add('ar4-original-header');
@@ -138,15 +138,15 @@ $('ar4Why').onclick=()=>{try{if(typeof openWhyModal==='function')openWhyModal(se
 const add=e('button','btn primary ar4-add',`${ic('plus')} Spieler hinzufügen`);add.type='button';add.onclick=()=>$('addMemberBtn')?.click();
 titleHead(members,'KADER VERWALTEN','Mitglieder','Teilnahme, Fixstatus und Spielerstärke zentral pflegen.',add);
 const memberCard=$('memberList')?.closest('.card');memberCard?.classList.add('ar4-roster-card');
-const rosterHead=e('div','ar4-roster-heading',`<div><h3>Clan-Kader <span id="ar4MemberCount"></span></h3><p>Spieler antippen, um seine Einstellungen zu bearbeiten.</p></div><div class="ar5-roster-quick"><button class="btn small" id="ar5RosterImport" type="button">${ic('plus')} Import</button><button class="btn small" id="ar5RosterBulk" type="button">Mehrfachauswahl</button><button class="ar5-roster-help" id="ar4Filters" type="button" title="Dabei, Fix und Priorität erklären" aria-label="Hilfe zur Mitgliederverwaltung">${ic('info')}</button></div>`);
+const rosterHead=e('div','ar4-roster-heading',`<div><h3>Clan-Kader <span id="ar4MemberCount"></span></h3><p>Spieler antippen, um seine Einstellungen zu bearbeiten.</p></div><div class="ar5-roster-quick"><button class="btn small" id="ar5RosterImport" type="button">${ic('plus')} CSV-Import</button><button class="btn small" id="ar5RosterBulk" type="button">Mehrfachauswahl</button><button class="ar5-roster-help" id="ar4Filters" type="button" title="Dabei, Fix und Priorität erklären" aria-label="Hilfe zur Mitgliederverwaltung">${ic('info')}</button></div>`);
 memberCard?.prepend(rosterHead);
-const advancedRoster=e('details','ar4-roster-advanced');advancedRoster.innerHTML='<summary>Weitere Optionen · Sortierung, CSV-Vorlage und manuelles Hinzufügen</summary>';
+const advancedRoster=e('details','ar4-roster-advanced');advancedRoster.innerHTML='<summary>Weitere Importmöglichkeiten · mehrere Spieler, CSV-Vorlage, Clanabgleich</summary>';
 const rosterBar=memberCard?.querySelector('.member-actionbar');if(rosterBar){rosterBar.parentNode.insertBefore(advancedRoster,rosterBar);advancedRoster.append(rosterBar)} 
 const ordering=memberCard?.querySelector('.list-management');
 if(ordering){memberCard.insertBefore(ordering,memberCard.querySelector('.member-filters'));ordering.classList.add('ar5-ordering')}
 for(const sel of ['.member-help-details','#guestMembersTools','#cloudMembersTools']){const node=memberCard?.querySelector(sel);if(node)advancedRoster.append(node)}
 $('ar4Filters').onclick=()=>{const help=memberCard?.querySelector('.member-help-details');if(help){advancedRoster.open=true;help.open=!help.open;if(help.open)help.scrollIntoView({behavior:'smooth',block:'nearest'})}else $('membersHelpBtn')?.click()};
-$('ar5RosterImport').onclick=()=>{const btn=window.CWLCloud?.active?$('cloudMembersSyncBtn'):$('membersImportBtn'); if(btn)btn.click();else $('membersFile')?.click()};
+$('ar5RosterImport').onclick=()=>{const btn=$('membersImportBtn')||$('guestImportMembersBtn');if(btn)btn.click();else $('membersFile')?.click()};
 $('ar5RosterBulk').onclick=()=>{$('selectMembersBtn')?.click();$('ar5RosterBulk').classList.toggle('active',$('selectMembersBtn')?.getAttribute('aria-pressed')==='true')};
 function decorateMembers(){const root=$('memberList');if(!root)return;
  root.querySelectorAll('.member').forEach((card,i)=>{
