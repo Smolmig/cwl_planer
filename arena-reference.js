@@ -113,7 +113,7 @@ function renderReference(){const st=currentState(),dps=currentPlan();if(!st)retu
      actions.append(button);
    }
  }
- $('ar5LineupSummary').textContent=weekMode==='all'?'Alle Tagesaufstellungen einblenden':`Spielerliste anzeigen · ${ids.length} Spieler`;
+ $('ar5LineupSummary').textContent=weekMode==='all'?( $('ar5LineupDisclosure').open?'Alle Tagesaufstellungen einklappen':'Alle Tagesaufstellungen einblenden'):( $('ar5LineupDisclosure').open?'Spielerliste einklappen':`Spielerliste anzeigen · ${ids.length} Spieler`);
  $('ar4InsightNoteTitle').textContent=`Der Fokus für Tag ${selectedDay+1}`;
  $('ar4InsightTitle').textContent=ids.length===st.config.slots&&!(dp.warnings||[]).length?'Dein Team ist bereit.':participants.length?'Aufstellung prüfen.':'Deinen Kader vorbereiten.';
  $('ar4InsightText').textContent=participants.length?'Deine Aufstellung mit Fixspielern, Tagesregeln und sinnvoller Rotation im Blick.':'Füge zuerst Spieler hinzu oder importiere deinen Clan-Kader.';
@@ -132,6 +132,7 @@ const openEditor=()=>{try{const idx=selectedDay;const locked=!!currentState()?.l
  }catch(err){console.error(err)}};
 $('ar4Edit').onclick=openEditor;$('ar4DetailEdit').onclick=openEditor;
 $('ar4Copy').onclick=()=>$('copyFullPlanBtn')?.click();
+$('ar5LineupDisclosure').addEventListener('toggle',()=>{const label=$('ar5LineupSummary');if(label)label.textContent=$('ar5LineupDisclosure').open?'Spielerliste einklappen':`Spielerliste anzeigen · ${currentPlan()[selectedDay]?.lineup?.length||0} Spieler`});
 $('ar4AllPlayers').onclick=()=>{extended.open=!extended.open;if(extended.open)requestAnimationFrame(()=>extended.scrollIntoView({block:'nearest',behavior:'smooth'}))};
 $('ar4Why').onclick=()=>{try{if(typeof openWhyModal==='function')openWhyModal(selectedDay);else{extended.open=true}}catch{extended.open=true}};
 // ===== MEMBERS: exact reference list geometry, real controls retained in expanded editor =====
