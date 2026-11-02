@@ -203,6 +203,16 @@
   function route(which){if(!['plan','members','summary','settings','stats'].includes(which))which='plan';document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+which));
     navInner.querySelectorAll('.navbtn:not([hidden])').forEach(b=>{const active=b.dataset.view===which||(which==='stats'&&b.dataset.view==='summary');b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false')});
     if(which==='settings')selectPage(null);window.scrollTo({top:0,behavior:'instant'});}
+  // Original cloud settings was a modal: prevent its backdrop click handler
+  // from closing the new full-page settings view on empty whitespace.
+  settings.addEventListener('click',event=>{if(event.target===settings)event.stopImmediatePropagation()},true);
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&settings.classList.contains('active')){
+      event.stopImmediatePropagation();event.preventDefault();
+      const hasOpenSubpage=Object.values(sections).some(section=>section.classList.contains('active'));
+      if(hasOpenSubpage)selectPage(null);else route('plan');
+    }
+  },true);
   window.showPlannerView=route;
   navInner.querySelectorAll('.navbtn').forEach(b=>{if(!b.hidden)b.onclick=()=>route(b.dataset.view)});
   $('settingsOpen').onclick=()=>route('settings');$('settingsClose').onclick=()=>route('plan');
