@@ -8,6 +8,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.3] - 2026-11-02
+
+### CWL & Mitgliederabgleich
+- Ausgetretene Spieler in geplanten Aufstellungen lassen sich eindeutig weiter einplanen oder aus allen noch offenen Kriegstagen nehmen. Bereits gespielte Aufstellungen und Spielerhistorie bleiben gespeichert.
+- Der CWL-Abruf unterscheidet verständlich zwischen fehlenden Berechtigungen, vorübergehend nicht verfügbaren Kriegsdetails und allgemeinen Verbindungsproblemen. Der manuelle Plan bleibt erhalten.
+
 ## [1.4.2] - 2026-11-01
 
 ### Einladungen
