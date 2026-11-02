@@ -1148,6 +1148,17 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
   .top-actions .settings-gear{min-width:34px}
 }
 .cwl-live-ths>strong{font-size:12px;color:var(--muted);font-weight:700;align-self:center;margin-right:4px}
+/* Planfreigabe: separate from the automatic played-day locks. */
+.plan-review-panel{border-left:3px solid var(--primary)}
+.plan-review-panel .section-title{gap:10px}
+.plan-review-panel .actions{align-items:center}
+.plan-review-suggestions{display:grid;gap:8px;margin-top:10px}
+.plan-review-suggestion{border:1px solid var(--line);background:var(--card);border-radius:11px;padding:10px 12px}
+.plan-review-suggestion-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
+.plan-review-suggestion small{color:var(--muted)}
+.plan-review-diff{font-size:12px;color:var(--muted);margin:7px 0}
+.plan-review-diff li{margin:3px 0}
+.plan-review-panel .btn:disabled{opacity:.5}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1175,6 +1186,15 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn primary" id="copyFullPlanBtn">📋 Gesamten CWL-Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+  </div>
+  <div class="card plan-review-panel" id="planReviewPanel" hidden>
+    <div class="section-title"><div><h3>Planfreigabe</h3><div class="statusline" id="planReviewHint">Gemeinsame Planung</div></div><span class="badge" id="planReviewStatus">In Bearbeitung</span></div>
+    <div class="actions">
+      <button class="btn primary" id="planReviewToggle" type="button" hidden>Plan freigeben</button>
+      <button class="btn primary" id="planSubmitSuggestion" type="button" hidden>Änderung vorschlagen</button>
+      <button class="btn small" id="planRefreshSuggestions" type="button">Vorschläge aktualisieren</button>
+    </div>
+    <div class="plan-review-suggestions" id="planReviewSuggestions" aria-live="polite"></div>
   </div>
   <div class="mobile-day-switcher" id="mobileDaySwitcher" aria-label="CWL-Tag wählen">
   <div class="day-switcher-header"><span class="day-switcher-label">Kriegstag wählen</span><div class="desktop-day-mode" role="group" aria-label="Tagesansicht"><button type="button" class="btn small" id="singleDayMode" aria-pressed="false">Einzeltag</button><button type="button" class="btn small" id="allDaysMode" aria-pressed="true">Alle Tage</button></div></div>
