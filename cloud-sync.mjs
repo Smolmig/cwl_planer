@@ -190,13 +190,20 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  renderLive(){if(this.active)live.render()},
+ isPlanLocked:()=>planIsLocked(),
+ openNewCycle:()=>openNewPlanCycle(),
  onLocalChange(){
   if(!this.active||hydrating||role==="viewer")return;
   if(!navigator.onLine){msg("Cloud ist offline. Bearbeiten ist nicht möglich; bitte neu laden, wenn die Verbindung zurück ist.",true);blocked=true;return}
   if(blocked){status("Cloud: Konflikt – neu laden",true);return}
   const serialized=JSON.stringify(storage.getProfile());
-  if(serialized===lastSerial || serialized===changedSerial)return;
+  if(serialized===lastSerial){changedSerial=null;renderPlanReview();return}
+  if(serialized===changedSerial)return;
   changedSerial=serialized;
+  if(role==="editor"&&planIsLocked()){
+    clearTimeout(debounce);status("Cloud: Änderungsvorschlag noch nicht eingereicht",true);
+    renderPlanReview();return;
+  }
   status("Cloud: nicht gespeichert",true);
   clearTimeout(debounce);
   debounce=setTimeout(()=>writeCloud().catch(err=>msg("Speichern fehlgeschlagen: "+err.message,true)),600);
@@ -219,9 +226,10 @@ const cloud={
   toggle("statsNav",!!this.active&&!!clanId);
   installNameEditors();
   live.render();
+  renderPlanReview();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
-  const keep=new Set(["copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
+  const keep=new Set(["planRefreshSuggestions","copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
     "mobileOverviewToggle","cwlLiveRefresh","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
     "exportProfileBtn","exportAllBtn","settingsCloudManage"]);
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select")){
@@ -521,6 +529,7 @@ async function leaveCloud(){
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
+ planReview=null;planSuggestions=[];
  blocked=false;hydrating=false;resetRoster();
  storage.restoreGuest();cloud.afterRender();
  msg("Lokaler Modus. Deine bisherigen lokalen Daten bleiben auf diesem Gerät.");
@@ -578,6 +587,7 @@ async function chooseClan(epoch=accountEpoch){
  cloud.active=true;hydrating=true;
  await loadCloudProfile(false);
  if(epoch!==accountEpoch)return;
+ await loadPlanReview(clanId);
  text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Gemeinsamer Stand geladen")+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
  await audit();
  channel=sb.channel("cloud-profile-"+clanId)
