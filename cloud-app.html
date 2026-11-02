@@ -1211,6 +1211,8 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
 .cloud-mode .member-strength-picker{display:inline-flex!important}
 /* Select stays hidden when the touch picker is available. */
 .cloud-mode .member-strength{display:none!important}
+/* Show deployment counts without mobile ellipsis. */
+@media(max-width:699px){#view-plan .player-meta{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1966,7 +1968,7 @@ function getVisibleMembers(){const q=memberSearch.trim().toLocaleLowerCase("de")
 function memberCompactPerformance(m){
  if(!window.CWLCloud?.active)return esc(STRENGTH_SHORT[m.threeStar]||"3★ ?");
  const stat=m.playerTag?window.CWLCloudStats?.getRecentPlayerStats?.(m.playerTag):null;
- const played=lastPlan?.playedCounts?.[m.id]||0,planned=lastPlan?.counts?.[m.id]||0;return (stat&&stat.attacks?"3★ "+stat.hitRate+"% ("+stat.attacks+" Ag.)":"Noch keine Statistik")+" · "+played+" gespielt · "+planned+"/"+state.config.days+" Tage";
+ const played=lastPlan?.playedCounts?.[m.id]||0,planned=lastPlan?.counts?.[m.id]||0;return (stat&&stat.attacks?"3★ "+stat.hitRate+"%":"3★ –")+" · "+played+" gespielt · "+Math.max(0,planned-played)+" geplant";
 }
 function memberPerformance(m){
  if(!window.CWLCloud?.active)return esc(STRENGTH_SHORT[m.threeStar]||"3★ ?");
