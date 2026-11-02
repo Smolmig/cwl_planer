@@ -1205,6 +1205,12 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
 .cloud-change-detail-list p{font-size:12px;margin:6px 0;line-height:1.4}
 .cloud-change-actions{display:flex;flex-wrap:wrap;gap:6px}
 #saveBadge.cloud-conflict-link{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* The active clan sits below the title, never squeezing the action buttons. */
+.titleblock .header-clan-name{display:block;max-width:260px;margin-top:2px}
+@media(max-width:699px){.titleblock .header-clan-name{max-width:130px;margin-top:2px}.cloud-mode .topbar{min-height:79px}}
+.cloud-mode .member-strength-picker{display:inline-flex!important}
+/* Select stays hidden when the touch picker is available. */
+.cloud-mode .member-strength{display:none!important}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1218,10 +1224,11 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
   <div class="toprow">
     <div class="titleblock">
       <h1>⚔️ CWL Planer</h1>
+      <span id="headerClanName" class="header-clan-name" hidden></span>
       <div class="subtitle">CWL planen · Einsätze fair verteilen · Überblick behalten</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><span id="headerClanName" class="header-clan-name" hidden></span><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
+    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
   </div>
 </div>
 <main class="content">
