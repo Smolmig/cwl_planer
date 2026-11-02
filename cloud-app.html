@@ -1379,11 +1379,14 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.7</strong><span>Freigabe abgesichert</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.4.8</strong><span>Mitglieder & Übersicht</span></div>
       <ul>
-        <li><b>Vize-Vorschläge:</b> Bereits gespeicherte Aufstellungen und Mitgliederarchive bleiben bei Änderungen erhalten – auch nach älteren App-Versionen.</li>
-        <li><b>Schreibschutz:</b> Gespielte Tage und Löschaktionen sind während einer Planfreigabe nur für den Clanführer möglich.</li>
-        <li><b>Gemeinsam planen:</b> Einsatzziele, Fixstatus und Tagesregeln können weiterhin als Vorschlag eingereicht werden.</li>
+       <li><b>Mitglieder:</b> Echte Angriffswerte werden nicht durch eine zweite manuelle 3★-Einstufung überlagert. Die Spieler-Info erklärt die Statistikdaten und ihre Berechnung.</li>
+       <li><b>Einsatzziel:</b> Bei Fixspielern verständlich als alle verfügbaren Tage angezeigt.</li>
+       <li><b>Plan:</b> 3★-Quote und gespielte/geplante Einsätze ohne irreführendes „7 Angriffe max.“.</li>
+       <li><b>Übersicht:</b> Goldfarbene Einsatzbalken mit gespielten und geplanten Tagen.</li>
+       <li><b>Cloud:</b> Aktueller Clan in der Kopfzeile, kleine Info zur automatischen Aktualisierung sowie direkt prüf- und ladbare Änderungskonflikte.</li>
+       <li><b>Design:</b> Arena-Theme in Anthrazit und Gold.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1718,7 +1721,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.7";
+const APP_VERSION="v1.4.8";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2311,6 +2314,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.7"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.4.8"></script>
 </body>
 </html>
