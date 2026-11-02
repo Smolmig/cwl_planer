@@ -14,7 +14,7 @@ document.documentElement.classList.add('arena-reference');document.body.classLis
 const main=$('view-plan'),members=$('view-members'),summary=$('view-summary'),settings=$('view-settings'),stats=$('view-stats');
 const originalWeek=$('mobileDaySwitcher'),originalPlan=$('planDays'),overview=$('planOverview');
 const originalKpis=overview?.querySelector('.kpis');
-let selectedDay=0,currentView='plan',activeSubpage=null,weekMode='single';
+let selectedDay=Math.min(typeof playedPrefixLength==='function'?playedPrefixLength():0,Math.max(0,(typeof state!=='undefined'?state.config.days:7)-1)),currentView='plan',activeSubpage=null,weekMode='single';
 const cleanMonth=()=>new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric'}).format(new Date()).toUpperCase('de-AT');
 const activeProfile=()=>{try{return state?.name||'Neuer Clan'}catch{return 'Neuer Clan'}};
 const currentPlan=()=>{try{return lastPlan?.dayPlans||[]}catch{return []}};
