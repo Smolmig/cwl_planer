@@ -1135,6 +1135,19 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 .member-target-label{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;font-weight:700}
 .member-target-days{min-width:120px}
 @media(max-width:699px){.member-snapshot-actions .order-btn{min-width:29px;min-height:31px;padding:5px!important}}
+/* Same height, border and type rhythm for desktop header actions. */
+.top-actions :is(.cloud-toggle,.settings-gear,#helpBtn,.auto-badge){
+  box-sizing:border-box;min-height:38px;border-radius:11px;display:inline-flex;
+  align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:750;
+  border:1px solid var(--line);padding:0 12px;line-height:1.2;
+}
+.top-actions .auto-badge{color:var(--green);background:var(--greenbg)}
+.top-actions .settings-gear{min-width:38px;padding:0 8px;font-size:19px}
+@media(max-width:699px){
+  .top-actions :is(.cloud-toggle,.settings-gear,#helpBtn,.auto-badge){min-height:34px;padding:0 7px;font-size:11px}
+  .top-actions .settings-gear{min-width:34px}
+}
+.cwl-live-ths>strong{font-size:12px;color:var(--muted);font-weight:700;align-self:center;margin-right:4px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
