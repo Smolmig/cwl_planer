@@ -92,20 +92,20 @@ function renderPlanReview(){
  submitButton.disabled=!changedSerial;
  submitButton.title=changedSerial?"Vorschlag zur Freigabe einreichen":"Ändere zuerst Spieler oder Tagesregeln";
  const host=$("planReviewSuggestions");host.replaceChildren();
- const visible=planSuggestions.filter(x=>x.status==="pending"&&(owner||x.author_id===user?.id));
+ const visible=planSuggestions.filter(x=>planReview?.season===currentSeason()&&(owner?x.status==="pending":x.author_id===user?.id)).slice(0,20);
  if(!visible.length){const text=document.createElement("div");text.className="statusline";text.textContent=locked?
    "Keine offenen Änderungsvorschläge.":"Noch keine Planfreigabe aktiv.";host.append(text);return;}
  for(const item of visible){
    const row=document.createElement("div");row.className="plan-review-suggestion";
    const heading=document.createElement("div");heading.className="plan-review-suggestion-head";
-   const title=document.createElement("strong");title.textContent=owner?"Offener Vorschlag":"Dein eingereichter Vorschlag";
+   const title=document.createElement("strong");title.textContent=owner?"Offener Vorschlag":"Dein Vorschlag · "+({pending:"Eingereicht",accepted:"Angenommen",rejected:"Abgelehnt",stale:"Veraltet",withdrawn:"Zurückgezogen"}[item.status]||item.status);
    const date=document.createElement("small");date.textContent=new Date(item.submitted_at).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
    heading.append(title,date);row.append(heading);
    const list=document.createElement("ul");list.className="plan-review-diff";
    for(const line of suggestionChanges(item)){const li=document.createElement("li");li.textContent=line;list.append(li)}
    row.append(list);
    const actions=document.createElement("div");actions.className="actions";
-   for(const [action,label,primary] of (owner?
+   for(const [action,label,primary] of (item.status!=="pending"?[]:owner?
      [["accept","Übernehmen",true],["reject","Ablehnen",false]]:
      [["withdraw","Zurückziehen",false]])){
      const button=document.createElement("button");button.type="button";
@@ -121,7 +121,7 @@ async function loadPlanReview(expected=clanId){
    sb.from("cwl_plan_review_state").select("cycle_id,season,locked").eq("clan_id",expected).maybeSingle(),
    sb.from("cwl_plan_suggestions")
      .select("id,cycle_id,author_id,base_revision,suggested_profile,status,submitted_at")
-     .eq("clan_id",expected).eq("status","pending").order("submitted_at",{ascending:false}).limit(30)
+     .eq("clan_id",expected).order("submitted_at",{ascending:false}).limit(40)
  ]);
  if(stateResult.error)throw stateResult.error;
  if(suggestionResult.error)throw suggestionResult.error;
