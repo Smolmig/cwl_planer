@@ -19,7 +19,7 @@ function makeContext(){
  const warnings=[];
  const context=vm.createContext({
    console:{warn:(...args)=>warnings.push(args),log(){}},
-   AbortSignal,fetch:async()=>{throw Error("mock fetch unconfigured");}
+   AbortSignal,setTimeout:callback=>callback(),fetch:async()=>{throw Error("mock fetch unconfigured");}
  });
  vm.runInContext(code,context);
  return {context,warnings,loadStatus:vm.runInContext("loadStatus",context),
