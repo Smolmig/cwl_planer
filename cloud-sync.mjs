@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.7";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.7";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.7";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.7";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.8";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.8";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.8";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.8";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -224,6 +224,8 @@ const cloud={
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
   accountBtn.querySelector(".cloud-toggle-label").textContent=this.active?"Clan":"Login";
+  const headerClan=$("headerClanName");
+  if(headerClan){headerClan.hidden=!this.active;headerClan.textContent=this.active?label:"";headerClan.title=label;}
   accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
   accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
@@ -324,7 +326,7 @@ function installNameEditors(){
   }
  });
 }
-function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")}
+function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")+(blocked||remotePending?" cloud-conflict-link":"");$("saveBadge").title=blocked||remotePending?"Antippen, um den Cloud-Konflikt zu prüfen":""}
 function msg(value,isError=false){
  const element=$("cloudMsg");
  element.hidden=!isError;
@@ -657,9 +659,50 @@ function showChangeToast(message,sticky=false){
  if(!cloud.active)return;
  hideChangeToast();
  text("cloudChangeText",message);
+ text("cloudChangeTitle",blocked||remotePending?"Gemeinsame Änderung prüfen":"Gemeinsamer Plan aktualisiert");
+ $("cloudChangeDetailList").hidden=true;
+ $("cloudChangeDetailList").replaceChildren();
+ $("cloudChangeReload").hidden=!(blocked||remotePending);
  toggle("cloudChangeNotice",true);
  if(!sticky)notifyTimer=setTimeout(()=>toggle("cloudChangeNotice",false),9500);
 }
+function describeRemoteEvent(event){
+ const d=event?.details||{},lines=[],fields={name:"Name",fixed:"Fix",participating:"Dabei",
+  priority:"Priorität",targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln"};
+ const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):Array.isArray(v)?v.map((x,i)=>x==="auto"?"":("T"+(i+1)+": "+x)).filter(Boolean).join(", ")||"Automatisch":String(v);
+ for(const p of d.spieleraenderungen||[]){
+   for(const [key,value] of Object.entries(p.felder||{})){
+     if(key==="hinzugefuegt"||key==="entfernt"){lines.push((p.name||"Spieler")+(key==="hinzugefuegt"?" hinzugefügt":" entfernt"));continue}
+     if(Array.isArray(value))lines.push((p.name||"Spieler")+" · "+(fields[key]||key)+": "+fmt(value[0])+" → "+fmt(value[1]));
+   }
+ }
+ if(d.config_differenzen)for(const [key,pair] of Object.entries(d.config_differenzen))
+   lines.push("CWL-Grunddaten · "+key+": "+fmt(pair?.[0])+" → "+fmt(pair?.[1]));
+ if(d.day_goals_geaendert)lines.push("Tagesziele für RH oder Angriffsstärke angepasst");
+ if(d.plan_geaendert)lines.push("Gespielte Aufstellungen verändert");
+ if(d.archiv_geaendert)lines.push("CWL-Archiv verändert");
+ if(d.config_geaendert&&!d.config_differenzen)lines.push("CWL-Grunddaten verändert (älterer Verlauf ohne Details)");
+ if(d.weitere_spieler)lines.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
+ return lines.length?lines:["Profil aktualisiert – für diese Änderung sind keine Felddetails gespeichert"];
+}
+async function showRemoteChangeDetails(){
+ const host=$("cloudChangeDetailList");host.replaceChildren();host.hidden=false;
+ if(!clanId){host.textContent="Kein aktiver Clan.";return}
+ const from=Number(revision||0);
+ const {data,error:err}=await sb.from("cwl_change_events")
+  .select("details,actor_id,revision,created_at").eq("clan_id",clanId)
+  .gt("revision",from).order("revision",{ascending:true}).limit(20);
+ if(err)throw err;
+ const changes=data?.length?data:[];
+ if(!changes.length){host.textContent="Keine neueren Änderungsdetails gespeichert. Du kannst den aktuellen Cloud-Stand trotzdem laden.";return}
+ for(const ev of changes){
+  const p=document.createElement("p");
+  p.textContent="Revision "+ev.revision+" · "+new Date(ev.created_at).toLocaleString("de-AT")+
+   ": "+describeRemoteEvent(ev).join("; ");
+  host.append(p);
+ }
+}
+
 function formatChangeSummary(entry){
  const changes=entry?.details||{};
  if(changes.archiv_geaendert)return "das CWL-Archiv geändert";
@@ -670,7 +713,7 @@ function formatChangeSummary(entry){
   const target=affected[0];
   const fields=Object.keys(target.felder||{});
   const field=fields[0];
-  const terms={fixed:"FIX-Status",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
+  const terms={fixed:"Fix",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",targetDays:"Einsatzziel",name:"Name",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
   if(field==="hinzugefuegt")return target.name+" hinzugefügt";
   if(field==="entfernt")return target.name+" entfernt";
   return (target.name||"einen Spieler")+" · "+(terms[field]||"Spielerdaten")+" geändert"+(affected.length>1?" (und weitere)":"");
@@ -1257,7 +1300,7 @@ async function audit(){
   const detail=document.createElement("span");const d=e.details||{};
   const label={name:"Name",participating:"Dabei",fixed:"FIX",priority:"Priorität",
     townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",
-    firstDay:"Erst ab",outFromDay:"Raus ab"};
+    firstDay:"Erst ab",outFromDay:"Raus ab",targetDays:"Einsatzziel"};
   const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):String(v);
   const pieces=[];
   for(const entry of (d.spieleraenderungen||[])){
@@ -1274,7 +1317,8 @@ async function audit(){
     }
   }
   if(d.plan_geaendert)pieces.push("Gespielte Aufstellungen / Tagesspeicher geändert");
-  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert");
+  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert"+(d.config_differenzen?" ("+Object.entries(d.config_differenzen).map(([key,pair])=>key+": "+(pair||[]).join(" → ")).join(", ")+")":""));
+  if(d.day_goals_geaendert)pieces.push("Rathaus-/Stärke-Tagesziele geändert");
   if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
   if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
   detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
@@ -1417,8 +1461,12 @@ bind("cloudLogout","click",logout);
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",refreshCloud);
 bind("cloudChangeDismiss","click",hideChangeToast);
-bind("cloudChangeDetails","click",()=>{
- hideChangeToast();open();$("cloudAudit").scrollIntoView({behavior:"smooth",block:"center"});
+bind("cloudChangeDetails","click",showRemoteChangeDetails);
+bind("cloudChangeReload","click",refreshCloud);
+bind("saveBadge","click",()=>{
+ if(!blocked&&!remotePending)return;
+ showChangeToast("Ein neuer Cloud-Stand liegt vor. Prüfe die betroffenen Änderungen, bevor du neu lädst.",true);
+ showRemoteChangeDetails().catch(error);
 });
 bind("cloudLeaveBtn","click",leaveSharedClan);
 bind("cloudDeleteBtn","click",deleteOwnedClan);

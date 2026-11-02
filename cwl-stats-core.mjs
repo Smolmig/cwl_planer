@@ -229,9 +229,20 @@ export function computeRecentAttackStats(wars,attacks,maxAttacks=7){
   const group=groups.get(tag);
   if(group.length<limit)group.push(a);
  }
- return new Map([...groups].map(([tag,items])=>[tag,{
-  attacks:items.length,
-  averageStars:Math.round(items.reduce((sum,a)=>sum+a.stars,0)/items.length*100)/100,
-  hitRate:Math.round(items.filter(a=>a.stars===3).length/items.length*100)
- }]));
+ const warInfo=new Map((wars||[]).map(w=>[w.war_key,w]));
+ return new Map([...groups].map(([tag,items])=>{
+  const triples=items.filter(a=>a.stars===3).length;
+  const starsTotal=items.reduce((sum,a)=>sum+a.stars,0);
+  const normal=items.filter(a=>warInfo.get(a.war_key)?.war_type==="normal").length;
+  const cwl=items.filter(a=>warInfo.get(a.war_key)?.war_type==="cwl").length;
+  const imported=items.filter(a=>warInfo.get(a.war_key)?.source==="import").length;
+  return [tag,{
+   attacks:items.length,threes:triples,starsTotal,normalAttacks:normal,cwlAttacks:cwl,
+   importedAttacks:imported,apiAttacks:items.length-imported,
+   newestWar:warInfo.get(items[0]?.war_key)?.started_at||null,
+   oldestWar:warInfo.get(items.at(-1)?.war_key)?.started_at||null,
+   averageStars:Math.round(starsTotal/items.length*100)/100,
+   hitRate:Math.round(triples/items.length*100)
+  }];
+ }));
 }

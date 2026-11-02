@@ -8,6 +8,21 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.8] - 2026-11-02
+
+### Mitglieder & Statistik
+- Bei Spielern mit tatsächlichen Angriffsdaten entfällt die zusätzliche manuelle 3★-Stärkewahl. Ohne Daten bleibt die manuelle Einschätzung möglich.
+- Die Spielerhilfe beschreibt Eingaben und die Quelle der persönlichen Hit-Rate/Ø Sterne: bis zu sieben tatsächlich erfasste Angriffe aus CW/CWL, Import/API, Anzahl Dreier und Sternsumme.
+- Fixspieler sehen statt eines deaktivierten Einsatzziels eine eindeutige Kennzeichnung.
+- In der Planansicht stehen 3★-Rate und gespielte/geplante Einsätze statt „7 Angriffe max.“.
+
+### Ansicht & Zusammenarbeit
+- Kompakte Einsatzbalken unterscheiden bereits gespielte und noch geplante Tage.
+- Arena-Farbschema auf Basis des anthrazit-goldenen Beispiels, unabhängig von vorhandenen Themes.
+- Aktiver Clan direkt in der Kopfzeile; Auto-Synchronisierung als kleines grünes Symbol mit Erklärung der unterschiedlichen Intervalle.
+- Eine Cloud-Konfliktmeldung bietet direkt die Änderungen samt Ein-Klick-Aktion zum Neuladen (mit Schutz ungespeicherter Änderungen).
+- Änderungsprotokoll protokolliert zusätzlich Einsatzziele und konkrete CWL-Konfigurationsänderungen.
+
 ## [1.4.7] - 2026-11-02
 
 ### Nachbesserung Planfreigabe
