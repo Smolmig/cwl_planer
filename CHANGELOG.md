@@ -12,6 +12,7 @@ Keine offenen Änderungen für die nächste Version eingetragen.
 
 ### CWL & Mitgliederabgleich
 - Ausgetretene Spieler in geplanten Aufstellungen lassen sich eindeutig weiter einplanen oder aus allen noch offenen Kriegstagen nehmen. Bereits gespielte Aufstellungen und Spielerhistorie bleiben gespeichert.
+- CWL-API: Temporäre Upstream-Fehler werden begrenzt erneut versucht; einzelne fehlerhafte Kriegstagsabfragen können die verfügbare CWL-Gruppe nicht mehr vollständig blockieren. Vorhandene, passende CWL-Details bleiben bei Teilfehlern erhalten und bestätigte Kriegstage werden nicht überschrieben.
 - Der CWL-Abruf unterscheidet verständlich zwischen fehlenden Berechtigungen, vorübergehend nicht verfügbaren Kriegsdetails und allgemeinen Verbindungsproblemen. Der manuelle Plan bleibt erhalten.
 
 ## [1.4.2] - 2026-11-01
