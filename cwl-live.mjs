@@ -108,7 +108,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       sideHtml(round.clan)+"<div class='cwl-live-score-middle'><div class='cwl-live-score' aria-hidden='true'>"+
       "<span>"+ownScore+"</span><span class='cwl-live-score-colon'>:</span><span>"+enemyScore+"</span></div>"+
       "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+sideHtml(round.opponent)+"</div>"+
-      destruct+"<div class='cwl-live-ths'>"+townHallSummary(enemy)+"</div>"+
+      destruct+"<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'><strong>Gegner-Aufstellung</strong> "+townHallSummary(enemy)+"</div>"+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":"")+"</div>"+
       "<details class='cwl-live-details'"+(wasOpen?" open":"")+"><summary>Spieler und Angriffe anzeigen"+
