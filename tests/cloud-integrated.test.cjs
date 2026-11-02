@@ -68,14 +68,14 @@ test("Alpha 3: guest UX, pencil editing, multi-select and initial import are saf
  assert.match(mod,/if\(!rosterDiff\.initialImport\)m\.cocSyncState="new"/);
  assert.match(mod,/m\.cocOrder=i/);
  assert.match(mod,/toggle\("guestMembersTools",!this\.active\)/);
- assert.match(mod,/\.limit\(100\)/);
+ assert.match(mod,/\.limit\(150\)/);
  assert.match(mod,/table:"cwl_change_events"/);
 });
 
 test("Alpha 4: names, presence, clan management and reload feedback",()=>{
  const requiredHtml=[
   'const APP_VERSION="v1.4.9"',
-  'class="member-name-edit"','placeholder="Name" readonly',
+  'class="member-name-edit"','placeholder="Name" aria-label="Spielername bearbeiten" readonly hidden',
   'id="cloudClanActions"','id="cloudLeaveBtn"','id="cloudDeleteBtn"',
   'id="cloudActiveMembers"','id="cloudSyncFeedback"','id="autoUpdateStatus"',
   '#view-members .list-management-actions{display:grid'
