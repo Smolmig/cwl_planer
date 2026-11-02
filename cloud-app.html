@@ -1159,6 +1159,45 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 .plan-review-diff{font-size:12px;color:var(--muted);margin:7px 0}
 .plan-review-diff li{margin:3px 0}
 .plan-review-panel .btn:disabled{opacity:.5}
+/* Arena theme follows the supplied dark-charcoal / warm-gold reference. */
+html[data-theme="arena"]{
+ --bg:#111519;--card:#1a2026;--text:#f4f0e8;--muted:#a1a7aa;
+ --line:#343d43;--primary:#dbb771;--green:#a4d5b9;--greenbg:#20352d;
+ --red:#f0a4a0;--redbg:#412a2b;--amber:#eac37d;--amberbg:#453925;
+ --bluebg:#2b3034;--shadow:0 9px 28px rgba(0,0,0,.13);
+}
+html[data-theme="arena"] .topbar{background:#171c21}
+html[data-theme="arena"] .bottomnav{background:#171c21}
+html[data-theme="arena"] .kpi,html[data-theme="arena"] .player-chip,html[data-theme="arena"] .rule-panel,
+html[data-theme="arena"] .profile-active,html[data-theme="arena"] .helpbox,
+html[data-theme="arena"] .member-hint,html[data-theme="arena"] .info-strip,
+html[data-theme="arena"] .list-management,html[data-theme="arena"] .help-item,
+html[data-theme="arena"] .goal-pill,html[data-theme="arena"] .goal-row{background:#20262b}
+html[data-theme="arena"] .field input,html[data-theme="arena"] .field select,
+html[data-theme="arena"] .name-input,html[data-theme="arena"] textarea,
+html[data-theme="arena"] .sort-select,html[data-theme="arena"] .bulk-control,
+html[data-theme="arena"] .goal-row input{background:#151a1f;color:var(--text)}
+html[data-theme="arena"] .btn.primary{color:#171b20}
+html[data-theme="arena"] .bottomnav .active{color:var(--primary)}
+html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
+/* Header stays compact while exposing the active clan at mobile widths. */
+.header-clan-name{display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:800;color:var(--text)}
+.header-clan-name[hidden]{display:none}
+.sync-icon-button{height:37px;min-width:37px;display:inline-flex;align-items:center;justify-content:center;
+ border:1px solid var(--green);border-radius:11px;background:var(--greenbg);color:var(--green);
+ font-size:21px;font-weight:800;line-height:1}
+.sync-icon-button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:699px){.header-clan-name{font-size:11px;max-width:110px}.sync-icon-button{height:34px;min-width:34px}}
+@media(max-width:380px){.header-clan-name{max-width:75px}}
+.member-stat-automatic,.member-fixed-target{font-size:12px;color:var(--muted);padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:var(--bluebg)}
+.member-config-explain p,.member-help-source p{font-size:13px;color:var(--text);line-height:1.55;margin:8px 0}
+.member-help-source{border-top:1px solid var(--line);padding-top:10px;margin-top:14px}
+.member-help-source h4{font-size:14px;margin:0 0 9px}
+.summary-progress{display:flex;align-items:center;gap:9px;flex:1 1 100%;min-width:0;margin:3px 2px 1px}
+.summary-progress-track{display:flex;flex:1;min-width:0;height:8px;border-radius:20px;background:#293238;overflow:hidden}
+.summary-progress-played{background:var(--green)}
+.summary-progress-future{background:var(--primary)}
+.summary-progress small{font-size:10px;min-width:35px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1976,6 +2015,10 @@ function renderSummary(){
         <b class="summary-stat total" title="Gesamt: gespielt und geplant">${x.count}×</b>
       </div>
       <span class="summary-compact-deviation" title="Abweichung zum unbereinigten Rotationsdurchschnitt">${deviation}</span>
+      <div class="summary-progress" role="img" aria-label="${x.count} von ${state.config.days} Kriegstagen eingeplant">
+        <div class="summary-progress-track"><span class="summary-progress-played" style="width:${Math.min(100,x.played/state.config.days*100)}%"></span><span class="summary-progress-future" style="width:${Math.min(100,Math.max(0,x.count-x.played)/state.config.days*100)}%"></span></div>
+        <small>${x.count} / ${state.config.days}</small>
+      </div>
       ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
         (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>
           '<span class="summary-day-chip'+(dp.locked?' played':'')+'">Tag '+dp.day+
