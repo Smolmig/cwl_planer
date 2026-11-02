@@ -8,6 +8,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.6] - 2026-11-02
+
+### Planfreigabe & Vize-Vorschläge
+- Owner kann den gemeinsamen CWL-Plan freigeben und wieder zur Bearbeitung öffnen. Die Freigabe ist saisonabhängig und endet automatisch im folgenden Kalendermonat bzw. beim Neustart einer CWL.
+- Vize können Änderungen am freigegebenen Plan als Vorschlag einreichen, erhalten Rückmeldung zu Annahme/Ablehnung und können ausstehende eigene Vorschläge zurückziehen.
+- Offene Vorschläge mit Vorher/Nachher-Angaben; die Annahme durch den Clanführer aktualisiert den Plan nur bei unveränderter Basisrevision.
+- Supabase-RLS und serverseitiger Schreibschutz verhindern direkte Änderungen von Vize während der Freigabe. Bestätigte Kriegstage und Archive dürfen durch Vorschläge nicht überschrieben werden.
+
 ## [1.4.5] - 2026-11-02
 
 ### Planung & Bedienung
