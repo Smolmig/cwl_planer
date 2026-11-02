@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.6",
+  "version": "v1.4.7",
   "released": "2026-11-02",
-  "summary": "Gemeinsame CWL-Planung freigeben, Vize-Vorschläge einreichen und vom Clanführer bestätigen lassen."
+  "summary": "Freigabe-Hotfix: geschützte Cloud-Aufstellungen unverändert übernehmen und Vize-Aktionen bei gesperrtem Plan einschränken."
 }
