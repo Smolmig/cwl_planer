@@ -148,14 +148,36 @@ titleHead(members,'KADER VERWALTEN','Mitglieder','Teilnahme, Fixstatus und Spiel
 const memberCard=$('memberList')?.closest('.card');memberCard?.classList.add('ar4-roster-card');
 const rosterHead=e('div','ar4-roster-heading',`<div><h3>Clan-Kader <span id="ar4MemberCount"></span></h3><p>Spieler antippen, um seine Einstellungen zu bearbeiten.</p></div><div class="ar5-roster-quick"><button class="btn small" id="ar5RosterImport" type="button">${ic('plus')} CSV-Import</button><button class="btn small" id="ar5RosterBulk" type="button">Mehrfachauswahl</button><button class="ar5-roster-help" id="ar4Filters" type="button" title="Dabei, Fix und Priorität erklären" aria-label="Hilfe zur Mitgliederverwaltung">${ic('info')}</button></div>`);
 memberCard?.prepend(rosterHead);
-const advancedRoster=e('details','ar4-roster-advanced');advancedRoster.innerHTML='<summary>Weitere Importmöglichkeiten · mehrere Spieler, CSV-Vorlage, Clanabgleich</summary>';
-const rosterBar=memberCard?.querySelector('.member-actionbar');if(rosterBar){rosterBar.parentNode.insertBefore(advancedRoster,rosterBar);advancedRoster.append(rosterBar)} 
+// One compact toolbar for everyday work. Legacy controls remain in DOM as bridges.
+const bridge=e('div','ar6-member-bridge');bridge.hidden=true;memberCard.append(bridge);
+const nativeBar=memberCard?.querySelector('.member-actionbar');if(nativeBar)bridge.append(nativeBar);
+const nativeGuest=memberCard?.querySelector('#guestMembersTools');if(nativeGuest)bridge.append(nativeGuest);
+const nativeCloud=memberCard?.querySelector('#cloudMembersTools');
+if(nativeCloud){
+ const syncWrap=e('details','ar6-cloud-operations');
+ syncWrap.innerHTML='<summary>Clash-Clan abgleichen</summary><p>Mitglieder aus Clash übernehmen und Änderungen prüfen, ohne die Planung zu überschreiben.</p>';
+ memberCard.insertBefore(syncWrap,memberCard.querySelector('.member-filters'));
+ syncWrap.append(nativeCloud);
+}
+const helpDetail=memberCard?.querySelector('.member-help-details');
+if(helpDetail){rosterHead.insertAdjacentElement('afterend',helpDetail);helpDetail.classList.add('ar6-help-details');}
 const ordering=memberCard?.querySelector('.list-management');
 if(ordering){memberCard.insertBefore(ordering,memberCard.querySelector('.member-filters'));ordering.classList.add('ar5-ordering')}
-for(const sel of ['.member-help-details','#guestMembersTools','#cloudMembersTools']){const node=memberCard?.querySelector(sel);if(node)advancedRoster.append(node)}
-$('ar4Filters').onclick=()=>{const help=memberCard?.querySelector('.member-help-details');if(help){advancedRoster.open=true;help.open=!help.open;if(help.open)help.scrollIntoView({behavior:'smooth',block:'nearest'})}else $('membersHelpBtn')?.click()};
+const filter=memberCard?.querySelector('.member-filters');if(filter){
+ const label=e('label','ar6-status-label','Status');
+ label.htmlFor='memberFilter';
+ const select=$('memberFilter');if(select){select.parentNode.insertBefore(label,select);select.title='Nur Spieler dieses Teilnahme- oder Fixstatus anzeigen';}
+}
+const extras=e('details','ar6-import-extras');
+extras.innerHTML='<summary>Weitere Möglichkeiten zum Hinzufügen</summary><div class="ar6-import-actions"><button class="btn small" type="button" id="ar6AddMany">Mehrere Namen eingeben</button><button class="btn small" type="button" id="ar6Template">CSV-Vorlage herunterladen</button></div>';
+rosterHead.insertAdjacentElement('afterend',extras);
+$('ar6AddMany').onclick=()=>$('multiAddBtn')?.click();
+$('ar6Template').onclick=()=>$('membersTemplateBtn')?.click();
+$('ar4Filters').onclick=()=>{if(helpDetail){helpDetail.open=!helpDetail.open;if(helpDetail.open)helpDetail.scrollIntoView({behavior:'smooth',block:'nearest'})}else $('membersHelpBtn')?.click()};
 $('ar5RosterImport').onclick=()=>{const btn=$('membersImportBtn')||$('guestImportMembersBtn');if(btn)btn.click();else $('membersFile')?.click()};
-$('ar5RosterBulk').onclick=()=>{$('selectMembersBtn')?.click();$('ar5RosterBulk').classList.toggle('active',$('selectMembersBtn')?.getAttribute('aria-pressed')==='true')};
+function syncBulkVisual(){const selected=$('selectMembersBtn')?.getAttribute('aria-pressed')==='true';const button=$('ar5RosterBulk');button?.classList.toggle('active',selected);if(button){button.textContent=selected?'Auswahl beenden':'Mehrfachauswahl';button.setAttribute('aria-pressed',String(selected))}}
+$('ar5RosterBulk').onclick=()=>{$('selectMembersBtn')?.click();syncBulkVisual()};
+$('bulkDoneBtn')?.addEventListener('click',()=>requestAnimationFrame(syncBulkVisual));
 function decorateMembers(){const root=$('memberList');if(!root)return;
  root.querySelectorAll('.member').forEach((card,i)=>{
   const input=card.querySelector('.member-name');if(!input)return;
@@ -209,7 +231,7 @@ const util=e('div','ar4-settings-links',`<button type="button" id="ar4OpenAccoun
 $('ar4OpenAccount').onclick=()=>openPage('account');$('ar4Advanced').onclick=()=>openPage('advanced');
 // move original real controls, retaining their original IDs, inputs and event handlers
 const local=$('localProfileCard');if(local)pages.profiles.append(local);
-if(pbar){const wrap=e('div','ar4-panel ar4-profile-picker','<h3>Aktives Profil</h3>');wrap.append(pbar);pages.profiles.append(wrap)}
+if(pbar){const wrap=e('div','ar4-panel ar4-profile-picker','<h3>Aktives Profil</h3>');wrap.append(pbar);pages.profiles.insertBefore(wrap,local||null)}
 const cloudAcc=$('settingsCloudAccount')?.closest('.card');if(cloudAcc)pages.account.append(cloudAcc);
 const archive=$('archiveList')?.closest('.card');if(archive)pages.archive.append(archive);
 const source=[...win.querySelectorAll(':scope > .card')].find(c=>c.querySelector('.settings-subcard'));
