@@ -250,3 +250,50 @@ html.arena-reference .ar4-roster-card .member.member-expanded>.member-details,ht
 @media(max-width:700px){html.arena-reference .ar4-roster-card .ar4-member-facing{grid-template-columns:20px 29px minmax(0,1fr) 50px 48px;gap:7px}html.arena-reference .ar4-roster-card .ar4-member-badge{font-size:10px}}
 html.arena-reference .ar4-mobile-day-modes{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
 html.arena-reference .ar4-mobile-day-modes .btn{flex:1 1 120px}
+/* iOS touch fix: do not trigger desktop hover lift/clip while selecting a day. */
+@media (hover: none), (pointer: coarse) {
+  html.arena-reference .ar4-daycard,
+  html.arena-reference .ar4-daycard:hover,
+  html.arena-reference .ar4-daycard:active,
+  html.arena-reference .ar4-daycard.active {
+    transform: none!important;
+    scale: 1!important;
+    min-height: 142px;
+    margin-block: 0;
+  }
+  html.arena-reference .ar4-weekstrip {
+    scroll-padding-block: 5px;
+    scroll-padding-inline: 10px;
+    padding-block: 5px 12px;
+    overscroll-behavior-x: contain;
+    overflow-y: hidden;
+    align-items: stretch;
+  }
+}
+/* Sample data clearly identified; never imply a real cloud sync. */
+html.arena-reference .arena-demo-bar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 15px;border:1px solid rgba(233,189,107,.32);border-radius:13px;background:var(--bluebg);color:var(--text)}
+html.arena-reference .arena-demo-bar strong{font-size:12px;display:block}
+html.arena-reference .arena-demo-bar span{color:var(--muted);font-size:11px;display:block;margin-top:3px}
+html.arena-reference .arena-demo-bar button{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--card);color:var(--text);font-weight:750;font-size:12px}
+html.arena-reference .arena-demo-bar .arena-demo-info{flex:1 1 230px}
+html.arena-reference .arena-demo-history{display:none}
+html.arena-reference .arena-demo-history.active{display:block}
+html.arena-reference .arena-demo-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+html.arena-reference .arena-demo-stats-grid .stat{padding:15px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+html.arena-reference .arena-demo-stats-grid strong{font-size:24px;font-weight:850;display:block;color:var(--text)}
+html.arena-reference .arena-demo-stats-grid span{font-size:11px;color:var(--muted)}
+html.arena-reference .arena-demo-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 18px}
+html.arena-reference .arena-demo-filters select,html.arena-reference .arena-demo-filters input{min-height:42px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);padding:8px 12px;min-width:0;flex:1 1 140px}
+html.arena-reference .arena-demo-stat-row{display:grid;grid-template-columns:minmax(0,1.2fr) .6fr .6fr .6fr .75fr;align-items:center;gap:10px;padding:12px 6px;border-bottom:1px solid var(--line);font-size:12px}
+html.arena-reference .arena-demo-stat-row .name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:750}
+html.arena-reference .arena-demo-stat-row .faint{color:var(--muted)}
+html.arena-reference .arena-demo-stat-row.header{color:var(--muted);font-weight:650;font-size:11px;border-bottom:1px solid var(--line)}
+html.arena-reference .arena-demo-pct{display:inline-flex;align-items:center;gap:6px}
+html.arena-reference .arena-demo-pct:before{content:'';width:7px;height:7px;background:var(--primary);border-radius:50%}
+html.arena-reference .arena-demo-notice{color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:700px){html.arena-reference .arena-demo-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html.arena-reference .arena-demo-stat-row{grid-template-columns:minmax(0,1.1fr) .48fr .55fr .7fr;gap:5px}html.arena-reference .arena-demo-stat-row .missed{display:none}}
+/* Keep selected and hovered cards within the week strip across all input types. */
+html.arena-reference .ar4-daycard:hover,
+html.arena-reference .ar4-daycard:focus,
+html.arena-reference .ar4-daycard:active,
+html.arena-reference .ar4-daycard.active { transform:none!important; }
