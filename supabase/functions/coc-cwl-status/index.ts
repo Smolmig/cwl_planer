@@ -102,15 +102,19 @@ async function loadStatus(clanTag,key) {
   if(!group || group.state==="notInWar")return {
     ok:true,active:false,clanTag,rounds:[],currentWar:await currentNormalWar(clanTag,key)
   };
-  const season=String(group.season||"");
+  // Supercell currently returns a full date (e.g. 2026-11-02) for the
+  // CWL season. The frontend and saved snapshots use the YYYY-MM month.
+  const rawSeason=String(group.season||"").trim();
+  const seasonMatch=/^(\d{4}-(?:0[1-9]|1[0-2]))(?:-(?:0[1-9]|[12]\d|3[01]))?$/.exec(rawSeason);
+  const season=seasonMatch?.[1]||"";
   const groupState=String(group.state||"");
-  const validSeason=/^\d{4}-\d{2}$/.test(season);
+  const validSeason=!!seasonMatch;
   const validState=["preparation","inWar","ended"].includes(groupState);
   if(!validSeason||!Array.isArray(group.rounds)){
     // The official API can expose a league-group shell before the draw is
     // complete. A recognized group without rounds is not a network failure.
     console.warn("coc-cwl-status: incomplete league group",{
-      state:groupState.slice(0,30),season:season.slice(0,20),
+      state:groupState.slice(0,30),season:rawSeason.slice(0,20),
       roundsType:Array.isArray(group.rounds)?"array":typeof group.rounds,
       fields:Object.keys(group).slice(0,12)
     });
