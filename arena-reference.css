@@ -248,3 +248,5 @@ html.arena-reference .ar4-roster-card .member.member-expanded>.member-top,html.a
 html.arena-reference .ar4-roster-card .member.member-expanded>.member-snapshot,html.arena-reference .ar4-roster-card .member.ar4-open>.member-snapshot,html.arena-reference .ar4-roster-card .member.member-selecting>.member-snapshot{display:flex!important;padding:8px 12px!important}
 html.arena-reference .ar4-roster-card .member.member-expanded>.member-details,html.arena-reference .ar4-roster-card .member.ar4-open>.member-details{padding:10px 12px!important}
 @media(max-width:700px){html.arena-reference .ar4-roster-card .ar4-member-facing{grid-template-columns:20px 29px minmax(0,1fr) 50px 48px;gap:7px}html.arena-reference .ar4-roster-card .ar4-member-badge{font-size:10px}}
+html.arena-reference .ar4-mobile-day-modes{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+html.arena-reference .ar4-mobile-day-modes .btn{flex:1 1 120px}
