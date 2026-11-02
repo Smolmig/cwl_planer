@@ -191,6 +191,7 @@ const cloud={
  active:false,
  renderLive(){if(this.active)live.render()},
  isPlanLocked:()=>planIsLocked(),
+ isOwner:()=>role==="owner",
  openNewCycle:()=>openNewPlanCycle(),
  onLocalChange(){
   if(!this.active||hydrating||role==="viewer")return;
