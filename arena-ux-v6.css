@@ -1,0 +1,84 @@
+/* ARENA v6: consistent navigation and CWL-first daily workflow */
+/* No old compatibility cards in the visible layout */
+html.arena-reference .ar6-native-controls{display:none!important}
+html.arena-reference .ar6-day-focus{margin:14px 0 16px!important;padding:20px!important;border:1px solid var(--line)!important}
+html.arena-reference .ar6-focus-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+html.arena-reference .ar6-focus-title h2{margin:4px 0 2px;font-size:22px;letter-spacing:-.04em}
+html.arena-reference .ar6-focus-title p{color:var(--muted);font-size:12px;margin:3px 0}
+html.arena-reference .ar6-focus-info{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--line)!important;border-radius:10px;background:transparent!important;color:var(--muted)!important;flex:none}
+html.arena-reference .ar6-focus-info:hover{color:var(--primary)!important;border-color:var(--primary)!important}
+html.arena-reference .ar6-day-focus .ar5-changes{margin:10px 0 12px}
+html.arena-reference .ar6-day-focus .ar5-day-actions{margin:12px 0 0}
+html.arena-reference .ar6-pending-hint{font-size:12px;color:var(--muted);padding:11px 12px;border:1px dashed var(--line);border-radius:10px;width:100%}
+html.arena-reference .ar4-detail-layout{margin-top:0!important}
+html.arena-reference .ar4-lineup .ar4-panel-head{margin-bottom:8px}
+html.arena-reference .ar4-lineup #ar4AllPlayers{display:none!important}
+html.arena-reference .ar4-lineup-footer{display:none!important}
+html.arena-reference .ar4-lineup #ar4LineupRows{padding:0 12px 12px}
+html.arena-reference .ar6-management{margin-top:16px;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:18px}
+html.arena-reference .ar6-management-title{display:flex;gap:6px;flex-direction:column;margin-bottom:13px}
+html.arena-reference .ar6-management-title strong{font-size:14px}
+html.arena-reference .ar6-management-title span{font-size:11px;color:var(--muted)}
+html.arena-reference .ar6-management #planOverview{display:block!important;background:transparent!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;width:100%!important;max-height:none!important;overflow:visible!important}
+html.arena-reference .ar6-management #planOverview>.section-title{display:none!important}
+html.arena-reference .ar6-management #planOverview .cwl-status-row{display:flex!important;margin:8px 0!important}
+html.arena-reference .ar6-management #planOverview .plan-actions{display:flex!important;gap:9px!important;flex-wrap:wrap}
+html.arena-reference .ar6-management #copyFullPlanBtn{display:none!important}
+html.arena-reference .ar6-management #manageCwlBtn{min-height:42px;font-size:12px}
+html.arena-reference .ar6-management #nextDayBtn:not(.hidden){display:inline-flex!important}
+html.arena-reference .ar6-day-modes{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:13px}
+html.arena-reference .ar6-day-modes .btn{min-height:38px;font-size:12px}
+html.arena-reference #view-settings .ar6-subnav{display:flex;align-items:center;gap:12px;min-height:46px;border-bottom:1px solid var(--line);margin-bottom:18px;padding-bottom:10px}
+html.arena-reference #view-settings .ar6-subnav>span{font-size:12px;color:var(--muted)}
+html.arena-reference #view-settings .ar4-back,
+html.arena-reference #view-settings .ar4-settings-page .ar4-back,
+html.arena-reference #view-settings .ar6-subnav .ar4-back{display:inline-flex!important;align-items:center!important;gap:7px!important;color:var(--primary)!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:9px!important;padding:10px 8px!important;margin:0!important;min-height:39px!important;width:auto!important;flex:none!important;font-size:12px!important;font-weight:700!important}
+html.arena-reference #view-settings .ar4-back:hover{background:var(--bluebg)!important}
+html.arena-reference #view-settings .ar4-back .ar4-icon{width:16px;height:16px}
+html.arena-reference #view-settings .ar4-settings-page{padding:0 0 16px!important}
+html.arena-reference #view-settings .ar4-settings-page>h3{margin:9px 0 3px!important;font-size:24px!important}
+html.arena-reference #view-settings .ar4-settings-page>p{margin:0 0 20px!important;font-size:13px}
+html.arena-reference #view-settings .ar4-settings-page .ar4-profile-picker{margin:10px 0!important}
+html.arena-reference #view-settings .ar4-settings-page .profilebar{align-items:center}
+html.arena-reference .ar6-member-bridge{display:none!important}
+html.arena-reference .ar6-import-extras{border:0;border-bottom:1px solid var(--line);padding:6px 0 11px;margin:0 0 13px}
+html.arena-reference .ar6-import-extras>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--muted);font-weight:650;font-size:12px;padding:9px 0}
+html.arena-reference .ar6-import-extras>summary:before{content:'+';color:var(--primary);font-size:15px}
+html.arena-reference .ar6-import-extras>summary::-webkit-details-marker{display:none}
+html.arena-reference .ar6-import-extras[open]>summary:before{content:'−'}
+html.arena-reference .ar6-import-actions{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0}
+html.arena-reference .ar6-import-actions .btn{background:transparent!important;color:var(--text)!important}
+html.arena-reference .ar6-help-details{margin:4px 0 12px!important;border:1px solid var(--line)!important;background:var(--card)!important;border-radius:11px!important;padding:10px!important}
+html.arena-reference .ar6-help-details:not([open]){display:none!important}
+html.arena-reference .ar6-help-details summary{font-size:12px}
+html.arena-reference .ar6-status-label{display:inline-flex;align-items:center;color:var(--muted);font-size:11px;font-weight:700;margin-right:2px}
+html.arena-reference .ar5-ordering{margin:8px 0 12px!important}
+html.arena-reference .ar5-ordering .list-management-actions{display:flex!important;gap:8px}
+html.arena-reference .ar5-ordering select{width:100%;max-width:320px}
+html.arena-reference .ar6-cloud-operations{border:1px solid var(--line);border-radius:11px;background:var(--card);padding:12px;margin:10px 0}
+html.arena-reference .ar6-cloud-operations>summary{cursor:pointer;color:var(--primary);font-size:12px;font-weight:750}
+html.arena-reference .ar6-cloud-operations>p{font-size:12px;color:var(--muted)}
+html.arena-reference .ar6-cloud-operations[hidden]{display:none!important}
+html.arena-reference .ar4-roster-card .member-filters{margin:8px 0 12px!important}
+html.arena-reference .ar4-roster-card .member-filters #memberFilter{min-width:125px}
+html.arena-reference .ar4-roster-card .ar5-roster-quick{align-items:center}
+html.arena-reference #view-members #bulkBar:not(.hidden){background:var(--card)!important;box-shadow:none!important;border:1px solid var(--primary)!important}
+html.arena-reference #view-members #bulkBar .bulk-groups{background:transparent!important}
+html.arena-reference #view-members #bulkBar .bulk-group{background:var(--card)!important}
+html.arena-reference #view-members #bulkBar .bulk-group .bulk-label{color:var(--muted)!important}
+@media(max-width:700px){
+ html.arena-reference .ar6-day-focus{padding:15px!important}
+ html.arena-reference .ar6-focus-title h2{font-size:20px}
+ html.arena-reference .ar6-management{padding:14px}
+ html.arena-reference .ar6-day-modes .btn{flex:1}
+ html.arena-reference .ar4-detail-layout{display:flex!important;flex-direction:column!important;gap:12px}
+ html.arena-reference .ar4-detail-layout>*{width:100%!important}
+ html.arena-reference .ar6-import-extras{margin-top:6px}
+ html.arena-reference .ar4-roster-card .member-filters{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important}
+ html.arena-reference .ar4-roster-card .member-filters #memberSearch{flex:1 1 160px;min-width:0}
+ html.arena-reference .ar4-roster-card .member-filters #memberFilter{flex:0 1 130px}
+ html.arena-reference .ar4-roster-card .member-filters #memberVisibleCount{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ html.arena-reference #view-settings .ar4-settings-page,html.arena-reference #view-settings .ar4-settings-home{animation:none!important}
+}
