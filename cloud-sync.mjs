@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.6";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.6";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.6";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.6";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.7";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.7";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.7";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.7";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -47,7 +47,7 @@ const backups=createCloudBackups({
  askAction:options=>storage.askAction(options)
 });
 
-let planReview=null,planSuggestions=[];
+let planReview=null,planSuggestions=[],rawSavedProfile=null;
 const currentSeason=()=>new Date().toISOString().slice(0,7);
 const planIsLocked=()=>!!planReview?.locked&&planReview.season===currentSeason();
 function suggestionChanges(suggestion){
@@ -147,6 +147,13 @@ async function togglePlanLock(){
 async function submitPlanSuggestion(){
  if(!clanId||role!=="editor"||!planIsLocked()||!changedSerial)throw Error("Kein offener Änderungsvorschlag.");
  const proposal=JSON.parse(changedSerial);
+ // Legacy profiles are normalized in memory; preserve the server's exact
+ // protected snapshots so an unrelated edit cannot invalidate a suggestion.
+ if(rawSavedProfile)for(const key of ["locks","archives","archivedMembers"]){
+   if(Object.prototype.hasOwnProperty.call(rawSavedProfile,key))
+     proposal[key]=JSON.parse(JSON.stringify(rawSavedProfile[key]));
+   else delete proposal[key];
+ }
  const changes=suggestionChanges({suggested_profile:proposal});
  if(!await storage.confirmAction(changes.slice(0,8).join("; ")+"\n\nDiesen Vorschlag dem Clanführer zur Prüfung vorlegen?",
    {title:"Änderung vorschlagen",confirmText:"Vorschlag einreichen"}))return;
@@ -242,6 +249,21 @@ const cloud={
   if(role==="viewer"){
     for(const id of ["modalSave","bulkSave","inlineMemberSave","resetBtn","deleteProfileBtn"]){
       const el=$(id);if(el)el.disabled=true;
+    }
+  }
+  // Proposals may change planning rules, but cannot rewrite played rosters
+  // or destructive account/season data while the owner's approval is active.
+  const restricted=role==="editor"&&planIsLocked();
+  for(const el of document.querySelectorAll(
+    "#manageCwlBtn,#slotsPreset,#slotsCustomInput,#daysInput,#deleteAllBtn,#deleteSelectedBtn,"+
+    "#view-plan .lock-day,#view-plan .edit-day,#view-plan .unlock-day,#memberList .delete-member"
+  )){
+    if(restricted){
+      el.disabled=true;el.dataset.reviewDisabled="1";
+      el.title="Plan freigegeben – diese Aktion ist nur für den Clanführer möglich";
+    }else if(el.dataset.reviewDisabled==="1"){
+      delete el.dataset.reviewDisabled;
+      if(role!=="viewer")el.disabled=false;
     }
   }
  }
@@ -530,7 +552,7 @@ async function leaveCloud(){
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
- planReview=null;planSuggestions=[];
+ planReview=null;planSuggestions=[];rawSavedProfile=null;
  blocked=false;hydrating=false;resetRoster();
  storage.restoreGuest();cloud.afterRender();
  msg("Lokaler Modus. Deine bisherigen lokalen Daten bleiben auf diesem Gerät.");
@@ -741,9 +763,10 @@ async function loadCloudProfile(automatic=false){
  if(target!==clanId)return false;
  if(!automatic && changedSerial && !await storage.confirmAction("Nicht gespeicherte Änderungen verwerfen und Cloud-Stand laden?",{title:"Änderungen verwerfen?",confirmText:"Cloud-Stand laden",danger:true}))return false;
  const profile=data?.profile_json||storage.blank(clans.find(c=>c.id===clanId)?.name||"Neuer Clan");
+ const original=data?.profile_json?JSON.parse(JSON.stringify(data.profile_json)):null;
  revision=data?.revision??null;
  blocked=false;changedSerial=null;hydrating=true;
- try{storage.switchToCloud(profile);lastSerial=JSON.stringify(storage.getProfile())}finally{hydrating=false}
+ try{storage.switchToCloud(profile);rawSavedProfile=original;lastSerial=JSON.stringify(storage.getProfile())}finally{hydrating=false}
  status(data?"Cloud: gespeichert":"Cloud: noch leer",!data);
  return true;
 }
@@ -772,7 +795,7 @@ async function writeCloud(){
   }
   if(out.error)throw out.error;
   if(id!==clanId)return;
-  revision=out.data.revision;lastSerial=snapshot;
+  revision=out.data.revision;lastSerial=snapshot;rawSavedProfile=JSON.parse(snapshot);
   if(changedSerial===snapshot)changedSerial=null;
   status(changedSerial?"Cloud: neue Änderungen offen":"Cloud: gespeichert");
   audit().catch(console.warn);
@@ -1362,6 +1385,7 @@ async function exportCloud(){if(!clanId)throw Error("Kein Cloud-Clan ausgewählt
 }
 async function importCloud(){
  if(!clanId||role==="viewer")throw Error("Kein Bearbeitungszugriff.");
+ if(role==="editor"&&planIsLocked())throw Error("Plan freigegeben: Bitte einzelne Änderungen als Vorschlag einreichen.");
  const f=$("cloudImportFile").files[0];if(!f)throw Error("Bitte eine JSON-Backup-Datei auswählen.");
  const b=JSON.parse(await f.text());if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
  const p=b.kind==="cwl-profile"?b.profile:b.kind==="cwl-app-backup"?(b.app?.profiles?.find(x=>x.id===b.app?.activeProfileId)||b.app?.profiles?.[0]):null;

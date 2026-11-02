@@ -8,6 +8,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.7] - 2026-11-02
+
+### Nachbesserung Planfreigabe
+- Bei Vize-Vorschlägen werden die geschützten gespielten Aufstellungen und Archive exakt aus der Cloud-Version übernommen, sodass eine lokale Altdaten-Normalisierung keine berechtigten Vorschläge zurückweist.
+- Destruktive und historische Aktionen im freigegebenen Vize-Modus gesperrt; normale Regeln bleiben als Vorschlag bearbeitbar.
+
 ## [1.4.6] - 2026-11-02
 
 ### Planfreigabe & Vize-Vorschläge
