@@ -1198,6 +1198,13 @@ html[data-theme="arena"] .member-status-chip.in{color:var(--green)}
 .summary-progress-played{background:var(--green)}
 .summary-progress-future{background:var(--primary)}
 .summary-progress small{font-size:10px;min-width:35px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+/* Collaboration conflict: actionable revision diff without searching settings. */
+.cloud-change-notice:has(.cloud-change-detail-list:not([hidden])){max-width:min(95vw,580px)}
+.cloud-change-detail-list{border-top:1px solid var(--line);padding-top:8px;margin-top:8px;max-height:240px;overflow:auto}
+.cloud-change-detail-list[hidden]{display:none}
+.cloud-change-detail-list p{font-size:12px;margin:6px 0;line-height:1.4}
+.cloud-change-actions{display:flex;flex-wrap:wrap;gap:6px}
+#saveBadge.cloud-conflict-link{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1697,8 +1704,8 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  </div>
 </div>
 <div class="cloud-change-notice" id="cloudChangeNotice" role="status" aria-live="polite" hidden>
- <div class="cloud-change-content"><strong>Gemeinsamer Plan aktualisiert</strong><span id="cloudChangeText"></span></div>
- <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Ansehen</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
+ <div class="cloud-change-content"><strong id="cloudChangeTitle">Neuer gemeinsamer Stand</strong><span id="cloudChangeText"></span><div class="cloud-change-detail-list" id="cloudChangeDetailList" hidden></div></div>
+ <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
