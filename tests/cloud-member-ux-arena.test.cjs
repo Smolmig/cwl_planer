@@ -44,7 +44,7 @@ test("Member participation and fixed day controls are unambiguous",()=>{
 test("Arena theme and deployment bars stay separate from normal Dark",()=>{
  assert.match(html,/value="arena"/);
  assert.match(html,/html\[data-theme="arena"\]/);
- assert.match(html,/--primary:#dbb771/);
+ assert.match(html,/--primary:#dfbd7a/);
  assert.match(html,/summary-progress-played/);
  assert.match(html,/summary-progress-future/);
  assert.match(html,/summary-progress-track/);
