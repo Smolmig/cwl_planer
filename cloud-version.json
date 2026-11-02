@@ -1,5 +1,5 @@
 {
-  "version": "v1.4.3",
+  "version": "v1.4.4",
   "released": "2026-11-02",
-  "summary": "CWL-API robuster bei vorübergehend nicht verfügbaren Kriegsdetails; ausgetretene Spieler gezielt weiter einplanen oder entfernen."
+  "summary": "Mitglieder nach Ø Sternen der letzten sieben Angriffe sortieren, gleiche Zeitbasis der Hit-Rate, Einsatztage pro Spieler und stabilere CWL-Ansicht."
 }
