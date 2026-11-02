@@ -54,7 +54,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     return diff>=0&&diff<=1?prior:null;
   };
   function renderDay(round,dayCard,profile) {
-    const wasOpen=expandedDays.has(round.day)||!!dayCard.querySelector(".cwl-live-details[open]");
+    const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
     const section=document.createElement("section");
     section.className="cwl-live-day";
