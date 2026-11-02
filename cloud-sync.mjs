@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.3";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.3";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.3";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.3";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.4";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.4";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.4";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.4";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -45,6 +45,7 @@ const backups=createCloudBackups({
 });
 const cloud={
  active:false,
+ renderLive(){if(this.active)live.render()},
  onLocalChange(){
   if(!this.active||hydrating||role==="viewer")return;
   if(!navigator.onLine){msg("Cloud ist offline. Bearbeiten ist nicht möglich; bitte neu laden, wenn die Verbindung zurück ist.",true);blocked=true;return}
