@@ -1280,13 +1280,11 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.2</strong><span>Gemeinsam planen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.4.3</strong><span>CWL & Mitglieder</span></div>
       <ul>
-        <li><b>Einladungen:</b> Einladungslinks öffnen jetzt direkt ein Beitrittsfenster mit Clanname, Rolle und einfacher Anmeldung.</li>
-        <li><b>Mehr Kriegsdetails:</b> Ø Sterne pro Angriff, Einzelangriffe und ein Archiv vergangener Kriege.</li><li><b>Mitglieder:</b> Im Cloud-Planer siehst du echte Angriffswerte und kannst den automatischen Clanabgleich steuern.</li><li><b>Zusammenarbeit:</b> Entfernen und Sperren sind getrennt.</li>
-        <li><b>Clanübersicht:</b> Während eines normalen Clankriegs findest du den Spielstand und offene Angriffe direkt in der Übersicht.</li>
-        <li><b>Nach dem Krieg:</b> Abgeschlossene CWLs übernehmen die tatsächlich eingesetzten Spieler. Normale Clankriege ergänzen die Spielerstatistik.</li>
-        <li><b>Planung bleibt flexibel:</b> Auch ohne laufende CWL kannst du Mitglieder einteilen und Aufstellungen vorbereiten.</li>
+        <li><b>Clanabgleich:</b> Ausgetretene Spieler im CWL-Plan ausdrücklich behalten oder aus allen noch offenen Aufstellungen nehmen.</li>
+        <li><b>Gespielte Tage:</b> Bereits bestätigte Aufstellungen bleiben unverändert.</li>
+        <li><b>CWL-API:</b> Fehlende Kriegsdetails blockieren nicht mehr die gesamte CWL-Übersicht. Bekannte Kriege bleiben erhalten und werden erneut geprüft.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1598,7 +1596,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.2";
+const APP_VERSION="v1.4.3";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2104,6 +2102,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.2"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.4.3"></script>
 </body>
 </html>

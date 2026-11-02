@@ -2,6 +2,19 @@ import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows } fr
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
+// Keep user-facing errors actionable while logging the original API reason for diagnosis.
+export function cwlErrorMessage(reason) {
+  const messages={
+    war_details_unavailable:"CWL-Kriegsdetails gerade nicht verfügbar. Dein Plan bleibt gespeichert.",
+    upstream_timeout:"CWL-Abruf dauert gerade zu lange. Bitte später erneut versuchen.",
+    missing_server_configuration:"Die CWL-Verbindung ist noch nicht vollständig eingerichtet.",
+    missing_linked_clan_tag:"Für den CWL-Abruf fehlt der Clan-Tag.",
+    not_a_member:"Du hast keinen Zugriff auf die CWL-Daten dieses Clans.",
+    supercell_status_403:"Clash gibt die CWL-Daten derzeit nicht frei. Dein Plan bleibt gespeichert.",
+    supercell_status_429:"Clash verarbeitet gerade zu viele Anfragen. Bitte später erneut versuchen."
+  };
+  return messages[reason]||"CWL-Daten gerade nicht verfügbar. Dein gespeicherter Plan bleibt erhalten.";
+}
 const badgeArt=side=>{
   const src=safeBadgeUrl(side?.badgeUrl);
   return src
@@ -134,6 +147,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     refresh.textContent=fetching?"CWL wird geladen …":"↻ CWL-Daten";
     refresh.disabled=fetching;
     const info=effective();
+    const detailsWarning=current?.detailsStatus==="unavailable"
+      ?" · ⚠ Kriegsdetails derzeit nicht abrufbar"
+      :current?.detailsStatus==="partial"
+        ?" · ⚠ Einige Kriegsdetails fehlen noch":"";
     let node=old;
     if(!node){
       node=document.createElement("section");node.id="cwlLiveOverview";node.className="cwl-live-overview";
@@ -149,7 +166,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const ended=info.rounds.filter(r=>r.state==="warEnded").length;
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
-      (offlineReason?" · ⚠ "+esc(offlineReason):"")+"</span>";
+      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>";
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
@@ -169,9 +186,20 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         throw new Error(msg);
       }
       if(req!==requestId||id!==context().clanId)return;
-      current=data;offlineReason="";confirmedNoCwl=!data.active;
+      // A temporary failure to fetch individual wars must not wipe previously
+      // confirmed, same-season information saved by another clan leader.
+      const previous=ctx.profile?.cwlLive;
+      if(data.active && data.detailsStatus && data.detailsStatus!=="complete" &&
+         previous?.season===data.season && previous?.clanTag===data.clanTag &&
+         Array.isArray(previous.rounds) && Array.isArray(data.rounds)){
+        data.rounds=data.rounds.map((round,i)=>round?.available?round:
+          previous.rounds[i]?.available?previous.rounds[i]:round);
+      }
+      current=data;offlineReason=data.pending?
+        "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
-      if(onSnapshot)Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
+      if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
+        Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
       if(data.active && ctx.role!=="viewer" && context().canApply) {
         const result=reconcileCwl(storage.getProfile(),data,name=>storage.newMember(name));
         if(result.changed) {
@@ -180,10 +208,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
             notify("✓ CWL-Tag "+result.lockedDays.join(", ")+" automatisch mit tatsächlicher Aufstellung abgeschlossen");
         }
       }
-      if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
+      if(manual && data.pending)notify("Die CWL-Auslosung ist noch nicht vollständig verfügbar. Dein Plan bleibt erhalten.");
+      else if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
     }catch(err){
       if(req!==requestId)return;
-      offlineReason="CWL-API nicht erreichbar; gespeicherter Plan bleibt unverändert";
+      offlineReason=cwlErrorMessage(String(err?.message||""));
       if(manual)notify("⚠ "+offlineReason);
       console.warn("CWL status:",String(err?.message||err));
     }finally{

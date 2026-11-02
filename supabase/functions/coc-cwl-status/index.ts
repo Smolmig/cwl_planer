@@ -8,6 +8,8 @@ const CORS = {
   "Cache-Control":"no-store", "Vary":"Origin"
 };
 const CACHE = new Map();
+const WAR_CACHE = new Map();
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const fail=(error,status=502)=>Response.json({ok:false,error},{status,headers:CORS});
 const tag=v=>{const t=String(v||"").trim().toUpperCase();return t.startsWith("#")?t:t?"#"+t:""};
 const valid=t=>/^#[0289PYLQGRJCUV]{3,15}$/.test(t);
@@ -46,13 +48,38 @@ const safeSide=(s,fromGroup)=>({
   members:(Array.isArray(s?.members)?s.members:[]).slice(0,50).map(safeMember)
 });
 async function getGame(path,key) {
-  const r=await fetch("https://cocproxy.royaleapi.dev/v1"+path,{
-    headers:{Authorization:"Bearer "+key,Accept:"application/json"},
-    signal:AbortSignal.timeout(12000)
-  });
-  if(r.status===404) return null;
-  if(!r.ok)throw Error("supercell_status_"+r.status);
-  return r.json();
+  // Retry transient gateway/rate-limit errors once, without retrying authorization errors.
+  for(let attempt=0;attempt<2;attempt++){
+    let response;
+    try{
+      response=await fetch("https://cocproxy.royaleapi.dev/v1"+path,{
+        headers:{Authorization:"Bearer "+key,Accept:"application/json"},
+        signal:AbortSignal.timeout(12000)
+      });
+    }catch(error){
+      if(attempt===0){await pause(350);continue}
+      throw error;
+    }
+    if(response.status===404)return null;
+    if(!response.ok){
+      if(attempt===0 && (response.status===429||response.status>=500)){
+        await pause(response.status===429?900:350);
+        continue;
+      }
+      throw Error("supercell_status_"+response.status);
+    }
+    return response.json();
+  }
+  throw Error("upstream_unreachable");
+}
+async function getWar(tagValue,key){
+  const cached=WAR_CACHE.get(tagValue);
+  if(cached&&Date.now()<cached.expires)return cached.war;
+  const war=await getGame("/clanwarleagues/wars/"+encodeURIComponent(tagValue),key);
+  const ttl=war?.state==="warEnded"?12*3600000:war?.state==="preparation"?120000:war?60000:30000;
+  WAR_CACHE.set(tagValue,{war,expires:Date.now()+ttl});
+  if(WAR_CACHE.size>100)for(const [t,v] of WAR_CACHE)if(v.expires<Date.now())WAR_CACHE.delete(t);
+  return war;
 }
 async function currentNormalWar(clanTag,key) {
   try{
@@ -76,8 +103,23 @@ async function loadStatus(clanTag,key) {
     ok:true,active:false,clanTag,rounds:[],currentWar:await currentNormalWar(clanTag,key)
   };
   const season=String(group.season||"");
-  if(!/^\d{4}-\d{2}$/.test(season)||!Array.isArray(group.rounds))
-    throw Error("unexpected_group_response");
+  const groupState=String(group.state||"");
+  const validSeason=/^\d{4}-\d{2}$/.test(season);
+  const validState=["preparation","inWar","ended"].includes(groupState);
+  if(!validSeason||!Array.isArray(group.rounds)){
+    // The official API can expose a league-group shell before the draw is
+    // complete. A recognized group without rounds is not a network failure.
+    console.warn("coc-cwl-status: incomplete league group",{
+      state:groupState.slice(0,30),season:season.slice(0,20),
+      roundsType:Array.isArray(group.rounds)?"array":typeof group.rounds,
+      fields:Object.keys(group).slice(0,12)
+    });
+    if(validState&&validSeason&&group.rounds==null)
+      group.rounds=[]; // Matchups have not yet been assigned.
+    else if(validState&&!validSeason)
+      return {ok:true,active:false,pending:true,clanTag,rounds:[]};
+    else throw Error("unexpected_group_response");
+  }
   // CWL wars contain both clans; the requested clan is not always in the "clan" field.
   const groupClans=new Map((Array.isArray(group.clans)?group.clans:[])
     .filter(clan=>valid(tag(clan?.tag)))
@@ -87,15 +129,23 @@ async function loadStatus(clanTag,key) {
     .map(tag).filter(t=>valid(t)))].slice(0,32);
   const results=new Map();
   let success=0,failures=0;
-  // Bounded parallelism to avoid hammering the Supercell/RoyaleAPI endpoint.
-  for(let i=0;i<tags.length;i+=6) {
-    const batch=await Promise.all(tags.slice(i,i+6).map(async t=>{
-      try{return {tag:t,war:await getGame("/clanwarleagues/wars/"+encodeURIComponent(t),key)}}
-      catch{return {tag:t,war:null,error:true}}
+  const failedByCode={};
+  // Preserve the accessible league group even if individual war detail requests fail.
+  // No missing round may ever be treated as a finished war by the planner.
+  for(let i=0;i<tags.length;i+=4) {
+    const batch=await Promise.all(tags.slice(i,i+4).map(async t=>{
+      try{return {tag:t,war:await getWar(t,key)}}
+      catch(error){return {tag:t,war:null,error:String(error?.message||"upstream_unreachable")}}
     }));
-    for(const b of batch){results.set(b.tag,b.war);if(b.war)success++;if(b.error)failures++}
+    for(const b of batch){
+      results.set(b.tag,b.war);
+      if(b.war)success++;
+      if(b.error){failures++;failedByCode[b.error]=(failedByCode[b.error]||0)+1}
+    }
   }
-  if(tags.length && !success && failures)throw Error("war_details_unavailable");
+  if(failures)console.warn("coc-cwl-status: war details incomplete",{
+    requested:tags.length,available:success,failed:failures,codes:failedByCode
+  });
   const rounds=rawRounds.map((r,index)=>{
     const t=(Array.isArray(r?.warTags)?r.warTags:[]).map(tag).filter(valid);
     let match=null,warTag="";
@@ -115,7 +165,8 @@ async function loadStatus(clanTag,key) {
       opponent:safeSide(enemy,groupClans.get(tag(enemy?.tag)))};
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
-  return {ok:true,active:true,season,clanTag,rounds};
+  return {ok:true,active:true,season,clanTag,rounds,
+    detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
 const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(req.method!=="POST")return fail("method_not_allowed",405);
@@ -142,6 +193,7 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
     return Response.json(response,{headers:CORS});
   }catch(e){
     const reason=String(e?.message||"upstream_unreachable");
+    console.warn("coc-cwl-status: group fetch failed",{reason,errorType:String(e?.name||"Error")});
     return fail(/^supercell_status_\d+$/.test(reason)?reason:
       reason==="war_details_unavailable"||reason==="unexpected_group_response"?reason:
       e?.name==="TimeoutError"?"upstream_timeout":"upstream_unreachable");

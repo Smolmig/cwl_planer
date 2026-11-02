@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.2";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.2";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.2";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.2";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.3";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.3";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.3";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.3";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -972,7 +972,7 @@ async function getRoster({automatic=false}={}){
   const title=document.createElement("strong");
   title.textContent="⚠️ "+critical.length+" Spieler nicht mehr im Clan, aber noch in der CWL-Aufstellung";
   const description=document.createElement("p");
-  description.textContent="Diese Spieler werden nicht automatisch pausiert oder entfernt. Bitte für jeden entscheiden:";
+  description.textContent="Diese Spieler stehen noch im CWL-Plan. Entscheide, ob sie weiterhin eingesetzt werden sollen. Gespielte Tage bleiben erhalten:";
   warn.append(title,description);
   for(const item of critical){
    const label=document.createElement("label");
@@ -980,8 +980,8 @@ async function getRoster({automatic=false}={}){
    const select=document.createElement("select");
    select.className="cloud-missing-choice";select.dataset.playerId=item.member.id;
    select.add(new Option("Bitte auswählen",""));
-   select.add(new Option("Vorerst nichts ändern","defer"));
-   select.add(new Option("Weiterhin als Dabei bestätigen","keep"));
+   select.add(new Option("Weiterhin dabei","keep"));
+   select.add(new Option("Aus der CWL-Planung nehmen","remove"));
    label.append(select);warn.append(label);
   }
  }
@@ -1016,7 +1016,7 @@ async function applyRoster(){
  const currentRoster=roster;
  const decisions=new Map([...document.querySelectorAll("#cloudDepartedWarnings .cloud-missing-choice")]
    .map(select=>[select.dataset.playerId,select.value]));
- if(rosterDiff.critical.some(item=>!decisions.get(item.member.id)))
+ if(rosterDiff.critical.some(item=>!["keep","remove"].includes(decisions.get(item.member.id))))
   throw Error("Bitte für alle Spieler in einer Aufstellung entscheiden, bevor du den Abgleich übernimmst.");
  const protectedIds=new Set(rosterDiff.critical.map(item=>item.member.id));
  const p=storage.getProfile(),members=p.members;
@@ -1043,8 +1043,10 @@ async function applyRoster(){
     if(decisions.get(m.id)==="keep"){
       m.participating=true;
       m.cocSyncState="kept"; // expressly retain a missing member's eligibility
+    }else if(decisions.get(m.id)==="remove"){
+      m.participating=false; // exclude from every unplayed day on the next calculation
+      m.cocSyncState="former"; // preserve player details and already locked lineups
     }
-    // "defer" means preserve everything and review again at the next import.
     continue;
   }
   if(m.cocSyncState==="kept")continue; // explicit user decision remains in force

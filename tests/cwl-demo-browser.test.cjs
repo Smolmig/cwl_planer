@@ -67,7 +67,7 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   await page.locator("#demoError").check();
   await page.waitForFunction(()=>document.getElementById("demoApiState").textContent==="Fehler");
   assert.match(await page.locator("#demoCompleted").innerText(),/1 \/ 7/);
-  assert.match(await page.locator("#cwlLiveOverview").innerText(),/API nicht erreichbar/);
+  assert.match(await page.locator("#cwlLiveOverview").innerText(),/CWL-Daten gerade nicht verfügbar/);
   await page.locator("#demoError").uncheck();
   await page.locator("#demoNoCwl").check();
   await page.waitForFunction(()=>document.getElementById("demoApiState").textContent==="Aus");
