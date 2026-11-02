@@ -224,6 +224,8 @@ const cloud={
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
   accountBtn.querySelector(".cloud-toggle-label").textContent=this.active?"Clan":"Login";
+  const headerClan=$("headerClanName");
+  if(headerClan){headerClan.hidden=!this.active;headerClan.textContent=this.active?label:"";headerClan.title=label;}
   accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
   accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
@@ -670,7 +672,7 @@ function formatChangeSummary(entry){
   const target=affected[0];
   const fields=Object.keys(target.felder||{});
   const field=fields[0];
-  const terms={fixed:"FIX-Status",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
+  const terms={fixed:"Fix",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",targetDays:"Einsatzziel",name:"Name",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
   if(field==="hinzugefuegt")return target.name+" hinzugefügt";
   if(field==="entfernt")return target.name+" entfernt";
   return (target.name||"einen Spieler")+" · "+(terms[field]||"Spielerdaten")+" geändert"+(affected.length>1?" (und weitere)":"");
@@ -1257,7 +1259,7 @@ async function audit(){
   const detail=document.createElement("span");const d=e.details||{};
   const label={name:"Name",participating:"Dabei",fixed:"FIX",priority:"Priorität",
     townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",
-    firstDay:"Erst ab",outFromDay:"Raus ab"};
+    firstDay:"Erst ab",outFromDay:"Raus ab",targetDays:"Einsatzziel"};
   const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):String(v);
   const pieces=[];
   for(const entry of (d.spieleraenderungen||[])){
@@ -1274,7 +1276,8 @@ async function audit(){
     }
   }
   if(d.plan_geaendert)pieces.push("Gespielte Aufstellungen / Tagesspeicher geändert");
-  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert");
+  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert"+(d.config_differenzen?" ("+Object.entries(d.config_differenzen).map(([key,pair])=>key+": "+(pair||[]).join(" → ")).join(", ")+")":""));
+  if(d.day_goals_geaendert)pieces.push("Rathaus-/Stärke-Tagesziele geändert");
   if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
   if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
   detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
