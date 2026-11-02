@@ -254,7 +254,9 @@ function openPage(name){activeSubpage=name||null;
  else{home.style.animation='none';void home.offsetWidth;home.style.animation='ar5-slide-back .2s ease-out both'}
  if(currentView==='settings')window.scrollTo({top:0,behavior:'instant'})
 }
-function updateGlobal(){renderReference();renderCharts();decorateMembers();const label=$('ar4ActiveClan');if(label)label.textContent=activeProfile()}
+function updateGlobal(){renderReference();renderCharts();decorateMembers();syncBulkVisual();
+ const cloudOperations=document.querySelector('.ar6-cloud-operations');if(cloudOperations)cloudOperations.hidden=!window.CWLCloud?.active;
+ const label=$('ar4ActiveClan');if(label)label.textContent=activeProfile()}
 // Core render functions do the data/handler binding first; visual components update afterwards.
 // Avoid recursion from cloud plugins: schedule one presentation update per paint frame.
 let pending=false;function schedule(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;updateGlobal()})}
