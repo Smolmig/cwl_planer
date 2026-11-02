@@ -1175,7 +1175,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
       <div class="subtitle">CWL planen · Einsätze fair verteilen · Überblick behalten</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><span class="badge ok auto-badge">✓ Auto-Aktualisierung</span></div>
+    <div class="top-actions"><span id="headerClanName" class="header-clan-name" hidden></span><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
   </div>
 </div>
 <main class="content">
@@ -1185,7 +1185,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
     <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
-    <div class="plan-actions"><button class="btn primary" id="copyFullPlanBtn">📋 Gesamten CWL-Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+    <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
   <div class="card plan-review-panel" id="planReviewPanel" hidden>
     <div class="section-title"><div><h3>Planfreigabe</h3><div class="statusline" id="planReviewHint">Gemeinsame Planung</div></div><span class="badge" id="planReviewStatus">In Bearbeitung</span></div>
@@ -1205,7 +1205,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 <section id="view-members" class="view">
   <div class="card">
     <div class="section-title">
-      <div><h3>Mitglieder</h3><div class="statusline">Mitglieder, Teilnahme und Verfügbarkeit verwalten.</div></div>
+      <div><h3>Mitglieder</h3><div class="statusline">Hier legst du fest, wer mitspielt, wie oft jemand eingesetzt werden soll und welche Tagesregeln gelten.</div></div>
     </div>
     <div id="guestMembersTools" class="cloud-member-tools">
       <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
@@ -1240,15 +1240,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
       </div>
     </div>
     <div class="inline-member-add hidden" id="inlineMemberAdd"><input class="name-input" id="inlineMemberName" type="text" autocomplete="off" placeholder="Name des neuen Mitglieds"><button class="btn small primary" id="inlineMemberSave">Hinzufügen</button><button class="btn small" id="inlineMemberCancel">Abbrechen</button></div>
-    <details class="member-help-details"><summary>Dabei, Fix und Priorität erklärt</summary>
-    <div class="member-hint"><b>Schnellstart:</b> Setze CWL-Teilnehmer auf <b>Dabei</b>. <b>Fix</b> hält Spieler jeden Kriegstag in der Aufstellung. <b>Einsatzziel</b> gibt die gewünschte Anzahl Tage vor. MUSS/RAUS regeln einzelne Kriegstage. Priorität entscheidet bei vergleichbaren Spielern. Im gemeinsamen Planer zeigt die Statistik echte Angriffswerte.</div>
-    <div class="info-strip">
-      <span class="info-pill"><b>Dabei</b> = nimmt an der aktuellen CWL teil</span>
-      <span class="info-pill"><b>Fix</b> = wird an jedem verfügbaren Tag gesetzt</span>
-      <span class="info-pill"><b>Prio</b> = bevorzugt bei sonst vergleichbaren Spielern den zusätzlichen Einsatz</span>
-      <button class="btn small" id="membersHelpBtn">Mehr erklären</button>
-    </div>
-    </details>
+    
     <div class="list-management">
       <div class="list-management-head"><div><div class="list-management-title">Mitgliederübersicht</div><div class="list-management-sub">Reihenfolge festlegen oder mehrere Spieler gleichzeitig bearbeiten.</div></div></div>
       <div class="list-management-actions">
@@ -1330,7 +1322,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
   <p class="settings-note">Neue Spieler und Rathauslevel übernehmen. Austritte prüfen, ohne bestehende CWL-Aufstellungen zu verändern.</p>
   <div class="statusline" id="autoRosterStatus" aria-live="polite">Noch kein Abgleich.</div>
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
-</div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
+</div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
       <div class="latest-changelog-head"><strong>Neu in v1.4.7</strong><span>Freigabe abgesichert</span></div>
       <ul>
@@ -1669,7 +1661,7 @@ function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,veryl
 function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null,targetDays:null}}
 function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],archivedMembers:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[],updatedAt:Date.now()}}
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
-function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
+function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight","arena"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
 function saveUiSettings(){try{localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}catch(e){/* UI preferences are non-critical */}}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
@@ -2096,7 +2088,7 @@ async function createProfilePrompt(){const raw=await promptInline("Neues Profil 
 function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
 async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
 function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
-function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
+function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="arena"?"#151a20":resolved==="dark"?"#0f172a":"#f4f7fb"}
 function renderRecoveryBanner(){
   const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
   if(!startupStorageIssue)return;
