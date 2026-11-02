@@ -304,6 +304,9 @@ function installNameEditors(){
   if(cloud.active&&role==="viewer")return;
   const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
   if(!input)return;
+  const name= input.closest(".name-wrap")?.querySelector(".member-name-label");
+  if(name)name.hidden=true;
+  input.hidden=false;
   input.readOnly=false;
   pencil.setAttribute("aria-pressed","true");
   input.focus({preventScroll:true});
@@ -313,6 +316,9 @@ function installNameEditors(){
   const input=event.target;
   if(!input.matches?.(".member-name"))return;
   input.readOnly=true;
+  input.hidden=true;
+  const label=input.closest(".name-wrap")?.querySelector(".member-name-label");
+  if(label){label.textContent=input.value.trim()||label.textContent;label.hidden=false;label.title=label.textContent;}
   input.closest(".name-wrap")?.querySelector(".member-name-edit")?.setAttribute("aria-pressed","false");
  },true);
  list.addEventListener("keydown",event=>{
