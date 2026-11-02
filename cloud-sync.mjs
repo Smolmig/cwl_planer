@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.8";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.8";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.8";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.8";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.9";
+import { createCwlLive } from "./cwl-live.mjs?v=1.4.9";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.4.9";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.9";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -304,6 +304,9 @@ function installNameEditors(){
   if(cloud.active&&role==="viewer")return;
   const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
   if(!input)return;
+  const name= input.closest(".name-wrap")?.querySelector(".member-name-label");
+  if(name)name.hidden=true;
+  input.hidden=false;
   input.readOnly=false;
   pencil.setAttribute("aria-pressed","true");
   input.focus({preventScroll:true});
@@ -313,6 +316,9 @@ function installNameEditors(){
   const input=event.target;
   if(!input.matches?.(".member-name"))return;
   input.readOnly=true;
+  input.hidden=true;
+  const label=input.closest(".name-wrap")?.querySelector(".member-name-label");
+  if(label){label.textContent=input.value.trim()||label.textContent;label.hidden=false;label.title=label.textContent;}
   input.closest(".name-wrap")?.querySelector(".member-name-edit")?.setAttribute("aria-pressed","false");
  },true);
  list.addEventListener("keydown",event=>{
@@ -667,23 +673,51 @@ function showChangeToast(message,sticky=false){
  if(!sticky)notifyTimer=setTimeout(()=>toggle("cloudChangeNotice",false),9500);
 }
 function describeRemoteEvent(event){
- const d=event?.details||{},lines=[],fields={name:"Name",fixed:"Fix",participating:"Dabei",
-  priority:"Priorität",targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln"};
- const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):Array.isArray(v)?v.map((x,i)=>x==="auto"?"":("T"+(i+1)+": "+x)).filter(Boolean).join(", ")||"Automatisch":String(v);
- for(const p of d.spieleraenderungen||[]){
-   for(const [key,value] of Object.entries(p.felder||{})){
-     if(key==="hinzugefuegt"||key==="entfernt"){lines.push((p.name||"Spieler")+(key==="hinzugefuegt"?" hinzugefügt":" entfernt"));continue}
-     if(Array.isArray(value))lines.push((p.name||"Spieler")+" · "+(fields[key]||key)+": "+fmt(value[0])+" → "+fmt(value[1]));
+ const data=event?.details||{},lines=[];
+ const labels={name:"Name",fixed:"Fix",participating:"Dabei",priority:"Priorität",
+  targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",
+  playerTag:"Spieler-Tag",cocSyncState:"Clanstatus",cocOrder:"Clash-Reihenfolge",
+  firstDay:"Erst ab",outFromDay:"Raus ab"};
+ const fmt=value=>value==null?"–":typeof value==="boolean"?(value?"Ja":"Nein"):String(value);
+ if(event?.event_type==="profile_created")return ["Gemeinsamen Clanplan erstellt"];
+ for(const player of data.spieleraenderungen||[]){
+   const n=player.name||"Spieler";
+   for(const [key,pair] of Object.entries(player.felder||{})){
+     if(key==="hinzugefuegt"){lines.push(n+" hinzugefügt");continue}
+     if(key==="entfernt"){lines.push(n+" entfernt");continue}
+     if(!Array.isArray(pair)||pair.length<2)continue;
+     if(key==="statuses"&&Array.isArray(pair[0])&&Array.isArray(pair[1])){
+       const statusLabel=v=>({auto:"AUTO",must:"MUSS",out:"RAUS"}[v]||String(v||"AUTO").toUpperCase());
+       const before=pair[0],after=pair[1];
+       for(let i=0;i<Math.max(before.length,after.length);i++)
+         if(before[i]!==after[i])lines.push(n+" · Tag "+(i+1)+": "+
+           statusLabel(before[i])+" → "+statusLabel(after[i]));
+       continue;
+     }
+     lines.push(n+" · "+(labels[key]||key)+": "+fmt(pair[0])+" → "+fmt(pair[1]));
    }
  }
- if(d.config_differenzen)for(const [key,pair] of Object.entries(d.config_differenzen))
-   lines.push("CWL-Grunddaten · "+key+": "+fmt(pair?.[0])+" → "+fmt(pair?.[1]));
- if(d.day_goals_geaendert)lines.push("Tagesziele für RH oder Angriffsstärke angepasst");
- if(d.plan_geaendert)lines.push("Gespielte Aufstellungen verändert");
- if(d.archiv_geaendert)lines.push("CWL-Archiv verändert");
- if(d.config_geaendert&&!d.config_differenzen)lines.push("CWL-Grunddaten verändert (älterer Verlauf ohne Details)");
- if(d.weitere_spieler)lines.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
- return lines.length?lines:["Profil aktualisiert – für diese Änderung sind keine Felddetails gespeichert"];
+ for(const [key,pair] of Object.entries(data.config_differenzen||{}))
+   if(Array.isArray(pair))lines.push("CWL-Einstellung "+key+": "+fmt(pair[0])+" → "+fmt(pair[1]));
+ const dayList=values=>Array.isArray(values)&&values.length?" (Tag "+values.join(", ")+")":"";
+ if(data.day_goals_geaendert)lines.push("Tagesziele verändert"+dayList(data.tagesziele_tage));
+ if(data.plan_geaendert)lines.push("Gespielte Aufstellung verändert"+dayList(data.gespielte_tage));
+ if(data.archiv_geaendert)lines.push("CWL-Archiv aktualisiert");
+ const sections=new Set(data.bereiche||[]);
+ if(sections.has("name"))lines.push("Name des Clanplans geändert");
+ if(sections.has("archivedMembers"))lines.push("Archivierte Clanmitglieder aktualisiert");
+ if(sections.has("cwlLive"))lines.push("CWL-Kriegs- und Gegnerdaten synchronisiert");
+ if(sections.has("members")&&!(data.spieleraenderungen||[]).length)
+   lines.push("Mitgliederdaten abgeglichen (z. B. Clanstatus oder Spieler-Tag)");
+ if(sections.has("config")&&!data.config_geaendert&&!Object.keys(data.config_differenzen||{}).length)
+   lines.push("CWL-Einstellungen synchronisiert");
+ if(sections.has("config")&&data.config_geaendert&&!Object.keys(data.config_differenzen||{}).length)
+   lines.push("Weitere CWL-Einstellungen geändert");
+ if(data.weitere_spieler)lines.push("Weitere "+data.weitere_spieler+" Spieler betroffen");
+ if(lines.length)return [...new Set(lines)];
+ if(sections.size===1&&sections.has("updatedAt"))return ["Nur Speicherzeitpunkt aktualisiert – keine sichtbare Änderung"];
+ if(sections.size)return ["Andere Profildaten aktualisiert: "+[...sections].filter(x=>x!=="updatedAt").join(", ")];
+ return ["Älterer Eintrag: Die genauen Änderungen wurden damals nicht aufgezeichnet"];
 }
 async function showRemoteChangeDetails(){
  const host=$("cloudChangeDetailList");host.replaceChildren();host.hidden=false;
@@ -704,21 +738,8 @@ async function showRemoteChangeDetails(){
 }
 
 function formatChangeSummary(entry){
- const changes=entry?.details||{};
- if(changes.archiv_geaendert)return "das CWL-Archiv geändert";
- if(changes.plan_geaendert)return "eine gespielte Aufstellung geändert";
- if(changes.config_geaendert)return "die CWL-Einstellungen geändert";
- const affected=changes.spieleraenderungen||[];
- if(affected.length){
-  const target=affected[0];
-  const fields=Object.keys(target.felder||{});
-  const field=fields[0];
-  const terms={fixed:"Fix",participating:"Teilnahme",priority:"Priorität",townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",targetDays:"Einsatzziel",name:"Name",firstDay:"Erst-ab",outFromDay:"Raus-ab"};
-  if(field==="hinzugefuegt")return target.name+" hinzugefügt";
-  if(field==="entfernt")return target.name+" entfernt";
-  return (target.name||"einen Spieler")+" · "+(terms[field]||"Spielerdaten")+" geändert"+(affected.length>1?" (und weitere)":"");
- }
- return "den gemeinsamen CWL-Plan geändert";
+ const changes=describeRemoteEvent(entry);
+ return changes[0]+(changes.length>1?" und "+(changes.length-1)+" weitere Änderungen":"");
 }
 async function remoteChangeMessage(id,oldRevision){
  const {data:events,error:err}=await sb.from("cwl_change_events")
@@ -733,7 +754,7 @@ async function remoteChangeMessage(id,oldRevision){
  if(memberError)throw memberError;
  const byRole={owner:"Clanführer",editor:"Vize",viewer:"Beobachter"};
  const actor=member?.display_name||byRole[member?.role]||"Ein Clanmitglied";
- return actor+" hat "+formatChangeSummary(foreign);
+ return actor+": "+formatChangeSummary(foreign);
 }
 async function checkRemoteChanges(reason="poll"){
  const id=clanId,epoch=accountEpoch;
@@ -1287,46 +1308,39 @@ async function applyRoster(){
 async function audit(){
  if(!clanId)return;
  const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
-  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at").eq("clan_id",clanId).order("id",{ascending:false}).limit(100),
+  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at")
+   .eq("clan_id",clanId).order("id",{ascending:false}).limit(150),
   sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",clanId)
  ]);
  if(err)throw err;if(e2)throw e2;
  const aliases=new Map((people||[]).map(x=>[x.user_id,x.display_name||"Clanmitglied "+x.user_id.slice(0,6)]));
  const root=$("cloudAudit");root.replaceChildren();
  if(!rows?.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
+ let hiddenTechnical=0,shown=0;
  for(const e of rows){
-  const item=document.createElement("div");item.className="cloud-actor";
-  const head=document.createElement("b");head.textContent=(e.actor_id===user.id?"Du":aliases.get(e.actor_id)||"Ehemaliges Clanmitglied")+" · "+new Date(e.created_at).toLocaleString("de-AT");
-  const detail=document.createElement("span");const d=e.details||{};
-  const label={name:"Name",participating:"Dabei",fixed:"FIX",priority:"Priorität",
-    townHall:"Rathaus",threeStar:"3★-Stärke",statuses:"Tagesregeln",
-    firstDay:"Erst ab",outFromDay:"Raus ab",targetDays:"Einsatzziel"};
-  const fmt=v=>v==null?"–":typeof v==="boolean"?(v?"Ja":"Nein"):String(v);
-  const pieces=[];
-  for(const entry of (d.spieleraenderungen||[])){
-    const fields=entry.felder||{};
-    if(fields.hinzugefuegt){pieces.push(entry.name+" hinzugefügt");continue}
-    if(fields.entfernt){pieces.push(entry.name+" entfernt");continue}
-    for(const [key,pair] of Object.entries(fields)){
-      if(!Array.isArray(pair))continue;
-      if(key==="statuses" && Array.isArray(pair[0]) && Array.isArray(pair[1])){
-        const changed=pair[1].map((v,i)=>v!==pair[0][i]?"Tag "+(i+1)+": "+fmt(pair[0][i])+" → "+fmt(v):null).filter(Boolean);
-        pieces.push(entry.name+": "+changed.join(", "));continue;
-      }
-      pieces.push(entry.name+": "+(label[key]||key)+" "+fmt(pair[0])+" → "+fmt(pair[1]));
-    }
+  const changes=describeRemoteEvent(e);
+  if(changes.length===1&&changes[0].startsWith("Nur Speicherzeitpunkt")){hiddenTechnical++;continue}
+  const item=document.createElement("details");item.className="cloud-actor cloud-audit-item";
+  const summary=document.createElement("summary");
+  const who=document.createElement("strong");
+  who.textContent=(e.actor_id===user?.id?"Du":aliases.get(e.actor_id)||"Ehemaliges Clanmitglied")+
+   " · "+new Date(e.created_at).toLocaleString("de-AT");
+  const preview=document.createElement("span");
+  preview.textContent=changes[0]+(changes.length>1?" · +"+(changes.length-1)+" weitere":"");
+  summary.append(who,preview);item.append(summary);
+  const details=document.createElement("ul");details.className="cloud-audit-changes";
+  for(const change of changes){
+   const line=document.createElement("li");line.textContent=change;details.append(line);
   }
-  if(d.plan_geaendert)pieces.push("Gespielte Aufstellungen / Tagesspeicher geändert");
-  if(d.config_geaendert)pieces.push("CWL-Grunddaten geändert"+(d.config_differenzen?" ("+Object.entries(d.config_differenzen).map(([key,pair])=>key+": "+(pair||[]).join(" → ")).join(", ")+")":""));
-  if(d.day_goals_geaendert)pieces.push("Rathaus-/Stärke-Tagesziele geändert");
-  if(d.weitere_spieler)pieces.push("+"+d.weitere_spieler+" weitere Spieleränderungen");
-  if(!pieces.length && d.aenderungen_mitglieder?.length)pieces.push("Betroffen: "+d.aenderungen_mitglieder.join(", "));
-  detail.textContent=(e.event_type==="profile_created"?"Profil erstellt":"Profil geändert")+
-    (pieces.length?" · "+pieces.join(" · "):"");
-  item.append(head,detail);root.append(item);
+  item.append(details);root.append(item);shown++;
+ }
+ if(!shown)root.textContent="Keine inhaltlichen Änderungen gespeichert.";
+ if(hiddenTechnical){
+  const note=document.createElement("div");note.className="statusline cloud-audit-technical";
+  note.textContent=hiddenTechnical+" rein technische Speicheraktualisierungen ausgeblendet.";
+  root.append(note);
  }
 }
-
 function stopPresence(){
  if(presenceTimer!==null){clearInterval(presenceTimer);presenceTimer=null;}
  text("cloudActiveMembers","");

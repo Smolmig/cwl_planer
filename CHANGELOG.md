@@ -8,6 +8,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.4.9] - 2026-11-03
+
+### Darstellung
+- Arena übernimmt jetzt auch Karten, Modale, Dialoge, Spieler-/Statistikübersichten, Formulare, Navigation und Buttons mit dunklen Oberflächen sowie warmen Goldakzenten.
+- Insbesondere der aktive Mitgliederabgleich ist klar als ausführbare Aktion statt wie ausgegraut erkennbar. Echte Sperren behalten eine unterscheidbare deaktivierte Darstellung.
+- Namen in Mitgliederzeilen sind im Normalzustand Text statt flexibel wachsender Eingabefelder. Der Stift sitzt stets unmittelbar daneben; zum Bearbeiten erscheint ein Eingabefeld.
+- Hilfe zu einzelnen Spielern in die rechte untere Ecke des Bearbeitungsbereichs verschoben.
+
+### Zusammenarbeit
+- Änderungshistorie zeigt aufklappbare konkrete Feldänderungen inklusive Vorher/Nachher und betroffenen Tagen. Rein technische Zeitstempel-Ereignisse werden ausgeblendet.
+- Die Audit-Funktion erfasst nun zusätzlich CWL-Live-Abgleich, Mitgliederarchivierung, Änderungen am Clannamen und betroffene Tagesziele.
+- Alte Ereignisse ohne gespeicherte Felddaten werden ehrlich als nicht rekonstruierbar markiert.
+
 ## [1.4.8] - 2026-11-02
 
 ### Mitglieder & Statistik
