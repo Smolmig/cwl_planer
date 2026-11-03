@@ -48,7 +48,7 @@ test("logout does not discard unsaved changes when backup fails or session error
  await assert.rejects(noBackup.logout(),/Backup konnte nicht erstellt/);
  assert.equal(noBackup.calls.signedOut,0);
  const apiFail=compileLogout({signOutError:{message:"Remote server error"}});
- await assert.rejects(apiFail.logout(),/Remote server error/);
+ await assert.rejects(apiFail.logout(),e=>e&&e.message==="Remote server error");
  assert.equal(apiFail.calls.leftCloud,0);
 });
 test("account icon opens a quick menu with direct logout, including at small mobile widths",{timeout:90000},async()=>{
