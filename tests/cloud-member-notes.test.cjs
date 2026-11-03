@@ -57,7 +57,7 @@ test("API-linked clan names are read-only while local manual and unlinked profil
  assert.match(sync,/hasApiClan:\(\)=>!!clans\.find/);
  assert.match(html,/const apiManaged=!!\(window\.CWLCloud\?\.active&&window\.CWLCloud\?\.hasApiClan\?\.\(\)/);
  assert.match(html,/\$\{apiManaged\?"":\x60<button type="button" class="member-name-edit"/);
- assert.match(sync,/cloud\.hasApiClan\?\.\(\)&&member\?\.playerTag&&Number\.isInteger\(member\.cocOrder\)/);
+ assert.match(sync,/cloud\.hasApiClan\?\.\(\)&&!cloud\.isEmergencyEditing\?\.\(\)&&member\?\.playerTag&&Number\.isInteger\(member\.cocOrder\)/);
 });
 test("offline index remains separate, and cloud note does not require a new SQL table",()=>{
  const offline=fs.readFileSync(path.join(root,"index.html"),"utf8");
