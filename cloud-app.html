@@ -158,7 +158,7 @@ html[data-theme="cyber"] .bottomnav,html[data-theme="cyberlight"] .bottomnav{bor
 html[data-theme="cyber"] h1,html[data-theme="cyber"] h2,html[data-theme="cyber"] h3,html[data-theme="cyber"] h4,html[data-theme="cyber"] .day-title,html[data-theme="cyberlight"] h1,html[data-theme="cyberlight"] h2,html[data-theme="cyberlight"] h3,html[data-theme="cyberlight"] h4,html[data-theme="cyberlight"] .day-title{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;letter-spacing:.035em}
 html[data-theme="cyber"] h1,html[data-theme="cyber"] .day-title{color:#f3feff;text-shadow:-1px 0 rgba(255,63,155,.38),1px 0 rgba(34,231,255,.52),0 0 14px rgba(34,231,255,.16)}
 html[data-theme="cyberlight"] h1,html[data-theme="cyberlight"] .day-title{color:#073a4d;text-shadow:-1px 0 rgba(255,63,155,.20),1px 0 rgba(0,166,210,.28)}
-html[data-theme="cyber"] .titleblock h1::after,html[data-theme="cyberlight"] .titleblock h1::after{content:" // CWL OPS";font-size:9px;letter-spacing:.18em;color:var(--cy-magenta);vertical-align:middle;margin-left:7px;text-shadow:none;white-space:nowrap}
+/* Cyberpunk no longer adds a redundant CWL OPS wordmark. */
 html[data-theme="cyber"] .subtitle,html[data-theme="cyberlight"] .subtitle{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.05em}
 html[data-theme="cyber"] .card,html[data-theme="cyber"] .settings-subcard,html[data-theme="cyber"] .profile-active,html[data-theme="cyber"] .list-management,html[data-theme="cyber"] .bulkbar,html[data-theme="cyber"] .modalbox,html[data-theme="cyber"] .inline-action-panel{border-radius:4px 18px 4px 18px;border-color:rgba(34,231,255,.40);background:linear-gradient(135deg,rgba(34,231,255,.22) 0 2px,transparent 2px) top left/24px 24px no-repeat,linear-gradient(315deg,rgba(255,63,155,.22) 0 2px,transparent 2px) bottom right/24px 24px no-repeat,linear-gradient(145deg,#0a1121,#060a14);box-shadow:var(--shadow),inset 0 0 0 1px rgba(255,63,155,.045)}
 html[data-theme="cyberlight"] .card,html[data-theme="cyberlight"] .settings-subcard,html[data-theme="cyberlight"] .profile-active,html[data-theme="cyberlight"] .list-management,html[data-theme="cyberlight"] .bulkbar,html[data-theme="cyberlight"] .modalbox,html[data-theme="cyberlight"] .inline-action-panel{border-radius:4px 18px 4px 18px;border-color:rgba(0,127,167,.42);background:linear-gradient(135deg,rgba(0,166,210,.26) 0 2px,transparent 2px) top left/24px 24px no-repeat,linear-gradient(315deg,rgba(201,20,97,.20) 0 2px,transparent 2px) bottom right/24px 24px no-repeat,linear-gradient(145deg,#ffffff,#f4fcff);box-shadow:var(--shadow),inset 0 0 0 1px rgba(201,20,97,.035)}
@@ -1630,6 +1630,10 @@ html[data-theme="arena"] .stats-th img{max-width:38px;max-height:38px}
  .cloud-overlay.open{display:flex;justify-content:flex-end;padding:0}
  .cloud-overlay.open .cloud-panel{width:min(760px,100%);max-width:none;margin:0;min-height:100dvh;border-radius:0;animation:moreSlideIn .19s ease-out}
 }
+
+#view-more:has(.more-detail:not([hidden])) .more-heading{display:none}
+@media(min-width:700px){.cloud-overlay.open .cloud-panel{height:100dvh;overflow-y:auto;overscroll-behavior:contain;border-radius:0}}
+@media(max-width:699px){.cloud-overlay.open .cloud-panel{height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(22px + env(safe-area-inset-bottom))}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
