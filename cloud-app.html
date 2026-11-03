@@ -1739,11 +1739,13 @@ html[data-theme="arena"] .mobile-day-tab.played{border-color:var(--green)}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.4.9</strong><span>Arena & Zusammenarbeit</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.5.0</strong><span>Navigation & Bedienung</span></div>
       <ul>
-       <li><b>Arena-Theme:</b> Dunkle Gold-Darstellung für Karten, Menüs, Dialoge, Statistik, Eingaben und aktive Schaltflächen. Deaktivierte Aktionen sind eindeutig unterscheidbar.</li>
-       <li><b>Mitglieder:</b> Der Bearbeitungsstift bleibt direkt neben dem Namen, unabhängig von der Namenslänge. Hilfe-Button am unteren rechten Rand des Bearbeitungsfensters.</li>
-       <li><b>Änderungsverlauf:</b> Aufklappbare Einträge zeigen konkrete Vorher/Nachher-Angaben, betroffene Tage und den Typ des Cloud-Abgleichs. Ältere Einträge ohne Detailprotokoll werden entsprechend gekennzeichnet.</li>
+       <li><b>PC:</b> Feste Navigation links und breiterer Arbeitsbereich anstelle der unteren Leiste.</li>
+       <li><b>Handy:</b> Bereich „Mehr“ für Clan & Konto, Archiv, Regeln, Darstellung, Backup und Hilfe.</li>
+       <li><b>Anmeldung:</b> Enter funktioniert; eine Textmarkierung schließt den Dialog nicht unbeabsichtigt.</li>
+       <li><b>Arena:</b> Schild-Logo und goldfarbenes Branding, aufgeräumte Clan-Verwaltung und dezente Hintergrundgrafik.</li>
+       <li><b>Planung:</b> Verständlichere Tageszustände, kleine Rathausbilder und keine manuelle Mehrfach-3★-Stärke im Cloud-Planer.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2078,7 +2080,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.4.9";
+const APP_VERSION="v1.5.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2695,6 +2697,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.4.9"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.5.0"></script>
 </body>
 </html>
