@@ -51,6 +51,8 @@ function makeHarness({invokeError=false,malformed=false,crashAtPlanning=false}={
   console:{warn(){},log(){}},
   document:doc,Option:dom.window.Option,
   clanId:state.clanId,role:"editor",
+  cloud:{active:false,hasApiClan:()=>false},
+  refreshRosterEmergencyUI:()=>{},rosterApiFailed:false,manualRosterPending:()=>false,
   ensureSaved:async()=>{},
   resetRoster:()=>{},
   toggle:(id,value)=>{doc.getElementById(id).hidden=!value},
