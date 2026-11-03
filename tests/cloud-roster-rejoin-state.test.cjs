@@ -105,3 +105,31 @@ test("manual edits are explicitly marked in the cloud member controls",()=>{
    assert.ok(html.includes('markRosterAbsenceEdit(m,"'+field.replace("\\","")),"edit marker: "+field);
  assert.match(sync,/if\(m\.cocSyncState==="kept"\|\|m\.cocSyncState==="former"\)continue/);
 });
+
+test("a new CWL clears absent-player day rules and exact targets without reviving old ones",async()=>{
+ const m=base(),p=profile(m);
+ await apply(p);
+ assert.equal(m.cocBeforeDeparture.before.targetDays,3);
+ const a=html.indexOf("function resetPlanningData(){");
+ const b=html.indexOf("async function handleCwlManage",a);
+ assert.ok(a>0&&b>a);
+ const reset=vm.runInNewContext(html.slice(a,b)+"\nresetPlanningData",{
+  state:p,emptyDayGoal:()=>({townHall:{},strength:{}}),
+  mobileSelectedDay:null,mobileLineupsExpanded:false
+ });
+ reset();
+ assert.equal(m.targetDays,null);
+ assert.equal(m.cocBeforeDeparture.before.targetDays,null);
+ assert.ok(m.cocBeforeDeparture.before.statuses.every(x=>x==="auto"));
+ await apply(p,incoming());
+ assert.equal(m.targetDays,null);
+ assert.ok(m.statuses.every(x=>x==="auto"));
+ assert.equal(m.participating,true,"participation from before departure still restored");
+});
+test("snapshot is never applied if its stored tag differs from returning player tag",async()=>{
+ const m=base(),p=profile(m);await apply(p);
+ m.cocBeforeDeparture.tag="#WRONG";
+ await apply(p,incoming());
+ assert.equal(m.participating,false);
+ assert.equal(m.cocBeforeDeparture,undefined);
+});
