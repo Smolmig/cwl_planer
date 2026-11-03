@@ -196,6 +196,7 @@ async function openNewPlanCycle(){
 
 const cloud={
  active:false,
+ hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
@@ -302,6 +303,8 @@ function installNameEditors(){
   if(!pencil)return;
   event.preventDefault();event.stopPropagation();
   if(cloud.active&&role==="viewer")return;
+  const member=storage.getProfile()?.members?.find(m=>m.id===pencil.closest(".member")?.dataset.id);
+  if(cloud.active&&cloud.hasApiClan()&&member?.playerTag&&Number.isInteger(member.cocOrder)&&member.cocSyncState!=="former")return;
   const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
   if(!input)return;
   const name= input.closest(".name-wrap")?.querySelector(".member-name-label");
