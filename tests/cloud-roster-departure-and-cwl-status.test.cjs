@@ -26,6 +26,7 @@ async function applyDecision(decision){
     normalizeTag:v=>String(v||"").toUpperCase(),
     storage:{getProfile:()=>profile,newMember:()=>{throw Error("unexpected new member")},rerender:()=>{rerenders++}},
     resetRoster:()=>{},
+    refreshRosterEmergencyUI:()=>{},
     toggle:()=>{},
     msg:()=>{}
   };
