@@ -1238,8 +1238,7 @@ async function getRoster({automatic=false}={}){
    throw Error(descriptions[reason]||reason+" (API-Anfrage fehlgeschlagen)");
  }
  if(!data?.ok)throw Error(data?.error||"Abruf fehlgeschlagen.");
- rosterApiFailed=false;
- refreshRosterEmergencyUI();
+ if(typeof refreshRosterEmergencyUI==="function"){rosterApiFailed=false;refreshRosterEmergencyUI();}
  text("cloudRosterStatus","Vergleich abgeschlossen. Bitte die Unterschiede prüfen.");
  stage="Mitglieder vergleichen";
  if(!Array.isArray(data.members))throw Error("Die Clan-Mitgliederliste wurde nicht vollständig übertragen.");
@@ -1311,7 +1310,7 @@ async function getRoster({automatic=false}={}){
   }
  }
  }catch(err){
-   if(cloud.active&&cloud.hasApiClan?.()&&["Clash-Daten abrufen","Serverantwort prüfen","Mitglieder vergleichen"].includes(stage)){
+   if(typeof cloud!=="undefined"&&cloud.active&&cloud.hasApiClan?.()&&["Clash-Daten abrufen","Serverantwort prüfen","Mitglieder vergleichen"].includes(stage)){
      rosterApiFailed=true;
      refreshRosterEmergencyUI();
    }
@@ -1423,7 +1422,7 @@ async function applyRoster(){
  rosterApiFailed=false;
  storage.rerender();
  await ensureSaved();
- refreshRosterEmergencyUI();
+ if(typeof refreshRosterEmergencyUI==="function")refreshRosterEmergencyUI();
  msg("Mitgliederliste übernommen ✓");resetRoster();toggle("cloudRosterBox",false);
 }
 async function audit(){
