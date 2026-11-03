@@ -64,7 +64,7 @@ test("Historical subjective bulk strength remains guest-only, actual stats unaff
   assert.match(html,/class="bulk-group bulk-strength-group"/);
   assert.match(html,/body\.cloud-mode \.bulk-strength-group\{display:none!important\}/);
   assert.match(html,/function memberTownHallMarkup\(m\)/);
-  assert.match(html,/level_\x27\+th\+\x27\.webp/);
+  assert.match(html,/home-village\/town_hall\/level_/);
   assert.match(html,/memberTownHallMarkup\(m\)/);
 });
 test("Days expose played, next and future statuses while keeping mobile short labels",()=>{
