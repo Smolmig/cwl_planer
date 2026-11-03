@@ -930,6 +930,48 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
  .cwl-live-fight{font-size:12px}
 }
 
+/* CWL war overview: the two teams belong to the same left/right sides as the scoreboard.
+   Controls are clear full-width cards, not tiny arrow links. */
+.cwl-live-side-label{font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;color:var(--muted)}
+.cwl-live-team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;align-items:start;min-width:0}
+.cwl-live-team-details{box-sizing:border-box;min-width:0;margin:0!important;padding:0!important;
+ border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+.cwl-live-team-details>summary{min-height:60px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;
+ position:relative;padding:12px 36px 12px 13px;list-style:none!important;
+ border:0;background:var(--bluebg);cursor:pointer;outline-offset:-3px;
+ transition:background .15s,border-color .15s}
+.cwl-live-team-details>summary::-webkit-details-marker{display:none}
+.cwl-live-team-details>summary::before{content:none!important;display:none!important}
+.cwl-live-team-details>summary::after{content:"";position:absolute;right:14px;top:50%;
+ width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ transform:translateY(-70%) rotate(45deg);transition:transform .16s;color:var(--text)}
+.cwl-live-team-details[open]>summary::after{transform:translateY(-30%) rotate(225deg)}
+.cwl-live-team-details>summary:hover{filter:brightness(1.06)}
+.cwl-live-team-details>summary:focus-visible{outline:2px solid var(--primary)}
+.cwl-team-summary-title{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
+.cwl-live-team-details .cwl-live-attack-count{margin-left:0;white-space:normal;font-size:11px;line-height:1.35;color:var(--muted)}
+.cwl-live-team-enemy>summary{background:var(--surface,rgba(127,127,127,.1));border-left:3px solid var(--primary)}
+.cwl-live-team-own>summary{border-left:3px solid var(--green)}
+.cwl-live-team-details[open]>summary{border-bottom:1px solid var(--line)}
+.cwl-live-team-details>.cwl-roster-list,
+.cwl-live-team-details>.cwl-live-attack,
+.cwl-live-team-details>.cwl-live-attack-empty{margin-left:12px;margin-right:12px}
+.cwl-live-team-details>.cwl-roster-list{margin-top:4px;margin-bottom:7px}
+.cwl-live-team-details .cwl-live-attack{grid-template-columns:minmax(0,1fr);gap:5px;padding:11px 4px}
+.cwl-live-team-details .cwl-live-attack-result{justify-content:flex-start}
+.cwl-live-team-details .cwl-live-fight{overflow-wrap:anywhere}
+.cwl-live-team-details .cwl-roster-member{flex-wrap:wrap}
+@media(max-width:800px){
+ .cwl-live-team-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+ .cwl-live-team-details>summary{min-height:52px}
+}
+@media(max-width:390px){
+ .cwl-live-team-details>summary{padding:11px 31px 11px 10px}
+ .cwl-team-summary-title{font-size:13px}
+}
+html[data-theme="arena"] .cwl-live-team-details{border-color:#615841;background:rgba(19,24,27,.28)}
+html[data-theme="arena"] .cwl-live-team-details>summary{background:rgba(227,177,90,.10)}
+html[data-theme="arena"] .cwl-live-team-enemy>summary{background:rgba(227,177,90,.055)}
 /* Statistics keep the compact table readable on 320px iPhones. */
 .stats-header,.stats-table-card{overflow:hidden}
 .stats-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
