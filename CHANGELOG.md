@@ -8,6 +8,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.5.1] - 2026-11-03
+
+### Navigation und Clanwechsel
+- Im Cloud-Modus kann der aktive Clan direkt über den Clannamen im Kopfbereich gewechselt werden; die vorhandene Cloud-Speicher- und Berechtigungslogik bleibt unverändert.
+- PC: Doppelte CWL-Planer-Kopfmarke entfernt; Seitenleiste optional auf reine Symbole einklappbar, Präferenz bleibt lokal gespeichert.
+- Clankonto bleibt über die Clanauswahl verwaltbar. Login für nicht angemeldete Nutzer bleibt unverändert.
+- Keine Migration und keine Änderung produktiver Supabase-Daten.
+
 ## [1.5.0] - 2026-11-03
 
 ### Adaptive Navigation
