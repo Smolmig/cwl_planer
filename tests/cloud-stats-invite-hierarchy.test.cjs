@@ -33,7 +33,7 @@ test("Stats controls are compact but individually selectable",()=>{
  assert.match(html,/>Verpasst</);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
  assert.match(ui,/id="statsCwlField"|statsCwlField/);
- assert.match(ui,/raw\.githubusercontent\.com\/ClashKingInc\/ClashKingAssets/);
+ assert.match(ui,/assets\.clashk\.ing\/buildings\/home-village\/town_hall/);
  assert.match(ui,/onerror='this\.remove\(\)'/);
 });
 
