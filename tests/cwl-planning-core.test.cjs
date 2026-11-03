@@ -2,9 +2,8 @@
 const {test}=require("node:test");
 const assert=require("node:assert/strict");
 const path=require("node:path");
-const {pathToFileURL}=require("node:url");
-const load=import(pathToFileURL(path.join(__dirname,"..","cwl-planning-core.mjs")).href);
-const solve=async props=>(await load).planCwl(props);
+const {planCwl}=require(path.join(__dirname,"..","cwl-planning-core.js"));
+const solve=async props=>planCwl(props);
 const member=(id,rest={})=>({id,name:id,playerTag:"#"+id,participating:true,fixed:false,priority:0,targetDays:null,statuses:Array(7).fill("auto"),...rest});
 const rotation=(a={},b={},slots=15)=>({slots,days:7,members:[...Array.from({length:slots-1},(_,i)=>member("fix"+i,{fixed:true})),member("A",a),member("B",b)]});
 
