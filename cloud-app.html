@@ -2582,7 +2582,7 @@ function renderPlanDayWarnings(dp){
  // The global solver may repeat every day's shortage on every day plan.
  // Show a day-specific notice only on its own card, and global conflicts once.
  const warnings=(dp.warnings||[]).filter(raw=>{
-  const day=String(raw).match(/^Tag\\s+(\\d+)\\s*:/i);
+  const day=String(raw).match(/^Tag\s+(\d+)\s*:/i);
   return day?Number(day[1])===dp.day:dp.day===1;
  });
  if(!warnings.length)return "";
