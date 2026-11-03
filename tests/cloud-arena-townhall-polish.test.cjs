@@ -34,6 +34,8 @@ test("Rathaus icons scale consistently and Arena surfaces avoid rectangular cut-
      const result=await page.evaluate(({theme,icon})=>{
       document.documentElement.dataset.theme=theme;
       document.body.classList.add("cloud-mode");
+      document.getElementById("view-members").classList.add("active");
+      document.getElementById("view-stats").classList.add("active");
       const statsHost=document.getElementById("statsRows");
       const membersHost=document.getElementById("memberList");
       statsHost.innerHTML='<div class="stats-player-row"><div class="stats-player"><span class="stats-th"><img class="stats-th-icon" src="'+icon+'" alt=""><small>RH18</small></span><div class="stats-name"><b>Spieler Beispiel</b></div></div><strong class="stats-rate">75%</strong><span class="stats-number">8</span><span class="stats-number">1</span></div>';
