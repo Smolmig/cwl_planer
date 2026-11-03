@@ -1560,6 +1560,14 @@ html[data-theme="arena"] .mobile-day-tab .day-no strong{color:var(--text)}
 html[data-theme="arena"] .mobile-day-tab.active .day-no strong{color:#f6d68c}
 html[data-theme="arena"] .mobile-day-tab.played{border-color:var(--green)}
 
+
+.arena-castle-mark{display:none}
+html[data-theme="arena"] .plan-overview .arena-castle-mark{
+ position:absolute!important;z-index:0!important;right:10px;top:18px;
+ display:block;width:min(25%,230px);height:auto;opacity:.11;
+ color:#e1bd72;pointer-events:none;transform:rotate(-2deg);
+}
+@media(max-width:699px){html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1584,7 +1592,7 @@ html[data-theme="arena"] .mobile-day-tab.played{border-color:var(--green)}
 <main class="content">
 <section id="view-plan" class="view active">
   <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryExportBtn">JSON-Backup jetzt sichern</button><button class="btn hidden" id="recoveryRetryBtn">Speichern erneut versuchen</button><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
-  <div class="card plan-overview" id="planOverview">
+  <div class="card plan-overview" id="planOverview"><svg class="arena-castle-mark" viewBox="0 0 250 190" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 172h212M33 172V91h26V49h21v42h27V33h36v58h27V49h21v42h26v81"/><path d="M59 49V33h21v16M108 33V18h35v15M170 49V33h21v16M99 172v-44c0-16 11-28 26-28s26 12 26 28v44M59 114h21m90 0h21"/><path d="M38 78h17M81 78h17M151 78h17M193 78h16"/></svg>
     <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
