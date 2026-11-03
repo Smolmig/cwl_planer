@@ -1629,17 +1629,15 @@ html[data-theme="arena"] .more-tile:hover{border-color:#cfab68}
 html[data-theme="arena"] .navinner .navbtn.active{background:#393226;border:1px solid #987a48;color:#ebca87}
 html[data-theme="arena"] .brand-mark{color:#e7bf72}
 html[data-theme="arena"] .brand-wordmark{letter-spacing:.01em}
-html[data-theme="arena"] .more-heading h2,
-html[data-theme="arena"] .plan-overview h3{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
+html[data-theme="arena"] .more-heading h2{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
 html[data-theme="arena"] .plan-overview{position:relative;overflow:hidden;isolation:isolate}
-html[data-theme="arena"] .plan-overview>*{position:relative;z-index:2}
+html[data-theme="arena"] .plan-overview>*{position:relative;z-index:1}
 html[data-theme="arena"] .plan-overview::before{
- content:"";position:absolute;right:-28px;top:-30px;width:310px;height:240px;
- pointer-events:none;z-index:0;opacity:.15;
- background:radial-gradient(circle at 50% 50%,transparent 18%,#dcb46e 18.5% 19%,transparent 20% 31%,#dcb46e 31.5% 32%,transparent 33%),
- linear-gradient(45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%),
- linear-gradient(-45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%);
- transform:rotate(-12deg);
+ content:"";position:absolute;inset:0 0 0 auto;width:min(72%,640px);
+ pointer-events:none;z-index:0;opacity:1;
+ background:radial-gradient(ellipse at 82% 16%,rgba(217,173,104,.10),transparent 66%),
+   linear-gradient(115deg,transparent 23%,rgba(220,182,116,.035) 68%,transparent 100%);
+ transform:none;
 }
 /* Avoid the outlined nested card-within-card appearance of the old Gold modal. */
 html[data-theme="arena"] .cloud-panel{background:#171d22;border-color:#5d523e;box-shadow:0 24px 65px rgba(0,0,0,.55)}
@@ -1684,13 +1682,7 @@ html[data-theme="arena"] .mobile-day-tab.active .day-no strong{color:#f6d68c}
 html[data-theme="arena"] .mobile-day-tab.played{border-color:var(--green)}
 
 
-.arena-castle-mark{display:none}
-html[data-theme="arena"] .plan-overview .arena-castle-mark{
- position:absolute!important;z-index:0!important;right:10px;top:18px;
- display:block;width:min(25%,230px);height:auto;opacity:.11;
- color:#e1bd72;pointer-events:none;transform:rotate(-2deg);
-}
-@media(max-width:699px){html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none}}
+/* Removed obsolete castle watermark declarations. */
 
 /* v1.5.1: desktop rail and quick clan navigation only. */
 .titleblock{position:relative;min-width:0}
@@ -1843,6 +1835,35 @@ body.cloud-mode .account-quick-wrap{display:inline-flex}
 .account-quick-menu>button:hover,.account-quick-menu>button:focus-visible{background:var(--bluebg)}
 #accountQuickLogout{color:var(--red)}
 @media(max-width:520px){.account-quick-trigger{min-height:34px;min-width:34px;font-size:19px!important}}
+/* Shared section labels remain compact in non-Arena themes; only Arena
+   receives the large editorial serif heading treatment. */
+.view-lead-copy{min-width:0}
+.view-lead-kicker{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;
+ line-height:1.35;color:var(--muted);margin-bottom:4px}
+/* Arena page titles share the prominent visual hierarchy from "Mehr". */
+html[data-theme="arena"] .view-lead-heading{
+ display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:13px
+}
+html[data-theme="arena"] .view-lead-copy{min-width:0;flex:1 1 150px}
+html[data-theme="arena"] .view-lead-kicker{
+ display:block;font-size:10px;font-weight:850;line-height:1.35;
+ letter-spacing:.17em;color:var(--primary);margin-bottom:5px
+}
+html[data-theme="arena"] .view-lead-heading h3{
+ font-family:Georgia,"Times New Roman",serif!important;
+ font-size:clamp(25px,3vw,34px)!important;font-weight:750!important;
+ line-height:1.16!important;letter-spacing:-.028em!important;
+ margin:0!important;color:var(--text)
+}
+html[data-theme="arena"] .view-lead-heading>.actions{margin-left:auto;min-width:0}
+html[data-theme="arena"] .view-lead-heading .statusline{line-height:1.45}
+@media(max-width:420px){
+ html[data-theme="arena"] .view-lead-heading{gap:5px 8px;margin-bottom:8px}
+ html[data-theme="arena"] .view-lead-heading h3{font-size:25px!important}
+ html[data-theme="arena"] #view-plan .plan-overview .view-lead-heading>.actions{
+  flex:0 1 auto;max-width:100%;justify-content:flex-end
+ }
+}
 /* v1.7.1 P0: a hidden clan chip must stay hidden in guest mode.
    Earlier, a later selector re-enabled the empty button, creating a white pill. */
 #headerClanName[hidden]{display:none!important}
@@ -1916,8 +1937,8 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 <main class="content">
 <section id="view-plan" class="view active">
   <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryExportBtn">JSON-Backup jetzt sichern</button><button class="btn hidden" id="recoveryRetryBtn">Speichern erneut versuchen</button><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
-  <div class="card plan-overview" id="planOverview"><svg class="arena-castle-mark" viewBox="0 0 250 190" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 172h212M33 172V91h26V49h21v42h27V33h36v58h27V49h21v42h26v81"/><path d="M59 49V33h21v16M108 33V18h35v15M170 49V33h21v16M99 172v-44c0-16 11-28 26-28s26 12 26 28v44M59 114h21m90 0h21"/><path d="M38 78h17M81 78h17M151 78h17M193 78h16"/></svg>
-    <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
+  <div class="card plan-overview" id="planOverview">
+    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">PLANUNG</span><h3>CWL-Plan</h3></div><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
@@ -1939,8 +1960,8 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 </section>
 <section id="view-members" class="view">
   <div class="card">
-    <div class="section-title">
-      <div><h3>Mitglieder</h3><div class="statusline">Hier legst du fest, wer mitspielt, wie oft jemand eingesetzt werden soll und welche Tagesregeln gelten.</div></div>
+    <div class="section-title view-lead-heading">
+      <div class="view-lead-copy"><span class="view-lead-kicker">KADER</span><h3>Mitglieder</h3><div class="statusline">Hier legst du fest, wer mitspielt, wie oft jemand eingesetzt werden soll und welche Tagesregeln gelten.</div></div>
     </div>
     <div id="guestMembersTools" class="cloud-member-tools">
       <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
@@ -2025,7 +2046,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
     </div>
     <div id="currentWarContent"></div>
   </div>
-  <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <div class="card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
     <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
@@ -2091,7 +2112,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
-    <div class="section-title"><div><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
       <div class="field"><label id="statsPeriodLabel">Zeitraum</label>
