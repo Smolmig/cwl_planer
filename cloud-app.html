@@ -1553,7 +1553,7 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
   <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
 </div><div class="summary-legend">G = gespielt · P = noch geplant · Gesamt = beide zusammen</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
-  <div class="card"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
+  <div class="card" id="archiveSection"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
 
 </section>
 
@@ -1561,6 +1561,7 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
  <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Clan & Einstellungen</h2><p>Alle seltener benötigten Funktionen an einem Ort. Deine aktuelle Planung bleibt im Hauptmenü.</p></div>
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Vize, Einladungen und Freigaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Vergangene Ligen und gespeicherte Aufstellungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
@@ -2437,6 +2438,24 @@ function showPlannerView(view){if(view!=="settings")window.__previousPlannerView
  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showPlannerView(b.dataset.view));
+document.querySelector(".more-menu").addEventListener("click",event=>{
+  const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
+  if(!action)return;
+  if(action==="help"){openModal("helpModal");return}
+  if(action==="clan"||(action==="profiles"&&window.CWLCloud?.active)){
+    document.getElementById("cloudOpen").click();return;
+  }
+  if(action==="archive"){
+    showPlannerView("summary");
+    requestAnimationFrame(()=>document.getElementById("archiveSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
+    return;
+  }
+  const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
+    backup:"settingsBackupSection",profiles:"localProfileCard"};
+  showPlannerView("settings");
+  const targetId=targets[action];
+  if(targetId)requestAnimationFrame(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
+});
 document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
