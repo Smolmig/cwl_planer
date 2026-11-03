@@ -1,3 +1,5 @@
+> **Fortführung:** Die UI-Integration dieses Dokuments wurde am 03.11.2026 in den gesonderten **Cloud-v1.7.0-Release-Kandidaten** übernommen. Die Versionsangaben weiter unten dokumentieren weiterhin den damaligen Draft-Stand. Die Freigabekriterien stehen in [RELEASE_V1.7.0.md](RELEASE_V1.7.0.md). Noch kein Live-Merge.
+
 # UI Phase 2 – integrierter Draft (03.11.2026)
 
 ## Ausgangslage
