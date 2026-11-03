@@ -1478,11 +1478,12 @@ body.cloud-mode .navinner{grid-template-columns:repeat(5,minmax(0,1fr));}
  .bottomnav{position:fixed;inset:0 auto 0 0;width:228px;height:100dvh;z-index:35;
   display:flex;flex-direction:column;overflow-y:auto;
   padding:24px 13px;border-top:0;border-right:1px solid var(--line);border-radius:0}
- .sidebar-brand{display:flex;align-items:center;gap:11px;padding:4px 7px 24px;
-  border-bottom:1px solid var(--line);margin-bottom:24px}
- .sidebar-brand .brand-mark{width:43px;height:43px}
- .sidebar-brand b{display:block;font-size:15px;white-space:nowrap}
- .sidebar-brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.055em;margin-top:4px}
+ .sidebar-brand{display:flex;align-items:center;gap:8px;padding:4px 0 20px;
+  border-bottom:1px solid var(--line);margin-bottom:18px}
+ .sidebar-brand .brand-mark{width:36px;height:36px}
+ .sidebar-brand>div{min-width:0;flex:1}
+ .sidebar-brand b{display:block;font-size:14px;white-space:nowrap}
+ .sidebar-brand small{display:none}
  .sidebar-label{display:block;color:var(--muted);font-size:10px;letter-spacing:.15em;
   font-weight:900;padding:0 14px;margin:0 0 12px}
  .navinner,.navinner:where(body.cloud-mode *){display:flex!important;flex-direction:column;gap:6px;
@@ -1584,13 +1585,18 @@ body.cloud-mode .top-actions #cloudOpen{display:none}
   .topbar .brand-lockup,.topbar .subtitle{display:none!important}
   .topbar .titleblock{display:flex;align-items:center;min-height:38px}
   .topbar .header-clan-name:not([hidden]){margin:0;max-width:min(460px,50vw)}
-  .sidebar-collapse{display:flex;align-items:center;justify-content:center;min-height:34px;width:34px;padding:0;margin:-13px 10px 14px auto;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-size:24px}
+  .sidebar-collapse{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;min-height:36px;
+    padding:0;margin:0 0 0 auto;border-radius:10px;border:0;background:transparent;
+    color:var(--muted);cursor:pointer;transition:background .16s ease,color .16s ease}
+  .sidebar-collapse:hover{background:var(--bluebg);color:var(--text)}
+  .sidebar-collapse svg{display:block;width:22px;height:22px}
   body.sidebar-collapsed .app{margin-left:74px;width:calc(100% - 74px)}
   body.sidebar-collapsed .bottomnav{width:74px;padding:20px 9px}
   body.sidebar-collapsed .sidebar-brand{padding:4px 0 20px;justify-content:center}
-  body.sidebar-collapsed .sidebar-brand>div,body.sidebar-collapsed .sidebar-label{display:none}
-  body.sidebar-collapsed .sidebar-brand .brand-mark{width:38px;height:38px}
-  body.sidebar-collapsed .sidebar-collapse{margin:0 auto 19px}
+  body.sidebar-collapsed .sidebar-brand>.brand-mark,
+  body.sidebar-collapsed .sidebar-brand>div,
+  body.sidebar-collapsed .sidebar-label{display:none}
+  body.sidebar-collapsed .sidebar-collapse{margin:0 auto}
   body.sidebar-collapsed .navinner .navbtn{justify-content:center;padding:10px!important;gap:0}
   body.sidebar-collapsed .navinner .navbtn>.nav-symbol+span{display:none}
   body.sidebar-collapsed .nav-symbol{width:25px;height:25px}
@@ -1643,19 +1649,10 @@ body.cloud-mode .top-actions #cloudOpen{display:none}
   .cloud-mode #view-members .member-stat-automatic,
   .cloud-mode #view-members .member-fixed-target{display:none!important}
 }
+/* Desktop sidebar control stays in its own header row; never overlaps the content edge. */
 @media(min-width:1100px){
-  .sidebar-collapse{
-    position:fixed;top:90px;left:calc(228px - 14px);z-index:45;
-    width:28px;height:28px;min-height:28px;padding:0;margin:0;
-    display:grid;place-items:center;font-size:0;border-radius:999px;
-    border:1px solid var(--line);background:var(--card);color:var(--muted);
-    box-shadow:0 2px 10px rgba(0,0,0,.14);transition:background .16s ease,color .16s ease,left .16s ease
-  }
-  .sidebar-collapse::before{content:"";width:7px;height:7px;border-left:2px solid currentColor;
-    border-bottom:2px solid currentColor;transform:translateX(1px) rotate(45deg)}
-  .sidebar-collapse:hover{color:var(--text);background:var(--bluebg)}
-  body.sidebar-collapsed .sidebar-collapse{left:calc(74px - 14px);margin:0}
-  body.sidebar-collapsed .sidebar-collapse::before{transform:translateX(-1px) rotate(225deg)}
+  .sidebar-collapse:active{transform:scale(.96)}
+  @media(prefers-reduced-motion:reduce){.sidebar-collapse{transition:none}}
 }
 #view-members .member-top .name-wrap .member-name-edit{
   display:grid!important;place-items:center!important;flex:0 0 29px!important;
@@ -1917,7 +1914,7 @@ body.cloud-mode .top-actions #cloudOpen{display:none}
   <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
-<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><button type="button" class="sidebar-collapse" id="sidebarCollapse" title="Seitenleiste minimieren" aria-label="Seitenleiste minimieren" aria-expanded="true"></button><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
+<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div><button type="button" class="sidebar-collapse" id="sidebarCollapse" title="Seitenleiste minimieren" aria-label="Seitenleiste minimieren" aria-expanded="true"><svg class="sidebar-panel-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.4"/><path d="M9.5 4v16"/><path d="M5.8 7.8h1.3M5.8 11.2h1.3" stroke-linecap="round"/></svg></button></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
@@ -2775,7 +2772,6 @@ function setSidebarCollapsed(collapsed){
   sidebarCollapse.setAttribute("aria-expanded",String(!collapsed));
   sidebarCollapse.setAttribute("aria-label",collapsed?"Seitenleiste ausklappen":"Seitenleiste minimieren");
   sidebarCollapse.title=sidebarCollapse.getAttribute("aria-label");
-  sidebarCollapse.textContent="";
   try{localStorage.setItem("cwl_desktop_sidebar_collapsed",collapsed?"1":"0")}catch{}
 }
 try{setSidebarCollapsed(localStorage.getItem("cwl_desktop_sidebar_collapsed")==="1")}
