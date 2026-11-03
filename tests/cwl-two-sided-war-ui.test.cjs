@@ -75,8 +75,8 @@ test("both sides show attack count, official war stars, opponent attack stars an
   assert.match(data.ownSummary,/1\/2 Angriffe · 4 ★/);
   assert.match(data.enemySummary,/1\/2 Angriffe · 2 ★/);
   assert.match(data.score,/4:2/);
-  assert.deepEqual(data.ownStars,["★★★","☆☆☆"]);
-  assert.deepEqual(data.enemyStars,["★★☆","☆☆☆"]);
+  assert.deepEqual(data.ownStars,["☆☆☆","★★★"]);
+  assert.deepEqual(data.enemyStars,["☆☆☆","★★☆"]);
   assert.match(data.enemyResults,/77 %/);
   assert.match(data.enemyResults,/Eigener 2/,"opponent attack target is a player from our clan");
   assert.match(data.ownResults,/100 %/);
