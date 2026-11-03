@@ -1,6 +1,6 @@
 
-CLOUD-RELEASE 03.11.2026 (v1.6.0):
-- Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.6.0 (offiziell; API-Aufstellungen und CWL-Livedaten optional).
+CLOUD-RELEASE 03.11.2026 (v1.7.0, Release-Kandidat):
+- Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.7.0 (geplanter Cloud-Release; v1.6.0 bleibt bis zum Merge live).
 - Separate installierbare lokale Offline-PWA \`index.html\`: weiterhin v1.0.2.
 - Flexible CW/CWL-Statistik, 3★-Hit-Rate, verpasste Angriffe und geschützte Gruppenlinks mit Rollen, Laufzeit und Sperren.
 - Cloud: vorläufige Tagesaufstellungen beider Clans, Wechselvorschläge gegenüber der
@@ -9,13 +9,14 @@ CLOUD-RELEASE 03.11.2026 (v1.6.0):
   ohne neue Datenbankmigration. Vorläufige Clash-Aufstellungen ändern den Plan nicht.
 - Ohne aktive CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar.
 - Datenformat v9, Profile, lokale Schlüssel und Archivbestände bleiben kompatibel.
+- Neues in v1.7.0: Hilfe/Konto-Unterseiten, optimierte Mitgliederliste und einheitliche Arena-/Rathaus-Darstellung.
 - Vollständige Details und technische Grenzen stehen in CHANGELOG.md und
-  docs/CLOUD_ROADMAP_CWL_STATS.md.
+  docs/RELEASE_V1.7.0.md.
 
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.6.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: Release-Kandidat v1.7.0, aktuell live v1.6.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
