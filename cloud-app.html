@@ -1568,6 +1568,37 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
  color:#e1bd72;pointer-events:none;transform:rotate(-2deg);
 }
 @media(max-width:699px){html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none}}
+
+/* v1.5.1: desktop rail and quick clan navigation only. */
+.titleblock{position:relative;min-width:0}
+.titleblock .header-clan-name:not([hidden]){cursor:pointer;max-width:min(300px,100%);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;font-size:12px;font-weight:750}
+.titleblock .header-clan-name:not([hidden])::after{content:"⌄";margin-left:4px;opacity:.8}
+.titleblock .header-clan-name:focus-visible,.sidebar-collapse:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.quick-clan-menu[hidden]{display:none!important}
+.quick-clan-menu{position:absolute;top:calc(100% + 8px);left:0;z-index:100;width:min(320px,calc(100vw - 30px));padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);box-shadow:0 18px 44px rgba(0,0,0,.32);display:grid;gap:12px}
+.quick-clan-menu label{font-size:12px;font-weight:750;color:var(--muted)}
+.quick-clan-menu select{width:100%;min-height:42px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font:inherit}
+body.cloud-mode .top-actions #cloudOpen{display:none}
+.sidebar-collapse{display:none}
+@media(min-width:1100px){
+  .topbar .brand-lockup,.topbar .subtitle{display:none!important}
+  .topbar .titleblock{display:flex;align-items:center;min-height:38px}
+  .topbar .header-clan-name:not([hidden]){margin:0;max-width:min(460px,50vw)}
+  .sidebar-collapse{display:flex;align-items:center;justify-content:center;min-height:34px;width:34px;padding:0;margin:-13px 10px 14px auto;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-size:24px}
+  body.sidebar-collapsed .app{margin-left:74px;width:calc(100% - 74px)}
+  body.sidebar-collapsed .bottomnav{width:74px;padding:20px 9px}
+  body.sidebar-collapsed .sidebar-brand{padding:4px 0 20px;justify-content:center}
+  body.sidebar-collapsed .sidebar-brand>div,body.sidebar-collapsed .sidebar-label{display:none}
+  body.sidebar-collapsed .sidebar-brand .brand-mark{width:38px;height:38px}
+  body.sidebar-collapsed .sidebar-collapse{margin:0 auto 19px}
+  body.sidebar-collapsed .navinner .navbtn{justify-content:center;padding:10px!important;gap:0}
+  body.sidebar-collapsed .navinner .navbtn>.nav-symbol+span{display:none}
+  body.sidebar-collapsed .nav-symbol{width:25px;height:25px}
+  body.sidebar-collapsed #view-settings .settings-window{max-width:min(1100px,calc(100vw - 130px))}
+}
+@media(max-width:699px){
+  .titleblock .header-clan-name:not([hidden]){max-width:min(210px,calc(100vw - 145px));margin-top:5px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1582,7 +1613,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <div class="toprow">
     <div class="titleblock">
       <h1 class="brand-lockup"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="brand-wordmark"><span>CWL</span><small>Planer</small></span></h1>
-      <span id="headerClanName" class="header-clan-name" hidden aria-label="Aktuell ausgewählter Clan"></span>
+      <button id="headerClanName" class="header-clan-name" type="button" hidden aria-label="Clan wechseln" aria-expanded="false" aria-controls="quickClanMenu"></button><div class="quick-clan-menu" id="quickClanMenu" hidden><label for="quickClanSelect">Clan wechseln</label><select id="quickClanSelect" aria-label="Clan auswählen"></select><button class="btn small" type="button" id="quickClanManage">Clan & Konto verwalten</button></div>
       <div class="subtitle">CWL planen · Einsätze fair verteilen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
@@ -1747,13 +1778,11 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.5.0</strong><span>Navigation & Bedienung</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.5.1</strong><span>Navigation & Clanwechsel</span></div>
       <ul>
-       <li><b>PC:</b> Feste Navigation links und breiterer Arbeitsbereich anstelle der unteren Leiste.</li>
-       <li><b>Handy:</b> Bereich „Mehr“ für Clan & Konto, Archiv, Regeln, Darstellung, Backup und Hilfe.</li>
-       <li><b>Anmeldung:</b> Enter funktioniert; eine Textmarkierung schließt den Dialog nicht unbeabsichtigt.</li>
-       <li><b>Arena:</b> Schild-Logo und goldfarbenes Branding, aufgeräumte Clan-Verwaltung und dezente Hintergrundgrafik.</li>
-       <li><b>Planung:</b> Verständlichere Tageszustände, kleine Rathausbilder und keine manuelle Mehrfach-3★-Stärke im Cloud-Planer.</li>
+       <li><b>Clanwechsel:</b> Direkt über den Clannamen in der Kopfzeile; ohne Umweg über das Konto.</li>
+       <li><b>PC:</b> Doppeltes Branding entfernt und Seitenleiste einklappbar gemacht.</li>
+       <li><b>Mobil:</b> Clanwechsel über die gleiche kompakte Auswahl; Anmeldung bleibt separat erreichbar.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1814,7 +1843,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
-<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
+<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><button type="button" class="sidebar-collapse" id="sidebarCollapse" title="Seitenleiste minimieren" aria-label="Seitenleiste minimieren" aria-expanded="true">‹</button><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
@@ -2088,7 +2117,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.5.0";
+const APP_VERSION="v1.5.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2599,7 +2628,56 @@ function showPlannerView(view){if(view!=="settings")window.__previousPlannerView
  gear.setAttribute("aria-pressed",String(view==="settings"));
  window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showPlannerView(b.dataset.view));
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{closeQuickClan();showPlannerView(b.dataset.view)});
+// v1.5.1: reuse the existing Supabase clan-selection flow; no parallel cloud state.
+const quickClanBtn=document.getElementById("headerClanName");
+const quickClanMenu=document.getElementById("quickClanMenu");
+const quickClanSelect=document.getElementById("quickClanSelect");
+function closeQuickClan(){
+  quickClanMenu.hidden=true;
+  quickClanBtn.setAttribute("aria-expanded","false");
+}
+quickClanBtn.onclick=()=>{
+  if(!window.CWLCloud?.active)return;
+  if(!quickClanMenu.hidden){closeQuickClan();return}
+  const source=document.getElementById("cloudClanSelect");
+  quickClanSelect.replaceChildren(...Array.from(source.options,o=>new Option(o.textContent,o.value)));
+  quickClanSelect.value=source.value;
+  quickClanMenu.hidden=false;
+  quickClanBtn.setAttribute("aria-expanded","true");
+  quickClanSelect.focus();
+};
+quickClanSelect.onchange=()=>{
+  const original=document.getElementById("cloudClanSelect");
+  if(original.value!==quickClanSelect.value){
+    original.value=quickClanSelect.value;
+    original.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  closeQuickClan();
+};
+document.getElementById("quickClanManage").onclick=()=>{
+  closeQuickClan();
+  document.getElementById("cloudOpen").click();
+};
+document.addEventListener("pointerdown",event=>{
+  if(!quickClanMenu.hidden&&!quickClanMenu.contains(event.target)&&event.target!==quickClanBtn)closeQuickClan();
+});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"&&!quickClanMenu.hidden)closeQuickClan();
+});
+const sidebarCollapse=document.getElementById("sidebarCollapse");
+function setSidebarCollapsed(collapsed){
+  document.body.classList.toggle("sidebar-collapsed",collapsed);
+  sidebarCollapse.setAttribute("aria-expanded",String(!collapsed));
+  sidebarCollapse.setAttribute("aria-label",collapsed?"Seitenleiste ausklappen":"Seitenleiste minimieren");
+  sidebarCollapse.title=sidebarCollapse.getAttribute("aria-label");
+  sidebarCollapse.textContent=collapsed?"›":"‹";
+  try{localStorage.setItem("cwl_desktop_sidebar_collapsed",collapsed?"1":"0")}catch{}
+}
+try{setSidebarCollapsed(localStorage.getItem("cwl_desktop_sidebar_collapsed")==="1")}
+catch{setSidebarCollapsed(false)}
+sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+
 document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
@@ -2705,6 +2783,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.5.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.5.1"></script>
 </body>
 </html>
