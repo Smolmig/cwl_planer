@@ -50,6 +50,17 @@ const backups=createCloudBackups({
 let planReview=null,planSuggestions=[],rawSavedProfile=null;
 const currentSeason=()=>new Date().toISOString().slice(0,7);
 const planIsLocked=()=>!!planReview?.locked&&planReview.season===currentSeason();
+// Never publish an impossible plan as approved, including a pending editor proposal.
+function assertPlanningReady(profile){
+ if(!window.CWLPlanningCore?.planCwl)throw Error("Die Einsatzplanung ist nicht verfügbar. Bitte Seite neu laden.");
+ if(!profile||typeof profile!=="object")throw Error("Keine gültige CWL-Planung vorhanden.");
+ const result=window.CWLPlanningCore.planCwl({
+  members:profile.members,archivedMembers:profile.archivedMembers,
+  locks:profile.locks,slots:profile.config?.slots,days:profile.config?.days
+ });
+ if(!result.ok)throw Error("CWL-Plan noch nicht freigabefähig: "+result.conflicts.slice(0,3).join(" · "));
+ return result;
+}
 function suggestionChanges(suggestion){
  const prev=storage.getProfile(),draft=suggestion.suggested_profile;
  if(!prev||!draft)return ["Vorgeschlagene Planänderung"];
@@ -87,10 +98,13 @@ function renderPlanReview(){
  const toggleButton=$("planReviewToggle");
  toggleButton.hidden=!owner;
  toggleButton.textContent=locked?"Plan wieder öffnen":"Plan freigeben";
+ const invalid=!locked&&storage.getPlanningState?.()?.ok===false;
+ toggleButton.disabled=invalid;
+ toggleButton.title=invalid?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":"";
  const submitButton=$("planSubmitSuggestion");
  submitButton.hidden=!(editor&&locked);
- submitButton.disabled=!changedSerial;
- submitButton.title=changedSerial?"Vorschlag zur Freigabe einreichen":"Ändere zuerst Spieler oder Tagesregeln";
+ submitButton.disabled=!changedSerial||storage.getPlanningState?.()?.ok===false;
+ submitButton.title=storage.getPlanningState?.()?.ok===false?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":changedSerial?"Vorschlag zur Freigabe einreichen":"Ändere zuerst Spieler oder Tagesregeln";
  const host=$("planReviewSuggestions");host.replaceChildren();
  const visible=planSuggestions.filter(x=>planReview?.season===currentSeason()&&(owner?x.status==="pending":x.author_id===user?.id)).slice(0,20);
  if(!visible.length){const text=document.createElement("div");text.className="statusline";text.textContent=locked?
@@ -132,8 +146,9 @@ async function loadPlanReview(expected=clanId){
 }
 async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
- await ensureSaved();
  const lock=!planIsLocked();
+ if(lock)assertPlanningReady(storage.getProfile());
+ await ensureSaved();
  const ok=await storage.confirmAction(lock?
     "Die aktuelle Planung für diese CWL freigeben? Vize können danach nur noch Vorschläge einreichen.":
     "Die Planung wieder zur gemeinsamen Bearbeitung öffnen? Ausstehende Vorschläge werden abgeschlossen.",
@@ -154,6 +169,7 @@ async function submitPlanSuggestion(){
      proposal[key]=JSON.parse(JSON.stringify(rawSavedProfile[key]));
    else delete proposal[key];
  }
+ assertPlanningReady(proposal);
  const changes=suggestionChanges({suggested_profile:proposal});
  if(!await storage.confirmAction(changes.slice(0,8).join("; ")+"\n\nDiesen Vorschlag dem Clanführer zur Prüfung vorlegen?",
    {title:"Änderung vorschlagen",confirmText:"Vorschlag einreichen"}))return;
@@ -171,6 +187,11 @@ async function decidePlanSuggestion(id,action){
    if(error)throw error;
  }else{
    if(role!=="owner")throw Error("Nur der Clanführer kann Vorschläge entscheiden.");
+   if(action==="accept"){
+     const proposed=planSuggestions.find(s=>String(s.id)===String(id));
+     if(!proposed)throw Error("Vorschlag nicht mehr vorhanden. Bitte Vorschläge aktualisieren.");
+     assertPlanningReady(proposed.suggested_profile);
+   }
    await ensureSaved();
    if(!await storage.confirmAction(action==="accept"?
      "Den Vorschlag verbindlich übernehmen? Die gemeinsame CWL-Planung wird sofort aktualisiert.":
