@@ -228,7 +228,12 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   async function refreshNow(manual=false) {
     const ctx=context();
     if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||!navigator.onLine||fetching)return;
-    const req=++requestId,id=ctx.clanId;
+    const req=++requestId,id=ctx.clanId,profileAtRequest=ctx.profile,roleAtRequest=ctx.role;
+    const stillCurrent=()=>{
+      const now=context();
+      return req===requestId&&id===now.clanId&&now.active&&now.hasClanTag&&
+        profileAtRequest===now.profile&&roleAtRequest===now.role;
+    };
     fetching=true;render();
     try {
       const {data,error}=await sb.functions.invoke("coc-cwl-status",{body:{clanId:id}});
@@ -237,7 +242,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         if(error?.context?.json)try{msg=(await error.context.json())?.error||msg}catch{}
         throw new Error(msg);
       }
-      if(req!==requestId||id!==context().clanId)return;
+      if(!stillCurrent())return;
       // A temporary failure to fetch individual wars must not wipe previously
       // confirmed, same-season information saved by another clan leader.
       const previous=ctx.profile?.cwlLive;
@@ -259,7 +264,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
       if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
-        Promise.resolve().then(()=>onSnapshot(data)).catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
+        Promise.resolve().then(()=>stillCurrent()?onSnapshot(data):undefined)
+          .catch(e=>console.warn("Statistik-Abgleich:",String(e?.message||e)));
       if(data.active && ctx.role!=="viewer" && context().canApply) {
         const result=reconcileCwl(storage.getProfile(),data,name=>storage.newMember(name));
         if(result.changed) {
@@ -271,7 +277,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       if(manual && data.pending)notify("Die CWL-Auslosung ist noch nicht vollständig verfügbar. Dein Plan bleibt erhalten.");
       else if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
     }catch(err){
-      if(req!==requestId)return;
+      if(!stillCurrent())return;
       offlineReason=cwlErrorMessage(String(err?.message||""));
       if(manual)notify("⚠ "+offlineReason);
       console.warn("CWL status:",String(err?.message||err));
