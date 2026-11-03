@@ -163,9 +163,13 @@ export function reconcileCwl(profile,payload,createMember,now=Date.now()) {
 
 // Keep each CWL attack distinct. During the battle put players who have
 // not attacked first; after the battle preserve the actual lineup order.
-export function cwlAttackRows(round) {
-  const targets=new Map((round?.opponent?.members||[]).map(m=>[tagOf(m.tag),m]));
-  const rows=(round?.clan?.members||[]).flatMap((player,playerIndex)=>{
+export function cwlAttackRows(round,side="clan") {
+  // One read-only mapper for both clans. No assumptions about enemy attack order
+  // or missing targets; each recorded attack stays attached to its attacker.
+  const attackers=side==="opponent"?"opponent":"clan";
+  const defenders=attackers==="clan"?"opponent":"clan";
+  const targets=new Map((round?.[defenders]?.members||[]).map(m=>[tagOf(m.tag),m]));
+  const rows=(round?.[attackers]?.members||[]).flatMap((player,playerIndex)=>{
     const attacks=Array.isArray(player?.attacks)?player.attacks:[];
     if(attacks.length===0)return [{player,target:null,attack:null,playerIndex,attackIndex:0}];
     return attacks.map((attack,attackIndex)=>({
