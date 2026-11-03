@@ -50,13 +50,16 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
       lineup:[...members.slice(0,13),...members.slice(15)].map(m=>m.id)};
      const {createCwlLive}=await import("/cwl-live.mjs");
      window.__reviewLive=createCwlLive({
-      sb:{functions:{invoke:async()=>{throw Error("No external API in browser test")}}},
+      sb:{functions:{invoke:async()=>({data:{ok:true,active:true,season,clanTag:"#2PYG",rounds:[round]}})}},
       context:()=>({active:true,hasClanTag:true,clanId:"fixture",role:"viewer",profile}),
       storage:{getPlannedLineups:()=>[dayPlan],getPlanningState:()=>({ok:true}),
        getProfile:()=>profile,rerender:()=>{throw Error("Read-only preview mutated a plan")}},
       notify:()=>{throw Error("Unexpected Cloud write")}
      });
      window.__reviewLive.render();
+     if(!document.querySelector(".cwl-prep-review")?.textContent.includes("Gespeicherter Stand"))
+       throw Error("Stored CWL data must never produce authoritative swap advice");
+     await window.__reviewLive.refresh();
     },theme);
     await page.locator(".cwl-prep-review").waitFor();
     assert.match(await page.locator(".cwl-prep-result").textContent(),/2 Wechsel nötig/);
