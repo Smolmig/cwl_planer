@@ -67,10 +67,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       return;
     }
     const own=round.clan?.members||[],enemy=round.opponent?.members||[];
-    const opponentMap=new Map(enemy.map(m=>[tagOf(m.tag),m]));
-    const attacks=own.reduce((sum,m)=>sum+(m.attacks?.length||0),0);
-    const missing=own.filter(m=>!m.attacks?.length).length;
-    const attackRows=cwlAttackRows(round);
+    const attackCount=team=>team.reduce((sum,m)=>sum+(Array.isArray(m.attacks)?m.attacks.length:0),0);
+    const attacks=attackCount(own),enemyAttacks=attackCount(enemy);
     const rosterLine=m=>"<li class='cwl-roster-member'><span class='cwl-live-rh'>RH"+
       esc(m.townHallLevel??"?")+"</span><span class='cwl-roster-name'>"+esc(m.name||"Unbekannt")+
       "</span><span class='cwl-roster-tag'>"+esc(tagOf(m.tag))+"</span></li>";
@@ -104,19 +102,25 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
-    const players=round.state==="preparation"
-      ?(rosterReady(own)?"<ol class='cwl-roster-list'>"+own.map(rosterLine).join("")+"</ol>":
-        "<p class='cwl-live-attack-empty'>Eigene Aufstellung noch nicht vollständig verfügbar.</p>")
-      :attackRows.map(({player,attack,target})=>{
-        const didAttack=!!attack;
-        const stars=didAttack?attack.stars:null;
-        const starIcons=didAttack?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";
+    // The same sanitized war data already includes attacks by *both* teams.
+    // Reverse the sides for enemy attacks; never infer scores or perform extra API reads.
+    const battleRows=(attackerSide,targetSide)=>cwlAttackRows({
+      state:round.state,clan:{members:attackerSide},opponent:{members:targetSide}
+    });
+    const renderAttackRows=(attackerSide,targetSide,missingMessage)=>{
+      if(!rosterReady(attackerSide))
+        return "<p class='cwl-live-attack-empty'>"+missingMessage+"</p>";
+      return battleRows(attackerSide,targetSide).map(({player,attack,target})=>{
+        const didAttack=!!attack,starsKnown=didAttack&&Number.isInteger(attack.stars)&&
+          attack.stars>=0&&attack.stars<=3;
+        const starIcons=starsKnown?"★".repeat(attack.stars)+"☆".repeat(3-attack.stars):
+          didAttack?"–":"☆☆☆";
         const targetName=target?.name||"Ziel unbekannt";
         const targetLevel=target?.townHallLevel??null;
         return "<div class='cwl-live-attack"+(didAttack?"":" pending")+"'>"+
           "<div class='cwl-live-attack-result'>"+
           "<span class='cwl-live-stars"+(didAttack?"":" no-attack")+"' aria-label='"+
-          (didAttack?stars+" von 3 Sternen":"Noch nicht angegriffen")+"'>"+
+          (starsKnown?attack.stars+" von 3 Sternen":didAttack?"Sterne nicht verfügbar":"Noch nicht angegriffen")+"'>"+
           starIcons+"</span>"+
           "<span class='cwl-live-percent"+(didAttack?"":" no-attack")+"'>"+
           (didAttack?pctText(attack.destructionPercentage):"–")+"</span></div>"+
@@ -130,6 +134,18 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
               "Kein Angriff erfasst":"Angriff offen")+"</div>")+
           "</div></div>";
       }).join("");
+    };
+    const ownPlayers=round.state==="preparation"
+      ?(rosterReady(own)?"<ol class='cwl-roster-list'>"+own.map(rosterLine).join("")+"</ol>":
+        "<p class='cwl-live-attack-empty'>Eigene Aufstellung noch nicht vollständig verfügbar.</p>")
+      :renderAttackRows(own,enemy,"Eigene Aufstellung noch nicht vollständig verfügbar.");
+    const opponentPlayers=round.state==="preparation"?opponentRoster:
+      renderAttackRows(enemy,own,"Gegnerische Aufstellung noch nicht vollständig verfügbar.");
+    const attackLabel=(members,count)=>{
+      if(!rosterReady(members))return "Angriffsstand nicht verfügbar";
+      return count+"/"+round.teamSize+" Angriffe";
+    };
+    const ownAttackLabel=attackLabel(own,attacks),enemyAttackLabel=attackLabel(enemy,enemyAttacks);
     const ownScore=scoreText(round.clan?.stars),enemyScore=scoreText(round.opponent?.stars);
     const destruct=round.clan?.destructionPercentage!==null&&round.clan?.destructionPercentage!==undefined&&
       round.opponent?.destructionPercentage!==null&&round.opponent?.destructionPercentage!==undefined
@@ -145,25 +161,40 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       sideHtml(round.clan)+"<div class='cwl-live-score-middle'><div class='cwl-live-score' aria-hidden='true'>"+
       "<span>"+ownScore+"</span><span class='cwl-live-score-colon'>:</span><span>"+enemyScore+"</span></div>"+
       "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+sideHtml(round.opponent)+"</div>"+
-      destruct+"<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'><strong>Gegner-Aufstellung</strong> "+townHallSummary(enemy)+"</div>"+
-      reviewHtml+
-      "<details class='cwl-opponent-details'"+(wasOpponentOpen?" open":"")+"><summary>"+
-      (fresh?"Gegnerteam ansehen":"Gegnerteam · gespeicherter Stand")+
-      " <span class='cwl-live-attack-count'>"+
-      (rosterReady(enemy)?enemy.length+" Spieler":"Noch nicht vollständig")+"</span></summary>"+
-      opponentRoster+"</details>"+
+      destruct+reviewHtml+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       (round.state==="preparation"?(fresh?
         "Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
         "Clash-Aufstellung gespeichert · vor Wechseln bitte aktualisieren"):
-        attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":""))+"</div>"+
+        "Unsere Angriffe: "+ownAttackLabel+" · Gegner: "+enemyAttackLabel+
+        (round.state==="warEnded"?" · API-Ergebnis":""))+"</div>"+
+      "<div class='cwl-live-team-grid'>"+
+      "<div class='cwl-live-team-panel own' aria-label='Unser CWL-Team'>"+
+      "<div class='cwl-live-team-head'><b>Unser Team</b><span class='cwl-live-team-metric'>"+
+      (round.state==="preparation"?(rosterReady(own)?own.length+" Spieler · vorläufig":"Noch nicht vollständig"):
+        ownAttackLabel+" · ★"+ownScore)+"</span></div>"+
       "<details class='cwl-live-details'"+(wasOpen?" open":"")+"><summary>"+
-      (round.state==="preparation"?(fresh?"Clash-Aufstellung ansehen":
-        "Clash-Aufstellung · gespeicherter Stand"):"Spieler und Angriffe anzeigen")+
-      "<span class='cwl-live-attack-count'>"+(round.state==="preparation"?
-        (rosterReady(own)?own.length+" Spieler · vorläufig":"Noch nicht vollständig"):missing+" offen · "+(own.length-missing)+" erledigt")+
-      "</span></summary>"+
-      (players||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>";
+      (round.state==="preparation"?(fresh?"Unsere Aufstellung ansehen":
+        "Unsere Aufstellung · gespeicherter Stand"):"Unsere Spieler und Angriffe anzeigen")+
+      "<span class='cwl-live-attack-count'>"+
+      (round.state==="preparation"?(rosterReady(own)?own.length+" Spieler":"Noch nicht vollständig"):
+        ownAttackLabel)+"</span></summary>"+
+      (ownPlayers||"<div class='statusline'>Aufstellung noch nicht verfügbar.</div>")+"</details>"+
+      "</div>"+
+      "<div class='cwl-live-team-panel opponent' aria-label='Gegnerisches CWL-Team'>"+
+      "<div class='cwl-live-team-head'><b>Gegnerteam</b><span class='cwl-live-team-metric'>"+
+      (round.state==="preparation"?(rosterReady(enemy)?enemy.length+" Spieler · vorläufig":"Noch nicht vollständig"):
+        enemyAttackLabel+" · ★"+enemyScore)+"</span></div>"+
+      "<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'>"+
+      townHallSummary(enemy)+"</div>"+
+      "<details class='cwl-opponent-details'"+(wasOpponentOpen?" open":"")+"><summary>"+
+      (round.state==="preparation"?(fresh?"Gegnerische Aufstellung ansehen":
+        "Gegnerteam · gespeicherter Stand"):"Gegnerische Spieler und Angriffe anzeigen")+
+      "<span class='cwl-live-attack-count'>"+
+      (round.state==="preparation"?(rosterReady(enemy)?enemy.length+" Spieler":"Noch nicht vollständig"):
+        enemyAttackLabel)+"</span></summary>"+
+      opponentPlayers+"</details>"+
+      "</div></div>";
     section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
       if(event.target.open)expandedDays.add(round.day);
       else expandedDays.delete(round.day);

@@ -73,5 +73,5 @@ test("Cloud remembers the last clan selection and enemy TH is clearly labeled",(
  assert.match(sync,/LAST_CLAN_PREFIX/);
  assert.match(sync,/const desired=selected\|\|clanId\|\|savedClan\(\)/);
  assert.match(sync,/rememberClan\(clanId\)/);
- assert.match(live,/Gegner-Aufstellung/);
+ assert.match(live,/aria-label='Rathausverteilung der gegnerischen Aufstellung'/);
 });
