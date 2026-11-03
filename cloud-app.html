@@ -1835,6 +1835,11 @@ body.cloud-mode .account-quick-wrap{display:inline-flex}
 .account-quick-menu>button:hover,.account-quick-menu>button:focus-visible{background:var(--bluebg)}
 #accountQuickLogout{color:var(--red)}
 @media(max-width:520px){.account-quick-trigger{min-height:34px;min-width:34px;font-size:19px!important}}
+/* Shared section labels remain compact in non-Arena themes; only Arena
+   receives the large editorial serif heading treatment. */
+.view-lead-copy{min-width:0}
+.view-lead-kicker{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;
+ line-height:1.35;color:var(--muted);margin-bottom:4px}
 /* Arena page titles share the prominent visual hierarchy from "Mehr". */
 html[data-theme="arena"] .view-lead-heading{
  display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:13px
