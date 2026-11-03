@@ -1211,6 +1211,10 @@ async function getRoster({automatic=false}={}){
  if(!Array.isArray(data.members))throw Error("Die Clan-Mitgliederliste wurde nicht vollständig übertragen.");
  const incoming=data.members.filter(m=>m&&typeof m==="object");
  const rosterMap=new Map(incoming.filter(m=>/^#[0-9A-Z]+$/.test(normalizeTag(m.tag))).map(m=>[normalizeTag(m.tag),m]));
+ // Reject empty, malformed or duplicate upstream rosters before any departure decision.
+ // A partial API response must never mass-pause valid CWL members.
+ if(!incoming.length||incoming.length!==data.members.length||rosterMap.size!==incoming.length)
+   throw Error("Clash hat eine unvollständige Mitgliederliste geliefert. Es wurden keine Änderungen übernommen. Bitte erneut prüfen.");
  const existing=storage.getProfile().members;
  const initialImport=existing.length===0;
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
@@ -1222,11 +1226,13 @@ async function getRoster({automatic=false}={}){
    .filter(item=>item.days.length>0);
  const criticalTags=new Set(critical.map(item=>normalizeTag(item.member.playerTag)));
  const normalDeparted=departed.filter(m=>!criticalTags.has(normalizeTag(m.playerTag)));
+ const tracked=existing.filter(m=>m.playerTag&&m.cocSyncState!=="former"&&m.cocSyncState!=="kept").length;
+ const unusuallyManyDeparted=tracked>=10 && departed.length>=Math.max(5,Math.ceil(tracked*0.4));
  const updated=[...rosterMap.values()].filter(m=>{
    const current=existingMap.get(normalizeTag(m.tag));
    return current&&(["former","kept"].includes(current.cocSyncState)||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
- roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,received:incoming.length,initialImport};
+ roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,unusuallyManyDeparted,received:incoming.length,initialImport};
  stage="Unterschiede anzeigen";
  const diff=$("cloudRosterDiff");diff.replaceChildren();
  function group(title,items){
@@ -1257,12 +1263,12 @@ async function getRoster({automatic=false}={}){
  toggle("cloudDepartedWarnings",critical.length>0);
  toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
- text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(critical.length?" · ⚠️ Aufstellungen prüfen":""));
+ text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(unusuallyManyDeparted?" · ⚠️ Ungewöhnlich viele Austritte – manuell prüfen":critical.length?" · ⚠️ Aufstellungen prüfen":""));
  if(automatic){
-  if(critical.length){
+  if(critical.length||unusuallyManyDeparted){
    toggle("cloudRosterBox",true);
-   text("autoRosterStatus","Aufstellung prüfen: "+critical.length+" ausgetretene Spieler sind noch eingeplant.");
-   storage.toast("⚠ Mitgliederabgleich: Aufstellungen prüfen");
+   text("autoRosterStatus",unusuallyManyDeparted?"Ungewöhnlich viele Austritte erkannt. Bitte den Mitgliederabgleich manuell prüfen.":"Aufstellung prüfen: "+critical.length+" ausgetretene Spieler sind noch eingeplant.");
+   storage.toast("⚠ Mitgliederabgleich: bitte manuell prüfen");
   }else{
    const changes=added.length+updated.length+normalDeparted.length;
    if(changes)await applyRoster();
@@ -1324,6 +1330,12 @@ async function applyRoster(){
    .map(select=>[select.dataset.playerId,select.value]));
  if(rosterDiff.critical.some(item=>!["keep","remove"].includes(decisions.get(item.member.id))))
   throw Error("Bitte für alle Spieler in einer Aufstellung entscheiden, bevor du den Abgleich übernimmst.");
+ if(rosterDiff.unusuallyManyDeparted){
+  const ok=await storage.confirmAction(
+   "Clash meldet ungewöhnlich viele Austritte ("+rosterDiff.departed.length+"). Bitte kontrolliere die Liste. Wirklich auf dieser Grundlage abgleichen?",
+   {title:"Viele Austritte bestätigen",confirmText:"Trotzdem übernehmen",danger:true});
+  if(!ok)return;
+ }
  const protectedIds=new Set(rosterDiff.critical.map(item=>item.member.id));
  const p=storage.getProfile(),members=p.members;
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
