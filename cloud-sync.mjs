@@ -65,8 +65,8 @@ function suggestionChanges(suggestion){
  const prev=storage.getProfile(),draft=suggestion.suggested_profile;
  if(!prev||!draft)return ["Vorgeschlagene Planänderung"];
  const old=new Map((prev.members||[]).map(m=>[m.id,m]));
- const fields=["participating","fixed","priority","townHall","threeStar","targetDays","statuses"];
- const labels={participating:"Dabei",fixed:"Fix",priority:"Priorität",townHall:"Rathaus",
+ const fields=["participating","fixed","priority","rotationWeight","townHall","threeStar","targetDays","statuses"];
+ const labels={participating:"Dabei",fixed:"Fix",priority:"Alte Priorität",rotationWeight:"Rotation",townHall:"Rathaus",
    threeStar:"3★-Stärke",targetDays:"Einsatzziel",statuses:"Tagesregeln"};
  const result=[];
  for(const m of draft.members||[]){
