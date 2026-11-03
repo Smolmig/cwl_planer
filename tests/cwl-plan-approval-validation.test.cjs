@@ -47,5 +47,5 @@ test("Owner lock, editor submission and owner acceptance all enforce validation"
  assert.match(cloud,/assertPlanningReady\(proposed\.suggested_profile\)/);
  assert.match(cloud,/toggleButton\.disabled=invalid/);
  assert.match(cloud,/submitButton\.disabled=!changedSerial\|\|storage\.getPlanningState/);
- assert.match(html,/getPlanningState:\(\)=>\(\{ok:lastPlan\?\.ok!==false/);
+ assert.match(html,/getPlanningState:\(\)=>\(\{ok:lastPlan\?\.ok===true/);
 });
