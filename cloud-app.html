@@ -2533,12 +2533,12 @@ function renderSummary(){
   }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
   const badge=document.getElementById("fairBadge"),rotStats=rotationStats();
   if(rotStats){
-    badge.textContent=rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"prüfen";
-    badge.className="badge "+(rotStats.spread<=1?"ok":rotStats.spread<=2?"warn":"err");
-    document.getElementById("rotationSummary").textContent=`Einsätze: ${rotStats.min}–${rotStats.max} pro Rotationsspieler · Unterschied: ${rotStats.spread} (Verfügbarkeit nicht berücksichtigt)`;
+    badge.textContent=lastPlan.ok===false?"Konflikt":rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"ungleich";
+    badge.className="badge "+(lastPlan.ok===false?"err":rotStats.spread<=1?"ok":"warn");
+    document.getElementById("rotationSummary").textContent=`Einsätze: ${rotStats.min}–${rotStats.max} pro Rotationsspieler · Unterschied: ${rotStats.spread} (Verfügbarkeit nicht berücksichtigt)`+(lastPlan.ok===false?" · Planung nicht vollständig":lastPlan.notices?.length?" · "+lastPlan.notices.join(" "):"");
   }else{
-    badge.textContent="–";badge.className="badge ok";
-    document.getElementById("rotationSummary").textContent="Noch keine Rotation berechnet";
+    badge.textContent=lastPlan.ok===false?"Konflikt":"–";badge.className="badge "+(lastPlan.ok===false?"err":"ok");
+    document.getElementById("rotationSummary").textContent=lastPlan.ok===false?"Planung nicht vollständig – bitte Vorgaben prüfen.":"Noch keine Rotation berechnet";
   }
 }
 function archiveCurrentCwl(){
