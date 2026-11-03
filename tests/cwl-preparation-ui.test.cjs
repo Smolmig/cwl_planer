@@ -41,6 +41,10 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.match(review.textContent,/1 Wechsel nötig/);
   assert.match(review.querySelector(".cwl-prep-group.remove").textContent,/Spieler B/);
   assert.match(review.querySelector(".cwl-prep-group.add").textContent,/Spieler C/);
+  assert.equal(review.querySelector(".cwl-prep-group.remove .cwl-roster-tag").textContent,"#2PYQ");
+  assert.equal(review.querySelector(".cwl-prep-group.add .cwl-roster-tag").textContent,"#2PYV");
+  assert.match(doc.querySelector(".cwl-live-day > .statusline").textContent,/Aufstellung vorläufig/);
+  assert.doesNotMatch(doc.querySelector(".cwl-live-day > .statusline").textContent,/Angriffe erfasst/);
   assert.equal(doc.querySelectorAll(".cwl-opponent-details .cwl-roster-member").length,2);
   assert.ok(doc.querySelector(".cwl-opponent-details").textContent.includes("<img src=x onerror=alert(1)>"),
     "hostile API name must display as text");
@@ -59,6 +63,12 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   live.render();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/noch nicht vollständig/);
   assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+  assert.equal(edits,0);
+  round.clan.members.push({tag:b.playerTag,name:b.name,townHallLevel:18});
+  round.opponent.members[0].tag="#INVALID";
+  live.render();
+  assert.equal(doc.querySelectorAll(".cwl-opponent-details .cwl-roster-member").length,0);
+  assert.match(doc.querySelector(".cwl-opponent-details").textContent,/noch nicht vollständig verfügbar/);
   assert.equal(edits,0);
   live.stop();
  }finally{
