@@ -15,11 +15,14 @@ const end=html.indexOf('document.getElementById("settingsCloudManage").onclick='
 assert.ok(start>=0&&end>start,"Navigation module must be extractable");
 const navScript=html.slice(start,html.indexOf(";",end)+1);
 
-test("v1.5.1 only introduces navigation, keeping existing backend and More routing",()=>{
-  assert.equal(version.version,"v1.5.1");
-  assert.match(html,/const APP_VERSION="v1\.5\.1"/);
-  assert.match(html,/cloud-sync\.mjs\?v=1\.5\.1/);
-  assert.match(html,/id="quickClanSelect"/);
+test("v1.5.2 only introduces navigation, keeping existing backend and More routing",()=>{
+  assert.equal(version.version,"v1.5.2");
+  assert.match(html,/const APP_VERSION="v1\.5\.2"/);
+  assert.match(html,/cloud-sync\.mjs\?v=1\.5\.2/);
+  assert.match(html,/id="quickClanChoices"/);
+  assert.match(html,/id="quickClanConfirm"/);
+  assert.match(html,/id="quickClanCancel"/);
+  assert.doesNotMatch(html,/id="quickClanSelect"/);
   assert.match(html,/id="sidebarCollapse"/);
   assert.match(html,/original\.dispatchEvent\(new Event\("change",\{bubbles:true\}\)\)/);
   assert.match(html,/cwl_desktop_sidebar_collapsed/);
@@ -53,11 +56,19 @@ test("desktop and iPhone: direct clan switch and account management stay usable"
         const btn=page.locator("#headerClanName");
         await btn.click();
         assert.equal(await btn.getAttribute("aria-expanded"),"true");
-        assert.equal(await page.locator("#quickClanSelect option").count(),2);
-        await page.locator("#quickClanSelect").selectOption("b");
+        assert.equal(await page.locator("#quickClanChoices button").count(),2);
+        await page.locator('#quickClanChoices button[data-clan-id="b"]').click();
+        assert.equal(await page.evaluate(()=>document.getElementById("cloudClanSelect").value),"a");
+        assert.equal(await page.evaluate(()=>window.__clanChanges),0);
+        await page.locator("#quickClanCancel").click();
+        assert.equal(await page.locator("#quickClanMenu").isVisible(),false);
+        assert.equal(await page.evaluate(()=>window.__clanChanges),0);
+        await btn.click();
+        await page.locator('#quickClanChoices button[data-clan-id="b"]').click();
+        assert.equal(await page.locator("#quickClanConfirm").isEnabled(),true);
+        await page.locator("#quickClanConfirm").click();
         assert.equal(await page.evaluate(()=>document.getElementById("cloudClanSelect").value),"b");
         assert.equal(await page.evaluate(()=>window.__clanChanges),1);
-        assert.equal(await page.locator("#quickClanMenu").isVisible(),false);
         await btn.click();
         await page.locator("#quickClanManage").click();
         assert.equal(await page.evaluate(()=>window.__manageOpens),1);
@@ -72,6 +83,13 @@ test("desktop and iPhone: direct clan switch and account management stay usable"
         assert.ok(widths.body<=width+2,"Unexpected horizontal overflow at "+width+": "+JSON.stringify(widths));
         assert.ok(widths.header<=width+2,"Clan switcher outside viewport at "+width);
         assert.ok(widths.gear<=width+2,"Settings gear outside viewport at "+width);
+        if(width<700){
+          const positions=await page.evaluate(()=>({
+            brand:document.querySelector(".topbar .brand-lockup").getBoundingClientRect().bottom,
+            clan:document.getElementById("headerClanName").getBoundingClientRect().top
+          }));
+          assert.ok(positions.clan>=positions.brand+4,"Clan must sit below brand at "+width);
+        }
         if(width>=1100){
           assert.equal(await page.locator(".topbar .brand-lockup").isVisible(),false);
           const before=await page.locator(".bottomnav").evaluate(el=>Math.round(el.getBoundingClientRect().width));
