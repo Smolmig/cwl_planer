@@ -8,6 +8,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.5.2] - 2026-11-03
+
+### Clanwechsel & Kopfbereich
+- In-App-Clanauswahl auf Desktop und Mobil: Auswahl nur vormerken, erst mit „Wechseln“ bestätigen; „Abbrechen“ und „Clan & Konto“ direkt erreichbar.
+- Mobile Kopfzeile: aktiver Clan steht unterhalb des Logos; kleineres, einheitliches Chevron.
+- Desktop: dezenter Einklapp-Button auf der Seitenleistenkante und kompakter Stift neben Mitgliedernamen.
+
+### Mitglieder
+- Mobile Rathausdarstellung und Abstände zu Dabei/Fix verbessert.
+- Überflüssige Hinweise „3★-Werte aus Statistik“ und „Fix: alle verfügbaren Tage“ auf Mobilgeräten ausgeblendet.
+- Keine Supabase-Migration; CWL-Planungslogik und Clan-Daten bleiben unberührt.
+
 ## [1.5.1] - 2026-11-03
 
 ### Navigation und Clanwechsel
