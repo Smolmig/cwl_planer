@@ -1787,6 +1787,20 @@ html[data-theme="arena"] #view-members .member-tools{background:transparent!impo
 html[data-theme="arena"] #view-members .member-details{border-top-color:#4b5356}
 html[data-theme="arena"] #view-members .member-snapshot{border-color:transparent}
 html[data-theme="arena"] .member-townhall{color:#eee5d6}
+/* Account shortcut for Cloud mode: keep login in guest mode. */
+.account-quick-wrap{position:relative;display:none;align-self:center}
+body.cloud-mode .account-quick-wrap{display:inline-flex}
+.account-quick-trigger{min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:21px!important;padding:0 7px!important}
+.account-quick-menu[hidden]{display:none!important}
+.account-quick-menu{position:absolute;z-index:230;top:calc(100% + 10px);right:0;width:min(248px,calc(100vw - 26px));
+ padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);
+ box-shadow:0 14px 40px rgba(0,0,0,.3);display:grid;gap:4px}
+.account-quick-label{padding:7px 9px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.account-quick-menu>button{width:100%;min-height:44px;border:0;border-radius:9px;padding:9px 12px;
+ text-align:left;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.account-quick-menu>button:hover,.account-quick-menu>button:focus-visible{background:var(--bluebg)}
+#accountQuickLogout{color:var(--red)}
+@media(max-width:520px){.account-quick-trigger{min-height:34px;min-width:34px;font-size:19px!important}}
 /* v1.7.1 P0: a hidden clan chip must stay hidden in guest mode.
    Earlier, a later selector re-enabled the empty button, creating a white pill. */
 #headerClanName[hidden]{display:none!important}
@@ -1846,7 +1860,15 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
       <div class="subtitle">CWL planen · Einsätze fair verteilen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
+    <div class="top-actions"><div class="account-quick-wrap" id="accountQuickWrap">
+ <button class="btn small account-quick-trigger" type="button" id="accountQuickButton"
+  aria-expanded="false" aria-controls="accountQuickMenu" aria-label="Konto-Menü öffnen" title="Konto">♙</button>
+ <div class="account-quick-menu" id="accountQuickMenu" hidden>
+  <div class="account-quick-label">Mein Konto</div>
+  <button type="button" id="accountQuickManage">Clan & Konto verwalten</button>
+  <button type="button" id="accountQuickLogout">Abmelden</button>
+ </div>
+ </div><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
   </div>
 </div>
 <main class="content">
