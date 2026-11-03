@@ -304,7 +304,7 @@ function installNameEditors(){
   event.preventDefault();event.stopPropagation();
   if(cloud.active&&role==="viewer")return;
   const member=storage.getProfile()?.members?.find(m=>m.id===pencil.closest(".member")?.dataset.id);
-  if(cloud.active&&cloud.hasApiClan()&&member?.playerTag&&Number.isInteger(member.cocOrder)&&member.cocSyncState!=="former")return;
+  if(cloud.active&&cloud.hasApiClan?.()&&member?.playerTag&&Number.isInteger(member.cocOrder)&&member.cocSyncState!=="former")return;
   const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
   if(!input)return;
   const name= input.closest(".name-wrap")?.querySelector(".member-name-label");
