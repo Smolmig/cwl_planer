@@ -71,6 +71,41 @@ export function canFinalize(round,expectedSlots,now=Date.now()) {
   }
   return true;
 }
+// Read-only preview: the solver's recommended lineup is the source of truth.
+// Clash's preparation roster is provisional and must never silently change it.
+export function reviewPreparationLineup(profile,dayPlan,round,{planningOk=true}={}){
+ if(!round?.available||round.state!=="preparation")return null;
+ const unavailable=reason=>({status:"unavailable",reason,toRemove:[],toAdd:[]});
+ const slots=Number(profile?.config?.slots),teamSize=Number(round.teamSize);
+ const actual=Array.isArray(round.clan?.members)?round.clan.members:[];
+ if(!Number.isInteger(teamSize)||teamSize<1||teamSize>50||
+    slots!==teamSize||actual.length!==teamSize)
+   return unavailable("Clash-Aufstellung noch nicht vollständig verfügbar oder Kriegsgröße unterschiedlich.");
+ const actualTags=actual.map(m=>tagOf(m?.tag));
+ if(actualTags.some(t=>!validTag(t))||new Set(actualTags).size!==teamSize)
+   return unavailable("Die Clash-Aufstellung ist noch unvollständig. Bitte erneut aktualisieren.");
+ if(!planningOk||!dayPlan||dayPlan.locked||
+    !Array.isArray(dayPlan.lineup)||dayPlan.lineup.length!==teamSize||
+    (Array.isArray(dayPlan.warnings)&&dayPlan.warnings.length))
+   return unavailable("Bitte zuerst die empfohlene Aufstellung im Planer vollständig prüfen.");
+ const members=new Map([...(profile?.members||[]),...(profile?.archivedMembers||[])].map(m=>[m.id,m]));
+ const planned=dayPlan.lineup.map(id=>members.get(id));
+ if(planned.some(m=>!m?.playerTag))
+   return unavailable("Für den Abgleich fehlen Player-Tags in der Planung.");
+ const plannedTags=planned.map(m=>tagOf(m.playerTag));
+ if(plannedTags.some(t=>!validTag(t))||new Set(plannedTags).size!==teamSize)
+   return unavailable("Für den Abgleich sind eindeutige Player-Tags im Planer erforderlich.");
+ const chosen=new Set(plannedTags),existing=new Set(actualTags);
+ const toRemove=actual.filter(m=>!chosen.has(tagOf(m.tag)))
+   .map(m=>({tag:tagOf(m.tag),name:m.name,townHallLevel:m.townHallLevel}));
+ const toAdd=planned.filter(m=>!existing.has(tagOf(m.playerTag)))
+   .map(m=>({tag:tagOf(m.playerTag),name:m.name,townHallLevel:m.townHall}));
+ if(toRemove.length!==toAdd.length)
+   return unavailable("Die Listen sind nicht eindeutig vergleichbar. Bitte erneut aktualisieren.");
+ return {status:toRemove.length?"changes":"match",
+  matched:teamSize-toRemove.length,teamSize,toRemove,toAdd};
+}
+
 // Mutable profile is the same object used by the existing v9 planner.
 // Caller may save only when this returns changed=true.
 export function reconcileCwl(profile,payload,createMember,now=Date.now()) {

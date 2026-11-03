@@ -28,12 +28,12 @@ test("Compact member star average is limited to the last seven individual attack
  assert.equal(recent.get("#8PYL").averageStars,2);
  assert.equal(computeRecentAttackStats(wars,attacks,20).get("#2PYL").attacks,7);
 });
-test("Cloud member cards explain both metrics and omit P0 abbreviations",()=>{
+test("Cloud member cards explain metrics and show readable rotation labels",()=>{
  const html=read("cloud-app.html"),stats=read("cwl-stats.mjs");
  assert.match(html,/3★-Hit-Rate: /);
  assert.match(html,/Ø Sterne:/);
  assert.match(html,/letzte 7 Angriffe/);
- assert.match(html,/window\.CWLCloud\?\.active\?"":" · Prio "/);
+ assert.match(html,/window\.CWLCloud\?\.active\?"":" · "\+rotationWeightLabel\(m\)/);
  assert.doesNotMatch(html,/ · P\$\{m\.priority\}/);
  assert.match(stats,/getRecentPlayerStats/);
 });
