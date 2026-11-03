@@ -1158,7 +1158,7 @@ async function getRoster({automatic=false}={}){
  let stage="Vorbereitung";
  try{
  if(!clanId)throw Error("Bitte Clan auswählen");
- if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy||manualRosterPending()))return;
+ if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy||(typeof manualRosterPending==="function"&&manualRosterPending())))return;
  await ensureSaved();
  if(automatic)rosterAutoBusy=true;
  resetRoster();
@@ -1267,7 +1267,7 @@ async function getRoster({automatic=false}={}){
  }
  toggle("cloudDepartedWarnings",critical.length>0);
  toggle("cloudRosterDiff",true);
- toggle("cloudApplyRoster",role!=="viewer"&&((added.length+updated.length+departed.length)>0||manualRosterPending()));
+ toggle("cloudApplyRoster",role!=="viewer"&&((added.length+updated.length+departed.length)>0||(typeof manualRosterPending==="function"&&manualRosterPending())));
  text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(critical.length?" · ⚠️ Aufstellungen prüfen":""));
  if(automatic){
   if(critical.length){
