@@ -41,7 +41,7 @@ function townHallSummary(members) {
 }
 export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
-  let staleRoundDays=new Set(); // A saved fallback is never a fresh API observation.
+  let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set();
   const effective=()=>{
@@ -217,7 +217,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>";
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
     const fresh=!!(current?.active&&activeClan===ctx.clanId&&
-      current.season===info.season&&lastSuccessfulAt>0&&
+      current.season===info.season&&lastSuccessfulProfile===ctx.profile&&lastSuccessfulAt>0&&
       Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&!offlineReason);
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
@@ -231,7 +231,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     // A manual first refresh must establish its own clan session, too.
     // Never carry fresh-state flags or round snapshots over from another clan.
     if(activeClan!==ctx.clanId){
-      activeClan=ctx.clanId;current=null;lastSuccessfulAt=0;staleRoundDays.clear();
+      activeClan=ctx.clanId;current=null;lastSuccessfulAt=0;lastSuccessfulProfile=null;staleRoundDays.clear();
     }
     const req=++requestId,id=ctx.clanId,profileAtRequest=ctx.profile,roleAtRequest=ctx.role;
     const stillCurrent=()=>{
@@ -265,7 +265,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         });
       }
       staleRoundDays=nextStaleDays;
-      current=data;lastSuccessfulAt=Date.now();offlineReason=data.pending?
+      current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
       if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
@@ -292,7 +292,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   }
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
-    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;
+    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;
     expandedDays.clear();expandedOpponentDays.clear();staleRoundDays.clear();
     render();
   }
