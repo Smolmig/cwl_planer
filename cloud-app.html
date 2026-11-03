@@ -1787,6 +1787,52 @@ html[data-theme="arena"] #view-members .member-tools{background:transparent!impo
 html[data-theme="arena"] #view-members .member-details{border-top-color:#4b5356}
 html[data-theme="arena"] #view-members .member-snapshot{border-color:transparent}
 html[data-theme="arena"] .member-townhall{color:#eee5d6}
+
+/* Arena refinement: same editorial heading hierarchy as the polished More page.
+   Keep the compact mobile layout and the other themes unchanged. */
+html[data-theme="arena"] :is(
+ #view-plan .plan-overview .section-title h3,
+ #view-members>.card>.section-title h3,
+ #view-summary .summary-primary-card .section-title h3,
+ #view-stats .stats-header .section-title h3
+){
+ font-family:Georgia,"Times New Roman",serif;
+ font-size:clamp(23px,2.8vw,34px);
+ font-weight:700;letter-spacing:-.03em;line-height:1.18;
+ margin:0;overflow-wrap:anywhere;
+}
+html[data-theme="arena"] #view-plan .plan-overview .section-title h3::before,
+html[data-theme="arena"] #view-members>.card>.section-title h3::before,
+html[data-theme="arena"] #view-summary .summary-primary-card .section-title h3::before,
+html[data-theme="arena"] #view-stats .stats-header .section-title h3::before{
+ display:block;font:850 10px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;
+ letter-spacing:.15em;color:var(--primary);margin:0 0 6px;
+}
+html[data-theme="arena"] #view-plan .plan-overview .section-title h3::before{content:"PLANUNG"}
+html[data-theme="arena"] #view-members>.card>.section-title h3::before{content:"CLAN-KADER"}
+html[data-theme="arena"] #view-summary .summary-primary-card .section-title h3::before{content:"EINSÄTZE"}
+html[data-theme="arena"] #view-stats .stats-header .section-title h3::before{content:"AUSWERTUNG"}
+html[data-theme="arena"] #view-plan .plan-overview .section-title,
+html[data-theme="arena"] #view-members>.card>.section-title,
+html[data-theme="arena"] #view-summary .summary-primary-card .section-title,
+html[data-theme="arena"] #view-stats .stats-header .section-title{align-items:flex-start;gap:10px}
+@media(max-width:520px){
+ html[data-theme="arena"] :is(
+  #view-plan .plan-overview .section-title h3,
+  #view-members>.card>.section-title h3,
+  #view-summary .summary-primary-card .section-title h3,
+  #view-stats .stats-header .section-title h3
+ ){font-size:clamp(21px,6vw,27px)}
+}
+/* Remove the crude, crossing castle line-art and compass circles from the
+   overview surface. The cards retain a subtle charcoal-to-gold treatment. */
+html[data-theme="arena"] .plan-overview{
+ background:radial-gradient(ellipse 80% 110% at 100% 0%,rgba(176,137,73,.075),transparent 67%),
+  linear-gradient(150deg,#20262a 0%,#181e23 100%);
+ background-color:#1a2025;
+}
+html[data-theme="arena"] .plan-overview::before{content:none!important;display:none!important}
+html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none!important}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1920,7 +1966,7 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
     </div>
     <div id="currentWarContent"></div>
   </div>
-  <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <div class="card summary-primary-card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
     <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
