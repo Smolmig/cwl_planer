@@ -30,7 +30,7 @@ const pendingInviteCode=()=>{const input=document.getElementById("cloudJoinCode"
  const code=query||input||storedInvite(INVITE_TOKEN_KEY);
  return isInviteCode(code)?code:"";
 };
-let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false;
+let saving=false,blocked=false,hydrating=false,debounce=null,channel=null,roster=null,rosterDiff=null,inviteLink=null,accountEpoch=0,rosterAutoBusy=false,rosterRequestSerial=0;
 let clanRoles=new Map(),presenceTimer=null,lastVersionCheck=0,appUpdatePending=false;
 let recoveryMode=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
 let forgotOpen=false;
@@ -462,7 +462,7 @@ async function submitInviteAuth(){
  }catch(err){inviteFeedback(err?.message||"Anmeldung fehlgeschlagen.",true)}
  finally{inviteSubmitting=false;$("inviteWelcomeAuthSubmit").disabled=false}
 }
-function resetRoster(){roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
+function resetRoster(){rosterRequestSerial++;roster=null;rosterDiff=null;toggle("cloudRosterDiff",false);toggle("cloudApplyRoster",false);toggle("cloudDepartedWarnings",false)}
 function showSignedIn(){
  toggle("cloudAuth",!user&&!recoveryMode&&!forgotOpen);
  toggle("cloudForgotRequest",!user&&!recoveryMode&&forgotOpen);
@@ -1124,18 +1124,35 @@ async function maybeAutoRoster(force=false){
   console.warn("Automatischer Mitgliederabgleich:",e?.message||e)}
 }
 async function getRoster({automatic=false}={}){
- let stage="Vorbereitung";
+ let stage="Vorbereitung",isCurrentRequest=()=>true;
  try{
  if(!clanId)throw Error("Bitte Clan auswählen");
+ const initialClan=clanId,initialProfile=storage.getProfile()?.id||null;
+ const initialEpoch=typeof accountEpoch==="undefined"?null:accountEpoch;
  if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy))return;
  await ensureSaved();
+ if(initialClan!==clanId||initialProfile!==(storage.getProfile()?.id||null)||
+    initialEpoch!==(typeof accountEpoch==="undefined"?null:accountEpoch))return;
  if(automatic)rosterAutoBusy=true;
  resetRoster();
+ const requestContext={
+  clanId,profileId:storage.getProfile()?.id||null,
+  accountEpoch:typeof accountEpoch==="undefined"?null:accountEpoch,
+  revision:typeof revision==="undefined"?null:revision,
+  requestSerial:typeof rosterRequestSerial==="undefined"?null:rosterRequestSerial
+ };
+ isCurrentRequest=()=>requestContext.clanId===clanId&&
+  requestContext.profileId===(storage.getProfile()?.id||null)&&
+  requestContext.accountEpoch===(typeof accountEpoch==="undefined"?null:accountEpoch)&&
+  requestContext.revision===(typeof revision==="undefined"?null:revision)&&
+  (requestContext.requestSerial===null||requestContext.requestSerial===rosterRequestSerial)&&
+  !blocked&&!changedSerial;
  if(!automatic)toggle("cloudRosterBox",true);
  const status=$("cloudRosterStatus");status.textContent="Clanmitglieder werden verglichen …";status.classList.remove("error");
  if(!automatic)$("cloudRosterBox").scrollIntoView({behavior:"auto",block:"nearest"});
  stage="Clash-Daten abrufen";
- let {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId}});
+ let {data,error:err}=await sb.functions.invoke("coc-clan-members",{body:{clanId:requestContext.clanId}});
+ if(!isCurrentRequest())return;
  if(err && (err.name==="FunctionsFetchError" ||
     (err.name==="TypeError" && /type error|failed to fetch|load failed/i.test(err.message||"")))){
    // Read-only fallback for WebKit when the SDK cannot finish reading the
@@ -1170,6 +1187,7 @@ async function getRoster({automatic=false}={}){
    }
  }
  stage="Serverantwort prüfen";
+ if(!isCurrentRequest())return;
  if(err){
    let reason=err.message||"unknown_error";
    if(err.context?.json)try{const info=await err.context.json();reason=info?.error||reason}catch{}
@@ -1211,7 +1229,8 @@ async function getRoster({automatic=false}={}){
    const current=existingMap.get(normalizeTag(m.tag));
    return current&&(["former","kept"].includes(current.cocSyncState)||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
- roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,unusuallyManyDeparted,received:incoming.length,initialImport};
+ if(!isCurrentRequest())return;
+ roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,unusuallyManyDeparted,received:incoming.length,initialImport,request:requestContext};
  stage="Unterschiede anzeigen";
  const diff=$("cloudRosterDiff");diff.replaceChildren();
  function group(title,items){
@@ -1256,6 +1275,7 @@ async function getRoster({automatic=false}={}){
   }
  }
  }catch(err){
+   if(!isCurrentRequest())return;
    console.warn("Clanvergleich fehlgeschlagen",{
      stage,name:err?.name||"Fehler",message:String(err?.message||err).slice(0,200)
    });
@@ -1303,7 +1323,21 @@ function restoreRosterReturn(m){
 }
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
+ const request=rosterDiff.request;
+ const isValidContext=()=>!request||(
+  request.clanId===clanId&&
+  request.profileId===(storage.getProfile()?.id||null)&&
+  request.accountEpoch===(typeof accountEpoch==="undefined"?null:accountEpoch)&&
+  request.revision===(typeof revision==="undefined"?null:revision)&&
+  (request.requestSerial===null||request.requestSerial===rosterRequestSerial)&&
+  !blocked&&!changedSerial
+ );
+ const requireCurrentContext=()=>{
+  if(!isValidContext())throw Error("Der gemeinsame Clanplan hat sich seit dem Vergleich geändert. Bitte Mitglieder erneut abgleichen.");
+ };
+ requireCurrentContext();
  await ensureSaved();
+ requireCurrentContext();
  const currentRoster=roster;
  const decisions=new Map([...document.querySelectorAll("#cloudDepartedWarnings .cloud-missing-choice")]
    .map(select=>[select.dataset.playerId,select.value]));
@@ -1318,6 +1352,7 @@ async function applyRoster(){
  const protectedIds=new Set(rosterDiff.critical.map(item=>item.member.id));
  const p=storage.getProfile(),members=p.members;
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
+ requireCurrentContext();
  const remoteTags=new Set();
  for(const [i,r] of currentRoster.entries()){
   const tag=normalizeTag(r.tag);if(!tag)continue;remoteTags.add(tag);
