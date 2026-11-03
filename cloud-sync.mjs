@@ -1258,6 +1258,41 @@ async function getRoster({automatic=false}={}){
    throw err;
  }finally{if(automatic)rosterAutoBusy=false}
 }
+// Keep the last valid planning state with the player (identified by stable Clash tag).
+// Cloud JSON/Realtime/backups already persist unknown member fields; no DB migration.
+function rosterPlanningState(m){
+ return {
+  participating:!!m.participating,fixed:!!m.fixed,
+  priority:Math.max(0,Math.min(5,Number(m.priority)||0)),
+  rotationWeight:["preferred","balanced","less"].includes(m.rotationWeight)?m.rotationWeight:null,
+  targetDays:Number.isInteger(Number(m.targetDays))&&Number(m.targetDays)>0?Number(m.targetDays):null,
+  statuses:Array.from({length:7},(_,d)=>["auto","must","out"].includes(m.statuses?.[d])?m.statuses[d]:"auto"),
+  note:typeof m.note==="string"?m.note:""
+ };
+}
+function rememberRosterDeparture(m){
+ const tag=normalizeTag(m.playerTag);
+ if(!tag||m.cocBeforeDeparture?.tag===tag)return;
+ const before=rosterPlanningState(m);
+ m.cocBeforeDeparture={tag,before,automatic:{...before,participating:false},edited:{}};
+}
+function restoreRosterReturn(m){
+ const snapshot=m.cocBeforeDeparture;
+ if(!snapshot)return;
+ delete m.cocBeforeDeparture;
+ if(!snapshot.before||snapshot.tag!==normalizeTag(m.playerTag)||m.cocSyncState==="kept")return;
+ const now=rosterPlanningState(m);
+ const edited=snapshot.edited||{};
+ for(const field of ["participating","fixed","priority","rotationWeight","targetDays","note"]){
+   if(edited[field]||!Object.prototype.hasOwnProperty.call(snapshot.automatic||{},field))continue;
+   if(now[field]===snapshot.automatic[field])m[field]=snapshot.before[field];
+ }
+ const oldDays=snapshot.before.statuses,autoDays=snapshot.automatic?.statuses;
+ if(Array.isArray(oldDays)&&Array.isArray(autoDays)){
+   m.statuses=now.statuses.map((value,d)=>
+     !edited["statuses."+d]&&value===autoDays[d]?oldDays[d]:value);
+ }
+}
 async function applyRoster(){
  if(!roster||!rosterDiff||!["owner","editor"].includes(role))return;
  await ensureSaved();
@@ -1279,6 +1314,7 @@ async function applyRoster(){
     if(!rosterDiff.initialImport)m.cocSyncState="new"; // no NEW badges on first complete import
     members.push(m);map.set(tag,m);
   } else if(m.cocSyncState==="former"||m.cocSyncState==="kept") {
+    restoreRosterReturn(m); // recover the pre-departure state unless explicitly edited
     delete m.cocSyncState; // rejoined the clan
   }
   m.name=r.name;
@@ -1289,15 +1325,18 @@ async function applyRoster(){
   if(!m.playerTag||remoteTags.has(normalizeTag(m.playerTag)))continue;
   if(protectedIds.has(m.id)){
     if(decisions.get(m.id)==="keep"){
+      delete m.cocBeforeDeparture; // explicit keep is a new decision, not a temporary auto-pause
       m.participating=true;
       m.cocSyncState="kept"; // expressly retain a missing member's eligibility
     }else if(decisions.get(m.id)==="remove"){
+      rememberRosterDeparture(m);
       m.participating=false; // exclude from every unplayed day on the next calculation
       m.cocSyncState="former"; // preserve player details and already locked lineups
     }
     continue;
   }
-  if(m.cocSyncState==="kept")continue; // explicit user decision remains in force
+  if(m.cocSyncState==="kept"||m.cocSyncState==="former")continue; // preserve deliberate changes during absence
+  rememberRosterDeparture(m);
   m.cocSyncState="former";
   m.participating=false; // no planned lineups reference this person
  }
