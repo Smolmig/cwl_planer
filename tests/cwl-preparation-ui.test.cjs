@@ -29,13 +29,14 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   const profile={id:"sample",config:{slots:2,days:1},members:[a,b,c],
    archivedMembers:[],cwlLive:{season,clanTag:"#2PYG",rounds:[round]}};
   const plan={day:1,lineup:["A","C"],warnings:[],locked:false};
+  let activeProfile=profile;
   const {createCwlLive}=await core();
   let apiData={ok:true,active:true,clanTag:"#2PYG",season,rounds:[round]};
   const live=createCwlLive({
     sb:{functions:{invoke:async()=>({data:apiData})}},
-    context:()=>({active:true,clanId:"sample-id",hasClanTag:true,role:"viewer",profile}),
+    context:()=>({active:true,clanId:"sample-id",hasClanTag:true,role:"viewer",profile:activeProfile}),
     storage:{getPlannedLineups:()=>[plan],getPlanningState:()=>({ok:true}),
-      getProfile:()=>profile,rerender:()=>{edits++},newMember:()=>{edits++;throw Error("write")}},
+      getProfile:()=>activeProfile,rerender:()=>{edits++},newMember:()=>{edits++;throw Error("write")}},
     notify:()=>{edits++}
   });
   live.render();
@@ -87,6 +88,12 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   live.render();
   assert.equal(doc.querySelectorAll(".cwl-opponent-details .cwl-roster-member").length,0);
   assert.match(doc.querySelector(".cwl-opponent-details").textContent,/noch nicht vollständig verfügbar/);
+  assert.equal(edits,0);
+  // Cloud Realtime installs a new profile object: it needs its own live read.
+  round.clan.members.push({tag:b.playerTag,name:b.name,townHallLevel:18});
+  activeProfile={...profile};
+  live.render();
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
   assert.equal(edits,0);
   live.stop();
  }finally{
