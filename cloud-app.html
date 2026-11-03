@@ -1787,6 +1787,64 @@ html[data-theme="arena"] #view-members .member-tools{background:transparent!impo
 html[data-theme="arena"] #view-members .member-details{border-top-color:#4b5356}
 html[data-theme="arena"] #view-members .member-snapshot{border-color:transparent}
 html[data-theme="arena"] .member-townhall{color:#eee5d6}
+
+/* Two-sided CWL war presentation: left is our clan, right is the opponent.
+   On phones the panels stack with explicit headings rather than ambiguous links. */
+.cwl-live-team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+ margin:13px 0 4px;align-items:start;min-width:0}
+.cwl-live-team-panel{min-width:0;padding:12px;border:1px solid var(--line);
+ border-radius:12px;background:var(--card)}
+.cwl-live-team-panel.own{border-top:3px solid var(--primary)}
+.cwl-live-team-panel.opponent{border-top:3px solid var(--amber)}
+.cwl-live-team-head{display:flex;align-items:flex-start;justify-content:space-between;
+ flex-wrap:wrap;gap:5px 10px;margin-bottom:8px;min-width:0}
+.cwl-live-team-head>b{font-size:14px;font-weight:850;color:var(--text)}
+.cwl-live-team-metric{font-size:11px;color:var(--muted);font-weight:650;
+ line-height:1.4;overflow-wrap:anywhere}
+.cwl-live-team-panel .cwl-live-ths{margin:5px 0 8px;gap:5px}
+.cwl-live-team-panel .cwl-live-th{font-size:10px;padding:3px 5px}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details){
+ margin:0;padding:0;border:0;min-width:0}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary{
+ box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;
+ gap:6px;flex-wrap:wrap;padding:10px 11px;min-height:48px;
+ border:1px solid var(--line);border-radius:10px;background:var(--bluebg);
+ color:var(--text);font-size:12px;line-height:1.4;font-weight:800;
+ cursor:pointer;list-style:none;overflow-wrap:anywhere}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary::-webkit-details-marker{display:none}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary::before{
+ content:"";flex:none;display:inline-block;width:7px;height:7px;
+ border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ transform:rotate(-45deg);transition:transform .16s}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)[open]>summary::before{
+ transform:rotate(45deg)}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary:hover{
+ border-color:var(--primary)}
+.cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary:focus-visible{
+ outline:2px solid var(--primary);outline-offset:2px}
+.cwl-live-team-panel .cwl-live-attack-count{font-size:10px;font-weight:700}
+.cwl-live-team-panel .cwl-live-attack{grid-template-columns:minmax(0,1fr);
+ gap:5px;overflow-wrap:anywhere}
+.cwl-live-team-panel .cwl-live-attack-result{gap:8px}
+.cwl-live-team-panel .cwl-live-player b{overflow-wrap:anywhere}
+.cwl-live-team-panel .cwl-roster-list{max-height:380px}
+.cwl-live-team-panel .cwl-roster-member{gap:5px;flex-wrap:wrap}
+.cwl-live-team-panel .cwl-roster-tag{overflow-wrap:anywhere;white-space:normal}
+@media(max-width:800px){
+ .cwl-live-team-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .cwl-live-team-panel{padding:11px}
+}
+@media(max-width:390px){
+ .cwl-live-team-grid{margin-top:10px;gap:8px}
+ .cwl-live-team-panel{padding:9px}
+ .cwl-live-team-panel .cwl-live-team-head>b{font-size:13px}
+ .cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary{padding:9px;min-height:48px}
+}
+html[data-theme="arena"] .cwl-live-team-panel{
+ background:rgba(21,26,32,.52);border-left-color:#40494d;border-right-color:#40494d;
+ border-bottom-color:#40494d}
+html[data-theme="arena"] .cwl-live-team-panel :is(.cwl-live-details,.cwl-opponent-details)>summary{
+ background:#282c2d;border-color:#7d6948;color:#f7e9cc}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
