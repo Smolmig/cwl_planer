@@ -13,11 +13,11 @@ const season=new Date().toISOString().slice(0,7);
 const player=(id,tag,rest={})=>({id,name:id,playerTag:tag,participating:true,
  fixed:false,targetDays:null,statuses:Array(7).fill("auto"),...rest});
 const a=player("A","#2PYL",{fixed:true}),b=player("B","#2PYQ",{targetDays:1}),c=player("C","#2PYV",{targetDays:1});
-const members=[a,b,c],actual=[a,c].map(m=>({tag:m.playerTag,name:m.name}));
+const members=[a,b,c];
 function fixture(state="inWar"){
  return {config:{slots:2,days:2},members,archivedMembers:[],
   locks:[{locked:false,lineup:[]},{locked:false,lineup:[]}],
-  cwlLive:{season,clanTag:"#2PYG",rounds:[{day:1,available:true,state,teamSize:2,clan:{members:actual}}]}};
+  cwlLive:{season,clanTag:"#2PYG",rounds:[{day:1,available:true,state,teamSize:2,clan:{members:[a,c].map(m=>({tag:m.playerTag,name:m.name}))}}]}};
 }
 function effectiveLocks(profile,linked=true){
  return fromApp(profile,{CWLCloud:{active:true,hasApiClan:()=>linked}},()=>members,norm)();
