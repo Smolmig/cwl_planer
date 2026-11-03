@@ -72,3 +72,10 @@ test("fixed players receive all available days independently of rotation weight"
  assert.equal(p.ok,true);
  assert.equal(p.counts.fix0,7);
 });
+
+test("bulk rotation offers only three options and never assigns a preference to fixed players",()=>{
+ assert.match(html,/id="bulkRotationSelect"/);
+ assert.match(html,/applyBulkValue\("rotationWeight",e\.target\.value\)/);
+ assert.doesNotMatch(html,/id="bulkPrioritySelect"/);
+ assert.match(html,/field==="rotationWeight"&&m\.fixed/);
+});
