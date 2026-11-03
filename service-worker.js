@@ -7,7 +7,7 @@ self.addEventListener("fetch",e=>{
   const url=new URL(e.request.url);
   // The Cloud app is online-only. Never serve stale JavaScript modules from
   // the offline planner's cache: old code broke Safari member synchronization.
-  const cloudModule=/\/(?:cloud-app\.html|cloud-sync\.mjs|cloud-backups\.mjs|cloud-version\.json|cwl-live(?:-core)?\.mjs|cwl-current-war\.mjs|cwl-stats(?:-core)?\.mjs)$/.test(url.pathname);
+  const cloudModule=/\/(?:cloud-app\.html|cloud-sync\.mjs|cloud-backups\.mjs|cloud-version\.json|cwl-live(?:-core)?\.mjs|cwl-current-war\.mjs|cwl-stats(?:-core)?\.mjs|cwl-planning-core\.js)$/.test(url.pathname);
   if(url.origin===self.location.origin && cloudModule){
     e.respondWith(fetch(e.request,{cache:"no-store"}));return;
   }
