@@ -11,6 +11,8 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
  const dom=new JSDOM('<main id="view-plan"><div class="plan-actions"></div><div class="plan-overview"></div>'+
   '<article id="day-card-0"><div class="day-head">Tag 1</div></article></main>');
  const oldDocument=global.document;global.document=dom.window.document;
+ const priorNavigator=Object.getOwnPropertyDescriptor(globalThis,"navigator");
+ Object.defineProperty(globalThis,"navigator",{value:dom.window.navigator,configurable:true});
  let edits=0,oldOpponentOpen=false;
  try{
   const a=player("A","#2PYL"),b=player("B","#2PYQ"),c=player("C","#2PYV");
@@ -29,14 +31,18 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   const plan={day:1,lineup:["A","C"],warnings:[],locked:false};
   const {createCwlLive}=await core();
   const live=createCwlLive({
-    sb:{functions:{invoke:async()=>{throw Error("unexpected network")}}},
+    sb:{functions:{invoke:async()=>({data:{ok:true,active:true,clanTag:"#2PYG",season,rounds:[round]}})}},
     context:()=>({active:true,clanId:"sample-id",hasClanTag:true,role:"viewer",profile}),
     storage:{getPlannedLineups:()=>[plan],getPlanningState:()=>({ok:true}),
       getProfile:()=>profile,rerender:()=>{edits++},newMember:()=>{edits++;throw Error("write")}},
     notify:()=>{edits++}
   });
   live.render();
-  const doc=dom.window.document,review=doc.querySelector(".cwl-prep-review");
+  const doc=dom.window.document;
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
+  assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/Wechsel nötig|stimmt überein/);
+  await live.refresh(); // fresh API response, no Cloud mutation (viewer role)
+  const review=doc.querySelector(".cwl-prep-review");
   assert.ok(review,"comparison must appear inside the war card");
   assert.match(review.textContent,/1 Wechsel nötig/);
   assert.match(review.querySelector(".cwl-prep-group.remove").textContent,/Spieler B/);
@@ -73,6 +79,8 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   live.stop();
  }finally{
   if(oldDocument===undefined)delete global.document;else global.document=oldDocument;
+  if(priorNavigator)Object.defineProperty(globalThis,"navigator",priorNavigator);
+  else delete globalThis.navigator;
   dom.window.close();
  }
 });
