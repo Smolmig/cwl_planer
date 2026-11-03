@@ -30,8 +30,9 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
    archivedMembers:[],cwlLive:{season,clanTag:"#2PYG",rounds:[round]}};
   const plan={day:1,lineup:["A","C"],warnings:[],locked:false};
   const {createCwlLive}=await core();
+  let apiData={ok:true,active:true,clanTag:"#2PYG",season,rounds:[round]};
   const live=createCwlLive({
-    sb:{functions:{invoke:async()=>({data:{ok:true,active:true,clanTag:"#2PYG",season,rounds:[round]}})}},
+    sb:{functions:{invoke:async()=>({data:apiData})}},
     context:()=>({active:true,clanId:"sample-id",hasClanTag:true,role:"viewer",profile}),
     storage:{getPlannedLineups:()=>[plan],getPlanningState:()=>({ok:true}),
       getProfile:()=>profile,rerender:()=>{edits++},newMember:()=>{edits++;throw Error("write")}},
@@ -65,6 +66,17 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/Aufstellung stimmt überein/);
   assert.equal(doc.querySelectorAll(".cwl-prep-group").length,0);
   assert.equal(edits,0,"preview must not save or change Cloud data");
+
+  // A successful *partial* refresh must not make older, saved war data look fresh.
+  apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"partial",
+    rounds:[{day:1,available:false}]};
+  await live.refresh();
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
+  assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+  apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"complete",rounds:[round]};
+  await live.refresh();
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+
   round.clan.members.pop();
   live.render();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/noch nicht vollständig/);
