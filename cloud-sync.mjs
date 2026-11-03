@@ -1602,9 +1602,30 @@ async function deleteOwnedClan(){
 }
 
 async function logout(){
- await ensureSaved();
- const {error:err}=await sb.auth.signOut();if(err)throw err;
- await useSession(null);close();
+ // Sign-out must remain possible with an expired desktop session. Never
+ // silently discard unsaved Cloud edits in order to clear local auth.
+ try{
+  await ensureSaved();
+ }catch(err){
+  if(changedSerial||blocked||saving){
+   try{storage.saveJson()}catch(backupError){
+    throw Error("Abmelden pausiert: Änderungen sind nicht gespeichert und das JSON-Backup konnte nicht erstellt werden.");
+   }
+   if(!await storage.confirmAction(
+    "Änderungen sind noch nicht sicher in der Cloud gespeichert. Ein JSON-Backup wurde heruntergeladen. Trotzdem auf diesem Gerät abmelden?",
+    {title:"Mit offenen Änderungen abmelden?",confirmText:"Abmelden",danger:true}
+   ))return;
+  }else{
+   console.warn("Abmeldung ohne offene Änderungen:",err);
+  }
+ }
+ const {error:err}=await sb.auth.signOut({scope:"local"});
+ // Supabase can have cleared an expired token already. This is not a reason to
+ // strand the user on a stale Cloud screen with no working log-out button.
+ if(err&&!/auth.?session.?missing|session missing|no session/i.test(String(err.message||err)))
+  throw err;
+ await useSession(null);
+ close();
 }
 async function exportCloud(){if(!clanId)throw Error("Kein Cloud-Clan ausgewählt.");
  await ensureSaved();storage.saveJson();
@@ -1640,6 +1661,22 @@ bind("cloudSendReset","click",sendPasswordReset);
 bind("cloudBackToLogin","click",backToLogin);
 bind("cloudChangePassword","click",completeRecovery);
 bind("cloudLogout","click",logout);
+const accountQuickMenu=$("accountQuickMenu"),accountQuickButton=$("accountQuickButton");
+function closeAccountQuickMenu(){accountQuickMenu.hidden=true;accountQuickButton.setAttribute("aria-expanded","false")}
+bind("accountQuickButton","click",()=>{
+ const open=accountQuickMenu.hidden;
+ accountQuickMenu.hidden=!open;
+ accountQuickButton.setAttribute("aria-expanded",String(open));
+});
+bind("accountQuickManage","click",()=>{closeAccountQuickMenu();open()});
+bind("accountQuickLogout","click",async()=>{closeAccountQuickMenu();await logout()});
+document.addEventListener("pointerdown",e=>{
+ if(!accountQuickMenu.hidden&&!accountQuickMenu.contains(e.target)&&
+  !accountQuickButton.contains(e.target))closeAccountQuickMenu();
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&!accountQuickMenu.hidden)closeAccountQuickMenu();
+});
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",refreshCloud);
 bind("cloudChangeDismiss","click",hideChangeToast);
