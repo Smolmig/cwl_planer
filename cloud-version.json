@@ -1,5 +1,5 @@
 {
-  "version": "v1.8.0",
+  "version": "v1.8.1",
   "released": "2026-11-03",
-  "summary": "Beidseitiger CWL-Teamvergleich mit Gegnerangriffen, stabilerer lokaler Modus, sicherer PC-Logout und überarbeitetes Arena-Theme."
+  "summary": "Fixer CWL-Kader ab Kriegsbeginn, konsistente Spielerwechsel aus dem aktuellen Clash-Abgleich und ausgeblendete theoretische Rein-/Raus-Listen."
 }
