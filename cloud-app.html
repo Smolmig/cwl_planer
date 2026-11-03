@@ -2657,6 +2657,17 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 
 // Navigation
 applyTheme();
+function showPlannerView(view){
+  if(view!=="more")closeMoreDetail();
+  if(view!=="settings")window.__previousPlannerView=view;
+  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
+  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===visible));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
+  const gear=document.getElementById("settingsOpen");
+  gear.classList.toggle("active",view==="settings");
+  gear.setAttribute("aria-pressed",String(view==="settings"));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 const moreOrigins=new Map();
 function closeMoreDetail(){
   for(const [node,origin] of moreOrigins){
@@ -2688,17 +2699,6 @@ function openMoreDetail(action){
   document.getElementById("moreLanding").hidden=true;
   document.getElementById("moreDetail").hidden=false;
   window.scrollTo({top:0,behavior:"auto"});
-}
-function showPlannerView(view){
-  if(view!=="more")closeMoreDetail();
-  if(view!=="settings")window.__previousPlannerView=view;
-  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
-  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===visible));
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
-  const gear=document.getElementById("settingsOpen");
-  gear.classList.toggle("active",view==="settings");
-  gear.setAttribute("aria-pressed",String(view==="settings"));
-  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
   if(b.dataset.view==="more")closeMoreDetail();
