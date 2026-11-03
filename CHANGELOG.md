@@ -6,7 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Keine offenen Änderungen für die nächste Version eingetragen.
+- Mehr → Hilfe als eigenständige Unterseite und aktualisierte Hilfetexte (Draft-PR #57, noch nicht live).
+
+## [1.6.0] - 2026-11-03
+
+### CWL-Planung und Vorbereitung
+- Globale Mehrtagesplanung mit exakten Einsatzzielen und drei Rotationsstufen; ältere Prioritäten bleiben konservativ erhalten.
+- Die vorläufige Clash-Aufstellung eines freigegebenen Kriegstags kann mit der Empfehlung verglichen werden. Die App nennt Wechsel, ohne den Plan automatisch umzuschreiben.
+- Eigene und gegnerische Mitglieder mit Rathaus und Player-Tag lassen sich in der Vorbereitung aufklappen. Unvollständige oder gespeicherte Daten werden nicht als bestätigte Aufstellung ausgegeben.
+
+### Mitglieder, Sicherheit und Bedienung
+- Spielernotizen, sichere Wiederaufnahme nach Austritt und API-geführte schreibgeschützte Stammdaten im Normalmodus.
+- Manuelle Notfallbearbeitung nach Clash-API-Ausfall nur ausdrücklich; späterer API-Abgleich erfordert Bestätigung.
+- Schutz gegen verspätete API-Antworten und Cloud-Revisionskonflikte; integrierter Seitenleisten-Schalter auf Desktop.
+- Datenformat bleibt v9, separate Offline-PWA v1.0.2; keine Supabase-Datenbankmigration.
 
 ## [1.5.2] - 2026-11-03
 
