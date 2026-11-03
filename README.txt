@@ -1,3 +1,13 @@
+CLOUD-RELEASE 03.11.2026 (v1.8.1):
+- Cloud: Start eines Kriegstags fixiert die tatsächliche Clash-Aufstellung als
+  Planungsbasis, auch solange der Krieg noch läuft. „Gespielt“ erst nach Kriegsende.
+- API-Wechselabgleich ist die primäre Handlungsanweisung für die Vorbereitung.
+  Theoretisches Rein/Raus bleibt im API-Modus nur optional eingeklappt sichtbar.
+- Neuer Kopiertext für geprüfte Clash-Wechsel; keine fingierten Wechsel bei
+  gespeicherten, nicht aktuellen oder unvollständigen Daten.
+- Keine Cloud-Datenmigration, keine Änderungen an bestehenden Spielerprofilen;
+  separate Offline-PWA weiterhin v1.0.2. Details: CHANGELOG.md.
+
 
 CLOUD-RELEASE 03.11.2026 (v1.8.0):
 - Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.8.0 (Cloud-Release mit beidseitiger CWL-Ansicht und geschützter gemeinsamer Planung).
@@ -16,7 +26,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.8.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.8.1;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
