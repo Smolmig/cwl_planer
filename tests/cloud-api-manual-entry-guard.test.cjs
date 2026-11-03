@@ -45,7 +45,7 @@ test("CSV import cannot bypass API source-of-truth restriction",()=>{
 test("linked API controls are editable only in explicitly enabled emergency mode",()=>{
  const ctx={window:{CWLCloud:{active:true,hasApiClan:()=>true,isEmergencyEditing:()=>false}}};
  const restrict=pick("function manualRosterRestricted(){",
-  "function apiManagedRosterMember(","manualRosterRestricted",ctx);
+  html.includes("function apiManagedRosterMember(")?"function apiManagedRosterMember(":"function isReadOnlyApiMember(","manualRosterRestricted",ctx);
  assert.equal(restrict(),true);
  ctx.window.CWLCloud.isEmergencyEditing=()=>true;
  assert.equal(restrict(),false);
