@@ -68,7 +68,7 @@ test("Historical subjective bulk strength remains guest-only, actual stats unaff
   assert.match(html,/memberTownHallMarkup\(m\)/);
 });
 test("Days expose played, next and future statuses while keeping mobile short labels",()=>{
-  assert.match(html,/stateName=played\?"Gespielt":d===playedPrefixLength\(\)\?"Nächster":"Geplant"/);
+  assert.ok(html.includes('stateName=played?"Gespielt":fixedFromApi?"Aufstellung fix"'));
   assert.match(html,/class="day-long-status"/);
   assert.match(html,/class="day-short-status"/);
 });

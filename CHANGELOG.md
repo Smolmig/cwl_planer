@@ -6,7 +6,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Keine Änderungen seit dem vorbereiteten v1.8.0-Stand.
+Keine Änderungen seit dem v1.8.1-Stand.
+
+## [1.8.1] - 2026-11-03
+
+### CWL-Aufstellungen und Wechsel
+- Sobald Clash einen Krieg mit vollständiger, eindeutig zuordenbarer Mannschaft als laufend meldet, dient diese unveränderliche Aufstellung als feste Basis für die verbleibende CWL-Rotation. Geplante und tatsächlich eingesetzte Mitglieder werden nicht mehr verwechselt.
+- „Aufstellung in Clash fix“ ist von „Krieg abgeschlossen/gespielt“ getrennt: laufende Kriege werden erst nach Kriegsende historisch bestätigt und in den gespielten Statistiken gezählt.
+- Bei API-verknüpften Clans kommt die maßgebliche Rein-/Raus-Anweisung aus dem aktuellen Clash-Vorbereitungsabgleich. Ein neuer Kopierbutton übernimmt ausschließlich diese Wechsel beziehungsweise die Bestätigung, dass keine Wechsel nötig sind; gespeicherte oder unvollständige Daten dürfen keine aktuelle Anweisung vortäuschen.
+- Die theoretische Plan-Rotation bleibt nur als eingeklappter, klar gekennzeichneter Zusatzvergleich zugänglich; der vollständige Plantext aus dem API-Modus enthält keine zweite widersprüchliche Wechselanweisung.
+- Reproduzierter Echtfall United Fighters: Aufstellung Tag 1 in Clash fixiert – Tag 2 benötigt gegenüber Tag 1 **Suminizer/Raphtor raus** und **Luki/Tommy rein**, statt des bisherigen rein theoretischen Wechsels.
+
+### Kompatibilität
+- Reine Anzeige-/Planungs-Korrektur; produktive Profile und Datenbanktabellen werden nicht migriert oder zurückgesetzt. Keine Backend-/RLS-Änderung, Cloud-Datenformat weiterhin v9, separate Offline-PWA weiterhin v1.0.2.
 
 ## [1.8.0] - 2026-11-03
 
