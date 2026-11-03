@@ -18,7 +18,7 @@ test("main tabs retain meaningful titles and common Arena heading hierarchy at p
 },async()=>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  try{
-  for(const theme of ["arena","dark"]){
+  for(const theme of ["arena","dark","light","cyber","cyberlight"]){
    for(const width of [320,390,768,1366]){
     const page=await browser.newPage({viewport:{width,height:900}});
     try{
@@ -43,7 +43,7 @@ test("main tabs retain meaningful titles and common Arena heading hierarchy at p
        const copy=heading.querySelector(".view-lead-copy").getBoundingClientRect();
        return {id,kicker:k.textContent,title:h.textContent,fontFamily:getComputedStyle(h).fontFamily,
         fontSize:parseFloat(getComputedStyle(h).fontSize),
-        kickerShown:getComputedStyle(k).display!=="none",width:rect.width,
+        kickerShown:getComputedStyle(k).display!=="none",kickerSize:parseFloat(getComputedStyle(k).fontSize),width:rect.width,
         right:rect.right,summaryRight:summary.right,copyWidth:copy.width};
       });
       return {results,moreFontSize:parseFloat(moreStyle.fontSize),viewport:innerWidth,
@@ -57,6 +57,8 @@ test("main tabs retain meaningful titles and common Arena heading hierarchy at p
       assert.ok(item.width>45&&item.copyWidth>60,JSON.stringify(item));
       assert.ok(item.right<=width+2,"headline overflows: "+JSON.stringify({theme,width,item}));
       assert.ok(item.summaryRight<=width+2,"section heading overflows: "+JSON.stringify({theme,width,item}));
+      if(theme!=="arena")assert.ok(item.kickerSize>=9&&item.kickerSize<=12,
+       "label must remain compact in existing themes: "+JSON.stringify(item));
       if(theme==="arena"){
        assert.match(item.fontFamily,/Georgia|Times New Roman/);
        assert.ok(item.fontSize>=24,"headings should feel like More: "+JSON.stringify(item));
