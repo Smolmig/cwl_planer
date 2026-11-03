@@ -10,6 +10,7 @@ const start=html.indexOf("function syncMemberExpandedRow(");
 const end=html.indexOf("function moveMember(",start);
 assert.ok(start>0&&end>start,"incremental member renderer must be available");
 const code=`
+let memberSearch="",memberFilter="all",memberSearchRenderTimer=null;
 const STRENGTH_LABELS={unknown:"Unbekannt",high:"Oft 3★",medium:"Solide",low:"Selten"};
 const openMemberDetails=new Set(),openRulePanels=new Set(),openDuplicatePanels=new Set();
 const selectedMembers=new Set();let selectionMode=false;
@@ -150,4 +151,45 @@ test("rendering manual-order members performs one index-map pass instead of a re
  assert.match(section,/const idx=orderIndex\.get\(m\.id\)/);
  assert.doesNotMatch(section,/const idx=state\.members\.findIndex\(/);
  assert.doesNotMatch(section,/el\.querySelector\("\.member-edit-toggle"\)\.onclick=.*renderMembers\(/s);
+});
+
+test("rapid member searches are batched into one redraw and filters flush a pending search",{timeout:90000},async()=>{
+ const searchStart=html.indexOf('document.getElementById("memberSearch").oninput=e=>{');
+ const searchEnd=html.indexOf('document.getElementById("summaryList").addEventListener',searchStart);
+ assert.ok(searchStart>0&&searchEnd>searchStart,"current filter wiring exists");
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  const page=await browser.newPage({viewport:{width:1366,height:900}});
+  try{
+   await page.setContent(cleanHtml,{waitUntil:"domcontentloaded"});
+   await page.addScriptTag({content:code+"\\n"+html.slice(searchStart,searchEnd)});
+   const result=await page.evaluate(async()=>{
+    window.__setMembers(85);
+    const root=document.getElementById("memberList");
+    const search=document.getElementById("memberSearch");
+    const filter=document.getElementById("memberFilter");
+    let redraws=0;
+    const observer=new MutationObserver(records=>redraws+=records.filter(x=>x.target===root).length);
+    observer.observe(root,{childList:true});
+    for(const query of ["A","Al","Alp","Alpha","Alpha "]){
+     search.value=query;
+     search.dispatchEvent(new Event("input",{bubbles:true}));
+    }
+    await new Promise(resolve=>setTimeout(resolve,140));
+    const afterTyping=redraws;
+    search.value="B";
+    search.dispatchEvent(new Event("input",{bubbles:true}));
+    filter.value="fixed";
+    filter.dispatchEvent(new Event("change",{bubbles:true}));
+    await new Promise(resolve=>setTimeout(resolve,140));
+    const afterFilter=redraws;
+    observer.disconnect();
+    return {afterTyping,afterFilter,query:memberSearch,filter:memberFilter};
+   });
+   assert.equal(result.afterTyping,1,"rapid typing must rebuild the list once, not per keystroke");
+   assert.equal(result.afterFilter,2,"changing a filter must cancel the queued duplicate redraw");
+   assert.equal(result.query,"B");
+   assert.equal(result.filter,"fixed");
+  }finally{await page.close()}
+ }finally{await browser.close()}
 });
