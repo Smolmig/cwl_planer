@@ -1,19 +1,23 @@
 
-CLOUD-RELEASE 01.11.2026 (v1.4.0):
-- Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.2.0 (offiziell; CWL-Livedaten optional).
+CLOUD-RELEASE 03.11.2026 (v1.7.0):
+- Gemeinsamer Cloud-Planer \`cloud-app.html\`: v1.7.0 (Cloud-Release; gemeinsame Clans und CWL-Livedaten).
 - Separate installierbare lokale Offline-PWA \`index.html\`: weiterhin v1.0.2.
 - Flexible CW/CWL-Statistik, 3★-Hit-Rate, verpasste Angriffe und geschützte Gruppenlinks mit Rollen, Laufzeit und Sperren.
-- Cloud: Gegner und RH-Verteilung je freigegebenem Kriegstag, live Angriffe/Sterne und
-  sicherer automatischer Abschluss beendeter Kriege beim Cloud-Abgleich.
+- Cloud: vorläufige Tagesaufstellungen beider Clans, Wechselvorschläge gegenüber der
+  empfohlenen Planung, Live-Angriffe/Sterne und sicherer Abschluss beendeter Kriege.
+- Exakte Einsatzziele, Rotationsstufen, Spielernotizen und geschützte Wiedereintritte
+  ohne neue Datenbankmigration. Vorläufige Clash-Aufstellungen ändern den Plan nicht.
 - Ohne aktive CWL oder bei API-Ausfall bleibt die bisherige manuelle Planung verfügbar.
 - Datenformat v9, Profile, lokale Schlüssel und Archivbestände bleiben kompatibel.
+- Neues in v1.7.0: Hilfe/Konto-Unterseiten, optimierte Mitgliederliste und einheitliche Arena-/Rathaus-Darstellung.
 - Vollständige Details und technische Grenzen stehen in CHANGELOG.md und
-  docs/CLOUD_ROADMAP_CWL_STATS.md.
+  docs/RELEASE_V1.7.0.md.
 
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Aktuelle Release-Basis: v1.0.0.
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.7.0;
+  separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
 - Die chronologische Zuordnung ab Projektbeginn, Release-Regeln und der Umgang mit
@@ -22,9 +26,10 @@ AKTUELLE VERSIONIERUNG (seit v1.0.0):
   werden durch die Umstellung der App-Version nicht umbenannt oder zurückgesetzt.
 
 Hinweise:
-- Die App speichert Daten lokal auf dem jeweiligen Gerät.
-- In der App kannst du ein JSON-Backup exportieren/importieren.
-- Nach dem ersten vollständigen Laden funktioniert sie auch offline.
+- Der Cloud-Planer benötigt Internet. Gemeinsame Clanprofile werden online synchronisiert.
+- Die separate \`index.html\` speichert lokale Profile auf dem jeweiligen Gerät und
+  kann nach dem ersten vollständigen Laden offline funktionieren.
+- Für beide Modi stehen JSON-Backups zur Verfügung; lokale und Cloud-Daten bleiben getrennt.
 
 Update v2: 
 - iPhone Safe-Area oben korrigiert, damit Titel/Button nicht mehr mit Uhrzeit, Dynamic Island oder Statussymbolen überlappen.

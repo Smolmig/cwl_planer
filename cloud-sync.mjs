@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.6.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.6.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.6.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.6.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.7.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.7.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.7.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.7.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -387,10 +387,12 @@ function installNameEditors(){
 }
 function status(value,isError=false){text("saveBadge",value);$("saveBadge").className="badge "+(isError?"warn":"ok")+(blocked||remotePending?" cloud-conflict-link":"");$("saveBadge").title=blocked||remotePending?"Antippen, um den Cloud-Konflikt zu prüfen":""}
 function msg(value,isError=false){
- const element=$("cloudMsg");
- element.hidden=!isError;
- if(isError){text("cloudMsg",value);element.classList.add("error")}
- else element.classList.remove("error");
+ for(const id of ["cloudMsg","cloudAccountMessage"]){
+  const element=$(id);if(!element)continue;
+  element.hidden=!isError;
+  element.classList.toggle("error",isError);
+  if(isError)element.textContent=value;
+ }
  if(value)storage.toast((isError?"⚠ ":"")+value);
 }
 function error(e){msg(e?.message||String(e),true);
@@ -398,7 +400,13 @@ function error(e){msg(e?.message||String(e),true);
   text("cloudRosterStatus",e?.message||String(e));$("cloudRosterStatus").classList.add("error")
  }
  console.warn("Cloud Planner:",e)}
-function open(){const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false")}
+function open(){
+ // Login and password reset remain dialogs; signed-in account management is a page.
+ if(user&&!recoveryMode&&typeof window.CWLShowAccountPage==="function"){
+  close();window.CWLShowAccountPage();return;
+ }
+ const o=$("cloudOverlay");o.classList.add("open");o.setAttribute("aria-hidden","false");
+}
 function close(){const o=$("cloudOverlay");o.classList.remove("open");o.setAttribute("aria-hidden","true");if(pendingRelease)setTimeout(installPendingRelease,0)}
 function inviteFeedback(message,isError=false){
  const target=$("inviteWelcomeError");if(!target)return;
@@ -590,16 +598,21 @@ async function sign(kind){
 }
 async function useSession(session){
  const epoch=++accountEpoch;
+ const wasAuthDialogOpen=$("cloudOverlay").classList.contains("open");
  user=session?.user||null;showSignedIn();
  if(!user){
   await leaveCloud();
   return;
  }
  await listClans(epoch);
+ if(epoch!==accountEpoch)return;
  const code=pendingInviteCode();
  if(code){
   close();
   await showInviteDialog(code);
+ }else if(wasAuthDialogOpen){
+  // Only explicit login opens the account page; existing sessions retain their current view.
+  open();
  }
 }
 async function leaveCloud(){
@@ -1762,6 +1775,8 @@ window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder onlin
 let pendingRelease=null;
 function safeForReload(){
  return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
+   // Account administration is now a page, not a modal: protect unsaved form input.
+   !document.getElementById("view-account")?.classList.contains("active")&&
    !document.querySelector(".cloud-overlay.open,.invite-welcome.open")&&
    !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
 }

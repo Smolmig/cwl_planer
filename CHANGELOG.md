@@ -6,7 +6,33 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Keine offenen Änderungen für die nächste Version eingetragen.
+Keine neuen Änderungen nach dem geplanten Cloud-v1.7.0-Release.
+
+## [1.7.0] - 2026-11-03
+
+### Bedienung
+- Hilfe und Clan & Konto als eigenständige responsive Unterseiten unter „Mehr“. Anmeldung, Registrierung, Passwort-Wiederherstellung und Einladungsannahme bleiben gesonderte Dialoge.
+- Cloud-Kontoverwaltung mit bestehenden Rollen-/Einladungs-/Backup-Aktionen; automatische Versionswechsel pausieren während die Kontoseite offen ist.
+
+### Mitglieder und Darstellung
+- Karten, Tagesregeln und doppelte Namen ohne vollständiges Neuzeichnen der gesamten Mitgliederliste; Suche bündelt schnelle Eingaben und manuelle Reihenfolge wird effizienter ermittelt.
+- Arena-/Gold-Theme mit ruhigeren Kartenflächen; Rathausbilder in Mitgliederliste und Statistik einheitlich, mit lesbarem RH-Fallback und CDN-Quelle.
+
+### Kompatibilität
+- Keine Änderung am CWL-Solver, API-/RLS-Berechtigungen oder Supabase-Schema. Cloud-Datenformat bleibt v9; die separate Offline-PWA bleibt v1.0.2.
+
+## [1.6.0] - 2026-11-03
+
+### CWL-Planung und Vorbereitung
+- Globale Mehrtagesplanung mit exakten Einsatzzielen und drei Rotationsstufen; ältere Prioritäten bleiben konservativ erhalten.
+- Die vorläufige Clash-Aufstellung eines freigegebenen Kriegstags kann mit der Empfehlung verglichen werden. Die App nennt Wechsel, ohne den Plan automatisch umzuschreiben.
+- Eigene und gegnerische Mitglieder mit Rathaus und Player-Tag lassen sich in der Vorbereitung aufklappen. Unvollständige oder gespeicherte Daten werden nicht als bestätigte Aufstellung ausgegeben.
+
+### Mitglieder, Sicherheit und Bedienung
+- Spielernotizen, sichere Wiederaufnahme nach Austritt und API-geführte schreibgeschützte Stammdaten im Normalmodus.
+- Manuelle Notfallbearbeitung nach Clash-API-Ausfall nur ausdrücklich; späterer API-Abgleich erfordert Bestätigung.
+- Schutz gegen verspätete API-Antworten und Cloud-Revisionskonflikte; integrierter Seitenleisten-Schalter auf Desktop.
+- Datenformat bleibt v9, separate Offline-PWA v1.0.2; keine Supabase-Datenbankmigration.
 
 ## [1.5.2] - 2026-11-03
 

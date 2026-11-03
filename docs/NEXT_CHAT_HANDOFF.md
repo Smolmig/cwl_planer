@@ -1,3 +1,5 @@
+> **Historischer Stand:** Diese Übergabe dokumentiert die Entwicklungsplanung **vor Cloud v1.6.0**. Der Gesamt-Release wurde am 03.11.2026 über [PR #56](https://github.com/Smolmig/cwl_planer/pull/56) veröffentlicht. Für den aktuellen Stand siehe [Cloud v1.6.0](https://github.com/Smolmig/cwl_planer/releases/tag/v1.6.0) und die offenen Punkte in [Issue #46](https://github.com/Smolmig/cwl_planer/issues/46) / [#44](https://github.com/Smolmig/cwl_planer/issues/44). Alte Draft-PRs #50–#55 wurden durch #56 ersetzt und dürfen nicht erneut gemergt werden. Diese Datei bleibt zur Nachvollziehbarkeit erhalten.
+
 # CWL-Planer – Übergabe für den nächsten Chat
 
 **Stand: 03.11.2026, nach Live-Release Cloud v1.5.2.**  
