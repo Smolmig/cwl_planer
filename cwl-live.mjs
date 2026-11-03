@@ -228,6 +228,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   async function refreshNow(manual=false) {
     const ctx=context();
     if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||!navigator.onLine||fetching)return;
+    // A manual first refresh must establish its own clan session, too.
+    // Never carry fresh-state flags or round snapshots over from another clan.
+    if(activeClan!==ctx.clanId){
+      activeClan=ctx.clanId;current=null;lastSuccessfulAt=0;staleRoundDays.clear();
+    }
     const req=++requestId,id=ctx.clanId,profileAtRequest=ctx.profile,roleAtRequest=ctx.role;
     const stillCurrent=()=>{
       const now=context();
