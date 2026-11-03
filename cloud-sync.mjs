@@ -1274,7 +1274,7 @@ function rememberRosterDeparture(m){
  const tag=normalizeTag(m.playerTag);
  if(!tag||m.cocBeforeDeparture?.tag===tag)return;
  const before=rosterPlanningState(m);
- m.cocBeforeDeparture={tag,before,automatic:{...before,participating:false},edited:{}};
+ m.cocBeforeDeparture={tag,before,automatic:{...before,statuses:[...before.statuses],participating:false},edited:{}};
 }
 function restoreRosterReturn(m){
  const snapshot=m.cocBeforeDeparture;
