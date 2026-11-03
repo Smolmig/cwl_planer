@@ -66,3 +66,51 @@ test("offline index remains separate, and cloud note does not require a new SQL 
  assert.match(html,/function exportActiveProfile\(\)/);
  assert.match(html,/JSON\.stringify\(\{kind:"cwl-profile"/);
 });
+
+
+test("linked API name editors are inert but an unlinked profile can edit",()=>{
+ const {JSDOM}=require("jsdom");
+ const begin=sync.indexOf("function installNameEditors(){");
+ const end=sync.indexOf("function status(",begin);
+ assert.ok(begin>0&&end>begin);
+ const dom=new JSDOM('<div id="memberList"><div class="member" data-id="m"><div class="name-wrap"><span class="member-name-label">Test</span><input class="member-name" readonly hidden value="Test"><button class="member-name-edit">Edit</button></div></div></div>');
+ try{
+  let linked=true;
+  const cloud={active:true,hasApiClan:()=>linked};
+  const make=new dom.window.Function("$","cloud","role","storage",sync.slice(begin,end)+";return installNameEditors");
+  const editor=make(id=>dom.window.document.getElementById(id),cloud,"owner",
+    {getProfile:()=>({members:[{id:"m",name:"Test",playerTag:"#2PYL",cocOrder:0}]})});
+  editor();
+  const input=dom.window.document.querySelector(".member-name");
+  dom.window.document.querySelector(".member-name-edit").click();
+  assert.equal(input.readOnly,true);
+  assert.equal(input.hidden,true);
+  linked=false;
+  dom.window.document.querySelector(".member-name-edit").click();
+  assert.equal(input.readOnly,false);
+  assert.equal(input.hidden,false);
+ }finally{dom.window.close()}
+});
+test("note editor rejects viewer changes and supports clearing notes",async()=>{
+ const begin=html.indexOf("async function editMemberNote(");
+ const end=html.indexOf("function renderMembers(){",begin);
+ assert.ok(begin>0&&end>begin);
+ const source=html.slice(begin,end)+"\neditMemberNote";
+ const m={name:"Test",note:"Vorher"};
+ let prompts=0,renders=0,viewer=true;
+ const context={
+  window:{CWLCloud:{active:true}},
+  document:{body:{classList:{contains:()=>viewer}}},
+  promptInline:async()=>{prompts++;return "";},
+  renderAll:()=>{renders++}
+ };
+ const edit=vm.runInNewContext(source,context);
+ await edit(m);
+ assert.equal(prompts,0);
+ assert.equal(m.note,"Vorher");
+ viewer=false;
+ await edit(m);
+ assert.equal(prompts,1);
+ assert.equal(m.note,"");
+ assert.equal(renders,1);
+});
