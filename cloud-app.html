@@ -896,6 +896,34 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 .cwl-live-attack-pending{color:var(--muted);font-size:11px}
 .cwl-live-attack.pending{background:rgba(127,127,127,.035)}
 .cwl-live-attack-empty{padding:13px 0 5px;color:var(--muted);font-size:12px}
+/* CWL preparation comparison is read-only. Neutral panels adapt to every theme. */
+.cwl-prep-review{margin:12px 0 10px;border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-width:0}
+.cwl-prep-review>p{margin:8px 0 0;line-height:1.5}
+.cwl-prep-heading{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.cwl-prep-heading>b,.cwl-prep-review>b{font-size:13px}
+.cwl-prep-result{font-size:12px;font-weight:750;color:var(--text)}
+.cwl-prep-result.matched{color:var(--green)}
+.cwl-prep-result.changes{color:var(--primary)}
+.cwl-prep-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:11px}
+.cwl-prep-group{min-width:0;padding-left:10px;border-left:2px solid var(--line)}
+.cwl-prep-group.remove{border-left-color:#b86b6b}
+.cwl-prep-group.add{border-left-color:var(--green)}
+.cwl-prep-group>b{font-size:12px}
+.cwl-prep-group ul{list-style:none;margin:7px 0 0;padding:0;display:grid;gap:7px}
+.cwl-prep-group li{display:flex;align-items:center;gap:6px;min-width:0;font-size:12px;overflow-wrap:anywhere}
+.cwl-opponent-details{border-top:1px solid var(--line);margin-top:9px;padding-top:8px}
+.cwl-opponent-details>summary{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:750}
+.cwl-opponent-details>summary::before{content:"";display:inline-block;width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .16s}
+.cwl-opponent-details[open]>summary::before{transform:rotate(45deg)}
+.cwl-roster-list{list-style:none;margin:8px 0 2px;padding:0;display:grid;gap:0;max-height:380px;overflow-y:auto}
+.cwl-roster-member{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px}
+.cwl-roster-member:last-child{border-bottom:0}
+.cwl-roster-name{font-weight:650;flex:1;min-width:0;overflow-wrap:anywhere}
+.cwl-roster-tag{font-size:10px;color:var(--muted);white-space:nowrap}
+@media(max-width:480px){
+ .cwl-prep-groups{grid-template-columns:minmax(0,1fr);gap:12px}
+ .cwl-roster-tag{font-size:9px}
+}
 @media(max-width:699px){
  .cwl-live-attack{grid-template-columns:minmax(0,1fr);gap:5px;padding:10px 0}
  .cwl-live-attack-result{justify-content:flex-start}
