@@ -30,7 +30,7 @@ test("Cloud loads exact-target browser engine synchronously before inline app",(
  assert.doesNotThrow(()=>new Function(html.slice(inlineStart,inlineEnd)));
 });
 test("Browser calculatePlan delegates to global exact-target engine",()=>{
- const ctx={state,window:{CWLPlanningCore:{planCwl}}};
+ const ctx={state,window:{CWLPlanningCore:{planCwl}},confirmedCwlPlanningLocks:()=>state.locks,allKnownMembers:()=>roster};
  const plan=vm.runInNewContext(calculate+"\ncalculatePlan",ctx)();
  assert.equal(plan.ok,true,JSON.stringify(plan.conflicts));
  assert.equal(plan.counts.A,5);
@@ -39,7 +39,7 @@ test("Browser calculatePlan delegates to global exact-target engine",()=>{
 });
 test("Missing browser engine fails closed rather than treating soft targets as exact",()=>{
  const ctx={
-  state,window:{},allKnownMembers:()=>roster,memberById:id=>roster.find(m=>m.id===id),
+  state,window:{},confirmedCwlPlanningLocks:()=>state.locks,allKnownMembers:()=>roster,memberById:id=>roster.find(m=>m.id===id),
   effectiveStatus:(m,d)=>m.statuses[d],fairnessCandidateScore:(m,d,counts)=>({
    used:counts[m.id]||0,remaining:7-d-1,priority:m.priority
   })
