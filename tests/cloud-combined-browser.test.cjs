@@ -85,3 +85,57 @@ test("Chromium: combined cloud guest cards and notes work on mobile and desktop 
   await new Promise(resolve=>server.close(resolve));
  }
 });
+
+test("Chromium: linked Clash roster rejects manual mutations until emergency is confirmed",{timeout:150000},async()=>{
+ const server=makeServer();await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ let browser;
+ try{
+  browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  page.setDefaultTimeout(12000);
+  const errors=[];page.on("pageerror",e=>errors.push(e.message));
+  try{
+   await page.addInitScript(data=>localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data)),guestProfile());
+   await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
+   await page.locator('.navbtn[data-view="members"]').first().click();
+   await page.evaluate(()=>{
+    const m=window.CWLLegacy.getProfile().members.find(m=>m.id==="A");
+    m.cocOrder=0; m.townHall=19;
+    window.CWLCloud={
+     active:true,hasApiClan:()=>true,isEmergencyEditing:()=>false,
+     afterRender(){},renderLive(){},onLocalChange(){}
+    };
+    window.CWLLegacy.rerender();
+   });
+   const alpha=page.locator('#memberList .member[data-id="A"]');
+   await alpha.waitFor();
+   assert.equal(await alpha.locator(".member-name-edit").count(),0,"API name pencil is hidden");
+   await alpha.locator(".member-edit-toggle").click();
+   assert.equal(await alpha.locator(".member-th-picker").count(),0,"API TH picker is hidden");
+   assert.equal(await alpha.locator(".delete-member").count(),0,"API deletion button is hidden");
+   assert.equal(await alpha.locator(".member-note-btn").count(),1,"notes remain editable");
+   const res=await page.evaluate(()=>{
+    const p=window.CWLLegacy.getProfile(),before=p.members.length;
+    const deletion=window.removeMembers(new Set(["A"]));
+    const added=window.addMany("ShouldNotAppear");
+    return {before,after:p.members.length,deletionBlocked:deletion.blocked,added};
+   });
+   assert.equal(res.deletionBlocked,true);
+   assert.equal(res.added,0);
+   assert.equal(res.before,res.after,"API managed member and roster untouched");
+   await page.evaluate(()=>{
+    window.CWLLegacy.getProfile().members=[];
+    window.CWLLegacy.rerender();
+   });
+   assert.equal(await page.locator("#emptyMultiAdd").count(),0,"linked empty roster must not offer manual bulk import");
+   assert.equal(await page.locator("#emptyImport").count(),0);
+   assert.match(await page.locator("#memberList").textContent(),/Mitglieder aktualisieren/);
+   await page.evaluate(()=>{
+    window.CWLCloud.isEmergencyEditing=()=>true;
+    window.CWLLegacy.rerender();
+   });
+   assert.equal(await page.locator("#emptyMultiAdd").count(),1,"emergency explicitly re-enables manual roster tools");
+   assert.deepEqual(errors,[],"no runtime exception");
+  }finally{await page.close()}
+ }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
+});
