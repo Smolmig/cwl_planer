@@ -1203,7 +1203,7 @@ async function getRoster({automatic=false}={}){
  const normalDeparted=departed.filter(m=>!criticalTags.has(normalizeTag(m.playerTag)));
  const updated=[...rosterMap.values()].filter(m=>{
    const current=existingMap.get(normalizeTag(m.tag));
-   return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
+   return current&&(["former","kept"].includes(current.cocSyncState)||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
  roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,received:incoming.length,initialImport};
  stage="Unterschiede anzeigen";
@@ -1280,14 +1280,16 @@ function restoreRosterReturn(m){
  const snapshot=m.cocBeforeDeparture;
  if(!snapshot)return;
  delete m.cocBeforeDeparture;
- if(!snapshot.before||snapshot.tag!==normalizeTag(m.playerTag)||m.cocSyncState==="kept")return;
+ if(!snapshot.before||!snapshot.automatic||snapshot.tag!==normalizeTag(m.playerTag)||m.cocSyncState==="kept")return;
+ // Imported/old backups can contain incomplete fields. Only restore normalized plan fields.
+ const before=rosterPlanningState(snapshot.before),automatic=rosterPlanningState(snapshot.automatic);
  const now=rosterPlanningState(m);
  const edited=snapshot.edited||{};
  for(const field of ["participating","fixed","priority","rotationWeight","targetDays","note"]){
-   if(edited[field]||!Object.prototype.hasOwnProperty.call(snapshot.automatic||{},field))continue;
-   if(now[field]===snapshot.automatic[field])m[field]=snapshot.before[field];
+   if(edited[field]||!Object.prototype.hasOwnProperty.call(snapshot.automatic,field))continue;
+   if(now[field]===automatic[field])m[field]=before[field];
  }
- const oldDays=snapshot.before.statuses,autoDays=snapshot.automatic?.statuses;
+ const oldDays=before.statuses,autoDays=automatic.statuses;
  if(Array.isArray(oldDays)&&Array.isArray(autoDays)){
    m.statuses=now.statuses.map((value,d)=>
      !edited["statuses."+d]&&value===autoDays[d]?oldDays[d]:value);
