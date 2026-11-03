@@ -113,7 +113,7 @@ test("automatic Cloud version reloads pause on the Account page and resume safel
    activeElement:{matches:()=>inputActive}
   }
  };
- const fn=vm.runInNewContext(sync.slice(start,end)+"\\nsafeForReload",ctx);
+ const fn=vm.runInNewContext(sync.slice(start,end)+"\nsafeForReload",ctx);
  assert.equal(fn(),false,"active account page must block surprise reload");
  accountActive=false;
  assert.equal(fn(),true,"normal view permits safe updates");
