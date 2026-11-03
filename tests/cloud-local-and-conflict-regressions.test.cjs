@@ -29,7 +29,8 @@ test("real guest UI: bulk members, new and renamed local profiles, and all days 
    await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
    assert.equal(await page.locator("#headerClanName").isVisible(),false,"hidden clan control cannot become an empty pill");
    await page.locator('.navbtn[data-view="members"]').click();
-   await page.locator("#emptyMultiAdd").click();
+   await page.locator("#guestMembersTools summary").click();
+   await page.locator("#guestManualMany").click();
    await page.locator("#bulkNames").fill("Test\nTest\nTest\nTest");
    assert.match(await page.locator("#bulkDetectedCount").textContent(),/4 Namen erkannt/);
    await page.locator("#bulkSave").click();
