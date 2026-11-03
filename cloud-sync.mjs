@@ -47,7 +47,34 @@ const backups=createCloudBackups({
  askAction:options=>storage.askAction(options)
 });
 
-let planReview=null,planSuggestions=[],rawSavedProfile=null;
+let planReview=null,planSuggestions=[],rawSavedProfile=null,rosterApiFailed=false;
+function manualRosterPending(){return !!storage.getProfile()?.cocManualEmergency?.pending;}
+function refreshRosterEmergencyUI(){
+ const managed=cloud.active&&cloud.hasApiClan?.();
+ const allowed=["owner","editor"].includes(role);
+ const pending=managed&&manualRosterPending();
+ const canActivate=managed&&rosterApiFailed&&!pending&&allowed&&!(role==="editor"&&planIsLocked());
+ toggle("cloudEmergencyStatus",!!(managed&&(pending||rosterApiFailed)));
+ text("cloudEmergencyStatus",pending?
+  "Manuelle Notfallbearbeitung aktiv. Änderungen bleiben erhalten; beim nächsten API-Abgleich musst du die Übernahme ausdrücklich bestätigen.":
+  "Der Clash-Abgleich ist fehlgeschlagen. Bekannte Spieler und Pläne bleiben erhalten.");
+ toggle("cloudEmergencyEnable",!!canActivate);
+ toggle("cloudManualMembers",!!(cloud.active&&allowed&&(!managed||pending)));
+}
+async function enableRosterEmergency(){
+ if(!cloud.active||!cloud.hasApiClan?.()||!rosterApiFailed||
+   !["owner","editor"].includes(role)||role==="editor"&&planIsLocked())return;
+ if(!navigator.onLine)throw Error("Die Cloud ist offline. Änderungen können derzeit nicht gespeichert werden.");
+ if(!await storage.confirmAction(
+  "Nur wenn Clash nicht erreichbar ist: Name, Rathaus und Mitglieder vorübergehend manuell bearbeiten? Der nächste API-Abgleich braucht deine ausdrückliche Bestätigung.",
+  {title:"Manuelle Notfallbearbeitung",confirmText:"Notfallmodus aktivieren"}))return;
+ storage.getProfile().cocManualEmergency={pending:true,since:Date.now()};
+ storage.rerender();
+ await ensureSaved();
+ refreshRosterEmergencyUI();
+ storage.toast("Notfallbearbeitung aktiviert – API-Abgleich vorerst pausiert");
+}
+
 const currentSeason=()=>new Date().toISOString().slice(0,7);
 const planIsLocked=()=>!!planReview?.locked&&planReview.season===currentSeason();
 // Never publish an impossible plan as approved, including a pending editor proposal.
@@ -217,6 +244,7 @@ async function openNewPlanCycle(){
 
 const cloud={
  active:false,
+ isEmergencyEditing:()=>manualRosterPending(),
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
  isPlanLocked:()=>planIsLocked(),
@@ -254,6 +282,7 @@ const cloud={
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
   toggle("guestMembersTools",!this.active);
+  refreshRosterEmergencyUI();
   toggle("cloudHelpSection",this.active);
   toggle("statsNav",!!this.active&&!!clanId);
   installNameEditors();
@@ -325,7 +354,7 @@ function installNameEditors(){
   event.preventDefault();event.stopPropagation();
   if(cloud.active&&role==="viewer")return;
   const member=storage.getProfile()?.members?.find(m=>m.id===pencil.closest(".member")?.dataset.id);
-  if(cloud.active&&cloud.hasApiClan?.()&&member?.playerTag&&Number.isInteger(member.cocOrder)&&member.cocSyncState!=="former")return;
+  if(cloud.active&&cloud.hasApiClan?.()&&!cloud.isEmergencyEditing?.()&&member?.playerTag&&Number.isInteger(member.cocOrder)&&member.cocSyncState!=="former")return;
   const input=pencil.closest(".name-wrap")?.querySelector(".member-name");
   if(!input)return;
   const name= input.closest(".name-wrap")?.querySelector(".member-name-label");
@@ -1138,7 +1167,7 @@ function syncAutoRosterSetting(){
  if(hint&&!["owner","editor"].includes(role))hint.textContent="Automatischer Import ist für die Clanführung verfügbar.";
 }
 async function maybeAutoRoster(force=false){
- if(!clanId||!user||!cloud.active||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
+ if(!clanId||!user||!cloud.active||manualRosterPending()||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
     !navigator.onLine||document.hidden||rosterAutoBusy||blocked||changedSerial||saving)return;
  const now=Date.now();
  if(!force&&now-(autoRosterChecks.get(clanId)||0)<900000)return;
@@ -1151,7 +1180,7 @@ async function getRoster({automatic=false}={}){
  let stage="Vorbereitung";
  try{
  if(!clanId)throw Error("Bitte Clan auswählen");
- if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy))return;
+ if(automatic&&(role==="viewer"||changedSerial||saving||blocked||rosterAutoBusy||manualRosterPending()))return;
  await ensureSaved();
  if(automatic)rosterAutoBusy=true;
  resetRoster();
@@ -1209,6 +1238,8 @@ async function getRoster({automatic=false}={}){
    throw Error(descriptions[reason]||reason+" (API-Anfrage fehlgeschlagen)");
  }
  if(!data?.ok)throw Error(data?.error||"Abruf fehlgeschlagen.");
+ rosterApiFailed=false;
+ refreshRosterEmergencyUI();
  text("cloudRosterStatus","Vergleich abgeschlossen. Bitte die Unterschiede prüfen.");
  stage="Mitglieder vergleichen";
  if(!Array.isArray(data.members))throw Error("Die Clan-Mitgliederliste wurde nicht vollständig übertragen.");
@@ -1265,7 +1296,7 @@ async function getRoster({automatic=false}={}){
  }
  toggle("cloudDepartedWarnings",critical.length>0);
  toggle("cloudRosterDiff",true);
- toggle("cloudApplyRoster",role!=="viewer"&&(added.length+updated.length+departed.length)>0);
+ toggle("cloudApplyRoster",role!=="viewer"&&((added.length+updated.length+departed.length)>0||manualRosterPending()));
  text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(unusuallyManyDeparted?" · ⚠️ Ungewöhnlich viele Austritte – manuell prüfen":critical.length?" · ⚠️ Aufstellungen prüfen":""));
  if(automatic){
   if(critical.length||unusuallyManyDeparted){
@@ -1280,6 +1311,10 @@ async function getRoster({automatic=false}={}){
   }
  }
  }catch(err){
+   if(cloud.active&&cloud.hasApiClan?.()&&["Clash-Daten abrufen","Serverantwort prüfen","Mitglieder vergleichen"].includes(stage)){
+     rosterApiFailed=true;
+     refreshRosterEmergencyUI();
+   }
    console.warn("Clanvergleich fehlgeschlagen",{
      stage,name:err?.name||"Fehler",message:String(err?.message||err).slice(0,200)
    });
@@ -1341,6 +1376,12 @@ async function applyRoster(){
  }
  const protectedIds=new Set(rosterDiff.critical.map(item=>item.member.id));
  const p=storage.getProfile(),members=p.members;
+ if(p.cocManualEmergency?.pending){
+  const ok=await storage.confirmAction(
+   "Die Clash-Daten werden jetzt wieder übernommen. Manuelle Korrekturen an Namen/Rathaus können überschrieben werden. Willst du den geprüften API-Abgleich anwenden?",
+   {title:"Zur automatischen Clanliste zurückkehren",confirmText:"API-Daten übernehmen"});
+  if(!ok)return;
+ }
  const map=new Map(members.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const remoteTags=new Set();
  for(const [i,r] of currentRoster.entries()){
@@ -1378,8 +1419,11 @@ async function applyRoster(){
   m.cocSyncState="former";
   m.participating=false; // no planned lineups reference this person
  }
+ if(p.cocManualEmergency?.pending)delete p.cocManualEmergency;
+ rosterApiFailed=false;
  storage.rerender();
  await ensureSaved();
+ refreshRosterEmergencyUI();
  msg("Mitgliederliste übernommen ✓");resetRoster();toggle("cloudRosterBox",false);
 }
 async function audit(){
@@ -1620,6 +1664,7 @@ async function safeRosterRefresh(){
 }
 bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
 bind("cloudMembersSyncBtn","click",safeRosterRefresh);
+bind("cloudEmergencyEnable","click",enableRosterEmergency);
 bind("settingsRosterRefresh","click",async()=>{
  $("settingsClose").click();
  document.querySelector('.navbtn[data-view="members"]')?.click();
