@@ -2967,7 +2967,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",async()=>{
 renderAll();
 window.CWLLegacy={
  getProfile:()=>state,
- getPlanningState:()=>({ok:lastPlan?.ok!==false,conflicts:[...(lastPlan?.conflicts||[])]}),
+ getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  toast:(message)=>showToast(message),
   confirmAction:(message,options)=>confirmInline(message,options),
