@@ -1427,9 +1427,9 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
 <div class="topbar">
   <div class="toprow">
     <div class="titleblock">
-      <h1>⚔️ CWL Planer</h1>
-      <span id="headerClanName" class="header-clan-name" hidden></span>
-      <div class="subtitle">CWL planen · Einsätze fair verteilen · Überblick behalten</div>
+      <h1 class="brand-lockup"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="brand-wordmark"><span>CWL</span><small>Planer</small></span></h1>
+      <span id="headerClanName" class="header-clan-name" hidden aria-label="Aktuell ausgewählter Clan"></span>
+      <div class="subtitle">CWL planen · Einsätze fair verteilen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
     <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
@@ -1557,6 +1557,17 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
 
 </section>
 
+<section id="view-more" class="view" aria-labelledby="moreTitle">
+ <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Clan & Einstellungen</h2><p>Alle seltener benötigten Funktionen an einem Ort. Deine aktuelle Planung bleibt im Hauptmenü.</p></div>
+ <div class="more-menu">
+  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Vize, Einladungen und Freigaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
+ </div>
+</section>
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
   <div class="card settings-intro">
     
@@ -1572,14 +1583,14 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
   </div>
   <div class="card">
     <div class="section-title"><h3>Planung & Daten</h3></div>
-    <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
+    <div class="settings-subcard" id="settingsRulesSection"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
     <div class="settings-subcard" id="settingsAutoRosterBox">
   <h4>Clash-Mitglieder</h4>
   <label class="settings-auto-roster"><input type="checkbox" id="settingsAutoRoster" checked> Automatisch abgleichen</label>
   <p class="settings-note">Neue Spieler und Rathauslevel übernehmen. Austritte prüfen, ohne bestehende CWL-Aufstellungen zu verändern.</p>
   <div class="statusline" id="autoRosterStatus" aria-live="polite">Noch kein Abgleich.</div>
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
-</div><div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
+</div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
       <div class="latest-changelog-head"><strong>Neu in v1.4.9</strong><span>Arena & Zusammenarbeit</span></div>
       <ul>
@@ -1588,7 +1599,7 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
        <li><b>Änderungsverlauf:</b> Aufklappbare Einträge zeigen konkrete Vorher/Nachher-Angaben, betroffene Tage und den Typ des Cloud-Abgleichs. Ältere Einträge ohne Detailprotokoll werden entsprechend gekennzeichnet.</li>
       </ul>
     </div></div></div></div>
-    <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
+    <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
     <p class="footer-note"><span class="settings-local-note">Im lokalen Planer werden Änderungen auf diesem Gerät gespeichert. Für einen Gerätewechsel empfiehlt sich ein Backup.</span><span class="settings-cloud-note">Im gemeinsamen Clan werden Änderungen online gespeichert. Erstelle bei Bedarf zusätzlich eine eigene Sicherung.</span></p>
@@ -1646,7 +1657,7 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
   <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
-<nav class="bottomnav"><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button><button class="navbtn" id="statsNav" data-view="stats" hidden>📈<br>Statistik</button></div></nav>
+<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button><button class="navbtn" id="statsNav" data-view="stats" hidden>📈<br>Statistik</button><button class="navbtn" data-view="more">•••<br>Mehr</button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
