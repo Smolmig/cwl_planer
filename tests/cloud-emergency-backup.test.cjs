@@ -47,5 +47,5 @@ test("both normalized cloud loading and manual auto-sync gate use the saved flag
  assert.match(sync,/async function loadCloudProfile\(automatic=false\)/);
  assert.match(sync,/storage\.switchToCloud\(profile\)/);
  assert.match(html,/function normalizeProfile\(p\)/);
- assert.match(html,/return p\}/);
+ assert.match(html,/p\.archives=\(Array\.isArray\(p\.archives\)/);
 });
