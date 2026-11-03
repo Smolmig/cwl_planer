@@ -6,11 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-- Mehr → Hilfe und Clan & Konto als eigenständige, responsive Unterseiten (Draft-PR #57, noch nicht live).
-- Cloud-Anmeldung, Registrierung und Passwort-Wiederherstellung bleiben separate Dialoge; bestehende Clan-Rollen, Einladungen und Sicherungen nutzen unveränderte Cloud-Aktionen.
-- Mitgliederkarten: Bearbeiten, Tagesregeln und doppelte Namen ohne vollständigen Listen-Neuaufbau; schnellere Suche und Sortierung (Draft #58, in die UI-Integration übernommen).
-- Arena-Theme: ruhigerer Kartenaufbau, konsistente Rathausbilder in Mitgliederliste und Statistik mit lesbarer RH-Anzeige als Fallback (Draft #59, in die UI-Integration übernommen).
-- Alle drei Änderungen sind in einem gesonderten Integrationsbranch zusammengeführt. Noch kein Live-Release; App-Version bleibt vorerst v1.6.0.
+Keine neuen Änderungen nach dem geplanten Cloud-v1.7.0-Release.
+
+## [1.7.0] - 2026-11-03
+
+### Bedienung
+- Hilfe und Clan & Konto als eigenständige responsive Unterseiten unter „Mehr“. Anmeldung, Registrierung, Passwort-Wiederherstellung und Einladungsannahme bleiben gesonderte Dialoge.
+- Cloud-Kontoverwaltung mit bestehenden Rollen-/Einladungs-/Backup-Aktionen; automatische Versionswechsel pausieren während die Kontoseite offen ist.
+
+### Mitglieder und Darstellung
+- Karten, Tagesregeln und doppelte Namen ohne vollständiges Neuzeichnen der gesamten Mitgliederliste; Suche bündelt schnelle Eingaben und manuelle Reihenfolge wird effizienter ermittelt.
+- Arena-/Gold-Theme mit ruhigeren Kartenflächen; Rathausbilder in Mitgliederliste und Statistik einheitlich, mit lesbarem RH-Fallback und CDN-Quelle.
+
+### Kompatibilität
+- Keine Änderung am CWL-Solver, API-/RLS-Berechtigungen oder Supabase-Schema. Cloud-Datenformat bleibt v9; die separate Offline-PWA bleibt v1.0.2.
 
 ## [1.6.0] - 2026-11-03
 
