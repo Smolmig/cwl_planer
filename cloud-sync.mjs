@@ -1763,10 +1763,7 @@ $("settingsAutoRoster").addEventListener("change",ev=>{
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
-bind("guestImportMembersBtn","click",()=>{ $("membersFile").click(); });
-bind("guestManualOne","click",()=>{ $("addMemberBtn").click(); });
-bind("guestManualMany","click",()=>{ $("multiAddBtn").click(); });
-bind("bulkDoneBtn","click",()=>{ if($("bulkBar").classList.contains("hidden"))return; $("selectMembersBtn").click(); });
+// Guest/manual controls are owned by the inline planner, independent of Cloud/Auth initialization.
 
 $("memberList").addEventListener("click",event=>{
   if(!cloud.active||role==="viewer")return;
