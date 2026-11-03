@@ -79,7 +79,7 @@ test("API mode blocks manual member tools and name/RH controls until emergency a
  for(const id of ["cloudEmergencyEnable","cloudEmergencyStatus","cloudManualMembers"])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(sync,/manualRosterPending\(\)\|\|!\["owner","editor"\]\.includes\(role\)/);
- assert.match(sync,/rosterAutoBusy\|\|manualRosterPending\(\)/);
+ assert.match(sync,/rosterAutoBusy\|\|\(typeof manualRosterPending===/);
  assert.match(sync,/if\(p\.cocManualEmergency\?\.pending\)/);
  assert.match(sync,/toggle\("cloudManualMembers"/);
  assert.match(html,/\!window\.CWLCloud\?\.isEmergencyEditing\?\.\(\)/);
