@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.7.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.7.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.7.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.7.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.8.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.8.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.8.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.8.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -1602,9 +1602,30 @@ async function deleteOwnedClan(){
 }
 
 async function logout(){
- await ensureSaved();
- const {error:err}=await sb.auth.signOut();if(err)throw err;
- await useSession(null);close();
+ // Sign-out must remain possible with an expired desktop session. Never
+ // silently discard unsaved Cloud edits in order to clear local auth.
+ try{
+  await ensureSaved();
+ }catch(err){
+  if(changedSerial||blocked||saving){
+   try{storage.saveJson()}catch(backupError){
+    throw Error("Abmelden pausiert: Änderungen sind nicht gespeichert und das JSON-Backup konnte nicht erstellt werden.");
+   }
+   if(!await storage.confirmAction(
+    "Änderungen sind noch nicht sicher in der Cloud gespeichert. Ein JSON-Backup wurde heruntergeladen. Trotzdem auf diesem Gerät abmelden?",
+    {title:"Mit offenen Änderungen abmelden?",confirmText:"Abmelden",danger:true}
+   ))return;
+  }else{
+   console.warn("Abmeldung ohne offene Änderungen:",err);
+  }
+ }
+ const {error:err}=await sb.auth.signOut({scope:"local"});
+ // Supabase can have cleared an expired token already. This is not a reason to
+ // strand the user on a stale Cloud screen with no working log-out button.
+ if(err&&!/auth.?session.?missing|session missing|no session/i.test(String(err.message||err)))
+  throw err;
+ await useSession(null);
+ close();
 }
 async function exportCloud(){if(!clanId)throw Error("Kein Cloud-Clan ausgewählt.");
  await ensureSaved();storage.saveJson();
@@ -1640,6 +1661,22 @@ bind("cloudSendReset","click",sendPasswordReset);
 bind("cloudBackToLogin","click",backToLogin);
 bind("cloudChangePassword","click",completeRecovery);
 bind("cloudLogout","click",logout);
+const accountQuickMenu=$("accountQuickMenu"),accountQuickButton=$("accountQuickButton");
+function closeAccountQuickMenu(){accountQuickMenu.hidden=true;accountQuickButton.setAttribute("aria-expanded","false")}
+bind("accountQuickButton","click",()=>{
+ const open=accountQuickMenu.hidden;
+ accountQuickMenu.hidden=!open;
+ accountQuickButton.setAttribute("aria-expanded",String(open));
+});
+bind("accountQuickManage","click",()=>{closeAccountQuickMenu();open()});
+bind("accountQuickLogout","click",async()=>{closeAccountQuickMenu();await logout()});
+document.addEventListener("pointerdown",e=>{
+ if(!accountQuickMenu.hidden&&!accountQuickMenu.contains(e.target)&&
+  !accountQuickButton.contains(e.target))closeAccountQuickMenu();
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&!accountQuickMenu.hidden)closeAccountQuickMenu();
+});
 bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
 bind("cloudReload","click",refreshCloud);
 bind("cloudChangeDismiss","click",hideChangeToast);
@@ -1726,10 +1763,7 @@ $("settingsAutoRoster").addEventListener("change",ev=>{
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });
 bind("cloudManualFile","click",()=>{ $("membersFile").click(); });
-bind("guestImportMembersBtn","click",()=>{ $("membersFile").click(); });
-bind("guestManualOne","click",()=>{ $("addMemberBtn").click(); });
-bind("guestManualMany","click",()=>{ $("multiAddBtn").click(); });
-bind("bulkDoneBtn","click",()=>{ if($("bulkBar").classList.contains("hidden"))return; $("selectMembersBtn").click(); });
+// Guest/manual controls are owned by the inline planner, independent of Cloud/Auth initialization.
 
 $("memberList").addEventListener("click",event=>{
   if(!cloud.active||role==="viewer")return;

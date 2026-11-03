@@ -930,6 +930,48 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
  .cwl-live-fight{font-size:12px}
 }
 
+/* CWL war overview: the two teams belong to the same left/right sides as the scoreboard.
+   Controls are clear full-width cards, not tiny arrow links. */
+.cwl-live-side-label{font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;color:var(--muted)}
+.cwl-live-team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;align-items:start;min-width:0}
+.cwl-live-team-details{box-sizing:border-box;min-width:0;margin:0!important;padding:0!important;
+ border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+.cwl-live-team-details>summary{min-height:60px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;
+ position:relative;padding:12px 36px 12px 13px;list-style:none!important;
+ border:0;background:var(--bluebg);cursor:pointer;outline-offset:-3px;
+ transition:background .15s,border-color .15s}
+.cwl-live-team-details>summary::-webkit-details-marker{display:none}
+.cwl-live-team-details>summary::before{content:none!important;display:none!important}
+.cwl-live-team-details>summary::after{content:"";position:absolute;right:14px;top:50%;
+ width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ transform:translateY(-70%) rotate(45deg);transition:transform .16s;color:var(--text)}
+.cwl-live-team-details[open]>summary::after{transform:translateY(-30%) rotate(225deg)}
+.cwl-live-team-details>summary:hover{filter:brightness(1.06)}
+.cwl-live-team-details>summary:focus-visible{outline:2px solid var(--primary)}
+.cwl-team-summary-title{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
+.cwl-live-team-details .cwl-live-attack-count{margin-left:0;white-space:normal;font-size:11px;line-height:1.35;color:var(--muted)}
+.cwl-live-team-enemy>summary{background:var(--surface,rgba(127,127,127,.1));border-left:3px solid var(--primary)}
+.cwl-live-team-own>summary{border-left:3px solid var(--green)}
+.cwl-live-team-details[open]>summary{border-bottom:1px solid var(--line)}
+.cwl-live-team-details>.cwl-roster-list,
+.cwl-live-team-details>.cwl-live-attack,
+.cwl-live-team-details>.cwl-live-attack-empty{margin-left:12px;margin-right:12px}
+.cwl-live-team-details>.cwl-roster-list{margin-top:4px;margin-bottom:7px}
+.cwl-live-team-details .cwl-live-attack{grid-template-columns:minmax(0,1fr);gap:5px;padding:11px 4px}
+.cwl-live-team-details .cwl-live-attack-result{justify-content:flex-start}
+.cwl-live-team-details .cwl-live-fight{overflow-wrap:anywhere}
+.cwl-live-team-details .cwl-roster-member{flex-wrap:wrap}
+@media(max-width:800px){
+ .cwl-live-team-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+ .cwl-live-team-details>summary{min-height:52px}
+}
+@media(max-width:390px){
+ .cwl-live-team-details>summary{padding:11px 31px 11px 10px}
+ .cwl-team-summary-title{font-size:13px}
+}
+html[data-theme="arena"] .cwl-live-team-details{border-color:#615841;background:rgba(19,24,27,.28)}
+html[data-theme="arena"] .cwl-live-team-details>summary{background:rgba(227,177,90,.10)}
+html[data-theme="arena"] .cwl-live-team-enemy>summary{background:rgba(227,177,90,.055)}
 /* Statistics keep the compact table readable on 320px iPhones. */
 .stats-header,.stats-table-card{overflow:hidden}
 .stats-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
@@ -1587,17 +1629,15 @@ html[data-theme="arena"] .more-tile:hover{border-color:#cfab68}
 html[data-theme="arena"] .navinner .navbtn.active{background:#393226;border:1px solid #987a48;color:#ebca87}
 html[data-theme="arena"] .brand-mark{color:#e7bf72}
 html[data-theme="arena"] .brand-wordmark{letter-spacing:.01em}
-html[data-theme="arena"] .more-heading h2,
-html[data-theme="arena"] .plan-overview h3{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
+html[data-theme="arena"] .more-heading h2{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
 html[data-theme="arena"] .plan-overview{position:relative;overflow:hidden;isolation:isolate}
-html[data-theme="arena"] .plan-overview>*{position:relative;z-index:2}
+html[data-theme="arena"] .plan-overview>*{position:relative;z-index:1}
 html[data-theme="arena"] .plan-overview::before{
- content:"";position:absolute;right:-28px;top:-30px;width:310px;height:240px;
- pointer-events:none;z-index:0;opacity:.15;
- background:radial-gradient(circle at 50% 50%,transparent 18%,#dcb46e 18.5% 19%,transparent 20% 31%,#dcb46e 31.5% 32%,transparent 33%),
- linear-gradient(45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%),
- linear-gradient(-45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%);
- transform:rotate(-12deg);
+ content:"";position:absolute;inset:0 0 0 auto;width:min(72%,640px);
+ pointer-events:none;z-index:0;opacity:1;
+ background:radial-gradient(ellipse at 82% 16%,rgba(217,173,104,.10),transparent 66%),
+   linear-gradient(115deg,transparent 23%,rgba(220,182,116,.035) 68%,transparent 100%);
+ transform:none;
 }
 /* Avoid the outlined nested card-within-card appearance of the old Gold modal. */
 html[data-theme="arena"] .cloud-panel{background:#171d22;border-color:#5d523e;box-shadow:0 24px 65px rgba(0,0,0,.55)}
@@ -1642,13 +1682,7 @@ html[data-theme="arena"] .mobile-day-tab.active .day-no strong{color:#f6d68c}
 html[data-theme="arena"] .mobile-day-tab.played{border-color:var(--green)}
 
 
-.arena-castle-mark{display:none}
-html[data-theme="arena"] .plan-overview .arena-castle-mark{
- position:absolute!important;z-index:0!important;right:10px;top:18px;
- display:block;width:min(25%,230px);height:auto;opacity:.11;
- color:#e1bd72;pointer-events:none;transform:rotate(-2deg);
-}
-@media(max-width:699px){html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none}}
+/* Removed obsolete castle watermark declarations. */
 
 /* v1.5.1: desktop rail and quick clan navigation only. */
 .titleblock{position:relative;min-width:0}
@@ -1787,6 +1821,90 @@ html[data-theme="arena"] #view-members .member-tools{background:transparent!impo
 html[data-theme="arena"] #view-members .member-details{border-top-color:#4b5356}
 html[data-theme="arena"] #view-members .member-snapshot{border-color:transparent}
 html[data-theme="arena"] .member-townhall{color:#eee5d6}
+/* Account shortcut for Cloud mode: keep login in guest mode. */
+.account-quick-wrap{position:relative;display:none;align-self:center}
+body.cloud-mode .account-quick-wrap{display:inline-flex}
+.account-quick-trigger{min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:21px!important;padding:0 7px!important}
+.account-quick-menu[hidden]{display:none!important}
+.account-quick-menu{position:absolute;z-index:230;top:calc(100% + 10px);right:0;width:min(248px,calc(100vw - 26px));
+ padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);
+ box-shadow:0 14px 40px rgba(0,0,0,.3);display:grid;gap:4px}
+.account-quick-label{padding:7px 9px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.account-quick-menu>button{width:100%;min-height:44px;border:0;border-radius:9px;padding:9px 12px;
+ text-align:left;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.account-quick-menu>button:hover,.account-quick-menu>button:focus-visible{background:var(--bluebg)}
+#accountQuickLogout{color:var(--red)}
+@media(max-width:520px){.account-quick-trigger{min-height:34px;min-width:34px;font-size:19px!important}}
+/* Shared section labels remain compact in non-Arena themes; only Arena
+   receives the large editorial serif heading treatment. */
+.view-lead-copy{min-width:0}
+.view-lead-kicker{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;
+ line-height:1.35;color:var(--muted);margin-bottom:4px}
+/* Arena page titles share the prominent visual hierarchy from "Mehr". */
+html[data-theme="arena"] .view-lead-heading{
+ display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:13px
+}
+html[data-theme="arena"] .view-lead-copy{min-width:0;flex:1 1 150px}
+html[data-theme="arena"] .view-lead-kicker{
+ display:block;font-size:10px;font-weight:850;line-height:1.35;
+ letter-spacing:.17em;color:var(--primary);margin-bottom:5px
+}
+html[data-theme="arena"] .view-lead-heading h3{
+ font-family:Georgia,"Times New Roman",serif!important;
+ font-size:clamp(25px,3vw,34px)!important;font-weight:750!important;
+ line-height:1.16!important;letter-spacing:-.028em!important;
+ margin:0!important;color:var(--text)
+}
+html[data-theme="arena"] .view-lead-heading>.actions{margin-left:auto;min-width:0}
+html[data-theme="arena"] .view-lead-heading .statusline{line-height:1.45}
+@media(max-width:420px){
+ html[data-theme="arena"] .view-lead-heading{gap:5px 8px;margin-bottom:8px}
+ html[data-theme="arena"] .view-lead-heading h3{font-size:25px!important}
+ html[data-theme="arena"] #view-plan .plan-overview .view-lead-heading>.actions{
+  flex:0 1 auto;max-width:100%;justify-content:flex-end
+ }
+}
+/* v1.7.1 P0: a hidden clan chip must stay hidden in guest mode.
+   Earlier, a later selector re-enabled the empty button, creating a white pill. */
+#headerClanName[hidden]{display:none!important}
+
+/* Realtime conflict: mobile layout owns full width; actions must never crush the text. */
+.cloud-change-notice{box-sizing:border-box;min-width:0}
+.cloud-change-content{flex:1 1 auto;max-width:100%;overflow-wrap:anywhere}
+.cloud-change-actions{min-width:0}
+@media(max-width:700px){
+ .cloud-change-notice{left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));
+  transform:none;width:auto;max-height:min(75dvh,620px);padding:14px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px;overflow:auto}
+ .cloud-change-content{grid-column:1/-1;grid-row:1;width:100%;min-width:0;max-width:100%;gap:7px;line-height:1.45}
+ .cloud-change-content strong{font-size:15px}
+ .cloud-change-content span{white-space:normal;overflow-wrap:anywhere}
+ .cloud-change-actions{grid-column:1/-1;grid-row:2;display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:8px;width:100%;align-items:center}
+ .cloud-change-actions .btn{min-width:0;min-height:42px!important;white-space:normal;text-align:center;font-size:12px!important}
+ .cloud-change-actions #cloudChangeDismiss{min-width:40px;width:40px;padding:8px!important}
+ .cloud-change-detail-list{max-width:100%}
+}
+@media(max-width:360px){
+ .cloud-change-actions{grid-template-columns:minmax(0,1fr) auto}
+ .cloud-change-actions #cloudChangeDetails{grid-column:1;grid-row:1}
+ .cloud-change-actions #cloudChangeReload{grid-column:1;grid-row:2}
+ .cloud-change-actions #cloudChangeDismiss{grid-column:2;grid-row:1}
+}
+
+/* Local profile actions are launched from a fixed Settings surface (z=310).
+   The shared confirmation must be above it, including the dimming backdrop. */
+body:has(#view-settings.active) .inline-action-backdrop{z-index:540}
+body:has(#view-settings.active) .inline-action-panel{z-index:545}
+body:has(#inviteWelcome.open) .inline-action-backdrop{z-index:620}
+body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
+#view-settings.active ~ .inline-action-panel{isolation:isolate}
+
+/* Secondary day-mode controls use the shared button shape and pressed state. */
+.desktop-day-mode .btn{display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;padding:8px 13px;border:1px solid var(--line);
+ border-radius:11px;font-size:12px;font-weight:750;line-height:1.2;background:var(--card);color:var(--text)}
+.desktop-day-mode .btn.active{border-color:var(--primary);background:var(--bluebg);color:var(--text)}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1805,14 +1923,22 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
       <div class="subtitle">CWL planen · Einsätze fair verteilen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
-    <div class="top-actions"><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
+    <div class="top-actions"><div class="account-quick-wrap" id="accountQuickWrap">
+ <button class="btn small account-quick-trigger" type="button" id="accountQuickButton"
+  aria-expanded="false" aria-controls="accountQuickMenu" aria-label="Konto-Menü öffnen" title="Konto"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></button>
+ <div class="account-quick-menu" id="accountQuickMenu" hidden>
+  <div class="account-quick-label">Mein Konto</div>
+  <button type="button" id="accountQuickManage">Clan & Konto verwalten</button>
+  <button type="button" id="accountQuickLogout">Abmelden</button>
+ </div>
+ </div><button class="cloud-toggle" id="cloudOpen" type="button" title="Clan und Konto öffnen" aria-label="Clan und Konto öffnen"><span class="cloud-toggle-icon" aria-hidden="true">☁️</span><span class="cloud-toggle-label">Clan</span></button><button class="btn small settings-gear" id="settingsOpen" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button><button class="btn small" id="helpBtn">? Hilfe</button><button class="sync-icon-button" type="button" id="syncInfoBtn" title="Automatische Aktualisierung erklären" aria-label="Information zur automatischen Aktualisierung">↻</button></div>
   </div>
 </div>
 <main class="content">
 <section id="view-plan" class="view active">
   <div id="recoveryBanner" class="recovery-banner hidden"><b>⚠ Lokaler Speicher benötigt Aufmerksamkeit</b><p id="recoveryMessage"></p><div class="actions"><button class="btn primary hidden" id="recoveryExportBtn">JSON-Backup jetzt sichern</button><button class="btn hidden" id="recoveryRetryBtn">Speichern erneut versuchen</button><button class="btn primary hidden" id="recoveryAcceptBtn">Wiederhergestellten Stand übernehmen</button><button class="btn" id="recoveryImportBtn">Backup wiederherstellen</button><button class="btn danger" id="recoveryEmptyBtn">Leeres Profil starten</button></div></div>
-  <div class="card plan-overview" id="planOverview"><svg class="arena-castle-mark" viewBox="0 0 250 190" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 172h212M33 172V91h26V49h21v42h27V33h36v58h27V49h21v42h26v81"/><path d="M59 49V33h21v16M108 33V18h35v15M170 49V33h21v16M99 172v-44c0-16 11-28 26-28s26 12 26 28v44M59 114h21m90 0h21"/><path d="M38 78h17M81 78h17M151 78h17M193 78h16"/></svg>
-    <div class="section-title"><h3>Übersicht</h3><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
+  <div class="card plan-overview" id="planOverview">
+    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">PLANUNG</span><h3>CWL-Plan</h3></div><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview">Aktionen ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
@@ -1834,8 +1960,8 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
 </section>
 <section id="view-members" class="view">
   <div class="card">
-    <div class="section-title">
-      <div><h3>Mitglieder</h3><div class="statusline">Hier legst du fest, wer mitspielt, wie oft jemand eingesetzt werden soll und welche Tagesregeln gelten.</div></div>
+    <div class="section-title view-lead-heading">
+      <div class="view-lead-copy"><span class="view-lead-kicker">KADER</span><h3>Mitglieder</h3><div class="statusline">Hier legst du fest, wer mitspielt, wie oft jemand eingesetzt werden soll und welche Tagesregeln gelten.</div></div>
     </div>
     <div id="guestMembersTools" class="cloud-member-tools">
       <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
@@ -1920,7 +2046,7 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
     </div>
     <div id="currentWarContent"></div>
   </div>
-  <div class="card"><div class="section-title"><div><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
+  <div class="card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
     <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
@@ -1968,12 +2094,12 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.7.0</strong><span>Übersichtlicher & flüssiger</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.8.0</strong><span>CWL-Vergleich & Feinschliff</span></div>
       <ul>
-       <li><b>Mehr:</b> Hilfe sowie Clan & Konto sind jetzt eigene, übersichtliche Unterseiten.</li>
-       <li><b>Mitglieder:</b> Spielerkarten, Tagesregeln und Suche reagieren flüssiger.</li>
-       <li><b>Arena:</b> Einheitlichere Karten und besser abgestimmte Rathausgrafiken.</li>
-       <li><b>Sicherheit:</b> Anmeldung, Einladungen und Backup-Funktionen bleiben erhalten.</li>
+       <li><b>CWL:</b> Unser Team und Gegner mit Angriffen, Sternen und Zielen direkt vergleichen.</li>
+       <li><b>Lokaler Modus:</b> Profilfenster, Mehrfachimport und Tagesansicht zuverlässiger bedienen.</li>
+       <li><b>Konto:</b> Abmelden direkt über das Konto-Menü; Schutz bei offenen Änderungen.</li>
+       <li><b>Arena:</b> Einheitliche Überschriften und ruhigerer Hintergrund.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -1986,7 +2112,7 @@ html[data-theme="arena"] .member-townhall{color:#eee5d6}
 
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
-    <div class="section-title"><div><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
       <div class="field"><label id="statsPeriodLabel">Zeitraum</label>
@@ -2318,9 +2444,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.7.0"></script>
+<script src="./cwl-planning-core.js?v=1.8.0"></script>
 <script>
-const APP_VERSION="v1.7.0";
+const APP_VERSION="v1.8.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -2515,7 +2641,20 @@ function calculatePlan(){
 function renderProfileUI(){const sel=document.getElementById("profileSelect");sel.innerHTML=app.profiles.map(p=>`<option value="${p.id}" ${p.id===state.id?"selected":""}>${esc(p.name)}</option>`).join("")+`<option disabled>────────────</option><option value="__new__">＋ Neues Profil erstellen…</option>`;document.getElementById("activeProfileName").textContent=state.name;document.getElementById("profileCountBadge").textContent=`${app.profiles.length} Profil${app.profiles.length===1?"":"e"}`}
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
 function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=`Plan bereit · ${days} Kriegstage · noch keiner als gespielt gespeichert`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
-function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${memberTownHallMarkup(m)}<span aria-hidden="true"> · </span>${memberCompactPerformance(m)}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Gespielte Aufstellung ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Manuell als gespielt bestätigen</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${dp.locked?"GESPIELT":exact?"BESETZT":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${dp.warnings.map(w=>`<div class="warntext">⚠️ ${esc(w)}</div>`).join("")}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px">${dp.day-1===nextPlayable&&!dp.locked?'<span class="statusline">Nach Kriegsende übernimmt Clash die tatsächliche Aufstellung automatisch. Manuelle Bestätigung nur als Ersatz.</span>':""}${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>{if(lastPlan.ok===false){showToast("Bitte zuerst die Konflikte bei den Einsatzzielen oder Tagesregeln beheben.");return}openLineupModal(Number(b.dataset.day))});root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays();window.CWLCloud?.renderLive?.()}
+function renderPlanDayWarnings(dp){
+ // The global solver may repeat every day's shortage on every day plan.
+ // Show a day-specific notice only on its own card, and global conflicts once.
+ const warnings=(dp.warnings||[]).filter(raw=>{
+  const day=String(raw).match(/^Tag\s+(\d+)\s*:/i);
+  return day?Number(day[1])===dp.day:dp.day===1;
+ });
+ if(!warnings.length)return "";
+ const display=values=>values.map(w=>'<div class="warntext">⚠ '+esc(w)+'</div>').join("");
+ return display(warnings.slice(0,2))+(warnings.length>2?
+  '<details class="day-warnings-more"><summary>'+ (warnings.length-2)+
+  ' weitere Hinweise ansehen</summary>'+display(warnings.slice(2))+'</details>':"");
+}
+function renderPlan(){const root=document.getElementById("planDays");root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay();lastPlan.dayPlans.forEach(dp=>{const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${memberTownHallMarkup(m)}<span aria-hidden="true"> · </span>${memberCompactPerformance(m)}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Gespielte Aufstellung ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Manuell als gespielt bestätigen</button>`}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${dp.locked?"GESPIELT":exact?"BESETZT":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${renderPlanDayWarnings(dp)}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>`:""}<div class="actions day-actions" style="margin-top:10px">${dp.day-1===nextPlayable&&!dp.locked?'<span class="statusline">Nach Kriegsende übernimmt Clash die tatsächliche Aufstellung automatisch. Manuelle Bestätigung nur als Ersatz.</span>':""}${action}${dp.day>1?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;root.appendChild(card)});root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>{if(lastPlan.ok===false){showToast("Bitte zuerst die Konflikte bei den Einsatzzielen oder Tagesregeln beheben.");return}openLineupModal(Number(b.dataset.day))});root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays();window.CWLCloud?.renderLive?.()}
 function renderMobileDays(){
   const root=document.getElementById("mobileDayTabs");if(!root)return;
   const days=state.config.days,next=Math.min(playedPrefixLength(),days-1);
@@ -2539,7 +2678,7 @@ function renderMobileDays(){
     const nav=document.getElementById("mobileDaySwitcher");
     if(nav && nav.getBoundingClientRect().top<0)nav.scrollIntoView({block:"start",behavior:"auto"});
   });
-  document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",d!==mobileSelectedDay));
+  document.querySelectorAll("#planDays .day-card").forEach((card,d)=>card.classList.toggle("mobile-day-hidden",single&&d!==mobileSelectedDay));
 }
 
 function markRosterAbsenceEdit(m,field){
@@ -3032,7 +3171,12 @@ document.getElementById("mobileOverviewToggle").onclick=()=>{const card=document
 document.getElementById("recoveryExportBtn").onclick=()=>{downloadFile(`CWL_Notfall_Backup_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({kind:"cwl-app-backup",version:APP_VERSION,dataVersion:DATA_VERSION,app},null,2));showToast("Notfall-Backup erstellt ✓")};
 document.getElementById("recoveryRetryBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderRecoveryBanner();if(!suspendWrites)showToast("Speicherung wiederhergestellt ✓")};
 document.getElementById("manageCwlBtn").onclick=handleCwlManage;document.getElementById("nextDayBtn").onclick=()=>{const d=Math.min(playedPrefixLength(),state.config.days-1);mobileSelectedDay=d;renderMobileDays();document.getElementById(`day-card-${d}`)?.scrollIntoView({behavior:"smooth",block:"start"})};
-document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);document.getElementById("addMemberBottomBtn").onclick=()=>openInlineMemberAdd(true);document.getElementById("inlineMemberSave").onclick=commitInlineMemberAdd;document.getElementById("inlineMemberCancel").onclick=closeInlineMemberAdd;document.getElementById("inlineMemberName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitInlineMemberAdd()}else if(e.key==="Escape")closeInlineMemberAdd()});document.getElementById("multiAddBtn").onclick=openBulkModal;document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();document.getElementById("membersTemplateBtn").onclick=downloadTemplate;document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};document.getElementById("memberExtraToggle").onclick=()=>{
+document.getElementById("addMemberBtn").onclick=()=>openInlineMemberAdd(false);document.getElementById("addMemberBottomBtn").onclick=()=>openInlineMemberAdd(true);document.getElementById("inlineMemberSave").onclick=commitInlineMemberAdd;document.getElementById("inlineMemberCancel").onclick=closeInlineMemberAdd;document.getElementById("inlineMemberName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitInlineMemberAdd()}else if(e.key==="Escape")closeInlineMemberAdd()});document.getElementById("multiAddBtn").onclick=openBulkModal;
+document.getElementById("guestManualOne").onclick=()=>openInlineMemberAdd(true);
+document.getElementById("guestManualMany").onclick=openBulkModal;
+document.getElementById("guestImportMembersBtn").onclick=()=>document.getElementById("membersFile").click();
+document.getElementById("bulkDoneBtn").onclick=()=>{if(!document.getElementById("bulkBar").classList.contains("hidden"))document.getElementById("selectMembersBtn").click()};
+document.getElementById("membersImportBtn").onclick=()=>document.getElementById("membersFile").click();document.getElementById("membersTemplateBtn").onclick=downloadTemplate;document.getElementById("selectMembersBtn").onclick=()=>{selectionMode=!selectionMode;if(!selectionMode)selectedMembers.clear();renderMembers()};document.getElementById("memberExtraToggle").onclick=()=>{
   const area=document.getElementById("memberAdditionalActions");
   const button=document.getElementById("memberExtraToggle");
   const open=area.classList.toggle("open");
@@ -3073,7 +3217,14 @@ document.getElementById("cloudAccountBack").onclick=()=>showPlannerView("more");
 document.getElementById("helpClose").onclick=()=>showPlannerView("more");document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
 document.getElementById("townHallPickerModal").onclick=e=>{if(e.target.id==="townHallPickerModal")closeTownHallPicker()};
 document.getElementById("whyClose").onclick=()=>closeModalById("whyModal");document.getElementById("whyModal").onclick=e=>{if(e.target.id==="whyModal")closeModalById("whyModal")};
-document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeLineupModal()};document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{const added=addMany(document.getElementById("bulkNames").value);closeBulkModal();renderAll(`${added} Mitglieder hinzugefügt · Plan aktualisiert ✓`)};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");document.getElementById("archiveModal").onclick=e=>{if(e.target.id==="archiveModal")closeModalById("archiveModal")};
+document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};document.getElementById("lineupModal").onclick=e=>{if(e.target.id==="lineupModal")closeLineupModal()};document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{
+ const input=document.getElementById("bulkNames");
+ if(!input.value.trim()){showToast("Bitte mindestens einen Spielernamen eingeben");input.focus();return}
+ const added=addMany(input.value);
+ if(!added){showToast("Es wurden keine Mitglieder hinzugefügt");return}
+ closeBulkModal();
+ renderAll(added+" Mitglieder hinzugefügt · Plan aktualisiert ✓");
+};document.getElementById("bulkModal").onclick=e=>{if(e.target.id==="bulkModal")closeBulkModal()};document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");document.getElementById("archiveModal").onclick=e=>{if(e.target.id==="archiveModal")closeModalById("archiveModal")};
 // Recovery
 document.getElementById("recoveryAcceptBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderAll("Wiederhergestellter Stand übernommen ✓")};document.getElementById("recoveryImportBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("recoveryEmptyBtn").onclick=async()=>{if(!await confirmInline("Die beschädigten lokalen Daten bleiben dadurch nicht erhalten.",{title:"Mit leerem Profil starten?",confirmText:"Leeres Profil starten",danger:true}))return;app=defaultApp();state=app.profiles[0];suspendWrites=false;startupStorageIssue=null;localStorage.removeItem(STORAGE_KEY);renderAll("Leeres Profil gestartet ✓")};
 document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionBackdrop").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{
@@ -3116,6 +3267,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.7.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.8.0"></script>
 </body>
 </html>

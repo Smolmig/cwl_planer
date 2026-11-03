@@ -6,7 +6,25 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Keine neuen Änderungen nach dem geplanten Cloud-v1.7.0-Release.
+Keine Änderungen seit dem vorbereiteten v1.8.0-Stand.
+
+## [1.8.0] - 2026-11-03
+
+### CWL-Anzeige
+- Eigene und gegnerische Clan-Aufstellung als gleichwertige, responsive Teamkarten mit jeweiligem Angriffsfortschritt und offiziellen Kriegssternen.
+- Gegnerische Einzelangriffe einschließlich Sternen, Zerstörung, Rathausstufen und Zielauflösung; Vorbereitung bleibt ohne erfundene Angriffswerte.
+
+### Stabilität und Bedienung
+- Cloud-Abmeldung direkt im Konto-Menü, einschließlich Behandlung abgelaufener Sitzungen und Schutz für ungespeicherte Änderungen.
+- Gastmodus: Mehrfachimport unabhängig von der Cloud-Anmeldung, Profilfenster im Vordergrund und zuverlässiges Umschalten zwischen Einzel- und Alle-Tage-Ansicht.
+- Mobile Konflikthinweise und Tageswarnungen kompakter; verschwundenes weißes Clan-Steuerelement im lokalen Modus.
+
+### Gestaltung
+- Arena/Gold: große einheitliche Hauptüberschriften und ruhigerer Hintergrund ohne geometrisches Wasserzeichen.
+- Kompakte Abschnittslabels in den übrigen Themes.
+
+### Kompatibilität
+- Cloud-Datenformat v9, CWL-Solver, Clash-Backend, Supabase/RLS und produktive Profile unverändert. Offline-PWA weiterhin v1.0.2.
 
 ## [1.7.0] - 2026-11-03
 
