@@ -932,6 +932,11 @@ body:has(#cloudOverlay.open) #toast{z-index:450;bottom:calc(30px + env(safe-area
 
 /* CWL war overview: the two teams belong to the same left/right sides as the scoreboard.
    Controls are clear full-width cards, not tiny arrow links. */
+.plan-rotation-backup{margin-top:10px;padding:9px 11px;border:1px dashed var(--line);border-radius:12px;background:var(--surface,transparent)}
+.plan-rotation-backup>summary{cursor:pointer;color:var(--muted);font-size:12px;font-weight:700;list-style-position:inside}
+.plan-rotation-backup[open]>summary{margin-bottom:8px}
+.plan-rotation-backup .changes{margin:8px 0}
+.plan-rotation-backup .btn{margin-top:6px}
 .cwl-live-side-label{font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;color:var(--muted)}
 .cwl-live-team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;align-items:start;min-width:0}
 .cwl-live-team-details{box-sizing:border-box;min-width:0;margin:0!important;padding:0!important;
@@ -2583,7 +2588,7 @@ function confirmedCwlPlanningLocks(){
   if(!window.CWLCloud?.active||!window.CWLCloud.hasApiClan?.()||
      !live||live.season===state.cwlLiveIgnoredSeason||!Array.isArray(live.rounds))return locks;
   const date=new Date(),month=date.getUTCFullYear()*12+date.getUTCMonth()+1;
-  const season=/^(\\d{4})-(\\d{2})$/.exec(String(live.season||""));
+  const season=/^(\d{4})-(\d{2})$/.exec(String(live.season||""));
   const seasonMonth=season?Number(season[1])*12+Number(season[2]):0;
   if(!seasonMonth||month-seasonMonth<0||month-seasonMonth>1)return locks;
   const tags=new Map(allKnownMembers().filter(m=>m.playerTag).map(m=>[normalizePlayerTag(m.playerTag),m.id]));
