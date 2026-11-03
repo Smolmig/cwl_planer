@@ -8,7 +8,7 @@ const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
-const staticHtml=html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,"").replace(/<link\\b[^>]*>/gi,"");
+const staticHtml=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<link\b[^>]*>/gi,"");
 const icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23dfbd7a'/%3E%3C/svg%3E";
 
 test("both member and stats views use the provider-documented CDN and keep RH text if icons fail",()=>{
