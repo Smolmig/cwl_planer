@@ -22,6 +22,7 @@ test("Editor proposal reuses original server-side played histories despite norma
    clanId:"clan-id",role:"editor",changedSerial:JSON.stringify(normalized),
    rawSavedProfile:raw,revision:4,planIsLocked:()=>true,
    suggestionChanges:()=>["Einsatzziel geändert"],
+   assertPlanningReady:profile=>{assert.equal(profile.members[0].targetDays,3);assert.deepEqual(JSON.parse(JSON.stringify(profile.locks)),raw.locks);},
    storage:{confirmAction:async()=>true,toast:()=>{}},
    sb:{rpc:async(name,payload)=>{assert.equal(name,"cwl_submit_plan_suggestion");submitted=payload.p_profile;return {error:null}}},
    loadCloudProfile:async()=>{reloaded++},loadPlanReview:async()=>{refreshed++},
