@@ -72,8 +72,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const rosterLine=m=>"<li class='cwl-roster-member'><span class='cwl-live-rh'>RH"+
       esc(m.townHallLevel??"?")+"</span><span class='cwl-roster-name'>"+esc(m.name||"Unbekannt")+
       "</span><span class='cwl-roster-tag'>"+esc(tagOf(m.tag))+"</span></li>";
-    const rosterReady=(list)=>Number.isInteger(round.teamSize)&&round.teamSize>0&&
-      list.length===round.teamSize&&new Set(list.map(m=>tagOf(m.tag))).size===round.teamSize;
+    const rosterReady=list=>Array.isArray(list)&&Number.isInteger(round.teamSize)&&round.teamSize>0&&
+      list.length===round.teamSize&&list.every(m=>/^#[0289PYLQGRJCUV]{3,15}$/.test(tagOf(m?.tag)))&&
+      new Set(list.map(m=>tagOf(m.tag))).size===round.teamSize;
     const opponentRoster=rosterReady(enemy)
       ?"<ol class='cwl-roster-list'>"+enemy.map(rosterLine).join("")+"</ol>"
       :"<p class='cwl-live-attack-empty'>Gegnerische Aufstellung noch nicht vollständig verfügbar.</p>";
@@ -82,7 +83,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const review=reviewPreparationLineup(profile,dayPlan,round,{planningOk:planning?.ok!==false});
     const group=(title,items,kind)=>"<div class='cwl-prep-group "+kind+"'><b>"+title+"</b><ul>"+
       items.map(m=>"<li><span class='cwl-live-rh'>RH"+esc(m.townHallLevel??"?")+
-        "</span> "+esc(m.name)+"</li>").join("")+"</ul></div>";
+        "</span><span class='cwl-roster-name'>"+esc(m.name)+
+        "</span><span class='cwl-roster-tag'>"+esc(tagOf(m.tag))+"</span></li>").join("")+"</ul></div>";
     const reviewHtml=!review?"":review.status==="unavailable"
       ?"<div class='cwl-prep-review'><b>Abgleich mit dem CWL-Plan</b><p class='statusline'>"+
         esc(review.reason)+"</p></div>"
@@ -141,7 +143,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       (rosterReady(enemy)?enemy.length+" Spieler":"Noch nicht vollständig")+"</span></summary>"+
       opponentRoster+"</details>"+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
-      attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":"")+"</div>"+
+      (round.state==="preparation"?"Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
+        attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":""))+"</div>"+
       "<details class='cwl-live-details'"+(wasOpen?" open":"")+"><summary>"+
       (round.state==="preparation"?"Clash-Aufstellung ansehen":"Spieler und Angriffe anzeigen")+
       "<span class='cwl-live-attack-count'>"+(round.state==="preparation"?
