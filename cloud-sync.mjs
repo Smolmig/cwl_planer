@@ -1775,6 +1775,8 @@ window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder onlin
 let pendingRelease=null;
 function safeForReload(){
  return !changedSerial&&!saving&&!blocked&&!editingDialog()&&
+   // Account administration is now a page, not a modal: protect unsaved form input.
+   !document.getElementById("view-account")?.classList.contains("active")&&
    !document.querySelector(".cloud-overlay.open,.invite-welcome.open")&&
    !document.activeElement?.matches("input,textarea,select,[contenteditable='true']");
 }
