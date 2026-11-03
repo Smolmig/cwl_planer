@@ -55,9 +55,9 @@ test("Isolated CWL browser simulation: seven days, live war attacks, idempotent 
   assert.match(await page.locator("#day-card-0").innerText(),/GESPIELT/);
   assert.equal(await page.locator("#day-card-0 .cwl-live-details[open]").count(),1,
     "Expanded attack details should stay expanded after a live refresh");
-  assert.equal(await page.locator("#day-card-0 .cwl-live-attack.pending").count(),1);
-  assert.match(await page.locator("#day-card-0 .cwl-live-attack").first().innerText(),/Spieler 01/);
-  assert.match(await page.locator("#day-card-0 .cwl-live-attack").last().innerText(),/Kein Angriff erfasst/);
+  assert.equal(await page.locator("#day-card-0 .cwl-live-details .cwl-live-attack.pending").count(),1);
+  assert.match(await page.locator("#day-card-0 .cwl-live-details .cwl-live-attack").first().innerText(),/Spieler 01/);
+  assert.match(await page.locator("#day-card-0 .cwl-live-details .cwl-live-attack").last().innerText(),/Kein Angriff erfasst/);
   assert.equal((await page.locator("#day-card-0 .cwl-live-score").innerText()).replace(/\s/g,""),"35:27");
   assert.match(await page.locator("#day-card-0 .cwl-live-score-detail").innerText(),/Zerstörung/);
   assert.match(await page.locator("#day-card-0").innerText(),/Automatisch abgeschlossen/);
