@@ -162,7 +162,7 @@ test("rapid member searches are batched into one redraw and filters flush a pend
   const page=await browser.newPage({viewport:{width:1366,height:900}});
   try{
    await page.setContent(cleanHtml,{waitUntil:"domcontentloaded"});
-   await page.addScriptTag({content:code+"\\n"+html.slice(searchStart,searchEnd)});
+   await page.addScriptTag({content:code+"\n"+html.slice(searchStart,searchEnd)});
    const result=await page.evaluate(async()=>{
     window.__setMembers(85);
     const root=document.getElementById("memberList");
