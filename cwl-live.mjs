@@ -103,6 +103,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         (review.status==="changes"?"<div class='cwl-prep-groups'>"+
           group("Aus Clash raus",review.toRemove,"remove")+
           group("In Clash rein",review.toAdd,"add")+"</div>":"")+
+        "<button type='button' class='btn small cwl-copy-live-swaps'>"+
+        (review.status==="match"?"Abgleich kopieren":"Wechseltext aus Clash kopieren")+"</button>"+
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
@@ -167,7 +169,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       (round.state==="preparation"?(fresh?
         "Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
         "Clash-Aufstellung gespeichert · vor Wechseln bitte aktualisieren"):
-        "Angriffsstand "+(fresh?"aus Clash":"gespeichert")+
+        "Aufstellung fix · Angriffsstand "+(fresh?"aus Clash":"gespeichert")+
         (round.state==="warEnded"?" · Krieg beendet":""))+"</div>"+
       "<div class='cwl-live-team-grid' role='group' aria-label='Eigene und gegnerische CWL-Aufstellungen'>"+
       "<details class='cwl-live-team-details cwl-live-details cwl-live-team-own'"+(wasOpen?" open":"")+"><summary>"+
@@ -178,6 +180,24 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       "<span class='cwl-team-summary-title'>Gegnerteam</span>"+
       "<span class='cwl-live-attack-count'>"+esc(sideSummary(round.opponent,enemy,enemyAttacks,enemyMissing))+"</span></summary>"+
       opponentPlayers+"</details></div>";
+    section.querySelector(".cwl-copy-live-swaps")?.addEventListener("click",()=>{
+      const ctx=context(),now=Date.now(),activeSnapshot=current?.active&&activeClan===ctx.clanId&&
+        current.season===ctx.profile?.cwlLive?.season&&lastSuccessfulProfile===ctx.profile&&
+        now-lastSuccessfulAt<=FRESH_WINDOW_MS&&!offlineReason&&!staleRoundDays.has(round.day);
+      if(!activeSnapshot){notify("Bitte zuerst CWL-Daten aktualisieren – keine Wechsel aus einem gespeicherten Stand übernehmen.");return;}
+      const currentRound=current.rounds?.find(r=>r.day===round.day);
+      const dp=storage.getPlannedLineups?.().find(p=>p.day===round.day);
+      const latest=reviewPreparationLineup(ctx.profile,dp,currentRound,{planningOk:storage.getPlanningState?.()?.ok!==false});
+      if(!latest||latest.status==="unavailable"){notify("Abgleich derzeit nicht eindeutig. Bitte CWL-Daten aktualisieren.");return;}
+      const lines=["CWL Tag "+round.day+" · Clash-Abgleich"];
+      if(latest.status==="match")lines.push("✓ Aufstellung stimmt mit dem Plan überein. Keine Wechsel nötig.");
+      else{
+        lines.push("🔴 Aus Clash raus: "+latest.toRemove.map(m=>m.name).join(", "));
+        lines.push("🟢 In Clash rein: "+latest.toAdd.map(m=>m.name).join(", "));
+      }
+      lines.push("Stand: "+new Date(lastSuccessfulAt).toLocaleString("de-AT")+" · In Clash prüfen");
+      storage.copyText?.(lines.join("\n"),"Clash-Wechseltext kopiert ✓");
+    });
     section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
       if(event.target.open)expandedDays.add(round.day);
       else expandedDays.delete(round.day);
