@@ -1650,10 +1650,8 @@ body.cloud-mode .top-actions #cloudOpen{display:none}
   .cloud-mode #view-members .member-fixed-target{display:none!important}
 }
 /* Desktop sidebar control stays in its own header row; never overlaps the content edge. */
-@media(min-width:1100px){
-  .sidebar-collapse:active{transform:scale(.96)}
-  @media(prefers-reduced-motion:reduce){.sidebar-collapse{transition:none}}
-}
+@media(min-width:1100px){.sidebar-collapse:active{transform:scale(.96)}}
+@media(prefers-reduced-motion:reduce){.sidebar-collapse{transition:none}}
 #view-members .member-top .name-wrap .member-name-edit{
   display:grid!important;place-items:center!important;flex:0 0 29px!important;
   width:29px!important;height:29px!important;min-height:29px!important;
