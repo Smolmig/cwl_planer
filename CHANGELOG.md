@@ -8,6 +8,9 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 - Mehr → Hilfe und Clan & Konto als eigenständige, responsive Unterseiten (Draft-PR #57, noch nicht live).
 - Cloud-Anmeldung, Registrierung und Passwort-Wiederherstellung bleiben separate Dialoge; bestehende Clan-Rollen, Einladungen und Sicherungen nutzen unveränderte Cloud-Aktionen.
+- Mitgliederkarten: Bearbeiten, Tagesregeln und doppelte Namen ohne vollständigen Listen-Neuaufbau; schnellere Suche und Sortierung (Draft #58, in die UI-Integration übernommen).
+- Arena-Theme: ruhigerer Kartenaufbau, konsistente Rathausbilder in Mitgliederliste und Statistik mit lesbarer RH-Anzeige als Fallback (Draft #59, in die UI-Integration übernommen).
+- Alle drei Änderungen sind in einem gesonderten Integrationsbranch zusammengeführt. Noch kein Live-Release; App-Version bleibt vorerst v1.6.0.
 
 ## [1.6.0] - 2026-11-03
 
