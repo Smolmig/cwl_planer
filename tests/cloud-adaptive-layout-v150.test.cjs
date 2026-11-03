@@ -85,3 +85,43 @@ test("Strength-aware planner remains a simulation and preserves existing hard co
   assert.match(docs,/Vor Anwenden/);
   assert.match(docs,/keine zusätzlichen Supabase-Änderungen/);
 });
+
+
+test("At desktop widths the bar becomes a true vertical rail with wide content",{
+ timeout:90000
+},async()=>{
+ const {chromium}=require("playwright");
+ const style=html.match(/<style>([\s\S]*?)<\/style>/)?.[1];
+ const nav=html.match(/<nav class="bottomnav"[^>]*>[\s\S]*?<\/nav>/)?.[0];
+ assert.ok(style&&nav);
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [390,1366]){
+   const page=await browser.newPage({viewport:{width,height:850}});
+   try{
+    await page.setContent('<!doctype html><html data-theme="arena"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+style+'</style></head><body class="cloud-mode"><div class="app"><div class="topbar">Header</div><main class="content"><div class="card">Plan</div></main></div>'+nav+'</body></html>');
+    await page.locator("#statsNav").evaluate(el=>{el.hidden=false});
+    const result=await page.evaluate(()=>{
+     const app=document.querySelector(".app").getBoundingClientRect();
+     const nav=document.querySelector(".bottomnav").getBoundingClientRect();
+     const buttons=[...document.querySelectorAll(".navbtn")].filter(e=>getComputedStyle(e).display!=="none");
+     const rects=buttons.map(b=>({x:b.getBoundingClientRect().x,y:b.getBoundingClientRect().y,width:b.getBoundingClientRect().width}));
+     return {app:{x:app.x,width:app.width},nav:{x:nav.x,width:nav.width,y:nav.y,bottom:nav.bottom},
+       rects,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth};
+    });
+    assert.ok(result.scrollWidth<=width+2,"No horizontal overflow at "+width);
+    assert.equal(result.rects.length,5);
+    if(width>=1100){
+     assert.ok(Math.abs(result.nav.width-228)<2,"desktop sidebar width");
+     assert.ok(Math.abs(result.app.x-228)<2,"content starts after sidebar");
+     assert.ok(result.rects[1].y>result.rects[0].y+20,"vertical navigation");
+     assert.ok(result.app.width>1000,"content should use available desktop space");
+    }else{
+     assert.ok(Math.abs(result.nav.width-width)<2,"mobile bar spans viewport");
+     assert.ok(Math.abs(result.app.x)<2,"mobile has no left gutter");
+     assert.ok(Math.abs(result.nav.bottom-850)<2,"mobile bar anchored to bottom");
+    }
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});
