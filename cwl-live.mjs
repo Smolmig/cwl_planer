@@ -40,7 +40,8 @@ function townHallSummary(members) {
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
 export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
-  let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false;
+  let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
+  const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set();
   const effective=()=>{
     const ctx=context();
@@ -53,7 +54,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const now=new Date(),diff=now.getFullYear()*12+now.getMonth()+1-month;
     return diff>=0&&diff<=1?prior:null;
   };
-  function renderDay(round,dayCard,profile) {
+  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0}={}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     const wasOpponentOpen=expandedOpponentDays.has(round?.day)||!!dayCard.querySelector(".cwl-opponent-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
@@ -81,11 +82,15 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const planning=storage.getPlanningState?.();
     const dayPlan=storage.getPlannedLineups?.().find(dp=>dp.day===round.day);
     const review=reviewPreparationLineup(profile,dayPlan,round,{planningOk:planning?.ok!==false});
+    const reviewFresh=fresh&&round.state==="preparation";
     const group=(title,items,kind)=>"<div class='cwl-prep-group "+kind+"'><b>"+title+"</b><ul>"+
       items.map(m=>"<li><span class='cwl-live-rh'>RH"+esc(m.townHallLevel??"?")+
         "</span><span class='cwl-roster-name'>"+esc(m.name)+
         "</span><span class='cwl-roster-tag'>"+esc(tagOf(m.tag))+"</span></li>").join("")+"</ul></div>";
-    const reviewHtml=!review?"":review.status==="unavailable"
+    const reviewHtml=!review?"":!reviewFresh
+      ?"<div class='cwl-prep-review'><b>Abgleich mit dem CWL-Plan</b>"+
+        "<p class='statusline'>Gespeicherter Stand – bitte CWL-Daten aktualisieren, bevor du Wechsel in Clash vornimmst.</p></div>"
+      :review.status==="unavailable"
       ?"<div class='cwl-prep-review'><b>Abgleich mit dem CWL-Plan</b><p class='statusline'>"+
         esc(review.reason)+"</p></div>"
       :"<div class='cwl-prep-review'><div class='cwl-prep-heading'><b>Abgleich mit dem CWL-Plan</b>"+
@@ -95,7 +100,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         (review.status==="changes"?"<div class='cwl-prep-groups'>"+
           group("Aus Clash raus",review.toRemove,"remove")+
           group("In Clash rein",review.toAdd,"add")+"</div>":"")+
-        "<p class='statusline'>Clash-Aufstellung ist vorläufig. Nur Anzeige – bitte Wechsel direkt im Spiel durchführen.</p></div>";
+        "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
+        esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
+        " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
     const players=round.state==="preparation"
       ?(rosterReady(own)?"<ol class='cwl-roster-list'>"+own.map(rosterLine).join("")+"</ol>":
         "<p class='cwl-live-attack-empty'>Eigene Aufstellung noch nicht vollständig verfügbar.</p>")
@@ -208,9 +215,13 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
       (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>";
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
+    const fresh=!!(current?.active&&activeClan===ctx.clanId&&
+      current.season===info.season&&lastSuccessfulAt>0&&
+      Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&!offlineReason);
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
-      if(dayCard)renderDay(byDay.get(i+1),dayCard,ctx.profile);
+      if(dayCard)renderDay(byDay.get(i+1),dayCard,ctx.profile,
+        {fresh,checkedAt:lastSuccessfulAt});
     }
   }
   async function refreshNow(manual=false) {
@@ -235,7 +246,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         data.rounds=data.rounds.map((round,i)=>round?.available?round:
           previous.rounds[i]?.available?previous.rounds[i]:round);
       }
-      current=data;offlineReason=data.pending?
+      current=data;lastSuccessfulAt=Date.now();offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
       if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
@@ -261,7 +272,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   }
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
-    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;
+    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;
     expandedDays.clear();expandedOpponentDays.clear();
     render();
   }
