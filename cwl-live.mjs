@@ -147,14 +147,19 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+sideHtml(round.opponent)+"</div>"+
       destruct+"<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'><strong>Gegner-Aufstellung</strong> "+townHallSummary(enemy)+"</div>"+
       reviewHtml+
-      "<details class='cwl-opponent-details'"+(wasOpponentOpen?" open":"")+"><summary>Gegnerteam ansehen <span class='cwl-live-attack-count'>"+
+      "<details class='cwl-opponent-details'"+(wasOpponentOpen?" open":"")+"><summary>"+
+      (fresh?"Gegnerteam ansehen":"Gegnerteam · gespeicherter Stand")+
+      " <span class='cwl-live-attack-count'>"+
       (rosterReady(enemy)?enemy.length+" Spieler":"Noch nicht vollständig")+"</span></summary>"+
       opponentRoster+"</details>"+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
-      (round.state==="preparation"?"Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
+      (round.state==="preparation"?(fresh?
+        "Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
+        "Clash-Aufstellung gespeichert · vor Wechseln bitte aktualisieren"):
         attacks+"/"+own.length+" Angriffe erfasst"+(round.state==="warEnded"?" · API-Ergebnis":""))+"</div>"+
       "<details class='cwl-live-details'"+(wasOpen?" open":"")+"><summary>"+
-      (round.state==="preparation"?"Clash-Aufstellung ansehen":"Spieler und Angriffe anzeigen")+
+      (round.state==="preparation"?(fresh?"Clash-Aufstellung ansehen":
+        "Clash-Aufstellung · gespeicherter Stand"):"Spieler und Angriffe anzeigen")+
       "<span class='cwl-live-attack-count'>"+(round.state==="preparation"?
         (rosterReady(own)?own.length+" Spieler · vorläufig":"Noch nicht vollständig"):missing+" offen · "+(own.length-missing)+" erledigt")+
       "</span></summary>"+
