@@ -1415,6 +1415,119 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
 .cloud-audit-changes li{font-size:12px;line-height:1.5;margin-bottom:5px}
 .cloud-audit-technical{padding:8px 0 0;font-size:11px}
 
+
+/* Responsive information architecture — mobile bottom bar, desktop rail. */
+.brand-lockup{display:inline-flex;align-items:center;gap:10px;max-width:100%;margin:0}
+.brand-lockup .brand-wordmark{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.brand-wordmark small{font-size:.68em;font-weight:450;opacity:.77}
+.brand-mark{display:inline-grid;place-items:center;color:var(--primary);width:38px;height:38px;flex:none}
+.brand-mark svg{display:block;width:100%;height:100%}
+.sidebar-brand,.sidebar-label{display:none}
+.navbtn[hidden]{display:none!important}
+.nav-symbol{display:block;width:21px;height:21px;line-height:1}
+.nav-symbol svg{width:100%;height:100%}
+.navinner .navbtn{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+.navinner{grid-template-columns:repeat(4,minmax(0,1fr));}
+body.cloud-mode .navinner{grid-template-columns:repeat(5,minmax(0,1fr));}
+.titleblock .header-clan-name:not([hidden]){
+ display:inline-flex;align-items:center;gap:6px;max-width:min(260px,90vw);
+ padding:4px 9px;border:1px solid var(--line);border-radius:999px;
+ font-size:12px;font-weight:750;color:var(--text);background:var(--bluebg);
+ margin-top:4px;vertical-align:middle;
+}
+.titleblock .header-clan-name:not([hidden])::before{
+ content:"";display:inline-block;width:7px;height:7px;border-radius:999px;
+ background:var(--green);flex:none;
+}
+@media(max-width:520px){
+ .brand-lockup{gap:6px}
+ .brand-mark{width:30px;height:30px}
+ .brand-wordmark small{font-size:.63em}
+ .titleblock .header-clan-name:not([hidden]){max-width:155px;font-size:10px}
+ body.cloud-mode .navinner{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ body.cloud-mode .navinner .navbtn{padding-inline:2px!important;font-size:10px}
+ .nav-symbol{width:19px;height:19px}
+}
+/* Rare actions live in More, without creating a second settings system. */
+.more-heading{max-width:650px;margin:6px 0 22px}
+.more-heading .more-eyebrow{display:block;font-size:11px;font-weight:850;letter-spacing:.18em;color:var(--primary)}
+.more-heading h2{font-size:clamp(28px,4vw,40px);margin:9px 0}
+.more-heading p{color:var(--muted);line-height:1.55;margin:0}
+.more-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.more-tile{display:flex;align-items:center;gap:12px;min-height:112px;text-align:left;
+ border:1px solid var(--line);border-radius:16px;padding:18px;
+ background:var(--card);color:var(--text);box-shadow:var(--shadow);
+}
+.more-tile>span:nth-child(2){display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.more-tile strong{font-size:16px}
+.more-tile small{font-size:12px;line-height:1.45;color:var(--muted)}
+.more-tile>span:last-child{font-size:29px;color:var(--muted)}
+.more-tile-symbol{display:grid;place-items:center;width:43px;height:43px;flex:none;
+ color:var(--primary);font-size:22px;border-radius:12px;
+ background:var(--bluebg);border:1px solid var(--line)
+}
+.more-tile:hover{border-color:var(--primary)}
+.more-tile:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:650px){.more-menu{grid-template-columns:1fr}.more-tile{min-height:86px;padding:13px 14px}}
+/* Desktop layouts have much more horizontal space than the original 920px PWA. */
+@media(min-width:1100px){
+ body{padding-bottom:0}
+ .app{max-width:none;width:calc(100% - 228px);margin-left:228px;min-height:100dvh}
+ .topbar{padding:12px clamp(18px,2.2vw,36px)}
+ .content{width:min(100%,1500px);padding:20px clamp(20px,2.5vw,44px);margin:0 auto}
+ .bottomnav{position:fixed;inset:0 auto 0 0;width:228px;height:100dvh;z-index:35;
+  display:flex;flex-direction:column;overflow-y:auto;
+  padding:24px 13px;border-top:0;border-right:1px solid var(--line);border-radius:0}
+ .sidebar-brand{display:flex;align-items:center;gap:11px;padding:4px 7px 24px;
+  border-bottom:1px solid var(--line);margin-bottom:24px}
+ .sidebar-brand .brand-mark{width:43px;height:43px}
+ .sidebar-brand b{display:block;font-size:15px;white-space:nowrap}
+ .sidebar-brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.055em;margin-top:4px}
+ .sidebar-label{display:block;color:var(--muted);font-size:10px;letter-spacing:.15em;
+  font-weight:900;padding:0 14px;margin:0 0 12px}
+ .navinner,.navinner:where(body.cloud-mode *){display:flex!important;flex-direction:column;gap:6px;
+  max-width:none;width:100%;margin:0}
+ body.cloud-mode .navinner{display:flex!important;flex-direction:column}
+ .navinner .navbtn{width:100%;min-height:51px!important;flex-direction:row;justify-content:flex-start;
+  gap:12px;border-radius:12px;text-align:left;font-size:14px;padding:12px 15px!important}
+ .nav-symbol{width:22px;height:22px}
+ .navbtn[hidden]{display:none!important}
+ .more-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .titleblock .header-clan-name:not([hidden]){max-width:380px}
+ #view-settings .settings-window{max-width:min(1100px,calc(100vw - 290px))}
+}
+html[data-theme="arena"] .more-tile{
+ background:linear-gradient(150deg,#1b2227,#151a20);border-color:#45494a;
+}
+html[data-theme="arena"] .more-tile-symbol{
+ color:#e3bf79;background:#30291d;border-color:#6e5938;
+}
+html[data-theme="arena"] .more-tile:hover{border-color:#cfab68}
+html[data-theme="arena"] .navinner .navbtn.active{background:#393226;border:1px solid #987a48;color:#ebca87}
+html[data-theme="arena"] .brand-mark{color:#e7bf72}
+html[data-theme="arena"] .brand-wordmark{letter-spacing:.01em}
+html[data-theme="arena"] .more-heading h2,
+html[data-theme="arena"] .plan-overview h3{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
+html[data-theme="arena"] .plan-overview{position:relative;overflow:hidden;isolation:isolate}
+html[data-theme="arena"] .plan-overview>*{position:relative;z-index:2}
+html[data-theme="arena"] .plan-overview::before{
+ content:"";position:absolute;right:-28px;top:-30px;width:310px;height:240px;
+ pointer-events:none;z-index:0;opacity:.15;
+ background:radial-gradient(circle at 50% 50%,transparent 18%,#dcb46e 18.5% 19%,transparent 20% 31%,#dcb46e 31.5% 32%,transparent 33%),
+ linear-gradient(45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%),
+ linear-gradient(-45deg,transparent 47%,#dcb46e 47.5%,transparent 48.2%);
+ transform:rotate(-12deg);
+}
+/* Avoid the outlined nested card-within-card appearance of the old Gold modal. */
+html[data-theme="arena"] .cloud-panel{background:#171d22;border-color:#5d523e;box-shadow:0 24px 65px rgba(0,0,0,.55)}
+html[data-theme="arena"] .cloud-panel .cloud-section{
+ background:transparent!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;padding:18px 0!important;margin:10px 0!important;
+ border-top:1px solid #454139!important;
+}
+html[data-theme="arena"] .cloud-panel .cloud-minor{background:#1d252a;border:1px solid #454d50;border-radius:10px}
+html[data-theme="arena"] .cloud-access-list>.cloud-access-row{background:transparent}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1658,7 +1771,7 @@ html[data-theme="arena"] .cwl-live-ths{color:#ead4aa}
   <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
-<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan">⚔️<br>Plan</button><button class="navbtn" data-view="members">👥<br>Mitglieder</button><button class="navbtn" data-view="summary">📊<br>Übersicht</button><button class="navbtn" id="statsNav" data-view="stats" hidden>📈<br>Statistik</button><button class="navbtn" data-view="more">•••<br>Mehr</button></div></nav>
+<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
