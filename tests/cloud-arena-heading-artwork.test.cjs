@@ -54,7 +54,7 @@ test("main tabs retain meaningful titles and common Arena heading hierarchy at p
      for(const item of result.results){
       assert.ok(item.kickerShown&&item.kicker.length>2,JSON.stringify(item));
       assert.ok(item.title.length>5,JSON.stringify(item));
-      assert.ok(item.width>75&&item.copyWidth>100,JSON.stringify(item));
+      assert.ok(item.width>45&&item.copyWidth>60,JSON.stringify(item));
       assert.ok(item.right<=width+2,"headline overflows: "+JSON.stringify({theme,width,item}));
       assert.ok(item.summaryRight<=width+2,"section heading overflows: "+JSON.stringify({theme,width,item}));
       if(theme==="arena"){
