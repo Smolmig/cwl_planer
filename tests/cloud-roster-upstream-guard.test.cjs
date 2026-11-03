@@ -12,7 +12,7 @@ const segment=source.slice(begin,end);
 const make=(ids,serverMembers)=>{
  const members=ids.map(id=>({id,name:id,playerTag:"#"+id,participating:true, fixed:false,
    statuses:Array(7).fill("auto")}));
- let toastCount=0,renderCount=0;
+ let toastCount=0,renderCount=0,autoApplies=0;
  const elements=new Map();
  const element=id=>{
   if(!elements.has(id))elements.set(id,{
@@ -28,14 +28,14 @@ const make=(ids,serverMembers)=>{
   sb:{functions:{invoke:async()=>({data:{ok:true,members:serverMembers},error:null})}},
   storage:{getProfile:()=>({members}),getPlannedLineups:()=>[],
    toast:()=>{toastCount++;}},
-  resetRoster:()=>{},ensureSaved:async()=>{},toggle:(id,value)=>{element(id).hidden=!value},
+  resetRoster:()=>{},ensureSaved:async()=>{},applyRoster:async()=>{autoApplies++},toggle:(id,value)=>{element(id).hidden=!value},
   text:(id,value)=>{element(id).textContent=value},$:(id)=>element(id),
   document:{createElement:()=>({textContent:"",style:{},append(){}})},
   normalizeTag:v=>String(v||"").toUpperCase(),
   console:{warn(){}},Date
  };
  const getRoster=vm.runInNewContext(segment+"\ngetRoster",ctx);
- return {ctx,members,getRoster,element,stats:()=>({toasts:toastCount,renders:renderCount})};
+ return {ctx,members,getRoster,element,stats:()=>({toasts:toastCount,renders:renderCount,autoApplies})};
 };
 const from=(ids)=>ids.map(id=>({tag:"#"+id,name:id,townHallLevel:18}));
 test("empty upstream roster cannot mark any existing player as departed",async()=>{
@@ -66,6 +66,7 @@ test("abnormally large departures always require manual review, never auto-apply
  assert.equal(a.ctx.rosterDiff.departed.length,6);
  assert.ok(a.members.every(m=>m.participating));
  assert.match(a.element("autoRosterStatus").textContent,/manuell prüfen/);
+ assert.equal(a.stats().autoApplies,0,"never automatically accept mass-departure changes");
 });
 test("small valid roster changes retain automatic comparison behavior",async()=>{
  const original=Array.from({length:12},(_,i)=>"P"+i);
@@ -73,6 +74,7 @@ test("small valid roster changes retain automatic comparison behavior",async()=>
  await a.getRoster({automatic:true});
  assert.equal(a.ctx.rosterDiff.unusuallyManyDeparted,false);
  assert.equal(a.ctx.rosterDiff.departed.length,0);
+ assert.equal(a.stats().autoApplies,1,"ordinary valid changes still use automatic synchronization");
 });
 test("manual mass-departure confirmation can be cancelled before member mutation",async()=>{
  const start=source.indexOf("function rosterPlanningState(");
