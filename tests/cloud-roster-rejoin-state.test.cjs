@@ -133,3 +133,39 @@ test("snapshot is never applied if its stored tag differs from returning player 
  assert.equal(m.participating,false);
  assert.equal(m.cocBeforeDeparture,undefined);
 });
+
+test("kept players are also detected as returned members without API name/RH changes",()=>{
+ const detection=sync.slice(sync.indexOf("const updated=[...rosterMap.values()]"),sync.indexOf("roster=incoming;"));
+ assert.match(detection,/\["former","kept"\]\.includes\(current\.cocSyncState\)/);
+});
+test("roster snapshot is deep-cloned when a profile is copied",()=>{
+ const from=html.indexOf("function cloneProfile(p,newName){"),to=html.indexOf("function resetProfileCompletely(){",from);
+ assert.ok(from>0&&to>from);
+ const clone=vm.runInNewContext(html.slice(from,to)+"\ncloneProfile",{
+  uid:(()=>{let n=0;return()=>String(++n)})(),
+  cloneGoal:()=>({}),normalizeProfile:p=>p,structuredClone
+ });
+ const m=base(),p=profile(m);
+ m.cocBeforeDeparture={tag:m.playerTag,before:{participating:true,statuses:["must"]},
+  automatic:{participating:false,statuses:["must"]},edited:{}};
+ p.dayGoals=[];p.archives=[];p.config={days:7,slots:15};
+ const copy=clone(p,"Kopie"),other=copy.members[0];
+ assert.notEqual(copy.id,p.id);
+ assert.notEqual(other.id,m.id);
+ assert.notStrictEqual(other.cocBeforeDeparture,m.cocBeforeDeparture);
+ other.cocBeforeDeparture.before.statuses[0]="out";
+ assert.equal(m.cocBeforeDeparture.before.statuses[0],"must");
+ assert.equal(copy.locks[0].snapshots[other.id].name,"Historischer Name");
+});
+test("backup-supplied malformed snapshot values are normalized before restoring",async()=>{
+ const m=base(),p=profile(m);await apply(p);
+ m.cocBeforeDeparture.before.priority=999;
+ m.cocBeforeDeparture.before.statuses[0]="invalid-html";
+ await apply(p,incoming());
+ assert.equal(m.priority,5);
+ assert.equal(m.statuses[0],"auto");
+});
+test("bulk changes while absent register deliberate overrides",()=>{
+ assert.match(html,/function applyBulkValue\(field,value\)/);
+ assert.match(html,/markRosterAbsenceEdit\(m,field\);m\[field\]=value/);
+});
