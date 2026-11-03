@@ -64,6 +64,7 @@ test("real guest UI: bulk members, new and renamed local profiles, and all days 
    assert.equal(await page.locator("#activeProfileName").textContent(),"Testprofil");
    const profiles=await page.evaluate(()=>JSON.parse(localStorage.getItem("cwl_planer_mobile_v9")).profiles.map(p=>p.name));
    assert.deepEqual(profiles,["Neuer Clan","Testprofil"]);
+   await page.locator("#settingsClose").click();
    await page.locator('.navbtn[data-view="plan"]').click();
    assert.deepEqual(errors,[],"guest interactions must not throw runtime exceptions");
   }finally{await page.close()}
