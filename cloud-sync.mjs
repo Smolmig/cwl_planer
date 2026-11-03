@@ -1224,7 +1224,7 @@ async function getRoster({automatic=false}={}){
  const normalDeparted=departed.filter(m=>!criticalTags.has(normalizeTag(m.playerTag)));
  const updated=[...rosterMap.values()].filter(m=>{
    const current=existingMap.get(normalizeTag(m.tag));
-   return current&&(current.cocSyncState==="former"||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
+   return current&&(["former","kept"].includes(current.cocSyncState)||current.name!==m.name||(m.townHallLevel!=null&&current.townHall!==m.townHallLevel));
  });
  roster=incoming;rosterDiff={added,departed,updated,normalDeparted,critical,received:incoming.length,initialImport};
  stage="Unterschiede anzeigen";
