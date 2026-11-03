@@ -80,14 +80,13 @@ test("both sides show attack count, official war stars, opponent attack stars an
   assert.match(data.enemyResults,/77 %/);
   assert.match(data.enemyResults,/Eigener 2/,"opponent attack target is a player from our clan");
   assert.match(data.ownResults,/100 %/);
-  assert.match(data.ownResults,/Ziel unbekannt|/);
   assert.equal(data.section.querySelectorAll(".cwl-live-team-details").length,2);
   assert.ok(data.section.querySelector(".cwl-live-team-own")?.compareDocumentPosition(
    data.section.querySelector(".cwl-live-team-enemy"))&4,"own controls precede opponent controls");
   assert.equal(data.section.querySelectorAll("img[src=x]").length,0,"enemy names are escaped");
   assert.match(data.enemyResults,/<img src=x onerror=alert\(1\)>/);
   assert.equal(data.edits,0,"read-only UI cannot save or alter a Cloud plan");
- }finally{data.live.stop();data.dom.window.close()}
+ }finally{data.dom.window.close()}
 });
 test("preparation day lists both lineups but no invented attack progress",async()=>{
  const data=await renderOne("preparation");
@@ -98,7 +97,7 @@ test("preparation day lists both lineups but no invented attack progress",async(
   assert.equal(data.section.querySelectorAll(".cwl-live-team-own .cwl-roster-member").length,2);
   assert.equal(data.section.querySelectorAll(".cwl-live-team-enemy .cwl-roster-member").length,2);
   assert.equal(data.section.querySelectorAll(".cwl-live-attack").length,0);
- }finally{data.live.stop();data.dom.window.close()}
+ }finally{data.dom.window.close()}
 });
 test("attack mapper safely handles both sides, pending players and unknown targets",async()=>{
  const {cwlAttackRows,sanitizeSnapshot}=await loadCore();
@@ -158,5 +157,5 @@ test("desktop shows two aligned team cards; mobile stacks them without clipped c
     }finally{await page.close()}
    }
   }
- }finally{await browser.close();data.live.stop();data.dom.window.close()}
+ }finally{await browser.close();data.dom.window.close()}
 });
