@@ -58,8 +58,10 @@ test("both CWL teams display attack counts, individual stars and target side wit
   const enemyRows=enemy.querySelectorAll(".cwl-live-attack");
   assert.equal(ownRows.length,2);
   assert.equal(enemyRows.length,2);
-  assert.match(ownRows[0].textContent,/★★★/);
-  assert.match(ownRows[0].textContent,/Enemy One/);
+  const ownCompleted=[...ownRows].find(row=>row.textContent.includes("Our One"));
+  assert.ok(ownCompleted,"own completed attack must remain visible after pending attacks");
+  assert.match(ownCompleted.textContent,/★★★/);
+  assert.match(ownCompleted.textContent,/Enemy One/);
   assert.match(enemyRows[0].textContent,/★★☆/);
   assert.match(enemyRows[0].textContent,/Our One/);
   assert.match(enemyRows[1].textContent,/★☆☆/);
