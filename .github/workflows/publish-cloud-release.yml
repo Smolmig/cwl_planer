@@ -34,7 +34,10 @@ jobs:
           if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $VERSION exists; nothing to do"
           else
+            SUMMARY="$(node -p "require('./cloud-version.json').summary")"
             gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$SHA" \
               --title "CWL Planer Cloud $VERSION" \
-              --notes "Offizieller Cloud-Planer: gemeinsame Clanführung, verschlüsselte Backups mit Restore-Test und optionale CWL-Gegner-/Angriffsdaten. Die separate Offline-PWA bleibt v1.0.2. Details, API-Grenzen und Prüfhinweise: CHANGELOG.md und docs/CLOUD_ROADMAP_CWL_STATS.md."
+              --notes "Cloud $VERSION: $SUMMARY
+
+              Weitere Änderungen und Kompatibilität: CHANGELOG.md. Die separate Offline-PWA bleibt v1.0.2."
           fi
