@@ -50,7 +50,7 @@ function makeHarness({invokeError=false,malformed=false,crashAtPlanning=false}={
  const rootEnv={
   console:{warn(){},log(){}},
   document:doc,Option:dom.window.Option,
-  clanId:state.clanId,role:"editor",
+  clanId:state.clanId,role:"editor",blocked:false,changedSerial:null,
   ensureSaved:async()=>{},
   resetRoster:()=>{},
   toggle:(id,value)=>{doc.getElementById(id).hidden=!value},
