@@ -4,6 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const {chromium}=require("playwright");
+const vm=require("node:vm");
 const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
@@ -96,4 +97,30 @@ test("no account content is cloned and no access form writes during navigation",
  assert.match(html,/window\.CWLShowAccountPage=\(\)=>showPlannerView\("account"\)/);
  assert.match(html,/document\.getElementById\("cloudAccountBack"\)\.onclick=\(\)=>showPlannerView\("more"\)/);
  assert.doesNotMatch(sync,/await sb\.from\("cwl_cloud_profiles"\).*CWLShowAccountPage/);
+});
+
+test("automatic Cloud version reloads pause on the Account page and resume safely after navigating away",()=>{
+ const start=sync.indexOf("function safeForReload(){");
+ const end=sync.indexOf("function installPendingRelease(){",start);
+ assert.ok(start>0&&end>start);
+ let accountActive=true,dialogOpen=false,inputActive=false;
+ const ctx={
+  changedSerial:null,saving:false,blocked:false,
+  editingDialog:()=>false,
+  document:{
+   getElementById:id=>id==="view-account"?{classList:{contains:name=>name==="active"&&accountActive}}:null,
+   querySelector:()=>dialogOpen?{}:null,
+   activeElement:{matches:()=>inputActive}
+  }
+ };
+ const fn=vm.runInNewContext(sync.slice(start,end)+"\\nsafeForReload",ctx);
+ assert.equal(fn(),false,"active account page must block surprise reload");
+ accountActive=false;
+ assert.equal(fn(),true,"normal view permits safe updates");
+ dialogOpen=true;
+ assert.equal(fn(),false,"auth dialogs continue to block reloads");
+ dialogOpen=false;inputActive=true;
+ assert.equal(fn(),false,"focused inputs stay protected");
+ inputActive=false;ctx.changedSerial="pending";
+ assert.equal(fn(),false,"unsaved Cloud edits prevent reload");
 });
