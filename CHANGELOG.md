@@ -6,7 +6,8 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-- Mehr → Hilfe als eigenständige Unterseite und aktualisierte Hilfetexte (Draft-PR #57, noch nicht live).
+- Mehr → Hilfe und Clan & Konto als eigenständige, responsive Unterseiten (Draft-PR #57, noch nicht live).
+- Cloud-Anmeldung, Registrierung und Passwort-Wiederherstellung bleiben separate Dialoge; bestehende Clan-Rollen, Einladungen und Sicherungen nutzen unveränderte Cloud-Aktionen.
 
 ## [1.6.0] - 2026-11-03
 
