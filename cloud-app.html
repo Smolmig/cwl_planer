@@ -1568,6 +1568,68 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
  color:#e1bd72;pointer-events:none;transform:rotate(-2deg);
 }
 @media(max-width:699px){html[data-theme="arena"] .plan-overview .arena-castle-mark{display:none}}
+
+/* Cloud polish: compact branding, clan switching, nested More areas. */
+.titleblock{position:relative;min-width:0}
+.titleblock .header-clan-name:not([hidden]){cursor:pointer;max-width:min(300px,100%);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;font-size:12px;font-weight:750}
+.titleblock .header-clan-name:not([hidden])::after{content:"⌄";margin-left:4px;opacity:.8}
+.quick-clan-menu[hidden],.more-detail[hidden],#moreLanding[hidden]{display:none!important}
+.quick-clan-menu{position:absolute;top:calc(100% + 8px);left:0;z-index:100;width:min(320px,calc(100vw - 30px));padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);box-shadow:0 18px 44px rgba(0,0,0,.42);display:grid;gap:12px}
+.quick-clan-menu label{font-size:12px;font-weight:750;color:var(--muted)}
+.quick-clan-menu select{width:100%;min-height:42px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font:inherit}
+body.cloud-mode .top-actions #cloudOpen{display:none}
+.more-detail{min-width:0;animation:moreSlideIn .19s ease-out}
+@keyframes moreSlideIn{from{opacity:.65;transform:translateX(22px)}to{opacity:1;transform:none}}
+.more-detail-header{display:flex;align-items:center;gap:14px;margin:0 0 18px;border-bottom:1px solid var(--line);padding-bottom:15px}
+.more-detail-header h2{margin:0;font-size:clamp(20px,2.6vw,28px)}
+.more-detail-content{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:1100px}
+.more-detail-content>.settings-subcard,.more-detail-content>.card{width:100%;margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.more-detail-content>.settings-subcard h4{margin-top:0}
+.sidebar-collapse{display:none}
+@media(min-width:1100px){
+  .topbar .brand-lockup,.topbar .subtitle{display:none!important}
+  .topbar .titleblock{display:flex;align-items:center;min-height:38px}
+  .topbar .header-clan-name:not([hidden]){margin:0;max-width:min(460px,50vw)}
+  .sidebar-collapse{display:flex;align-items:center;justify-content:center;min-height:34px;width:34px;padding:0;margin:-15px 10px 14px auto;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-size:24px}
+  body.sidebar-collapsed .app{margin-left:74px;width:calc(100% - 74px)}
+  body.sidebar-collapsed .bottomnav{width:74px;padding:20px 9px}
+  body.sidebar-collapsed .sidebar-brand{padding:4px 0 20px;justify-content:center}
+  body.sidebar-collapsed .sidebar-brand>div,body.sidebar-collapsed .sidebar-label{display:none}
+  body.sidebar-collapsed .sidebar-brand .brand-mark{width:38px;height:38px}
+  body.sidebar-collapsed .sidebar-collapse{margin:0 auto 19px}
+  body.sidebar-collapsed .navinner .navbtn{justify-content:center;padding:10px!important;gap:0}
+  body.sidebar-collapsed .navinner .navbtn>.nav-symbol+span{display:none}
+  body.sidebar-collapsed .nav-symbol{width:25px;height:25px}
+  body.sidebar-collapsed #view-settings .settings-window{max-width:min(1100px,calc(100vw - 130px))}
+}
+@media(max-width:699px){
+  .titleblock .header-clan-name:not([hidden]){display:flex;max-width:min(210px,calc(100vw - 145px));margin-top:5px}
+  .more-detail-content>.settings-subcard,.more-detail-content>.card{padding:14px}
+  .more-detail-header{gap:9px;align-items:start}
+  .more-detail-header h2{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){.more-detail{animation:none}}
+/* Gold: no ornamental overlays or nested brighter strips inside member cards. */
+html[data-theme="arena"] body{background:#10151a;background-attachment:initial}
+html[data-theme="arena"] .plan-overview::before,
+html[data-theme="arena"] .arena-castle-mark{display:none!important}
+html[data-theme="arena"] :is(h1,h2,h3,h4,.day-title,.list-management-title){font-family:Georgia,"Times New Roman",serif;letter-spacing:-.016em}
+html[data-theme="arena"] .member{background:#171e23;border:1px solid #464d51;box-shadow:none}
+html[data-theme="arena"] .member-snapshot,html[data-theme="arena"] .member-tools{background:transparent!important;border:0!important;box-shadow:none!important}
+html[data-theme="arena"] .member-details{background:transparent!important;border:0!important;border-top:1px solid #454d51!important;border-radius:0!important;box-shadow:none!important}
+html[data-theme="arena"] .member-brief{background:transparent!important}
+html[data-theme="arena"] #view-members .member-details .rule-panel{background:#1c2429;border-color:#3e4a50}
+html[data-theme="arena"] .stats-th{border:0;background:transparent;box-shadow:none;width:39px;height:39px}
+html[data-theme="arena"] .stats-th img{max-width:38px;max-height:38px}
+@media(min-width:700px){html[data-theme="arena"] #memberList .member{transition:none;filter:none;backdrop-filter:none}}
+@media(max-width:699px){
+ .cloud-overlay.open{display:flex;align-items:stretch;padding:0}
+ .cloud-overlay.open .cloud-panel{width:100%;max-width:none;margin:0;min-height:100dvh;border-radius:0;animation:moreSlideIn .19s ease-out}
+}
+@media(min-width:700px){
+ .cloud-overlay.open{display:flex;justify-content:flex-end;padding:0}
+ .cloud-overlay.open .cloud-panel{width:min(760px,100%);max-width:none;margin:0;min-height:100dvh;border-radius:0;animation:moreSlideIn .19s ease-out}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1582,7 +1644,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <div class="toprow">
     <div class="titleblock">
       <h1 class="brand-lockup"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="brand-wordmark"><span>CWL</span><small>Planer</small></span></h1>
-      <span id="headerClanName" class="header-clan-name" hidden aria-label="Aktuell ausgewählter Clan"></span>
+      <button id="headerClanName" class="header-clan-name" type="button" hidden aria-label="Clan wechseln" aria-expanded="false" aria-controls="quickClanMenu"></button><div class="quick-clan-menu" id="quickClanMenu" hidden><label for="quickClanSelect">Clan wechseln</label><select id="quickClanSelect" aria-label="Clan auswählen"></select><button class="btn small" type="button" id="quickClanManage">Clan & Konto verwalten</button></div>
       <div class="subtitle">CWL planen · Einsätze fair verteilen</div>
       <div class="profilebar"><span>Profil</span><select id="profileSelect"></select></div>
     </div>
@@ -1713,7 +1775,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
 
 <section id="view-more" class="view" aria-labelledby="moreTitle">
  <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Clan & Einstellungen</h2><p>Alle seltener benötigten Funktionen an einem Ort. Deine aktuelle Planung bleibt im Hauptmenü.</p></div>
- <div class="more-menu">
+ <div class="more-menu" id="moreLanding">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Vize, Einladungen und Freigaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Vergangene Ligen und gespeicherte Aufstellungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
@@ -1722,6 +1784,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
  </div>
+ <div class="more-detail" id="moreDetail" hidden><div class="more-detail-header"><button class="btn small" id="moreDetailBack" type="button">‹ Zurück</button><h2 id="moreDetailTitle"></h2></div><div class="more-detail-content" id="moreDetailContent"></div></div>
 </section>
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
   <div class="card settings-intro">
@@ -1814,7 +1877,7 @@ html[data-theme="arena"] .plan-overview .arena-castle-mark{
   <div class="card stats-war-history-card"><div class="section-title"><div><h3>Einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></div>
 </section>
 </main></div>
-<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
+<nav class="bottomnav" aria-label="Hauptnavigation"><div class="sidebar-brand" aria-hidden="true"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 44 44" width="40" height="40" fill="none"><path d="M22 3.5 37.5 10v12.7c0 9.2-6 15.5-15.5 18.5C12.5 38.2 6.5 31.9 6.5 22.7V10L22 3.5Z" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/><path d="m15 22 5 5 9-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>CWL / Planer</b><small>DEIN CLAN · DEINE PLANUNG</small></div></div><button type="button" class="sidebar-collapse" id="sidebarCollapse" title="Seitenleiste minimieren" aria-label="Seitenleiste minimieren" aria-expanded="true">‹</button><div class="sidebar-label">ARBEITSBEREICH</div><div class="navinner"><button class="navbtn active" data-view="plan"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6M17 2v6M4 10h16"/></svg></span><span>Plan</span></button><button class="navbtn" data-view="members"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg></span><span>Mitglieder</span></button><button class="navbtn" data-view="summary"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V13M10 21V5M16 21v-9M22 21V9M2 21h21"/></svg></span><span>Einsätze</span></button><button class="navbtn" id="statsNav" data-view="stats" hidden><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V4M3 20h18M6 15l5-5 4 3 5-8"/></svg></span><span>Statistik</span></button><button class="navbtn" data-view="more"><span class="nav-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span>Mehr</span></button></div></nav>
 
 <div class="modal" id="lineupModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalbox lineup-modal-box">
   <div class="lineup-modal-head">
@@ -2590,16 +2653,54 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 
 // Navigation
 applyTheme();
-function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
- const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
- document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===visible));
- document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
- const gear=document.getElementById("settingsOpen");
- gear.classList.toggle("active",view==="settings");
- gear.setAttribute("aria-pressed",String(view==="settings"));
- window.scrollTo({top:0,behavior:"smooth"});
+const moreOrigins=new Map();
+function closeMoreDetail(){
+  for(const [node,origin] of moreOrigins){
+    if(origin.next?.parentNode===origin.parent)origin.parent.insertBefore(node,origin.next);
+    else origin.parent.appendChild(node);
+  }
+  moreOrigins.clear();
+  document.getElementById("moreDetailContent").replaceChildren();
+  document.getElementById("moreDetail").hidden=true;
+  document.getElementById("moreLanding").hidden=false;
 }
-document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showPlannerView(b.dataset.view));
+function openMoreDetail(action){
+  const config={
+    archive:["CWL-Archiv","archiveSection"],
+    rules:["CWL-Regeln & Grunddaten","settingsRulesSection"],
+    appearance:["Design & Aktualisierung","settingsAppearanceSection","settingsAutoRosterBox"],
+    profiles:["Lokale Clanprofile","localProfileCard"],
+    backup:["Backup & Import","settingsBackupSection"]
+  }[action];
+  if(!config)return;
+  closeMoreDetail();
+  const content=document.getElementById("moreDetailContent");
+  for(const id of config.slice(1)){
+    const node=document.getElementById(id);if(!node)continue;
+    moreOrigins.set(node,{parent:node.parentNode,next:node.nextSibling});
+    content.appendChild(node);
+  }
+  document.getElementById("moreDetailTitle").textContent=config[0];
+  document.getElementById("moreLanding").hidden=true;
+  document.getElementById("moreDetail").hidden=false;
+  window.scrollTo({top:0,behavior:"auto"});
+}
+function showPlannerView(view){
+  if(view!=="more")closeMoreDetail();
+  if(view!=="settings")window.__previousPlannerView=view;
+  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
+  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===visible));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
+  const gear=document.getElementById("settingsOpen");
+  gear.classList.toggle("active",view==="settings");
+  gear.setAttribute("aria-pressed",String(view==="settings"));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
+  if(b.dataset.view==="more")closeMoreDetail();
+  showPlannerView(b.dataset.view);
+});
+document.getElementById("moreDetailBack").onclick=closeMoreDetail;
 document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
@@ -2607,17 +2708,41 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(action==="clan"||(action==="profiles"&&window.CWLCloud?.active)){
     document.getElementById("cloudOpen").click();return;
   }
-  if(action==="archive"){
-    showPlannerView("summary");
-    requestAnimationFrame(()=>document.getElementById("archiveSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
-    return;
-  }
-  const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
-    backup:"settingsBackupSection",profiles:"localProfileCard"};
-  showPlannerView("settings");
-  const targetId=targets[action];
-  if(targetId)requestAnimationFrame(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
+  showPlannerView("more");openMoreDetail(action);
 });
+const quickClanBtn=document.getElementById("headerClanName"),quickClanMenu=document.getElementById("quickClanMenu"),quickClanSelect=document.getElementById("quickClanSelect");
+function closeQuickClan(){quickClanMenu.hidden=true;quickClanBtn.setAttribute("aria-expanded","false")}
+quickClanBtn.onclick=()=>{
+  if(!window.CWLCloud?.active)return;
+  if(!quickClanMenu.hidden){closeQuickClan();return}
+  const source=document.getElementById("cloudClanSelect");
+  quickClanSelect.replaceChildren(...Array.from(source.options,o=>new Option(o.textContent,o.value)));
+  quickClanSelect.value=source.value;
+  quickClanMenu.hidden=false;quickClanBtn.setAttribute("aria-expanded","true");
+  quickClanSelect.focus();
+};
+quickClanSelect.onchange=()=>{
+  const original=document.getElementById("cloudClanSelect");
+  if(original.value!==quickClanSelect.value){
+    original.value=quickClanSelect.value;
+    original.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  closeQuickClan();
+};
+document.getElementById("quickClanManage").onclick=()=>{closeQuickClan();document.getElementById("cloudOpen").click()};
+document.addEventListener("pointerdown",e=>{if(!quickClanMenu.hidden&&!quickClanMenu.contains(e.target)&&e.target!==quickClanBtn)closeQuickClan()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeQuickClan();if(!document.getElementById("moreDetail").hidden)closeMoreDetail()}});
+const sidebarCollapse=document.getElementById("sidebarCollapse");
+function setSidebarCollapsed(collapsed){
+  document.body.classList.toggle("sidebar-collapsed",collapsed);
+  sidebarCollapse.setAttribute("aria-expanded",String(!collapsed));
+  sidebarCollapse.setAttribute("aria-label",collapsed?"Seitenleiste ausklappen":"Seitenleiste minimieren");
+  sidebarCollapse.title=sidebarCollapse.getAttribute("aria-label");
+  sidebarCollapse.textContent=collapsed?"›":"‹";
+  try{localStorage.setItem("cwl_desktop_sidebar_collapsed",collapsed?"1":"0")}catch{}
+}
+try{setSidebarCollapsed(localStorage.getItem("cwl_desktop_sidebar_collapsed")==="1")}catch{setSidebarCollapsed(false)}
+sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
