@@ -31,8 +31,8 @@ test("Settings and backup fields live outside Overview, existing IDs remain wire
       assert.ok(doc.getElementById(id)?.closest("#view-settings"),id+" must be in settings");
       assert.equal(doc.querySelector("#view-summary #"+id),null,id+" must not be in Overview");
     }
-    assert.equal(doc.querySelectorAll(".navbtn").length,4,
-      "No extra bottom navigation tab");
+    assert.equal(doc.querySelectorAll(".navbtn").length,5,
+      "Five primary destinations, with rare settings collected under More");
     assert.equal(doc.querySelectorAll("#settingsCloudManage").length,1);
     assert.match(sync,/#view-settings button,#view-settings input,#view-settings select/);
     assert.match(sync,/"settingsCloudManage"/);

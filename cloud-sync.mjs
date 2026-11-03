@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.4.9";
-import { createCwlLive } from "./cwl-live.mjs?v=1.4.9";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.4.9";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.4.9";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.5.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.5.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.5.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.5.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -1576,7 +1576,31 @@ bind("cloudSnapshotSelect","change",()=>backups.buttons());
 bind("cloudDownloadSnapshot","click",()=>backups.download());
 bind("cloudRestoreSnapshot","click",()=>backups.restore());
 bind("cloudExportProfile","click",exportCloud);bind("cloudImportProfile","click",importCloud);
-$("cloudOverlay").addEventListener("click",e=>{if(e.target===$("cloudOverlay"))close()});
+// Only an intentional tap on the backdrop closes this dialog. A text selection
+// started inside the panel must NEVER dismiss the window when released outside.
+let cloudBackdropStart=null;
+$("cloudOverlay").addEventListener("pointerdown",e=>{
+  cloudBackdropStart=e.target===$("cloudOverlay")?
+    {id:e.pointerId,x:e.clientX,y:e.clientY}:null;
+});
+$("cloudOverlay").addEventListener("pointerup",e=>{
+  const start=cloudBackdropStart;cloudBackdropStart=null;
+  if(!start||e.target!==$("cloudOverlay")||e.pointerId!==start.id)return;
+  if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>7)return;
+  if(window.getSelection?.()?.toString().trim())return;
+  close();
+});
+$("cloudOverlay").addEventListener("pointercancel",()=>{cloudBackdropStart=null;});
+$("cloudAuth").addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.matches("#cloudEmail,#cloudPassword,#cloudAuthName")||
+    e.isComposing)return;
+  e.preventDefault();
+  $("cloudLogin").click();
+});
+$("inviteWelcomeAuthForm").addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.matches("input")||e.isComposing)return;
+  e.preventDefault();$("inviteWelcomeAuthSubmit").click();
+});
 window.addEventListener("online",()=>{if(cloud.active&&blocked)msg("Wieder online. Bitte Cloud-Stand neu laden, bevor du weiterbearbeitest.",true)});
 
 let pendingRelease=null;

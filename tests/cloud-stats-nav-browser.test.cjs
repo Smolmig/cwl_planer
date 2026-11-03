@@ -7,8 +7,8 @@ const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const style=html.match(/<style>([\s\S]*?)<\/style>/)?.[1];
-const navbar=html.match(/<nav class="bottomnav">[\s\S]*?<\/nav>/)?.[0];
-test("Cloud mobile bottom navigation: four equal visible tabs, guest gets three and Plan",{
+const navbar=html.match(/<nav class="bottomnav"[^>]*>[\s\S]*?<\/nav>/)?.[0];
+test("Cloud mobile bottom navigation: five equal visible tabs, guest gets four",{
  timeout:90000
 },async()=>{
  assert.ok(style&&navbar);
@@ -27,7 +27,7 @@ test("Cloud mobile bottom navigation: four equal visible tabs, guest gets three 
       return {scrollWidth:document.documentElement.scrollWidth,width:innerWidth,
         items:buttons.map(e=>({x:e.getBoundingClientRect().left,width:e.getBoundingClientRect().width}))};
     });
-    assert.equal(logged.items.length,4,"Cloud should show all four tabs at "+width);
+    assert.equal(logged.items.length,5,"Cloud should show all five tabs at "+width);
     assert.ok(logged.scrollWidth<=logged.width+2,"navigation overflows at "+width);
     const widths=logged.items.map(x=>x.width);
     assert.ok(Math.max(...widths)-Math.min(...widths)<4,"uneven tab widths at "+width);
@@ -47,7 +47,7 @@ test("Cloud mobile bottom navigation: four equal visible tabs, guest gets three 
         plan:getComputedStyle(document.getElementById("view-plan")).display,
         stats:getComputedStyle(document.getElementById("view-stats")).display};
     });
-    assert.deepEqual(guest.items,["plan","members","summary"]);
+    assert.deepEqual(guest.items,["plan","members","summary","more"]);
     assert.ok(guest.scrollWidth<=guest.width+2);
     assert.notEqual(guest.plan,"none");
     assert.equal(guest.stats,"none");

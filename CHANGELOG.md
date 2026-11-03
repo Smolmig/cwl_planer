@@ -8,6 +8,23 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Keine offenen Änderungen für die nächste Version eingetragen.
 
+## [1.5.0] - 2026-11-03
+
+### Adaptive Navigation
+- Desktop ab 1100 px: dauerhaft sichtbare linke Seitenleiste und deutlich breiterer Arbeitsbereich statt schmaler 920-px-Hauptspalte und unten feststehender Navigation.
+- Mobil bleibt die Bottom-Navigation; „Mehr“ führt zu Clan & Konto, CWL-Archiv, Regeln/Grunddaten, Darstellung, Backups, lokalen Profilen und Hilfe. Vorhandene Einstellungsformulare werden weiterverwendet, nicht dupliziert.
+- Neues Schildsymbol und vektorbasiertes Browser-Favicon; die Kopfzeile passt das Logo farblich an das aktive Theme an.
+- Arena: dezente Hintergrundgestaltung des Plan-Kopfbereichs und flachere Clan-/Kontoverwaltung statt ineinander verschachtelter kontrastreicher Kästen.
+- Kriegstage mit klareren Zuständen; kleine Rathausbilder in Mitglieder- und Plan-Karten ohne Verlust der RH-Zahl.
+
+### Bedienung
+- Enter in der Cloud-Anmeldung sowie beim Einladungslogin löst „Anmelden“ aus.
+- Ziehen einer Textmarkierung aus dem Konto-Dialog schließt ihn nicht; nur gezielter Tap direkt auf den Hintergrund oder „Schließen“.
+- 3★-Mehrfachbearbeitung im Cloud-Planer verborgen; die echte, gesicherte Angriffshistorie bleibt maßgeblich.
+
+### Nächste Idee
+- Dokumentierter, standardmäßig **inaktiver** experimenteller Stärkevorschlag auf Basis geglätteter 3★-Quoten, Ø Sterne und Konfidenz unter Einhaltung harter CWL-Regeln, siehe docs/EXPERIMENTAL_ATTACK_STRENGTH_PLANNING.md.
+
 ## [1.4.9] - 2026-11-03
 
 ### Darstellung
