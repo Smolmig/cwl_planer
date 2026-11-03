@@ -73,3 +73,24 @@ test("non-preparation rounds and missing wars do not create swap advice",async()
  x.round.state="preparation";x.round.available=false;
  assert.equal(reviewPreparationLineup(x.profile,x.plan,x.round),null);
 });
+
+test("full 15er and 30er teams compare by tag without any player-count shortcuts",async()=>{
+ const {reviewPreparationLineup}=await core();
+ const alphabet="0289PYLQGRJCUV";
+ for(const slots of [15,30]){
+  const ids=Array.from({length:slots+2},(_,i)=>String(i));
+  const tag=i=>"#2P"+alphabet[Math.floor(i/alphabet.length)]+alphabet[i%alphabet.length];
+  const members=ids.map((id,i)=>make(id,tag(i)));
+  const profile={config:{slots,days:7},members,archivedMembers:[]};
+  const round={day:1,available:true,warTag:"#2PQV",state:"preparation",teamSize:slots,
+   clan:{members:members.slice(0,slots).map(m=>({tag:m.playerTag,name:m.name,townHallLevel:m.townHall}))}};
+  const planned={day:1,locked:false,warnings:[],
+   lineup:[...members.slice(0,slots-2),...members.slice(slots,slots+2)].map(m=>m.id)};
+  const out=reviewPreparationLineup(profile,planned,round);
+  assert.equal(out.status,"changes");
+  assert.equal(out.teamSize,slots);
+  assert.equal(out.matched,slots-2);
+  assert.equal(out.toAdd.length,2);
+  assert.equal(out.toRemove.length,2);
+ }
+});
