@@ -39,6 +39,12 @@
 - Zusammenklappbare Bereiche haben verständliche Labels, passende Chevron-Drehrichtung, ausreichend große Touch-Flächen und Tastaturfokus. **Geöffnet bleibt geöffnet** bis der Nutzer es selbst schließt oder bewusst die Datengrundlage wechselt.
 - Wenn möglich offene Unterbereiche (z. B. Team in Runde 1) auch bei Refresh erhalten. Beim nächsten aktiven Aufruf kann Zustand innerhalb der laufenden Ansicht beibehalten werden; persistente Speicherung nur, wenn explizit sinnvoll.
 
+## Installierbarkeit und Startziel (Cloud / Offline strikt trennen)
+
+- Cloud und lokale Offline-PWA sind **zwei unterschiedliche Installationsidentitäten**: Cloud-HTML verlinkt `cloud-manifest.webmanifest` mit `id` und `start_url` auf `./cloud-app.html`; lokales `index.html` verlinkt ausschließlich `manifest.webmanifest` mit `start_url: "./"`.
+- Installations-Hinweise müssen klar sagen, welche Variante geöffnet wird. **Nicht** zwei HTML-Einstiege mit demselben Manifest verknüpfen. Android Chrome/Firefox Home-Screen-Verhalten testen.
+- Bestehende installierte Startbildschirm-Icons ändern sich nicht automatisch bei einem Manifest-Fix; kein automatisches Entfernen des Offline-Caches oder fremder lokal gespeicherter Profile. Bei manueller Deinstallation vorher Backup empfehlen.
+
 ## 5. Mobile zuerst, Desktop gezielt erweitern
 
 - Smartphone zuerst testen: 320, 375/390, 430 px und iPhone Safari. Dazu Tablet/Browserspanne und 1366+ px Desktop.
