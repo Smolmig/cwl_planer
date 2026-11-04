@@ -3656,7 +3656,7 @@ function showPlannerView(view){
  if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive","more-settings"].includes(visible)?"more":visible;
+   ["help","account","archive","more-settings","install"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -3751,6 +3751,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="help"){showPlannerView("help");return}
+  if(action==="install"){renderInstallGuide();showPlannerView("install");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
