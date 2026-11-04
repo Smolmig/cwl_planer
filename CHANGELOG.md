@@ -1,12 +1,3 @@
-## [1.14.6] - 2026-11-04
-
-### Einheitliches Logo für PWA und geteilte Links
-
-- Goldene Schild-/Haken-Marke aus brand-mark.svg als gemeinsame Quelle für Cloud und separate Offline-PWA.
-- Neue PNG-App-Icons (192/512), Safari-Home-Screen, Favicon und große 1200×630-Linkvorschau; Open Graph/Twitter Meta-Tags.
-- Versionierte neue Bilddateinamen und behutsam erneuerter Offline-Icon-Cache; kein Eingriff in Profildaten, Cloud-Login, Solver, Supabase oder die Cloud-Installations-ID.
-- Dialog-Backdrop schützt Textauswahl: Loslassen außerhalb nach Beginn innerhalb schließt modale Fenster nicht mehr; absichtliche Taps auf den Außenbereich bleiben möglich.\n- Bestehende Home-Screen-Symbole können wegen iOS-/Android-Caches ein erneutes Hinzufügen benötigen; native Link-Previews können serverseitig zwischengespeichert sein.
-
 # Changelog
 
 Alle **neuen** veröffentlichten Versionen ab v1.0.0 werden hier dokumentiert.
@@ -16,6 +7,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 ## [Unreleased]
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
+
+## [1.14.6] - 2026-11-04
+
+### Einheitliches Logo für PWA und geteilte Links
+
+- Goldene Schild-/Haken-Marke aus brand-mark.svg als gemeinsame Quelle für Cloud und separate Offline-PWA.
+- Neue PNG-App-Icons (192/512), Safari-Home-Screen, Favicon und große 1200×630-Linkvorschau; Open Graph/Twitter Meta-Tags.
+- Versionierte neue Bilddateinamen und aktualisierte Offline-Icon-Dateien bei unverändertem Cache-Namespace; kein Eingriff in Profildaten, Cloud-Login, Solver, Supabase oder die Cloud-Installations-ID.
+- Dialog-Backdrop schützt Textauswahl: Loslassen außerhalb nach Beginn innerhalb schließt modale Fenster nicht mehr; absichtliche Taps auf den Außenbereich bleiben möglich.
+- Bestehende Home-Screen-Symbole können wegen iOS-/Android-Caches ein erneutes Hinzufügen benötigen; native Link-Previews können serverseitig zwischengespeichert sein.
+
 
 ## [1.14.5] - 2026-11-04
 

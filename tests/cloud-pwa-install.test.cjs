@@ -25,7 +25,7 @@ test("Cloud and offline app have distinct, stable launch identities while refres
  assert.equal(localManifest.scope,"./");
  assert.match(cloudHtml,/<link rel="manifest" href="\.\/cloud-manifest\.webmanifest">/);
  assert.match(offlineHtml,/<link rel="manifest" href="\.\/manifest\.webmanifest">/);
- assert.match(read("service-worker.js"),/cwl-planer-v1-0-2-brand2/);
+ assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
  assert.ok(read("service-worker.js").includes("brand-icon-192.png"));
  assert.ok(read("service-worker.js").includes("brand-icon-512.png"));
  for(const item of [manifest,localManifest]){

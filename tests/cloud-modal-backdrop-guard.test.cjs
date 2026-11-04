@@ -22,19 +22,19 @@ test("dragging selection from inside a dialog onto backdrop must not dismiss",as
  try{
   const page=await browser.newPage();
   await page.setContent('<div id="overlay"><div id="dialog"><input id="text" value="mein clan"></div></div>');
-  await page.addScriptTag({content:guard+'\nwindow.closed=0;bindModalBackdropClose("overlay",()=>window.closed++);'});
+  await page.addScriptTag({content:guard+'\nwindow.__dialogClosed=0;bindModalBackdropClose("overlay",()=>window.__dialogClosed++);'});
   await page.evaluate(()=>{
    document.getElementById("text").dispatchEvent(new PointerEvent("pointerdown",{bubbles:true}));
    document.getElementById("overlay").dispatchEvent(new PointerEvent("pointerup",{bubbles:true}));
    document.getElementById("overlay").dispatchEvent(new MouseEvent("click",{bubbles:true,detail:1}));
   });
-  assert.equal(await page.evaluate(()=>window.closed),0);
+  assert.equal(await page.evaluate(()=>window.__dialogClosed),0);
   await page.evaluate(()=>{
    const el=document.getElementById("overlay");
    el.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true}));
    el.dispatchEvent(new PointerEvent("pointerup",{bubbles:true}));
    el.dispatchEvent(new MouseEvent("click",{bubbles:true,detail:1}));
   });
-  assert.equal(await page.evaluate(()=>window.closed),1);
+  assert.equal(await page.evaluate(()=>window.__dialogClosed),1);
  }finally{await browser.close()}
 });
