@@ -81,7 +81,13 @@ BEGIN
                          + COALESCE((old_match#>>'{opponent,attacks}')::integer,0);
           next_attacks := COALESCE((next_match#>>'{clan,attacks}')::integer,0)
                           + COALESCE((next_match#>>'{opponent,attacks}')::integer,0);
-          IF next_attacks < old_attacks THEN chosen := old_match; END IF;
+          IF next_attacks < old_attacks OR
+             COALESCE((next_match#>>'{clan,stars}')::integer,0) <
+               COALESCE((old_match#>>'{clan,stars}')::integer,0) OR
+             COALESCE((next_match#>>'{opponent,stars}')::integer,0) <
+               COALESCE((old_match#>>'{opponent,stars}')::integer,0) THEN
+            chosen := old_match;
+          END IF;
         END IF;
       END IF;
       merged_matches := merged_matches || jsonb_build_array(chosen);
