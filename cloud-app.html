@@ -2009,6 +2009,35 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .season-round-meta{font-size:10px}
  .season-segments button{font-size:12px;min-height:40px}
 }
+
+/* CWL group scoreboard and four pairings per round. */
+.season-group-scroll{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border-radius:13px;border:1px solid var(--line)}
+.season-group-table{width:100%;min-width:480px;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12px}
+.season-group-table :is(th,td){padding:11px 9px;text-align:right;border-bottom:1px solid var(--line)}
+.season-group-table :is(th,td):nth-child(2){text-align:left}
+.season-group-table th{color:var(--muted);font-weight:800;font-size:11px;background:var(--card);white-space:nowrap}
+.season-group-table td .season-clan{font-size:12px}
+.season-group-table td small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.season-group-table tr:last-child td{border-bottom:none}
+.season-own-clan{background:color-mix(in srgb,var(--primary) 10%,transparent)}
+.season-own-clan td{font-weight:750}
+.season-group-matches{display:grid;gap:6px;margin-top:11px}
+.season-group-match{display:grid;grid-template-columns:minmax(0,1fr) 84px minmax(0,1fr);align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.season-group-match.season-own-match{border-color:color-mix(in srgb,var(--primary) 60%,var(--line));background:color-mix(in srgb,var(--primary) 7%,transparent)}
+.season-group-match.season-missing{display:block;font-size:12px;color:var(--muted);text-align:center;border-style:dashed;padding:12px}
+.season-group-score{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.season-group-score b{display:block;font-size:14px}
+.season-group-score small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+@media(max-width:520px){
+ .season-group-table{min-width:420px;font-size:11px}
+ .season-group-table :is(th,td){padding:10px 7px}
+ .season-group-table .season-badge,.season-group-table .season-badge-fallback{width:25px;height:25px}
+ .season-group-match{grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);gap:4px;padding:8px 5px}
+ .season-group-match .season-badge,.season-group-match .season-badge-fallback{width:22px;height:22px}
+ .season-group-match .season-clan{font-size:10px;overflow-wrap:anywhere}
+ .season-group-score b{font-size:12px}
+ .season-group-score small{font-size:9px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
