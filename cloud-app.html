@@ -3212,7 +3212,7 @@ function memberPerformance(m){
  return "<span class='member-rate'>"+rate+"</span>"+
   "<span class='member-average'>Ø Sterne: "+average+" ★ · "+period+"</span>";
 }
-window.CWLRefreshMembers=()=>{renderMembers();if(lastPlan)renderPlan()};
+window.CWLRefreshMembers=()=>{renderMembers.preserveNextViewport=true;renderMembers();if(lastPlan)renderPlan()};
 async function editMemberNote(m){
  if(window.CWLCloud?.active&&(document.body.classList.contains("cloud-role-viewer")||m.cocSyncState==="former"))return;
  const value=await promptInline("Spielernotiz",m.name+" · bis 200 Zeichen",m.note||"",200);
@@ -3251,9 +3251,27 @@ function toggleMemberCardDetails(el){
  if(expanded&&singleColumn)el.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberSearchRenderTimer);memberSearchRenderTimer=null}const root=document.getElementById("memberList");
+ const keepViewport=renderMembers.preserveNextViewport===true;
+ renderMembers.preserveNextViewport=false;
  const memberContext=(window.CWLCloud?.active?(window.CWLCloud?.getActiveClanId?.()||"cloud"):"local")+
   "|"+String(state.id||state.name||"");
- const activeControl=root.dataset.profileContext===memberContext&&root.contains(document.activeElement)
+ // Preserve the visible player during read-only Realtime updates, even when
+ // other rows join or leave. Deliberate sorting/filtering never uses this anchor.
+ const sameMemberContext=root.dataset.profileContext===memberContext;
+ const listVisible=document.getElementById("view-members")?.classList.contains("active");
+ let memberViewportAnchor=null;
+ if(keepViewport&&sameMemberContext&&listVisible&&root.children.length){
+  const box=root.getBoundingClientRect();
+  const headerBottom=document.querySelector(".topbar")?.getBoundingClientRect().bottom||0;
+  const bottomLimit=window.innerHeight-(document.querySelector(".bottomnav")?.getBoundingClientRect().height||0);
+  const y=Math.min(bottomLimit-12,Math.max(headerBottom+18,headerBottom+60));
+  const x=Math.min(window.innerWidth-12,Math.max(12,box.left+24));
+  if(y>headerBottom&&y<bottomLimit){
+   const node=document.elementFromPoint(x,y)?.closest?.(".member");
+   if(node&&root.contains(node))memberViewportAnchor={id:node.dataset.id,top:node.getBoundingClientRect().top};
+  }
+ }
+ const activeControl=sameMemberContext&&root.contains(document.activeElement)
   ?document.activeElement:null;
  const activeRowId=activeControl?.closest(".member")?.dataset.id;
  const activeControlSelector=activeRowId?[
@@ -3281,6 +3299,13 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  el.querySelector(".rule-panel")?.classList.toggle("open",expanded);
  el.querySelector(".toggle-rules").setAttribute("aria-expanded",String(expanded));
 };el.querySelector(".delete-member")?.addEventListener("click",()=>deleteMember(id));el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);markRosterAbsenceEdit(m,"statuses."+d);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll("Tagesregel gespeichert · Plan aktualisiert ✓")});});updateBulkBar();
+ if(memberViewportAnchor){
+  const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===memberViewportAnchor.id);
+  if(replacement){
+   const delta=replacement.getBoundingClientRect().top-memberViewportAnchor.top;
+   if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
+  }
+ }
  if(activeRowId&&activeControlSelector){
   const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===activeRowId)
    ?.querySelector(activeControlSelector);
@@ -3589,6 +3614,8 @@ function openMoreSettings(action){
  showPlannerView("more-settings");
 }
 function showPlannerView(view){
+ const wasSettingsOpen=document.getElementById("view-settings").classList.contains("active");
+ const previousView=window.__previousPlannerView;
  // Modal and tab navigation must never strand the only copy of a control
  // inside an inactive subpage. Its events/state remain intact.
  if(view!=="more-settings"&&typeof movedSettings!=="undefined"&&movedSettings.length)restoreMoreSettings();
@@ -3602,7 +3629,10 @@ function showPlannerView(view){
  const gear=document.getElementById("settingsOpen");
  gear.classList.toggle("active",view==="settings");
  gear.setAttribute("aria-pressed",String(view==="settings"));
- window.scrollTo({top:0,behavior:"smooth"});
+ // Settings is an overlay, not a navigation away from the current scroll.
+ // Opening/closing must not jump a long roster back to its beginning.
+ if(view!=="settings"&&!(wasSettingsOpen&&view===previousView))
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 window.CWLShowAccountPage=()=>showPlannerView("account");
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{closeQuickClan();showPlannerView(b.dataset.view)});
@@ -3827,6 +3857,7 @@ window.CWLLegacy={
    document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";
    document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";
   }
+  renderMembers.preserveNextViewport=sameClan;
   renderAll();
  },
  restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()},
