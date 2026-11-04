@@ -340,5 +340,5 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true)};
+  return {start,stop,render,refresh:()=>refreshNow(true),getSnapshot:()=>current?.active&&activeClan===context().clanId?sanitizeSnapshot(current):null};
 }
