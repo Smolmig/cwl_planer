@@ -2834,6 +2834,7 @@ let toastTimer=null,modalDay=null,modalSelection=new Set(),openRulePanels=new Se
 let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
 let mobileSelectedDay=null,mobileLineupsExpanded=!matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches;
 let memberSearch="",memberFilter="all",memberSearchRenderTimer=null,summarySearch="",summaryFilter="all",summaryOpenMemberId=null,openMemberDetails=new Set(),townHallPickHandler=null;
+let lastRenderedCloudClanId=null;
 
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -2889,7 +2890,7 @@ function lineupPlayer(id,day){const m=memberById(id),past=state.locks[day]?.lock
 function allKnownMembers(){return [...state.members,...state.archivedMembers]}
 function profileNameExists(name,excludeId=null){const key=canonicalProfileName(name);return app.profiles.some(p=>p.id!==excludeId&&canonicalProfileName(p.name)===key)}
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
-function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()}
+function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()}
 function saveApp(){
  if(window.CWLCloud?.active){window.CWLCloud.onLocalChange();return}
  const b=document.getElementById("saveBadge");
@@ -3252,9 +3253,12 @@ function removeMembers(ids){if([...ids].some(id=>apiManagedRosterMember(state.me
 async function deleteMember(id){if(reviewLockedForVize()){showToast("Plan freigegeben – Spieler nicht löschen, stattdessen Teilnahme ändern");return}const m=memberById(id);if(!m)return;if(apiManagedRosterMember(m)){showToast("Aktive Clanmitglieder werden über Clash verwaltet");return}const used=usedInLockedDay(id),msg=used?`„${m.name}“ wurde bereits an einem gespielten Tag eingesetzt. Aus der aktuellen CWL entfernen? Vergangene gespielte Line-ups und Einsätze bleiben erhalten.`:`${m.name||"Mitglied"} wirklich löschen?`;if(!await confirmInline(msg,{title:used?"Spieler aus aktueller CWL entfernen":"Mitglied löschen",confirmText:used?"Aus CWL entfernen":"Löschen",danger:true}))return;const r=removeMembers(new Set([id]));if(r.blocked)return;renderAll(r.archived?"Spieler aus aktueller CWL entfernt · Historie bleibt erhalten ✓":"Mitglied gelöscht ✓")}
 function renderSummary(){
   const summaryRoot=document.getElementById("summaryList");
-  const focusedSummaryId=summaryRoot.contains(document.activeElement)&&
+  const summaryContext=String(state.id||state.name||"");
+  const focusedSummaryId=summaryRoot.dataset.profileContext===summaryContext&&
+    summaryRoot.contains(document.activeElement)&&
     document.activeElement?.matches?.(".summary-player-toggle")
      ?document.activeElement.dataset.memberId:null;
+  summaryRoot.dataset.profileContext=summaryContext;
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
     ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
   lockedIds.forEach(id=>ids.add(id));
@@ -3761,8 +3765,25 @@ window.CWLLegacy={
  toast:(message)=>showToast(message),
   confirmAction:(message,options)=>confirmInline(message,options),
   askAction:(options)=>askInlineAction(options),
- switchToCloud:(profile)=>{const p=normalizeProfile(structuredClone(profile));app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};state=p;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
- restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();memberSearch="";memberFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";renderAll()},
+ switchToCloud:(profile)=>{
+  const p=normalizeProfile(structuredClone(profile));
+  const nextClanId=window.CWLCloud?.getActiveClanId?.()||null;
+  // Realtime reload of the same Cloud clan is not a user-initiated navigation.
+  // Keep disclosure, selected day, search, filter and local selection state.
+  const sameClan=!!nextClanId&&nextClanId===lastRenderedCloudClanId&&state?.id===p.id;
+  lastRenderedCloudClanId=nextClanId;
+  app={version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p]};
+  state=p;
+  if(!sameClan){
+   mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();
+   selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;
+   memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";
+   document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";
+   document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";
+  }
+  renderAll();
+ },
+ restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()},
  blank:(name)=>freshProfile(name),
  newMember:(name)=>freshMember(name),
  normalize:(p)=>normalizeProfile(p),
