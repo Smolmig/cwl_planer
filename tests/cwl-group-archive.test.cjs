@@ -21,7 +21,7 @@ const wrapper=()=>new JSDOM('<section id="view-archive" class="view active">'+
 });
 function deferred(){let resolve;const promise=new Promise(r=>{resolve=r});return {resolve,promise}}
 test("server-only group archive schema exposes SELECT to members, not client writes",()=>{
- const sql=read("docs/group-archive-schema-review.sql");
+ const sql=read("supabase/migrations/20261104124937_cwl_group_archive_secure_read_only.sql");
  assert.match(sql,/CREATE TABLE public.cwl_group_archives/);
  assert.match(sql,/PRIMARY KEY \(clan_id, season\)/);
  assert.match(sql,/ENABLE ROW LEVEL SECURITY/);
