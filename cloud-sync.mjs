@@ -348,6 +348,7 @@ const live=createCwlLive({
 window.CWLGroupArchive=createCwlGroupArchiveView({
  sb,
  getClanId:()=>cloud.active?clanId:null,
+ getProfile:()=>storage.getProfile(),
  isConnected:()=>!!cloud.active&&!!clanId
 });
 window.CWLSeasonView=createCwlSeasonView({
