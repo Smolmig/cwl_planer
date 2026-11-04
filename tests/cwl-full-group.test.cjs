@@ -119,6 +119,10 @@ test("group round UI shows all matchups and escapes unsafe group names",async()=
    view.render();
    assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Runde 1/);
    assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Paarungen bekannt/);
+   const roundText=dom.window.document.querySelector("#cwlSeasonContent").textContent;
+   assert.match(roundText,/24 : 18/,"left-side team stars must not be a dash");
+   assert.match(roundText,/10 : 20/,"a live pairing reads clan.stars rather than own.stars");
+   assert.match(roundText,/– : –/,"preparation scores must remain unknown");
    dom.window.document.querySelector('[data-season-tab="group"]').click();
    const html=dom.window.document.querySelector("#cwlSeasonContent").innerHTML;
    assert.match(html,/\+ 10 Bonus/);

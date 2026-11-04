@@ -1,9 +1,9 @@
 // CWL season overview: a read-only companion to the operational day planner.
-// Currently the official Clash proxy retains our own seven war pairings.
-// Display known facts only; the complete eight-clan ranking needs the group feed.
-import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.11.0";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.11.0";
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.11.0";
+// Group standings and all pairings come from the verified group feed.
+// No missing scores are ever interpreted as a valid zero.
+import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.12.0";
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.12.0";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.12.0";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
 const stars=x=>x===null||x===undefined?"–":String(x);
@@ -14,7 +14,7 @@ const dateLabel=season=>{const [year,month]=String(season).split("-").map(Number
  const date=new Date(Date.UTC(year,month-1,1));
  return Number.isFinite(date.valueOf())?date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"}):season};
 const stateLabel=round=>round.state==="warEnded"?"Abgeschlossen":round.state==="inWar"?"Läuft":round.state==="preparation"?"Vorbereitung":"Noch offen";
-const score=round=>round.state==="preparation"?"– : –":stars(round.own?.stars)+" : "+stars(round.opponent?.stars);
+const score=round=>round.state==="preparation"?"– : –":stars(round.own?.stars??round.clan?.stars)+" : "+stars(round.opponent?.stars);
 function viewGroup(s,g){
  if(g){
    const intro='<div class="season-info"><strong>'+(g.complete?"Gruppenergebnis":"Gruppenstand · vorläufig")+'</strong>'+
@@ -104,6 +104,11 @@ export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected
    const groupRaw=connected?getGroup?.():null;
    const group=model&&groupRaw?.season===model.season&&
       groupRaw?.clanTag===model.clanTag?summarizeCwlGroup(groupRaw):null;
+   const shortcut=$("planCwlSeasonEntry"),hint=$("planCwlSeasonHint");
+   if(shortcut)shortcut.hidden=!(connected&&model&&
+     profile?.cwlLiveIgnoredSeason!==model.season);
+   if(hint&&model)hint.textContent=dateLabel(model.season)+
+     (group?" · "+group.clans.length+" Clans · "+group.known+" von "+group.expected+" Paarungen":" · "+model.available+" von 7 Gegnern bekannt");
    $("cwlSeasonRefresh").hidden=!connected;
    if(!connected){
      caption.textContent="Saisoninformationen sind mit einem verbundenen Cloud-Clan verfügbar.";

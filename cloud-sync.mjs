@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.11.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.11.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.11.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.11.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.11.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.11.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.12.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.12.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.12.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.12.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.12.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.12.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -295,7 +295,7 @@ const cloud={
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["planRefreshSuggestions","copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
-    "mobileOverviewToggle","cwlLiveRefresh","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
+    "mobileOverviewToggle","cwlLiveRefresh","planCwlSeasonOpen","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
     "exportProfileBtn","exportAllBtn","settingsCloudManage"]);
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select")){
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
@@ -348,6 +348,7 @@ const live=createCwlLive({
 window.CWLGroupArchive=createCwlGroupArchiveView({
  sb,
  getClanId:()=>cloud.active?clanId:null,
+ getProfile:()=>storage.getProfile(),
  isConnected:()=>!!cloud.active&&!!clanId
 });
 window.CWLSeasonView=createCwlSeasonView({

@@ -8,6 +8,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.12.0] - 2026-11-04
+
+### Live-CWL im Plan und eigene Aufstellungen im Archiv
+- **Plan → CWL-Saison ansehen:** Ein schlanker Einstieg in der Planung führt direkt zu Gruppe, Runden und Clan. Auf dem Rückweg geht es wieder zum Plan; aus „Mehr“ weiterhin zu „Mehr“. Beobachter können die Saison genauso öffnen.
+- **Sternanzeige korrigiert:** In der vollständigen Gruppen-Rundenansicht wird die linke Punktzahl nun korrekt aus `clan.stars` gelesen. Ein tatsächlicher Zwischenstand 10 : 36 wird nicht mehr als „– : 36“ ausgegeben. Vorbereitung bleibt „– : –“.
+- **CWL-Archiv im Detail:** Unter den Gruppenrunden können die tatsächlich eingesetzten eigenen Spieler einschließlich RH, Angriffen und Sternen ausgeklappt werden. Der zusätzliche, geschützte Server-Speicher `cwl_own_lineup_archives` archiviert vollständige Aufstellungen **ab Kriegsbeginn** und behält sie nach dem Saisonende.
+- Nur der authentifizierte Clan-API-Proxy schreibt die Roster-Snapshots. Per RLS dürfen alle Clanmitglieder, auch Beobachter, ausschließlich lesen; kein Client kann Archiv-Ergebnisse verändern.
+- Archiv-Trigger verhindert Austausch der Teilnehmerliste und Rückschritt von `warEnded` zu einem älteren Zwischenstand; nachträgliche weitere Angriffe und Sterne dürfen ergänzt, aber nicht reduziert werden.
+- Bereits vorhandene manuelle Planarchive bleiben unverändert; wo ein altes Clash-Roster fehlt, wird eine archivierte Plan-Aufstellung **ausdrücklich unbestätigt** gekennzeichnet. Keine Datenmigration für Cloudprofile v9, keine Solver-/Tagesrotation- oder Offline-PWA-Änderung.
+
+### Hinweis
+- Nur Kriege mit einer vollständigen und von Clash bereits fixierten Mannschaft werden automatisch archiviert. Fehlende vergangene API-Saisons können nicht rückwirkend rekonstruiert werden.
+- Die praktische iPhone-Prüfung der neuen Archivansicht und der Beobachterrolle bleibt nach dem Release offen.
+
 ## [1.11.0] - 2026-11-04
 
 ### Dauerhaftes CWL-Gruppenarchiv

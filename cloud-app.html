@@ -2070,6 +2070,40 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .season-archive-body{padding:8px}
 }
 
+
+/* One compact read-only gateway from the operating plan into the live CWL season. */
+.plan-cwl-season-shortcut{display:flex;align-items:center;justify-content:space-between;gap:14px;
+ border:1px solid var(--line);border-left:3px solid var(--primary);border-radius:14px;
+ background:var(--card);padding:12px 16px;margin:0 0 14px;min-width:0}
+.plan-cwl-season-shortcut[hidden]{display:none!important}
+.plan-season-shortcut-copy{display:grid;gap:2px;min-width:0}
+.plan-season-shortcut-kicker{font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--primary)}
+.plan-season-shortcut-copy strong{font-size:14px;line-height:1.4}
+.plan-season-shortcut-copy small{font-size:11px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.plan-season-shortcut-open{flex:none;min-height:42px;white-space:nowrap}
+@media(max-width:430px){.plan-cwl-season-shortcut{padding:11px 12px;gap:8px}
+ .plan-season-shortcut-copy strong{font-size:13px}
+ .plan-season-shortcut-open{font-size:12px;padding:9px 11px;min-height:40px}}
+
+
+/* Authenticated own CWL rosters within each saved group round. */
+.season-archive-lineup{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:var(--card);overflow:hidden}
+.season-archive-lineup>summary{list-style:none;cursor:pointer;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:9px}
+.season-archive-lineup>summary::-webkit-details-marker{display:none}
+.season-archive-lineup>summary span{font-weight:800;font-size:12px;color:var(--text)}
+.season-archive-lineup>summary small{font-size:10px;color:var(--muted);text-align:right;line-height:1.5}
+.season-archive-lineup[open]>summary{border-bottom:1px solid var(--line)}
+.season-archive-lineup>summary:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.season-archive-roster{padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.season-archive-player{min-width:0;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--line);border-radius:9px}
+.season-archive-player strong{font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.season-archive-player small{font-size:10px;color:var(--muted);line-height:1.3}
+@media(max-width:520px){.season-archive-roster{grid-template-columns:1fr;padding:8px}
+ .season-archive-lineup>summary{align-items:flex-start;flex-wrap:wrap}
+ .season-archive-lineup>summary small{max-width:100%;text-align:left}
+ .season-archive-player{padding:8px 10px}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2107,6 +2141,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+  </div>
+  <div id="planCwlSeasonEntry" class="plan-cwl-season-shortcut" hidden>
+    <div class="plan-season-shortcut-copy"><span class="plan-season-shortcut-kicker">CWL AKTUELL</span>
+      <strong>Gruppenstand &amp; Runden</strong><small id="planCwlSeasonHint">Aktuelle Liga im Überblick</small>
+    </div>
+    <button id="planCwlSeasonOpen" class="btn small plan-season-shortcut-open" type="button" aria-label="Aktuelle CWL-Saison ansehen">Saison ansehen <span aria-hidden="true">›</span></button>
   </div>
   <div class="card plan-review-panel" id="planReviewPanel" hidden>
     <div class="section-title"><div><h3>Planfreigabe</h3><div class="statusline" id="planReviewHint">Gemeinsame Planung</div></div><span class="badge" id="planReviewStatus">In Bearbeitung</span></div>
@@ -2293,12 +2333,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.11.0</strong><span>Gemeinsames CWL-Gruppenarchiv</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.12.0</strong><span>CWL direkt im Plan · eigene Aufstellungen im Archiv</span></div>
       <ul>
-       <li><b>CWL-Archiv:</b> Gruppentabellen und Runden bleiben auch nach der Saison gespeichert.</li>
-       <li><b>Gemeinsam:</b> Alle Clanmitglieder können die Historie lesen, auch Beobachter.</li>
-       <li><b>Verlässlich:</b> Bestätigte Kriege werden nicht durch ältere Clash-Zwischenstände überschrieben.</li>
-       <li><b>Planung:</b> Bestehende Aufstellungsarchive und aktuelle CWL-Pläne bleiben unverändert.</li>
+       <li><b>CWL-Saison:</b> Über den Plan-Tab mit einem Klick erreichbar, ohne deine Tagesplanung zu überladen.</li>
+       <li><b>Runden:</b> Sterne beider Clans werden korrekt angezeigt, auch wenn unser Clan links steht.</li>
+       <li><b>Archiv:</b> Eigene Spieler, Rathausstufen, Angriffe und Sterne pro Kriegstag aus Clash dauerhaft gespeichert.</li>
+       <li><b>Verlässlich:</b> Bereits gestartete Aufstellungen bleiben fix; Beobachter dürfen die Historie lesen.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2643,9 +2683,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.11.0"></script>
+<script src="./cwl-planning-core.js?v=1.12.0"></script>
 <script>
-const APP_VERSION="v1.11.0";
+const APP_VERSION="v1.12.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3280,7 +3320,8 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 applyTheme();
 function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
- const navView=["help","account","archive","cwl-season"].includes(visible)?"more":visible;
+ const navView=visible==="cwl-season"?(window.__seasonEntrySource||"more"):
+   ["help","account","archive"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -3376,7 +3417,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
     document.getElementById("cloudOpen").click();return;
   }
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
-  if(action==="season"){showPlannerView("cwl-season");window.CWLSeasonView?.render?.();return;}
+  if(action==="season"){window.__seasonEntrySource="more";document.getElementById("cwlSeasonBack").textContent="Zurück zu Mehr";showPlannerView("cwl-season");window.CWLSeasonView?.render?.();return;}
   const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
     backup:"settingsBackupSection",profiles:"localProfileCard"};
   showPlannerView("settings");
@@ -3384,7 +3425,13 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(targetId)requestAnimationFrame(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
 });
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");
-document.getElementById("cwlSeasonBack").onclick=()=>showPlannerView("more");
+document.getElementById("planCwlSeasonOpen").onclick=()=>{
+ window.__seasonEntrySource="plan";
+ document.getElementById("cwlSeasonBack").textContent="Zurück zum Plan";
+ showPlannerView("cwl-season");
+ window.CWLSeasonView?.render?.();
+};
+document.getElementById("cwlSeasonBack").onclick=()=>showPlannerView(window.__seasonEntrySource||"more");
 document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
@@ -3495,6 +3542,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.11.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.12.0"></script>
 </body>
 </html>

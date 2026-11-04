@@ -1,7 +1,7 @@
 // Durable, read-only CWL group histories. Separate from the planner's own
 // archived lineups. All queries use the logged-in Supabase session and RLS.
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.11.0";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.11.0";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.12.0";
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.12.0";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("de-AT",{maximumFractionDigits:1});
@@ -24,7 +24,71 @@ function groupTable(data){
     '<td>'+c.wins+'</td><td><strong>'+c.stars+'</strong></td><td>'+fmt(c.totalDestruction)+'</td></tr>').join("")+
     '</tbody></table></div>';
 }
-function groupRounds(data){
+// A lineage-safe lookup. Never match a roster just by a displayed month name.
+const key=(season,day)=>String(season)+"|"+Number(day);
+const validTag=x=>/^#[0289PYLQGRJCUV]{3,15}$/.test(String(x||""));
+function extractLineup(profile,season,day,warTag,clanTag){
+  const snapshots=[];
+  if(profile?.cwlLive?.season===season)snapshots.push(profile.cwlLive);
+  for(const archived of (Array.isArray(profile?.archives)?profile.archives:[]))
+    if(archived?.cwlLive?.season===season)snapshots.push(archived.cwlLive);
+  const candidates=snapshots.map(s=>{
+    if(s.clanTag!==clanTag)return null;
+    const r=(s.rounds||[]).find(x=>x?.day===day&&x.available&&x.warTag===warTag&&
+      ["inWar","warEnded"].includes(x.state));
+    if(!r||r.clan?.tag!==clanTag||!Array.isArray(r.clan?.members)||
+       r.clan.members.length!==r.teamSize)return null;
+    return {source:"clash",state:r.state,members:r.clan.members};
+  }).filter(Boolean).sort((a,b)=>Number(b.state==="warEnded")-Number(a.state==="warEnded")||
+    b.members.reduce((n,m)=>n+(m.attacks?.length||0),0)-
+    a.members.reduce((n,m)=>n+(m.attacks?.length||0),0));
+  if(candidates.length)return candidates[0];
+  // A manually locked lineup from an older plan is still useful, but is
+  // labelled as planning data, never misrepresented as an API-confirmed team.
+  for(const archived of (Array.isArray(profile?.archives)?profile.archives:[])){
+    if(archived?.cwlLive?.season!==season)continue;
+    const dayLineup=(archived.lineups||[]).find(l=>l?.day===day);
+    if(!dayLineup||!Array.isArray(dayLineup.lineup))continue;
+    const players=new Map((archived.players||[]).map(p=>[p.id,p]));
+    const members=dayLineup.lineup.map(id=>{
+      const m=dayLineup.snapshots?.[id]||players.get(id);
+      return m?{name:m.name||"Unbekannt",tag:m.playerTag||"",townHallLevel:m.townHall??null,
+        attacks:null}:null;
+    }).filter(Boolean);
+    if(members.length)return {source:"plan",state:"archived",members};
+  }
+  return null;
+}
+function ownLineupForDay(group,day,rows,profile){
+  const round=group.rounds.find(r=>r.day===day);
+  const own=round?.matches.find(m=>m.available&&["inWar","warEnded"].includes(m.state)&&
+    (m.clan.tag===group.clanTag||m.opponent.tag===group.clanTag));
+  if(!own)return null;
+  const server=rows.find(x=>x.season===group.season&&x.day===day&&
+    x.war_tag===own.warTag&&["inWar","warEnded"].includes(x.state)&&
+    Array.isArray(x.lineup_json?.members)&&x.lineup_json.members.length===x.team_size);
+  if(server)return {source:"clash",state:server.state,members:server.lineup_json.members};
+  return extractLineup(profile,group.season,day,own.warTag,group.clanTag);
+}
+function lineupDetail(lineup){
+  if(!lineup?.members?.length)return "";
+  const trusted=lineup.source==="clash";
+  const status=trusted?(lineup.state==="warEnded"?"Clash · Krieg abgeschlossen":"Clash · Aufstellung fix"):
+    "Aus dem Planarchiv · nicht mit Clash abgeglichen";
+  const rows=lineup.members.map(m=>{
+    const hasAttacks=Array.isArray(m.attacks);
+    const hits=hasAttacks?m.attacks.filter(a=>Number.isInteger(a?.stars)&&a.stars>=0&&a.stars<=3):[];
+    const th=Number.isInteger(m.townHallLevel)?"RH "+m.townHallLevel:"";
+    const stat=hasAttacks?hits.length+" Angr. · "+hits.reduce((sum,a)=>sum+a.stars,0)+"★":"";
+    const meta=[th,stat].filter(Boolean).join(" · ");
+    return '<div class="season-archive-player"><strong>'+esc(m.name||m.tag||"Spieler")+'</strong>'+
+      (meta?'<small>'+esc(meta)+'</small>':"")+'</div>';
+  }).join("");
+  return '<details class="season-archive-lineup"><summary><span>Unser Team · '+
+    lineup.members.length+' Spieler</span><small>'+esc(status)+'</small></summary>'+
+    '<div class="season-archive-roster">'+rows+'</div></details>';
+}
+function groupRounds(data,ownRows,profile){
   return '<div class="season-group-archive-rounds">'+data.rounds.map(round=>
     '<details class="season-archive-round"><summary>Runde '+round.day+' · '+
     round.matches.filter(m=>m.available).length+' Begegnungen bekannt</summary>'+
@@ -36,10 +100,16 @@ function groupRounds(data){
         '<span class="season-group-score"><b>'+score(m.clan,m.state)+' : '+score(m.opponent,m.state)+'</b>'+
         '<small>'+({warEnded:"Beendet",inWar:"Läuft",preparation:"Vorbereitung"}[m.state]||"Unbekannt")+'</small></span>'+
         '<span class="season-clan right">'+badge(m.opponent)+'<strong>'+esc(m.opponent.name)+'</strong></span></div>';
-    }).join(""):'<p class="season-empty">Keine Begegnungen gespeichert.</p>')+'</div></details>').join("")+'</div>';
+    }).join(""):'<p class="season-empty">Keine Begegnungen gespeichert.</p>')+'</div>'+
+    (ownLineupForDay(data,round.day,ownRows,profile)?
+      lineupDetail(ownLineupForDay(data,round.day,ownRows,profile)):
+      round.matches.some(m=>m.available&&["inWar","warEnded"].includes(m.state)&&
+        (m.clan.tag===data.clanTag||m.opponent.tag===data.clanTag))?
+        '<p class="statusline">Unsere Aufstellung ist für diese Runde noch nicht archiviert.</p>':"")+
+    '</details>').join("")+'</div>';
 }
-export function createCwlGroupArchiveView({sb,getClanId,isConnected}){
-  let rows=[],loadedId=null,requestSerial=0,busy=false;
+export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=()=>null}){
+  let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false;
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
   if(!host)return {open(){},invalidate(){}};
   const current=()=>isConnected()?getClanId():null;
@@ -64,12 +134,12 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected}){
         '<div class="season-archive-body"><p class="statusline">Zuletzt gesichert: '+esc(date)+
         '. Die Rangfolge ist bei offenen oder fehlenden Kriegen vorläufig. Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
         groupTable(d)+
-        '<h4>Runden</h4>'+groupRounds(d)+'</div></details>';
+        '<h4>Runden</h4>'+groupRounds(d,ownRows,getProfile?.())+'</div></details>';
     }).join("")+'</div>';
   }
   async function open(force=false){
     const id=current(),token=++requestSerial;
-    if(!id){loadedId=null;rows=[];busy=false;render();return}
+    if(!id){loadedId=null;rows=[];ownRows=[];busy=false;render();return}
     if(!force&&loadedId===id&&!busy){render();return}
     busy=true;render();
     try{
@@ -78,13 +148,21 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected}){
         .eq("clan_id",id).order("season",{ascending:false}).limit(18);
       if(token!==requestSerial||id!==current())return;
       if(error)throw error;
-      loadedId=id;rows=Array.isArray(data)?data:[];busy=false;render();
+      // A temporary roster-storage error must not hide the historical group.
+      let rosterQuery={data:[],error:null};
+      try{rosterQuery=await sb.from("cwl_own_lineup_archives")
+        .select("season,day,war_tag,state,team_size,lineup_json,updated_at")
+        .eq("clan_id",id).order("season",{ascending:false}).limit(140)}
+      catch{rosterQuery={data:[],error:true}}
+      if(token!==requestSerial||id!==current())return;
+      loadedId=id;rows=Array.isArray(data)?data:[];
+      ownRows=!rosterQuery.error&&Array.isArray(rosterQuery.data)?rosterQuery.data:[];busy=false;render();
     }catch(error){
       if(token!==requestSerial||id!==current())return;
-      loadedId=null;rows=[];busy=false;
+      loadedId=null;rows=[];ownRows=[];busy=false;
       host.innerHTML='<p class="season-empty">Das Gruppenarchiv konnte nicht geladen werden. Bitte Verbindung und Anmeldung prüfen und erneut versuchen. Deine bisherigen Plan-Archive bleiben erhalten.</p>';
     }
   }
   refresh?.addEventListener("click",()=>open(true));
-  return {open,invalidate(){requestSerial++;loadedId=null;rows=[];busy=false;if($("view-archive")?.classList.contains("active"))open(true)}};
+  return {open,invalidate(){requestSerial++;loadedId=null;rows=[];ownRows=[];busy=false;if($("view-archive")?.classList.contains("active"))open(true)}};
 }

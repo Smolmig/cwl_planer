@@ -99,7 +99,7 @@ test("Mehr contains season and archive as independent views, but not a duplicate
  assert.match(app,/data-more-action="archive"/);
  assert.match(app,/id="view-cwl-season"/);
  assert.match(app,/id="view-archive"/);
- assert.match(app,/const navView=\["help","account","archive","cwl-season"\]/);
+ assert.match(app,/const navView=visible==="cwl-season"\?\(window\.__seasonEntrySource\|\|"more"\)/);
  assert.match(app,/if\(action==="archive"\)\{showPlannerView\("archive"\)/);
  const summary=app.slice(app.indexOf('<section id="view-summary"'),app.indexOf('<section id="view-more"'));
  assert.doesNotMatch(summary,/id="archiveSection"/);
