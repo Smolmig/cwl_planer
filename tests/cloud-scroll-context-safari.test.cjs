@@ -63,7 +63,9 @@ test("Realtime refresh preserves the visible player at 320, 390, 430 and desktop
      window.scrollTo(0,scrollTo);
      const headerBottom=document.querySelector(".topbar").getBoundingClientRect().bottom;
      const box=root.getBoundingClientRect();
-     const bottomLimit=window.innerHeight-(document.querySelector(".bottomnav")?.getBoundingClientRect().height||0);
+     const navRect=document.querySelector(".bottomnav")?.getBoundingClientRect();
+     const bottomLimit=navRect&&navRect.width>window.innerWidth*.65&&navRect.top>headerBottom
+      ?Math.min(window.innerHeight,navRect.top):window.innerHeight;
      const y=Math.min(bottomLimit-12,Math.max(headerBottom+18,headerBottom+60));
      const x=Math.min(window.innerWidth-12,Math.max(12,box.left+24));
      const anchor=document.elementFromPoint(x,y)?.closest(".member");
