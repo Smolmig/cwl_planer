@@ -27,7 +27,7 @@ test("merged UI retains Cloud account/help navigation together with fast members
 
 test("v1.14.1 preserves Cloud data format and independent offline PWA",()=>{
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(html,/const APP_VERSION="v1\.14\.0"/);
+ assert.match(html,/const APP_VERSION="v1\.14\.1"/);
  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.14.1");
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
  assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
