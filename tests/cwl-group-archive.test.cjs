@@ -181,22 +181,27 @@ test("background polling retains expanded season, round and own roster; temporar
   await view.open();
   const root=dom.window.document.querySelector("#cwlGroupArchiveContent");
   let details=[...root.querySelectorAll("details[data-archive-key]")];
-  assert.equal(details.length,3,"season, round and own roster have independent stable keys");
-  details.forEach(node=>{node.open=true});
+  // Seven rounds exist even when only one has a real own-team roster.
+  assert.equal(details.length,9,"season, seven rounds and own roster use stable keys");
+  const expanded=new Set(["season:2026-11","round:2026-11:1","roster:2026-11:1"]);
+  details.forEach(node=>{node.open=expanded.has(node.dataset.archiveKey)});
+  assert.equal(details.filter(node=>node.open).length,3);
   assert.ok(root.textContent.includes("24"),"initial score displayed");
   const before=root.innerHTML;
   view.invalidate();
   assert.equal(root.innerHTML,before,"background refresh must not swap existing content for loading");
   await new Promise(resolve=>setImmediate(resolve));
   details=[...root.querySelectorAll("details[data-archive-key]")];
-  assert.ok(details.every(node=>node.open),"nested expanded panels survive new API snapshot");
+  assert.ok(details.every(node=>node.open===expanded.has(node.dataset.archiveKey)),
+    "only the three explicitly opened panels remain open after refresh");
   assert.match(root.textContent,/25/,"new values updated while preserving opened panels");
   assert.match(root.textContent,/Owned player/);
   fail=true;
   view.invalidate();
   await new Promise(resolve=>setImmediate(resolve));
   details=[...root.querySelectorAll("details[data-archive-key]")];
-  assert.ok(details.every(node=>node.open),"temporary network error may not collapse panels");
+  assert.ok(details.every(node=>node.open===expanded.has(node.dataset.archiveKey)),
+    "temporary network error keeps expanded and collapsed panels unchanged");
   assert.match(root.textContent,/Owned player/);
   assert.doesNotMatch(root.textContent,/konnte nicht geladen werden/);
  }finally{if(previous===undefined)delete global.document;else global.document=previous;dom.window.close()}
