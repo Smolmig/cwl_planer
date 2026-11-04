@@ -49,6 +49,10 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.match(review.textContent,/1 Wechsel nötig/);
   assert.match(review.querySelector(".cwl-prep-group.remove").textContent,/Spieler B/);
   assert.match(review.querySelector(".cwl-prep-group.add").textContent,/Spieler C/);
+  assert.match(review.querySelector(".cwl-prep-group.remove > b").textContent,/Aus der Kriegsaufstellung nehmen/);
+  assert.match(review.querySelector(".cwl-prep-group.add > b").textContent,/In die Kriegsaufstellung aufnehmen/);
+  assert.doesNotMatch(review.textContent,/Aus Clash raus|In Clash rein/);
+  assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Aufstellungswechsel kopieren/);
   assert.equal(review.querySelector(".cwl-prep-group.remove .cwl-roster-tag").textContent,"#2PYQ");
   assert.equal(review.querySelector(".cwl-prep-group.add .cwl-roster-tag").textContent,"#2PYV");
   assert.match(doc.querySelector(".cwl-live-day > .statusline").textContent,/Aufstellung vorläufig/);
