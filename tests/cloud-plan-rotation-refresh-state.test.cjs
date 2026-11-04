@@ -38,20 +38,35 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{
      waitUntil:"domcontentloaded"
     });
+    // The rotation comparison exists only for a linked Cloud clan, not a guest.
+    // Stub the Cloud read-only capability: no live credentials or data writes.
+    await page.evaluate(()=>{
+     window.CWLCloud={active:true,hasApiClan:()=>true,renderLive:()=>{}};
+     window.renderPlanDayWarnings=dp=>dp.day===1
+      ?'<details class="day-warnings-more"><summary>Weitere Hinweise</summary><p>Konflikt prüfen</p></details>'
+      :'';
+     window.CWLLegacy.rerender();
+    });
     const selector="#day-card-1 .plan-rotation-backup";
     assert.equal(await page.locator(selector).count(),1);
+    assert.equal(await page.locator("#day-card-0 .day-warnings-more").count(),1);
     // Open several independent day details and focus a summary like a real user.
     await page.evaluate(()=>{
      document.querySelector("#day-card-1 .plan-rotation-backup").open=true;
      document.querySelector("#day-card-2 .plan-rotation-backup").open=true;
+     const warnings=document.querySelector("#day-card-0 .day-warnings-more");
+     warnings.open=true;
+     warnings.querySelector("summary").focus();
      window.CWLLegacy.rerender(); // e.g. Realtime/automatic Cloud refresh
     });
     const expanded=await page.evaluate(()=>({
      first:document.querySelector("#day-card-1 .plan-rotation-backup").open,
      second:document.querySelector("#day-card-2 .plan-rotation-backup").open,
-     third:document.querySelector("#day-card-3 .plan-rotation-backup").open
+     third:document.querySelector("#day-card-3 .plan-rotation-backup").open,
+     warnings:document.querySelector("#day-card-0 .day-warnings-more").open,
+     warningFocus:document.activeElement===document.querySelector("#day-card-0 .day-warnings-more summary")
     }));
-    assert.deepEqual(expanded,{first:true,second:true,third:false},
+    assert.deepEqual(expanded,{first:true,second:true,third:false,warnings:true,warningFocus:true},
      "an unrelated refresh must not close or open a rotation");
     // Changes to the same saved clan must keep the exact details states.
     await page.evaluate(()=>{
@@ -59,6 +74,34 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
      window.CWLLegacy.rerender();
     });
     assert.equal(await page.locator(selector).evaluate(el=>el.open),true);
+    assert.equal(await page.locator("#day-card-0 .day-warnings-more").evaluate(el=>el.open),true);
+    // Check focus restoration on the rotation summary itself.
+    const rotationFocus=await page.evaluate(()=>{
+     const summary=document.querySelector("#day-card-1 .plan-rotation-backup summary");
+     summary.focus();
+     window.CWLLegacy.rerender();
+     return document.activeElement===document.querySelector("#day-card-1 .plan-rotation-backup summary");
+    });
+    assert.equal(rotationFocus,true,"rotation keyboard focus survives refresh");
+    // Summary rows must preserve focused member and expanded day list.
+    const summaryState=await page.evaluate(()=>{
+     const member=window.CWLLegacy.newMember("Summary Test");
+     window.CWLLegacy.getProfile().members.push(member);
+     window.CWLLegacy.rerender();
+     const button=document.querySelector("#summaryList .summary-player-toggle");
+     if(!button)return {exists:false};
+     button.click();
+     const id=button.dataset.memberId;
+     const selected=[...document.querySelectorAll("#summaryList .summary-player-toggle")]
+      .find(el=>el.dataset.memberId===id);
+     selected.focus();
+     window.CWLLegacy.rerender();
+     const restored=[...document.querySelectorAll("#summaryList .summary-player-toggle")]
+      .find(el=>el.dataset.memberId===id);
+     return {exists:!!restored,focused:document.activeElement===restored,
+      expanded:restored?.getAttribute("aria-expanded")==="true"};
+    });
+    assert.deepEqual(summaryState,{exists:true,focused:true,expanded:true});
     // Switching the profile is a deliberate context change.
     await page.evaluate(()=>{
      const old=window.CWLLegacy.getProfile();
@@ -68,6 +111,8 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     });
     assert.equal(await page.locator(selector).evaluate(el=>el.open),false,
      "new clan must not inherit another clan's disclosure state");
+    assert.equal(await page.locator("#day-card-0 .day-warnings-more").evaluate(el=>el.open),false,
+     "new clan must not inherit another clan's warnings");
     assert.deepEqual(errors,[],"no browser errors on rerenders at "+width+"px");
    }finally{await page.close();}
   }
