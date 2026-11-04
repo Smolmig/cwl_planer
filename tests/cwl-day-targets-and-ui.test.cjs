@@ -63,7 +63,7 @@ test("Day target and manual buttons are visible, obsolete date windows removed",
  assert.match(html,/member-target-days/);
  assert.match(html,/Einsatzziel/);
  assert.match(html,/summary-snapshot-actions|member-snapshot-actions/);
- assert.match(html,/\$\{orderBtns\}<button class="btn small member-edit-toggle"/);
+ assert.match(html,/\$\{orderBtns\}\$\{former\?/);
  assert.doesNotMatch(html,/class="first-day"/);
  assert.doesNotMatch(html,/class="out-from"/);
  assert.match(html,/Manuell als gespielt bestätigen/);
