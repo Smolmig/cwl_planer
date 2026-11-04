@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.5] - 2026-11-04
+
+### Mobile App-Installation auffindbar, CWL-Wechsel klar bezeichnet
+- **Cloud-App installieren:** Eine eigenständige Seite unter „Mehr“ erklärt iPhone/iPad (Safari → Teilen → Zum Home-Bildschirm hinzufügen → Als Web-App öffnen), Android-Browser und Desktop. Browser-eigene Android-Installationsaufforderungen werden nicht abgefangen.
+- **Kein Installations-Popup:** Für iOS erscheint höchstens innerhalb von „Mehr“ ein kleiner Hinweis, der dauerhaft lokal ausblendbar ist. Im bereits installierten Stand wird er nicht angezeigt; die Anleitung bleibt bei Bedarf zugänglich.
+- **Wortlaut CWL:** Statt „Aus Clash raus“ / „In Clash rein“ heißen die Gruppen jetzt „Aus der Kriegsaufstellung nehmen“ / „In die Kriegsaufstellung aufnehmen“. Die Kopieraktion heißt „Aufstellungswechsel kopieren“; der kompakte einzeilige Chat-Text `Raus: ... - Rein: ...` bleibt unverändert.
+- Regressionen für iOS-/Android-Browser, installierte Ansicht, Hinweisunterdrückung und die CWL-Gruppenbeschriftung. Reale Safari-/Firefox-Geräteabnahme bleibt separat.
+- Keine Cloud-API-, Datenformat-/Rollen-, Supabase- oder Solver-Änderung; separate Offline-PWA bleibt v1.0.2.
+
 ## [1.14.4] - 2026-11-04
 
 ### Android-PWA-Installation startet wieder die Cloud-App
