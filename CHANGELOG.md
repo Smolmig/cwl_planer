@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.3] - 2026-11-04
+
+### Scrollposition und UI-Kontext beim Cloud-Abgleich
+- **Mitglieder:** Während eines automatischen Abgleichs desselben Clans bleibt der zuvor sichtbare Spieler über seine stabile ID am selben Punkt im Viewport. Eine davor eingefügte Karte oder ein neu sortiertes DOM zieht den Bildschirm nicht mehr ungefragt mit.
+- **Einstellungen:** Öffnen und Schließen des Einstellungen-Overlays bewahrt die Scrollposition der zugrunde liegenden Seite. Ein bewusster Tabwechsel navigiert weiterhin wie bisher.
+- **Kontexttrennung:** Beim Clanwechsel und bei ausdrücklich gewählter Filterung/Sortierung wird kein alter Scroll-Anker übernommen.
+- Automatisierter Browser-Test mit 76/77 Spielern bei 320, 390, 430 und 1366 px, der Desktop-Sidebar und der mobilen Bottom-Navigation. Echte iPhone-Safari- und schwache-PC-Abnahme stehen weiterhin aus.
+- Keine Datenmigration, keine Änderung an Supabase, Planeralgorithmus, Account-/Clanrechten oder Offline-PWA.
+
 ## [1.14.2] - 2026-11-04
 
 ### Flüssigeres Scrollen in langen Listen (UI-Performance)

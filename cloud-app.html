@@ -2230,7 +2230,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
 .cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
-/* v1.14.2: keep long member/statistics lists cheap on slower desktops.
+/* v1.14.3: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2492,12 +2492,11 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.14.2</strong><span>Flüssigeres Scrollen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.3</strong><span>Scrollposition bleibt erhalten</span></div>
       <ul>
-       <li><b>Mitglieder:</b> Schnellere Listen auf schwächeren PCs und ruhigerer Hintergrund im Gold-Theme.</li>
-       <li><b>Statistik:</b> Einzelangriffe erscheinen erst, wenn du einen Krieg aufklappst.</li>
-       <li><b>Bedienung:</b> Bereits geöffnete Kriege bleiben beim Aktualisieren offen; Suche und Sortierung arbeiten ressourcenschonender.</li>
-       <li><b>Smartphone:</b> Größere Tippflächen bei Spieleraktionen.</li>
+       <li><b>Mitglieder:</b> Automatische Clan-Updates lassen den gerade sichtbaren Spieler an seiner Position.</li>
+       <li><b>Einstellungen:</b> Nach dem Schließen landest du wieder an deiner vorherigen Scrollposition.</li>
+       <li><b>Smartphone & Desktop:</b> Der Scroll-Schutz berücksichtigt sowohl die untere Navigation als auch die Seitenleiste.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2842,9 +2841,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.14.2"></script>
+<script src="./cwl-planning-core.js?v=1.14.3"></script>
 <script>
-const APP_VERSION="v1.14.2";
+const APP_VERSION="v1.14.3";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3212,7 +3211,7 @@ function memberPerformance(m){
  return "<span class='member-rate'>"+rate+"</span>"+
   "<span class='member-average'>Ø Sterne: "+average+" ★ · "+period+"</span>";
 }
-window.CWLRefreshMembers=()=>{renderMembers();if(lastPlan)renderPlan()};
+window.CWLRefreshMembers=()=>{renderMembers.preserveNextViewport=true;renderMembers();if(lastPlan)renderPlan()};
 async function editMemberNote(m){
  if(window.CWLCloud?.active&&(document.body.classList.contains("cloud-role-viewer")||m.cocSyncState==="former"))return;
  const value=await promptInline("Spielernotiz",m.name+" · bis 200 Zeichen",m.note||"",200);
@@ -3251,9 +3250,30 @@ function toggleMemberCardDetails(el){
  if(expanded&&singleColumn)el.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberSearchRenderTimer);memberSearchRenderTimer=null}const root=document.getElementById("memberList");
+ const keepViewport=renderMembers.preserveNextViewport===true;
+ renderMembers.preserveNextViewport=false;
  const memberContext=(window.CWLCloud?.active?(window.CWLCloud?.getActiveClanId?.()||"cloud"):"local")+
   "|"+String(state.id||state.name||"");
- const activeControl=root.dataset.profileContext===memberContext&&root.contains(document.activeElement)
+ // Preserve the visible player during read-only Realtime updates, even when
+ // other rows join or leave. Deliberate sorting/filtering never uses this anchor.
+ const sameMemberContext=root.dataset.profileContext===memberContext;
+ const listVisible=document.getElementById("view-members")?.classList.contains("active");
+ let memberViewportAnchor=null;
+ if(keepViewport&&sameMemberContext&&listVisible&&root.children.length){
+  const box=root.getBoundingClientRect();
+  const headerBottom=document.querySelector(".topbar")?.getBoundingClientRect().bottom||0;
+  const navRect=document.querySelector(".bottomnav")?.getBoundingClientRect();
+  // Desktop navigation is a full-height sidebar, not a bottom overlay.
+  const bottomLimit=navRect&&navRect.width>window.innerWidth*.65&&navRect.top>headerBottom
+   ?Math.min(window.innerHeight,navRect.top):window.innerHeight;
+  const y=Math.min(bottomLimit-12,Math.max(headerBottom+18,headerBottom+60));
+  const x=Math.min(window.innerWidth-12,Math.max(12,box.left+24));
+  if(y>headerBottom&&y<bottomLimit){
+   const node=document.elementFromPoint(x,y)?.closest?.(".member");
+   if(node&&root.contains(node))memberViewportAnchor={id:node.dataset.id,top:node.getBoundingClientRect().top};
+  }
+ }
+ const activeControl=sameMemberContext&&root.contains(document.activeElement)
   ?document.activeElement:null;
  const activeRowId=activeControl?.closest(".member")?.dataset.id;
  const activeControlSelector=activeRowId?[
@@ -3281,6 +3301,13 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  el.querySelector(".rule-panel")?.classList.toggle("open",expanded);
  el.querySelector(".toggle-rules").setAttribute("aria-expanded",String(expanded));
 };el.querySelector(".delete-member")?.addEventListener("click",()=>deleteMember(id));el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);markRosterAbsenceEdit(m,"statuses."+d);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll("Tagesregel gespeichert · Plan aktualisiert ✓")});});updateBulkBar();
+ if(memberViewportAnchor){
+  const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===memberViewportAnchor.id);
+  if(replacement){
+   const delta=replacement.getBoundingClientRect().top-memberViewportAnchor.top;
+   if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
+  }
+ }
  if(activeRowId&&activeControlSelector){
   const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===activeRowId)
    ?.querySelector(activeControlSelector);
@@ -3589,6 +3616,8 @@ function openMoreSettings(action){
  showPlannerView("more-settings");
 }
 function showPlannerView(view){
+ const wasSettingsOpen=document.getElementById("view-settings").classList.contains("active");
+ const previousView=window.__previousPlannerView;
  // Modal and tab navigation must never strand the only copy of a control
  // inside an inactive subpage. Its events/state remain intact.
  if(view!=="more-settings"&&typeof movedSettings!=="undefined"&&movedSettings.length)restoreMoreSettings();
@@ -3602,7 +3631,10 @@ function showPlannerView(view){
  const gear=document.getElementById("settingsOpen");
  gear.classList.toggle("active",view==="settings");
  gear.setAttribute("aria-pressed",String(view==="settings"));
- window.scrollTo({top:0,behavior:"smooth"});
+ // Settings is an overlay, not a navigation away from the current scroll.
+ // Opening/closing must not jump a long roster back to its beginning.
+ if(view!=="settings"&&!(wasSettingsOpen&&view===previousView))
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 window.CWLShowAccountPage=()=>showPlannerView("account");
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{closeQuickClan();showPlannerView(b.dataset.view)});
@@ -3827,6 +3859,7 @@ window.CWLLegacy={
    document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";
    document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";
   }
+  renderMembers.preserveNextViewport=sameClan;
   renderAll();
  },
  restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()},
@@ -3837,6 +3870,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.14.2"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.3"></script>
 </body>
 </html>

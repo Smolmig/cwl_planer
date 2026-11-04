@@ -1,3 +1,11 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.3):
+- Beim automatischen Cloud-Abgleich bleibt der sichtbare Spieler an seiner
+  bisherigen Bildschirmposition, auch wenn davor Mitglieder eingefügt werden.
+- Der Einstellungen-Dialog erhält den Scrollstand der darunterliegenden Ansicht
+  beim Öffnen und Schließen; echter Tabwechsel verhält sich wie bisher.
+- Smartphone- (320/390/430 px) und Desktop-Regression (1366 px) ergänzt.
+- Cloud-Datenformat v9, Solver, Supabase und Offline-PWA unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.2):
 - Lange Mitglieder-/Statistiklisten rendern sichtbare Zeilen effizienter;
   Gold-Theme ohne fixierten Hintergrund oder Einzelschatten je Spielerkarte.
@@ -114,7 +122,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.2;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.3;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
