@@ -345,6 +345,7 @@ const live=createCwlLive({
 window.CWLSeasonView=createCwlSeasonView({
  getProfile:()=>storage.getProfile(),
  getSnapshot:()=>live.getSnapshot(),
+ getGroup:()=>live.getGroupSnapshot(),
  isConnected:()=>!!cloud.active&&!!clanId,
  refresh:()=>live.refresh()
 });
