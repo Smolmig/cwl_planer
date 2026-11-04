@@ -130,7 +130,7 @@ test("Plan shortcut is read-only, present only with a linked season, and preserv
   const v=createCwlSeasonView({getProfile:()=>active,getSnapshot:()=>null,getGroup:()=>group(),isConnected:()=>true});
   v.render();
   assert.equal(d.window.document.querySelector("#planCwlSeasonEntry").hidden,false);
-  assert.match(d.window.document.querySelector("#planCwlSeasonHint").textContent,/8? von 28 Paarungen/);
+  assert.match(d.window.document.querySelector("#planCwlSeasonHint").textContent,/1 von 1 Paarungen/);
   active.cwlLiveIgnoredSeason="2026-11";
   v.render();
   assert.equal(d.window.document.querySelector("#planCwlSeasonEntry").hidden,true);
