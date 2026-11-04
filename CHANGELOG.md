@@ -6,7 +6,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Saisonarchiv mit dauerhaft gespeicherten Gruppenergebnissen, weitere Mehr-Unterseiten und die experimentelle statistische Einteilung folgen separat (#71, #46, #44).
+Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
 ## [1.11.0] - 2026-11-04
 
