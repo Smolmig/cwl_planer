@@ -148,9 +148,12 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
         .eq("clan_id",id).order("season",{ascending:false}).limit(18);
       if(token!==requestSerial||id!==current())return;
       if(error)throw error;
-      const rosterQuery=await sb.from("cwl_own_lineup_archives")
+      // A temporary roster-storage error must not hide the historical group.
+      let rosterQuery={data:[],error:null};
+      try{rosterQuery=await sb.from("cwl_own_lineup_archives")
         .select("season,day,war_tag,state,team_size,lineup_json,updated_at")
-        .eq("clan_id",id).order("season",{ascending:false}).limit(140);
+        .eq("clan_id",id).order("season",{ascending:false}).limit(140)}
+      catch{rosterQuery={data:[],error:true}}
       if(token!==requestSerial||id!==current())return;
       loadedId=id;rows=Array.isArray(data)?data:[];
       ownRows=!rosterQuery.error&&Array.isArray(rosterQuery.data)?rosterQuery.data:[];busy=false;render();
