@@ -226,6 +226,45 @@ async function saveGroupArchive(clanId,group) {
   if(!response.ok)console.warn("coc-cwl-status: group archive save unavailable",{status:response.status});
 }
 
+// Store *our own* actual CWL lineups once war has started. No preparation
+// rosters or opponent members are archived. The table is browser read-only.
+async function saveOwnLineups(clanId,status) {
+  if(!status?.active||!/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(String(status.season||""))||
+     !valid(tag(status.clanTag)))return;
+  const rows=[];
+  for(const round of (Array.isArray(status.rounds)?status.rounds:[]).slice(0,7)){
+    if(!round?.available||!["inWar","warEnded"].includes(round.state)||
+       !Number.isInteger(round.day)||round.day<1||round.day>7||
+       !valid(tag(round.warTag))||!Number.isInteger(round.teamSize)||
+       round.teamSize<1||round.teamSize>50||tag(round.clan?.tag)!==tag(status.clanTag))continue;
+    const members=Array.isArray(round.clan?.members)?round.clan.members:[];
+    if(members.length!==round.teamSize||members.some(m=>!valid(tag(m?.tag))))continue;
+    rows.push({
+      clan_id:clanId,season:status.season,day:round.day,
+      war_tag:tag(round.warTag),state:round.state,team_size:round.teamSize,
+      lineup_json:{members:members.map(m=>({
+        tag:tag(m.tag),name:String(m.name||m.tag).slice(0,80),
+        townHallLevel:Number.isInteger(m.townHallLevel)?m.townHallLevel:null,
+        attacks:(Array.isArray(m.attacks)?m.attacks:[]).slice(0,4)
+          .filter(a=>Number.isInteger(a?.stars)&&a.stars>=0&&a.stars<=3)
+          .map(a=>({stars:a.stars,destructionPercentage:safeDestruction(a.destructionPercentage)}))
+      }))}
+    });
+  }
+  if(!rows.length)return;
+  const url=String(Deno.env.get("SUPABASE_URL")||"").replace(/\/+$/,"");
+  const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if(!url||!key){console.warn("coc-cwl-status: lineup archive unavailable (missing server configuration)");return}
+  const response=await fetch(url+"/rest/v1/cwl_own_lineup_archives?on_conflict=clan_id,season,day",{
+    method:"POST",
+    headers:{"apikey":key,"Authorization":"Bearer "+key,"Content-Type":"application/json",
+      "Prefer":"resolution=merge-duplicates,return=minimal"},
+    body:JSON.stringify(rows),
+    signal:AbortSignal.timeout(2500)
+  });
+  if(!response.ok)console.warn("coc-cwl-status: own lineup archive save unavailable",{status:response.status});
+}
+
 const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(req.method!=="POST")return fail("method_not_allowed",405);
   let body;
@@ -248,8 +287,12 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   try{
     const response=await loadStatus(clanTag,key);
     // Archiving is best-effort and never blocks CWL planning on storage errors.
-    if(response.active&&response.group)try{await saveGroupArchive(clanId,response.group)}
-      catch(error){console.warn("coc-cwl-status: group archive write failed",{reason:String(error?.name||"network")})}
+    if(response.active){
+      await Promise.allSettled([
+        response.group?saveGroupArchive(clanId,response.group):Promise.resolve(),
+        saveOwnLineups(clanId,response)
+      ]); // Archive writes are optional; planning must never fail with them.
+    }
     CACHE.set(clanId,{time:Date.now(),tag:clanTag,body:response});
     return Response.json(response,{headers:CORS});
   }catch(e){
