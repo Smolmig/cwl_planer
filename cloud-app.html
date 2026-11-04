@@ -3066,13 +3066,22 @@ function renderPlan(){
  const openRotationDays=new Set(sameContext
   ?[...root.querySelectorAll(".day-card")].filter(card=>card.querySelector(".plan-rotation-backup")?.open).map(card=>card.id)
   :[]);
- const focusedRotationDay=sameContext&&document.activeElement?.matches?.(".plan-rotation-backup summary")
-  ?document.activeElement.closest(".day-card")?.id:null;
+ const openWarningDays=new Set(sameContext
+  ?[...root.querySelectorAll(".day-card")].filter(card=>card.querySelector(".day-warnings-more")?.open).map(card=>card.id)
+  :[]);
+ const focusedDisclosure=sameContext&&root.contains(document.activeElement)&&
+   document.activeElement?.matches?.(".plan-rotation-backup summary,.day-warnings-more summary")
+  ?{id:document.activeElement.closest(".day-card")?.id,
+    section:document.activeElement.closest(".plan-rotation-backup")?".plan-rotation-backup":".day-warnings-more"}
+  :null;
  root.dataset.rotationContext=rotationContext;
  root.innerHTML="";const nextPlayable=playedPrefixLength(),unlockable=lastUnlockableDay(),apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.(),nextUnfixed=lastPlan.dayPlans.findIndex(p=>!p.locked);lastPlan.dayPlans.forEach(dp=>{const fixedFromApi=dp.locked&&!state.locks[dp.day-1]?.locked;const ids=dp.lineup,names=ids.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean),reinIds=sortIdsByMemberOrder(dp.rein),rausIds=sortIdsByMemberOrder(dp.raus),exact=names.length===state.config.slots&&!dp.warnings.length,card=document.createElement("div");card.id=`day-card-${dp.day-1}`;card.className="card day-card"+(dp.locked?" locked":"")+(mobileLineupsExpanded?" mobile-lineup-expanded":"");const mobileLineupButton=`<button class="btn small mobile-lineup-toggle" type="button" data-day="${dp.day-1}" aria-expanded="${mobileLineupsExpanded}">${mobileLineupsExpanded?"▴ Aufstellung einklappen":`▾ ${names.length} Spieler anzeigen`}</button>`;const chipHtml=names.map(m=>`<div class="player-chip${m.fixed?" fixed-player":""}">${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline" title="Doppelter Name">!</span>`:""}${m.fixed?` <span class="player-fixed-badge" title="Fixspieler">FIX</span>`:""}<span class="player-meta">${memberTownHallMarkup(m)}<span aria-hidden="true"> · </span>${memberCompactPerformance(m)}</span></div>`).join("");const inNames=reinIds.map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outNames=rausIds.map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);let action="";if(fixedFromApi){action='<span class="statusline">Aufstellung durch Clash bestätigt · Krieg läuft. Als gespielt wird der Tag erst nach Kriegsende übernommen.</span>'}else if(dp.locked){action=`<button class="btn small edit-day" data-day="${dp.day-1}">Gespielte Aufstellung ändern</button>${dp.day-1===unlockable?`<button class="btn small unlock-day" data-day="${dp.day-1}">Tag entsperren</button>`:""}`}else if(dp.day-1===nextPlayable){action=`<button class="btn small primary lock-day" data-day="${dp.day-1}">Manuell als gespielt bestätigen</button>`}else if(apiLinked&&dp.day-1===nextUnfixed&&nextUnfixed>nextPlayable){action='<span class="statusline">Nächster Krieg · aktuelle Wechsel bitte im Clash-Abgleich prüfen.</span>'}else{action=`<button class="btn small" disabled title="Vorherige Tage zuerst als gespielt bestätigen">Zuerst Tag ${nextPlayable+1} abschließen</button>`}card.innerHTML=`<div class="day-head"><div><div class="day-title">Tag ${dp.day}</div><div class="statusline">${names.length}/${state.config.slots} Spieler · ${fixedFromApi?"🔒 Aufstellung in Clash fix":dp.locked?"🔒 tatsächlich gespielt":"automatisch berechnet"}</div></div><span class="badge ${dp.locked?"ok":exact?"ok":"warn"}">${fixedFromApi?"IN CLASH FIX":dp.locked?"GESPIELT":exact?"BESETZT":"PRÜFEN"}</span><button class="btn small why-day-btn" data-day="${dp.day-1}" title="Auswahl erklären" aria-label="Auswahl für Tag ${dp.day} erklären">ⓘ</button></div>${renderPlanDayWarnings(dp)}${mobileLineupButton}<div class="lineup">${chipHtml}</div>${dp.day>1?`${apiLinked?`<details class="plan-rotation-backup"><summary>Geplante Rotation (ohne Clash) anzeigen</summary><p class="statusline">Diese Ansicht vergleicht die geplanten Teams von zwei aufeinanderfolgenden Kriegstagen. Sie zeigt nicht, welche Spieler aktuell in der Clash-Vorbereitung stehen. Dafür ausschließlich den aktuellen Clash-Abgleich oben verwenden. Die Aufstellung eines bereits gestarteten Kriegs bleibt als Grundlage fix.</p>`:""}<div class="changes"><div class="changebox in"><b>🟢 ${reinIds.length} rein</b><div class="change-names">${inNames.length?inNames.map(esc).join(", "):"–"}</div></div><div class="changebox out"><b>🔴 ${rausIds.length} raus</b><div class="change-names">${outNames.length?outNames.map(esc).join(", "):"–"}</div></div></div>${apiLinked?`<button class="btn small copy-changes" data-day="${dp.day-1}" type="button">Plan-Rotation kopieren (ohne Clash)</button></details>`:""}`:""}<div class="actions day-actions" style="margin-top:10px">${dp.day-1===nextPlayable&&!dp.locked?'<span class="statusline">Nach Kriegsende übernimmt Clash die tatsächliche Aufstellung automatisch. Manuelle Bestätigung nur als Ersatz.</span>':""}${action}${dp.day>1&&!apiLinked?`<button class="btn small copy-changes" data-day="${dp.day-1}">📋 Wechseltext kopieren</button>`:""}</div>`;const rotation=card.querySelector(".plan-rotation-backup");
  if(rotation&&openRotationDays.has(card.id))rotation.open=true;
+ const warnings=card.querySelector(".day-warnings-more");
+ if(warnings&&openWarningDays.has(card.id))warnings.open=true;
  root.appendChild(card);
- if(focusedRotationDay===card.id)rotation?.querySelector("summary")?.focus({preventScroll:true});
+ if(focusedDisclosure?.id===card.id)
+  card.querySelector(focusedDisclosure.section+" summary")?.focus({preventScroll:true});
  });root.querySelectorAll(".why-day-btn").forEach(b=>b.onclick=()=>openWhyModal(Number(b.dataset.day)));root.querySelectorAll(".lock-day").forEach(b=>b.onclick=()=>{if(lastPlan.ok===false){showToast("Bitte zuerst die Konflikte bei den Einsatzzielen oder Tagesregeln beheben.");return}openLineupModal(Number(b.dataset.day))});root.querySelectorAll(".edit-day").forEach(b=>b.onclick=()=>openLineupModal(Number(b.dataset.day)));root.querySelectorAll(".unlock-day").forEach(b=>b.onclick=()=>unlockDay(Number(b.dataset.day)));root.querySelectorAll(".copy-changes").forEach(b=>b.onclick=()=>copyChanges(Number(b.dataset.day)));root.querySelectorAll(".mobile-lineup-toggle").forEach(b=>b.onclick=()=>{mobileLineupsExpanded=!mobileLineupsExpanded;renderPlan()});renderMobileDays();window.CWLCloud?.renderLive?.()}
 function renderMobileDays(){
   const root=document.getElementById("mobileDayTabs");if(!root)return;
@@ -3242,6 +3251,10 @@ function removeMembers(ids){if([...ids].some(id=>apiManagedRosterMember(state.me
 }if(reviewLockedForVize()){showToast("Plan freigegeben – Änderungen bitte als Vorschlag einreichen");return {archived:0,removed:0,blocked:true}}let archived=0,removed=0;for(const id of [...ids]){const m=state.members.find(x=>x.id===id);if(!m)continue;if(usedInLockedDay(id)){if(!state.archivedMembers.some(x=>x.id===id))state.archivedMembers.push({...m,statuses:[...m.statuses],participating:false});archived++}else removed++;state.members=state.members.filter(x=>x.id!==id);openRulePanels.delete(id);selectedMembers.delete(id)}return{archived,removed}}
 async function deleteMember(id){if(reviewLockedForVize()){showToast("Plan freigegeben – Spieler nicht löschen, stattdessen Teilnahme ändern");return}const m=memberById(id);if(!m)return;if(apiManagedRosterMember(m)){showToast("Aktive Clanmitglieder werden über Clash verwaltet");return}const used=usedInLockedDay(id),msg=used?`„${m.name}“ wurde bereits an einem gespielten Tag eingesetzt. Aus der aktuellen CWL entfernen? Vergangene gespielte Line-ups und Einsätze bleiben erhalten.`:`${m.name||"Mitglied"} wirklich löschen?`;if(!await confirmInline(msg,{title:used?"Spieler aus aktueller CWL entfernen":"Mitglied löschen",confirmText:used?"Aus CWL entfernen":"Löschen",danger:true}))return;const r=removeMembers(new Set([id]));if(r.blocked)return;renderAll(r.archived?"Spieler aus aktueller CWL entfernt · Historie bleibt erhalten ✓":"Mitglied gelöscht ✓")}
 function renderSummary(){
+  const summaryRoot=document.getElementById("summaryList");
+  const focusedSummaryId=summaryRoot.contains(document.activeElement)&&
+    document.activeElement?.matches?.(".summary-player-toggle")
+     ?document.activeElement.dataset.memberId:null;
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
     ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
   lockedIds.forEach(id=>ids.add(id));
@@ -3260,7 +3273,7 @@ function renderSummary(){
     return true;
   });
   document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
-  document.getElementById("summaryList").innerHTML=visible.map(x=>{
+  summaryRoot.innerHTML=visible.map(x=>{
     const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
@@ -3285,6 +3298,11 @@ function renderSummary(){
           '<span class="statusline">Keine Einsätze geplant</span>')+'</div>':""}
     </div>`;
   }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
+  if(focusedSummaryId){
+    const replacement=[...summaryRoot.querySelectorAll(".summary-player-toggle")]
+      .find(button=>button.dataset.memberId===focusedSummaryId);
+    replacement?.focus({preventScroll:true});
+  }
   const badge=document.getElementById("fairBadge"),rotStats=rotationStats();
   if(rotStats){
     badge.textContent=lastPlan.ok===false?"Konflikt":rotStats.spread<=1?"sehr fair":rotStats.spread<=2?"okay":"ungleich";
