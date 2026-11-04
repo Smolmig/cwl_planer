@@ -1,5 +1,5 @@
 {
-  "version": "v1.14.4",
+  "version": "v1.14.5",
   "released": "2026-11-04",
-  "summary": "Android-Installation öffnet durch eigenes Cloud-Manifest wieder die Cloud-App statt des Offline-Planers."
+  "summary": "Installationshilfe für iPhone und Android ohne wiederkehrende Popups; klare Wechselbegriffe für die CWL-Kriegsaufstellung."
 }
