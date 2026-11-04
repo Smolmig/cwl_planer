@@ -1,3 +1,12 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.4):
+- Android-Installation von cloud-app.html startet nun zuverlässig den Cloud-Planer
+  mit Konto/Clan-Anmeldung, Einsätzen und Statistik statt der Offline-PWA.
+- Eigenes cloud-manifest.webmanifest mit eindeutiger Cloud-App-ID und Start-URL.
+- Lokale Offline-PWA (index.html / manifest.webmanifest) bleibt v1.0.2, unverändert.
+- Bereits falsch installierte lokale Verknüpfungen müssen manuell ersetzt werden;
+  vor Löschen eventuell lokaler Daten vorher JSON-Backup exportieren.
+- Keine Cloud-API-, Solver- oder Supabase-Änderung; Datenformat v9 unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.3):
 - Beim automatischen Cloud-Abgleich bleibt der sichtbare Spieler an seiner
   bisherigen Bildschirmposition, auch wenn davor Mitglieder eingefügt werden.
@@ -122,7 +131,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.3;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.4;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
