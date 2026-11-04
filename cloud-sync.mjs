@@ -4,6 +4,7 @@ import { createCwlLive } from "./cwl-live.mjs?v=1.10.0";
 import { createCloudStats } from "./cwl-stats.mjs?v=1.10.0";
 import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.10.0";
 import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.10.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.11.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -337,10 +338,17 @@ const live=createCwlLive({
  onSnapshot:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
+  if(document.getElementById("view-archive")?.classList.contains("active"))
+    window.CWLGroupArchive?.invalidate?.();
   return stats.captureCwl(data);
  },
  context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+});
+window.CWLGroupArchive=createCwlGroupArchiveView({
+ sb,
+ getClanId:()=>cloud.active?clanId:null,
+ isConnected:()=>!!cloud.active&&!!clanId
 });
 window.CWLSeasonView=createCwlSeasonView({
  getProfile:()=>storage.getProfile(),
@@ -637,6 +645,7 @@ async function leaveCloud(){
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
+ window.CWLGroupArchive?.invalidate?.();
  planReview=null;planSuggestions=[];rawSavedProfile=null;
  blocked=false;hydrating=false;resetRoster();
  storage.restoreGuest();cloud.afterRender();
@@ -667,6 +676,7 @@ async function chooseClan(epoch=accountEpoch){
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
  clanId=$("cloudClanSelect").value||null;if(clanId)rememberClan(clanId);revision=null;role=null;
+ window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
  toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
