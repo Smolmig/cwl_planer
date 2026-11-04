@@ -340,7 +340,13 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true),getSnapshot:()=>{
+  return {start,stop,render,refresh:()=>refreshNow(true),getGroupSnapshot:()=>{
+    const ctx=context();
+    if(!current?.active||activeClan!==ctx.clanId||
+       current.group?.season!==current.season||
+       ctx.profile?.cwlLiveIgnoredSeason===current.season)return null;
+    return current.group||null;
+  },getSnapshot:()=>{
     if(!current?.active||activeClan!==context().clanId)return null;
     const clean=sanitizeSnapshot(current);
     if(clean&&staleRoundDays.size)clean.rounds=clean.rounds.map(r=>
