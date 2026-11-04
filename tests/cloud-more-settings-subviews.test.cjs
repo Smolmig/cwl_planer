@@ -91,6 +91,7 @@ test("viewer read-only covers moved settings controls while preserving navigatio
  assert.match(cloud,/"moreSettingsBack","moreSettingsCloudBackup"/);
  assert.match(cloud,/if\(role==="viewer" && !keep\.has\(el\.id\)/);
  assert.match(app,/if\(action==="profiles"&&window\.CWLCloud\?\.active\)\{showPlannerView\("account"\);return\}/);
+ assert.match(app,/\.cloud-mode #view-more \.more-tile\[data-more-action="profiles"\]\{display:none\}/);
 });
 test("mobile real subpages: no page overflow, aligned 44px buttons and visible values",{timeout:120000},async()=>{
  const staticHtml=app.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<link\b[^>]*>/gi,"");
