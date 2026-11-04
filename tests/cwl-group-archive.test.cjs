@@ -115,3 +115,45 @@ test("when user switches clans mid-request stale archive data is discarded",asyn
   assert.doesNotMatch(html,/November 2026/);
  }finally{if(original===undefined)delete global.document;else global.document=original;dom.window.close()}
 });
+
+test("group archive remains usable on iPhone and desktop without horizontal page overflow",{
+ timeout:120000
+},async()=>{
+ const {chromium}=require("playwright");
+ const app=read("cloud-app.html")
+   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
+   .replace(/<link\b[^>]*>/gi,"");
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,430,820,1366]){
+   const page=await browser.newPage({viewport:{width,height:840}});
+   try{
+    await page.setContent(app,{waitUntil:"domcontentloaded"});
+    const metrics=await page.evaluate(()=>{
+      document.documentElement.dataset.theme="arena";
+      document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
+      document.getElementById("view-archive").classList.add("active");
+      const host=document.getElementById("cwlGroupArchiveContent");
+      host.innerHTML='<details class="season-archive-item" open><summary><span>'+
+       '<strong>November 2026</strong><small>8 Clans · 3 / 28 abgeschlossen</small></span>'+
+       '<span class="season-archive-chip">Gespeicherter Zwischenstand</span></summary>'+
+       '<div class="season-archive-body"><div class="season-group-scroll">'+
+       '<table class="season-group-table"><tbody>'+
+       Array.from({length:8},(_,i)=>'<tr><td>'+(i+1)+'.</td><td>United Fighters</td>'+
+         '<td>3</td><td>100</td><td>456</td></tr>').join("")+
+       '</tbody></table></div></div></details>';
+      const table=document.querySelector(".season-group-scroll");
+      return {
+       windowWidth:innerWidth,
+       documentWidth:document.documentElement.scrollWidth,
+       tableWidth:table.getBoundingClientRect().width,
+       tableContentWidth:table.scrollWidth,
+       cardWidth:document.querySelector(".season-archive-item").getBoundingClientRect().width
+      };
+    });
+    assert.ok(metrics.documentWidth<=width+3,"archive page must fit "+JSON.stringify({width,metrics}));
+    assert.ok(metrics.tableWidth>120&&metrics.cardWidth>150,"archive content visible "+width);
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});
