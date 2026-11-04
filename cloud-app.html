@@ -2038,6 +2038,38 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .season-group-score b{font-size:12px}
  .season-group-score small{font-size:9px}
 }
+
+/* Shared, server-protected CWL group archives beside existing plan archives. */
+#view-archive #cwlGroupArchiveSection{margin-top:16px}
+#cwlGroupArchiveSection .section-title{gap:12px;align-items:center;flex-wrap:wrap}
+#cwlGroupArchiveSection .section-title>div{min-width:0;flex:1 1 200px}
+#cwlGroupArchiveSection h3{margin:0}
+#cwlGroupArchiveSection .section-title .statusline{margin:3px 0 0}
+.season-group-archive-list{display:grid;gap:9px}
+.season-archive-item{border:1px solid var(--line);border-radius:13px;min-width:0;overflow:hidden}
+.season-archive-item>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px}
+.season-archive-item>summary::-webkit-details-marker{display:none}
+.season-archive-item>summary::after{content:"⌄";font-weight:800;color:var(--muted);flex:none}
+.season-archive-item[open]>summary{border-bottom:1px solid var(--line)}
+.season-archive-item[open]>summary::after{transform:rotate(180deg)}
+.season-archive-item>summary>span:first-child{min-width:0;flex:1}
+.season-archive-item>summary strong,.season-archive-item>summary small{display:block}
+.season-archive-item>summary strong{font-size:14px}
+.season-archive-item>summary small{margin-top:4px;font-size:11px;color:var(--muted)}
+.season-archive-chip{font-size:10px;line-height:1.4;color:var(--muted);padding:6px;border:1px solid var(--line);border-radius:8px;text-align:center;max-width:135px}
+.season-archive-body{padding:12px;display:grid;gap:12px}
+.season-archive-body>.statusline{margin:0}
+.season-archive-body h4{margin:2px 0 0}
+.season-group-archive-rounds{display:grid;gap:7px}
+.season-archive-round{border:1px solid var(--line);border-radius:10px;padding:10px}
+.season-archive-round>summary{cursor:pointer;font-weight:750;font-size:12px}
+.season-archive-round .season-group-matches{margin-top:10px}
+@media(max-width:430px){
+ .season-archive-item>summary{flex-wrap:wrap;gap:6px}
+ .season-archive-chip{font-size:9px}
+ .season-archive-body{padding:8px}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2227,7 +2259,14 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
    <p class="statusline">Deine gespeicherten Aufstellungen früherer CWLs. Die Archive bleiben unverändert erhalten.</p></div>
    <button type="button" class="btn small" id="cwlArchiveBack">Zurück zu Mehr</button>
   </div>
-  <div class="card" id="archiveSection"><div class="section-title"><h3>Vergangene CWLs</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
+  <div class="card" id="cwlGroupArchiveSection">
+   <div class="section-title"><div><h3>Gespeicherte Gruppensaisons</h3>
+      <p class="statusline">Tabellen und Runden aus Clash, auch nach Saisonende.</p></div>
+     <button class="btn small" id="cwlGroupArchiveRefresh" type="button">Aktualisieren</button>
+   </div>
+   <div id="cwlGroupArchiveContent" aria-live="polite"></div>
+  </div>
+  <div class="card" id="archiveSection"><div class="section-title"><h3>Gespeicherte Aufstellungen</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
  </div>
 </section>
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
@@ -3336,7 +3375,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(action==="clan"||(action==="profiles"&&window.CWLCloud?.active)){
     document.getElementById("cloudOpen").click();return;
   }
-  if(action==="archive"){showPlannerView("archive");return;}
+  if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(action==="season"){showPlannerView("cwl-season");window.CWLSeasonView?.render?.();return;}
   const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
     backup:"settingsBackupSection",profiles:"localProfileCard"};
