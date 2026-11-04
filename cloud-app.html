@@ -2070,6 +2070,21 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .season-archive-body{padding:8px}
 }
 
+
+/* One compact read-only gateway from the operating plan into the live CWL season. */
+.plan-cwl-season-shortcut{display:flex;align-items:center;justify-content:space-between;gap:14px;
+ border:1px solid var(--line);border-left:3px solid var(--primary);border-radius:14px;
+ background:var(--card);padding:12px 16px;margin:0 0 14px;min-width:0}
+.plan-cwl-season-shortcut[hidden]{display:none!important}
+.plan-season-shortcut-copy{display:grid;gap:2px;min-width:0}
+.plan-season-shortcut-kicker{font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--primary)}
+.plan-season-shortcut-copy strong{font-size:14px;line-height:1.4}
+.plan-season-shortcut-copy small{font-size:11px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.plan-season-shortcut-open{flex:none;min-height:42px;white-space:nowrap}
+@media(max-width:430px){.plan-cwl-season-shortcut{padding:11px 12px;gap:8px}
+ .plan-season-shortcut-copy strong{font-size:13px}
+ .plan-season-shortcut-open{font-size:12px;padding:9px 11px;min-height:40px}}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2107,6 +2122,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+  </div>
+  <div id="planCwlSeasonEntry" class="plan-cwl-season-shortcut" hidden>
+    <div class="plan-season-shortcut-copy"><span class="plan-season-shortcut-kicker">CWL AKTUELL</span>
+      <strong>Gruppenstand &amp; Runden</strong><small id="planCwlSeasonHint">Aktuelle Liga im Überblick</small>
+    </div>
+    <button id="planCwlSeasonOpen" class="btn small plan-season-shortcut-open" type="button" aria-label="Aktuelle CWL-Saison ansehen">Saison ansehen <span aria-hidden="true">›</span></button>
   </div>
   <div class="card plan-review-panel" id="planReviewPanel" hidden>
     <div class="section-title"><div><h3>Planfreigabe</h3><div class="statusline" id="planReviewHint">Gemeinsame Planung</div></div><span class="badge" id="planReviewStatus">In Bearbeitung</span></div>
@@ -3280,7 +3301,8 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 applyTheme();
 function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
- const navView=["help","account","archive","cwl-season"].includes(visible)?"more":visible;
+ const navView=visible==="cwl-season"?(window.__seasonEntrySource||"more"):
+   ["help","account","archive"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -3376,7 +3398,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
     document.getElementById("cloudOpen").click();return;
   }
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
-  if(action==="season"){showPlannerView("cwl-season");window.CWLSeasonView?.render?.();return;}
+  if(action==="season"){window.__seasonEntrySource="more";document.getElementById("cwlSeasonBack").textContent="Zurück zu Mehr";showPlannerView("cwl-season");window.CWLSeasonView?.render?.();return;}
   const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
     backup:"settingsBackupSection",profiles:"localProfileCard"};
   showPlannerView("settings");
@@ -3384,7 +3406,13 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(targetId)requestAnimationFrame(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
 });
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");
-document.getElementById("cwlSeasonBack").onclick=()=>showPlannerView("more");
+document.getElementById("planCwlSeasonOpen").onclick=()=>{
+ window.__seasonEntrySource="plan";
+ document.getElementById("cwlSeasonBack").textContent="Zurück zum Plan";
+ showPlannerView("cwl-season");
+ window.CWLSeasonView?.render?.();
+};
+document.getElementById("cwlSeasonBack").onclick=()=>showPlannerView(window.__seasonEntrySource||"more");
 document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
