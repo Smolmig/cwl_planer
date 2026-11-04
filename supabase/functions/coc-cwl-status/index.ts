@@ -206,6 +206,26 @@ async function loadStatus(clanTag,key) {
   return {ok:true,active:true,season,clanTag,rounds,group:groupSummary,
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
+// Archive only sanitized group data after the same authenticated clan membership
+// check as the live status. Supabase service credentials never reach the browser.
+async function saveGroupArchive(clanId,group) {
+  if(!group||!/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(String(group.season||""))||
+     !valid(tag(group.clanTag))||!Array.isArray(group.clans)||group.clans.length<2||
+     !Array.isArray(group.rounds)||group.rounds.length>7)return;
+  const url=String(Deno.env.get("SUPABASE_URL")||"").replace(/\/+$/,"");
+  const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if(!url||!key){console.warn("coc-cwl-status: group archive unavailable (missing server configuration)");return}
+  const payload={clan_id:clanId,season:group.season,clan_tag:group.clanTag,group_json:group};
+  const response=await fetch(url+"/rest/v1/cwl_group_archives?on_conflict=clan_id,season",{
+    method:"POST",
+    headers:{"apikey":key,"Authorization":"Bearer "+key,
+      "Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
+    body:JSON.stringify(payload),
+    signal:AbortSignal.timeout(2500)
+  });
+  if(!response.ok)console.warn("coc-cwl-status: group archive save unavailable",{status:response.status});
+}
+
 const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(req.method!=="POST")return fail("method_not_allowed",405);
   let body;
@@ -227,6 +247,9 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
     return Response.json(prior.body,{headers:CORS});
   try{
     const response=await loadStatus(clanTag,key);
+    // Archiving is best-effort and never blocks CWL planning on storage errors.
+    if(response.active&&response.group)try{await saveGroupArchive(clanId,response.group)}
+      catch(error){console.warn("coc-cwl-status: group archive write failed",{reason:String(error?.name||"network")})}
     CACHE.set(clanId,{time:Date.now(),tag:clanTag,body:response});
     return Response.json(response,{headers:CORS});
   }catch(e){
