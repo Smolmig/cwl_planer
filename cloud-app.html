@@ -3263,7 +3263,10 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  if(keepViewport&&sameMemberContext&&listVisible&&root.children.length){
   const box=root.getBoundingClientRect();
   const headerBottom=document.querySelector(".topbar")?.getBoundingClientRect().bottom||0;
-  const bottomLimit=window.innerHeight-(document.querySelector(".bottomnav")?.getBoundingClientRect().height||0);
+  const navRect=document.querySelector(".bottomnav")?.getBoundingClientRect();
+  // Desktop navigation is a full-height sidebar, not a bottom overlay.
+  const bottomLimit=navRect&&navRect.width>window.innerWidth*.65&&navRect.top>headerBottom
+   ?Math.min(window.innerHeight,navRect.top):window.innerHeight;
   const y=Math.min(bottomLimit-12,Math.max(headerBottom+18,headerBottom+60));
   const x=Math.min(window.innerWidth-12,Math.max(12,box.left+24));
   if(y>headerBottom&&y<bottomLimit){
