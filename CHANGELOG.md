@@ -6,7 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Weitere CWL-Funktionen werden separat geplant; keine nicht freigegebenen Änderungen enthalten.
+Noch offene CWL-Gruppentabelle, vollständige Paarungen und andere Mehr-Unterseiten sind in GitHub Issues #71 und #46 geplant.
+
+## [1.9.0] - 2026-11-04
+
+### CWL-Saison und Archiv – eigene Unterseiten unter Mehr
+- Die vorhandenen Profile behalten ihre gespeicherten CWL-Archive; die Archivübersicht ist aus „Einsätze“ nach „Mehr → CWL-Archiv“ umgezogen. Kein Schema- oder Datenformatwechsel.
+- „Mehr → CWL-Saison“ zeigt drei lesende Ansichten: Gruppe mit bisher bekannten gegnerischen Clans, Runden mit den eigenen maximal sieben Kriegen sowie Clan mit bekannten Spieler-Angriffsstatistiken aus gestarteten/beendeten CWL-Kriegen. Ohne ausreichende API-Daten werden Ergebnisse als unbekannt gekennzeichnet.
+- Eine Rangliste für **alle acht Clans** ist derzeit bewusst **nicht** verfügbar: Dafür fehlen im bisher gespeicherten Cloud-Profil die übrigen Gruppenpaarungen. Der gesonderte, geschützte Serverabruf und saisonale Gruppensnapshots sind Phase 2 (#71).
+- Team-/Spielernamen werden HTML-sicher ausgegeben, Wappen-URLs validiert. Beobachter dürfen vorhandene Archivdaten nur ansehen, nicht löschen. Mobile/desktop responsive, separate Zurück-Navigation und aktive „Mehr“-Navigation.
+- Der bisherige `coc-cwl-status`-Abruf wird wiederverwendet, ohne einen neuen API-Request oder Hintergrundspeicherzugriff einzuführen. Nur bereits sichere, aktuelle Runden werden aus der frischen Sitzung angezeigt.
+
+### Kompatibilität
+- Cloud-Datenformat weiterhin v9. Keine Supabase-/RLS-/Edge-Function-Migration, keine Änderung am globalen CWL-Planungssolver, keine produktiven Profil-/Kriegswrites und kein Löschen alter Archive.
+- Separate lokale Offline-PWA weiterhin v1.0.2.
 
 ## [1.8.2] - 2026-11-04
 

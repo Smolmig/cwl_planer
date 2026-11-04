@@ -12,7 +12,7 @@ test("merged UI retains Cloud account/help navigation together with fast members
  }
  assert.ok(html.indexOf('id="cloudAccount"')<html.indexOf('id="cloudOverlay"'),"account page is not inside auth dialog");
  assert.match(html,/window\.CWLShowAccountPage=\(\)=>showPlannerView\("account"\)/);
- assert.match(html,/const navView=\["help","account"\]\.includes\(visible\)\?"more":visible/);
+ assert.match(html,/const navView=\["help","account","archive","cwl-season"\]\.includes\(visible\)\?"more":visible/);
  assert.match(sync,/!document\.getElementById\("view-account"\)\?\.classList\.contains\("active"\)/);
  assert.match(html,/function syncMemberExpandedRow\(el\)/);
  assert.match(html,/function toggleMemberCardDetails\(el\)/);
@@ -25,10 +25,10 @@ test("merged UI retains Cloud account/help navigation together with fast members
  assert.ok(html.includes("https://assets.clashk.ing/buildings/home-village/town_hall/level_"));
 });
 
-test("v1.8.2 preserves Cloud data format and independent offline PWA",()=>{
+test("v1.9.0 preserves Cloud data format and independent offline PWA",()=>{
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(html,/const APP_VERSION="v1\.8\.2"/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.8.2");
+ assert.match(html,/const APP_VERSION="v1\.9\.0"/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.9.0");
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
  assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
  assert.match(read("docs/UI_PHASE2_INTEGRATION.md"),/Versions-\/Cachekennungen/);

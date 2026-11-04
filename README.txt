@@ -1,3 +1,13 @@
+CLOUD-RELEASE 04.11.2026 (v1.9.0):
+- Mehr → CWL-Saison mit Gruppe (bekannte Gegner), Runden (eigene sieben
+  Kriege) und Clan (echte Angriffe/Sterne/Ø soweit vorhanden).
+- Mehr → CWL-Archiv ist nun eine eigene Unterseite; die vorhandenen
+  Planungsarchive und die Wiederherstellungslogik bleiben unverändert.
+- Vollständige acht-Clan-Gruppentabelle und historische CWL-Ranglisten
+  benötigen einen separaten geschützten API- und Archiv-Ausbau (#71).
+- Keine Datenmigration, keine Änderung an Supabase, dem Planungsalgorithmus
+  oder der separaten Offline-PWA v1.0.2. Details: CHANGELOG.md.
+
 CLOUD-RELEASE 04.11.2026 (v1.8.2):
 - Mobiler CWL-Abgleich: kopierbarer, einzeiliger Rein/Raus-Klartext ohne Emojis,
   einheitliche Teamstatus-Anzeigen und passendere Anordnung der Aktionen.
@@ -35,7 +45,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.8.2;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.9.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.

@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.8.2";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.9.0";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -340,5 +340,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true)};
+  return {start,stop,render,refresh:()=>refreshNow(true),getSnapshot:()=>{
+    if(!current?.active||activeClan!==context().clanId)return null;
+    const clean=sanitizeSnapshot(current);
+    if(clean&&staleRoundDays.size)clean.rounds=clean.rounds.map(r=>
+      staleRoundDays.has(r.day)?{day:r.day,available:false}:r);
+    return clean;
+  }};
 }
