@@ -2225,6 +2225,8 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .more-settings-body .settings-row{grid-template-columns:minmax(0,1fr)}
 }
 
+
+.more-settings-body button:not([hidden]){min-height:44px}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2463,12 +2465,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.13.0</strong><span>Ruhiges CWL-Design &amp; stabile Archivansicht</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.0</strong><span>„Mehr“ bekommt richtige Unterseiten</span></div>
       <ul>
-       <li><b>CWL-Saison:</b> Jetzt ausschließlich über „Plan“ erreichbar – kein doppelter Einstieg unter „Mehr“.</li>
-       <li><b>Archiv:</b> Weniger Rahmen, übersichtliche Listen mit klaren Trennlinien statt ineinandergeschachtelter Kästen.</li>
-       <li><b>Auto-Abgleich:</b> Geöffnete Saisons, Runden und Teams bleiben beim Aktualisieren offen.</li>
-       <li><b>Einheitliches Design:</b> Neue App-weite UI/UX-Regeln im Repository für alle künftigen Änderungen.</li>
+       <li><b>Mehr:</b> CWL-Regeln, Design, Backup und lokale Clanprofile öffnen jetzt übersichtliche Unterseiten statt eines langen Einstellungsfensters.</li>
+       <li><b>Bedienung:</b> Einstellungen behalten ihre Werte und Funktionen – auch beim Wechsel zwischen den Seiten.</li>
+       <li><b>Cloud:</b> Clanprofile und gemeinsame Sicherungen führen zur passenden Kontoansicht. Beobachter bleiben schreibgeschützt.</li>
+       <li><b>Smartphone:</b> Bessere Button-Anordnung und größere Berührungsflächen in den neuen Unterseiten.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2813,9 +2815,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.13.0"></script>
+<script src="./cwl-planning-core.js?v=1.14.0"></script>
 <script>
-const APP_VERSION="v1.13.0";
+const APP_VERSION="v1.14.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3731,6 +3733,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.13.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.0"></script>
 </body>
 </html>
