@@ -340,5 +340,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true),getSnapshot:()=>current?.active&&activeClan===context().clanId?sanitizeSnapshot(current):null};
+  return {start,stop,render,refresh:()=>refreshNow(true),getSnapshot:()=>{
+    if(!current?.active||activeClan!==context().clanId)return null;
+    const clean=sanitizeSnapshot(current);
+    if(clean&&staleRoundDays.size)clean.rounds=clean.rounds.map(r=>
+      staleRoundDays.has(r.day)?{day:r.day,available:false}:r);
+    return clean;
+  }};
 }
