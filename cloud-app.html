@@ -3757,6 +3757,64 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(moreSettingsMeta[action]){openMoreSettings(action);return}
 });
+// Keep Android's native install UI; iOS Safari has no beforeinstallprompt API.
+// The user opens this guide on demand, and the optional iOS hint lives only
+// in More and can be dismissed permanently.
+const CLOUD_INSTALL_HINT_KEY="cwl_cloud_install_tip_dismissed_v1";
+let installHintDismissedInMemory=false;
+function cloudInstallEnvironment(){
+ const agent=navigator.userAgent||"";
+ const ios=/iPhone|iPad|iPod/.test(agent)||
+  (navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+ const installed=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+ return {ios,installed,android:/Android/i.test(agent)};
+}
+function renderInstallGuide(){
+ const environment=cloudInstallEnvironment();
+ const title=document.getElementById("installGuideTitle");
+ const description=document.getElementById("installGuideText");
+ const list=document.getElementById("installGuideSteps");
+ const steps=environment.installed?[]:environment.ios
+  ?["Die Cloud-Seite in Safari öffnen.",
+    "Auf Teilen tippen und „Zum Home-Bildschirm hinzufügen“ wählen.",
+    "„Als Web-App öffnen“ aktivieren und auf „Hinzufügen“ tippen."]
+  :environment.android
+  ?["Die Cloud-Seite in Chrome, Samsung Internet oder dem gewünschten Browser öffnen.",
+    "Im Browsermenü „Installieren“ oder „Zum Startbildschirm hinzufügen“ wählen.",
+    "„CWL Cloud“ starten und dich über „Clan & Konto“ anmelden."]
+  :["Im Browsermenü nach „App installieren“ oder „Verknüpfung erstellen“ suchen.",
+    "Die Cloud-App hinzufügen und über „Clan & Konto“ anmelden."];
+ title.textContent=environment.installed?"App bereits installiert":environment.ios
+  ?"Zum Home-Bildschirm hinzufügen":environment.android?"Auf Android installieren":"App installieren";
+ description.textContent=environment.installed
+  ?"Du verwendest die CWL Cloud bereits als eigenständige App. Keine weiteren Schritte nötig."
+  :environment.ios
+  ?"Auf iPhone und iPad gibt es keinen automatischen Installationsdialog. Die Einrichtung erfolgt einmal über das Teilen-Menü."
+  :environment.android
+  ?"Viele Android-Browser schlagen die Installation selbst vor. Im Browsermenü geht es auch jederzeit manuell."
+  :"Je nach Browser ist die Installation direkt oder über das Browsermenü möglich.";
+ list.replaceChildren(...steps.map(step=>{const item=document.createElement("li");item.textContent=step;return item}));
+ list.hidden=environment.installed;
+}
+function updateCloudInstallSuggestion(){
+ const hint=document.getElementById("installSuggestion");
+ const environment=cloudInstallEnvironment();
+ let dismissed=installHintDismissedInMemory;
+ try{dismissed=dismissed||localStorage.getItem(CLOUD_INSTALL_HINT_KEY)==="1"}catch{}
+ hint.hidden=!environment.ios||environment.installed||dismissed;
+}
+function dismissInstallHint(){
+ installHintDismissedInMemory=true;
+ try{localStorage.setItem(CLOUD_INSTALL_HINT_KEY,"1")}catch{}
+ updateCloudInstallSuggestion();
+}
+document.getElementById("installBack").onclick=()=>showPlannerView("more");
+document.getElementById("installSuggestionOpen").onclick=()=>{
+ dismissInstallHint();renderInstallGuide();showPlannerView("install");
+};
+document.getElementById("installSuggestionDismiss").onclick=dismissInstallHint;
+updateCloudInstallSuggestion();
+window.addEventListener("appinstalled",updateCloudInstallSuggestion);
 document.getElementById("moreSettingsBack").onclick=()=>{
  const source=activeMoreSettings;
  showPlannerView("more");
