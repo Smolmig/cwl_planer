@@ -71,13 +71,14 @@ test("historic groups render independently of existing plan archives and HTML is
   const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
   const client={from(table){
    assert.equal(table,"cwl_group_archives");
-   return {select(){
-    return {eq(key,value){assert.equal(key,"clan_id");assert.equal(value,"clan-a");return {
-      order(){return {limit:async()=>({data:[
+   return {
+     select(){return this},
+     eq(key,value){assert.equal(key,"clan_id");assert.equal(value,"clan-a");return this},
+     order(){return this},
+     async limit(){return {data:[
        {season:"2026-11",group_json:group(),updated_at:"2026-11-04T11:00:00Z"}
-      ],error:null})}}
-    }}}}
-   }};
+     ],error:null}}
+   };
   }};
   const view=createCwlGroupArchiveView({sb:client,getClanId:()=>"clan-a",isConnected:()=>true});
   await view.open();
@@ -96,9 +97,12 @@ test("when user switches clans mid-request stale archive data is discarded",asyn
  try{
   const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
   let id="clan-a";const a=deferred(),b=deferred(),pending=[a,b];
-  const client={from(){return {select(){return {eq(){return {order(){return {
-    limit(){return pending.shift().promise}
-  }}}}}}}}};
+  const client={from(){return {
+   select(){return this},
+   eq(){return this},
+   order(){return this},
+   limit(){return pending.shift().promise}
+  }}};
   const view=createCwlGroupArchiveView({sb:client,getClanId:()=>id,isConnected:()=>true});
   const first=view.open();id="clan-b";const second=view.open();
   const latest=group();latest.season="2026-12";
