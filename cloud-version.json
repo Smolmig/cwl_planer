@@ -1,5 +1,5 @@
 {
-  "version": "v1.14.3",
+  "version": "v1.14.4",
   "released": "2026-11-04",
-  "summary": "Automatische Clan-Updates erhalten den sichtbaren Spieler und den Scrollstand; Einstellungen öffnen und schließen ohne Scrollsprung."
+  "summary": "Android-Installation öffnet durch eigenes Cloud-Manifest wieder die Cloud-App statt des Offline-Planers."
 }
