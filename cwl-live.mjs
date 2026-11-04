@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup } from "./cwl-live-core.mjs?v=1.8.1";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.8.2";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -103,8 +103,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         (review.status==="changes"?"<div class='cwl-prep-groups'>"+
           group("Aus Clash raus",review.toRemove,"remove")+
           group("In Clash rein",review.toAdd,"add")+"</div>":"")+
-        "<button type='button' class='btn small cwl-copy-live-swaps'>"+
-        (review.status==="match"?"Abgleich kopieren":"Wechseltext aus Clash kopieren")+"</button>"+
+        "<button type='button' class='btn small cwl-copy-live-swaps' title='Einzeiligen Text zum Einfügen im Clash-Clan-Chat kopieren'>"+
+        (review.status==="match"?"Status als Text kopieren":"Rein/Raus-Text kopieren")+"</button>"+
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
@@ -189,14 +189,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       const dp=storage.getPlannedLineups?.().find(p=>p.day===round.day);
       const latest=reviewPreparationLineup(ctx.profile,dp,currentRound,{planningOk:storage.getPlanningState?.()?.ok!==false});
       if(!latest||latest.status==="unavailable"){notify("Abgleich derzeit nicht eindeutig. Bitte CWL-Daten aktualisieren.");return;}
-      const lines=["CWL Tag "+round.day+" · Clash-Abgleich"];
-      if(latest.status==="match")lines.push("✓ Aufstellung stimmt mit dem Plan überein. Keine Wechsel nötig.");
-      else{
-        lines.push("🔴 Aus Clash raus: "+latest.toRemove.map(m=>m.name).join(", "));
-        lines.push("🟢 In Clash rein: "+latest.toAdd.map(m=>m.name).join(", "));
-      }
-      lines.push("Stand: "+new Date(lastSuccessfulAt).toLocaleString("de-AT")+" · In Clash prüfen");
-      storage.copyText?.(lines.join("\n"),"Clash-Wechseltext kopiert ✓");
+      const message=formatClashSwapText(round.day,latest);
+      if(!message){notify("Kein gültiger Wechseltext verfügbar. Bitte CWL-Daten aktualisieren.");return;}
+      storage.copyText?.(message,"Clash-Wechseltext kopiert");
     });
     section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
       if(event.target.open)expandedDays.add(round.day);

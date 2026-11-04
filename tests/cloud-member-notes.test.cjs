@@ -48,7 +48,7 @@ test("member notes are visible in collapsed cards and edited with a bounded inpu
  assert.match(html,/m\.note=next/);
 });
 test("viewer can see notes but cannot edit via normal cloud controls",()=>{
- assert.match(html,/window\.CWLCloud\?\.active&&document\.body\.classList\.contains\("cloud-role-viewer"\)/);
+ assert.match(html,/document\.body\.classList\.contains\("cloud-role-viewer"\)/);
  assert.match(sync,/document\.body\.classList\.toggle\("cloud-role-viewer"/);
  assert.match(sync,/#view-members button/);
  assert.match(sync,/role==="viewer"/);
@@ -56,7 +56,7 @@ test("viewer can see notes but cannot edit via normal cloud controls",()=>{
 test("API-linked clan names are read-only while local manual and unlinked profiles retain edits",()=>{
  assert.match(sync,/hasApiClan:\(\)=>!!clans\.find/);
  assert.match(html,/const apiManaged=!!\(window\.CWLCloud\?\.active&&window\.CWLCloud\?\.hasApiClan\?\.\(\)/);
- assert.match(html,/\$\{apiManaged\?"":\x60<button type="button" class="member-name-edit"/);
+ assert.match(html,/\$\{apiManaged\|\|former\?"":\x60<button type="button" class="member-name-edit"/);
  assert.match(sync,/cloud\.hasApiClan\?\.\(\)&&!cloud\.isEmergencyEditing\?\.\(\)&&member\?\.playerTag&&Number\.isInteger\(member\.cocOrder\)/);
 });
 test("offline index remains separate, and cloud note does not require a new SQL table",()=>{

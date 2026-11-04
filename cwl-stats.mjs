@@ -95,7 +95,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
            "<img class='stats-th-icon' src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+p.th+".webp' width='28' height='28' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
           "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
-        "<strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
+        "<div class='stats-hit-cell'><strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
+        "<small class='stats-rate-avg' title='Durchschnittliche Sterne pro Angriff'>"+
+        (p.averageStars===null?"Ø –":"Ø "+p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★")+
+        "</small></div>"+
         "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
         "<span class='stats-number"+missedColor+"'>"+(p.missed===null?(p.missedKnown>0?"mind. "+p.missedKnown:"k. A."):p.missed)+"</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";

@@ -6,7 +6,24 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Keine Änderungen seit dem v1.8.1-Stand.
+Weitere CWL-Funktionen werden separat geplant; keine nicht freigegebenen Änderungen enthalten.
+
+## [1.8.2] - 2026-11-04
+
+### CWL-Abgleich & mobile Bedienung
+- Copy für Clash-Chat: eindeutigerer Button, einzeiliger Text mit einfachen Trennzeichen statt dekorativer Emojis/Mehrzeilenformatierung. Den Paste-Vorgang im Spiel bitte zusätzlich manuell prüfen; Clash-interne Einfügebeschränkungen sind nicht kontrollierbar.
+- Teamkarten in der Vorbereitung: beide Statusangaben rechts gleich ausgerichtet; Button hat konsistenten Abstand zur Bewertung.
+- Gold-/Arena-Theme: hinterlegte Fläche um die mobilen Kriegstage neutralisiert.
+- Mobile Planübersicht: „Teilnehmer“ und „Fixspieler“ dauerhaft sichtbar; der übrige Bereich als „Übersicht & Aktionen“ benannt; Status laufender Kriege und theoretische Rotation verständlicher formuliert.
+
+### Mitglieder & Statistik
+- Notiz-Symbol bei Spielern mit kurzer Beschriftung.
+- Ausgetretene Spieler in der Cloud erscheinen nicht mehr wie bearbeitbare aktive Kader-Mitglieder, sondern als schreibgeschützte Einträge mit sichtbarer Löschoption. Der gespeicherte Zustand bleibt bis zu einem expliziten Löschen erhalten und wird bei erneutem Clanbeitritt restauriert.
+- Beobachter sehen die Mitgliederübersicht ohne Bearbeitungsaktionen und mit gedämpften Mitgliedskarten. Berechtigungen bleiben zusätzlich über die bestehenden Cloud-Rollen geschützt.
+- Individuelle Durchschnittssterne erscheinen wieder unter der 3★-Hit-Rate in der Statistiktabelle; die Kennzahl wird aus bereits gespeicherten Angriffen berechnet.
+
+### Kompatibilität
+- Keine Datenbankmigration, keine produktiven Profil- oder CWL-Aufstellungsänderungen, keine Änderung am CWL-Algorithmus oder Clash-Backend. Cloud-Datenformat v9 und separate Offline-PWA v1.0.2 unverändert.
 
 ## [1.8.1] - 2026-11-03
 
