@@ -12,7 +12,7 @@ test("merged UI retains Cloud account/help navigation together with fast members
  }
  assert.ok(html.indexOf('id="cloudAccount"')<html.indexOf('id="cloudOverlay"'),"account page is not inside auth dialog");
  assert.match(html,/window\.CWLShowAccountPage=\(\)=>showPlannerView\("account"\)/);
- assert.match(html,/const navView=\["help","account"\]\.includes\(visible\)\?"more":visible/);
+ assert.match(html,/const navView=\["help","account","archive","cwl-season"\]\.includes\(visible\)\?"more":visible/);
  assert.match(sync,/!document\.getElementById\("view-account"\)\?\.classList\.contains\("active"\)/);
  assert.match(html,/function syncMemberExpandedRow\(el\)/);
  assert.match(html,/function toggleMemberCardDetails\(el\)/);
