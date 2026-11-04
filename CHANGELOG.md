@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.4] - 2026-11-04
+
+### Android-PWA-Installation startet wieder die Cloud-App
+- **Ursache behoben:** Die Cloud-Seite verwendete irrtümlich das Offline-PWA-Manifest mit `start_url: "./"`. Die Installation von `cloud-app.html` führte so zur lokalen Startseite `index.html` ohne Konto-Anmeldung und Cloud-Tabs.
+- **Getrennte Apps:** `cloud-app.html` verweist auf das neue `cloud-manifest.webmanifest` mit eindeutiger `id` und `start_url` `./cloud-app.html`; kurzer Android-Name „CWL Cloud“. Der Offline-Planer behält sein bisheriges Manifest und seinen Service-Worker-Cache.
+- **Bestehende falsche Verknüpfung:** Sie bleibt lokal, bis sie manuell vom Startbildschirm entfernt und die Cloud-App erneut installiert wird. Vor dem Löschen einer möglicherweise genutzten Offline-App bei Bedarf deren JSON-Backup exportieren.
+- Automatisierter Android-Chromium-Test prüft getrennte Manifest-IDs, korrekten Start, Cloud-Konto-Einstieg und Unversehrtheit der Offline-PWA.
+- Keine Supabase-Migration, keine Änderung der Clanprofile, Cloud-API, Rollen, CWL-Planung oder Offline-PWA v1.0.2.
+
 ## [1.14.3] - 2026-11-04
 
 ### Scrollposition und UI-Kontext beim Cloud-Abgleich
