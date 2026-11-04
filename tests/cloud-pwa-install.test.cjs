@@ -1,0 +1,95 @@
+"use strict";
+const {test}=require("node:test");
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const http=require("node:http");
+const path=require("node:path");
+const {chromium}=require("playwright");
+
+const root=path.resolve(__dirname,"..");
+const read=f=>fs.readFileSync(path.join(root,f),"utf8");
+const manifest=JSON.parse(read("cloud-manifest.webmanifest"));
+const localManifest=JSON.parse(read("manifest.webmanifest"));
+const cloudHtml=read("cloud-app.html");
+const offlineHtml=read("index.html");
+
+test("Cloud and offline app have distinct, stable launch identities without touching offline cache",()=>{
+ assert.equal(manifest.id,"./cloud-app.html");
+ assert.equal(manifest.start_url,"./cloud-app.html");
+ assert.equal(manifest.scope,"./");
+ assert.equal(manifest.display,"standalone");
+ assert.equal(manifest.name,"CWL Planer Cloud");
+ assert.notEqual(manifest.id,localManifest.id||localManifest.start_url);
+ assert.notEqual(manifest.start_url,localManifest.start_url);
+ assert.equal(localManifest.start_url,"./");
+ assert.equal(localManifest.scope,"./");
+ assert.match(cloudHtml,/<link rel="manifest" href="\.\/cloud-manifest\.webmanifest">/);
+ assert.match(offlineHtml,/<link rel="manifest" href="\.\/manifest\.webmanifest">/);
+ assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
+ assert.match(read("service-worker.js"),/cloud-app\\\.html/);
+ assert.ok(!read("service-worker.js").includes("cloud-manifest.webmanifest"),
+  "offline worker must never pre-cache the online Cloud installation metadata");
+});
+
+test("Android installation follows cloud-app.html, not the legacy three-tab offline planner",{
+ timeout:120000
+},async()=>{
+ const server=http.createServer((req,res)=>{
+  const pathname=new URL(req.url||"/","http://localhost").pathname;
+  if(pathname==="/cloud-sync.mjs"){
+   res.writeHead(200,{"content-type":"text/javascript"});
+   res.end("export {};\n");return;
+  }
+  const map={"/":"index.html","/index.html":"index.html",
+   "/cloud-app.html":"cloud-app.html",
+   "/cloud-manifest.webmanifest":"cloud-manifest.webmanifest",
+   "/manifest.webmanifest":"manifest.webmanifest",
+   "/cwl-planning-core.js":"cwl-planning-core.js"};
+  const file=map[pathname];
+  if(!file){res.writeHead(404);res.end("");return}
+  const kind=file.endsWith(".webmanifest")?"application/manifest+json":
+   file.endsWith(".js")?"text/javascript":"text/html";
+  res.writeHead(200,{"content-type":kind+"; charset=utf-8"});
+  res.end(read(file));
+ });
+ await new Promise(done=>server.listen(0,"127.0.0.1",done));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  const url="http://127.0.0.1:"+server.address().port;
+  const page=await browser.newPage({
+   viewport:{width:384,height:854},isMobile:true,hasTouch:true,
+   userAgent:"Mozilla/5.0 (Linux; Android 14; SM-S921B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36"
+  });
+  try{
+   const errors=[];
+   page.on("pageerror",err=>errors.push(err.message));
+   await page.goto(url+"/cloud-app.html",{waitUntil:"domcontentloaded"});
+   const info=await page.evaluate(async()=>{
+    const link=document.querySelector('link[rel="manifest"]');
+    const response=await fetch(link.href);
+    const manifest=await response.json();
+    const start=new URL(manifest.start_url,response.url);
+    const id=new URL(manifest.id,response.url);
+    return {linkPath:new URL(link.href).pathname,startPath:start.pathname,
+      idPath:id.pathname,startOrigin:start.origin,currentOrigin:location.origin,
+      cloudLogin:!!document.getElementById("cloudOpen"),
+      cloudStats:!!document.getElementById("statsNav"),
+      localLegacyTab:!!document.querySelector('.navbtn[data-view="summary"]'),
+      name:manifest.name};
+   });
+   assert.deepEqual(info,{
+    linkPath:"/cloud-manifest.webmanifest",startPath:"/cloud-app.html",
+    idPath:"/cloud-app.html",startOrigin:new URL(url).origin,currentOrigin:new URL(url).origin,
+    cloudLogin:true,cloudStats:true,localLegacyTab:false,name:"CWL Planer Cloud"
+   });
+   await page.goto(url+info.startPath,{waitUntil:"domcontentloaded"});
+   assert.equal(await page.locator("#cloudOpen").count(),1,
+    "the installed Cloud launch must expose its account entry point");
+   assert.ok(await page.locator("#statsNav").count()===1);
+   assert.deepEqual(errors,[]);
+  }finally{await page.close();}
+ }finally{
+  await browser.close();
+  await new Promise(done=>server.close(done));
+ }
+});
