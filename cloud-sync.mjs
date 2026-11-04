@@ -246,6 +246,7 @@ async function openNewPlanCycle(){
 
 const cloud={
  active:false,
+ getActiveClanId:()=>clanId,
  isEmergencyEditing:()=>manualRosterPending(),
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
