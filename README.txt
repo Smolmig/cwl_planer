@@ -1,3 +1,15 @@
+CLOUD-RELEASE 04.11.2026 (v1.11.0):
+- CWL-Gruppentabellen und alle bekannten Runden werden nach erfolgreichem
+  Live-Abruf automatisch und dauerhaft pro Cloud-Clan und Saison gesichert.
+- Mehr > CWL-Archiv zeigt die neue Gruppenhistorie und unverändert die
+  bisherigen gespeicherten Aufstellungsarchive.
+- Beobachter dürfen lesen, aber keine Archivdaten bearbeiten; bestätigte
+  Kriegsergebnisse bleiben gegenüber älteren API-Zwischenständen geschützt.
+- Kein zusätzliches Clash-API-Polling, kein Reset des Cloud-Profils und
+  keine Änderung am Planungsalgorithmus oder der separaten Offline-PWA.
+- Datenbankschema: cwl_group_archives (RLS), Edge coc-cwl-status;
+  Details: CHANGELOG.md.
+
 CLOUD-RELEASE 04.11.2026 (v1.10.0):
 - Die CWL-Saison-Gruppe zeigt alle bekannten Clans mit vorläufiger Rangfolge,
   bestätigten Siegboni und Ergebnis-Zwischenständen.
@@ -55,7 +67,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.10.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.11.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.

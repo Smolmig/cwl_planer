@@ -1,5 +1,5 @@
 {
-  "version": "v1.10.0",
+  "version": "v1.11.0",
   "released": "2026-11-04",
-  "summary": "CWL-Gruppe mit vorläufiger Rangfolge aller acht Clans, sieben Runden mit jeweils bis zu vier Paarungen und bestätigten Siegboni aus dem bereits vorhandenen geschützten API-Abruf."
+  "summary": "Dauerhaftes CWL-Gruppenarchiv mit Tabellen und Runden pro Clan und Saison, geschützten Leserechten und Schutz vor veralteten Clash-Zwischenständen."
 }
