@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,"..");
 const app=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
-const style=app.match(/<style>([\\s\\S]*?)<\\/style>/)?.[1];
+const style=app.match(/<style>([\s\S]*?)<\/style>/)?.[1];
 const loadCore=()=>import(pathToFileURL(path.join(root,"cwl-live-core.mjs")).href);
 test("Clash swap copy uses one line and preserves only player names, no UI emojis or column gaps",async()=>{
  const {formatClashSwapText}=await loadCore();
@@ -13,33 +13,33 @@ test("Clash swap copy uses one line and preserves only player names, no UI emoji
    toRemove:[{name:"Suminizer"},{name:"Raphtor"}],
    toAdd:[{name:"Luki"},{name:"Tommy"}]});
  assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: Luki, Tommy");
- assert.doesNotMatch(text,/[\\n\\r\\t]|[🔴🟢📋]/u);
+ assert.doesNotMatch(text,/[\n\r\t]|[🔴🟢📋]/u);
  assert.equal(formatClashSwapText(2,{status:"match"}),"Tag 2: Aufstellung passt. Keine Wechsel noetig.");
  assert.equal(formatClashSwapText(3,{status:"unavailable"}),null);
  assert.equal(formatClashSwapText(2,{status:"changes",toAdd:[],toRemove:[]}),null);
- const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\\nKen  "}],toAdd:[{name:"Kai\\tZen"}]});
+ const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\nKen  "}],toAdd:[{name:"Kai\tZen"}]});
  assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: Kai Zen");
- assert.match(live,/formatClashSwapText\\(round\\.day,latest\\)/);
- assert.match(live,/Rein\\/Raus-Text kopieren/);
+ assert.match(live,/formatClashSwapText\(round\.day,latest\)/);
+ assert.match(live,/Rein\/Raus-Text kopieren/);
  assert.doesNotMatch(live,/🔴 Aus Clash raus/);
 });
 test("Former members keep settings for rejoin but become only deletable archived rows in the UI",()=>{
- assert.match(app,/const former=!!\\(window\\.CWLCloud\\?\\.active&&m\\.cocSyncState==="former"\\)/);
+ assert.match(app,/const former=!!\(window\.CWLCloud\?\.active&&m\.cocSyncState==="former"\)/);
  assert.match(app,/delete-member former-trash/);
- assert.match(app,/member-former \\:is\\(\\.member-part,\\.member-fixed/);
- assert.match(app,/apiManaged\\|\\|former\\?"":/);
- assert.match(app,/m\\.cocSyncState==="former"\\|\\|apiManagedRosterMember/);
- assert.match(app,/if\\(window\\.CWLCloud\\?\\.active&&\\(document\\.body\\.classList\\.contains/);
+ assert.match(app,/member-former \:is\(\.member-part,\.member-fixed/);
+ assert.match(app,/apiManaged\|\|former\?"":/);
+ assert.match(app,/m\.cocSyncState==="former"\|\|apiManagedRosterMember/);
+ assert.match(app,/if\(window\.CWLCloud\?\.active&&\(document\.body\.classList\.contains/);
  assert.match(app,/cocBeforeDeparture/);
- assert.match(app,/el\\.querySelector\\("\\.delete-member"\\)\\?\\.addEventListener/);
+ assert.match(app,/el\.querySelector\("\.delete-member"\)\?\.addEventListener/);
 });
 test("Member note label, viewer read-only styling, individual average stars and clarifying CWL copy exist",()=>{
- assert.match(app,/member-note-caption">Notiz<\\/span>/);
- assert.match(app,/cloud-role-viewer #memberList \\.member\\{/);
+ assert.match(app,/member-note-caption">Notiz<\/span>/);
+ assert.match(app,/cloud-role-viewer #memberList \.member\{/);
  assert.match(app,/Übersicht &amp; Aktionen/);
  assert.match(app,/Diese Ansicht vergleicht die geplanten Teams/);
  assert.match(app,/CWL läuft: Team bereits gestarteter Kriege steht fest/);
- assert.match(stats,/p\\.averageStars\\.toLocaleString\\("de-AT"/);
+ assert.match(stats,/p\.averageStars\.toLocaleString\("de-AT"/);
  assert.match(stats,/stats-rate-avg/);
 });
 test("Mobile plan always shows participants and fixed players, expanded overview adds secondary KPIs",{
