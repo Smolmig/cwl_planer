@@ -131,7 +131,8 @@ test("Large lists: viewport paint skipping, no fixed Gold gradient, mobile hit t
     assert.equal(layout.memberPaint,"auto");
     assert.equal(layout.rowPaint,"auto");
     assert.equal(layout.memberShadow,"none");
-    assert.equal(layout.backgroundAttachment,"scroll");
+    assert.ok(layout.backgroundAttachment.split(",").every(value=>value.trim()==="scroll"),
+     "every layered Arena gradient must scroll without a fixed background");
     assert.ok(layout.scrollWidth<=width+2,"no overflow at "+width+": "+JSON.stringify(layout));
     assert.ok(layout.scrollY>300,"long lists must remain scrollable at "+width);
     if(width<700)assert.ok(layout.touch.every(n=>n>=41),JSON.stringify(layout.touch));
