@@ -1,5 +1,5 @@
 {
-  "version": "v1.14.1",
+  "version": "v1.14.2",
   "released": "2026-11-04",
-  "summary": "Cloud-Aktualisierungen bewahren geöffnete Plan- und Mitgliederbereiche, Filter, Einsätze und Fokus; bewusste Clanwechsel bleiben sauber getrennt."
+  "summary": "Lange Mitglieder- und Statistiklisten scrollen flüssiger; Einzelangriffe werden erst beim Aufklappen geladen, mit größeren mobilen Spieleraktionen."
 }

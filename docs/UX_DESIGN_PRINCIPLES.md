@@ -44,6 +44,9 @@
 - Bedienelemente mit ausreichend großen Treffflächen (Richtwert rund 44 × 44 CSS-Pixel für wichtige Touch-Aktionen), erkennbarem aktivem Zustand und klaren Beschriftungen.
 - Desktop nutzt verfügbaren Platz, z. B. Sidebar, sinnvoll breitere Spalten und weniger unnötige Karten; nicht einfach ein hochskaliertes Mobil-Layout.
 - Animationen kurz, funktional und reduzierbar via `prefers-reduced-motion`. Kein ruckeliger Full-List-Rerender bei jedem Poll.
+- **Low-End-Performance:** Lange Spieler- und Statistiklisten ohne teure Einzelkartenschatten, fixierte Verlaufshintergründe oder nicht notwendige Whole-List-Rerender; nur Elemente im sichtbaren Bereich zeichnen, wenn dies die Scrollposition nicht verschlechtert.
+- Geschlossene Historien-/Detailbereiche erst beim aktiven Öffnen mit vielen Einträgen füllen; Filter und Live-Updates verwenden unveränderte DOM-Zeilen und Berechnungen möglichst wieder.
+- Regressionen synthetisch in 320/390/1366px prüfen; reale schwache Büro-PCs und iPhone Safari bleiben ein separater Praxistest, nicht durch synthetische FPS-Versprechen ersetzen.
 
 ## 6. Texte und Zustände
 

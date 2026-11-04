@@ -2230,6 +2230,30 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
 .cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
+/* v1.14.2: keep long member/statistics lists cheap on slower desktops.
+   Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
+@supports (content-visibility:auto){
+ #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
+ #view-stats #statsRows>.stats-player-row{content-visibility:auto;contain-intrinsic-size:auto 64px}
+}
+html[data-theme="arena"] #view-members #memberList>.member{
+ background:var(--card);box-shadow:none;
+}
+/* Large fixed gradient backgrounds cause costly scrolling repaints on some PCs. */
+html[data-theme="arena"] body{background-attachment:scroll}
+/* Bigger hit areas, but allow wrapping instead of clipping on narrow iPhones. */
+@media(max-width:699px){
+ #view-members .member-note-btn{min-width:44px;min-height:44px;padding:8px}
+ #view-members .member-snapshot-actions .order-btn{
+  min-width:42px;min-height:44px;padding:8px 9px!important
+ }
+ #view-members .member-snapshot-actions .member-edit-toggle{min-height:44px!important;padding:8px 10px!important}
+ #view-members .member-top .name-wrap .member-name-edit{
+  flex:0 0 44px!important;width:44px!important;height:44px!important;min-height:44px!important
+ }
+ #view-members .member-snapshot{flex-wrap:wrap}
+ #view-members .member-snapshot-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2468,12 +2492,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.14.1</strong><span>Cloud-Updates ohne Zuklappen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.2</strong><span>Flüssigeres Scrollen</span></div>
       <ul>
-       <li><b>Mitglieder:</b> Geöffnete Spielerkarten, Suchtexte und Filter bleiben nach einem Hintergrundabgleich erhalten.</li>
-       <li><b>Plan:</b> Rotationen, weitere Hinweise und gewählter Kriegstag bleiben beim Neuladen offen.</li>
-       <li><b>Einsätze:</b> Aufgeklappte Spielertage und der Tastaturfokus werden nicht mehr unnötig zurückgesetzt.</li>
-       <li><b>Clanwechsel:</b> Die vorherige Ansicht wird bewusst zurückgesetzt, damit nichts zwischen Clans vermischt wird.</li>
+       <li><b>Mitglieder:</b> Schnellere Listen auf schwächeren PCs und ruhigerer Hintergrund im Gold-Theme.</li>
+       <li><b>Statistik:</b> Einzelangriffe erscheinen erst, wenn du einen Krieg aufklappst.</li>
+       <li><b>Bedienung:</b> Bereits geöffnete Kriege bleiben beim Aktualisieren offen; Suche und Sortierung arbeiten ressourcenschonender.</li>
+       <li><b>Smartphone:</b> Größere Tippflächen bei Spieleraktionen.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2818,9 +2842,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.14.1"></script>
+<script src="./cwl-planning-core.js?v=1.14.2"></script>
 <script>
-const APP_VERSION="v1.14.1";
+const APP_VERSION="v1.14.2";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3813,6 +3837,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.14.1"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.2"></script>
 </body>
 </html>

@@ -9,6 +9,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
+  let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastMembersNotifiedVersion=-1;
+  let historyAttacksByWar=new Map();
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
   function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
   window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
@@ -22,13 +24,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       $("statsSummary").innerHTML="";
       $("statsRows").innerHTML="";
       $("statsWarHistory").innerHTML="";
+      $("statsWarHistory").removeAttribute("data-history-signature");
+      $("statsWarHistory").removeAttribute("data-history-clan");
+      cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;
       return;
     }
-    const summary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
-    cachedPlayerStats=new Map(summary.rows.map(p=>[cleanTag(p.tag),p]));
-    const metricSignature=[ctx.clanId,version,type,last,cwlSeasons,sameHigher,showFormer].join("|");
-    const metricsChanged=metricSignature!==lastMetricSignature;
-    lastMetricSignature=metricSignature;
+    const metricSignature=[ctx.clanId,version,type,last,cwlSeasons,sameHigher,showFormer,(ctx.memberTags||[]).join(",")].join("|");
+    const metricsChanged=metricSignature!==lastMetricSignature||!cachedSummary;
+    if(metricsChanged){
+      cachedSummary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+      lastMetricSignature=metricSignature;
+      cachedPlayerStats=new Map(cachedSummary.rows.map(p=>[cleanTag(p.tag),p]));
+    }
+    const summary=cachedSummary;
     const label=summary.complete?String(summary.misses):
       (summary.missesKnown>0?"mind. "+summary.missesKnown:"k. A.");
     $("statsSummary").innerHTML=[
@@ -71,7 +79,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const note=$("statsMissingNote");
     if(note){note.textContent=summary.complete?"": "„mind.“ = nachgewiesene Mindestzahl; „k. A.“ = keine verlässliche Angabe aus älteren Kriegen.";note.hidden=summary.complete;}
     renderWarHistory();
-    if(metricsChanged)window.CWLCloudStats?.onUpdate?.();
+    // Membership performance badges depend on loaded attack data, not search/sort/filter state.
+    if(scope===ctx.clanId&&lastMembersNotifiedVersion!==version){
+      lastMembersNotifiedVersion=version;
+      window.CWLCloudStats?.onUpdate?.();
+    }
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
@@ -79,7 +91,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
         return (ascending?diff:-diff)||b.attacks-a.attacks;
       });
-    $("statsRows").innerHTML=visible.length?visible.map(p=>{
+    const nextRowsMarkup=visible.length?visible.map(p=>{
       const hitColor=p.hitRate===null?"":p.hitRate>=80?" great":p.hitRate<60?" low":"";
       const missedColor=p.missedKnown>0?" warn":"";
       const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
@@ -102,31 +114,71 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
         "<span class='stats-number"+missedColor+"'>"+(p.missed===null?(p.missedKnown>0?"mind. "+p.missedKnown:"k. A."):p.missed)+"</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
+    // Avoid destroying player rows (and their decoded RH images) for identical results.
+    const rowsHost=$("statsRows");
+    if(lastRowsHost!==rowsHost||lastRowsMarkup!==nextRowsMarkup){
+      rowsHost.innerHTML=nextRowsMarkup;
+      lastRowsHost=rowsHost;
+      lastRowsMarkup=nextRowsMarkup;
+    }
+  }
+  // CWL histories can contain thousands of attacks. Only summaries are mounted
+  // initially; expanding a war creates its attack rows on demand.
+  function renderHistoryAttacks(disclosure){
+    const target=disclosure?.querySelector(".war-history-detail");
+    if(!target||target.dataset.rendered==="1")return;
+    const rows=(historyAttacksByWar.get(disclosure.dataset.warKey)||[]).slice().sort((a,b)=>
+      String(a.attacker_name||"").localeCompare(String(b.attacker_name||""),"de")||a.attack_order-b.attack_order);
+    target.innerHTML=rows.length?rows.map(a=>"<div class='war-history-attack'><span>"+
+      esc(a.attacker_name)+" <small>RH"+esc(a.attacker_th??"?")+"</small></span><span>"+
+      "<strong class='war-history-stars'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"</strong> "+
+      esc(a.destruction)+"% <small>gegen "+esc(a.defender_name||"Gegner")+" · RH"+
+      esc(a.defender_th??"?")+"</small></span></div>").join(""):
+      "<p class='stats-note'>Keine Einzelangriffe hinterlegt.</p>";
+    target.dataset.rendered="1";
   }
   function renderWarHistory(){
     const host=$("statsWarHistory");if(!host)return;
+    const ctx=context();
+    const historySignature=[ctx.clanId,version,type,last,cwlSeasons].join("|");
+    if(host.dataset.historySignature===historySignature)return;
+    const sameClan=host.dataset.historyClan===String(ctx.clanId||"");
+    const openWars=new Set(sameClan?[...host.querySelectorAll(".war-history-item[open]")].map(el=>el.dataset.warKey):[]);
+    const focusedWar=sameClan&&host.contains(document.activeElement)&&
+      document.activeElement?.matches?.(".war-history-item>summary")?
+      document.activeElement.parentElement.dataset.warKey:null;
     const chosen=selectStatWars(wars,{type,last,cwlSeasons});
     const relevant=chosen.slice().sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at));
+    // One index pass, instead of scanning all attacks separately for every war.
+    const index=new Map();
+    for(const attack of attacks){
+      if(!index.has(attack.war_key))index.set(attack.war_key,[]);
+      index.get(attack.war_key).push(attack);
+    }
+    historyAttacksByWar=index;
+    host.dataset.historySignature=historySignature;
+    host.dataset.historyClan=String(ctx.clanId||"");
     if(!relevant.length){host.innerHTML="<p class='stats-note'>Noch keine abgeschlossenen Kriege gespeichert.</p>";return;}
     host.innerHTML=relevant.map(w=>{
-      const entries=attacks.filter(a=>a.war_key===w.war_key).sort((a,b)=>
-        a.attacker_name.localeCompare(b.attacker_name,"de")||a.attack_order-b.attack_order);
+      const entries=index.get(w.war_key)||[];
       const when=new Date(w.started_at).toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric"});
-      const stars=entries.reduce((n,a)=>n+a.stars,0);
+      const stars=entries.reduce((n,a)=>n+(Number(a.stars)||0),0);
       const kind=w.war_type==="cwl"?"CWL":"CW";
-      const rows=entries.length?entries.map(a=>"<div class='war-history-attack'><span>"+
-        esc(a.attacker_name)+" <small>RH"+esc(a.attacker_th??"?")+"</small></span><span>"+
-        "<strong class='war-history-stars'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"</strong> "+
-        esc(a.destruction)+"% <small>gegen "+esc(a.defender_name||"Gegner")+" · RH"+
-        esc(a.defender_th??"?")+"</small></span></div>").join(""):
-        "<p class='stats-note'>Keine Einzelangriffe hinterlegt.</p>";
-      return "<details class='war-history-item'><summary><span><strong>"+esc(kind+" · "+when)+"</strong><small>gegen "+
+      return "<details class='war-history-item' data-war-key='"+esc(w.war_key)+"'"+
+        (openWars.has(w.war_key)?" open":"")+"><summary><span><strong>"+esc(kind+" · "+when)+"</strong><small>gegen "+
         esc(w.opponent_name||"unbekannt")+"</small></span><span>"+entries.length+" Angriffe · "+stars+
-        " ★</span></summary><div class='war-history-detail'>"+rows+"</div></details>";
+        " ★</span></summary><div class='war-history-detail'></div></details>";
     }).join("");
+    for(const disclosure of host.querySelectorAll(".war-history-item[open]"))renderHistoryAttacks(disclosure);
+    if(focusedWar){
+      const restored=[...host.querySelectorAll(".war-history-item")].find(el=>el.dataset.warKey===focusedWar);
+      restored?.querySelector("summary")?.focus({preventScroll:true});
+    }
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();lastMetricSignature="";version++;lastCapture.clear();loading=false;importing=false;
+    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();
+    cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
+    version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
   async function load(){
@@ -269,6 +321,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   }
   function bind(){
     const e=id=>$(id);
+    // The native <details> toggle does not bubble; capture it on the stable host.
+    e("statsWarHistory")?.addEventListener("toggle",event=>{
+      const disclosure=event.target;
+      if(disclosure?.matches?.(".war-history-item")&&disclosure.open)renderHistoryAttacks(disclosure);
+    },true);
     e("statsType")?.addEventListener("change",ev=>{
       type=ev.target.value;
       syncPeriodChoices();
