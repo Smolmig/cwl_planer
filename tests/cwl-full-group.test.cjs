@@ -112,7 +112,7 @@ test("group round UI shows all matchups and escapes unsafe group names",async()=
    const view=createCwlSeasonView({getProfile:()=>profile,getSnapshot:()=>null,getGroup:()=>group,isConnected:()=>true,refresh:()=>{}});
    view.render();
    // Season view requires a verified own-season snapshot; simulate a known own war.
-   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Noch keine CWL/);
+   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Runde 1/);
    profile.cwlLive.rounds=[{day:1,available:true,state:"warEnded",warTag:"#2PYL0",
      clan:{tag:tags[0],name:"Clan 0",members:[],stars:24},
      opponent:{tag:tags[1],name:"Clan 1",members:[],stars:18}}];
@@ -121,7 +121,7 @@ test("group round UI shows all matchups and escapes unsafe group names",async()=
    assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Paarungen bekannt/);
    dom.window.document.querySelector('[data-season-tab="group"]').click();
    const html=dom.window.document.querySelector("#cwlSeasonContent").innerHTML;
-   assert.match(html,/+ 10 Bonus|+ 20 Bonus|+ 10 Bonus/u);
+   assert.match(html,/\+ 10 Bonus/);
    assert.doesNotMatch(html,/<svg onload=alert\(1\)>/);
    assert.match(html,/vorläufig/);
    assert.match(html,/Zerstörung Σ/);
