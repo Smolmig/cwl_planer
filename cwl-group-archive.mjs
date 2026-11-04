@@ -127,8 +127,18 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
   }
   function replaceContent(html){
     const keys=captureOpen();
+    const active=host.contains(document.activeElement)?document.activeElement:null;
+    const focusedKey=active?.closest?.('details[data-archive-key]')?.getAttribute("data-archive-key");
+    const summaryWasFocused=active?.tagName==="SUMMARY";
     host.innerHTML=html;
     restoreOpen(keys);
+    if(focusedKey&&summaryWasFocused){
+      // Keyboard users must not lose their place when a new API snapshot
+      // replaces a section they were currently inspecting.
+      const target=[...host.querySelectorAll('details[data-archive-key]')]
+        .find(node=>node.getAttribute("data-archive-key")===focusedKey);
+      target?.querySelector(":scope > summary")?.focus({preventScroll:true});
+    }
   }
   function render(){
     const id=current();
@@ -176,11 +186,18 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
         .eq("clan_id",id).order("season",{ascending:false}).limit(140)}
       catch{rosterQuery={data:[],error:true}}
       if(token!==requestSerial||id!==current())return;
+      if(refresh)refresh.title="";
       loadedId=id;rows=Array.isArray(data)?data:[];
       ownRows=!rosterQuery.error&&Array.isArray(rosterQuery.data)?rosterQuery.data:[];busy=false;render();
     }catch(error){
       if(token!==requestSerial||id!==current())return;
-      loadedId=null;rows=[];ownRows=[];busy=false;
+      busy=false;
+      if(loadedId===id&&rows.length){
+        // A transient refresh failure must not close a single open round.
+        if(refresh)refresh.title="Aktualisierung derzeit nicht möglich – der gespeicherte Stand bleibt sichtbar.";
+        return;
+      }
+      loadedId=null;rows=[];ownRows=[];
       host.innerHTML='<p class="season-empty">Das Gruppenarchiv konnte nicht geladen werden. Bitte Verbindung und Anmeldung prüfen und erneut versuchen. Deine bisherigen Plan-Archive bleiben erhalten.</p>';
     }
   }
