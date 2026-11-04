@@ -62,7 +62,7 @@ test("no arbitrary ordering for exact star/destruction ties, invalid group not a
 });
 test("backend already fetches all group wars, adds no extra calls, and returns no other clans' members",async()=>{
  const source=read("supabase/functions/coc-cwl-status/index.ts");
- const stripped=source.replace(/^import .*;\n/,"").replace(/export default \{fetch:[\s\S]*$/,"");
+ const stripped=source.replace(/^import .*;\n/m,"").replace(/export default \{fetch:[\s\S]*$/,"");
  const code=new Function("fetch","withSupabase","Response","AbortSignal","Deno",stripped+";return {loadStatus};");
  const requestLog=[];
  const warTags=["#2PYL0","#2PYL2","#2PYL8","#2PYL9"];
