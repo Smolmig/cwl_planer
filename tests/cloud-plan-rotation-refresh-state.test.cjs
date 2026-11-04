@@ -46,6 +46,7 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
       ?'<details class="day-warnings-more"><summary>Weitere Hinweise</summary><p>Konflikt prüfen</p></details>'
       :'';
      window.CWLLegacy.rerender();
+     document.getElementById("allDaysMode").click(); // allow keyboard focus on day 2 on mobile
     });
     const selector="#day-card-1 .plan-rotation-backup";
     assert.equal(await page.locator(selector).count(),1);
@@ -85,6 +86,7 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     assert.equal(rotationFocus,true,"rotation keyboard focus survives refresh");
     // Summary rows must preserve focused member and expanded day list.
     const summaryState=await page.evaluate(()=>{
+     window.showPlannerView("summary"); // focus requires its tab to be visible
      const member=window.CWLLegacy.newMember("Summary Test");
      window.CWLLegacy.getProfile().members.push(member);
      window.CWLLegacy.rerender();
