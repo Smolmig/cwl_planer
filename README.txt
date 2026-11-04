@@ -1,3 +1,11 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.2):
+- Lange Mitglieder-/Statistiklisten rendern sichtbare Zeilen effizienter;
+  Gold-Theme ohne fixierten Hintergrund oder Einzelschatten je Spielerkarte.
+- Kriegsverlauf erzeugt die Einzelangriffe erst beim Öffnen; Filter und
+  Refresh behalten die geöffneten Kriege, Suche vermeidet Rechen-/DOM-Duplikate.
+- Mobile Aktionen für Notizen, Reihenfolge und Bearbeiten besser erreichbar.
+- Cloud-Datenformat v9, Planungslogik, RLS, Supabase und Offline-PWA unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.1):
 - Hintergrund-Cloud-Abgleich bewahrt geöffnete Mitgliederkarten, Suche/Filter,
   gewählten Kriegstag, Plan-Rotationen und zusätzliche Tageswarnungen.
@@ -106,7 +114,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.1;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.2;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
