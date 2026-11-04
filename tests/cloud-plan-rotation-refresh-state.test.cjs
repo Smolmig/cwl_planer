@@ -43,7 +43,8 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     await page.evaluate(()=>{
      window.__fakeClanId="clan-a";
      window.CWLCloud={active:true,hasApiClan:()=>true,
-      getActiveClanId:()=>window.__fakeClanId,renderLive:()=>{}};
+      getActiveClanId:()=>window.__fakeClanId,renderLive:()=>{},
+      onLocalChange:()=>{},afterRender:()=>{}};
      window.CWLLegacy.switchToCloud({...window.CWLLegacy.getProfile()});
      window.renderPlanDayWarnings=dp=>dp.day===1
       ?'<details class="day-warnings-more"><summary>Weitere Hinweise</summary><p>Konflikt prüfen</p></details>'
