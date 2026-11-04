@@ -3599,9 +3599,8 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="help"){showPlannerView("help");return}
-  if(action==="clan"||(action==="profiles"&&window.CWLCloud?.active)){
-    document.getElementById("cloudOpen").click();return;
-  }
+  if(action==="clan"){showPlannerView("account");return}
+  if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(moreSettingsMeta[action]){openMoreSettings(action);return}
 });
