@@ -2193,6 +2193,43 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  #view-archive .season-archive-round>summary::before{transition:none}
 }
 
+
+/* v1.14 – real More subpages with reused settings controls, not a scrolled modal. */
+#view-more-settings{max-width:1080px;margin-inline:auto}
+.more-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:3px 0 18px}
+.more-detail-header>div{min-width:0;flex:1}
+.more-detail-header .more-eyebrow{display:block;font-size:11px;font-weight:850;letter-spacing:.18em;color:var(--primary)}
+.more-detail-header h2{font-size:clamp(24px,3.5vw,36px);margin:7px 0 9px}
+.more-detail-header p{max-width:650px;margin:0;line-height:1.55}
+.more-detail-back{flex:none;min-height:44px}
+.more-settings-body{max-width:860px;display:grid;gap:0;min-width:0}
+.more-settings-body .settings-subcard,.more-settings-body #localProfileCard{
+ margin:0;padding:20px 2px 22px;
+ border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;background:transparent;
+}
+.more-settings-body .settings-subcard:last-child,.more-settings-body #localProfileCard:last-child{border-bottom:0}
+.more-settings-body .settings-subcard h4{font-size:17px;margin:0 0 14px}
+.more-settings-body .settings-row{gap:14px}
+.more-settings-body .field{min-width:0}
+.more-settings-body .field :is(select,input){max-width:100%;min-height:44px}
+.more-settings-body :is(.actions,.profile-actions){display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.more-settings-body :is(.actions,.profile-actions) .btn{min-height:44px;max-width:100%;white-space:normal;text-align:center}
+.more-detail-notice{padding:12px 0;color:var(--muted);font-size:13px;line-height:1.5;max-width:850px}
+.more-cloud-backup{min-height:44px;margin:0 0 14px}
+@media(max-width:520px){
+ .more-detail-header{flex-direction:column;gap:12px}
+ .more-detail-back{align-self:flex-start}
+ .more-settings-body .settings-subcard,.more-settings-body #localProfileCard{padding:16px 1px 20px}
+ .more-settings-body :is(.actions,.profile-actions){align-items:stretch}
+ .more-settings-body :is(.actions,.profile-actions) .btn{flex:1 1 100%;width:100%}
+ .more-settings-body .settings-row{grid-template-columns:minmax(0,1fr)}
+}
+
+
+.more-settings-body button:not([hidden]){min-height:44px}
+
+/* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
+.cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2364,6 +2401,16 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
  </div>
 </section>
+<section id="view-more-settings" class="view more-subview" aria-labelledby="moreSettingsTitle">
+ <div class="more-detail-header">
+  <div><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreSettingsTitle">Einstellungen</h2>
+  <p id="moreSettingsDescription" class="statusline">Einstellungen für deinen Clan.</p></div>
+  <button type="button" class="btn small more-detail-back" id="moreSettingsBack">Zurück zu Mehr</button>
+ </div>
+ <p class="more-detail-notice" id="moreSettingsNotice" hidden></p>
+ <button type="button" id="moreSettingsCloudBackup" class="btn more-cloud-backup" hidden>Cloud-Sicherungen unter Clan & Konto öffnen</button>
+ <div id="moreSettingsContent" class="more-settings-body"></div>
+</section>
 <section id="view-cwl-season" class="view more-subview" aria-labelledby="cwlSeasonTitle">
  <div class="card season-page">
   <div class="section-title more-subview-heading">
@@ -2421,12 +2468,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.13.0</strong><span>Ruhiges CWL-Design &amp; stabile Archivansicht</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.0</strong><span>„Mehr“ bekommt richtige Unterseiten</span></div>
       <ul>
-       <li><b>CWL-Saison:</b> Jetzt ausschließlich über „Plan“ erreichbar – kein doppelter Einstieg unter „Mehr“.</li>
-       <li><b>Archiv:</b> Weniger Rahmen, übersichtliche Listen mit klaren Trennlinien statt ineinandergeschachtelter Kästen.</li>
-       <li><b>Auto-Abgleich:</b> Geöffnete Saisons, Runden und Teams bleiben beim Aktualisieren offen.</li>
-       <li><b>Einheitliches Design:</b> Neue App-weite UI/UX-Regeln im Repository für alle künftigen Änderungen.</li>
+       <li><b>Mehr:</b> CWL-Regeln, Design, Backup und lokale Clanprofile öffnen jetzt übersichtliche Unterseiten statt eines langen Einstellungsfensters.</li>
+       <li><b>Bedienung:</b> Einstellungen behalten ihre Werte und Funktionen – auch beim Wechsel zwischen den Seiten.</li>
+       <li><b>Cloud:</b> Clanprofile und gemeinsame Sicherungen führen zur passenden Kontoansicht. Beobachter bleiben schreibgeschützt.</li>
+       <li><b>Smartphone:</b> Bessere Button-Anordnung und größere Berührungsflächen in den neuen Unterseiten.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2771,9 +2818,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.13.0"></script>
+<script src="./cwl-planning-core.js?v=1.14.0"></script>
 <script>
-const APP_VERSION="v1.13.0";
+const APP_VERSION="v1.14.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3406,10 +3453,66 @@ function updateOnlineStatus(){const b=document.getElementById("offlineBadge");b.
 
 // Navigation
 applyTheme();
-function showPlannerView(view){if(view!=="settings")window.__previousPlannerView=view;
+// Reuse the *same* existing settings inputs and their attached handlers.
+// Moving real DOM nodes (instead of cloning) preserves selected values,
+// input events, backup file handlers, and existing lock/read-only logic.
+// Small comment anchors return every control to the gear modal on exit.
+const moreSettingsMeta={
+ rules:{title:"CWL-Regeln & Grunddaten",
+   description:"Kriegsgröße, Anzahl der Tage und automatische Mitgliederpflege.",
+   ids:["settingsRulesSection","settingsAutoRosterBox"]},
+ appearance:{title:"Design & Aktualisierung",
+   description:"Farbschema, Versionsinformationen und Aktualisierungsstatus.",
+   ids:["settingsAppearanceSection"]},
+ profiles:{title:"Clanprofile",
+   description:"Lokale Clanprofile verwalten. Cloud-Clans findest du unter Clan & Konto.",
+   ids:["localProfileCard"]},
+ backup:{title:"Backup & Import",
+   description:"Profile sichern oder ein vorhandenes Backup wiederherstellen.",
+   ids:["settingsBackupSection"]}
+};
+const moreSettingsHost=document.getElementById("moreSettingsContent");
+const movedSettings=[];
+let activeMoreSettings=null;
+function restoreMoreSettings(){
+ for(const {node,anchor} of movedSettings)if(anchor.parentNode)anchor.replaceWith(node);
+ movedSettings.length=0;
+ moreSettingsHost.replaceChildren();
+ activeMoreSettings=null;
+}
+function openMoreSettings(action){
+ // A connected Cloud clan is managed through its dedicated account page,
+ // not by the local profile actions hidden in Cloud mode.
+ if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
+ const meta=moreSettingsMeta[action];if(!meta)return;
+ restoreMoreSettings();
+ for(const id of meta.ids){
+  const node=document.getElementById(id);
+  if(!node?.parentNode)continue;
+  const anchor=document.createComment("more-settings-home:"+id);
+  node.parentNode.insertBefore(anchor,node);
+  movedSettings.push({node,anchor});
+  moreSettingsHost.appendChild(node);
+ }
+ activeMoreSettings=action;
+ document.getElementById("moreSettingsTitle").textContent=meta.title;
+ document.getElementById("moreSettingsDescription").textContent=meta.description;
+ const isCloud=!!window.CWLCloud?.active;
+ const note=document.getElementById("moreSettingsNotice");
+ note.hidden=!(isCloud&&action==="backup");
+ note.textContent=isCloud?"Gemeinsame Cloud-Sicherungen und Wiederherstellungspunkte findest du in Clan & Konto. Hier kannst du eine zusätzliche Datei exportieren.":"";
+ document.getElementById("moreSettingsCloudBackup").hidden=!(isCloud&&action==="backup");
+ showPlannerView("more-settings");
+}
+function showPlannerView(view){
+ // Modal and tab navigation must never strand the only copy of a control
+ // inside an inactive subpage. Its events/state remain intact.
+ if(view!=="more-settings"&&typeof movedSettings!=="undefined"&&movedSettings.length)restoreMoreSettings();
+ if(view==="settings"&&window.__previousPlannerView==="more-settings")window.__previousPlannerView="more";
+ if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive"].includes(visible)?"more":visible;
+   ["help","account","archive","more-settings"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -3501,15 +3604,21 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="help"){showPlannerView("help");return}
-  if(action==="clan"||(action==="profiles"&&window.CWLCloud?.active)){
-    document.getElementById("cloudOpen").click();return;
-  }
+  if(action==="clan"){document.getElementById("cloudOpen").click();return}
+  if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
-  const targets={rules:"settingsRulesSection",appearance:"settingsAppearanceSection",
-    backup:"settingsBackupSection",profiles:"localProfileCard"};
-  showPlannerView("settings");
-  const targetId=targets[action];
-  if(targetId)requestAnimationFrame(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
+  if(moreSettingsMeta[action]){openMoreSettings(action);return}
+});
+document.getElementById("moreSettingsBack").onclick=()=>{
+ const source=activeMoreSettings;
+ showPlannerView("more");
+ if(source)document.querySelector('[data-more-action="'+source+'"]')?.focus({preventScroll:true});
+};
+document.getElementById("moreSettingsCloudBackup").onclick=()=>showPlannerView("account");
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape"&&document.getElementById("view-more-settings").classList.contains("active")){
+  event.preventDefault();showPlannerView("more");
+ }
 });
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");
 document.getElementById("planCwlSeasonOpen").onclick=()=>{
@@ -3627,6 +3736,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.13.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.0"></script>
 </body>
 </html>
