@@ -1,3 +1,13 @@
+CLOUD-RELEASE 04.11.2026 (v1.10.0):
+- Die CWL-Saison-Gruppe zeigt alle bekannten Clans mit vorläufiger Rangfolge,
+  bestätigten Siegboni und Ergebnis-Zwischenständen.
+- Alle bis zu vier Paarungen jeder CWL-Runde aus dem bereits vorhandenen
+  Supabase-Clash-Abruf; unbekannte Kriege bleiben ausdrücklich unbestimmt.
+- Keine zusätzlichen API-Calls, keine Speicherung fremder Spielerlisten,
+  keine Datenbankmigration; separater Offline-Planer bleibt v1.0.2.
+- Historische Gruppenstände folgen nach abgesicherter Snapshot-Speicherung.
+  Details: CHANGELOG.md und docs/CWL_GROUP_PHASE2_2026-11.md.
+
 CLOUD-RELEASE 04.11.2026 (v1.9.0):
 - Mehr → CWL-Saison mit Gruppe (bekannte Gegner), Runden (eigene sieben
   Kriege) und Clan (echte Angriffe/Sterne/Ø soweit vorhanden).
@@ -45,7 +55,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.9.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.10.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.

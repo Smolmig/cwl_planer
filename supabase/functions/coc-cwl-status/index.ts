@@ -150,6 +150,40 @@ async function loadStatus(clanTag,key) {
   if(failures)console.warn("coc-cwl-status: war details incomplete",{
     requested:tags.length,available:success,failed:failures,codes:failedByCode
   });
+  // Every group's war was already fetched above for our own-war discovery.
+  // Return only compact team summaries for other pairings: never player rosters,
+  // raw API objects, or extra requests from the client.
+  const groupSummary={
+    season,clanTag,
+    clans:[...groupClans.entries()].slice(0,8).map(([t,clan])=>({
+      tag:t,name:String(clan?.name||"Unbekannt").slice(0,80),
+      badgeUrl:safeBadge(clan?.badgeUrls)
+    })),
+    rounds:rawRounds.map((round,index)=>({
+      day:index+1,
+      matches:(Array.isArray(round?.warTags)?round.warTags:[]).slice(0,4).map(value=>{
+        const warTag=tag(value),war=valid(warTag)?results.get(warTag):null;
+        const state=String(war?.state||"");
+        const aTag=tag(war?.clan?.tag),bTag=tag(war?.opponent?.tag);
+        if(!war||!["preparation","inWar","warEnded"].includes(state)||
+           !groupClans.has(aTag)||!groupClans.has(bTag)||aTag===bTag)
+          return {available:false};
+        const showScore=state!=="preparation";
+        const side=side=>{
+          const info=groupClans.get(tag(side?.tag));
+          const members=Array.isArray(side?.members)?side.members:[];
+          return {tag:tag(side.tag),name:String(side?.name||info?.name||"Unbekannt").slice(0,80),
+            badgeUrl:safeBadge(side?.badgeUrls)||safeBadge(info?.badgeUrls),
+            stars:showScore?safeStars(side?.stars):null,
+            destructionPercentage:showScore?safeDestruction(side?.destructionPercentage):null,
+            attacks:showScore?members.reduce((n,m)=>n+(Array.isArray(m?.attacks)?m.attacks.length:0),0):null};
+        };
+        return {available:true,warTag,state,
+          teamSize:Number.isInteger(war.teamSize)?war.teamSize:null,
+          clan:side(war.clan),opponent:side(war.opponent)};
+      })
+    }))
+  };
   const rounds=rawRounds.map((r,index)=>{
     const t=(Array.isArray(r?.warTags)?r.warTags:[]).map(tag).filter(valid);
     let match=null,warTag="";
@@ -169,7 +203,7 @@ async function loadStatus(clanTag,key) {
       opponent:safeSide(enemy,groupClans.get(tag(enemy?.tag)))};
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
-  return {ok:true,active:true,season,clanTag,rounds,
+  return {ok:true,active:true,season,clanTag,rounds,group:groupSummary,
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
 const handler=withSupabase({auth:"user"},async(req,ctx)=>{
