@@ -2425,6 +2425,24 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>Cloud-Planer zum Startbildschirm hinzufügen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
  </div>
+ <div id="installSuggestion" class="install-suggestion" hidden>
+  <span>Als App auf dem iPhone nutzen? Das geht ohne App Store.</span>
+  <button type="button" class="btn small" id="installSuggestionOpen">So geht’s</button>
+  <button type="button" class="install-suggestion-dismiss" id="installSuggestionDismiss" aria-label="Installationshinweis dauerhaft ausblenden" title="Hinweis ausblenden">×</button>
+ </div>
+</section>
+<section id="view-install" class="view more-subview" aria-labelledby="installTitle">
+ <div class="more-detail-header">
+  <div><span class="more-eyebrow">ZUGANG</span><h2 id="installTitle">CWL Cloud als App</h2>
+   <p class="statusline">Ein eigener Startbildschirm-Eintrag für den gemeinsamen Planer mit Clan-Anmeldung, Einsätzen und Statistik.</p></div>
+  <button type="button" class="btn small more-detail-back" id="installBack">Zurück zu Mehr</button>
+ </div>
+ <div class="install-guide" id="installGuide" role="status">
+  <h3 id="installGuideTitle">App zum Startbildschirm hinzufügen</h3>
+  <p id="installGuideText">Öffne die Installationsfunktion deines Browsers.</p>
+  <ol id="installGuideSteps"></ol>
+  <p class="statusline">Verwende die Cloud-Seite „cloud-app.html“, nicht die separate lokale Offline-PWA. Bereits installierte falsche Verknüpfungen müssen einmal entfernt und neu hinzugefügt werden.</p>
+ </div>
 </section>
 <section id="view-more-settings" class="view more-subview" aria-labelledby="moreSettingsTitle">
  <div class="more-detail-header">
