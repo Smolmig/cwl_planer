@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup } from "./cwl-live-core.mjs?v=1.8.2";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.8.2";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -189,14 +189,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       const dp=storage.getPlannedLineups?.().find(p=>p.day===round.day);
       const latest=reviewPreparationLineup(ctx.profile,dp,currentRound,{planningOk:storage.getPlanningState?.()?.ok!==false});
       if(!latest||latest.status==="unavailable"){notify("Abgleich derzeit nicht eindeutig. Bitte CWL-Daten aktualisieren.");return;}
-      // The in-game chat is sensitive to ornamental emojis, tabs and multiline paste.
-      // Keep the exact Clash player names, but only ASCII separators on one line.
-      const cleanName=m=>String(m.name||"").replace(/[\r\n\t]+/g," ").trim();
-      const message=latest.status==="match"
-        ?"Tag "+round.day+": Aufstellung passt. Keine Wechsel noetig."
-        :"Tag "+round.day+" - Raus: "+latest.toRemove.map(cleanName).join(", ")+
-         " - Rein: "+latest.toAdd.map(cleanName).join(", ");
-      storage.copyText?.(message,"Text fuer Clash kopiert");
+      const message=formatClashSwapText(round.day,latest);
+      if(!message){notify("Kein gültiger Wechseltext verfügbar. Bitte CWL-Daten aktualisieren.");return;}
+      storage.copyText?.(message,"Clash-Wechseltext kopiert");
     });
     section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
       if(event.target.open)expandedDays.add(round.day);
