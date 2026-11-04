@@ -1,3 +1,15 @@
+CLOUD-RELEASE 04.11.2026 (v1.12.0):
+- Aktuelle CWL-Saison aus dem Plan per Direktlink erreichbar, ohne
+  Planübersicht und Kriegstag-Schalter zu überladen.
+- Korrekte linke Kriegssterne in der vollständigen Gruppenansicht.
+- Historisches Gruppenarchiv zeigt unter jedem Kriegstag das eigene Team
+  mit Spielern, Rathausstufen, Angriffen und Sternen aus Clash.
+- Eigene feste Aufstellungen werden ab Kriegsbeginn separat, geschützt
+  und dauerhaft serverseitig gesichert; keine gegnerischen Mitglieder.
+- Bestehende archivierte Pläne bleiben erhalten und können als ausdrücklich
+  nicht Clash-verifizierter Fallback angezeigt werden.
+- Kein Cloudprofil-Reset, keine Solver- oder Offline-PWA-Änderung.
+
 CLOUD-RELEASE 04.11.2026 (v1.11.0):
 - CWL-Gruppentabellen und alle bekannten Runden werden nach erfolgreichem
   Live-Abruf automatisch und dauerhaft pro Cloud-Clan und Saison gesichert.
@@ -67,7 +79,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.11.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.12.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
