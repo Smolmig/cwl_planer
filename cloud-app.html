@@ -1950,6 +1950,65 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .stats-hit-cell{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 .stats-hit-cell .stats-rate-avg{font-size:10px;line-height:1.2;color:var(--muted);font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
 @media(max-width:380px){.stats-hit-cell .stats-rate-avg{font-size:9px}}
+
+/* v1.9: CWL season and archive are real "Mehr" subpages, read-only by design. */
+.season-page,.archive-page{max-width:1080px;margin-inline:auto}
+.season-page .more-subview-heading,.archive-page .more-subview-heading{align-items:flex-start;gap:12px}
+.season-page .more-subview-heading>div,.archive-page .more-subview-heading>div{min-width:0;flex:1 1 300px}
+.season-tools{display:flex;justify-content:flex-end;gap:8px;margin:12px 0}
+.season-segments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:16px 0 12px;background:transparent}
+.season-segments button{font:inherit;font-size:13px;font-weight:800;min-height:42px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:12px;cursor:pointer}
+.season-segments button.active,.season-segments button[aria-selected="true"]{background:var(--bluebg);border-color:var(--primary);color:var(--text)}
+.season-segments button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.season-info{padding:12px 14px;margin:12px 0;border:1px solid var(--line);border-radius:12px;color:var(--muted);line-height:1.5}
+.season-info strong{display:block;color:var(--text);font-size:14px}
+.season-info p{margin:4px 0 0}
+.season-empty{color:var(--muted);text-align:center;padding:22px 12px;line-height:1.6}
+.season-rounds{display:grid;gap:10px}
+.season-round{min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--card)}
+.season-round-heading,.season-round-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.season-round-heading{font-size:13px}
+.season-state{font-size:11px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.season-state.warEnded{border-color:var(--green);color:var(--green)}
+.season-state.inWar{border-color:var(--primary);color:var(--text)}
+.season-round-match{display:grid;grid-template-columns:minmax(0,1fr) 66px minmax(0,1fr);gap:8px;align-items:center;margin:14px 0}
+.season-clan{display:flex;align-items:center;gap:7px;min-width:0;overflow-wrap:anywhere;font-size:12px}
+.season-clan.right{flex-direction:row-reverse;text-align:right}
+.season-clan strong{font-weight:800;min-width:0}
+.season-score{font-size:18px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.season-badge{width:32px;height:32px;object-fit:contain;flex:none}
+.season-badge-fallback{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;flex:none}
+.season-round-meta{font-size:11px;color:var(--muted);margin-top:8px}
+.season-missing{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);border-style:dashed}
+.season-missing strong{color:var(--text)}
+.season-opponents{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px}
+.season-opponent{display:flex;align-items:center;gap:10px;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--card)}
+.season-opponent span:not(.season-badge-fallback){min-width:0}
+.season-opponent strong,.season-opponent small{display:block;overflow-wrap:anywhere}
+.season-opponent strong{font-size:13px}
+.season-opponent small{margin-top:3px;color:var(--muted);font-size:11px}
+.season-player-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;overscroll-behavior-x:contain}
+.season-player-table{width:100%;border-collapse:collapse;min-width:420px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+.season-player-table :is(th,td){padding:12px 10px;border-bottom:1px solid var(--line)}
+.season-player-table tr:last-child td{border-bottom:0}
+.season-player-table th{background:var(--card);color:var(--muted);font-size:11px}
+.season-player-table :is(th,td):first-child{text-align:left;min-width:130px}
+.season-player-table td strong,.season-player-table td small{display:block}
+.season-player-table td small{font-size:10px;color:var(--muted)}
+#view-archive #archiveSection{margin-top:16px}
+@media(max-width:520px){
+ .season-page,.archive-page{padding:14px}
+ .season-page .more-subview-heading,.archive-page .more-subview-heading{display:flex;flex-direction:column;align-items:stretch}
+ .season-page .more-subview-heading>div,.archive-page .more-subview-heading>div{flex-basis:auto}
+ .season-page .more-subview-heading .btn,.archive-page .more-subview-heading .btn{align-self:flex-start}
+ .season-round{padding:10px}
+ .season-round-match{grid-template-columns:minmax(0,1fr) 53px minmax(0,1fr);gap:4px}
+ .season-score{font-size:15px}
+ .season-badge,.season-badge-fallback{width:26px;height:26px}
+ .season-clan{gap:4px;font-size:11px}
+ .season-round-meta{font-size:10px}
+ .season-segments button{font-size:12px;min-height:40px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
