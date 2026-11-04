@@ -8,6 +8,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.2] - 2026-11-04
+
+### Flüssigeres Scrollen in langen Listen (UI-Performance)
+- **Mitglieder und Statistik:** Browser überspringt das Zeichnen von Listenzeilen außerhalb des sichtbaren Bereichs, unterstützt durch intrinsische Platzhalterhöhen. Im Gold-Theme werden aufwendige Einzelkartenschatten und der fixierte Verlaufshintergrund vermieden.
+- **Statistik-Historie:** Zunächst nur Kriegskopfzeilen samt tatsächlich bekannten Sternen/Angriffszahlen. Einzelangriffe werden erst beim Öffnen eines Kriegs erzeugt; geöffnete Kriege bleiben nach erneutem Laden desselben Clans geöffnet.
+- **Berechnungen:** Statistik-Suche und Sortierung verwenden identische bereits berechnete Werte erneut; unveränderte Spielerzeilen werden nicht erneut aufgebaut. Mitgliederkarten werden nicht bei jeder Statistikfilter-Interaktion neu gezeichnet.
+- **Smartphone:** Größere Berührungsflächen für Spieleraktionen und Umbruch auf schmalen Displays.
+- Automatisierte Playwright-Regression: 40 Kriege, 1.000 Angriffe, UI-Kontext und 320/390/1366px; echte Hardware-Abnahme am Arbeits-PC weiterhin empfohlen.
+- Keine Veränderung an statistischen Formeln, CWL-Solver, Backend-/Cloud-Datenformat, Supabase oder separater Offline-PWA.
+
 ## [1.14.1] - 2026-11-04
 
 ### Cloud-Realtime ohne Verlust des Bedienzustands
