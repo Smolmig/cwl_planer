@@ -5,7 +5,7 @@
 - Goldene Schild-/Haken-Marke aus brand-mark.svg als gemeinsame Quelle für Cloud und separate Offline-PWA.
 - Neue PNG-App-Icons (192/512), Safari-Home-Screen, Favicon und große 1200×630-Linkvorschau; Open Graph/Twitter Meta-Tags.
 - Versionierte neue Bilddateinamen und behutsam erneuerter Offline-Icon-Cache; kein Eingriff in Profildaten, Cloud-Login, Solver, Supabase oder die Cloud-Installations-ID.
-- Bestehende Home-Screen-Symbole können wegen iOS-/Android-Caches ein erneutes Hinzufügen benötigen; native Link-Previews können serverseitig zwischengespeichert sein.
+- Dialog-Backdrop schützt Textauswahl: Loslassen außerhalb nach Beginn innerhalb schließt modale Fenster nicht mehr; absichtliche Taps auf den Außenbereich bleiben möglich.\n- Bestehende Home-Screen-Symbole können wegen iOS-/Android-Caches ein erneutes Hinzufügen benötigen; native Link-Previews können serverseitig zwischengespeichert sein.
 
 # Changelog
 
