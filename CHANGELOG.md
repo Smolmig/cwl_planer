@@ -8,6 +8,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Saisonarchiv mit dauerhaft gespeicherten Gruppenergebnissen, weitere Mehr-Unterseiten und die experimentelle statistische Einteilung folgen separat (#71, #46, #44).
 
+## [1.11.0] - 2026-11-04
+
+### Dauerhaftes CWL-Gruppenarchiv
+- **Mehr → CWL-Archiv** enthält jetzt zwei getrennte Bereiche: die schon vorhandenen Aufstellungsarchive sowie die neu gespeicherten Gruppensaisons mit Tabellen und Runden.
+- Beim vorhandenen geschützten Clash-Abruf wird das bereits sanitierte Gruppenobjekt serverseitig in einer eigenen `cwl_group_archives`-Tabelle pro Clan und Saison gesichert. Keine zusätzlichen Supercell-API-Aufrufe, keine fremden Spielerlisten und keine Änderungen am Planungsalgorithmus.
+- Alle aktiven Clanmitglieder – einschließlich Beobachtern – können über Supabase-RLS lesen; Schreiben/Ändern/Löschen ist über den Browser nicht möglich. Die Serveranmeldung und die bisherige Clanmitgliedschaftsprüfung gelten weiterhin.
+- Eine Datenbank-Triggerprüfung erhält bestätigte Kriege bei später eintreffenden alten Zwischenständen. Ebenso werden veraltete Angriffs-/Sternwerte eines laufenden Krieges nicht zurückgeschrieben.
+- Ein Speicherfehler darf den Live-CWL-Abgleich nicht blockieren. Beim Clanwechsel werden verspätete Archivabfragen verworfen.
+- Geteilte Gruppensaisons werden auch nach dem Ende der offiziellen API-Saison angezeigt. Vorhandene Planarchive und v9-Profile werden nicht migriert oder zurückgesetzt.
+
+### Grenzen
+- Ohne früheren erfolgreichen Gruppenabruf kann eine alte Saison nicht nachträglich als vollständig rekonstruiert werden. Fehlende Kriege bleiben gekennzeichnet.
+- Der praktische Vergleich der Archivstände und der RLS-Ansicht auf einem realen iPhone steht nach der Veröffentlichung noch aus.
+
 ## [1.10.0] - 2026-11-04
 
 ### Vollständige CWL-Gruppe und Runden
