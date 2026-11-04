@@ -95,16 +95,19 @@ test("when user switches clans mid-request stale archive data is discarded",asyn
  const dom=wrapper(),original=global.document;global.document=dom.window.document;
  try{
   const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
-  let id="clan-a";const pending=[deferred(),deferred()];
+  let id="clan-a";const a=deferred(),b=deferred(),pending=[a,b];
   const client={from(){return {select(){return {eq(){return {order(){return {
-    limit(){return pending.shift()?.promise||Promise.resolve({data:[],error:null})}
+    limit(){return pending.shift().promise}
   }}}}}}}}};
   const view=createCwlGroupArchiveView({sb:client,getClanId:()=>id,isConnected:()=>true});
   const first=view.open();id="clan-b";const second=view.open();
   const latest=group();latest.season="2026-12";
-  // Resolve newer request first. The earlier clan must not displace it.
-  const current=pending;
-  // We cannot access shifted deferreds here; use explicit queue test below.
-  await Promise.allSettled([first,second]);
+  b.resolve({data:[{season:"2026-12",group_json:latest,updated_at:"2026-12-05T11:00:00Z"}],error:null});
+  await second;
+  a.resolve({data:[{season:"2026-11",group_json:group(),updated_at:"2026-11-04T11:00:00Z"}],error:null});
+  await first;
+  const html=dom.window.document.getElementById("cwlGroupArchiveContent").innerHTML;
+  assert.match(html,/Dezember 2026/);
+  assert.doesNotMatch(html,/November 2026/);
  }finally{if(original===undefined)delete global.document;else global.document=original;dom.window.close()}
 });
