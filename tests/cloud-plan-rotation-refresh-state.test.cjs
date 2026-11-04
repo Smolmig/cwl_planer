@@ -108,6 +108,29 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
       expanded:restored?.getAttribute("aria-expanded")==="true"};
     });
     assert.deepEqual(summaryState,{exists:true,focused:true,expanded:true});
+    // A Cloud Realtime profile replacement must preserve live member controls.
+    const memberState=await page.evaluate(()=>{
+     window.showPlannerView("members");
+     const search=document.getElementById("memberSearch");
+     search.value="Summary";
+     search.dispatchEvent(new Event("input",{bubbles:true}));
+     const filter=document.getElementById("memberFilter");
+     filter.value="participating";
+     filter.dispatchEvent(new Event("change",{bubbles:true}));
+     const row=document.querySelector("#memberList .member");
+     const toggle=row.querySelector(".member-edit-toggle");
+     toggle.click();
+     toggle.focus();
+     const id=row.dataset.id;
+     window.CWLLegacy.switchToCloud({...window.CWLLegacy.getProfile()});
+     const newRow=[...document.querySelectorAll("#memberList .member")]
+      .find(el=>el.dataset.id===id);
+     return {search:search.value,filter:filter.value,rows:document.querySelectorAll("#memberList .member").length,
+      expanded:!!newRow?.classList.contains("member-expanded"),
+      focused:document.activeElement===newRow?.querySelector(".member-edit-toggle")};
+    });
+    assert.deepEqual(memberState,{search:"Summary",filter:"participating",rows:1,expanded:true,focused:true},
+      "same-clan refresh preserves member search, filter, open details and keyboard focus");
     // Switching the profile is a deliberate context change.
     await page.evaluate(()=>{
      const old=window.CWLLegacy.getProfile();
@@ -122,6 +145,13 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
      "new clan must not inherit another clan's warnings");
     assert.equal(await page.locator("#summaryList .summary-player-toggle[aria-expanded='true']").count(),0,
      "member deployment disclosures reset on an actual clan change");
+    const changedClanUI=await page.evaluate(()=>({
+     search:document.getElementById("memberSearch").value,
+     filter:document.getElementById("memberFilter").value,
+     expanded:document.querySelectorAll("#memberList .member-expanded").length
+    }));
+    assert.deepEqual(changedClanUI,{search:"",filter:"all",expanded:0},
+     "different clan does not inherit another clan's member UI");
     assert.deepEqual(errors,[],"no browser errors on rerenders at "+width+"px");
    }finally{await page.close();}
   }
