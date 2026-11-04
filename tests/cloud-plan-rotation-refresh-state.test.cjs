@@ -41,7 +41,10 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     // The rotation comparison exists only for a linked Cloud clan, not a guest.
     // Stub the Cloud read-only capability: no live credentials or data writes.
     await page.evaluate(()=>{
-     window.CWLCloud={active:true,hasApiClan:()=>true,renderLive:()=>{}};
+     window.__fakeClanId="clan-a";
+     window.CWLCloud={active:true,hasApiClan:()=>true,
+      getActiveClanId:()=>window.__fakeClanId,renderLive:()=>{}};
+     window.CWLLegacy.switchToCloud({...window.CWLLegacy.getProfile()});
      window.renderPlanDayWarnings=dp=>dp.day===1
       ?'<details class="day-warnings-more"><summary>Weitere Hinweise</summary><p>Konflikt prüfen</p></details>'
       :'';
@@ -58,7 +61,7 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
      const warnings=document.querySelector("#day-card-0 .day-warnings-more");
      warnings.open=true;
      warnings.querySelector("summary").focus();
-     window.CWLLegacy.rerender(); // e.g. Realtime/automatic Cloud refresh
+     window.CWLLegacy.switchToCloud({...window.CWLLegacy.getProfile()}); // actual same-clan Cloud refresh
     });
     const expanded=await page.evaluate(()=>({
      first:document.querySelector("#day-card-1 .plan-rotation-backup").open,
@@ -107,14 +110,17 @@ test("Plan: expanded rotations survive automatic re-render without leaking to an
     // Switching the profile is a deliberate context change.
     await page.evaluate(()=>{
      const old=window.CWLLegacy.getProfile();
-     const next=window.CWLLegacy.normalize({...old,id:"another-clan-test",
-      name:"Anderer Clan"});
+     const next=window.CWLLegacy.normalize({...old,name:"Anderer Clan"});
+     // Different Cloud clan with an accidentally identical profile ID must still reset.
+     window.__fakeClanId="clan-b";
      window.CWLLegacy.switchToCloud(next);
     });
     assert.equal(await page.locator(selector).evaluate(el=>el.open),false,
      "new clan must not inherit another clan's disclosure state");
     assert.equal(await page.locator("#day-card-0 .day-warnings-more").evaluate(el=>el.open),false,
      "new clan must not inherit another clan's warnings");
+    assert.equal(await page.locator("#summaryList .summary-player-toggle[aria-expanded='true']").count(),0,
+     "member deployment disclosures reset on an actual clan change");
     assert.deepEqual(errors,[],"no browser errors on rerenders at "+width+"px");
    }finally{await page.close();}
   }
