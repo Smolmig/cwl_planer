@@ -1,5 +1,5 @@
 {
-  "version": "v1.12.0",
+  "version": "v1.13.0",
   "released": "2026-11-04",
-  "summary": "CWL-Saison mit direktem Einstieg im Plan, korrekten Sternen auf beiden Seiten und dauerhaftem Archiv tatsächlich eingesetzter eigener Spieler pro Kriegstag."
+  "summary": "Vereinfachtes CWL-Saison- und Archivdesign, Saison nur noch im Plan und zuverlässiger Erhalt geöffneter Runden und Teams bei automatischem Abgleich."
 }
