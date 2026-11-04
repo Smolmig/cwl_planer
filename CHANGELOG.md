@@ -8,6 +8,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.13.0] - 2026-11-04
+
+### Archiv bleibt beim Auto-Abgleich offen
+- **CWL-Saison ausschließlich im Plan:** Der doppelte Eintrag unter „Mehr“ wurde entfernt; der Rückweg führt wieder zum Plan.
+- **Mehr → CWL-Archiv:** Saison-, Runden- und Teamlisten behalten ihre geöffneten Zustände über automatische Clash-Aktualisierungen hinweg. Ein fachlicher Schlüssel (Saison/Tag/Team) statt DOM-Position verhindert unbeabsichtigtes Zuklappen.
+- Ein bereits geladenes Archiv wird beim Hintergrundabruf nicht erst durch einen Ladebildschirm ersetzt. Bei einem kurzen Netzwerkfehler bleiben die angezeigten Daten und offenen Runden erhalten.
+- Fokus auf einer aufgeklappten Überschrift wird nach dem Aktualisieren wiederhergestellt; Clanwechsel bleibt ein bewusster Kontextwechsel.
+- **Weniger „Karten in Karten“:** Ruhigere visuelle Hierarchie durch Abschnittstitel, Abstände, Listenzeilen und Trennlinien. Nur echte selbstständige Bereiche bleiben als Karte abgesetzt.
+- **Langfristige Design-Leitlinie:** `docs/UX_DESIGN_PRINCIPLES.md` sowie `AGENTS.md` dokumentieren verbindliche UI/UX-Grundsätze für die gesamte App und künftige Entwicklungsrunden.
+- Keine Änderung an Supabase, RLS, CWL-Planung, Clan-Daten oder den gespeicherten Archiven.
+
 ## [1.12.0] - 2026-11-04
 
 ### Live-CWL im Plan und eigene Aufstellungen im Archiv

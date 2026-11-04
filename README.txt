@@ -1,3 +1,12 @@
+CLOUD-RELEASE 04.11.2026 (v1.13.0):
+- CWL-Saison nur noch direkt aus Plan, nicht doppelt unter Mehr.
+- Archiv-Runden und Mannschaften schließen bei Live-/Auto-Abgleich nicht mehr.
+- Abfragen lassen vorhandene Archiv-Inhalte während des Ladens sichtbar,
+  erhalten aufgeklappte Abschnitte und verkraften kurzzeitige Netzfehler.
+- Gold-/Dark-/Light-kompatible Listen und Trennlinien statt Kartenstapel.
+- Dauerhafte appweite UX-Vorgaben: docs/UX_DESIGN_PRINCIPLES.md und AGENTS.md.
+- Keine Cloud-Migration, keine Solver-/Plan-/Archiv-Datenänderung.
+
 CLOUD-RELEASE 04.11.2026 (v1.12.0):
 - Aktuelle CWL-Saison aus dem Plan per Direktlink erreichbar, ohne
   Planübersicht und Kriegstag-Schalter zu überladen.
@@ -79,7 +88,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.12.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.13.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.

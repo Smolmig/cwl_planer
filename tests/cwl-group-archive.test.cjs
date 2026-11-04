@@ -157,3 +157,102 @@ test("group archive remains usable on iPhone and desktop without horizontal page
   }
  }finally{await browser.close()}
 });
+
+
+test("background polling retains expanded season, round and own roster; temporary errors keep view intact",async()=>{
+ const dom=wrapper(),previous=global.document;global.document=dom.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  let groupFetches=0,fail=false;
+  const own=[{season:"2026-11",day:1,war_tag:"#2PYY",state:"warEnded",
+   team_size:1,lineup_json:{members:[{tag:"#2PYL",name:"Owned player",townHallLevel:18,
+    attacks:[{stars:3,destructionPercentage:100}]}]}}];
+  const client={from(table){return{
+   select(){return this},eq(){return this},order(){return this},
+   async limit(){
+    if(table==="cwl_own_lineup_archives")return {data:own,error:null};
+    if(fail)throw Error("network offline");
+    const fresh=group();
+    fresh.rounds[0].matches[0].clan.stars=24+groupFetches++;
+    return {data:[{season:"2026-11",group_json:fresh,updated_at:"2026-11-04T15:00:00Z"}],error:null};
+   }
+  }}};
+  const view=createCwlGroupArchiveView({sb:client,getClanId:()=>"clan-a",isConnected:()=>true});
+  await view.open();
+  const root=dom.window.document.querySelector("#cwlGroupArchiveContent");
+  let details=[...root.querySelectorAll("details[data-archive-key]")];
+  // Seven rounds exist even when only one has a real own-team roster.
+  assert.equal(details.length,9,"season, seven rounds and own roster use stable keys");
+  const expanded=new Set(["season:2026-11","round:2026-11:1","roster:2026-11:1"]);
+  details.forEach(node=>{node.open=expanded.has(node.dataset.archiveKey)});
+  assert.equal(details.filter(node=>node.open).length,3);
+  assert.ok(root.textContent.includes("24"),"initial score displayed");
+  const before=root.innerHTML;
+  view.invalidate();
+  assert.equal(root.innerHTML,before,"background refresh must not swap existing content for loading");
+  await new Promise(resolve=>setImmediate(resolve));
+  details=[...root.querySelectorAll("details[data-archive-key]")];
+  assert.ok(details.every(node=>node.open===expanded.has(node.dataset.archiveKey)),
+    "only the three explicitly opened panels remain open after refresh");
+  assert.match(root.textContent,/25/,"new values updated while preserving opened panels");
+  assert.match(root.textContent,/Owned player/);
+  fail=true;
+  view.invalidate();
+  await new Promise(resolve=>setImmediate(resolve));
+  details=[...root.querySelectorAll("details[data-archive-key]")];
+  assert.ok(details.every(node=>node.open===expanded.has(node.dataset.archiveKey)),
+    "temporary network error keeps expanded and collapsed panels unchanged");
+  assert.match(root.textContent,/Owned player/);
+  assert.doesNotMatch(root.textContent,/konnte nicht geladen werden/);
+ }finally{if(previous===undefined)delete global.document;else global.document=previous;dom.window.close()}
+});
+
+test("UX guide is repository-wide and redundant season entry removed from Mehr",()=>{
+ const ux=read("docs/UX_DESIGN_PRINCIPLES.md"),agents=read("AGENTS.md");
+ const app=read("cloud-app.html");
+ assert.match(agents,/docs\/UX_DESIGN_PRINCIPLES\.md/);
+ assert.match(ux,/Auto-Refresh darf niemals geöffnete Bereiche schließen/);
+ assert.match(ux,/Plan, Mitglieder, Einsätze, Statistik, Mehr/);
+ assert.match(ux,/Karte > Karte > Karte/);
+ assert.doesNotMatch(app,/data-more-action="season"/);
+ assert.match(app,/id="planCwlSeasonOpen"/);
+ assert.match(app,/const navView=visible==="cwl-season"\?"plan"/);
+ assert.match(app,/id="view-archive"/);
+});
+
+test("archive list uses restrained separators instead of frames around every player",{timeout:120000},async()=>{
+ const {chromium}=require("playwright");
+ const html=read("cloud-app.html").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
+   .replace(/<link\b[^>]*>/gi,"");
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,430,1366]){
+   const page=await browser.newPage({viewport:{width,height:850}});
+   try{
+    await page.setContent(html);
+    const result=await page.evaluate(()=>{
+     document.querySelectorAll(".view.active").forEach(node=>node.classList.remove("active"));
+     document.querySelector("#view-archive").classList.add("active");
+     const host=document.querySelector("#cwlGroupArchiveContent");
+     host.innerHTML='<details class="season-archive-item" open><summary>November 2026</summary>'+
+      '<div class="season-archive-body"><div class="season-group-archive-rounds">'+
+      '<details class="season-archive-round" open><summary>Runde 1</summary>'+
+      '<details class="season-archive-lineup" open><summary>Unser Team</summary>'+
+      '<div class="season-archive-roster"><div class="season-archive-player">'+
+      '<strong>Spielername</strong><small>RH 18 · 3★</small></div></div></details></details></div></div></details>';
+     const style=x=>getComputedStyle(document.querySelector(x));
+     return {width:innerWidth,documentWidth:document.documentElement.scrollWidth,
+       outerBorder:style(".archive-page.card").borderTopWidth,
+       roundBorder:style(".season-archive-round").borderTopWidth,
+       rosterBorder:style(".season-archive-lineup").borderLeftWidth,
+       playerBorder:style(".season-archive-player").borderLeftWidth};
+    });
+    assert.ok(result.documentWidth<=width+3,JSON.stringify(result));
+    assert.equal(result.outerBorder,"0px");
+    assert.equal(result.roundBorder,"0px");
+    assert.equal(result.rosterBorder,"0px");
+    assert.equal(result.playerBorder,"0px");
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});

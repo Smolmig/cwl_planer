@@ -136,8 +136,8 @@ test("Plan shortcut is read-only, present only with a linked season, and preserv
   assert.equal(d.window.document.querySelector("#planCwlSeasonEntry").hidden,true);
   const html=read("cloud-app.html"),cloud=read("cloud-sync.mjs");
   assert.match(html,/id="planCwlSeasonOpen"/);
-  assert.match(html,/window\.__seasonEntrySource="plan"/);
-  assert.match(html,/window\.__seasonEntrySource="more"/);
+  assert.doesNotMatch(html,/data-more-action="season"/);
+  assert.match(html,/const navView=visible==="cwl-season"\?"plan"/);
   assert.match(html,/Zurück zum Plan/);
   assert.match(cloud,/"planCwlSeasonOpen"/);
  }finally{if(before===undefined)delete global.document;else global.document=before;d.window.close()}
