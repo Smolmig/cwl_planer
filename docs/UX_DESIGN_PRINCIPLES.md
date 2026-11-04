@@ -44,6 +44,8 @@
 - Cloud und lokale Offline-PWA sind **zwei unterschiedliche Installationsidentitäten**: Cloud-HTML verlinkt `cloud-manifest.webmanifest` mit `id` und `start_url` auf `./cloud-app.html`; lokales `index.html` verlinkt ausschließlich `manifest.webmanifest` mit `start_url: "./"`.
 - Installations-Hinweise müssen klar sagen, welche Variante geöffnet wird. **Nicht** zwei HTML-Einstiege mit demselben Manifest verknüpfen. Android Chrome/Firefox Home-Screen-Verhalten testen.
 - Bestehende installierte Startbildschirm-Icons ändern sich nicht automatisch bei einem Manifest-Fix; kein automatisches Entfernen des Offline-Caches oder fremder lokal gespeicherter Profile. Bei manueller Deinstallation vorher Backup empfehlen.
+- **Installieren ohne Nerven:** Unter „Mehr“ jederzeit eine plattformgerechte Anleitung anbieten, statt auf jedem Seitenaufruf ein Popup zu erzwingen. iOS kann `beforeinstallprompt` nicht; Safari benutzt „Teilen → Zum Home-Bildschirm hinzufügen“. Kleine Hinweise nur in passendem Kontext und mit dauerhaft speicherbarer Ablehnung.
+- Native installierbare Android-Browser-Prompts nicht durch ein eigenes `preventDefault()` unterdrücken. Bereits installierte App via `display-mode:standalone` bzw. `navigator.standalone` erkennen und Installationshinweis ausblenden.
 
 ## 5. Mobile zuerst, Desktop gezielt erweitern
 
