@@ -6,7 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
-Noch offene CWL-Gruppentabelle, vollständige Paarungen und andere Mehr-Unterseiten sind in GitHub Issues #71 und #46 geplant.
+Saisonarchiv mit dauerhaft gespeicherten Gruppenergebnissen, weitere Mehr-Unterseiten und die experimentelle statistische Einteilung folgen separat (#71, #46, #44).
+
+## [1.10.0] - 2026-11-04
+
+### Vollständige CWL-Gruppe und Runden
+- Der bestehende geschützte Supabase-Abruf lädt schon alle War-Tags der Gruppe. Dessen Antwort wird jetzt rein lesend um **kompakte Gruppenergebnisse** ergänzt, ohne zusätzliche Supercell-Anfragen oder fremde Spielerlisten im Browser.
+- Unter „Mehr → CWL-Saison → Gruppe“ erscheinen alle verfügbaren Clans mit vorläufiger Rangfolge: bestätigte Kriegssterne, +10 Siege-Bonus **ausschließlich nach Kriegsende**, Siege sowie die aus den Kriegswerten berechnete Zerstörungssumme. Unbekannte Runden und Gleichstände werden sichtbar gekennzeichnet.
+- „Runden“ zeigt pro Spieltag bis zu vier Paarungen samt Zuständen; eigene Begegnungen werden hervorgehoben. In der Vorbereitung keine vorgetäuschten 0:0-Endstände.
+- Die bereits vorhandene Saison-/Clanansicht und das separate Archiv bleiben erhalten; bei alter Backend-Version zeigt die App weiter nur die bekannte reduzierte Ansicht.
+- Der API-Proxy bleibt mit echtem Supabase-Nutzer und Clan-Mitgliedschaft autorisiert; Clash-Schlüssel bleiben serverseitig. Kein zusätzliches Datenbankschema, keine Änderungen am Solver, keine Profilmigration.
+
+### Noch offen
+- Die offizielle Platzierung kann bei fehlenden Spielpaarungen oder laufenden Kriegen abweichen. Sie wird deswegen als vorläufig bezeichnet.
+- Vollständige historische Gruppentabellen nach Saisonende benötigen dauerhafte, autorisierte Snapshots und eine eigene Archiv-Phase.
 
 ## [1.9.0] - 2026-11-04
 
