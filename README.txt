@@ -1,3 +1,5 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.6): Aktuelle Gold-Bildmarke für Home-Bildschirm, Manifest, Favicon und Teilen-Vorschau vereinheitlicht; getrennte Cloud-/Offline-Installations-IDs und Profilspeicher unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.5):
 - Unter Mehr > App installieren steht eine plattformgerechte, manuell abrufbare
   Anleitung für Safari/iOS, Android und weitere Browser.
@@ -141,7 +143,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.5;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.6;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
