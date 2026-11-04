@@ -2230,6 +2230,30 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
 .cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
+/* v1.14.2: keep long member/statistics lists cheap on slower desktops.
+   Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
+@supports (content-visibility:auto){
+ #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
+ #view-stats #statsRows>.stats-player-row{content-visibility:auto;contain-intrinsic-size:auto 64px}
+}
+html[data-theme="arena"] #view-members #memberList>.member{
+ background:var(--card);box-shadow:none;
+}
+/* Large fixed gradient backgrounds cause costly scrolling repaints on some PCs. */
+html[data-theme="arena"] body{background-attachment:scroll}
+/* Bigger hit areas, but allow wrapping instead of clipping on narrow iPhones. */
+@media(max-width:699px){
+ #view-members .member-note-btn{min-width:44px;min-height:44px;padding:8px}
+ #view-members .member-snapshot-actions .order-btn{
+  min-width:42px;min-height:44px;padding:8px 9px!important
+ }
+ #view-members .member-snapshot-actions .member-edit-toggle{min-height:44px!important;padding:8px 10px!important}
+ #view-members .member-top .name-wrap .member-name-edit{
+  flex:0 0 44px!important;width:44px!important;height:44px!important;min-height:44px!important
+ }
+ #view-members .member-snapshot{flex-wrap:wrap}
+ #view-members .member-snapshot-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
