@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.14.4";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.14.5";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -101,10 +101,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         (review.status==="match"?"Aufstellung stimmt überein":review.toAdd.length+" Wechsel nötig")+
         "</span></div>"+
         (review.status==="changes"?"<div class='cwl-prep-groups'>"+
-          group("Aus Clash raus",review.toRemove,"remove")+
-          group("In Clash rein",review.toAdd,"add")+"</div>":"")+
+          group("Aus der Kriegsaufstellung nehmen",review.toRemove,"remove")+
+          group("In die Kriegsaufstellung aufnehmen",review.toAdd,"add")+"</div>":"")+
         "<button type='button' class='btn small cwl-copy-live-swaps' title='Einzeiligen Text zum Einfügen im Clash-Clan-Chat kopieren'>"+
-        (review.status==="match"?"Status als Text kopieren":"Rein/Raus-Text kopieren")+"</button>"+
+        (review.status==="match"?"Status als Text kopieren":"Aufstellungswechsel kopieren")+"</button>"+
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";

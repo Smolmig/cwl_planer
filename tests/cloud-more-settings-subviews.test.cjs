@@ -31,7 +31,7 @@ test("Mehr navigation uses actual subviews instead of opening and scrolling a la
  assert.match(app,/if\(moreSettingsMeta\[action\]\)\{openMoreSettings\(action\);return\}/);
  assert.doesNotMatch(app,/const targets=\{rules:"settingsRulesSection"/);
  assert.match(app,/const navView=visible==="cwl-season"\?"plan":/);
- assert.match(app,/\["help","account","archive","more-settings"\]\.includes\(visible\)\?"more":visible/);
+ assert.match(app,/\["help","account","archive","more-settings","install"\]\.includes\(visible\)\?"more":visible/);
  assert.match(app,/if\(view!=="more-settings"&&typeof movedSettings!=="undefined"&&movedSettings.length\)restoreMoreSettings\(\)/);
  assert.match(app,/if\(view==="settings"&&window\.__previousPlannerView==="more-settings"\)/);
 });

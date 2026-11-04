@@ -20,7 +20,7 @@ test("Clash swap copy uses one line and preserves only player names, no UI emoji
  const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\nKen  "}],toAdd:[{name:"Kai\tZen"}]});
  assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: Kai Zen");
  assert.match(live,/formatClashSwapText\(round\.day,latest\)/);
- assert.match(live,/Rein\/Raus-Text kopieren/);
+ assert.match(live,/Aufstellungswechsel kopieren/);
  assert.doesNotMatch(live,/🔴 Aus Clash raus/);
 });
 test("Former members keep settings for rejoin but become only deletable archived rows in the UI",()=>{

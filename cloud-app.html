@@ -2230,7 +2230,19 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
 .cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
-/* v1.14.4: keep long member/statistics lists cheap on slower desktops.
+/* Optional install guidance inside More, never a recurring overlay. */
+.install-suggestion{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:17px;padding:13px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.install-suggestion[hidden]{display:none!important}
+.install-suggestion>span{flex:1 1 220px;line-height:1.5}
+.install-suggestion .btn{min-height:44px}
+.install-suggestion-dismiss{border:0;background:transparent;color:var(--muted);font-size:24px;min-width:44px;min-height:44px;cursor:pointer}
+.install-guide{max-width:760px;border-top:1px solid var(--line);padding-top:20px}
+.install-guide h3{font-size:20px;margin:0 0 9px}
+.install-guide p{line-height:1.6;color:var(--muted)}
+.install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
+.install-guide li{padding:4px 0}
+@media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
+/* v1.14.5: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2422,7 +2434,26 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>Cloud-Planer zum Startbildschirm hinzufügen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
+ </div>
+ <div id="installSuggestion" class="install-suggestion" hidden>
+  <span>Als App auf dem iPhone nutzen? Das geht ohne App Store.</span>
+  <button type="button" class="btn small" id="installSuggestionOpen">So geht’s</button>
+  <button type="button" class="install-suggestion-dismiss" id="installSuggestionDismiss" aria-label="Installationshinweis dauerhaft ausblenden" title="Hinweis ausblenden">×</button>
+ </div>
+</section>
+<section id="view-install" class="view more-subview" aria-labelledby="installTitle">
+ <div class="more-detail-header">
+  <div><span class="more-eyebrow">ZUGANG</span><h2 id="installTitle">CWL Cloud als App</h2>
+   <p class="statusline">Ein eigener Startbildschirm-Eintrag für den gemeinsamen Planer mit Clan-Anmeldung, Einsätzen und Statistik.</p></div>
+  <button type="button" class="btn small more-detail-back" id="installBack">Zurück zu Mehr</button>
+ </div>
+ <div class="install-guide" id="installGuide" role="status">
+  <h3 id="installGuideTitle">App zum Startbildschirm hinzufügen</h3>
+  <p id="installGuideText">Öffne die Installationsfunktion deines Browsers.</p>
+  <ol id="installGuideSteps"></ol>
+  <p class="statusline">Verwende die Cloud-Seite „cloud-app.html“, nicht die separate lokale Offline-PWA. Bereits installierte falsche Verknüpfungen müssen einmal entfernt und neu hinzugefügt werden.</p>
  </div>
 </section>
 <section id="view-more-settings" class="view more-subview" aria-labelledby="moreSettingsTitle">
@@ -2492,11 +2523,11 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.14.4</strong><span>Cloud-App richtig installieren</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.5</strong><span>Installieren ohne nervige Popups</span></div>
       <ul>
-       <li><b>Android:</b> „Zum Startbildschirm hinzufügen“ öffnet nun die Cloud-App statt des separaten Offline-Planers.</li>
-       <li><b>Getrennt:</b> Cloud mit Clan & Konto und lokaler Offline-Planer behalten eigene Installationsprofile.</li>
-       <li><b>Bereits installiert:</b> Falsche alte Verknüpfung entfernen und die Cloud-Seite erneut hinzufügen; vorhandene Offline-Daten vorher gegebenenfalls sichern.</li>
+       <li><b>Mehr:</b> „App installieren“ zeigt die passenden Schritte für iPhone, Android und andere Browser.</li>
+       <li><b>iPhone:</b> Ein dezenter Hinweis nur unter „Mehr“, den du dauerhaft ausblenden kannst. Keine wiederholten Popups.</li>
+       <li><b>CWL:</b> Raus/Rein wird jetzt eindeutig als Wechsel der Kriegsaufstellung bezeichnet.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2841,9 +2872,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.14.4"></script>
+<script src="./cwl-planning-core.js?v=1.14.5"></script>
 <script>
-const APP_VERSION="v1.14.4";
+const APP_VERSION="v1.14.5";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3625,7 +3656,7 @@ function showPlannerView(view){
  if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive","more-settings"].includes(visible)?"more":visible;
+   ["help","account","archive","more-settings","install"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -3720,11 +3751,70 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="help"){showPlannerView("help");return}
+  if(action==="install"){renderInstallGuide();showPlannerView("install");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(moreSettingsMeta[action]){openMoreSettings(action);return}
 });
+// Keep Android's native install UI; iOS Safari has no beforeinstallprompt API.
+// The user opens this guide on demand, and the optional iOS hint lives only
+// in More and can be dismissed permanently.
+const CLOUD_INSTALL_HINT_KEY="cwl_cloud_install_tip_dismissed_v1";
+let installHintDismissedInMemory=false;
+function cloudInstallEnvironment(){
+ const agent=navigator.userAgent||"";
+ const ios=/iPhone|iPad|iPod/.test(agent)||
+  (navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+ const installed=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+ return {ios,installed,android:/Android/i.test(agent)};
+}
+function renderInstallGuide(){
+ const environment=cloudInstallEnvironment();
+ const title=document.getElementById("installGuideTitle");
+ const description=document.getElementById("installGuideText");
+ const list=document.getElementById("installGuideSteps");
+ const steps=environment.installed?[]:environment.ios
+  ?["Die Cloud-Seite in Safari öffnen.",
+    "Auf Teilen tippen und „Zum Home-Bildschirm hinzufügen“ wählen.",
+    "„Als Web-App öffnen“ aktivieren und auf „Hinzufügen“ tippen."]
+  :environment.android
+  ?["Die Cloud-Seite in Chrome, Samsung Internet oder dem gewünschten Browser öffnen.",
+    "Im Browsermenü „Installieren“ oder „Zum Startbildschirm hinzufügen“ wählen.",
+    "„CWL Cloud“ starten und dich über „Clan & Konto“ anmelden."]
+  :["Im Browsermenü nach „App installieren“ oder „Verknüpfung erstellen“ suchen.",
+    "Die Cloud-App hinzufügen und über „Clan & Konto“ anmelden."];
+ title.textContent=environment.installed?"App bereits installiert":environment.ios
+  ?"Zum Home-Bildschirm hinzufügen":environment.android?"Auf Android installieren":"App installieren";
+ description.textContent=environment.installed
+  ?"Du verwendest die CWL Cloud bereits als eigenständige App. Keine weiteren Schritte nötig."
+  :environment.ios
+  ?"Auf iPhone und iPad gibt es keinen automatischen Installationsdialog. Die Einrichtung erfolgt einmal über das Teilen-Menü."
+  :environment.android
+  ?"Viele Android-Browser schlagen die Installation selbst vor. Im Browsermenü geht es auch jederzeit manuell."
+  :"Je nach Browser ist die Installation direkt oder über das Browsermenü möglich.";
+ list.replaceChildren(...steps.map(step=>{const item=document.createElement("li");item.textContent=step;return item}));
+ list.hidden=environment.installed;
+}
+function updateCloudInstallSuggestion(){
+ const hint=document.getElementById("installSuggestion");
+ const environment=cloudInstallEnvironment();
+ let dismissed=installHintDismissedInMemory;
+ try{dismissed=dismissed||localStorage.getItem(CLOUD_INSTALL_HINT_KEY)==="1"}catch{}
+ hint.hidden=!environment.ios||environment.installed||dismissed;
+}
+function dismissInstallHint(){
+ installHintDismissedInMemory=true;
+ try{localStorage.setItem(CLOUD_INSTALL_HINT_KEY,"1")}catch{}
+ updateCloudInstallSuggestion();
+}
+document.getElementById("installBack").onclick=()=>showPlannerView("more");
+document.getElementById("installSuggestionOpen").onclick=()=>{
+ dismissInstallHint();renderInstallGuide();showPlannerView("install");
+};
+document.getElementById("installSuggestionDismiss").onclick=dismissInstallHint;
+updateCloudInstallSuggestion();
+window.addEventListener("appinstalled",updateCloudInstallSuggestion);
 document.getElementById("moreSettingsBack").onclick=()=>{
  const source=activeMoreSettings;
  showPlannerView("more");
@@ -3870,6 +3960,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.14.4"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.5"></script>
 </body>
 </html>

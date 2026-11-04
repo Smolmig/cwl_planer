@@ -1,3 +1,13 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.5):
+- Unter Mehr > App installieren steht eine plattformgerechte, manuell abrufbare
+  Anleitung für Safari/iOS, Android und weitere Browser.
+- iOS: nur ein unaufdringlicher Hinweis innerhalb von Mehr, lokal dauerhaft
+  ausblendbar; keine neuen Pop-ups oder blockierten Android-Installationsprompts.
+- CWL-Abgleich: „Aus der Kriegsaufstellung nehmen“ /
+  „In die Kriegsaufstellung aufnehmen“. Kurzer Clash-Chat-Kopiertext bleibt.
+- Cloud-Manifest/Installations-ID, v9-Datenformat, Rollen, Solver, Supabase,
+  Offline-PWA v1.0.2 und vorhandene Cloud-Pläne unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.4):
 - Android-Installation von cloud-app.html startet nun zuverlässig den Cloud-Planer
   mit Konto/Clan-Anmeldung, Einsätzen und Statistik statt der Offline-PWA.
@@ -131,7 +141,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.4;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.5;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
