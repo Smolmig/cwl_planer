@@ -74,13 +74,13 @@ test("Android installation follows cloud-app.html, not the legacy three-tab offl
       idPath:id.pathname,startOrigin:start.origin,currentOrigin:location.origin,
       cloudLogin:!!document.getElementById("cloudOpen"),
       cloudStats:!!document.getElementById("statsNav"),
-      localLegacyTab:!!document.querySelector('.navbtn[data-view="summary"]'),
+      cloudMore:!!document.querySelector('.navbtn[data-view="more"]'),
       name:manifest.name};
    });
    assert.deepEqual(info,{
     linkPath:"/cloud-manifest.webmanifest",startPath:"/cloud-app.html",
     idPath:"/cloud-app.html",startOrigin:new URL(url).origin,currentOrigin:new URL(url).origin,
-    cloudLogin:true,cloudStats:true,localLegacyTab:false,name:"CWL Planer Cloud"
+    cloudLogin:true,cloudStats:true,cloudMore:true,name:"CWL Planer Cloud"
    });
    await page.goto(url+info.startPath,{waitUntil:"domcontentloaded"});
    assert.equal(await page.locator("#cloudOpen").count(),1,
