@@ -3,6 +3,7 @@ import { createCloudBackups } from "./cloud-backups.mjs?v=1.8.2";
 import { createCwlLive } from "./cwl-live.mjs?v=1.8.2";
 import { createCloudStats } from "./cwl-stats.mjs?v=1.8.2";
 import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.8.2";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.9.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -287,6 +288,7 @@ const cloud={
   toggle("statsNav",!!this.active&&!!clanId);
   installNameEditors();
   live.render();
+  window.CWLSeasonView?.render?.();
   renderPlanReview();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
@@ -333,10 +335,17 @@ const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
  onSnapshot:data=>{
   currentWarOverview?.update(data);
+  window.CWLSeasonView?.render?.();
   return stats.captureCwl(data);
  },
  context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+});
+window.CWLSeasonView=createCwlSeasonView({
+ getProfile:()=>storage.getProfile(),
+ getSnapshot:()=>live.getSnapshot(),
+ isConnected:()=>!!cloud.active&&!!clanId,
+ refresh:()=>live.refresh()
 });
 currentWarOverview=createCurrentWarOverview({
  context:()=>({active:cloud.active,clanId,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag}),
