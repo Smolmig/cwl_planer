@@ -32,7 +32,7 @@ test("Mehr navigation uses actual subviews instead of opening and scrolling a la
  assert.doesNotMatch(app,/const targets=\{rules:"settingsRulesSection"/);
  assert.match(app,/const navView=visible==="cwl-season"\?"plan":/);
  assert.match(app,/\["help","account","archive","more-settings"\]\.includes\(visible\)\?"more":visible/);
- assert.match(app,/if\(view!=="more-settings"&&movedSettings.length\)restoreMoreSettings\(\)/);
+ assert.match(app,/if\(view!=="more-settings"&&typeof movedSettings!=="undefined"&&movedSettings.length\)restoreMoreSettings\(\)/);
  assert.match(app,/if\(view==="settings"&&window\.__previousPlannerView==="more-settings"\)/);
 });
 test("moving real controls preserves listeners, selected values, unique IDs and original DOM homes",()=>{
