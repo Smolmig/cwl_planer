@@ -25,7 +25,26 @@ test("Cloud and offline app have distinct, stable launch identities without touc
  assert.equal(localManifest.scope,"./");
  assert.match(cloudHtml,/<link rel="manifest" href="\.\/cloud-manifest\.webmanifest">/);
  assert.match(offlineHtml,/<link rel="manifest" href="\.\/manifest\.webmanifest">/);
- assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
+ assert.match(read("service-worker.js"),/cwl-planer-v1-0-2-brand2/);
+ assert.match(read("service-worker.js"),/brand-icon-192\\.png/);
+ assert.match(read("service-worker.js"),/brand-icon-512\\.png/);
+ for(const item of [manifest,localManifest]){
+   assert.deepEqual(item.icons.map(icon=>icon.src),["./brand-icon-192.png","./brand-icon-512.png"]);
+   assert.ok(item.icons.every(icon=>icon.purpose==="any"));
+ }
+ assert.match(cloudHtml,/rel="apple-touch-icon"[^>]*brand-icon-192\\.png/);
+ assert.match(offlineHtml,/rel="apple-touch-icon"[^>]*brand-icon-192\\.png/);
+ assert.match(cloudHtml,/property="og:image" content="https:\\/\\/smolmig\\.github\\.io\\/cwl_planer\\/brand-social-preview\\.png"/);
+ assert.match(offlineHtml,/property="og:image" content="https:\\/\\/smolmig\\.github\\.io\\/cwl_planer\\/brand-social-preview\\.png"/);
+ for(const [asset,size] of [["brand-icon-192.png",192],["brand-icon-512.png",512]]){
+   const bytes=fs.readFileSync(path.join(root,asset));
+   assert.equal(bytes.subarray(0,8).toString("hex"),"89504e470d0a1a0a");
+   assert.equal(bytes.readUInt32BE(16),size);
+   assert.equal(bytes.readUInt32BE(20),size);
+ }
+ const share=fs.readFileSync(path.join(root,"brand-social-preview.png"));
+ assert.equal(share.readUInt32BE(16),1200);
+ assert.equal(share.readUInt32BE(20),630);
  assert.match(read("service-worker.js"),/cloud-app\\\.html/);
  assert.ok(!read("service-worker.js").includes("cloud-manifest.webmanifest"),
   "offline worker must never pre-cache the online Cloud installation metadata");
@@ -48,6 +67,7 @@ test("Android installation follows cloud-app.html, not the legacy three-tab offl
   const file=map[pathname];
   if(!file){res.writeHead(404);res.end("");return}
   const kind=file.endsWith(".webmanifest")?"application/manifest+json":
+   file.endsWith(".png")?"image/png":
    file.endsWith(".js")?"text/javascript":"text/html";
   res.writeHead(200,{"content-type":kind+"; charset=utf-8"});
   res.end(read(file));

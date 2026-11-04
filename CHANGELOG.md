@@ -1,3 +1,12 @@
+## [1.14.6] - 2026-11-04
+
+### Einheitliches Logo für PWA und geteilte Links
+
+- Goldene Schild-/Haken-Marke aus brand-mark.svg als gemeinsame Quelle für Cloud und separate Offline-PWA.
+- Neue PNG-App-Icons (192/512), Safari-Home-Screen, Favicon und große 1200×630-Linkvorschau; Open Graph/Twitter Meta-Tags.
+- Versionierte neue Bilddateinamen und behutsam erneuerter Offline-Icon-Cache; kein Eingriff in Profildaten, Cloud-Login, Solver, Supabase oder die Cloud-Installations-ID.
+- Bestehende Home-Screen-Symbole können wegen iOS-/Android-Caches ein erneutes Hinzufügen benötigen; native Link-Previews können serverseitig zwischengespeichert sein.
+
 # Changelog
 
 Alle **neuen** veröffentlichten Versionen ab v1.0.0 werden hier dokumentiert.

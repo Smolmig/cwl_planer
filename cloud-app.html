@@ -2242,7 +2242,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
 .install-guide li{padding:4px 0}
 @media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
-/* v1.14.5: keep long member/statistics lists cheap on slower desktops.
+/* v1.14.6: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2268,8 +2268,22 @@ html[data-theme="arena"] body{background-attachment:scroll}
 }
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
 <link rel="manifest" href="./cloud-manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./brand-icon-192.png">
+<meta name="description" content="Gemeinsam die CWL planen: Aufstellungen, Einsätze und Statistik für deinen Clash-of-Clans-Clan.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_AT">
+<meta property="og:title" content="CWL Planer Cloud – Dein Clan. Deine Planung.">
+<meta property="og:description" content="Die gemeinsame CWL-Planung für deinen Clash-of-Clans-Clan.">
+<meta property="og:url" content="https://smolmig.github.io/cwl_planer/cloud-app.html">
+<meta property="og:image" content="https://smolmig.github.io/cwl_planer/brand-social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Goldenes CWL-Planer-Schild mit Häkchen und App-Titel">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smolmig.github.io/cwl_planer/brand-social-preview.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CWL Planer">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2523,7 +2537,7 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.14.5</strong><span>Installieren ohne nervige Popups</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.6</strong><span>Installieren ohne nervige Popups</span></div>
       <ul>
        <li><b>Mehr:</b> „App installieren“ zeigt die passenden Schritte für iPhone, Android und andere Browser.</li>
        <li><b>iPhone:</b> Ein dezenter Hinweis nur unter „Mehr“, den du dauerhaft ausblenden kannst. Keine wiederholten Popups.</li>
@@ -2872,9 +2886,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.14.5"></script>
+<script src="./cwl-planning-core.js?v=1.14.6"></script>
 <script>
-const APP_VERSION="v1.14.5";
+const APP_VERSION="v1.14.6";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3960,6 +3974,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.14.5"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.6"></script>
 </body>
 </html>
