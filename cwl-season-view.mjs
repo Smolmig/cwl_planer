@@ -1,8 +1,8 @@
 // CWL season overview: a read-only companion to the operational day planner.
 // Currently the official Clash proxy retains our own seven war pairings.
 // Display known facts only; the complete eight-clan ranking needs the group feed.
-import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.9.0";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.9.0";
+import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.10.0";
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.10.0";
 import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.10.0";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
