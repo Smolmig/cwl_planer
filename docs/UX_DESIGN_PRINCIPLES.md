@@ -30,6 +30,8 @@
 - Bei bewusstem Clanwechsel/Saisonwechsel darf der sichtbare Kontext kontrolliert zurückgesetzt werden, aber fremde alte asynchrone Antworten dürfen niemals im neuen Clan erscheinen.
 - Abgeschlossene CWL-Kriege, tatsächlich gestartete Tagesaufstellungen und bereits bestätigte Daten sind nicht von vorläufigen API-Antworten zu überschreiben. Quellen/Zustände sauber trennen.
 - Nicht automatisch im Hintergrund navigieren oder Scrollposition zurücksetzen. Bei laufender Interaktion **keine überraschenden Strukturänderungen**.
+- Beim Austausch langer Listen den sichtbaren Datensatz über eine **stabile ID als Scroll-Anker** erhalten (nicht pauschal dieselbe Pixelposition oder automatisch die erste Zeile anzeigen). Nur für echte Hintergrund-Updates; bewusste Filter/Sortierung darf das Ergebnis passend neu positionieren.
+- Ein Overlay wie die Einstellungen darf beim Öffnen und Schließen die Scrollposition des darunterliegenden Haupttabs nicht verändern. Mobile Bottom-Navigation und Desktop-Sidebar geometrisch unterscheiden.
 
 ## 4. Progressive Offenlegung mit Gedächtnis
 
