@@ -1,5 +1,5 @@
 {
-  "version": "v1.14.2",
+  "version": "v1.14.3",
   "released": "2026-11-04",
-  "summary": "Lange Mitglieder- und Statistiklisten scrollen flüssiger; Einzelangriffe werden erst beim Aufklappen geladen, mit größeren mobilen Spieleraktionen."
+  "summary": "Automatische Clan-Updates erhalten den sichtbaren Spieler und den Scrollstand; Einstellungen öffnen und schließen ohne Scrollsprung."
 }
