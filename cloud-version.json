@@ -1,5 +1,5 @@
 {
-  "version": "v1.8.1",
-  "released": "2026-11-03",
-  "summary": "Fixer CWL-Kader ab Kriegsbeginn, konsistente Spielerwechsel aus dem aktuellen Clash-Abgleich und ausgeblendete theoretische Rein-/Raus-Listen."
+  "version": "v1.8.2",
+  "released": "2026-11-04",
+  "summary": "Clash-kompatibler einzeiliger Rein/Raus-Text, präzisere mobile CWL-Übersicht, ausgetretene Spieler nur lesbar und Ø Sterne je Spieler."
 }
