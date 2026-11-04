@@ -2227,6 +2227,9 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 
 .more-settings-body button:not([hidden]){min-height:44px}
+
+/* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
+.cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="manifest" href="./manifest.webmanifest">
