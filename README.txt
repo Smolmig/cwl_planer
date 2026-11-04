@@ -1,3 +1,10 @@
+CLOUD-RELEASE 04.11.2026 (v1.14.1):
+- Hintergrund-Cloud-Abgleich bewahrt geöffnete Mitgliederkarten, Suche/Filter,
+  gewählten Kriegstag, Plan-Rotationen und zusätzliche Tageswarnungen.
+- Fokus auf Mitgliederaktionen und der Einsatzübersicht bleibt beim Neuzeichnen;
+  erst ein bewusster Clanwechsel setzt die Ansicht zurück.
+- Cloud-Datenformat v9, Rollen, Supabase, Solver und Offline-PWA unverändert.
+
 CLOUD-RELEASE 04.11.2026 (v1.14.0):
 - Mehr > CWL-Regeln / Design / Backup / lokale Clanprofile als echte,
   responsive Unterseiten mit Zurück-Navigation.
@@ -99,7 +106,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.1;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
