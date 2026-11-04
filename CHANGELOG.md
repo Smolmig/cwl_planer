@@ -8,6 +8,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.0] - 2026-11-04
+
+### „Mehr“ mit echten Unterseiten und besseren mobilen Aktionen
+- **CWL-Regeln & Grunddaten**, **Design & Aktualisierung**, **Backup & Import** und **lokale Clanprofile** öffnen jetzt eigenständige Unterseiten mit Zurück zu „Mehr“, statt nur zum passenden Bereich des großen Einstellungsmodals zu scrollen.
+- Alle bisherigen Formulare werden innerhalb der Unterseiten mit ihren bestehenden DOM-Knoten (nicht mit Kopien) wiederverwendet; beim Zurücknavigieren kommen sie an den ursprünglichen Platz. Bestehende Werte, Datei-Import-Handler, Einstellungen, Rollen und Plan-Sperren bleiben erhalten.
+- Im Cloud-Modus führen die Clan-/Profilaktionen zur vorhandenen Seite „Clan & Konto“, und im Backup-Bereich gibt es einen Hinweis und direkten Zugang zu gemeinsamen Cloud-Sicherungen.
+- Die Beobachter-Sperren gelten auch für die neuen Unterseiten. Navigation, Farbschema und erlaubte Exporte bleiben für Beobachter zugänglich.
+- Unterseiten nutzen die UX-Leitlinie: ruhige Abschnitte mit Trennlinien, keine mehrfach geschachtelten Karten; responsive Button-Gruppen und große Touch-Flächen auf iPhones.
+- Die separate Offline-PWA, der CWL-Planungsalgorithmus, Supabase, RLS, Cloud-Speicherformat und historische Archive bleiben unverändert.
+
+### Als Nächstes
+- App-weites Mobile-/Desktop-UX-Audit mit gezielten Button- und Kartenkorrekturen in allen Haupttabs/Unterseiten (Issue #46).
+- Experimentelle leistungsbezogene CWL-Vorschau separat, nach Datengüte- und Solver-Regelprüfung (Issue #44).
+
 ## [1.13.0] - 2026-11-04
 
 ### Archiv bleibt beim Auto-Abgleich offen
