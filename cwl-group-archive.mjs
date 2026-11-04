@@ -70,7 +70,7 @@ function ownLineupForDay(group,day,rows,profile){
   if(server)return {source:"clash",state:server.state,members:server.lineup_json.members};
   return extractLineup(profile,group.season,day,own.warTag,group.clanTag);
 }
-function lineupDetail(lineup){
+function lineupDetail(lineup,season,day){
   if(!lineup?.members?.length)return "";
   const trusted=lineup.source==="clash";
   const status=trusted?(lineup.state==="warEnded"?"Clash · Krieg abgeschlossen":"Clash · Aufstellung fix"):
@@ -84,13 +84,13 @@ function lineupDetail(lineup){
     return '<div class="season-archive-player"><strong>'+esc(m.name||m.tag||"Spieler")+'</strong>'+
       (meta?'<small>'+esc(meta)+'</small>':"")+'</div>';
   }).join("");
-  return '<details class="season-archive-lineup"><summary><span>Unser Team · '+
+  return '<details class="season-archive-lineup" data-archive-key="roster:'+esc(season)+':'+day+'"><summary><span>Unser Team · '+
     lineup.members.length+' Spieler</span><small>'+esc(status)+'</small></summary>'+
     '<div class="season-archive-roster">'+rows+'</div></details>';
 }
 function groupRounds(data,ownRows,profile){
   return '<div class="season-group-archive-rounds">'+data.rounds.map(round=>
-    '<details class="season-archive-round"><summary>Runde '+round.day+' · '+
+    '<details class="season-archive-round" data-archive-key="round:'+esc(data.season)+':'+round.day+'"><summary>Runde '+round.day+' · '+
     round.matches.filter(m=>m.available).length+' Begegnungen bekannt</summary>'+
     '<div class="season-group-matches">'+(round.matches.length?round.matches.map(m=>{
       if(!m.available)return '<div class="season-group-match season-missing">Begegnung nicht gespeichert</div>';
@@ -102,7 +102,7 @@ function groupRounds(data,ownRows,profile){
         '<span class="season-clan right">'+badge(m.opponent)+'<strong>'+esc(m.opponent.name)+'</strong></span></div>';
     }).join(""):'<p class="season-empty">Keine Begegnungen gespeichert.</p>')+'</div>'+
     (ownLineupForDay(data,round.day,ownRows,profile)?
-      lineupDetail(ownLineupForDay(data,round.day,ownRows,profile)):
+      lineupDetail(ownLineupForDay(data,round.day,ownRows,profile),data.season,round.day):
       round.matches.some(m=>m.available&&["inWar","warEnded"].includes(m.state)&&
         (m.clan.tag===data.clanTag||m.opponent.tag===data.clanTag))?
         '<p class="statusline">Unsere Aufstellung ist für diese Runde noch nicht archiviert.</p>':"")+
@@ -113,6 +113,23 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
   if(!host)return {open(){},invalidate(){}};
   const current=()=>isConnected()?getClanId():null;
+  // A live API poll can refresh the archive while a user is reading it.
+  // Remember *every* open disclosure, including nested rounds/rosters,
+  // then restore them synchronously after replacing data. Only a real clan
+  // switch clears this state. Do not store it in the shared planner profile.
+  function captureOpen(){
+    return new Set([...host.querySelectorAll('details[data-archive-key][open]')]
+      .map(node=>node.getAttribute("data-archive-key")).filter(Boolean));
+  }
+  function restoreOpen(keys){
+    for(const node of host.querySelectorAll('details[data-archive-key]'))
+      if(keys.has(node.getAttribute("data-archive-key")))node.open=true;
+  }
+  function replaceContent(html){
+    const keys=captureOpen();
+    host.innerHTML=html;
+    restoreOpen(keys);
+  }
   function render(){
     const id=current();
     if(!id){
@@ -123,25 +140,29 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
     if(refresh)refresh.hidden=false;
     if(busy){host.innerHTML='<p class="season-empty">Gruppensaisons werden geladen …</p>';return}
     if(!rows.length){host.innerHTML='<p class="season-empty">Noch keine Gruppensaison gespeichert. Beim nächsten erfolgreichen Clash-Abruf wird die aktuelle Saison automatisch gesichert.</p>';return}
-    host.innerHTML='<div class="season-group-archive-list">'+rows.map(row=>{
+    replaceContent('<div class="season-group-archive-list">'+rows.map(row=>{
       const d=summarizeCwlGroup(row.group_json);
       if(!d||d.clanTag!==row.group_json?.clanTag||row.season!==d.season)return "";
       const checked=new Date(row.updated_at);
       const date=Number.isNaN(checked.getTime())?"Stand unbekannt":checked.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
-      return '<details class="season-archive-item"><summary><span><strong>'+esc(month(d.season))+'</strong>'+
+      return '<details class="season-archive-item" data-archive-key="season:'+esc(d.season)+'"><summary><span><strong>'+esc(month(d.season))+'</strong>'+
         '<small>'+d.clans.length+' Clans · '+d.ended+' / '+d.expected+' Kriege abgeschlossen</small></span>'+
         '<span class="season-archive-chip">'+(d.complete?"Abgeschlossen":"Gespeicherter Zwischenstand")+'</span></summary>'+
         '<div class="season-archive-body"><p class="statusline">Zuletzt gesichert: '+esc(date)+
         '. Die Rangfolge ist bei offenen oder fehlenden Kriegen vorläufig. Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
         groupTable(d)+
         '<h4>Runden</h4>'+groupRounds(d,ownRows,getProfile?.())+'</div></details>';
-    }).join("")+'</div>';
+    }).join("")+'</div>');
   }
   async function open(force=false){
     const id=current(),token=++requestSerial;
     if(!id){loadedId=null;rows=[];ownRows=[];busy=false;render();return}
     if(!force&&loadedId===id&&!busy){render();return}
-    busy=true;render();
+    // Keep visible rows and expanded panels in place during a background
+    // refresh. A spinner-only replacement loses both focus and scroll position.
+    const keepVisible=loadedId===id&&rows.length>0;
+    busy=!keepVisible;
+    if(!keepVisible){rows=[];ownRows=[];render()}
     try{
       const {data,error}=await sb.from("cwl_group_archives")
         .select("season,group_json,updated_at")
@@ -164,5 +185,12 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
     }
   }
   refresh?.addEventListener("click",()=>open(true));
-  return {open,invalidate(){requestSerial++;loadedId=null;rows=[];ownRows=[];busy=false;if($("view-archive")?.classList.contains("active"))open(true)}};
+  return {open,invalidate(){
+    requestSerial++;
+    const id=current(),changed=loadedId!==null&&loadedId!==id;
+    if(changed){loadedId=null;rows=[];ownRows=[];busy=false}
+    // A periodic live refresh is not a navigation event: keep rows, opened
+    // panels and the current reading position until new data arrives.
+    if($("view-archive")?.classList.contains("active"))void open(true);
+  }};
 }
