@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.1] - 2026-11-04
+
+### Cloud-Realtime ohne Verlust des Bedienzustands
+- Der automatische Cloud-Profilabgleich unterscheidet Aktualisierungen **im selben Clan** von einem bewussten Clanwechsel. Dabei bleiben Suchtexte, Mitgliederfilter, geöffnete Spieler, Tagesregeln und der ausgewählte Kriegstag bestehen. Bei einem anderen Clan werden diese Zustände bewusst zurückgesetzt.
+- Im Plan bleiben „Geplante Rotation (ohne Clash)“ und zusätzlich aufgeklappte Tageswarnungen auch nach einem Neuzeichnen geöffnet. Die geöffneten Details sind an Clan, Profil und Spieltag gebunden.
+- Die Einsatzübersicht behält geöffnete Spieler-Einsatztage; relevante Buttons bekommen nach einem Hintergrund-Refresh ihren Tastaturfokus ohne Scrollsprung zurück. Gleiches gilt für die Mitgliederaktionen.
+- Browser-Regressionen prüfen Smartphone-/Desktop-Breiten, gleichen versus anderen Clan, Filter, Offen-Zustände und Tastaturfokus.
+- Keine Änderung an CWL-Solver, Clanrechten, Supabase-Tabellen, Cloud-Profilformat v9, historischen Aufstellungen und separater Offline-PWA v1.0.2.
+
 ## [1.14.0] - 2026-11-04
 
 ### „Mehr“ mit echten Unterseiten und besseren mobilen Aktionen
