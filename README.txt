@@ -1,3 +1,12 @@
+CLOUD-RELEASE 04.11.2026 (v1.8.2):
+- Mobiler CWL-Abgleich: kopierbarer, einzeiliger Rein/Raus-Klartext ohne Emojis,
+  einheitliche Teamstatus-Anzeigen und passendere Anordnung der Aktionen.
+- Teilnehmer und Fixspieler dauerhaft sichtbar; Gold-Tageskopf und Hinweise bereinigt.
+- Ausgetretene Spieler schreibgeschützt, mit separater dauerhafter Löschoption,
+  bisherige Einstellungen bleiben bis dahin für einen Wiedereintritt erhalten.
+- Beobachter sehen einen schreibgeschützten Kader; Ø Sterne je Spieler wieder sichtbar.
+- Separate Offline-PWA unverändert v1.0.2, Datenformat v9. Details: CHANGELOG.md.
+
 CLOUD-RELEASE 03.11.2026 (v1.8.1):
 - Cloud: Start eines Kriegstags fixiert die tatsächliche Clash-Aufstellung als
   Planungsbasis, auch solange der Krieg noch läuft. „Gespielt“ erst nach Kriegsende.
@@ -26,7 +35,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.8.1;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.8.2;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
