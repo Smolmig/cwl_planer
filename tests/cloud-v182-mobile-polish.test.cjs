@@ -36,7 +36,7 @@ test("Former members keep settings for rejoin but become only deletable archived
 test("Member note label, viewer read-only styling, individual average stars and clarifying CWL copy exist",()=>{
  assert.match(app,/member-note-caption">Notiz<\/span>/);
  assert.match(app,/cloud-role-viewer #memberList \.member\{/);
- assert.match(app,/Übersicht &amp; Aktionen/);
+ assert.match(app,/Weitere Kennzahlen und Aktionen/);
  assert.match(app,/Diese Ansicht vergleicht die geplanten Teams/);
  assert.match(app,/CWL läuft: Team bereits gestarteter Kriege steht fest/);
  assert.match(stats,/p\.averageStars\.toLocaleString\("de-AT"/);
