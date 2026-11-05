@@ -200,7 +200,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "Form "+form.performanceIndex+"/100":"Form: zu wenig Daten";
       const nEff=form?.weighted90?.effectiveAttacks??0;
       const lastTen=p.lastTen;
-      const lastTenMissed=lastTen.missed===null?
+      const lastTenMissed=lastTen.recordedParticipations===0?"– (keine Teilnahme dokumentiert)":lastTen.missed===null?
         (lastTen.missedKnown>0?"mind. "+lastTen.missedKnown:"k. A."):
         String(lastTen.missed);
       const lastTenLabel=lastTen.attacks?
@@ -245,7 +245,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
         "<summary>Letzte "+lastTen.wars+" Kriege · Details</summary>"+
         "<div>"+esc(lastTenLabel)+" · verpasst: "+esc(lastTenMissed)+
-        "</div><small>Betrachtet werden die "+lastTen.wars+" zuletzt ausgewählten Kriege. "+
+        "</div><small>Betrachtet werden die "+lastTen.wars+" zuletzt ausgewählten Kriege · "+lastTen.coveredWars+"/"+lastTen.wars+" vollständig erfasst. "+
         "Ohne vollständige CWL-Tagesdaten können weitere Fehlangriffe unbekannt sein. "+
         "Ein nicht eingeplanter Spieler hat keinen verpassten Angriff.</small></details></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
