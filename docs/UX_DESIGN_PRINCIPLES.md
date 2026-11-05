@@ -65,6 +65,14 @@
 - Geschlossene Historien-/Detailbereiche erst beim aktiven Öffnen mit vielen Einträgen füllen; Filter und Live-Updates verwenden unveränderte DOM-Zeilen und Berechnungen möglichst wieder.
 - Regressionen synthetisch in 320/390/1366px prüfen; reale schwache Büro-PCs und iPhone Safari bleiben ein separater Praxistest, nicht durch synthetische FPS-Versprechen ersetzen.
 
+### Aktions-Typografie und Touch-Flächen (05.11.2026)
+
+- Lesbare **Textschaltflächen** als Standard: mobile wichtige Aktionen ungefähr **13–14 CSS-px**, Hauptnavigation möglichst **11–12 CSS-px** statt unter 10 px; Desktop-Sekundäraktionen mindestens 13 px, sofern Platz vorhanden.
+- Nicht einzelne Buttons auf 9–10 px schrumpfen, nur damit ein langer Text in eine Zeile passt: natürliche Mehrzeiligkeit, flexible Breite und `min-width:0` verwenden. Bei Bedarf zwei Reihen statt gequetschten Labels.
+- Primäre Touch-Targets in Hauptabläufen ca. **44 CSS-px** hoch; bewusst kompakte Badge-/Info-/Icon-Elemente und kurze Querformat-Ansichten nicht pauschal aufblasen.
+- Bei Anpassungen Nav-Labels, CWL-Tagesaktionen, Mitgliederaktionen und Statistik-Kontrollen zusammen prüfen (320/375/390/430 px; Gold, Cyberpunk, Hell/Dunkel) und Desktop-Sidebar unverändert funktional lassen.
+- Typografie getrennt von dekorativen Zierelementen testen: nur tatsächlich klickbare Aktionsbeschriftungen priorisieren, nicht KPI-/Tabellen-/Statuswerte.
+
 ## 6. Texte und Zustände
 
 - Deutsche, kurze, klare Begriffe für Clanmitglieder ohne Entwicklerwissen. Benenne die **Wirkung** einer Aktion („Wechseltext kopieren“) statt generischer interner Begriffe („Abgleich kopieren“).

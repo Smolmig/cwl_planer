@@ -8,6 +8,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.8] - 2026-11-05
+
+### Button-Typografie und mobile Bedienflächen
+- Auf kleinen Smartphones nutzt die Hauptnavigation jetzt mindestens 11 statt teils 9 px; ab 376 px 12 px und mindestens 46 px Höhe.
+- Text-Aktionen in CWL-Plan, Tagesaktionen, Mitgliederverwaltung, Saison und Hauptdialogen: 13 px mit lesbarer Zeilenhöhe und Umbruch bei langen Bezeichnungen; wichtige Touch-Ziele mindestens 44 px.
+- Auf Desktop erhält die sekundäre Aktionsschrift eine konsistente Mindestgröße von 13 px. Kleine Status-Badges, reine Icon-Tasten und der bewusst kompakte Handy-Querformat-Modus werden nicht pauschal vergrößert.
+- Browser-Regressionen auf 320/390/430/1366 px, Gold/Cyberpunk/Hell/Dunkel; keine Änderungen an Cloud-Daten, Offline-PWA, Supabase, CWL-Solver oder Rollen.
+
 ## [1.14.7] - 2026-11-05
 
 ### Einstellungen und Installationsanleitungen
