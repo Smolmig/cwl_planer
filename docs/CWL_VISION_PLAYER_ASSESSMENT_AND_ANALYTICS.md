@@ -46,6 +46,21 @@ Ein kurzer verständlicher Indikator wie „Aktuelle Stärke: sehr gut / gut / m
 5. **CWL- & Kriegsarchiv:** Saison für Saison, ggf. Vergleich besonderer Saisons; Kriegsgegner, Tages-RH-Verteilung, eigene/generische Angriffe, wirklich eingeplante 15/30, Wechsel und Starverteilung. Beide echten Juni-2026-CWL-Durchgänge sauber getrennt behandeln.
 6. **Tiefer eintauchen:** Clan → Spieler → Krieg → Einzelangriff; Filter nach Zeitraum, Kriegstyp, Spieler, RH, Ziel-RH, RH-Differenz, Sieg/Niederlage, Gegner, Map/First-Hit nur soweit belegbar. CSV-/Excel-Export zu einem späteren Zeitpunkt prüfen.
 
+### Beispiel: genau die Art Statistik, die wir ausbauen wollen
+
+Die konkrete **RH-Klasse × Kriegstyp**-Tabelle soll als wiederkehrender Analysebaustein dienen – **keine** künstlichen Zahlen in diesem Entwurf:
+
+| Filtergruppe | 3★-Quote | Angriffe | Ø Sterne |
+| --- | ---: | ---: | ---: |
+| CW gegen **niedrigeres** RH | – | – | – |
+| CW gegen **gleiches** RH | – | – | – |
+| CW gegen **höheres** RH | – | – | – |
+| CWL gegen **niedrigeres** RH | – | – | – |
+| CWL gegen **gleiches** RH | – | – | – |
+| CWL gegen **höheres** RH | – | – | – |
+
+Dieser Aufbau kann später nach *Spieler, Clan, RH-Stufe, Zeitraum, Saison, Gegner oder Map-Position* gefiltert und als gruppiertes Balkendiagramm gezeigt werden. Leere Gruppen müssen „keine Daten“ ausgeben, niemals irreführend 0 %.
+
 ### Darstellungsideen
 
 - **Standardeinstellung sofort verständlich.** Zunächst Überblick plus ein bis zwei schöne, aussagekräftige Vergleiche. Nicht 30 Regler, sieben Kartenstapel oder eine endlose Tabelle am Handy.
