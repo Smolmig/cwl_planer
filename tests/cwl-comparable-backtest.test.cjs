@@ -85,3 +85,13 @@ test("invalid prior is rejected instead of silently producing misleading scores"
  assert.throws(()=>backtestComparableForm([],[],{priorWeight:0}),/priorWeight/);
  assert.throws(()=>backtestComparableForm([],[],{priorWeight:NaN}),/priorWeight/);
 });
+
+test("duplicates are rejected; simultaneous-war coverage counts only evaluated wars",async()=>{
+ const {backtestComparableForm}=await load();
+ assert.throws(()=>backtestComparableForm([w("same",d(1)),w("same",d(2))],
+  [a("same",3)]),/Duplicate war_key/);
+ const result=backtestComparableForm([w("eligible",d(1)),w("other",d(1))],
+  [a("eligible",3),a("other",3,{defender_th:17})]);
+ assert.equal(result.warsWithEligibleAttacks,1);
+ assert.equal(result.eligibleEqualThAttacks,1);
+});
