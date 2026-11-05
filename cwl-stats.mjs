@@ -43,7 +43,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const excluded=m.lowerThExcluded+m.higherThExcluded+m.unknownThExcluded;
       desc.textContent=m.comparableAttacks+" Angriffe gegen dieselbe Rathausstufe aus den letzten 90 Tagen sind vergleichbar. "+
         (excluded?excluded+" weitere Angriffe mit anderem oder unbekanntem RH zählen hier nicht. ":"")+
-        "Die Auswahl aus CW und CWL entspricht deinen Filtern oben. Für die 90-Tage-Tendenz zählen neuere Angriffe stärker; bei wenig Daten bleibt sie unsicher.";
+        "Die Auswahl aus CW und CWL entspricht deinen Filtern oben. Für die 90-Tage-Tendenz zählen neuere Angriffe stärker; bei wenig Daten bleibt sie unsicher. "+
+        "Mirror-Position und Erstangriff sind historisch nicht durchgehend belegt.";
     }
     const qualityLabel={none:"Keine Vergleichsdaten",stale:"Nur ältere Angriffe",
       limited:"Wenig Daten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
