@@ -2473,6 +2473,24 @@ html[data-theme] #view-more-settings .latest-changelog{
  .stats-form-results{gap:7px}
  .stats-form-panel>summary{font-size:13px}
 }
+
+/* v1.15.3: raw win rates and conservative comparable form must remain distinct.
+   Player-level ten-war evidence is an inline disclosure, not an extra card. */
+.stats-form-score{display:block;font-size:10px;line-height:1.4;overflow-wrap:anywhere;
+ color:var(--muted);font-variant-numeric:tabular-nums;margin-top:3px}
+.stats-player-details{grid-column:1/-1;min-width:0;margin:1px 0 0;
+ border-top:1px solid var(--line);padding-top:4px;text-align:left!important}
+.stats-player-details>summary{cursor:pointer;min-height:40px;display:flex;
+ align-items:center;color:var(--muted);font-size:11px;font-weight:700;line-height:1.4;
+ list-style-position:inside}
+.stats-player-details>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.stats-player-details>div{font-size:12px;color:var(--text);line-height:1.5;overflow-wrap:anywhere}
+.stats-player-details>small{display:block;font-size:11px;color:var(--muted);
+ line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:380px){
+ .stats-form-score{font-size:9.5px}
+ .stats-player-details>summary{min-height:42px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2790,28 +2808,28 @@ html[data-theme] #view-more-settings .latest-changelog{
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
-    <div class="statusline">Höchste rohe 3★-Quote (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
+    <div class="statusline">Beste belegte Form (vorläufig, gleiches RH): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
-    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">3★-Hit-Rate: Anteil der Angriffe mit drei Sternen. Ø Sterne: durchschnittlich erreichte Sterne pro Angriff.</p>
+    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">3★-Quote und Ø Sterne sind die <strong>tatsächlichen Rohwerte</strong>. Die Standard-Reihung „Vergleichbare Form“ berücksichtigt nur Angriffe gegen dasselbe RH aus den letzten 90 Tagen und stuft kleine Stichproben zurück. Das ist noch keine genaue Vorhersage der Spielerstärke.</p>
     <div class="stats-toggles">
       <label><input type="checkbox" id="statsSameTH"> Nur Angriffe gegen gleiches oder höheres RH</label>
       <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Hit-Rate ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne ↓</option><option value="missed">Verpasst ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="performance" selected>Vergleichbare Form ↓</option><option value="hitRate">3★-Quote (roh) ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne (roh) ↓</option><option value="lastTen">Ø Sterne · letzte 10 Kriege ↓</option><option value="missed">Verpasst (belegt) ↓</option><option value="name">Name</option></select></div>
     </div>
     <div class="stats-player-table" aria-label="Spielerstatistik">
-      <div class="stats-player-head"><span>Spieler</span><span>3★-Hit-Rate</span><span>Angriffe</span><span>Verpasst</span></div>
+      <div class="stats-player-head"><span>Spieler</span><span>3★ / Form</span><span>Angriffe</span><span>Verpasst</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
     <p class="stats-note" id="statsMissingNote" hidden></p>
     <details class="stats-form-panel" id="statsFormDetails">
-      <summary>Vergleichbare Form · 30 / 90 Tage <span>Testansicht</span></summary>
+      <summary>Formanalyse · 30 / 90 Tage <span>Vorläufig</span></summary>
       <p class="stats-note" id="statsFormIntro">Gleichwertige RH-Angriffe werden geladen …</p>
       <div id="statsFormRows" class="stats-form-rows" aria-live="polite"></div>
-      <p class="stats-note">Diese Werte berücksichtigen nur Angriffe gegen dieselbe Rathausstufe. Die Basisnummer, Erstangriff und der Ausbaustand sind historisch nicht sicher bekannt. Der bestehende 7-Angriffs-Wert der Mitgliederliste bleibt unverändert.</p>
+      <p class="stats-note">Der Formwert ist eine vorsichtige Vergleichseinordnung (Wilson-Untergrenze mit zeitgewichteter Stichprobe, mindestens 5 effektive und 2 aktuelle Angriffe). Er ist keine geschätzte Erfolgswahrscheinlichkeit. Gleiche RH-Stufe bedeutet nicht gleiche Basisstärke, Mirror oder Erstangriff. Die Mitgliederliste bleibt vorerst unverändert.</p>
     </details>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
