@@ -43,6 +43,7 @@ test("Einsatzverteilung uses readable, unboxed rows and full-width filters on sm
        nameFont:parseFloat(getComputedStyle(clickTarget.querySelector("b")).fontSize),
        rowBorderTop:style.borderTopWidth,rowBorderBottom:style.borderBottomWidth,
        rowRadius:style.borderTopLeftRadius,rowBg:style.backgroundColor,
+       lastRowBottom:getComputedStyle(root.lastElementChild).borderBottomWidth,
        listColumns:getComputedStyle(root).gridTemplateColumns.split(" ").length
       };
      },theme);
@@ -59,6 +60,7 @@ test("Einsatzverteilung uses readable, unboxed rows and full-width filters on sm
       assert.equal(v.rowBorderBottom,"1px",reason);
       assert.equal(v.rowRadius,"0px",reason);
       assert.equal(v.rowBg,"rgba(0, 0, 0, 0)",reason);
+      assert.equal(v.lastRowBottom,"0px",reason);
      }else{
       assert.ok(v.grid>=2,reason);
       assert.equal(v.rowBorderTop,"1px",reason);
