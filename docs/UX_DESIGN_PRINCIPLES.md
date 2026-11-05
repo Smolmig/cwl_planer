@@ -37,6 +37,13 @@
 - Sternenziel-Hinweise bleiben **read-only** und erhalten geöffneten Zustand bei Live-Refresh. Automatische Umverteilung, Stärkeprofile und Ziel-RH-Prognosen nur im separat getesteten Experiment.
 - Zurück-Schaltflächen für „Mehr“-Unterseiten bleiben in der Regel unter der Überschrift links. **Explizite Ausnahme:** „Clan & Konto“ erhält gemäß Nutzerpräferenz den Zurück-Button auch mobil **rechts oben**, ohne Titel-Überlappung und mit mindestens 44 px Touchfläche.
 
+### Vergessene Angriffe: Datenqualität statt Schein-Nullen (05.11.2026)
+
+- Versäumte Angriffe nur als exakte Zahl aus **vollständigem** Kriegs-Roster/Attack-Log oder vollständigem Missed-Log präsentieren; bei Teilimporten ist die Zahl eine **Untergrenze**.
+- Vor allem CWL-Historien mit fehlenden historischen Aufstellungen dürfen bei einem Spieler, zu dem kein Angriff dokumentiert ist, **nicht** automatisch „0 verpasst“ anzeigen. Auch die Sortierung nutzt bestätigte Untergrenzen.
+- CW und CWL **getrennt** nach Quellenabdeckung darstellen; 30/30 vollständige normale CWs bleiben exakt, selbst wenn 21 von 22 CWL-Tagen keine vollständigen Aufstellungen haben.
+- Information dezent als Text unter den Statistik-KPIs und im bestehenden Spieler-Feld, nicht als zusätzliche Karte. Hinweise bleiben auch mobil lesbar; keine unnötige Änderung der 3★-/Ø-Sterne-Auswertung.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).
