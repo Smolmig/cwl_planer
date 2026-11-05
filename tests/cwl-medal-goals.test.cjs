@@ -117,7 +117,7 @@ test("CWL live UI has read-only disclosure, preserves opening on refresh and nev
  assert.match(page,/#view-account #cloudAccountBack/);
 });
 
-test("Account back is under heading on phones, desktop stays right aligned",{
+test("Account back stays top-right on phones and desktop without overlapping content",{
  timeout:120000
 },async()=>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -138,15 +138,12 @@ test("Account back is under heading on phones, desktop stays right aligned",{
        scroll:document.documentElement.scrollWidth};
      },theme);
      assert.ok(result.scroll<=width+2,JSON.stringify({width,theme,result}));
-     if(width<=699){
-      assert.ok(result.back.top>=result.head.bottom,
-       "mobile return belongs below page heading "+JSON.stringify({theme,width,result}));
-      assert.ok(Math.abs(result.back.left-result.head.left)<=4,
-       "mobile return belongs at left "+JSON.stringify({theme,width,result}));
-      assert.ok(result.back.height>=43,"touch target "+JSON.stringify({theme,width,result}));
-     }else{
-      assert.ok(result.back.top<result.head.bottom,"desktop remains horizontal");
-     }
+     assert.ok(result.back.top<result.head.bottom,
+      "Back button must be on the headline row "+JSON.stringify({theme,width,result}));
+     assert.ok(result.back.left>result.head.left+50,
+      "Back button must stay on the right "+JSON.stringify({theme,width,result}));
+     if(width<=699)assert.ok(result.back.height>=43,
+      "Touch target must be at least 44px "+JSON.stringify({theme,width,result}));
     }finally{await session.close()}
    }
   }

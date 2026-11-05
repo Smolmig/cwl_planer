@@ -2242,7 +2242,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
 .install-guide li{padding:4px 0}
 @media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
-/* v1.15.0: keep long member/statistics lists cheap on slower desktops.
+/* v1.15.1: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2267,7 +2267,7 @@ html[data-theme="arena"] body{background-attachment:scroll}
  #view-members .member-snapshot-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
 }
 
-/* v1.15.0 settings: one quiet desktop frame, unframed sections on phones.
+/* v1.15.1 settings: one quiet desktop frame, unframed sections on phones.
    Specificity deliberately outranks historic Arena/Cyber .settings-subcard styles. */
 #view-more-settings .more-settings-body{
  display:block;max-width:860px;min-width:0;padding:4px clamp(16px,2vw,26px);
@@ -2330,7 +2330,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
  }
 }
-/* v1.15.0 – action typography & touch audit.
+/* v1.15.1 – action typography & touch audit.
    Keep compact counters, status chips, icon-only controls and landscape-specific
    controls unchanged: only actual text actions use this responsive scale. */
 @media (min-width:700px) and (min-height:541px){
@@ -2387,7 +2387,7 @@ html[data-theme] #view-more-settings .latest-changelog{
  }
 }
 
-/* v1.15.0: Clan & Konto follows the same mobile header/back layout as Mehr. */
+/* v1.15.1: Clan & Konto follows the same mobile header/back layout as Mehr. */
 @media(max-width:699px){
  #view-account .account-page-head{
   display:flex;flex-direction:column;align-items:stretch;gap:12px;
@@ -2425,6 +2425,21 @@ html[data-theme] #view-more-settings .latest-changelog{
 @media(max-width:520px){
  .cwl-medal-row{grid-template-columns:minmax(0,1fr) auto;gap:6px 8px}
  .cwl-medal-row-state{grid-column:1/-1;max-width:none;text-align:left}
+}
+/* v1.15.1: preferred mobile account navigation.
+   Unlike the other More subpages, Clan & Konto intentionally keeps its back
+   control in the top-right, but never overlays the title or body text. */
+@media(max-width:699px){
+ #view-account .account-page-head{
+  display:flex;flex-direction:row;align-items:flex-start;
+  justify-content:space-between;flex-wrap:nowrap;gap:10px;
+ }
+ #view-account .account-page-head>div{flex:1 1 auto;min-width:0}
+ #view-account #cloudAccountBack{
+  margin-left:auto!important;align-self:flex-start;flex:0 0 auto;
+  min-height:44px;font-size:13px;line-height:1.3;white-space:normal;
+  text-align:center;max-width:42%;
+ }
 }
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
@@ -2702,11 +2717,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.0</strong><span>Fairer planen mit 8 Sternen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.1</strong><span>Feinschliff bei Clan & Konto</span></div>
       <ul>
-       <li><b>CWL:</b> Die 8-Sterne-Grenze für volle reguläre Ligamedaillen wird in der laufenden Liga berücksichtigt.</li>
-       <li><b>Fairness:</b> Eine rein lesende Übersicht zeigt Sternenziele, verbleibende Chancen und vorsichtige Wechselhinweise.</li>
-       <li><b>Clan & Konto:</b> Der Zurück-Button steht auf dem Handy unter der Überschrift.</li>
+       <li><b>Bedienung:</b> „Zurück zu Mehr“ befindet sich bei Clan & Konto wieder rechts oben, wie gewünscht.</li>
+       <li><b>Auswertung:</b> Die Spielerstatistiken werden für ein erweitertes, gegnerbereinigtes Modell untersucht.</li>
+       <li><b>Planung:</b> Die bestehende Sterne- und CWL-Berechnung bleibt während der Analyse unverändert.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3051,9 +3066,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.0"></script>
+<script src="./cwl-planning-core.js?v=1.15.1"></script>
 <script>
-const APP_VERSION="v1.15.0";
+const APP_VERSION="v1.15.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4166,6 +4181,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.1"></script>
 </body>
 </html>

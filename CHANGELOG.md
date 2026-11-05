@@ -8,6 +8,13 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.15.1] - 2026-11-05
+
+### Mobiler Zurück-Button und Forschungsgrundlage für bessere Leistungsstatistik
+- **Mehr → Clan & Konto:** Der Zurück-Button liegt auf kleinen Displays wieder rechts oben, wie vom Clan-Owner bevorzugt. Mindesthöhe 44 px; Titel und Rückweg bleiben getrennt.
+- **Recherche:** Bisherige CW-/CWL-Historie, Datenqualität, 7-Angriff-Grenze, gleiche Rathausstufe, echte Mirror-Angriffe, CWL-Gewichtung, Zeitfenster, ClashPerk-Kriegshistorie, verpasste Angriffe und zuverlässige Stärke-/Fairness-Prognosen systematisch analysiert.
+- **Sicher:** Keine Änderung an angezeigten Spielerquoten, laufenden CWL-Plänen, Medailenhinweisen, Datenbank, Rollen, Cloud-/Offline-PWA-IDs oder API-Zugriffen. Erst nach Backtests schrittweise neue Kennzahlen.
+
 ## [1.15.0] - 2026-11-05
 
 ### 8-Sterne-Ziel für reguläre CWL-Ligamedaillen und mobiles Zurück

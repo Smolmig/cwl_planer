@@ -35,7 +35,7 @@
 - Im Live-Plan nur aus den tatsächlichen, aktuellen CWL-Angriffen abgeleitete Sterne zeigen; fehlende, doppelte oder alte Daten nicht als 0 oder garantiert interpretieren. Mehrfach angegriffene Gegnerbasen ohne sichere Zuordnung als Unsicherheit behandeln.
 - Künftige Einsätze ermöglichen maximal drei weitere Sterne je Angriff, keine sichere Prognose. Konkrete Tauschtage nur bei von Clash bestätigter Vorbereitung zeigen; bei unbekanntem Kriegstag keine scheinbar ausführbare Wechselanweisung. Für exakte Einsatzziele, Fix, Muss, Raus, gespielte und laufende Kriege **keine Änderung oder Vorschläge gegen harte Regeln**.
 - Sternenziel-Hinweise bleiben **read-only** und erhalten geöffneten Zustand bei Live-Refresh. Automatische Umverteilung, Stärkeprofile und Ziel-RH-Prognosen nur im separat getesteten Experiment.
-- Zurück-Schaltflächen für Unterseiten von „Mehr“ auch unter **Clan & Konto** auf Smartphone unterhalb der Überschrift links und mit mindestens 44 px Touchfläche anordnen.
+- Zurück-Schaltflächen für „Mehr“-Unterseiten bleiben in der Regel unter der Überschrift links. **Explizite Ausnahme:** „Clan & Konto“ erhält gemäß Nutzerpräferenz den Zurück-Button auch mobil **rechts oben**, ohne Titel-Überlappung und mit mindestens 44 px Touchfläche.
 
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
