@@ -14,7 +14,7 @@ Vom Nutzer zur Verfügung gestellter ClashPerk-Export `Geronimo [Attack Log] 3.x
 - Große Zusatzinformationen: eigene und gegnerische Map-Position, Angreifer-/Ziel-RH, `Stars`, `New Stars`, Angriffsfolge, War-ID, Kriegsdatum. `New Stars < Stars` ist ein **Hinweis auf bereits auf der Basis erreichte Sterne, kein direkter Beleg, wer zuvor angegriffen hat**.
 - Einschränkung: Angriffe/Spieler sind abhängig, Gegner-Basisausbau und exakte Truppenstrategie fehlen, Tracking ist nicht gleich Zufallsstichprobe.
 
-**Zusätzliche Quellenauffälligkeit:** Am **04.–10.06.** sowie **19.–25.06.2026** weist der Export jeweils sieben 15v15-Runden als `cwl` aus. Offizielle CWL ist monatlich; der zweite Block ist inhaltlich ungeklärt und darf ohne manuelle Prüfung nicht als zweite reguläre Juni-CWL-Saison in ein produktives Modell einfließen. Daher wurde zusätzlich eine Sensitivitätsanalyse unter Ausschluss des zweiten Juni-Blocks gerechnet.
+**Offizieller Sonderfall – zweite Juni-CWL 2026:** Der ClashPerk-Export zeigt **04.–10.06.** und **19.–25.06.2026** als jeweils sieben 15v15-CWL-Kriege. Das ist **korrekt und kein Exportfehler**: Supercell kündigte für Juni 2026 ausdrücklich eine zweite Bonus-CWL ab **15. Juni** im Football-Fury-Event an; auch das traditionelle 15v15/30v30-Format war neben 11v11 möglich. Der Clanführer hat den besonderen zweiten CWL-Durchgang bestätigt (zeitlich als Juli erinnert; die Kriegsdaten selbst liegen im Juni). Die folgenden Analysen **enthalten grundsätzlich beide echten Juni-CWLs**. Der zusätzliche Ausschlusstest dient nur dazu, sicherzustellen, dass der außergewöhnliche Eventkalender das Ergebnis nicht allein erklärt. [Offizielle Supercell-Ankündigung](https://supercell.com/en/games/clashofclans/blog/news/anime-fury-returns-season-2-hits-different).
 
 ## Methode: ausschließlich chronologische Vorhersagen
 
@@ -54,14 +54,14 @@ Auf denselben **577 späteren gleich-RH-CWL-Angriffen** mit beiden Vorhersagen:
 - 90 Tage gleiches RH: **Brier 0,1854**;
 - höhere Gewichtung alter CWL-Angriffe: **0,1840**, Verbesserung nur **0,00142**; das 95-%-Intervall der Verbesserung enthält 0. Kein Nachweis für den produktiven Wechsel.
 
-### Sensitivität: ungewöhnlichen zweiten Juni-CWL-Block ausschließen
+### Sensitivität: offizielle Juni-Bonus-CWL versuchsweise ausschließen
 
 Nach Entfernen von sieben `cwl`-Kriegstagen 19.–25.06.2026 aus Training **und** Test:
 - **91 Kriege, 2.012 Angriffe, 1.682 gleiche-RH-Angriffe**.
 - Identische **1.605** später auswertbare Folgeangriffe: letzte 7 **0,1999** gegenüber 90 Tage gleiches RH **0,1933**. Verbesserung **0,00658**, Bootstrap-Intervall **+0,00230 bis +0,01118**.
 - Nur Mirror: 0,1988 versus Standard 0,1943 (auf denselben 1.574 Fällen); Map-/CWL-Gewichtung bringen auf 1.605 Fällen weiterhin keinen gesicherten Vorteil.
 
-Diese zusätzliche Probe ist kein unabhängig vorab festgelegter Holdout, zeigt aber, dass das Kernergebnis nicht vom auffälligen Juni-Block abhängt.
+Diese zusätzliche Probe ist kein unabhängig vorab festgelegter Holdout. Sie zeigt, dass das Kernergebnis **auch ohne die echte Sonder-CWL** erhalten bleibt; daraus folgt ausdrücklich **nicht**, dass die Bonus-CWL als fehlerhaft zu entfernen wäre.
 
 ## Produktentscheidung aus dieser Runde
 
@@ -69,7 +69,7 @@ Diese zusätzliche Probe ist kein unabhängig vorab festgelegter Holdout, zeigt 
 2. Mirror, Map-Distanz und `New Stars` sind **wertvolle Zusatzinformationen zum Einordnen und Erklären einzelner Angriffe**, aber aktuell **keine nachgewiesene Verbesserung für automatische Gewichtungen**. Besonders 0–3 Sterne/Mehrsterne und Cleanup nicht verwechseln.
 3. Bei zukünftiger produktiver Erweiterung: optionale, klar belegte **Einzelangriffsdetails** (Ziel-RH, Map-Position, zusätzliche Sterne) nur mit korrekter Provenienz und Datenverfügbarkeit; historische DB enthält Map-Felder aktuell nicht. Eine Migration braucht gesonderte Prüfung.
 4. **Nächster echter Abnahmetest:** zeitlich abgegrenzter, vorher festgelegter Holdout über weitere neue CWL-Tage oder andere Clans, plus Auswertung nach RH-Wechsel und Gegnerstärke. Vorher Gewichte nicht weiter an dieser Stichprobe optimieren.
-5. **ClashPerk-Aufklärung:** Zwei Juni-CWL-Blöcke klären (z. B. Quelle/Art des zweiten Wettbewerbs). Daten mit unklarer War-Type-Klassifikation bis dahin nur mit Sensitivitätsanalyse verwenden.
+5. **Juni-Sonder-CWL korrekt führen:** Beide Juni-CWL-Blöcke gehören zum offiziellen Spielgeschehen. Den zweiten im historischen Vergleich optional als **Bonus-CWL Juni 2026** kennzeichnen, statt ihn als Exportfehler oder reguläre Juli-Saison umzuetikettieren. Bei der Auswertung darf er als echter CWL-Angriff zählen; saisonbezogene Statistiken müssen mehrere CWL-Durchgänge in einem Kalendermonat getrennt halten.
 
 ## Reproduzierbarkeit (privat, ohne GitHub-Playerdaten)
 
