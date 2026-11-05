@@ -235,7 +235,7 @@ test("CWL alert is advisory only and never auto-pauses, changes rules or writes 
  const helpers=fs.readFileSync(path.join(root,"cwl-live-core.mjs"),"utf8");
  assert.match(live,/cwlAttackReminder/);
  assert.match(live,/Nur Hinweis, kein automatischer Wechsel/);
- assert.match(live,/if\\(attention.kind==="open"/);
- assert.match(live,/const attention=fresh\\?/);
- assert.doesNotMatch(helpers,/\\.participating\\s*=\\s*false|\\.statuses\\s*=|\\.locks\\s*=/);
+ assert.match(live,/attention\.kind==="open"/);
+ assert.ok(live.includes("const attention=fresh?"));
+ assert.doesNotMatch(helpers,/\.participating\s*=\s*false|\.statuses\s*=|\.locks\s*=/);
 });
