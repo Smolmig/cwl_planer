@@ -274,3 +274,62 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  assert.match(ui,/von 7 Kriegstagen gespeichert/);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
 });
+
+
+test("Missed coverage stays exact for CW while CWL remains a lower bound",async()=>{
+ const {computeWarStats}=await load();
+ const a="#2PYL",b="#8PY";
+ const wars=[
+  {...war("cw:complete","normal","2026-10-29T00:00:00Z"),missed_log_complete:true},
+  {...war("cwl:partial","cwl","2026-10-28T00:00:00Z"),missed_log_complete:false},
+  {...war("cwl:api","cwl","2026-10-27T00:00:00Z",[a,b],true),team_size:2}
+ ];
+ const attacks=[
+  attack("cw:complete",a,3,18,18),
+  attack("cwl:partial",a,2,18,18),
+  attack("cwl:api",a,3,18,18)
+ ];
+ const missedEvents=[
+  {war_key:"cw:complete",player_tag:a,player_name:"A",missed_count:1},
+  {war_key:"cwl:partial",player_tag:a,player_name:"A",missed_count:1},
+  // A redundant explicit roster miss must NOT double-count a proved API miss.
+  {war_key:"cwl:api",player_tag:b,player_name:"B",missed_count:1}
+ ];
+ const all=computeWarStats(wars,attacks,{type:"all",missedEvents});
+ assert.equal(all.missesKnown,3);
+ assert.equal(all.misses,null,"Mixed CW/CWL history must not fabricate a complete total");
+ assert.deepEqual(all.missedCoverage.normal,{wars:1,coveredWars:1,missedKnown:1,complete:true});
+ assert.deepEqual(all.missedCoverage.cwl,{wars:2,coveredWars:1,missedKnown:2,complete:false});
+ const known=all.rows.find(p=>p.tag===a);
+ assert.deepEqual(known.missedKnownByType,{normal:1,cwl:1});
+ assert.equal(known.missedKnown,2);
+ assert.equal(known.missed,null);
+ const maybe=all.rows.find(p=>p.tag===b);
+ assert.equal(maybe.missedKnown,1);
+ assert.equal(maybe.missed,null,
+  "If another CWL lineup is unknown, a player absent from that export cannot have a verified complete count");
+ assert.equal(maybe.missedComplete,false);
+ assert.deepEqual(maybe.missedKnownByType,{normal:0,cwl:1});
+ const cw=computeWarStats(wars,attacks,{type:"normal",missedEvents});
+ assert.equal(cw.misses,1);
+ assert.equal(cw.missedCoverage.normal.complete,true);
+ assert.equal(cw.rows.find(p=>p.tag===a).missed,1);
+ const cwl=computeWarStats(wars,attacks,{type:"cwl",missedEvents});
+ assert.equal(cwl.misses,null);
+ assert.equal(cwl.missedCoverage.cwl.missedKnown,2);
+ assert.equal(cwl.missedCoverage.cwl.coveredWars,1);
+ const filtered=computeWarStats(wars,attacks,{type:"all",sameHigher:true,missedEvents});
+ assert.equal(filtered.missesKnown,3,"TH filters cannot erase missed attack evidence");
+});
+
+test("Statistics UI explains incomplete historical CWL data and sorts proved misses",()=>{
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
+ assert.match(html,/id="statsMissedCoverage"/);
+ assert.match(ui,/const coverageDescriptions=/);
+ assert.match(ui,/missedCoverageHost\.textContent/);
+ assert.match(ui,/order==="missed"\?a\.missedKnown:a\[order\]/);
+ assert.match(ui,/missing?/, "Old import remains usable and no schema change is required");
+ assert.match(ui,/cwl-stats-core\.mjs\?v=1\.15\.2/);
+ assert.match(ui,/CWL: /);
+});
