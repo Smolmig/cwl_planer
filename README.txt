@@ -1,3 +1,4 @@
+CLOUD-RELEASE 05.11.2026 (v1.15.4): Mobile Einsatzverteilung überarbeitet. Suche/Filter auf schmalen Smartphones einzeln und lesbarer, Einsätze als ruhige Zeilen mit Trennlinien statt eng gerahmter Karten. Desktop und CWL-Planungslogik unverändert, keinerlei Datenmigration. 
 CLOUD-RELEASE 05.11.2026 (v1.15.3): Neuer aufklappbarer Vergleich der Spielerstärke aus 30-Tage-gleich-RH-Angriffen und 90-Tage zeitgewichteter gleich-RH-Form, getrennt nach CWL/CW und mit Datenqualität. Historische Mirror-Positionen und First-Hit-Status fehlen; keine falsche Sicherheit. Mitgliederkarte behält 7-Angriffs-Rohwerte bis zum Backtest. Die Importbestätigung nennt tatsächliche verpasste Angriffe statt nur Log-Zeilen. CWL Live zeigt offene Angriffe in der letzten Stunde vor Kriegsende und gesicherte Versäumnisse erst nach einem vollständigen, endgültigen Kriegsstand. Keine automatische saisonale Pause oder Änderung der nächsten Lineups; manuelle Clash-Aufstellung bleibt verbindlich. Datenqualitätsaudit read-only: 52 Kriege/1187 Attacken/59 belegt, keine widersprüchlichen Angriffszahlen oder 3★ ohne 100 %, 21 historische CWL-Tage weiter ohne vollständigen Missed-Nachweis.
 
 CLOUD-RELEASE 05.11.2026 (v1.15.2): Statistik „Verpasst“ zeigt CW/CWL mit eigenständiger Datenabdeckung. Normal-CWs bleiben auch dann exakt, wenn importierte CWL-Missed-Logs lückenhaft sind; Spielerzeilen zeigen die Teilwerte. Fehlende CWL-Kriegsaufstellungen ergeben keine angeblich sichere 0 und Sortierung nutzt nachgewiesene Misses. Datenquelle/Exportoptionen unter docs/CLASHPERK_EXPORTS_AND_MISSED_COVERAGE.md. Keine DB-/Planer-/Spielerwertänderungen.
@@ -155,7 +156,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.3;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.4;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
