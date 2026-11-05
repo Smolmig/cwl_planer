@@ -22,6 +22,7 @@ test("Comparable 30/90-day form disclosure stays within mobile stats width in al
       document.body.classList.add("cloud-mode");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
+      document.querySelector('[data-stats-panel="players"]').hidden=false;
       const details=document.getElementById("statsFormDetails");details.open=true;
       document.getElementById("statsFormIntro").textContent=
        "90 Tage: 1004 Angriffe gegen gleiches Rathaus. Mirror-Positionen nicht belegt.";

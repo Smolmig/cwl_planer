@@ -105,6 +105,38 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
 }
 // A missed log is independent of the hit-rate TH filter. Exact historical
 // CWL missed entries are usable, but they do not prove complete coverage.
+/**
+ * Actual CW/CWL attack outcomes by opposing Town Hall level.
+ * Read-only, descriptive counts; unlike the Form comparison it does not rank players.
+ * Unknown THs are a separate category rather than silently removed from denominators.
+ */
+export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cwlSeasons="all"}={}) {
+  const selected = selectStatWars(wars,{type,last,cwlSeasons});
+  const byWar = new Map(selected.map(w=>[w.war_key,w]));
+  const groups = ["normal","cwl"].flatMap(kind=>["lower","same","higher","unknown"].map(matchup=>({
+    type:kind,matchup,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null
+  })));
+  const byGroup = new Map(groups.map(g=>[g.type+":"+g.matchup,g]));
+  for(const attack of attacks||[]){
+    const war=byWar.get(attack.war_key);
+    if(!war||!Number.isInteger(attack.stars)||attack.stars<0||attack.stars>3)continue;
+    const a=Number(attack.attacker_th),d=Number(attack.defender_th);
+    const goodTH=Number.isInteger(attack.attacker_th)&&Number.isInteger(attack.defender_th)&&
+      a>=3&&a<=30&&d>=3&&d<=30;
+    const matchup=!goodTH?"unknown":d<a?"lower":d>a?"higher":"same";
+    const group=byGroup.get(war.war_type+":"+matchup);
+    if(!group)continue;
+    group.attacks++;
+    group.stars+=attack.stars;
+    if(attack.stars===3)group.triples++;
+  }
+  for(const group of groups){
+    group.hitRate=group.attacks?Math.round(group.triples/group.attacks*100):null;
+    group.averageStars=group.attacks?Math.round(group.stars/group.attacks*100)/100:null;
+  }
+  return groups;
+}
+
 export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,
   memberTags=[],minAttacks=0,missedEvents=[]}={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});

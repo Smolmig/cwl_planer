@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.6",
+  "version": "v1.15.7",
   "released": "2026-11-05",
-  "summary": "Tagesregeln lassen offene Mitgliederkarten und Scrollposition unverändert; bei automatischer Rotation wird ein einzelner RAUS-Tag nach Möglichkeit an einem anderen Tag ausgeglichen. Harte Tagesregeln, exakte Einsatzziele und gestartete CWL-Kriege bleiben geschützt."
+  "summary": "Statistik in vier klaren Bereichen mit RH-Vergleichen nach CW/CWL, nummerierten Spielern, verständlichen Filterumfängen und standardmäßig allen gespeicherten CWLs. Einsatzübersicht benennt Verfügbarkeit sowie gespielt, geplant und gesamt; keine Änderungen an Planungslogik, Datenbank oder Offline-PWA."
 }
