@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.3",
+  "version": "v1.15.4",
   "released": "2026-11-05",
-  "summary": "Vergleichbare Formstatistik (30/90 Tage) mit vorsichtiger, nach Stichprobengröße abgestufter Standardreihung; korrekte Missed-Importzählung und read-only CWL-Hinweise kurz vor oder nach Kriegsende. Keine automatischen Strafen oder Planänderungen."
+  "summary": "Mobile Einsatzverteilung mit lesbaren Suche-/Filter-Steuerelementen und ruhiger Listenansicht statt enger Einzelkarten. Planungs-, Cloud- und Offline-Daten unverändert."
 }
