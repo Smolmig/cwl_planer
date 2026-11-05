@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.15.6] - 2026-11-05
+
+### Fairer Tageswechsel ohne Bedienverlust
+- **Gezieltes RAUS ausgleichen:** Wer bei `Automatisch` bewusst an einem offenen Kriegstag ausgeschlossen wird, bekommt beim Verteilen der übrigen Tagesplätze eine kleine weiche Ausgleichspriorität. Dadurch kann ein bisher vorgesehener vierter Einsatz auf einen anderen Tag rücken (Praxisfall Jamie). Keine Garantie bei knappen Plätzen und kein neues hartes Einsatzziel.
+- **Grenzen bleiben verbindlich:** Kein Ausgleich über gesperrte/gestartete Tage oder `RAUS` hinweg. `MUSS`, `Fix`, explizite Einsatzziele, Rollen und Profil-Datenformat v9 bleiben unberührt.
+- **Mitgliederkarten stabil:** AUTO/MUSS/RAUS aktualisiert sofort den einzelnen Button und berechnet den Plan neu, ohne die gesamte Mitgliedertabelle aufzubauen; offene Karte, Tagesregeln, Fokus und Scrollposition bleiben erhalten.
+- **Regressionen:** Read-only Vergleich des realen Jamie-Falls, synthetische 19er-/15-Plätze-Tests, exakte Einsatzziele, Sperren, keine verfügbaren Ausweichtage, Mobil- und Desktop-Browserprüfung. Keine neue Supabase-Migration; Offline-PWA bleibt v1.0.2.
+
+
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
 ## [1.15.5] - 2026-11-05

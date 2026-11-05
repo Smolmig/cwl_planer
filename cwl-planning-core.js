@@ -95,9 +95,15 @@ function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, da
       } else {
         const previously = (lockedCount.get(m.id) || 0) + (forcedCount.get(m.id) || 0);
         const weight = m.rotationWeight === 'preferred' ? -45 : m.rotationWeight === 'less' ? 45 : 0;
+        // One deliberate RAUS on an unlocked day should not automatically cost
+        // an entire CWL appearance. Give AUTO rotation a modest, soft preference
+        // on other eligible days (weaker than explicit preferred/less rotation).
+        // Never overwrite hard daily rules, exact targets or locked lineups.
+        const openOutDays = m.statuses?.slice(0, days).filter((status, day) => !locked[day] && status === 'out').length || 0;
+        const compensation = openOutDays === 1 && options.length ? -30 : 0;
         const legacy = m.rotationWeight == null ? Math.max(0, Math.min(5, Number(m.priority) || 0)) : 0;
         for (let n = 1; n <= options.length; n++)
-          addEdge(S, node, 1, 100 * (2 * (previously + n) - 1) + weight - 6 * legacy);
+          addEdge(S, node, 1, 100 * (2 * (previously + n) - 1) + weight + compensation - 6 * legacy);
       }
       for (const d of options) {
         const day = dayNode.get(d);
