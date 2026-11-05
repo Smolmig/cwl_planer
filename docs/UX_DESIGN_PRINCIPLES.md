@@ -86,6 +86,21 @@
 - **Installieren ohne Nerven:** Unter „Mehr“ jederzeit eine plattformgerechte Anleitung anbieten, statt auf jedem Seitenaufruf ein Popup zu erzwingen. iOS kann `beforeinstallprompt` nicht; Safari benutzt „Teilen → Zum Home-Bildschirm hinzufügen“. Kleine Hinweise nur in passendem Kontext und mit dauerhaft speicherbarer Ablehnung.
 - Native installierbare Android-Browser-Prompts nicht durch ein eigenes `preventDefault()` unterdrücken. Bereits installierte App via `display-mode:standalone` bzw. `navigator.standalone` erkennen und Installationshinweis ausblenden.
 
+### Spielerstärke und Statistik: erst Evidenz, dann Einordnung (05.11.2026)
+
+- **Einfach statt pseudoexakt:** 3★-Quote bedeutet reale Dreier pro durchgeführtem Angriff; direkt daneben Attack-Zahl und betrachteten Zeitraum zeigen. **2/2 = 100 %** ist keine starke Leistungsevidenz. Rot/Grün darf aus der Rohquote keinen fertigen Leistungsrang suggerieren.
+- **Vergleichbares von Rohdaten getrennt halten:** Die Form betrachtet ausschließlich dokumentierte Angriffe gegen dasselbe RH. Das unterscheidet nicht automatisch Base-Stärke, Rush-Base, Mirror, Cleanup oder Erstangriff.
+- **Zuerst 30-Tage-Quote, 90-Tage-Trend und Zahl der Fälle.** Datenqualität direkt am Spieler in Alltagssprache („Wenig Daten“, „Erste Tendenz“, „Mehr Vergleichsdaten“), nicht als internen `n_eff`-Fachwert oder 0–100-Score.
+- **Unvalidierte Siegerdarstellungen vermeiden:** Keine „Bester Spieler“-Krone, keine objektive Spielerqualität, keine ungeprüfte Erfolgswahrscheinlichkeit. Eine vorläufige Vergleichssortierung muss als solche erklärt sein; bei zu kleiner/alter Stichprobe nicht ranken.
+- **Methodik optional:** Wilson-Untergrenze, Effektivstichprobe, Quellen, CW/CWL-Anteile und Ausnahmen im zugänglichen Detailbereich; Hauptansicht bleibt ohne Fachsprache lesbar.
+- **Unvollständige Historie:** Verpasste CWL-Angriffe nur mit nachweisbar vollständigen Aufstellungen und Missed-Logs als exakt ausgeben. „Unbekannt“ ≠ „0“. Exporte bei Bedarf gezielt von ClashPerk anfordern, nie pauschal historische Lücken auffüllen.
+- **UI-Tests:** 320/390/430/768/1366 px, Gold/Dark/Light/Cyber, Textauswahl und offene Details bei Refresh. Rohstatistik und Formvergleich bleiben unterschiedliche Kennzahlen und dürfen sich nicht durch unklare Filter beeinflussen.
+
+Weitere Fachreferenzen:
+- [Nielsen Norman Group – Data Tables: Four Major User Tasks](https://www.nngroup.com/articles/data-tables/) (relevante Werte leicht finden und direkt vergleichen)
+- [Office for National Statistics – Showing Uncertainty in Charts](https://service-manual.ons.gov.uk/data-visualisation/guidance/showing-uncertainty-in-charts) (bei zu großer Unsicherheit nicht scheinbar präzise vergleichen)
+- [Government Analysis Function – Testing Dashboards for Design and Accessibility](https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/) (Daten, Metadaten und Qualität klar trennen)
+
 ## 5. Mobile zuerst, Desktop gezielt erweitern
 
 - Smartphone zuerst testen: 320, 375/390, 430 px und iPhone Safari. Dazu Tablet/Browserspanne und 1366+ px Desktop.
