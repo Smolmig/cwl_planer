@@ -30,6 +30,16 @@ export function wilsonLowerBound(proportion,sampleSize,z=1.96){
  return Math.max(0,Math.min(1,(center-distance)/denom));
 }
 
+// Conservative *comparison* index, not a calibrated probability.
+// The Wilson lower bound discounts tiny samples (e.g. 2/2 vs 55/68) and
+// uses n_eff to respect recency weighting. z=1.645 is a model parameter;
+// future chronological backtests must validate or replace this heuristic.
+export function cautiousTripleIndex(rate,nEffective){
+ if(!Number.isFinite(rate)||!Number.isFinite(nEffective)||nEffective<3)return null;
+ const p=Math.max(0,Math.min(1,rate/100)),n=nEffective,z=1.645,z2=z*z;
+ const lower=(p+z2/(2*n)-z*Math.sqrt(p*(1-p)/n+z2/(4*n*n)))/(1+z2/n);
+ return round(100*Math.max(0,Math.min(1,lower)));
+}
 function weighted(rows,halfLifeDays){
  let weight=0,weight2=0,hit=0,stars=0;
  for(const row of rows){
@@ -109,8 +119,11 @@ export function computeComparableForm(wars,attacks,{
   const lower=rankable?wilsonLowerBound(
    weighted90.tripleShare,weighted90.effectiveAttacksExact):null;
   const performanceIndex=lower===null?null:round(100*lower);
+  const cautiousIndex=recent.length>0?
+    cautiousTripleIndex(weighted90.hitRate,weighted90.effectiveAttacks):null;
   profiles.set(tag,{
    tag,name:group.name,newestWar:group.newestWar,newestAgeDays:newestAge===null?null:round(newestAge,1),
+   cautiousIndex,
    last30,last90,weighted90,normal90:summarize(cw),cwl90:summarize(cwl),
    quality,performanceIndex,performanceRankable:rankable,
    excluded:{...group.excluded},
