@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.15.2] - 2026-11-05
+
+### Vergessene Angriffe eindeutig erklären
+- **Kriegsarten separat:** Statistik zeigt belegte CW- und CWL-Misses einschließlich der Zahl vollständig erfasster Kriege. Beispiel United Fighters: 30/30 normale CWs vollständig, 1/22 CWL-Kriegstage vollständig, zwei weitere explizit bekannte historische CWL-Misses.
+- **Spielerzeilen:** Sichtbare CW-/CWL-Unterwerte im kombinierten Modus. Wenn ältere CWL-Aufstellungen unvollständig sind, wird nicht fälschlich „0 verpasst“ angezeigt. „mind.“ bleibt die nachgewiesene Mindestzahl, „k. A.“ steht für fehlende Vollständigkeit.
+- **Sortierung:** „Verpasst“ berücksichtigt bei lückenhafter Datenabdeckung nachgewiesene Missed-Angriffe statt lauter `null`-Werte.
+- **Quellenkontrolle:** ClashPerk-Exportguide erläutert relevante Original-Kriegsdaten, CWL-Missed-Logs, tatsächliche Lineups, neue Spieler, Mirror/Map-Positionen und wie Datenlücken geschlossen werden könnten.
+- **Sicher:** Keine Änderungen an bestehenden Supabase-Tabellen/Daten, Clanprofilen, CWL-Solver, Sterne-/HitRate-Kennzahlen, Offline-PWA oder Archiv.
+
 ## [1.15.1] - 2026-11-05
 
 ### Mobiler Zurück-Button und Forschungsgrundlage für bessere Leistungsstatistik

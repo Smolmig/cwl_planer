@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.4.1";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.2";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -22,6 +22,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const copy=$("statsNoCloud");if(copy)copy.hidden=enabled;
     if(!enabled){
       $("statsSummary").innerHTML="";
+      if($("statsMissedCoverage"))$("statsMissedCoverage").textContent="";
       $("statsRows").innerHTML="";
       $("statsWarHistory").innerHTML="";
       $("statsWarHistory").removeAttribute("data-history-signature");
@@ -37,8 +38,20 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       cachedPlayerStats=new Map(cachedSummary.rows.map(p=>[cleanTag(p.tag),p]));
     }
     const summary=cachedSummary;
-    const label=summary.complete?String(summary.misses):
-      (summary.missesKnown>0?"mind. "+summary.missesKnown:"k. A.");
+    const displayMissed=(known,complete)=>complete?String(known):(known>0?"mind. "+known:"k. A.");
+    const label=displayMissed(summary.missesKnown,summary.complete);
+    // Give each war type its own denominator: 30/30 CWs can be exact even
+    // when only 1/22 CWL days has a fully evidenced roster.
+    const coverageDescriptions=[["normal","CW"],["cwl","CWL"]]
+      .filter(([type])=>summary.missedCoverage[type].wars>0)
+      .map(([type,name])=>{
+        const c=summary.missedCoverage[type];
+        return name+": "+displayMissed(c.missedKnown,c.complete)+
+          " verpasst · "+c.coveredWars+"/"+c.wars+" Kriege vollständig erfasst";
+      });
+    const missedCoverageHost=$("statsMissedCoverage");
+    if(missedCoverageHost)missedCoverageHost.textContent=
+      "Nachgewiesene Ausfälle im gewählten Zeitraum: "+coverageDescriptions.join(" · ");
     $("statsSummary").innerHTML=[
       ["3★-Hit-Rate",pct(summary.hitRate)],
       ["Ø Sterne / Angriff",summary.averageStars===null?"–":summary.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"],
@@ -77,7 +90,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       summary.best.name+" · "+summary.best.attacks+" Angriffe":
       "Noch kein Spieler mit mindestens 5 Angriffen";
     const note=$("statsMissingNote");
-    if(note){note.textContent=summary.complete?"": "„mind.“ = nachgewiesene Mindestzahl; „k. A.“ = keine verlässliche Angabe aus älteren Kriegen.";note.hidden=summary.complete;}
+    if(note){
+      note.textContent=summary.complete?"":(
+        "„mind.“ bedeutet: so viele vergessene Angriffe sind sicher bekannt. "+
+        "„k. A.“ bedeutet: 0 ist nicht bewiesen. Bei manchen älteren CWL-Kriegen "+
+        "fehlen vollständige Aufstellungen oder ein lückenloser Missed-Log; "+
+        "die normalen CWs können dennoch vollständig ausgewertet sein. "+
+        "Sortierung nach „Verpasst“ verwendet die nachgewiesene Anzahl."
+      );
+      note.hidden=summary.complete;
+    }
     renderWarHistory();
     // Membership performance badges depend on loaded attack data, not search/sort/filter state.
     if(scope===ctx.clanId&&lastMembersNotifiedVersion!==version){
@@ -87,7 +109,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
-        const av=a[order]??-1,bv=b[order]??-1;
+        const av=(order==="missed"?a.missedKnown:a[order])??-1;
+        const bv=(order==="missed"?b.missedKnown:b[order])??-1;
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
         return (ascending?diff:-diff)||b.attacks-a.attacks;
       });
@@ -112,7 +135,20 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         (p.averageStars===null?"Ø –":"Ø "+p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★")+
         "</small></div>"+
         "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
-        "<span class='stats-number"+missedColor+"'>"+(p.missed===null?(p.missedKnown>0?"mind. "+p.missedKnown:"k. A."):p.missed)+"</span></div>";
+        "<span class='stats-number stats-missed-cell"+missedColor+"' title='"+esc(
+          "CW: "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+
+          " · CWL: "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)
+        )+"' aria-label='"+esc(
+          "Verpasste Angriffe. Normale CWs: "+
+          (summary.missedCoverage.normal.wars?displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete):"nicht ausgewählt")+
+          ", CWL: "+
+          (summary.missedCoverage.cwl.wars?displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete):"nicht ausgewählt")
+        )+"'><strong>"+displayMissed(p.missedKnown,p.missedComplete)+"</strong>"+
+        (type==="all"&&summary.missedCoverage.normal.wars?
+          "<small>CW "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+"</small>":"")+
+        (type==="all"&&summary.missedCoverage.cwl.wars?
+          "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
+        "</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
     // Avoid destroying player rows (and their decoded RH images) for identical results.
     const rowsHost=$("statsRows");

@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.1",
+  "version": "v1.15.2",
   "released": "2026-11-05",
-  "summary": "Zurück-Button in Clan & Konto mobil wieder rechts oben; Forschungsgrundlage für zeitgewichtete, gegnerbereinigte CW/CWL-Leistungsstatistik dokumentiert. Keine Änderung an Berechnung oder Daten."
+  "summary": "Vergessene Angriffe: CW/CWL-Datenabdeckung getrennt und nachvollziehbar, Sortierung nach nachgewiesenen Misses, keine falschen Nullwerte bei historischen CWL-Lücken."
 }
