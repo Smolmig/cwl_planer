@@ -195,6 +195,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const nextRowsMarkup=visible.length?visible.map(p=>{
       const hitColor=p.hitRate===null?"":p.hitRate>=80?" great":p.hitRate<60?" low":"";
       const missedColor=p.missedKnown>0?" warn":"";
+      const form=viewComparableProfiles.get(cleanTag(p.tag));
+      const formText=form?.performanceIndex!==null&&form?.performanceIndex!==undefined?
+        "Form "+form.performanceIndex+"/100":"Form: zu wenig Daten";
+      const nEff=form?.weighted90?.effectiveAttacks??0;
+      const lastTen=p.lastTen;
+      const lastTenMissed=lastTen.missed===null?
+        (lastTen.missedKnown>0?"mind. "+lastTen.missedKnown:"k. A."):
+        String(lastTen.missed);
+      const lastTenLabel=lastTen.attacks?
+        lastTen.attacks+" Angriffe · "+lastTen.hitRate+" % 3★ · Ø "+
+        lastTen.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
+        "Keine Angriffe in diesem Kriegsfenster belegt";
+      const detailsOpen=openStatsPlayers.has(p.tag)?" open":"";
       const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
       const recent=oneWar?attacks.filter(a=>a.war_key===oneWar.war_key&&cleanTag(a.attacker_tag)===cleanTag(p.tag))
         .sort((a,b)=>a.attack_order-b.attack_order):[];
@@ -211,6 +224,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<div class='stats-hit-cell'><strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
         "<small class='stats-rate-avg' title='Durchschnittliche Sterne pro Angriff'>"+
         (p.averageStars===null?"Ø –":"Ø "+p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★")+
+        "</small><small class='stats-form-score' title='Vorläufige, konservative Einordnung aus gleich-RH-Angriffen der letzten 90 Tage'>"+
+        esc(formText)+(nEff?" · n_eff "+nEff.toLocaleString("de-AT"):"")+
         "</small></div>"+
         "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
         "<span class='stats-number stats-missed-cell"+missedColor+"' title='"+esc(
@@ -226,7 +241,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<small>CW "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+"</small>":"")+
         (type==="all"&&summary.missedCoverage.cwl.wars?
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
-        "</span></div>";
+        "</span>"+
+        "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
+        "<summary>Letzte "+lastTen.wars+" Kriege · Details</summary>"+
+        "<div>"+esc(lastTenLabel)+" · verpasst: "+esc(lastTenMissed)+
+        "</div><small>Betrachtet werden die "+lastTen.wars+" zuletzt ausgewählten Kriege. "+
+        "Ohne vollständige CWL-Tagesdaten können weitere Fehlangriffe unbekannt sein. "+
+        "Ein nicht eingeplanter Spieler hat keinen verpassten Angriff.</small></details></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
     renderComparableForm();
     // Avoid destroying player rows (and their decoded RH images) for identical results.
@@ -465,6 +486,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     e("statsFormer")?.addEventListener("change",ev=>{showFormer=ev.target.checked;render()});
     e("statsSearch")?.addEventListener("input",ev=>{search=ev.target.value;render()});
     e("statsSort")?.addEventListener("change",ev=>{order=ev.target.value;render()});
+    e("statsRows")?.addEventListener("toggle",event=>{
+      const details=event.target;
+      if(!details?.matches?.(".stats-player-details"))return;
+      const playerTag=cleanTag(details.dataset.playerTag);
+      if(details.open)openStatsPlayers.add(playerTag);else openStatsPlayers.delete(playerTag);
+    },true);
     e("statsRefresh")?.addEventListener("click",()=>load());
     e("statsImportButton")?.addEventListener("click",()=>e("statsImportFile").click());
     e("statsImportFile")?.addEventListener("change",async ev=>{
