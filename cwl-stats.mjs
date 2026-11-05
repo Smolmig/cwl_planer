@@ -163,6 +163,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       );
       note.hidden=summary.complete;
     }
+    const guide=$("statsCoverageGuide");
+    if(guide){
+      const cwl=summary.missedCoverage.cwl;
+      guide.hidden=!(cwl.wars>0&&!cwl.complete);
+      if(guide.hidden)guide.open=false;
+    }
     renderWarHistory();
     // Membership performance badges depend on loaded attack data, not search/sort/filter state.
     if(scope===ctx.clanId&&lastMembersNotifiedVersion!==version){
@@ -183,12 +189,18 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         return (ascending?diff:-diff)||tie||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
       });
     const nextRowsMarkup=visible.length?visible.map(p=>{
-      const hitColor=p.hitRate===null?"":p.hitRate>=80?" great":p.hitRate<60?" low":"";
+      // Raw hit rates are evidence, not green/red player grades.
       const missedColor=p.missedKnown>0?" warn":"";
       const form=viewComparableProfiles.get(cleanTag(p.tag));
-      const formText=form?.performanceIndex!==null&&form?.performanceIndex!==undefined?
-        "Form "+form.performanceIndex+"/100":"Form: zu wenig Daten";
-      const nEff=form?.weighted90?.effectiveAttacks??0;
+      const qualityLabels={none:"Keine Vergleichsdaten",stale:"Nur ältere Angriffe",
+        limited:"Wenig Daten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
+      const matched=form?.last90?.attacks??0;
+      const quality=qualityLabels[form?.quality]||"Keine Vergleichsdaten";
+      const formText=matched?
+        (form.performanceRankable?
+          "90-Tage-Trend "+formPct(form.weighted90.hitRate)+" · "+matched+" gleich-RH-Angriffe":
+          "Vergleich: "+quality+" · "+matched+" gleich-RH-Angriffe"):
+        "Vergleich: keine gleich-RH-Angriffe (90 Tage)";
       const lastTen=p.lastTen;
       const lastTenMissed=lastTen.recordedParticipations===0?"– (keine Teilnahme dokumentiert)":lastTen.missed===null?
         (lastTen.missedKnown>0?"mind. "+lastTen.missedKnown:"k. A."):
@@ -211,11 +223,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
            "<img class='stats-th-icon' src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+p.th+".webp' width='28' height='28' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
           "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
-        "<div class='stats-hit-cell'><strong class='stats-rate"+hitColor+"'>"+pct(p.hitRate)+"</strong>"+
+        "<div class='stats-hit-cell'><strong class='stats-rate'>"+pct(p.hitRate)+"</strong>"+
         "<small class='stats-rate-avg' title='Durchschnittliche Sterne pro Angriff'>"+
         (p.averageStars===null?"Ø –":"Ø "+p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★")+
         "</small><small class='stats-form-score' title='Vorläufige, konservative Einordnung aus gleich-RH-Angriffen der letzten 90 Tage'>"+
-        esc(formText)+(nEff?" · n_eff "+nEff.toLocaleString("de-AT"):"")+
+        esc(formText)+
         "</small></div>"+
         "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
         "<span class='stats-number stats-missed-cell"+missedColor+"' title='"+esc(
