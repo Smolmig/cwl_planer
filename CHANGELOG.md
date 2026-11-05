@@ -8,6 +8,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.15.4] - 2026-11-05
+
+### Mobile Einsatzverteilung
+- **Besser bedienbar:** Suche und Filter auf Smartphones bis 470 px einzeln und in voller Breite; ausreichend große Touch-Flächen, lesbare Schaltflächen.
+- **Weniger Kastenoptik:** Einsatzzeilen mobil als klare Liste mit feinen Trennlinien statt einzelner gerahmter Karten; Spielername und Meta besser lesbar.
+- **Regressionen:** 320/390/430 px, alle fünf Themes sowie Tablet-/Desktop-Kontrolle automatisiert geprüft.
+- **Keine Datenänderung:** CWL-Planer, Cloud-Konten, Profile, Rollen, Historie, API, Supabase und Offline-PWA bleiben unverändert.
+
 ## [1.15.3] - 2026-11-05
 
 ### Spielerstatistik: vergleichbare aktuelle Form ohne falsche Genauigkeit
