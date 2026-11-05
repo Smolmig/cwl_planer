@@ -329,7 +329,7 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(ui,/const coverageDescriptions=/);
  assert.match(ui,/missedCoverageHost\.textContent/);
  assert.match(ui,/order==="missed"\?a\.missedKnown:a\[order\]/);
- assert.match(ui,/missing?/, "Old import remains usable and no schema change is required");
+ assert.match(ui,/CWL-Kriegen/,"Missing league data must be explained");
  assert.match(ui,/cwl-stats-core\.mjs\?v=1\.15\.2/);
  assert.match(ui,/CWL: /);
 });
