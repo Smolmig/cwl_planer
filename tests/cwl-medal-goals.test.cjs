@@ -25,8 +25,8 @@ const base=()=>({
   war(3,{A:[[2,"X"]],B:[[2,"Y"]]}),
   {day:4,available:false}
  ]},
- profile:{config:{days:4,slots:2},members:[member("A"),member("B")],archivedMembers:[]},
- dayPlans:[1,2,3].map(day=>({day,lineup:["A","B"],locked:true})).concat([{day:4,lineup:["A"],locked:false,warnings:[]}])
+ profile:{config:{days:4,slots:2},members:[member("A"),member("B"),member("C")],archivedMembers:[]},
+ dayPlans:[1,2,3].map(day=>({day,lineup:["A","B"],locked:true})).concat([{day:4,lineup:["A","C"],locked:false,warnings:[]}])
 });
 
 test("Eight actual CWL attack stars reach 100% normal medal share; remaining opportunities are mathematical, not predictive",async()=>{
@@ -50,7 +50,7 @@ test("Eight actual CWL attack stars reach 100% normal medal share; remaining opp
 test("A player with 6 stars and a planned final attack is still mathematically able to reach 8",async()=>{
  const {evaluateEightStarGoals,findReadOnlyMedalSwap}=await importCore();
  const data=base();
- data.dayPlans[3].lineup=["B"];
+ data.dayPlans[3].lineup=["B","C"];
  const result=evaluateEightStarGoals(data);
  const b=result.rows.find(r=>r.id==="B");
  assert.equal(b.futureAttacks,1);assert.equal(b.potentialMax,9);
@@ -81,7 +81,8 @@ test("Started/finished days, fixed players, target days and mandatory availabili
   d=>{d.profile.members[1].statuses[3]="out"},
   d=>{d.dayPlans[3].locked=true},
   d=>{d.snapshot.rounds[3]=war(4,{},"inWar")},
-  d=>{d.dayPlans[3].warnings=["Widerspruch"]}
+  d=>{d.dayPlans[3].warnings=["Widerspruch"]},
+  d=>{d.dayPlans[3].lineup=["A"]}
  ];
  for(const mutate of variants){
   const data=base();mutate(data);
@@ -95,7 +96,7 @@ test("No active league results, no roster tags or incomplete plans cannot produc
  const {evaluateEightStarGoals,findReadOnlyMedalSwap}=await importCore();
  const data=base();
  data.profile.members[0].playerTag="";
- assert.equal(evaluateEightStarGoals(data).rows.length,1);
+ assert.equal(evaluateEightStarGoals(data).rows.length,2);
  data.profile.members=[];
  assert.equal(evaluateEightStarGoals(data).rows.length,0);
  const none={...base(),snapshot:{season:"2026-11",rounds:[]},dayPlans:[]};

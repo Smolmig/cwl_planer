@@ -101,8 +101,8 @@ export function findReadOnlyMedalSwap({assessment,profile,snapshot,dayPlans=[]}=
   for(const plan of plans){
    const day=plan?.day,round=snapshot.rounds?.find(r=>r.day===day);
    if(!Number.isInteger(day)||plan.locked||round?.state==="inWar"||round?.state==="warEnded"||
-      !Array.isArray(plan.lineup)||plan.warnings?.length||
-      plan.lineup.includes(recipient.id)||receiver.statuses?.[day-1]==="out")continue;
+      !Array.isArray(plan.lineup)||plan.lineup.length!==profile.config?.slots||plan.warnings?.length||
+      plan.lineup.includes(recipient.id)||receiver.statuses?.[day-1]!=="auto"&&receiver.statuses?.[day-1]!==undefined)continue;
    for(const donor of donors){
     const player=members.get(donor.id);
     if(!player||!plan.lineup.includes(donor.id)||player.statuses?.[day-1]==="must")continue;
