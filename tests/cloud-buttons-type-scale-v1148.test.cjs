@@ -36,19 +36,33 @@ test("Button font sizes and touch areas are readable at narrow widths in every t
       const tabs=[...document.querySelectorAll(".navinner .navbtn")]
        .filter(el=>getComputedStyle(el).display!=="none")
        .map(el=>({label:el.textContent.trim(),...metrics(el)}));
+      // Recheck the optional fifth destination without relying on a fixed
+      // number of navigation buttons or an empty ghost grid column.
+      const hiddenGrid=getComputedStyle(document.querySelector(".navinner")).gridTemplateColumns;
+      const statsNav=document.getElementById("statsNav");
+      statsNav.hidden=false;
+      const allTabs=[...document.querySelectorAll(".navinner .navbtn")]
+       .filter(el=>getComputedStyle(el).display!=="none")
+       .map(el=>({label:el.textContent.trim(),...metrics(el)}));
+      const visibleGrid=getComputedStyle(document.querySelector(".navinner")).gridTemplateColumns;
+      statsNav.hidden=true;
       const plan=metrics(document.getElementById("copyFullPlanBtn"));
       const day=metrics(document.getElementById("auditDayButton"));
       const long=metrics(document.getElementById("auditLongButton"));
       const overview=metrics(document.getElementById("mobileOverviewToggle"));
       const desktop=metrics(document.getElementById("singleDayMode"));
-      return {tabs,plan,day,long,overview,desktop,
+      return {tabs,allTabs,hiddenGrid,visibleGrid,plan,day,long,overview,desktop,
         docWidth:document.documentElement.scrollWidth,viewport:innerWidth};
      },theme);
      const desc=JSON.stringify({theme,width,measurements});
      assert.ok(measurements.docWidth<=width+3,desc);
      if(width<=699){
       assert.ok(measurements.tabs.length>=3,desc);
-      for(const tab of measurements.tabs){
+      assert.equal(measurements.tabs.length,4,desc);
+      assert.equal(measurements.allTabs.length,5,desc);
+      assert.equal(measurements.hiddenGrid.split(" ").length,4,desc);
+      assert.equal(measurements.visibleGrid.split(" ").length,5,desc);
+      for(const tab of [...measurements.tabs,...measurements.allTabs]){
        assert.ok(tab.font>=(width<=375?11:12)-.05,desc);
        assert.ok(tab.min>=46,desc);
        assert.ok(tab.height>=45,desc);
