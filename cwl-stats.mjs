@@ -1,6 +1,6 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.4";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.5";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
-import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.4";
+import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.5";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
