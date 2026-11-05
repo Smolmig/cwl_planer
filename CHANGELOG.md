@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.15.7] - 2026-11-05
+
+### Statistikbereich und Klarheit der Einsatzübersicht
+- **Vier Statistikbereiche:** Überblick, Spieler, Vergleiche sowie Verlauf & Kriege. Die bestehenden Einzelkriegsdaten bleiben abrufbar; eine erste RH-Differenz-Tabelle zeigt getrennte echte CW-/CWL-Angriffe, Dreierquote, Ø Sterne und die Fallzahlen je gleich/niedriger/höher/unbekanntem Gegner-RH.
+- **Datenumfang statt kryptischer Filter:** Standardmäßig alle erfassten CWL-Monate statt nur der letzten drei. Auswahl zeigt vorhandene/ausgewertete CWs und CWL-Monate; Spieler- und 90-Tage-Formkennzahlen erklären ihren Bezug zum gewählten Umfang.
+- **Spielerliste nummeriert:** Positionen sind lediglich die aktuell gewählte Tabellenreihenfolge, keine allgemeingültigen Stärkeränge. Details verdeutlichen, dass die letzten zehn Kriege aus der vorausgewählten gemischten Kriegsliste stammen.
+- **Einsätze:** Die Verfügbarkeit wird als Anzahl Tage ohne RAUS-Regel ausgedrückt. Das unklare alte Feld „3★ ?“ entfällt ausschließlich aus der Einsatzübersicht; gespielt, geplant und gesamt sind ausgeschrieben.
+- **Keine Datenmigration:** Cloud-Profile und aktuelle CWL-Aufstellungen, Supabase, Planungskern und Offline-PWA unverändert. Die zwei Juni-CWL-Durchgänge in privaten ClashPerk-Forschungsdaten sind noch nicht produktiv importiert; eigene Identität der Bonusliga wird vor dem Import gesondert geprüft.
+
+
 ## [1.15.6] - 2026-11-05
 
 ### Fairer Tageswechsel ohne Bedienverlust
