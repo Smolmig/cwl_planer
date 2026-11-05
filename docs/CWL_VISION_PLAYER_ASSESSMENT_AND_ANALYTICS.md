@@ -104,3 +104,69 @@ Dieser Aufbau kann später nach *Spieler, Clan, RH-Stufe, Zeitraum, Saison, Gegn
 Beim nächsten Nutzerimpuls zum Thema: Ideen **inhaltlich sinnvoll einer dieser drei Schienen zuordnen** und Widersprüche explizit prüfen. Nur die wichtigen Produktentscheidungen kurz in normalen Worten erklären. GitHub-Code/Backlog nicht dem Nutzer aufbürden. Grundentwurf iterativ schärfen, keine einseitige Vollimplementierung.
 
 *Es gilt weiterhin „Zeige das Wichtige zuerst, gruppiere mit Abstand statt mit Kästen, und ändere niemals ungefragt das, womit jemand gerade arbeitet.“*
+
+
+---
+
+## E. Forschungsabgleich und nächster überprüfbarer Schritt (05.11.2026)
+
+**Status: Konzeptfortschritt, nicht freigegebene Modell-/Produktimplementierung.** Die Erkenntnisse aus den offenen Drafts [#92](https://github.com/Smolmig/cwl_planer/pull/92) und [#95](https://github.com/Smolmig/cwl_planer/pull/95) sind hier bewusst in konkrete Forschungsfragen übersetzt. Originaldaten bleiben privat; das öffentliche Repository enthält nur Aggregate und synthetische Tests.
+
+### E1. Was die Quellen *wirklich* hergeben
+
+| Bestand / Quelle | Verifiziert | Einschränkung / Verwendung |
+| --- | --- | --- |
+| Bisheriger Live-Statistikbestand, dokumentierter Abgleich | 52 Kriege, 1.187 ausgeführte Angriffe, 43 historisch erfasste Player-Tags (nicht gleichzeitig aktive Mitglieder) | CW/CWL-/RH-Tabellen möglich; **nicht** mit überlappenden ClashPerk-Logs unbesehen addieren. |
+| Größerer **privater** ClashPerk-Attack-Log | 4.333 rohe Zeilen beider Clans → 4.125 eindeutige Ereignisse nach 208 Duplikaten; bei Stichtag 04.11. 98 Kriege / 2.117 eindeutige eigene Angriffe / 1.773 gleich-RH-Angriffe | Bei Analyse eigenen Clan, War-ID, Player-Tag und Angriff eindeutig deduplizieren; historische Map-Position und *New Stars* vorhanden, aber Base-Ausbau/Armee und sicherer First-Hit fehlen. Nicht still produktiv importieren. |
+| 21 historische CWL-Tage Aug–Okt 2026, [#90](https://github.com/Smolmig/cwl_planer/issues/90) **geschlossen** | Nutzerfreigegebener Metadaten-Backfill bereits durchgeführt: 21/21 abgeschlossene Tage, jeweils 15 belegte Teilnehmer, zusammen 313 Angriffe, 807 Sterne, 2 schon bekannte Misses; nur Roster-/Vollständigkeits-/Finalisierungsmetadaten aktualisiert | Ältere Textstellen in #88 oder \`docs/CLASHPERK_EXPORTS_AND_MISSED_COVERAGE.md\` mit „1/22 CWL vollständig“ beschreiben den **Stand vor dem Backfill**. Die zwei neueren November-API-Tage wurden **nicht** verändert; Vollständigkeit nicht allein aus Tagesabschluss oder alter Dokumentation folgern. Bei späterem Statistikdesign die aktuelle DB-Abdeckung erneut **read-only** kontrollieren. |
+| Zwei Juni-CWL-Durchgänge 04.–10. und 19.–25.06.2026 | Beide als echte CWLs erkannt; zweiter Durchgang offizielle Bonus-CWL | Saisons über War-/Durchgangsidentität, **nicht** nur \`YYYY-MM\` identifizieren; optional separat anzeigen und in Sensitivitätsanalysen filtern. |
+
+**Bisheriger Modellvergleich (explorativ):** Im umfassenderen ClashPerk-Backtest auf denselben 1.697 späteren Angriffen erreichten „letzte 7“ Brier **0,2003**, zeitgewichtete 90 Tage gegen gleiches RH **0,1942**. Nur Mirror **0,1993** statt 90-Tage-Baseline **0,1951** (jeweils dieselben 1.667 Fälle); Map-/New-Stars-/CWL-Gewichte brachten keinen abgesicherten Mehrwert. Ein aggregierter 90-Tage-Ansatz ist damit ein sinnvoller **Forschungs-Baselinekandidat**, aber **keine** bestätigte aktuelle Formbewertung und keine Freigabe für produktive Rotation. Erstangriff/Cleanup und gerushte Zielbases sind nicht zuverlässig kodiert.
+
+### E2. Nächste Studie: *Echte Formeinbrüche erkennen*, ohne Alarm aus 1–2 Angriffen
+
+**Vorab festzulegende Forschungsfrage:** Erkennt eine robuste Kurzfrist-Komponente nachweisbare aktuelle Leistungsverschlechterungen schneller als die reine 90-Tage-Baseline, **ohne** bei normalen Zufallsschwankungen zu viele falsche Formabstürze auszulösen?
+
+1. **Baseline einfrieren:** 90 Tage, gleiches Gegner-RH, 30-Tage-Halbwertszeit, konsistente Glättung. Bestehende letzte-7-Variante bleibt Kontrollwert; keine anhand des Holdouts nachträglich gewählten Gewichtungen.
+2. **Nur wenige Konkurrenten vorher definieren:** (a) 90-Tage-Baseline + vorsichtig zur Fallzahl geschrumpfte 14-/30-Tage-Abweichung; (b) 90-Tage-Baseline + zeitlich begrenzter Drift-/Regimewechsel-Hinweis; (c) reiner 30-Tage-Gleich-RH-Kandidat als Negativkontrolle. Vorab Fallzahl-/Trendbruchregeln und Schwellen als *Testparameter*, nicht als Produktentscheidung, dokumentieren.
+3. **Kontexte schichten statt blind multiplizieren:** eigene RH-Stufe *zum Angriff*, Gegner-RH bzw. RH-Differenz, normaler CW vs. CWL, War-Datum, dokumentierte Meta-/Balance-Epoche. Mirror/Map und New Stars nur als **erklärende Subgruppen**, solange kein unabhängiger prädiktiver Mehrwert bewiesen ist. Ranked-Liga und Lifetime-Kriegssterne nur als separat getestete, schwache Cold-Start-Hinweise; Ranked wird auch von Verteidigung und Aktivität beeinflusst ([Supercell Ranked](https://support.supercell.com/clash-of-clans/en/articles/ranked-leagues-4.html)).
+4. **Chronologischer Test:** Trainingsdaten ausschließlich aus **früheren abgeschlossenen Kriegstagen**; identischer Holdout für alle Varianten, aktuelle/unfertige War-Tage nicht einbeziehen. Zuerst rückwirkende bekannte Einbruchfälle mit vorab definierten Regeln untersuchen, dann neuere **noch unbenutzte** Saisons / andere Clans als unabhängigen Holdout reservieren. Nicht wiederholt am Holdout feintunen.
+5. **Ausgabe und Gate:** auf identischen späteren Angriffen Brier, Log-Loss, Kalibrierung, Abdeckung, Gruppen nach CW/CWL und RH, Zahl **falscher Trendalarme**, Reaktionsverzug bei nachvollziehbaren Einbrüchen, Unsicherheit mit kriegs-/spielerbezogenen Clustern. Falls die Kurzfrist-Komponente nicht stabil gewinnt: Baseline behalten, „Form unklar“ statt erfundenem Abwärtspfeil. Bei wenig Daten keine erzwungene Platzierung.
+6. **Zuverlässigkeit getrennt auswerten:** belegte nicht genutzte Angriffe ÷ belegte Angriffsmöglichkeiten (CWL: nur tatsächlich im Tageskader stehende Spieler; CW: tatsächliche Angriffsrechte), auf vollständigen abgeschlossenen Kriegen. Kein Missed als 0★, keine pauschale Saisonstrafe, keine automatische Pause nach verpasstem Angriff.
+
+**Besonders wichtig:** Vergleichbarkeit bedeutet nicht „gleiches RH = gleich schwere Basis“. Eine RH-18-/18-Quote ist **beobachtet unter tatsächlich gewählten Zielen**; sie misst nicht, wie derselbe Spieler gegen eine zufällige oder beliebig starke RH-18-Basis abschneiden würde. Schon die Auswahl der Angriffspartner erzeugt Verzerrung.
+
+### E3. Statistik-Tab: erste *konkret prüfbare* Konzeptausbaustufe
+
+**Beispiel für den ersten sichtbaren Analyseweg:** Statistik → **Angriffe vergleichen** → gemeinsame Zeitspanne festlegen → Tabelle „Gegner-RH niedriger / gleich / höher“ × „CW / CWL“ → Wert **3★-Quote / Ø Sterne / n** umschalten → Zelle öffnen und belegte Einzelangriffe sehen. Dieselbe Filterung kann als gruppiertes Balkendiagramm dargestellt werden. In jeder Zelle: **n**, Zeitraum, Quelle; „keine Daten“ statt 0 %. CWL-Sonderdurchgänge separat an-/abwählbar.
+
+Zunächst als eigenständige, nützliche Module **ohne** neuen Bewertungsscore:
+- **Clanüberblick:** Angriffe 0/1/2/3★, Ø Sterne, dokumentierte Angriffsmöglichkeiten und bestätigte Misses, Abdeckung.
+- **Gegner & RH:** CW/CWL × RH-Differenz; später konkrete RH-Stufen und Map-/New-Stars-Kontext, sofern vollständig belegbar.
+- **Entwicklung:** Zeitreihe der 3★-Quote **mit n pro Punkt**, gleitenden Zeiträumen, RH-Mix und erkannter Datenlücke statt scheinbar glatter Linie; dokumentierte Update-/Meta-Marker nur mit Beleg.
+- **Spielervergleich:** zwei oder mehr Spieler, dieselbe Datums-/CW-/CWL-/RH-Filterung, gleiche Fallzahl- und Unsicherheitsregeln, aktuelle Form und Zuverlässigkeit optional getrennt zuschaltbar.
+- **Saisonarchiv:** CWL-Durchgang/War-Key, Gegner- und eigene Tagesaufstellungen nur aus belegten Snapshots; Juni-Bonus-CWL sauber separat; „in CWL angemeldet“ ist nicht „an Tag X aufgestellt“.
+
+**UI-Prototyp ausschließlich als Konzept:** kompakter Standardüberblick + Segment „Vergleiche“ / „Verlauf“, Filterleiste mit **Zeitraum** und **Kriegstyp**, Rest unter „Weitere Filter“. Desktop kompakte Vergleichstabelle, Mobil zeilen-/spaltenoptimiert mit innerhalb der Tabelle horizontaler Navigation statt Seitenscroll. Drill-down bewahrt Filter, Auswahl, offene Bereiche und Scrollposition bei Auto-Refresh. Maximal eine übergeordnete Containerebene, wenige Trennlinien statt Kartenstapel. Datenqualität im Klartext („wenig Vergleichsangriffe“), Methodik optional in Details. Ergonomie und statistische Zurückhaltung an [NN/g Daten-Tabellen](https://www.nngroup.com/articles/data-tables/) und [ONS Unsicherheit](https://service-manual.ons.gov.uk/data-visualisation/guidance/showing-uncertainty-in-charts/) ausrichten.
+
+**Abnahmebeispiele vor UI-Code:** 2/2 ≠ 40/60; RH18 gegen RH17 ≠ RH18; mehrere CWLs in einem Juni; 0 aus fehlender Messung ≠ belegte 0; ein Spieler ohne Kriegsaufstellung kann keinen CWL-Miss haben; CWL-Attacke mit 2★ bei zuvor 1★ ist kein garantierter Erstangriff.
+
+### E4. Spätere Simulationsmodi: gemeinsame Grenze, unterschiedliches *Ziel*
+
+| Modus (Arbeitstitel) | Was zuerst optimiert wird | Was sichtbar gegengeprüft werden muss |
+| --- | --- | --- |
+| **Fair** (bestehender Standard bleibt unangetastet) | Einsatzchancen, explizite Ziele, möglichst viele erreichbare **8★-Medailenziele**; Stärke situativ, nicht ignoriert | Rotation, verbleibende Chancen, reale bisherige Sterne, begrenzte Gegnerinformation |
+| **Strategisch** | Tageskader mit passender eigener RH-/Angriffsstärke relativ zum **nachweisbaren** gegnerischen RH-Mix; Ressourcen für schwierige Tage reservieren | Fairnessabweichung, 8★-Chancen, Datenunsicherheit und warum ein Tauschtag sinnvoll sein *könnte* |
+| **Wettkampf** | möglichst starke verfügbare Tageskader, tendenziell mehr Wiederholung guter Spieler | aktive manuelle Fix-/Einsatzziele bleiben verbindlich, automatische Fixspieler nur als **unverbindlicher Vorschlag**, nicht als Datenmutation |
+
+**In allen Modi:** Fix/MUSS/RAUS, exakte Einsatzziele, Verfügbarkeiten, gespielte/gestartete Tage, bestätigte Clash-Aufstellungen und Owner-/Vize-Freigaben haben Vorrang. Vor dem Kampf sind Gegner-RH-/Roster-Mixe allenfalls ein Proxy, **keine** garantierte konkrete Gegnerbasis oder Angriffszuteilung. Acht Sterne sind ein individuelles, nicht garantiertes Ziel; bei 6★ reicht ein weiterer **2★**-Angriff. Keine ungeprüften Siegwahrscheinlichkeiten/Erz-Prognosen, keine unbeabsichtigten Cloud-Writes. Erst **read-only Shadow-Simulation** mit Standard-vs.-Alternativen-Diff und transparenten Fairnesskonflikten, ausdrücklich **nicht jetzt**.
+
+### E5. Bewusster GitHub-/Release-Abgleich
+
+- **Live laut \`main/cloud-version.json\`: v1.15.5.** Weder dieser Entwurf noch PR #92/#95/#97 sind live oder für einen automatischen Merge vorgesehen.
+- **Offene Themen:** #44 Moduskonzept, #46 umfassende UX-/Cross-Device-Praxisabnahme, #49 teils historischer Alt-Backlog, #71 CWL-Saison-/Archiv-Praxistest, #88 Form-Forschung, #96 Statistik-Labor.
+- **Offene Draft-PRs:** #92 / #95 / #97 aktive Forschung/Konzeptarbeit; **#45 / #63 / #66** ältere UI-Entwicklungsstände, vor jeder weiteren Integration auf bereits veröffentlichte Nachfolge-PRs prüfen, **nicht blind mergen**.
+- **#90 ist bereits geschlossen** nach verifiziertem, abgesichertem, nutzerfreigegebenem 21-Tage-Metadaten-Backfill. Ältere Export-/UX-/Issue-Texte sind historische Momentaufnahmen und sollten bei einem späteren **separat geprüften** Dokumentations-Cleanup aktualisiert werden. Änderungen an aktuellen Produktionsdaten oder Solver sind kein Teil davon.
+- **Weitere offene Qualität:** reelle Safari-/Android-/Desktop-/Rollenabnahme, PWA-Installationen, Echtzeit-Refresh ohne Verlust von Fokus/Scroll, UI-Texte, Gold-/Dark-/Light-/Cyber-Kontrast, langsame PCs, historische Saisons, keine inaktive Button-Leiche und keine „Karte in Karte“-Ansichten. Maßgeblich: [docs/UX_DESIGN_PRINCIPLES.md](https://github.com/Smolmig/cwl_planer/blob/main/docs/UX_DESIGN_PRINCIPLES.md).
+
+**Nächster konkreter Forschungs-Deliverable:** vorab definierte *Formbruch-Testmatrix* und Datenqualitäts-/Provenienz-Audit als reine read-only Untersuchung, erst danach UI-Mock und spätere Implementierungs-PR. **Keine aktuelle Planungslogik ändern.**
