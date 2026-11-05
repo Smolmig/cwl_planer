@@ -170,3 +170,21 @@ Zunächst als eigenständige, nützliche Module **ohne** neuen Bewertungsscore:
 - **Weitere offene Qualität:** reelle Safari-/Android-/Desktop-/Rollenabnahme, PWA-Installationen, Echtzeit-Refresh ohne Verlust von Fokus/Scroll, UI-Texte, Gold-/Dark-/Light-/Cyber-Kontrast, langsame PCs, historische Saisons, keine inaktive Button-Leiche und keine „Karte in Karte“-Ansichten. Maßgeblich: [docs/UX_DESIGN_PRINCIPLES.md](https://github.com/Smolmig/cwl_planer/blob/main/docs/UX_DESIGN_PRINCIPLES.md).
 
 **Nächster konkreter Forschungs-Deliverable:** vorab definierte *Formbruch-Testmatrix* und Datenqualitäts-/Provenienz-Audit als reine read-only Untersuchung, erst danach UI-Mock und spätere Implementierungs-PR. **Keine aktuelle Planungslogik ändern.**
+
+
+
+## F. Live-DB-Abgleich nach historischem Backfill (read-only, 05.11.2026)
+
+**Abfrage direkt auf dem verbundenen Supabase-Projekt; ausschließlich \`SELECT\`, keine Datenänderung.** Dieser aktuelle Snapshot ersetzt für eine neue Datenauswertung die **historischen** 52/1.187-Angaben aus Forschung #92 und v1.15.5, ohne deren alten Backtest rückwirkend umzuschreiben.
+
+| Bereich | Aktuell direkt aus der DB | Abdeckungsnotiz |
+| --- | --- | --- |
+| Alle \`cwl_stat_wars\` / \`cwl_stat_attacks\` | **54 Kriege / 1.217 Einzelangriffe** | CW 30 Kriege / 859 Angriffe; CWL 24 Tage / 358 Angriffe. |
+| CWL historisch importiert (Aug–Okt) | **21 Tage, 315 Plätze, 313 eigene Angriffe + 2 bekannte Misses** | Alle 21 \`finalized=true\`, \`missed_log_complete=true\`, je 15 tatsächliche Tags im Roster. |
+| CWL API (November) | **3 Tage, 45 Plätze, 45 eindeutige Angreifer, 0 offene Slots** | Alle 3 \`finalized=true\`, \`roster_tags\` je 15, aber \`missed_log_complete\` **nicht ausdrücklich true**. Daher technische Flag-Abdeckung **21/24**, während anhand der gespeicherten, vollständigen Roster und Einzelangriffe die **24/24 Tage** slotbilanziell belegbar sind. Diese beiden Bedeutungen nicht verwechseln. |
+| Normale CW | 29 importierte Kriege mit nachgewiesen vollständigen Missed-Logs, 1 finalisierter API-Krieg mit Roster/Angriffen | Die API-Zeile hat kein explizites \`missed_log_complete=true\`. Für echte Zuverlässigkeitsquoten Abdeckung pro Krieg und Angriffsrecht prüfen, nicht Flag und Bilanzen unterschiedlicher Formate still vermischen. |
+| Missed-Einträge | **59 dokumentierte ausgelassene Angriffe** (57 CW, 2 CWL) | Bei nachweislich vollständigen Kriegstagen sind 0 Misses belegbar, bei ungesichertem Roster bleibt 0 unbekannt. |
+
+**Zusätzliche Integritätschecks:** In der CWL stimmen für jede der 24 finalisierten Runden \`Anzahl eindeutiger Angreifer + dokumentierte Misses = Teamgröße\` und \`Anzahl Roster-Tags = Teamgröße\`. Keine mehrfachen eigenen Angriffszeilen pro Spieler/Tag; **0** CWL-Angreifer oder dokumentierte Missed-Tags außerhalb des jeweiligen Rosters; **0** CWL-Angriffe ohne Attack-Order. Diese Nachweise beziehen sich auf den **jetzigen Datenbanksnapshot** und dürfen nicht mit historischer Spielerqualität, Gegnerausbaustufe oder tatsächlich nicht aufgezeichneten First-Hits gleichgesetzt werden.
+
+**Konsequenz für die spätere App:** Unterschiedliche Vollständigkeitssignale (\`missed_log_complete\` vs. finale Roster-/Slotbilanz) zuerst semantisch vereinheitlichen und testen; keine jetzige Schema- oder Statistik-Änderung. Der zusätzliche November-Datenstand verlangt einen **neuen** read-only Datenexport für den nächsten chronologischen Vergleich; die 98-Kriege-ClashPerk-Forschung und 52-Kriege-Baseline behalten ihren eigenen eingefrorenen Stichtag. Das öffentliche Dokument enthält **keine Player-Tags, Einzelangriffslisten oder private Exporte**.
