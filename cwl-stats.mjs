@@ -150,9 +150,18 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         if(seasonDetails)seasonDetails.textContent="Bis zu "+last+" zuletzt gespielte normale Clankriege werden ausgewertet.";
       }
     }
-    const leader=$("statsBestPlayer");if(leader)leader.textContent=summary.best?
-      summary.best.name+" · "+summary.best.attacks+" Angriffe":
-      "Noch kein Spieler mit mindestens 5 Angriffen";
+    const leader=$("statsBestPlayer");
+    if(leader){
+      const current=new Set((ctx.memberTags||[]).map(cleanTag));
+      const ranked=[...viewComparableProfiles.values()]
+        .filter(p=>p.performanceIndex!==null&&(!current.size||current.has(p.tag)))
+        .sort((a,b)=>b.performanceIndex-a.performanceIndex||
+          b.weighted90.effectiveAttacks-a.weighted90.effectiveAttacks);
+      leader.textContent=ranked[0]?
+        ranked[0].name+" · "+ranked[0].performanceIndex+
+        "/100 (vorläufig, n_eff "+ranked[0].weighted90.effectiveAttacks.toLocaleString("de-AT")+")":
+        "Noch keine ausreichend belegte vergleichbare Form";
+    }
     const note=$("statsMissingNote");
     if(note){
       note.textContent=summary.complete?"":(
@@ -173,10 +182,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
-        const av=(order==="missed"?a.missedKnown:a[order])??-1;
-        const bv=(order==="missed"?b.missedKnown:b[order])??-1;
+        const metric=p=>order==="performance"?viewComparableProfiles.get(cleanTag(p.tag))?.performanceIndex:
+          order==="missed"?p.missedKnown:order==="lastTen"?p.lastTen.averageStars:p[order];
+        const rawA=metric(a),rawB=metric(b);
+        const av=rawA??-1,bv=rawB??-1;
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
-        return (ascending?diff:-diff)||b.attacks-a.attacks;
+        const tie=order==="performance"?
+          (viewComparableProfiles.get(cleanTag(b.tag))?.weighted90.effectiveAttacks??0)-
+          (viewComparableProfiles.get(cleanTag(a.tag))?.weighted90.effectiveAttacks??0):0;
+        return (ascending?diff:-diff)||tie||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
       });
     const nextRowsMarkup=visible.length?visible.map(p=>{
       const hitColor=p.hitRate===null?"":p.hitRate>=80?" great":p.hitRate<60?" low":"";
