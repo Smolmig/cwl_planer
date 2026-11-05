@@ -328,7 +328,7 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(html,/id="statsMissedCoverage"/);
  assert.match(ui,/const coverageDescriptions=/);
  assert.match(ui,/missedCoverageHost\.textContent/);
- assert.match(ui,/order==="missed"\?a\.missedKnown:a\[order\]/);
+ assert.match(ui,/order==="missed"\?p\.missedKnown/);
  assert.match(ui,/CWL-Kriegen/,"Missing league data must be explained");
  assert.match(ui,/cwl-stats-core\.mjs\?v=1\.15\.3/);
  assert.match(ui,/CWL: /);
