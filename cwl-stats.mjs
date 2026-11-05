@@ -40,36 +40,38 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         a.name.localeCompare(b.name,"de"));
     if(desc&&viewComparableSummary){
       const m=viewComparableSummary;
-      desc.textContent="Vergleichbare Angriffe aus den letzten 90 Tagen: "+m.comparableAttacks+
-        " gegen dieselbe Rathausstufe. "+m.lowerThExcluded+
-        " Angriffe auf niedrigere RH, "+m.higherThExcluded+" auf höhere RH und "+
-        m.unknownThExcluded+" ohne vollständige RH-Angabe sind nicht in dieser Quote enthalten. "+
-        "Weder Mirror-Position noch Erstangriff oder Basisausbau sind historisch vollständig belegt. "+
-        "Diese Testansicht berücksichtigt Kriegstyp und Zeitraum, verwendet aber nur Angriffe auf dasselbe RH. Sie ändert keine Mitglieder- oder Planerwerte.";
+      const excluded=m.lowerThExcluded+m.higherThExcluded+m.unknownThExcluded;
+      desc.textContent=m.comparableAttacks+" Angriffe gegen dieselbe Rathausstufe aus den letzten 90 Tagen sind vergleichbar. "+
+        (excluded?excluded+" weitere Angriffe mit anderem oder unbekanntem RH zählen hier nicht. ":"")+
+        "Die Auswahl aus CW und CWL entspricht deinen Filtern oben. Für die 90-Tage-Tendenz zählen neuere Angriffe stärker; bei wenig Daten bleibt sie unsicher.";
     }
-    const qualityLabel={none:"Keine vergleichbaren Angriffe",stale:"Älter als 30 Tage",
-      limited:"Wenig Vergleichsdaten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
+    const qualityLabel={none:"Keine Vergleichsdaten",stale:"Nur ältere Angriffe",
+      limited:"Wenig Daten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
     const textFor=p=>{
-      const n=p.last30.attacks;
-      const score=p.performanceIndex===null?"Nicht bewertbar":p.performanceIndex+"/100 (vorsichtiger Formwert)";
-      const recent=n?formPct(p.last30.hitRate)+" 3★ · Ø "+formStar(p.last30.averageStars):"Noch keine gleich-RH-Angriffe";
-      const combined=p.last90.attacks?
-        formPct(p.weighted90.hitRate)+" 3★ · Ø "+formStar(p.weighted90.averageStars)+
-        " · n_eff "+p.weighted90.effectiveAttacks.toLocaleString("de-AT"):
-        "Keine vergleichbaren Angriffe";
-      const breakdown="CWL "+p.cwl90.attacks+(p.cwl90.attacks?" · "+formPct(p.cwl90.hitRate):"")+
-        " / CW "+p.normal90.attacks+(p.normal90.attacks?" · "+formPct(p.normal90.hitRate):"");
+      const n30=p.last30.attacks,n90=p.last90.attacks;
+      const quality=qualityLabel[p.quality]||"Wenig Daten";
       const excluded=p.excluded.lower+p.excluded.higher+p.excluded.unknown;
+      const n30Label=n30?p.last30.triples+" von "+n30+" Angriffen mit 3★":"Keine aktuellen Angriffe";
+      const n90Label=n90?n90+" gleich-RH-Angriffe · neuere zählen stärker":"Keine Angriffe in 90 Tagen";
+      const source="CWL: "+p.cwl90.attacks+" Angriffe · normaler CW: "+p.normal90.attacks+" Angriffe";
+      const excludedText=excluded?" · "+excluded+" andere / unbekannte RH-Ziele nicht gewertet":"";
       return "<div class='stats-form-row'>"+
-        "<div class='stats-form-person'><b>"+esc(p.name)+"</b><small>"+esc(qualityLabel[p.quality]||"Wenig Daten")+" · "+esc(score)+
-        (excluded?" · "+excluded+" andere RH-Ziele nicht gewertet":"")+"</small></div>"+
+        "<div class='stats-form-person'><b>"+esc(p.name)+"</b>"+
+        "<span class='stats-form-quality'>"+esc(quality)+"</span>"+
+        "<small>"+(p.performanceRankable?"Ausreichend für einen vorsichtigen Vergleich":
+         "Keine belastbare Rang-Einordnung")+"</small></div>"+
         "<div class='stats-form-results'>"+
-        "<div><strong>"+recent+"</strong><small>Letzte 30 Tage · "+n+" Angriffe</small></div>"+
-        "<div><span>90 Tage zeitgewichtet: "+combined+"</span><small>"+breakdown+"</small></div>"+
+          "<div class='stats-form-cell'><span>Letzte 30 Tage</span><strong>"+
+            esc(n30?formPct(p.last30.hitRate):"–")+
+          "</strong><small>"+esc(n30Label)+"</small></div>"+
+          "<div class='stats-form-cell'><span>90-Tage-Trend</span><strong>"+
+            esc(n90?formPct(p.weighted90.hitRate):"–")+
+          "</strong><small>"+esc(n90Label)+"</small></div>"+
+          "<small class='stats-form-breakdown'>"+esc(source+excludedText)+"</small>"+
         "</div></div>";
     };
     const markup=rows.length?rows.map(textFor).join(""):
-      "<p class='stats-note'>Keine vergleichbaren Angriffe in dieser Auswahl. Die Rohdaten bleiben erhalten.</p>";
+      "<p class='stats-note'>Keine Angriffe gegen die gleiche Rathausstufe in dieser Auswahl. Die vollständigen Rohdaten bleiben erhalten.</p>";
     if(markup!==lastComparableRowsMarkup){host.innerHTML=markup;lastComparableRowsMarkup=markup}
   }
   function render(){
@@ -149,18 +151,6 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           " gespeicherten normalen CWs · "+summary.attacks+" Angriffe";
         if(seasonDetails)seasonDetails.textContent="Bis zu "+last+" zuletzt gespielte normale Clankriege werden ausgewertet.";
       }
-    }
-    const leader=$("statsBestPlayer");
-    if(leader){
-      const current=new Set((ctx.memberTags||[]).map(cleanTag));
-      const ranked=[...viewComparableProfiles.values()]
-        .filter(p=>p.performanceIndex!==null&&(!current.size||current.has(p.tag)))
-        .sort((a,b)=>b.performanceIndex-a.performanceIndex||
-          b.weighted90.effectiveAttacks-a.weighted90.effectiveAttacks);
-      leader.textContent=ranked[0]?
-        ranked[0].name+" · "+ranked[0].performanceIndex+
-        "/100 (vorläufig, n_eff "+ranked[0].weighted90.effectiveAttacks.toLocaleString("de-AT")+")":
-        "Noch keine ausreichend belegte vergleichbare Form";
     }
     const note=$("statsMissingNote");
     if(note){
