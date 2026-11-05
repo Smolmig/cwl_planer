@@ -26,7 +26,7 @@ test("Identical ClashPerk duplicate rows count once; disagreeing duplicates are 
  const result=backtestWarContext([row,{...row}],{bootstrap:0});
  assert.equal(result.coverage.ownUniqueAttacks,1);
  assert.equal(result.coverage.removedExactDuplicates,1);
- assert.throws(()=>backtestWarContext([row,{...row,stars:2}],{bootstrap:0}),
+ assert.throws(()=>backtestWarContext([row,{...row,stars:2,new:2}],{bootstrap:0}),
   /Conflicting duplicate attack event/);
 });
 test("Opponent attacks and unfinished future rounds are excluded",async()=>{
