@@ -6,6 +6,11 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+### Mobile Einsatzverteilung (noch nicht veröffentlicht)
+- Suche und Filter auf kleinen Smartphones als getrennte, 44 px hohe Bedienelemente statt einer gequetschten Doppelzeile; lesbarere Spielerlabels.
+- Einsatzzeilen mobil mit feinen Trennlinien statt Einzelkarten-Rahmen; Desktop-Layout, Datenmodell und Planungslogik unverändert.
+- Responsive Browser-Regression für 320/390/430 px, fünf Themes und Desktop-Kontrolle.
+
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
 ## [1.15.3] - 2026-11-05
