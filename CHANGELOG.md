@@ -17,6 +17,8 @@ Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Ein
 - **Ehrliche Lücken:** Ob ein Angriff auf sein Gegenüber, gegen eine gerushte Basis oder als Cleanup erfolgte, ist für ältere Daten **nicht zuverlässig belegt** und wird nicht behauptet.
 - **Mitglieder:** Der Hilfetext erläutert zusätzlich die neue Form. Die bisherigen sieben letzten Angriffe und deren Sortierung bleiben solange unverändert, bis die Alternative chronologisch nachweislich besser ist.
 - **Importdialog:** Ein Import mit 44 Missed-Datensätzen und 59 verpassten Angriffen zeigt jetzt korrekt **59 tatsächliche versäumte Angriffe (44 Einträge)**.
+- **CWL-Angriffsprüfung:** In der letzten Stunde vor einem aktiven CWL-Kriegsende zeigt die App **noch offene Angriffe** als Hinweis. Erst nach vollständig bestätigtem Kriegsende nennt sie **tatsächlich verpasste** Angriffe und erinnert daran, die nächste Aufstellung bewusst in Clash zu prüfen. Wer kurz vor Ende angreift, verschwindet nach dem nächsten erfolgreichen API-Abgleich aus dem Hinweis. **Keine automatische Pause, kein Raus aus der Aufstellung, keine Änderung der Tagesregeln.**
+- **Grenze:** Hinweise nur bei frischen Clash-Daten, während die Web-App aktiv genutzt wird; 5-Minuten-Aktualisierung ist keine garantierte Sofort- oder Hintergrundbenachrichtigung.
 - **Datenschutz:** Nur lesende Analyse, keine Supabase-Migration, keine Änderung an Clanprofilen, CWL-Solver, Aufstellungen oder Offline-PWA.
 
 ## [1.15.2] - 2026-11-05

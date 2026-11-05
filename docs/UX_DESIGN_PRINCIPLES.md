@@ -53,6 +53,14 @@
 - Technisch beobachtete Quoten niemals als individuelle Erfolgswahrscheinlichkeiten oder Basis für automatische CWL-Wechsel verkaufen, bevor **chronologische Backtests** Gewichte und Kalibrierung nachgewiesen haben.
 - Die neue Analyse unter bestehenden Statistik-Inhalten als **einzige ausklappbare, rahmenlose Gruppe** platzieren; Mobile und alle Themes auf horizontale Überläufe prüfen.
 
+### CWL: offene und verpasste Angriffe sind Hinweise, keine Strafen (05.11.2026)
+
+- Während eines laufenden Krieges **offene Angriffe in der letzten Stunde** im Live-Plan anzeigen, nur mit frisch abgerufenen, vollständig zugeordneten Roster-Tags und gültiger Endzeit. **Vor Kriegsende niemals „verpasst“ behaupten**; ein Angriff fünf Minuten vor Schluss ist weiterhin möglich.
+- Erst bei bestätigtem abgeschlossenen Krieg mit vollständigen eigenen und gegnerischen tatsächlichen Aufstellungen, Endzeit und API-Stand „verpasst“ ausgeben. Fehlende Daten nicht als Spielerfehler interpretieren.
+- Nach Kriegsende Hinweis auf notwendige **manuelle Entscheidung vor dem nächsten Krieg**. Keine automatische Pause, keine unerbetene Änderung von Tagesregeln, Einsatzzielen, Fix-Status, gespielten Tagen oder Aufstellungen. Clanwechsel und Saisonwechsel dürfen Hinweise nicht übernehmen.
+- Die App kann nicht selbst einen Spieler in Clash entfernen. Aktualisierung im offenen Browser ca. alle fünf Minuten, **keine garantierte Push-/Hintergrundüberwachung**; für kurzfristige Entscheidungen aktiv frisch laden. Ein später gemeldeter Angriff löscht den offenen Hinweis bei der nächsten erfolgreichen Abfrage.
+- Warnungen nicht als Pop-up oder weitere Kartenwand anzeigen, sondern dezent im bestehenden CWL-Überblick. Vervollständigter Krieg kann zur bereits bestehenden Archiv-/Missed-Statistik beitragen, ist aber keine automatische Disziplinarmaßnahme.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).

@@ -1,5 +1,5 @@
 {
   "version": "v1.15.3",
   "released": "2026-11-05",
-  "summary": "Transparente 30-/90-Tage-Formanalyse gegen dieselbe Rathausstufe mit Stichprobengröße, CWL/CW-Trennung und Datenqualität; korrigierte Zählung beim Historienimport. Bestehende Mitgliederquote und CWL-Plan unverändert."
+  "summary": "Vergleichbare Formstatistik (30/90 Tage) mit vorsichtiger, nach Stichprobengröße abgestufter Standardreihung; korrekte Missed-Importzählung und read-only CWL-Hinweise kurz vor oder nach Kriegsende. Keine automatischen Strafen oder Planänderungen."
 }

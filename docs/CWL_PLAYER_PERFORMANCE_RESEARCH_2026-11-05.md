@@ -162,3 +162,7 @@ Anschließend **Aggressivität** verstellbar (z. B. 0–100), aber als explizite
 - Alternative Drittanbieter-API: https://api.clashk.ing/swagger/index.html
 
 **Schluss:** Weniger Daten würden oft weniger aussagen — aber „so viele wie möglich“ ohne Kontext würde die Quote verzerren. Die richtige Richtung lautet: **große, provenance-geprüfte Historie + vergleichbare Attacken + starker Zeitbezug + separat gemessene Zuverlässigkeit + sichtbar ausgewiesene Unsicherheit**. Das verbessert später nicht nur die Mitgliederkarte, sondern die adaptiven CWL-Vorschläge.
+
+## 10. CWL versäumte Angriffe — Praxispräzisierung (05.11.2026)
+
+**Keine automatische Sperre oder Auswechslung nach vermisstem Angriff.** Eine frühere Idee, einen Spieler für den Rest der CWL zu pausieren, wurde aus der Praxis ausdrücklich verworfen: ein Spieler kann selbst fünf Minuten vor Ende noch angreifen. Außerdem ist der tatsächliche Wechsel immer in Clash manuell vorzunehmen. Deshalb zunächst nur: ca. letzte Stunde **offen**, nach vollständig abgeschlossenem Krieg **nachgewiesen verpasst**, vor dem nächsten Krieg bewusst prüfen. Kein Unreliable-Score im Planer ohne valide, vollständige Quellen. Die App bietet keine garantierten Background-Push-Nachrichten; fehlende API-Freshness unterdrückt kurzfristige Wechselhinweise.
