@@ -44,6 +44,15 @@
 - CW und CWL **getrennt** nach Quellenabdeckung darstellen; 30/30 vollständige normale CWs bleiben exakt, selbst wenn 21 von 22 CWL-Tagen keine vollständigen Aufstellungen haben.
 - Information dezent als Text unter den Statistik-KPIs und im bestehenden Spieler-Feld, nicht als zusätzliche Karte. Hinweise bleiben auch mobil lesbar; keine unnötige Änderung der 3★-/Ø-Sterne-Auswertung.
 
+### Transparente Leistungsanalyse bei kleinen Stichproben (05.11.2026)
+
+- Die **letzten sieben Angriffe** sind eine schnelle historische Vorschau, aber für eine belastbare aktuelle CWL-Stärke zu wenig: keine automatische Rangliste aus diesem Wert ableiten.
+- 30 Tage gleiches Rathaus und 90 Tage zeitgewichtete gleich-RH-Angriffe nur als **Beobachtungswerte** anbieten, inklusive CW/CWL-Anteile, effektiver Stichprobe, konkretem Zeitraum und Datenqualität. Mehr Daten sind nicht automatisch bessere Daten.
+- **Gleiches RH ist nicht dasselbe wie Mirror oder gleiche Baseausbaustufe**; fehlt die Position, nicht „Gegenüber“ behaupten. Sonderfälle Cleanup, gerushtes RH, neue Meta und fehlende Roster später getrennt erfassen.
+- Vergessene Angriffe zählen in eine unabhängige Zuverlässigkeitsbewertung, **nicht** als künstliche 0★ in eine HitRate. Importoberflächen nennen tatsächliche Anzahl versäumter Angriffe und Log-Zeilen separat.
+- Technisch beobachtete Quoten niemals als individuelle Erfolgswahrscheinlichkeiten oder Basis für automatische CWL-Wechsel verkaufen, bevor **chronologische Backtests** Gewichte und Kalibrierung nachgewiesen haben.
+- Die neue Analyse unter bestehenden Statistik-Inhalten als **einzige ausklappbare, rahmenlose Gruppe** platzieren; Mobile und alle Themes auf horizontale Überläufe prüfen.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).

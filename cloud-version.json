@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.2",
+  "version": "v1.15.3",
   "released": "2026-11-05",
-  "summary": "Vergessene Angriffe: CW/CWL-Datenabdeckung getrennt und nachvollziehbar, Sortierung nach nachgewiesenen Misses, keine falschen Nullwerte bei historischen CWL-Lücken."
+  "summary": "Transparente 30-/90-Tage-Formanalyse gegen dieselbe Rathausstufe mit Stichprobengröße, CWL/CW-Trennung und Datenqualität; korrigierte Zählung beim Historienimport. Bestehende Mitgliederquote und CWL-Plan unverändert."
 }

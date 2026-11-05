@@ -1,3 +1,5 @@
+CLOUD-RELEASE 05.11.2026 (v1.15.3): Neuer aufklappbarer Vergleich der Spielerstärke aus 30-Tage-gleich-RH-Angriffen und 90-Tage zeitgewichteter gleich-RH-Form, getrennt nach CWL/CW und mit Datenqualität. Historische Mirror-Positionen und First-Hit-Status fehlen; keine falsche Sicherheit. Mitgliederkarte behält 7-Angriffs-Rohwerte bis zum Backtest. Die Importbestätigung nennt tatsächliche verpasste Angriffe statt nur Log-Zeilen. Datenqualitätsaudit read-only: 52 Kriege/1187 Attacken/59 belegt, keine widersprüchlichen Angriffszahlen oder 3★ ohne 100 %, 21 historische CWL-Tage weiter ohne vollständigen Missed-Nachweis.
+
 CLOUD-RELEASE 05.11.2026 (v1.15.2): Statistik „Verpasst“ zeigt CW/CWL mit eigenständiger Datenabdeckung. Normal-CWs bleiben auch dann exakt, wenn importierte CWL-Missed-Logs lückenhaft sind; Spielerzeilen zeigen die Teilwerte. Fehlende CWL-Kriegsaufstellungen ergeben keine angeblich sichere 0 und Sortierung nutzt nachgewiesene Misses. Datenquelle/Exportoptionen unter docs/CLASHPERK_EXPORTS_AND_MISSED_COVERAGE.md. Keine DB-/Planer-/Spielerwertänderungen.
 
 CLOUD-RELEASE 05.11.2026 (v1.15.1): Auf Wunsch Zurück-Button in Mehr > Clan & Konto auf dem Smartphone wieder rechts oben. Ausführliche technische und fachliche Recherche für statistische Spielerbewertung in docs/CWL_PLAYER_PERFORMANCE_RESEARCH_2026-11-05.md. Statistikberechnung/Solver, CWL-Live, Cloudprofile und Supabase bleiben unverändert.
@@ -153,7 +155,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.2;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.3;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.

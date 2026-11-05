@@ -98,7 +98,7 @@ test("Missing or non-comparable data never creates fake strength, even with many
 test("Different player tags are never collapsed even when display names coincide",async()=>{
  const {computeComparableForm}=await core();
  const wars=[w("r1","normal","2026-11-01T12:00:00Z")];
- const attacks=[a("r1","#2PYL",2),a("r1","#8PY",3,{})];
+ const attacks=[a("r1","#2PYL",2),a("r1","#8PY",3)];
  const r=computeComparableForm(wars,attacks,{asOf:TIME});
  assert.equal(r.profiles.has("#2PYL"),true);
  assert.equal(r.profiles.has("#8PY"),true);

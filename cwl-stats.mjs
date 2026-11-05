@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.2";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.3";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.3";
 const $=id=>document.getElementById(id);
@@ -52,7 +52,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const recent=n?formPct(p.last30.hitRate)+" 3★ · Ø "+formStar(p.last30.averageStars):"Noch keine gleich-RH-Angriffe";
       const combined=p.last90.attacks?
         formPct(p.weighted90.hitRate)+" 3★ · Ø "+formStar(p.weighted90.averageStars)+
-        " · nₑₓₓ "+p.weighted90.effectiveAttacks.toLocaleString("de-AT"):
+        " · n_eff "+p.weighted90.effectiveAttacks.toLocaleString("de-AT"):
         "Keine vergleichbaren Angriffe";
       const breakdown="CWL "+p.cwl90.attacks+(p.cwl90.attacks?" · "+formPct(p.cwl90.hitRate):"")+
         " / CW "+p.normal90.attacks+(p.normal90.attacks?" · "+formPct(p.normal90.hitRate):"");

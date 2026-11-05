@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.15.2";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.15.2";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.15.3";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.15.3";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
