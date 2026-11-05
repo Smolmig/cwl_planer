@@ -63,6 +63,9 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
       const rows=document.getElementById("statsFormRows");
       guide.hidden=false;form.open=true;help.open=true;
       rows.innerHTML="<div class='stats-form-row'><div class='stats-form-person'><b>Very Long Player Name RH18</b><span class='stats-form-quality'>Wenig Daten</span><small>Keine belastbare Rang-Einordnung</small></div><div class='stats-form-results'><div class='stats-form-cell'><span>Letzte 30 Tage</span><strong>100 %</strong><small>2 von 2 Angriffen mit 3★</small></div><div class='stats-form-cell'><span>90-Tage-Trend</span><strong>87 %</strong><small>2 gleich-RH-Angriffe · neuere zählen stärker</small></div><small class='stats-form-breakdown'>CWL: 1 Angriff · normaler CW: 1 Angriff</small></div></div>";
+      const statsRows=document.getElementById("statsRows");
+      statsRows.innerHTML="<div class='stats-player-row'><div class='stats-player'><span class='stats-th'>RH18</span><div class='stats-name'><b>LongPlayerName</b></div></div><div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>100 %</strong><small class='stats-rate-avg'>Ø 3,00 ★</small></div><span class='stats-number'><small class='stats-mobile-label'>Angriffe</small>2</span><span class='stats-number stats-missed-cell'><small class='stats-mobile-label'>Verpasst</small><strong>k. A.</strong></span><small class='stats-form-score'>Vergleich: Wenig Daten · 2 gleich-RH-Angriffe</small><details class='stats-player-details'><summary>Letzte Kriege</summary></details></div>";
+      const playerRow=statsRows.querySelector(".stats-player-row");
       const rect=x=>x.getBoundingClientRect();
       const row=rows.querySelector(".stats-form-row"),results=row.querySelector(".stats-form-results");
       const panel=getComputedStyle(guide);
@@ -76,7 +79,12 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
        guideBorderLeft:panel.borderLeftWidth,
        headHeights:reads.map(x=>rect(x).height),
        mainText:parseFloat(getComputedStyle(document.querySelector(".stats-reading-copy")).fontSize),
-       methodVisible:form.open&&help.open&&guide.open
+       methodVisible:form.open&&help.open&&guide.open,
+       playerColumns:getComputedStyle(playerRow).gridTemplateColumns.split(" ").length,
+       mobileLabel:getComputedStyle(playerRow.querySelector(".stats-mobile-label")).display,
+       tableHead:getComputedStyle(document.querySelector(".stats-player-head")).display,
+       playerWidth:rect(playerRow).width,
+       playerChildren:[...playerRow.children].map(x=>rect(x).width)
       };
      },theme);
      const note=JSON.stringify({theme,width,metrics});
@@ -87,7 +95,16 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
      assert.ok(metrics.headHeights.every(n=>n>=43.5),note);
      assert.ok(metrics.mainText>=13,note);
      assert.equal(metrics.methodVisible,true,note);
-     if(width<=699)assert.ok(metrics.rowChildren.every(w=>w<=metrics.rowWidth+2),note);
+     if(width<=699){
+      assert.ok(metrics.rowChildren.every(w=>w<=metrics.rowWidth+2),note);
+      assert.equal(metrics.playerColumns,3,note);
+      assert.equal(metrics.mobileLabel,"block",note);
+      assert.equal(metrics.tableHead,"none",note);
+      assert.ok(metrics.playerChildren.every(w=>w<=metrics.playerWidth+2),note);
+     }else{
+      assert.equal(metrics.playerColumns,4,note);
+      assert.equal(metrics.mobileLabel,"none",note);
+     }
     }finally{await page.close()}
    }
   }
