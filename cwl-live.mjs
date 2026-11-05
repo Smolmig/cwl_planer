@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText } from "./cwl-live-core.mjs?v=1.15.2";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.15.2";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.15.3";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.15.3";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -282,9 +282,33 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       "Mehrfach angegriffene Ziele, fehlende Kriegsdaten und gespeicherte Stände werden vorsichtig behandelt."+
       (!fresh?" Stand ist gespeichert bzw. noch nicht frisch bestätigt.":"")+"</p>"+
       "<div class='cwl-medal-list'>"+medalRows+"</div>"+suggestionHtml+"</details>":"";
+    // Alert only from a fresh API snapshot, not an older cached league.
+    // No auto-pause, no schedule mutation, no pretended push notifications.
+    const attention=fresh?info.rounds
+      .filter(r=>!staleRoundDays.has(r.day))
+      .map(r=>cwlAttackReminder(r))
+      .filter(Boolean)
+      .filter(a=>a.kind==="open"||(a.day<ctx.profile.config.days&&
+        !["inWar","warEnded"].includes(info.rounds[a.day]?.state)))
+      .sort((a,b)=>Number(b.kind==="open")-Number(a.kind==="open")||b.day-a.day)[0]:null;
+    const attentionHtml=attention?(()=>{
+      const names=attention.players.slice(0,8).map(p=>esc(p.name)).join(", ")+
+        (attention.players.length>8?" und "+(attention.players.length-8)+" weitere":"");
+      return "<div class='cwl-attack-attention' data-kind='"+attention.kind+"'>"+
+        "<strong>"+(attention.kind==="open"?
+          "Tag "+attention.day+": "+attention.players.length+" Angriffe noch offen · "+
+          attention.minutesLeft+" Min. bis Kriegsende":
+          "Tag "+attention.day+": "+attention.players.length+" Angriffe nach Kriegsende nicht erfolgt")+
+        "</strong><span>"+names+"</span><small>"+
+        (attention.kind==="open"?
+          "Bitte in Clash prüfen und gegebenenfalls erinnern. Ein Angriff ist bis zum Ende noch möglich.":
+          "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden.")+
+        " Nur Hinweis, kein automatischer Wechsel. Stand aus Clash; bitte vor Entscheidungen aktualisieren."+
+        "</small></div>";
+    })():"";
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
-      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+medalHtml;
+      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml+medalHtml;
     if(medalFocused)node.querySelector(".cwl-medal-details>summary")?.focus({preventScroll:true});
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 

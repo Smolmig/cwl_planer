@@ -109,6 +109,8 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   memberTags=[],minAttacks=0,missedEvents=[]}={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});
   const lookup=new Map(selected.map(w=>[w.war_key,w]));
+  const lastTenWars=selected.slice(0,10);
+  const lastTenKeys=new Set(lastTenWars.map(w=>w.war_key));
   const chosen=attacks.filter(a=>lookup.has(a.war_key));
   const filtered=chosen.filter(a=>!sameHigher||
     Number.isInteger(a.attacker_th)&&Number.isInteger(a.defender_th)&&a.defender_th>=a.attacker_th);
@@ -122,7 +124,8 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   const players=new Map();
   function player(tag,name="",th=null){
     const key=cleanTag(tag);
-    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,starsTotal:0,missedKnown:0,missedKnownByType:{normal:0,cwl:0},participated:new Set()});
+    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,starsTotal:0,missedKnown:0,missedKnownByType:{normal:0,cwl:0},participated:new Set(),
+      lastTen:{attacks:0,threes:0,stars:0,missedKnown:0}});
     const p=players.get(key);
     if(!p.name&&name)p.name=name;
     if(p.th===null&&Number.isInteger(th))p.th=th;
@@ -131,6 +134,10 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   for(const w of selected)for(const a of filtered.filter(x=>x.war_key===w.war_key)){
     const p=player(a.attacker_tag,a.attacker_name,a.attacker_th);
     p.attacks++;p.starsTotal+=a.stars;if(a.stars===3)p.threes++;p.participated.add(w.war_key);
+    if(lastTenKeys.has(w.war_key)){
+      p.lastTen.attacks++;p.lastTen.stars+=a.stars;
+      if(a.stars===3)p.lastTen.threes++;
+    }
   }
   // Players who missed every attack still belong in the ranking, with no
   // fabricated hit-rate percentage.
@@ -155,6 +162,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     p.missedKnownByType[w.war_type]+=count;
     missedCoverage[w.war_type].missedKnown+=count;
     totalMissedKnown+=count;
+    if(lastTenKeys.has(w.war_key))p.lastTen.missedKnown+=count;
   }
   for(const w of selected){
     const coverage=missedCoverage[w.war_type];
@@ -189,6 +197,8 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     category.complete=category.wars>0&&category.coveredWars===category.wars;
   }
   const complete=selected.length>0&&selected.every(covered);
+  const lastTenCoveredWars=lastTenWars.filter(covered).length;
+  const lastTenComplete=lastTenWars.length>0&&lastTenCoveredWars===lastTenWars.length;
   const rows=[...players.values()].map(p=>({
     tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,
     hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,threes:p.threes,
@@ -196,6 +206,18 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     missed:complete?p.missedKnown:null,missedKnown:p.missedKnown,
     missedKnownByType:{...p.missedKnownByType},
     missedComplete:complete,
+    lastTen:{
+      wars:lastTenWars.length,
+      coveredWars:lastTenCoveredWars,
+      recordedParticipations:[...p.participated].filter(key=>lastTenKeys.has(key)).length,
+      attacks:p.lastTen.attacks,
+      threes:p.lastTen.threes,
+      hitRate:p.lastTen.attacks?Math.round(100*p.lastTen.threes/p.lastTen.attacks):null,
+      averageStars:p.lastTen.attacks?Math.round(100*p.lastTen.stars/p.lastTen.attacks)/100:null,
+      missedKnown:p.lastTen.missedKnown,
+      missed:lastTenComplete?p.lastTen.missedKnown:null,
+      missedComplete:lastTenComplete
+    },
     former:currentTags.size>0&&!currentTags.has(p.tag)
   })).filter(p=>p.attacks>=minAttacks&&(showFormer||!p.former))
     .sort((a,b)=>(b.hitRate??-1)-(a.hitRate??-1)||b.attacks-a.attacks||

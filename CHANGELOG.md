@@ -8,6 +8,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.15.3] - 2026-11-05
+
+### Spielerstatistik: vergleichbare aktuelle Form ohne falsche Genauigkeit
+- **30 Tage:** Im Statistik-Tab eine ausklappbare Vergleichsansicht mit beobachteter 3★-Quote, Ø Sternen und **Anzahl der Angriffe auf dasselbe Rathauslevel**. Erst 2–3 Messpunkte ergeben noch keine belastbare Stärke.
+- **90 Tage:** Ältere gleich-RH-Angriffe bleiben mit einer ausgewiesenen **Zeitgewichtung (30-Tage-Halbwertszeit)** sichtbar. Effektive Stichprobe und Datenqualität werden angezeigt; das ist ein beschreibender Wert, keine Erfolgsprognose.
+- **CWL gegen normale CWs:** Ausgewählte gleichwertige Angriffe werden nach Kriegsart und Quellherkunft getrennt. Niedrigere/höhere/fehlende Rathausstufen zählen **nicht** in die Vergleichsquote; deren Anzahl wird erklärt.
+- **Ehrliche Lücken:** Ob ein Angriff auf sein Gegenüber, gegen eine gerushte Basis oder als Cleanup erfolgte, ist für ältere Daten **nicht zuverlässig belegt** und wird nicht behauptet.
+- **Mitglieder:** Der Hilfetext erläutert zusätzlich die neue Form. Die bisherigen sieben letzten Angriffe und deren Sortierung bleiben solange unverändert, bis die Alternative chronologisch nachweislich besser ist.
+- **Importdialog:** Ein Import mit 44 Missed-Datensätzen und 59 verpassten Angriffen zeigt jetzt korrekt **59 tatsächliche versäumte Angriffe (44 Einträge)**.
+- **CWL-Angriffsprüfung:** In der letzten Stunde vor einem aktiven CWL-Kriegsende zeigt die App **noch offene Angriffe** als Hinweis. Erst nach vollständig bestätigtem Kriegsende nennt sie **tatsächlich verpasste** Angriffe und erinnert daran, die nächste Aufstellung bewusst in Clash zu prüfen. Wer kurz vor Ende angreift, verschwindet nach dem nächsten erfolgreichen API-Abgleich aus dem Hinweis. **Keine automatische Pause, kein Raus aus der Aufstellung, keine Änderung der Tagesregeln.**
+- **Grenze:** Hinweise nur bei frischen Clash-Daten, während die Web-App aktiv genutzt wird; 5-Minuten-Aktualisierung ist keine garantierte Sofort- oder Hintergrundbenachrichtigung.
+- **Datenschutz:** Nur lesende Analyse, keine Supabase-Migration, keine Änderung an Clanprofilen, CWL-Solver, Aufstellungen oder Offline-PWA.
+
 ## [1.15.2] - 2026-11-05
 
 ### Vergessene Angriffe eindeutig erklären

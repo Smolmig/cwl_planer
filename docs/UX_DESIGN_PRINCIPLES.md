@@ -44,6 +44,23 @@
 - CW und CWL **getrennt** nach Quellenabdeckung darstellen; 30/30 vollständige normale CWs bleiben exakt, selbst wenn 21 von 22 CWL-Tagen keine vollständigen Aufstellungen haben.
 - Information dezent als Text unter den Statistik-KPIs und im bestehenden Spieler-Feld, nicht als zusätzliche Karte. Hinweise bleiben auch mobil lesbar; keine unnötige Änderung der 3★-/Ø-Sterne-Auswertung.
 
+### Transparente Leistungsanalyse bei kleinen Stichproben (05.11.2026)
+
+- Die **letzten sieben Angriffe** sind eine schnelle historische Vorschau, aber für eine belastbare aktuelle CWL-Stärke zu wenig: keine automatische Rangliste aus diesem Wert ableiten.
+- 30 Tage gleiches Rathaus und 90 Tage zeitgewichtete gleich-RH-Angriffe nur als **Beobachtungswerte** anbieten, inklusive CW/CWL-Anteile, effektiver Stichprobe, konkretem Zeitraum und Datenqualität. Mehr Daten sind nicht automatisch bessere Daten.
+- **Gleiches RH ist nicht dasselbe wie Mirror oder gleiche Baseausbaustufe**; fehlt die Position, nicht „Gegenüber“ behaupten. Sonderfälle Cleanup, gerushtes RH, neue Meta und fehlende Roster später getrennt erfassen.
+- Vergessene Angriffe zählen in eine unabhängige Zuverlässigkeitsbewertung, **nicht** als künstliche 0★ in eine HitRate. Importoberflächen nennen tatsächliche Anzahl versäumter Angriffe und Log-Zeilen separat.
+- Technisch beobachtete Quoten niemals als individuelle Erfolgswahrscheinlichkeiten oder Basis für automatische CWL-Wechsel verkaufen, bevor **chronologische Backtests** Gewichte und Kalibrierung nachgewiesen haben.
+- Die neue Analyse unter bestehenden Statistik-Inhalten als **einzige ausklappbare, rahmenlose Gruppe** platzieren; Mobile und alle Themes auf horizontale Überläufe prüfen.
+
+### CWL: offene und verpasste Angriffe sind Hinweise, keine Strafen (05.11.2026)
+
+- Während eines laufenden Krieges **offene Angriffe in der letzten Stunde** im Live-Plan anzeigen, nur mit frisch abgerufenen, vollständig zugeordneten Roster-Tags und gültiger Endzeit. **Vor Kriegsende niemals „verpasst“ behaupten**; ein Angriff fünf Minuten vor Schluss ist weiterhin möglich.
+- Erst bei bestätigtem abgeschlossenen Krieg mit vollständigen eigenen und gegnerischen tatsächlichen Aufstellungen, Endzeit und API-Stand „verpasst“ ausgeben. Fehlende Daten nicht als Spielerfehler interpretieren.
+- Nach Kriegsende Hinweis auf notwendige **manuelle Entscheidung vor dem nächsten Krieg**. Keine automatische Pause, keine unerbetene Änderung von Tagesregeln, Einsatzzielen, Fix-Status, gespielten Tagen oder Aufstellungen. Clanwechsel und Saisonwechsel dürfen Hinweise nicht übernehmen.
+- Die App kann nicht selbst einen Spieler in Clash entfernen. Aktualisierung im offenen Browser ca. alle fünf Minuten, **keine garantierte Push-/Hintergrundüberwachung**; für kurzfristige Entscheidungen aktiv frisch laden. Ein später gemeldeter Angriff löscht den offenen Hinweis bei der nächsten erfolgreichen Abfrage.
+- Warnungen nicht als Pop-up oder weitere Kartenwand anzeigen, sondern dezent im bestehenden CWL-Überblick. Vervollständigter Krieg kann zur bereits bestehenden Archiv-/Missed-Statistik beitragen, ist aber keine automatische Disziplinarmaßnahme.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).
