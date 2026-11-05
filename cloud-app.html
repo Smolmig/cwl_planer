@@ -2606,6 +2606,44 @@ html[data-theme] #view-more-settings .latest-changelog{
 @media(prefers-reduced-motion:reduce){
   #view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary::before{transition:none}
 }
+
+/* Mobile stats: player identity and labelled numbers instead of unreadable 4 columns. */
+#view-stats .stats-mobile-label{display:none}
+#view-stats .stats-form-score{
+  grid-column:1/-1;display:block;min-width:0;margin:0;padding:3px 0 0;
+  text-align:left!important;font-size:11px;line-height:1.5;color:var(--muted);
+  overflow-wrap:anywhere;
+}
+@media(max-width:699px){
+  #view-stats .stats-player-table{border:0;border-radius:0;overflow:visible;background:transparent}
+  #view-stats .stats-player-head{display:none}
+  #view-stats .stats-player-row{
+    box-sizing:border-box;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,82px) minmax(0,88px);
+    gap:6px 10px;min-width:0;min-height:0;padding:13px 0;
+    border:0;border-top:1px solid var(--line);
+    border-radius:0;background:transparent;box-shadow:none;
+  }
+  #view-stats .stats-player-row:first-child{border-top:0}
+  #view-stats .stats-player{grid-column:1/-1;min-width:0}
+  #view-stats .stats-name b{font-size:14px;line-height:1.35;overflow-wrap:anywhere}
+  #view-stats .stats-hit-cell{grid-column:1;min-width:0;text-align:left!important}
+  #view-stats .stats-number:not(.stats-missed-cell){grid-column:2;min-width:0;text-align:right}
+  #view-stats .stats-missed-cell{grid-column:3;min-width:0;text-align:right}
+  #view-stats .stats-mobile-label{
+    display:block;font-size:10px;line-height:1.5;font-weight:650;color:var(--muted);
+    margin-bottom:4px;
+  }
+  #view-stats .stats-hit-cell>.stats-rate{display:block;font-size:16px;line-height:1.35}
+  #view-stats .stats-rate-avg{display:block;font-size:11px;margin-top:1px;white-space:nowrap}
+  #view-stats .stats-number{font-variant-numeric:tabular-nums;font-size:14px;font-weight:750}
+  #view-stats .stats-missed-cell strong{font-size:13px}
+  #view-stats .stats-form-score{grid-column:1/-1;white-space:normal;margin-top:1px;padding-top:6px}
+  #view-stats .stats-player-details{grid-column:1/-1}
+}
+@media(max-width:359px){
+  #view-stats .stats-player-row{grid-template-columns:minmax(0,1fr) minmax(0,72px) minmax(0,80px);gap:5px 7px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
