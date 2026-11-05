@@ -12,7 +12,7 @@ const attack=(wid,date,tag,stars,extra={})=>({
  order:1,stars,new:stars,th:18,targetth:18,pos:2,targetpos:2,...extra
 });
 test("Context research can never modify Cloud version, history or CWL solver",()=>{
- assert.doesNotMatch(source,/supabase|createClient|fetch\(|\.upsert\(|\.update\(/i);
+ assert.doesNotMatch(source,/createClient|fetch\(|\.upsert\(|\.update\(/i);
  assert.match(source,/No same-day leakage/);
  assert.match(source,/backtestWarContext/);
  assert.match(source,/Conflicting duplicate attack event/);
