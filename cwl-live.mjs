@@ -265,7 +265,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       " / 8 ★ · "+row.futureAttacks+" offen</span>"+
       "<span class='cwl-medal-row-state'>"+esc(memberStatus(row))+"</span></div>"
     ).join("")||"";
-    const suggestion=medal?.hasResults?
+    // Never suggest a Clash lineup change from cached or partially stale preparation data.
+    const suggestion=medal?.hasResults&&fresh&&!staleRoundDays.size?
       findReadOnlyMedalSwap({assessment:medal,profile:ctx.profile,snapshot:info,dayPlans:planned}):null;
     const suggestionHtml=suggestion?
       "<p class='cwl-medal-suggestion'><b>Unverbindliche Prüfidee – Tag "+suggestion.day+":</b> "+
