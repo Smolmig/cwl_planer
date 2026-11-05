@@ -2242,7 +2242,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
 .install-guide li{padding:4px 0}
 @media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
-/* v1.15.2: keep long member/statistics lists cheap on slower desktops.
+/* v1.15.3: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2267,7 +2267,7 @@ html[data-theme="arena"] body{background-attachment:scroll}
  #view-members .member-snapshot-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
 }
 
-/* v1.15.2 settings: one quiet desktop frame, unframed sections on phones.
+/* v1.15.3 settings: one quiet desktop frame, unframed sections on phones.
    Specificity deliberately outranks historic Arena/Cyber .settings-subcard styles. */
 #view-more-settings .more-settings-body{
  display:block;max-width:860px;min-width:0;padding:4px clamp(16px,2vw,26px);
@@ -2330,7 +2330,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
  }
 }
-/* v1.15.2 – action typography & touch audit.
+/* v1.15.3 – action typography & touch audit.
    Keep compact counters, status chips, icon-only controls and landscape-specific
    controls unchanged: only actual text actions use this responsive scale. */
 @media (min-width:700px) and (min-height:541px){
@@ -2387,7 +2387,7 @@ html[data-theme] #view-more-settings .latest-changelog{
  }
 }
 
-/* v1.15.2: Clan & Konto follows the same mobile header/back layout as Mehr. */
+/* v1.15.3: Clan & Konto follows the same mobile header/back layout as Mehr. */
 @media(max-width:699px){
  #view-account .account-page-head{
   display:flex;flex-direction:column;align-items:stretch;gap:12px;
@@ -2426,7 +2426,7 @@ html[data-theme] #view-more-settings .latest-changelog{
  .cwl-medal-row{grid-template-columns:minmax(0,1fr) auto;gap:6px 8px}
  .cwl-medal-row-state{grid-column:1/-1;max-width:none;text-align:left}
 }
-/* v1.15.2: preferred mobile account navigation.
+/* v1.15.3: preferred mobile account navigation.
    Unlike the other More subpages, Clan & Konto intentionally keeps its back
    control in the top-right, but never overlays the title or body text. */
 @media(max-width:699px){
@@ -2441,13 +2441,38 @@ html[data-theme] #view-more-settings .latest-changelog{
   text-align:center;max-width:42%;
  }
 }
-/* v1.15.2: Missed attacks require CW/CWL coverage context, not a fake 0.
+/* v1.15.3: Missed attacks require CW/CWL coverage context, not a fake 0.
    Compact source lines stay in the existing stats column; never new nested cards. */
 .stats-missed-coverage{font-size:12px;line-height:1.5;color:var(--muted);margin:9px 0 12px}
 .stats-missed-cell{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .stats-missed-cell strong{font-size:11px;line-height:1.3;font-weight:750}
 .stats-missed-cell small{display:block;max-width:100%;font-size:10px;line-height:1.25;color:var(--muted);overflow-wrap:break-word}
 .stats-missed-cell.warn small{color:var(--muted)}
+
+/* v1.15.3: Comparable form is a disclosure within the existing stats
+   section, not a second nested card. Real attack samples, no fake ranking. */
+.stats-form-panel{margin:20px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
+.stats-form-panel>summary{display:flex;align-items:center;justify-content:space-between;
+ gap:8px;cursor:pointer;min-height:44px;font-size:14px;line-height:1.35;font-weight:780;color:var(--text)}
+.stats-form-panel>summary::marker{font-size:12px}
+.stats-form-panel>summary span{font-size:11px;font-weight:700;color:var(--muted)}
+.stats-form-panel>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.stats-form-rows{min-width:0}
+.stats-form-row{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.6fr);
+ gap:14px;border-top:1px solid var(--line);padding:13px 0;align-items:start;
+ font-size:12px;line-height:1.5}
+.stats-form-person{min-width:0;overflow-wrap:anywhere}
+.stats-form-person b{display:block;font-size:13px;color:var(--text)}
+.stats-form-person small,.stats-form-results small{display:block;font-size:11px;
+ color:var(--muted);line-height:1.5;margin-top:3px}
+.stats-form-results{display:grid;gap:8px;min-width:0}
+.stats-form-results strong{font-size:13px;font-weight:790;color:var(--text)}
+.stats-form-results span{font-size:12px;color:var(--text)}
+@media(max-width:699px){
+ .stats-form-row{grid-template-columns:1fr;gap:7px}
+ .stats-form-results{gap:7px}
+ .stats-form-panel>summary{font-size:13px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2724,11 +2749,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.2</strong><span>Vergessene Angriffe transparent</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.3</strong><span>Vergleichbare Spielerform</span></div>
       <ul>
-       <li><b>Missed Attacks:</b> CW und CWL mit getrennten bestätigten Zahlen und Datenabdeckung.</li>
-       <li><b>Spieler:</b> „Verpasst“ lässt sich nach belegten Ausfällen sortieren – auch wenn alte CWL-Daten lückenhaft sind.</li>
-       <li><b>Fairness:</b> Keine erfundenen 0 verpassten Angriffe; Sternequote und bestehende Aufstellungen bleiben unverändert.</li>
+       <li><b>Formanalyse:</b> CWL/CW gegen gleiches Rathaus über 30 und 90 Tage separat nachvollziehen.</li>
+       <li><b>Transparenz:</b> Stichprobe, aktuelle Ergebnisse, ältere Angriffe und unvollständige Gegnerdaten sichtbar.</li>
+       <li><b>Import:</b> Tatsächliche Zahl versäumter Angriffe statt bloßer Log-Zeilen. CWL-Pläne unverändert.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2765,7 +2790,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
-    <div class="statusline">Bester Spieler (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
+    <div class="statusline">Höchste rohe 3★-Quote (ab 5 Angriffen): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
     <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">3★-Hit-Rate: Anteil der Angriffe mit drei Sternen. Ø Sterne: durchschnittlich erreichte Sterne pro Angriff.</p>
@@ -2782,6 +2807,12 @@ html[data-theme] #view-more-settings .latest-changelog{
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
     <p class="stats-note" id="statsMissingNote" hidden></p>
+    <details class="stats-form-panel" id="statsFormDetails">
+      <summary>Vergleichbare Form · 30 / 90 Tage <span>Testansicht</span></summary>
+      <p class="stats-note" id="statsFormIntro">Gleichwertige RH-Angriffe werden geladen …</p>
+      <div id="statsFormRows" class="stats-form-rows" aria-live="polite"></div>
+      <p class="stats-note">Diese Werte berücksichtigen nur Angriffe gegen dieselbe Rathausstufe. Die Basisnummer, Erstangriff und der Ausbaustand sind historisch nicht sicher bekannt. Der bestehende 7-Angriffs-Wert der Mitgliederliste bleibt unverändert.</p>
+    </details>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
     <p class="stats-asset-credit">Rathausbilder: <a href="https://github.com/ClashKingInc/ClashKingAssets" target="_blank" rel="noopener noreferrer">ClashKingAssets</a> · inoffizielle Fan-App, nicht von Supercell unterstützt.</p>
@@ -3074,9 +3105,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.2"></script>
+<script src="./cwl-planning-core.js?v=1.15.3"></script>
 <script>
-const APP_VERSION="v1.15.2";
+const APP_VERSION="v1.15.3";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3737,6 +3768,22 @@ function openMemberConfigHelp(m){
     paragraphs.push("Sortierung nach Kriegs-Startdatum und Angriffsreihenfolge. Einzelne Angriffszeitpunkte sind nicht gespeichert. Ein vergessener Angriff wird nicht als 0★-Angriff dazugerechnet.");
     if(stats.oldestWar&&stats.newestWar)paragraphs.push("Kriegsdaten von "+new Date(stats.oldestWar).toLocaleDateString("de-AT")+" bis "+new Date(stats.newestWar).toLocaleDateString("de-AT")+".");
   }
+  const comparable=m.playerTag?window.CWLCloudStats?.getComparablePlayerStats?.(m.playerTag):null;
+  if(window.CWLCloud?.active&&comparable){
+    if(comparable.last30.attacks){
+      paragraphs.push("Zusätzliche Formanalyse (nur gleiche Rathausstufe, letzte 30 Tage): "+
+        comparable.last30.attacks+" Angriffe · "+
+        comparable.last30.hitRate+" % mit 3★ · Ø "+
+        comparable.last30.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★.");
+    }else paragraphs.push("Formanalyse: Keine vergleichbaren Angriffe aus den letzten 30 Tagen belegt.");
+    if(comparable.last90.attacks)paragraphs.push(
+      "90 Tage zeitgewichtet: "+comparable.weighted90.hitRate+" % 3★ · Ø "+
+      comparable.weighted90.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+
+      " ★ · "+comparable.last90.attacks+" Angriffe (CWL "+comparable.cwl90.attacks+
+      ", normale CW "+comparable.normal90.attacks+"). Beobachtungswerte, keine Prognose."
+    );
+    paragraphs.push("Wichtig: „gleiches RH“ beweist nicht, dass der Spieler auf sein Mirror oder als erster auf die Basis angegriffen hat. Die Datenqualität bleibt eingeschränkt.");
+  }
   for(const line of paragraphs){const p=document.createElement("p");p.textContent=line;host.append(p)}
   openModal("memberConfigHelpModal");
 }
@@ -4189,6 +4236,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.2"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.3"></script>
 </body>
 </html>
