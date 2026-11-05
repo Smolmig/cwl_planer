@@ -2551,6 +2551,99 @@ html[data-theme] #view-more-settings .latest-changelog{
   #view-summary .summary-compact-name>b{font-size:13px}
   #view-summary .summary-compact-meta{font-size:11px}
 }
+/* Statistics UX: make observed results primary, evidence secondary, methodology optional. */
+#view-stats .stats-reading-copy{
+  font-size:13px;line-height:1.6;color:var(--text);margin:4px 0 9px;
+}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide){
+  margin:10px 0 14px;padding:0;border:0;border-top:1px solid var(--line);
+  border-radius:0;background:transparent;box-shadow:none;
+  font-size:12px;line-height:1.6;color:var(--muted);
+}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary{
+  display:flex;align-items:center;gap:9px;cursor:pointer;min-height:44px;
+  padding:8px 2px;font-size:13px;line-height:1.35;font-weight:750;color:var(--text);
+  list-style:none;
+}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary::-webkit-details-marker{display:none}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary::before{
+  content:"›";display:inline-block;width:14px;flex:none;color:var(--primary);
+  font-size:21px;font-weight:400;line-height:1;transition:transform .15s ease;
+}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)[open]>summary::before{transform:rotate(90deg)}
+#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>p{margin:5px 0 10px;overflow-wrap:anywhere}
+#view-stats .stats-coverage-guide a{color:var(--primary);text-underline-offset:2px}
+#view-stats .stats-form-panel{margin-top:19px;padding-top:9px}
+#view-stats .stats-form-panel>summary{font-size:14px;letter-spacing:-.01em}
+#view-stats .stats-form-row{
+  display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.6fr);
+  align-items:start;gap:10px 22px;padding:15px 0;border-top:1px solid var(--line);
+  background:transparent;box-shadow:none;
+}
+#view-stats .stats-form-person b{font-size:14px;line-height:1.4}
+#view-stats .stats-form-quality{display:inline-block;font-size:11px;font-weight:750;
+  line-height:1.4;color:var(--text);margin-top:4px}
+#view-stats .stats-form-person small{line-height:1.45;margin-top:5px}
+#view-stats .stats-form-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 15px}
+#view-stats .stats-form-cell{min-width:0}
+#view-stats .stats-form-cell>span{display:block;font-size:11px;font-weight:750;color:var(--muted);line-height:1.4}
+#view-stats .stats-form-cell>strong{display:block;font-size:18px;font-weight:800;line-height:1.4;
+  font-variant-numeric:tabular-nums;margin-top:2px;letter-spacing:-.025em;color:var(--text)}
+#view-stats .stats-form-cell>small{font-size:11px;line-height:1.5;margin-top:3px}
+#view-stats .stats-form-breakdown{grid-column:1/-1;font-size:11px;color:var(--muted);line-height:1.5}
+#view-stats .stats-form-score{font-size:11px;line-height:1.5;margin-top:4px}
+#view-stats .stats-rate{color:var(--text)}
+#view-stats .stats-rate.great{color:var(--text)}
+@media(max-width:699px){
+  #view-stats .stats-form-row{grid-template-columns:minmax(0,1fr);gap:10px}
+  #view-stats .stats-form-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  #view-stats .stats-form-cell>strong{font-size:16px}
+}
+@media(max-width:359px){
+  #view-stats .stats-form-results{gap:8px}
+  #view-stats .stats-form-cell>strong{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  #view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary::before{transition:none}
+}
+
+/* Mobile stats: player identity and labelled numbers instead of unreadable 4 columns. */
+#view-stats .stats-mobile-label{display:none}
+#view-stats .stats-form-score{
+  grid-column:1/-1;display:block;min-width:0;margin:0;padding:3px 0 0;
+  text-align:left!important;font-size:11px;line-height:1.5;color:var(--muted);
+  overflow-wrap:anywhere;
+}
+@media(max-width:699px){
+  #view-stats .stats-player-table{border:0;border-radius:0;overflow:visible;background:transparent}
+  #view-stats .stats-player-head{display:none}
+  #view-stats .stats-player-row{
+    box-sizing:border-box;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,82px) minmax(0,88px);
+    gap:6px 10px;min-width:0;min-height:0;padding:13px 0;
+    border:0;border-top:1px solid var(--line);
+    border-radius:0;background:transparent;box-shadow:none;
+  }
+  #view-stats .stats-player-row:first-child{border-top:0}
+  #view-stats .stats-player{grid-column:1/-1;min-width:0}
+  #view-stats .stats-name b{font-size:14px;line-height:1.35;overflow-wrap:anywhere}
+  #view-stats .stats-hit-cell{grid-column:1;min-width:0;text-align:left!important}
+  #view-stats .stats-number:not(.stats-missed-cell){grid-column:2;min-width:0;text-align:right}
+  #view-stats .stats-missed-cell{grid-column:3;min-width:0;text-align:right}
+  #view-stats .stats-mobile-label{
+    display:block;font-size:10px;line-height:1.5;font-weight:650;color:var(--muted);
+    margin-bottom:4px;
+  }
+  #view-stats .stats-hit-cell>.stats-rate{display:block;font-size:16px;line-height:1.35}
+  #view-stats .stats-rate-avg{display:block;font-size:11px;margin-top:1px;white-space:nowrap}
+  #view-stats .stats-number{font-variant-numeric:tabular-nums;font-size:14px;font-weight:750}
+  #view-stats .stats-missed-cell strong{font-size:13px}
+  #view-stats .stats-form-score{grid-column:1/-1;white-space:normal;margin-top:1px;padding-top:6px}
+  #view-stats .stats-player-details{grid-column:1/-1}
+}
+@media(max-width:359px){
+  #view-stats .stats-player-row{grid-template-columns:minmax(0,1fr) minmax(0,72px) minmax(0,80px);gap:5px 7px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2827,7 +2920,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.4</strong><span>Einsatzübersicht auf Mobilgeräten</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.5</strong><span>Statistik verständlicher & CWL-Daten</span></div>
       <ul>
        <li><b>Formanalyse:</b> CWL/CW gegen gleiches Rathaus über 30 und 90 Tage separat nachvollziehen.</li>
        <li><b>Transparenz:</b> Stichprobe, aktuelle Ergebnisse, ältere Angriffe und unvollständige Gegnerdaten sichtbar.</li>
@@ -2844,7 +2937,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
-    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">So erfolgreich und zuverlässig greift euer Clan an.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">Angriffe, Sterne und Zuverlässigkeit – aus den Kriegen, die tatsächlich erfasst wurden.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
       <div class="field"><label id="statsPeriodLabel">Zeitraum</label>
@@ -2868,28 +2961,40 @@ html[data-theme] #view-more-settings .latest-changelog{
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
-    <div class="statusline">Beste belegte Form (vorläufig, gleiches RH): <strong id="statsBestPlayer">–</strong></div>
   </div>
   <div class="card stats-table-card">
-    <div class="section-title"><h3>Spieler</h3></div><p class="stats-note">3★-Quote und Ø Sterne zeigen den Anteil der Dreisterne-Angriffe und durchschnittlich erreichte Sterne pro Angriff als <strong>tatsächliche Rohwerte</strong>. Die Standard-Reihung „Vergleichbare Form“ berücksichtigt nur Angriffe gegen dasselbe RH aus den letzten 90 Tagen und stuft kleine Stichproben zurück. Das ist noch keine genaue Vorhersage der Spielerstärke.</p>
+    <div class="section-title"><h3>Spieler im Vergleich</h3></div>
+    <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Kriegszeitraum. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
+    <details class="stats-explain" id="statsExplain"><summary>Wie wird hier sortiert?</summary>
+      <p>Standardmäßig stehen Spieler mit belegter aktueller Form oben. Dafür betrachtet die App nur Angriffe auf die <strong>gleiche Rathausstufe</strong>, gewichtet neuere Ergebnisse stärker und berücksichtigt, wie viele Angriffe vorliegen. Spieler mit sehr wenigen oder nur alten Vergleichsdaten werden nicht künstlich an die Spitze gesetzt.</p>
+      <p>Der Vergleich ist eine <strong>Orientierung, keine endgültige Rangliste</strong>: Ein gerushtes RH18, eine schwere Base, Mirror und Aufräumangriffe können wir historisch noch nicht sicher auseinanderhalten. Der RH-Filter darunter bezieht sich auf die Rohstatistik; der Formvergleich verwendet immer nur das gleiche RH.</p>
+    </details>
     <div class="stats-toggles">
       <label><input type="checkbox" id="statsSameTH"> Nur Angriffe gegen gleiches oder höheres RH</label>
       <label><input type="checkbox" id="statsFormer" checked> Ehemalige Spieler anzeigen</label>
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="performance" selected>Vergleichbare Form ↓</option><option value="hitRate">3★-Quote (roh) ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne (roh) ↓</option><option value="lastTen">Ø Sterne · letzte 10 Kriege ↓</option><option value="missed">Verpasst (belegt) ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="performance" selected>Aktuelle Form (mit Datenmenge)</option><option value="hitRate">3★-Quote (roh) ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne (roh) ↓</option><option value="lastTen">Ø Sterne · letzte 10 Kriege ↓</option><option value="missed">Verpasst (belegt) ↓</option><option value="name">Name</option></select></div>
     </div>
     <div class="stats-player-table" aria-label="Spielerstatistik">
-      <div class="stats-player-head"><span>Spieler</span><span>3★ / Form</span><span>Angriffe</span><span>Verpasst</span></div>
+      <div class="stats-player-head"><span>Spieler</span><span>3★-Quote</span><span>Angriffe</span><span>Verpasst</span></div>
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
-    <p class="stats-note" id="statsMissingNote" hidden></p>
+<p class="stats-note" id="statsMissingNote" hidden></p>
+    <details class="stats-coverage-guide" id="statsCoverageGuide" hidden>
+      <summary>Fehlende CWL-Angriffe mit ClashPerk belegen</summary>
+      <p>Für ältere CWL-Tage brauchen wir <strong>die tatsächliche Aufstellung jedes Tages</strong> und einen Nachweis, wer einen Angriff ausgelassen hat. ClashPerk bietet CWL-Missed-Attack- und Lineup-Change-Logs; nicht jeder alte Krieg ist rückwirkend vollständig verfügbar. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">Welche Logs es gibt</a>.</p>
+      <p>Bitte erst die Originaldaten je CWL-Tag prüfen, nicht fehlende Datensätze als null versäumte Angriffe zählen. Der normale Statistik-JSON-Import akzeptiert keine beliebigen Screenshots oder ClashPerk-Dateien direkt.</p>
+    </details>
     <details class="stats-form-panel" id="statsFormDetails">
-      <summary>Formanalyse · 30 / 90 Tage <span>Vorläufig</span></summary>
+      <summary>Angriffe gegen gleiches RH <span>30 / 90 Tage</span></summary>
       <p class="stats-note" id="statsFormIntro">Gleichwertige RH-Angriffe werden geladen …</p>
       <div id="statsFormRows" class="stats-form-rows" aria-live="polite"></div>
-      <p class="stats-note">Der Formwert ist eine vorsichtige Vergleichseinordnung (Wilson-Untergrenze mit zeitgewichteter Stichprobe, mindestens 5 effektive und 2 aktuelle Angriffe). Er ist keine geschätzte Erfolgswahrscheinlichkeit. Gleiche RH-Stufe bedeutet nicht gleiche Basisstärke, Mirror oder Erstangriff. Die Mitgliederliste bleibt vorerst unverändert.</p>
+<details class="stats-form-method" id="statsFormMethod"><summary>Wie entsteht die Form-Einordnung?</summary>
+        <p>Der Vergleich berücksichtigt nur Angriffe gegen dieselbe Rathausstufe. Für die <strong>letzten 30 Tage</strong> siehst du die unveränderte Trefferquote; beim <strong>90-Tage-Trend</strong> zählen neuere Angriffe stärker. Erst bei genügend aktuellen Vergleichsangriffen bekommt ein Spieler eine einordenbare Form.</p>
+        <p>Intern wird die Rangfolge vorsichtig nach Stichprobengröße korrigiert (Wilson-basierter Vergleichswert, mindestens fünf effektiv gewichtete und zwei aktuelle Angriffe). Dieser Wert ist <strong>keine vorhergesagte Dreisterne-Chance</strong> und deshalb bewusst nicht als 0–100-Punktzahl dargestellt. Gleiche RH-Stufe bedeutet nicht automatisch gleiche Basisschwierigkeit.</p>
+      </details>
     </details>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
@@ -3183,9 +3288,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.4"></script>
+<script src="./cwl-planning-core.js?v=1.15.5"></script>
 <script>
-const APP_VERSION="v1.15.4";
+const APP_VERSION="v1.15.5";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4314,6 +4419,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.4"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.5"></script>
 </body>
 </html>

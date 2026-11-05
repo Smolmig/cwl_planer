@@ -8,6 +8,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.15.5] - 2026-11-05
+
+### Statistik & Datentransparenz
+- **Einfache Erklärung statt irreführender Rangliste:** 2/2-Angriffe mit 100 % sind nicht dasselbe wie 40/60; 0–100-Formpunktzahl, technische n_eff-Hinweise und die vorläufige „Beste Form“-Auszeichnung aus der Hauptansicht entfernt.
+- **Angriffe gegen gleiches RH:** 30-Tage-Dreierquote, 90-Tage-Trend, Anzahl der Vergleichsangriffe, CW-/CWL-Quellanteile und Datenqualität als übersichtliche Listenzeilen. Methodik (Wilson und zeitgewichtete Stichprobe) nur auf Wunsch.
+- **Mobil besser:** Statt gequetschter Vier-Spalten-Tabelle Spielername und verständlich beschriftete Kennzahlen mit eigener Vergleichszeile; Desktop-Tabelle bleibt kompakt.
+- **Keine Leistungsabwertung nach Rohquote:** keine Rot-/Grün-Einfärbung als scheinbare Stärkeaussage. Vorläufiger Vergleich dient ausschließlich der Anzeige/Sortierung und verändert den CWL-Solver nicht.
+- **CWL-Historie:** Sichtbarer, aber optionaler ClashPerk-Hinweis nur bei unvollständiger CWL-Abdeckung; gesonderter Anfrageplan für 21 historische Kriegstage aus August–Oktober 2026.
+- **Sicher:** Datenformat 9, Cloud-Profile, Supabase, Rollen, gespielte Kriege, CWL-Aufstellungen, Archiv und Offline-PWA unverändert.
+
 ## [1.15.4] - 2026-11-05
 
 ### Mobile Einsatzverteilung

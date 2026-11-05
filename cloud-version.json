@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.4",
+  "version": "v1.15.5",
   "released": "2026-11-05",
-  "summary": "Mobile Einsatzverteilung mit lesbaren Suche-/Filter-Steuerelementen und ruhiger Listenansicht statt enger Einzelkarten. Planungs-, Cloud- und Offline-Daten unverändert."
+  "summary": "Statistik klarer erklärt mit Angriffsmengen, gleich-RH-Vergleich für 30/90 Tage und transparenter Datenqualität statt irreführender Formpunkte; mobil lesbare Spielerwerte und ClashPerk-Hinweis bei unvollständiger CWL-Historie. Keine Plan- oder Datenänderung."
 }
