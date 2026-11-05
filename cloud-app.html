@@ -2242,7 +2242,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
 .install-guide li{padding:4px 0}
 @media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
-/* v1.14.6: keep long member/statistics lists cheap on slower desktops.
+/* v1.14.7: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
 @supports (content-visibility:auto){
  #view-members #memberList>.member{content-visibility:auto;contain-intrinsic-size:auto 112px}
@@ -2265,6 +2265,55 @@ html[data-theme="arena"] body{background-attachment:scroll}
  }
  #view-members .member-snapshot{flex-wrap:wrap}
  #view-members .member-snapshot-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+}
+
+/* v1.14.7 settings: one quiet desktop frame, unframed sections on phones.
+   Specificity deliberately outranks historic Arena/Cyber .settings-subcard styles. */
+#view-more-settings .more-settings-body{
+ display:block;max-width:860px;min-width:0;padding:4px clamp(16px,2vw,26px);
+ background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+}
+html[data-theme="arena"] #view-more-settings .more-settings-body{
+ background:linear-gradient(150deg,#1b2227,#151a20 75%);border-color:#434b50;
+}
+html[data-theme="cyber"] #view-more-settings .more-settings-body{
+ background:linear-gradient(145deg,#0d1426,#090f1e);border-color:rgba(34,231,255,.30);
+}
+html[data-theme="cyberlight"] #view-more-settings .more-settings-body{
+ background:linear-gradient(145deg,#fff,#f5fbff);border-color:rgba(2,132,199,.22);
+}
+html[data-theme] #view-more-settings .more-settings-body>:is(.settings-subcard,#localProfileCard){
+ margin:0;padding:18px 0 22px;min-width:0;background:transparent;box-shadow:none;
+ border:0;border-bottom:1px solid var(--line);border-radius:0;
+}
+html[data-theme] #view-more-settings .more-settings-body>:is(.settings-subcard,#localProfileCard):last-child{
+ border-bottom:0;
+}
+html[data-theme] #view-more-settings .latest-changelog{
+ margin-top:12px;padding:12px 0 0!important;background:transparent;box-shadow:none;
+ border:0;border-top:1px solid var(--line);border-radius:0;
+}
+#view-more-settings .latest-changelog-head{flex-wrap:wrap}
+@media(max-width:699px){
+ html[data-theme] #view-more-settings .more-settings-body{
+  padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;
+ }
+ html[data-theme] #view-more-settings .more-settings-body>:is(.settings-subcard,#localProfileCard){
+  padding:14px 0 20px;
+ }
+}
+.install-platforms{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 18px}
+.install-platforms button{
+ min-height:44px;padding:10px 13px;border:1px solid var(--line);
+ border-radius:12px;background:var(--card);color:var(--text);font-weight:750;
+}
+.install-platforms button[aria-pressed="true"]{
+ border-color:var(--primary);background:var(--bluebg);color:var(--primary);
+}
+.install-platforms button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:520px){
+ .install-platforms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .install-platforms button{min-width:0}
 }
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
@@ -2448,7 +2497,7 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>Cloud-Planer zum Startbildschirm hinzufügen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
  </div>
  <div id="installSuggestion" class="install-suggestion" hidden>
@@ -2464,6 +2513,11 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button type="button" class="btn small more-detail-back" id="installBack">Zurück zu Mehr</button>
  </div>
  <div class="install-guide" id="installGuide" role="status">
+  <div class="install-platforms" id="installPlatforms" role="group" aria-label="Anleitung für Gerät auswählen">
+   <button type="button" data-install-platform="ios" aria-pressed="false">iPhone / iPad</button>
+   <button type="button" data-install-platform="android" aria-pressed="false">Android</button>
+   <button type="button" data-install-platform="desktop" aria-pressed="false">PC / Laptop</button>
+  </div>
   <h3 id="installGuideTitle">App zum Startbildschirm hinzufügen</h3>
   <p id="installGuideText">Öffne die Installationsfunktion deines Browsers.</p>
   <ol id="installGuideSteps"></ol>
@@ -2537,11 +2591,11 @@ html[data-theme="arena"] body{background-attachment:scroll}
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.14.6</strong><span>Aktuelles Logo auf allen Geräten</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.14.7</strong><span>Übersichtlichere Einstellungen</span></div>
       <ul>
-       <li><b>App-Symbol:</b> Das goldene CWL-Schild wird bei der Installation auf iPhone und Android angezeigt.</li>
-       <li><b>Teilen:</b> Geteilte Links erhalten eine einheitliche CWL-Planer-Vorschau.</li>
-       <li><b>Bedienung:</b> Dialoge schließen beim Markieren von Text nicht unbeabsichtigt.</li>
+       <li><b>Einstellungen:</b> Am PC ein gemeinsamer Rahmen, am Handy klar gegliederte, rahmenlose Abschnitte.</li>
+       <li><b>Installieren:</b> Anleitung für iPhone, Android und PC direkt auswählbar.</li>
+       <li><b>Themes:</b> Gold und Cyberpunk zeigen keine doppelten Inhaltsrahmen mehr.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2886,9 +2940,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.14.6"></script>
+<script src="./cwl-planning-core.js?v=1.14.7"></script>
 <script>
-const APP_VERSION="v1.14.6";
+const APP_VERSION="v1.14.7";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3797,33 +3851,46 @@ function cloudInstallEnvironment(){
  const installed=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
  return {ios,installed,android:/Android/i.test(agent)};
 }
+let installPlatformOverride=null;
 function renderInstallGuide(){
  const environment=cloudInstallEnvironment();
+ const platform=installPlatformOverride||(environment.ios?"ios":environment.android?"android":"desktop");
+ const alreadyInstalled=environment.installed&&!installPlatformOverride;
  const title=document.getElementById("installGuideTitle");
  const description=document.getElementById("installGuideText");
  const list=document.getElementById("installGuideSteps");
- const steps=environment.installed?[]:environment.ios
+ const steps=alreadyInstalled?[]:platform==="ios"
   ?["Die Cloud-Seite in Safari öffnen.",
     "Auf Teilen tippen und „Zum Home-Bildschirm hinzufügen“ wählen.",
     "„Als Web-App öffnen“ aktivieren und auf „Hinzufügen“ tippen."]
-  :environment.android
-  ?["Die Cloud-Seite in Chrome, Samsung Internet oder dem gewünschten Browser öffnen.",
-    "Im Browsermenü „Installieren“ oder „Zum Startbildschirm hinzufügen“ wählen.",
-    "„CWL Cloud“ starten und dich über „Clan & Konto“ anmelden."]
-  :["Im Browsermenü nach „App installieren“ oder „Verknüpfung erstellen“ suchen.",
-    "Die Cloud-App hinzufügen und über „Clan & Konto“ anmelden."];
- title.textContent=environment.installed?"App bereits installiert":environment.ios
-  ?"Zum Home-Bildschirm hinzufügen":environment.android?"Auf Android installieren":"App installieren";
- description.textContent=environment.installed
-  ?"Du verwendest die CWL Cloud bereits als eigenständige App. Keine weiteren Schritte nötig."
-  :environment.ios
+  :platform==="android"
+  ?["Die Cloud-Seite in Chrome, Samsung Internet oder Firefox auf Android öffnen.",
+    "Wenn der Browser „Installieren“ anbietet, kannst du die Meldung nutzen. Sonst im Browsermenü „Installieren“ oder „Zum Startbildschirm hinzufügen“ wählen.",
+    "„CWL Cloud“ vom Startbildschirm starten und dich unter „Clan & Konto“ anmelden."]
+  :["Die Cloud-Seite im Desktop-Browser öffnen.",
+    "Im Browsermenü „App installieren“ auswählen (falls angeboten) oder eine Verknüpfung erstellen.",
+    "Die Cloud-App starten und dich unter „Clan & Konto“ anmelden."];
+ for(const button of document.querySelectorAll("#installPlatforms [data-install-platform]")){
+  button.setAttribute("aria-pressed",String(button.dataset.installPlatform===platform));
+ }
+ title.textContent=alreadyInstalled?"App bereits installiert":platform==="ios"
+  ?"Zum Home-Bildschirm hinzufügen":platform==="android"?"Auf Android installieren":"Am Computer installieren";
+ description.textContent=alreadyInstalled
+  ?"Du verwendest die CWL Cloud bereits als eigenständige App. Wähle oben ein Gerät, um eine andere Installationsanleitung zu sehen."
+  :platform==="ios"
   ?"Auf iPhone und iPad gibt es keinen automatischen Installationsdialog. Die Einrichtung erfolgt einmal über das Teilen-Menü."
-  :environment.android
-  ?"Viele Android-Browser schlagen die Installation selbst vor. Im Browsermenü geht es auch jederzeit manuell."
-  :"Je nach Browser ist die Installation direkt oder über das Browsermenü möglich.";
+  :platform==="android"
+  ?"Viele Android-Browser bieten die Installation automatisch an. Auch ohne diese Meldung geht es über das Browsermenü; die Bezeichnung kann variieren."
+  :"Je nach Desktop-Browser ist eine direkte Installation oder eine Verknüpfung möglich.";
  list.replaceChildren(...steps.map(step=>{const item=document.createElement("li");item.textContent=step;return item}));
- list.hidden=environment.installed;
+ list.hidden=alreadyInstalled;
 }
+document.getElementById("installPlatforms").addEventListener("click",event=>{
+ const button=event.target.closest("button[data-install-platform]");
+ if(!button)return;
+ installPlatformOverride=button.dataset.installPlatform;
+ renderInstallGuide();
+});
 function updateCloudInstallSuggestion(){
  const hint=document.getElementById("installSuggestion");
  const environment=cloudInstallEnvironment();
@@ -3988,6 +4055,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.14.6"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.14.7"></script>
 </body>
 </html>
