@@ -1,3 +1,4 @@
+CLOUD-RELEASE 05.11.2026 (v1.15.5): Spielerstatistik übersichtlicher, nachvollziehbarere Formwerte nach 30/90 Tagen und belegter Stichprobe statt pseudoexaktem 0–100-Index; keine voreilige Auszeichnung des „besten“ Spielers. Auf Mobilgeräten klar beschriftete Kennzahlen in lesbaren Zeilen. Bei alten CWL-Lücken gezielte ClashPerk-Hilfe; 21 alte Kriegstage August–Oktober bleiben ohne vollständigen Nachweis. Rein lesend, keine Datenformatänderung, kein Umbau des Planers.
 CLOUD-RELEASE 05.11.2026 (v1.15.4): Mobile Einsatzverteilung überarbeitet. Suche/Filter auf schmalen Smartphones einzeln und lesbarer, Einsätze als ruhige Zeilen mit Trennlinien statt eng gerahmter Karten. Desktop und CWL-Planungslogik unverändert, keinerlei Datenmigration. 
 CLOUD-RELEASE 05.11.2026 (v1.15.3): Neuer aufklappbarer Vergleich der Spielerstärke aus 30-Tage-gleich-RH-Angriffen und 90-Tage zeitgewichteter gleich-RH-Form, getrennt nach CWL/CW und mit Datenqualität. Historische Mirror-Positionen und First-Hit-Status fehlen; keine falsche Sicherheit. Mitgliederkarte behält 7-Angriffs-Rohwerte bis zum Backtest. Die Importbestätigung nennt tatsächliche verpasste Angriffe statt nur Log-Zeilen. CWL Live zeigt offene Angriffe in der letzten Stunde vor Kriegsende und gesicherte Versäumnisse erst nach einem vollständigen, endgültigen Kriegsstand. Keine automatische saisonale Pause oder Änderung der nächsten Lineups; manuelle Clash-Aufstellung bleibt verbindlich. Datenqualitätsaudit read-only: 52 Kriege/1187 Attacken/59 belegt, keine widersprüchlichen Angriffszahlen oder 3★ ohne 100 %, 21 historische CWL-Tage weiter ohne vollständigen Missed-Nachweis.
 
@@ -156,7 +157,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.4;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.5;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
