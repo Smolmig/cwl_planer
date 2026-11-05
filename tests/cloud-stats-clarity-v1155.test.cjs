@@ -37,7 +37,7 @@ test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL
  assert.match(html,/keine beliebigen Screenshots/);
  assert.match(ui,/guide\.hidden=!\(cwl\.wars>0&&!cwl\.complete\)/);
  assert.match(ui,/if\(guide\.hidden\)guide\.open=false/);
- assert.match(ui,/displayMissed\(known,complete\)=>complete\?String\(known\)/);
+ assert.match(ui,/displayMissed=\(known,complete\)=>complete\?String\(known\)/);
  assert.match(ui,/computeComparableForm\(selection,attacks\)/);
  assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
 });
@@ -61,7 +61,7 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
       const form=document.getElementById("statsFormDetails");
       const guide=document.getElementById("statsCoverageGuide");
       const rows=document.getElementById("statsFormRows");
-      guide.hidden=false;form.open=true;help.open=true;
+      guide.hidden=false;form.open=true;help.open=true;guide.open=true;
       rows.innerHTML="<div class='stats-form-row'><div class='stats-form-person'><b>Very Long Player Name RH18</b><span class='stats-form-quality'>Wenig Daten</span><small>Keine belastbare Rang-Einordnung</small></div><div class='stats-form-results'><div class='stats-form-cell'><span>Letzte 30 Tage</span><strong>100 %</strong><small>2 von 2 Angriffen mit 3★</small></div><div class='stats-form-cell'><span>90-Tage-Trend</span><strong>87 %</strong><small>2 gleich-RH-Angriffe · neuere zählen stärker</small></div><small class='stats-form-breakdown'>CWL: 1 Angriff · normaler CW: 1 Angriff</small></div></div>";
       const statsRows=document.getElementById("statsRows");
       statsRows.innerHTML="<div class='stats-player-row'><div class='stats-player'><span class='stats-th'>RH18</span><div class='stats-name'><b>LongPlayerName</b></div></div><div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>100 %</strong><small class='stats-rate-avg'>Ø 3,00 ★</small></div><span class='stats-number'><small class='stats-mobile-label'>Angriffe</small>2</span><span class='stats-number stats-missed-cell'><small class='stats-mobile-label'>Verpasst</small><strong>k. A.</strong></span><small class='stats-form-score'>Vergleich: Wenig Daten · 2 gleich-RH-Angriffe</small><details class='stats-player-details'><summary>Letzte Kriege</summary></details></div>";
