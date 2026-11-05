@@ -1,3 +1,5 @@
+CLOUD-RELEASE 05.11.2026 (v1.15.0): Mobil-Layout des Zurück-Buttons in Clan & Konto vereinheitlicht. Read-only 8★-Fortschritt in aktiver CWL, konservative Datenlückenbehandlung und unverbindliche Wechselhinweise für einen faireren regulären Ligamedaillenanteil; keine Änderungen am Solver oder Cloud-Datenformat.
+
 CLOUD-RELEASE 05.11.2026 (v1.14.8): Button-Schriften in Handlungsbereichen vereinheitlicht (mobil i.d.R. 13px, Bottomnav 11–12px statt 9px), wichtige Touch-Flächen auf mindestens 44px erhöht. Desktop-Sekundäraktionen lesbarer; bewusst kompakte Icons, Tabellen/Badges und Landschaftsmodus bleiben erhalten. Keine Cloud-/CWL-Datenänderung.
 
 CLOUD-RELEASE 05.11.2026 (v1.14.7): Einheitliche Einstellungsansichten (ein Desktop-Rahmen, offene Mobilabschnitte) in allen Themes; iPhone-, Android- und PC-Installationshinweise direkt auswählbar. Ohne Eingriff in CWL-/Cloud-Daten und Installationsidentitäten.
@@ -147,7 +149,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.14.8;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.0;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
