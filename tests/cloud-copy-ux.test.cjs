@@ -9,7 +9,7 @@ const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 test("Cloud user-facing text is consistent with the statistics and actual features",()=>{
  const html=read("cloud-app.html");
  assert.match(html,/<option value="hitRate">3★-Quote \(roh\) ↓<\/option>/);
- assert.match(html,/<option value="performance" selected>Aktuelle Form \(mit Datenmenge\)<\/option>/);
+ assert.match(html,/<option value="performance" selected>Formvergleich \(90 Tage, gleiche RH\)<\/option>/);
  assert.match(html,/2 von 2 ergeben 100 %/);
  assert.match(html,/durchschnittlich erreichte Sterne pro Angriff/);
  assert.match(html,/<span>Verpasst<\/span>/);
