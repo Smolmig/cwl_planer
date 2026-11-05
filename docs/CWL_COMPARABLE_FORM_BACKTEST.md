@@ -44,6 +44,18 @@ node --test tests/cwl-comparable-backtest.test.cjs
 
 Brier kleiner = bessere mittlere quadratische Abweichung, Log-Loss kleiner = bessere Vorhersage in diesem historischen Test. Kalibrierung über Zeit, mehrere Clans, RH- und Meta-Wechsel und Unsicherheit müssen zusätzlich geprüft werden.
 
+## Erste read-only Auswertung: United Fighters, 05.11.2026
+
+Eine separate aggregierte Gegenprüfung auf dem vorhandenen Supabase-Statistikbestand (ohne Datenänderung) lieferte **52 Kriege, 1.187 Angriffe**, davon 1.004 spätere Angriffe gegen dasselbe RH. Bei 41 davon lagen keine historischen Vergleichswerte vor. Die drei Hauptmodelle konnten für **951 exakt gleiche Testangriffe** ausgewertet werden.
+
+| Modell | Brier (951 identische Testangriffe) | Log-Loss |
+| --- | ---: | ---: |
+| Last 7 | 0,1990 | 0,5864 |
+| 30 Tage, gleiches RH | 0,1963 | 0,5801 |
+| 90 Tage, gleiches RH, zeitgewichtet | **0,1943** | **0,5751** |
+
+Für die **279 CWL-Angriffe** innerhalb derselben gemeinsamen Testauswahl lauten die Brier-Werte 0,1950 / 0,1894 / **0,1848**. Der Effekt ist im historischen Sample klein, und die Testangriffe sind nach Spieler/Krieg korreliert. **Das ist keine statistische Signifikanz, keine kalibrierte Erfolgswahrscheinlichkeit und keine automatische Spieler-Rangfolge.** Weitere zeitgetrennte Testperioden, Konfidenzprüfung und Datenvalidierung stehen noch aus. Auch dieses Ergebnis darf nicht zur stillen Anpassung des Live-CWL-Solvers verwendet werden.
+
 ## Bekannte Grenzen & nächste Schritte
 
 - Gleiche Rathausstufe heißt **nicht** gleich schwere Base. Mirror, Cleanup/First-Hit, Angriffszeitpunkt und historischen Map-Kontext kennen wir nicht sicher.
