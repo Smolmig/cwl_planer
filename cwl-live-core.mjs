@@ -71,6 +71,36 @@ export function canFinalize(round,expectedSlots,now=Date.now()) {
   }
   return true;
 }
+// Read-only supervision of CWL attack deadlines. This never modifies
+// player participation, future day rules, targets, locks or lineups. A player
+// who is still attacking 5 minutes before the end is NOT a missed attacker.
+export function cwlAttackReminder(round,now=Date.now(),windowMinutes=60){
+  if(!round?.available||!["inWar","warEnded"].includes(round.state)||
+     !Number.isFinite(now)||!Number.isFinite(windowMinutes)||windowMinutes<=0)return null;
+  const limit=round.teamSize,roster=round.clan?.members;
+  if(!Number.isInteger(limit)||limit<1||limit>50||!Array.isArray(roster)||
+     roster.length!==limit)return null;
+  const tags=roster.map(m=>tagOf(m?.tag));
+  if(tags.some(t=>!validTag(t))||new Set(tags).size!==limit)return null;
+  const players=roster.filter(m=>Array.isArray(m.attacks)&&m.attacks.length===0);
+  // Missing attacks arrays are incomplete data, not confirmed misses.
+  if(roster.some(m=>!Array.isArray(m.attacks))||!players.length)return null;
+  const end=clashTime(round.endTime);
+  if(!Number.isFinite(end))return null;
+  if(round.state==="inWar"){
+    const start=clashTime(round.startTime),remaining=end-now;
+    if(!Number.isFinite(start)||start>now||remaining<=0||
+       remaining>windowMinutes*60000)return null;
+    return {day:round.day,kind:"open",players:players.map(m=>({tag:tagOf(m.tag),
+      name:String(m.name||tagOf(m.tag)).slice(0,80)})),
+      minutesLeft:Math.ceil(remaining/60000),endTime:round.endTime};
+  }
+  if(!canFinalize(round,limit,now))return null;
+  return {day:round.day,kind:"confirmed",players:players.map(m=>({
+    tag:tagOf(m.tag),name:String(m.name||tagOf(m.tag)).slice(0,80)})),
+    minutesLeft:0,endTime:round.endTime};
+}
+
 // Read-only preview: the solver's recommended lineup is the source of truth.
 // Clash's preparation roster is provisional and must never silently change it.
 export function reviewPreparationLineup(profile,dayPlan,round,{planningOk=true}={}){
