@@ -10,7 +10,7 @@ test("Cloud user-facing text is consistent with the statistics and actual featur
  const html=read("cloud-app.html");
  assert.match(html,/<option value="hitRate">3★-Quote \(roh\) ↓<\/option>/);
  assert.match(html,/<option value="performance" selected>Vergleichbare Form ↓<\/option>/);
- assert.match(html,/3★-Quote und Ø Sterne sind die/);
+ assert.match(html,/3★-Quote und Ø Sterne zeigen/);
  assert.match(html,/<span>Verpasst<\/span>/);
  assert.doesNotMatch(html,/>Hit Rate</);
  assert.match(html,/auf bis zu sieben CWL-Kriegstage/);
