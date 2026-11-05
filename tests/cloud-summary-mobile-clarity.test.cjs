@@ -5,8 +5,8 @@ const fs=require("node:fs");
 const path=require("node:path");
 const {chromium}=require("playwright");
 const markup=fs.readFileSync(path.join(__dirname,"..","cloud-app.html"),"utf8")
- .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,"")
- .replace(/<link\\b[^>]*>/gi,"");
+ .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
+ .replace(/<link\b[^>]*>/gi,"");
 
 test("Einsatzverteilung uses readable, unboxed rows and full-width filters on small phones",{
  timeout:120000
