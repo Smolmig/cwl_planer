@@ -197,7 +197,8 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     category.complete=category.wars>0&&category.coveredWars===category.wars;
   }
   const complete=selected.length>0&&selected.every(covered);
-  const lastTenComplete=lastTenWars.length>0&&lastTenWars.every(covered);
+  const lastTenCoveredWars=lastTenWars.filter(covered).length;
+  const lastTenComplete=lastTenWars.length>0&&lastTenCoveredWars===lastTenWars.length;
   const rows=[...players.values()].map(p=>({
     tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,
     hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,threes:p.threes,
@@ -207,6 +208,8 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     missedComplete:complete,
     lastTen:{
       wars:lastTenWars.length,
+      coveredWars:lastTenCoveredWars,
+      recordedParticipations:[...p.participated].filter(key=>lastTenKeys.has(key)).length,
       attacks:p.lastTen.attacks,
       threes:p.lastTen.threes,
       hitRate:p.lastTen.attacks?Math.round(100*p.lastTen.threes/p.lastTen.attacks):null,
