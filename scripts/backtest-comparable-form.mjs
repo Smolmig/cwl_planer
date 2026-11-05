@@ -66,9 +66,9 @@ export function backtestComparableForm(wars,attacks,{priorWeight=4}={}){
    for(const a of history){
     const tag=cleanTag(a.attacker_tag),war=sourceByKey.get(a.war_key);
     if(!historyByPlayer.has(tag))historyByPlayer.set(tag,[]);
-    historyByPlayer.get(tag).push({stars:a.stars,started:Date.parse(war.started_at)});
+    historyByPlayer.get(tag).push({stars:a.stars,started:Date.parse(war.started_at),order:Number(a.attack_order)||0});
    }
-   for(const hits of historyByPlayer.values())hits.sort((a,b)=>b.started-a.started);
+   for(const hits of historyByPlayer.values())hits.sort((a,b)=>b.started-a.started||b.order-a.order);
    for(const a of test){
     const tag=cleanTag(a.attacker_tag),y=Number(a.stars===3);
     const all=(historyByPlayer.get(tag)||[]).slice(0,7);
