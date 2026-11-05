@@ -7,10 +7,12 @@ const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
-  let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
+  let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="performance",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
   let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
+  let viewComparableProfiles=new Map(),viewComparableSummary=null;
+  const openStatsPlayers=new Set();
   let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastMembersNotifiedVersion=-1;
   let historyAttacksByWar=new Map();
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
@@ -31,24 +33,25 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const current=new Set((ctx.memberTags||[]).map(cleanTag));
     const term=search.trim().toLocaleLowerCase("de");
-    const rows=[...comparableProfiles.values()]
+    const rows=[...viewComparableProfiles.values()]
       .filter(p=>(showFormer||!current.size||current.has(p.tag))&&
         (!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term)))
       .sort((a,b)=>Number(current.has(b.tag))-Number(current.has(a.tag))||
         a.name.localeCompare(b.name,"de"));
-    if(desc&&comparableSummary){
-      const m=comparableSummary;
+    if(desc&&viewComparableSummary){
+      const m=viewComparableSummary;
       desc.textContent="Vergleichbare Angriffe aus den letzten 90 Tagen: "+m.comparableAttacks+
         " gegen dieselbe Rathausstufe. "+m.lowerThExcluded+
         " Angriffe auf niedrigere RH, "+m.higherThExcluded+" auf höhere RH und "+
         m.unknownThExcluded+" ohne vollständige RH-Angabe sind nicht in dieser Quote enthalten. "+
         "Weder Mirror-Position noch Erstangriff oder Basisausbau sind historisch vollständig belegt. "+
-        "Diese Testansicht ist unabhängig von den obigen Filtern; sie ändert keine Mitglieder- oder Planerwerte.";
+        "Diese Testansicht berücksichtigt Kriegstyp und Zeitraum, verwendet aber nur Angriffe auf dasselbe RH. Sie ändert keine Mitglieder- oder Planerwerte.";
     }
     const qualityLabel={none:"Keine vergleichbaren Angriffe",stale:"Älter als 30 Tage",
       limited:"Wenig Vergleichsdaten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
     const textFor=p=>{
       const n=p.last30.attacks;
+      const score=p.performanceIndex===null?"Nicht bewertbar":p.performanceIndex+"/100 (vorsichtiger Formwert)";
       const recent=n?formPct(p.last30.hitRate)+" 3★ · Ø "+formStar(p.last30.averageStars):"Noch keine gleich-RH-Angriffe";
       const combined=p.last90.attacks?
         formPct(p.weighted90.hitRate)+" 3★ · Ø "+formStar(p.weighted90.averageStars)+
@@ -58,7 +61,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         " / CW "+p.normal90.attacks+(p.normal90.attacks?" · "+formPct(p.normal90.hitRate):"");
       const excluded=p.excluded.lower+p.excluded.higher+p.excluded.unknown;
       return "<div class='stats-form-row'>"+
-        "<div class='stats-form-person'><b>"+esc(p.name)+"</b><small>"+esc(qualityLabel[p.quality]||"Wenig Daten")+
+        "<div class='stats-form-person'><b>"+esc(p.name)+"</b><small>"+esc(qualityLabel[p.quality]||"Wenig Daten")+" · "+esc(score)+
         (excluded?" · "+excluded+" andere RH-Ziele nicht gewertet":"")+"</small></div>"+
         "<div class='stats-form-results'>"+
         "<div><strong>"+recent+"</strong><small>Letzte 30 Tage · "+n+" Angriffe</small></div>"+
@@ -92,6 +95,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const metricsChanged=metricSignature!==lastMetricSignature||!cachedSummary;
     if(metricsChanged){
       cachedSummary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
+      const selection=selectStatWars(wars,{type,last,cwlSeasons});
+      const comparison=computeComparableForm(selection,attacks);
+      viewComparableProfiles=comparison.profiles;viewComparableSummary=comparison.summary;
       lastMetricSignature=metricSignature;
       cachedPlayerStats=new Map(cachedSummary.rows.map(p=>[cleanTag(p.tag),p]));
     }
@@ -273,6 +279,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   function reset(){
     scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
+    viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
