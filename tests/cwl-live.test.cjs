@@ -188,3 +188,54 @@ test("Unknown targets and multiple attacks are displayed separately, without gue
  assert.equal(rows[1].target,null);
  assert.equal(rows[2].player.name,"Bravo");
 });
+
+
+test("CWL near-end attention is read-only; an attack five minutes before end clears the notice",async()=>{
+ const {cwlAttackReminder}=await load();
+ const now=Date.parse("2026-11-05T10:00:00Z");
+ const data=snapshot();
+ const r=data.rounds[0];
+ r.state="inWar";
+ r.startTime="20261104T103000.000Z";
+ r.endTime="20261105T103000.000Z";
+ let note=cwlAttackReminder(sanitizeSnapshot(data).rounds[0],now);
+ assert.deepEqual({kind:note.kind,day:note.day,minutes:note.minutesLeft,
+  players:note.players.map(p=>p.name)},{kind:"open",day:1,minutes:30,players:["Bravo"]});
+ // No notification hours before the end (avoids persistent alarm).
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],now-90*60*1000),null);
+ // A player uses their last chance. They must not be penalized.
+ r.clan.members[1].attacks=[{attackerTag:"#JRC",defenderTag:"#8PY",stars:2,destructionPercentage:80}];
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],now+25*60*1000),null);
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],now+31*60*1000),null);
+});
+
+test("CWL absence is confirmed only after complete finished war and never mutates player state",async()=>{
+ const {cwlAttackReminder,sanitizeSnapshot}=await load();
+ const now=Date.parse("2026-11-05T10:00:00Z");
+ const data=snapshot(),round=data.rounds[0];
+ const before=JSON.stringify(data);
+ const note=cwlAttackReminder(sanitizeSnapshot(data).rounds[0],now);
+ assert.deepEqual({kind:note.kind,players:note.players.map(p=>p.tag)},
+  {kind:"confirmed",players:["#JRC"]});
+ assert.equal(JSON.stringify(data),before,"The API observation must be read-only");
+ const incomplete=snapshot();
+ incomplete.rounds[0].clan.members.pop();
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(incomplete).rounds[0],now),null);
+ const notFinished=snapshot();
+ notFinished.rounds[0].endTime="20261106T020000.000Z";
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(notFinished).rounds[0],now),null);
+ const unresolved=snapshot();
+ unresolved.rounds[0].state="inWar";
+ // Clash may still show an old "inWar" state after deadline. Do not assume missed.
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(unresolved).rounds[0],now),null);
+});
+
+test("CWL alert is advisory only and never auto-pauses, changes rules or writes a plan",()=>{
+ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
+ const helpers=fs.readFileSync(path.join(root,"cwl-live-core.mjs"),"utf8");
+ assert.match(live,/cwlAttackReminder/);
+ assert.match(live,/Nur Hinweis, kein automatischer Wechsel/);
+ assert.match(live,/if\\(attention.kind==="open"/);
+ assert.match(live,/const attention=fresh\\?/);
+ assert.doesNotMatch(helpers,/\\.participating\\s*=\\s*false|\\.statuses\\s*=|\\.locks\\s*=/);
+});
