@@ -143,3 +143,61 @@ test("Import UI counts missed attacks, not only database rows",()=>{
  assert.match(ui,/parsed\.missed\.reduce\(\(sum,row\)=>sum\+row\.missed_count,0\)/);
  assert.match(ui,/dokumentierte verpasste Angriffe in/);
 });
+
+
+test("A 4/4 or 2/2 raw 100% is not ranked above a well sampled 55/68 player",async()=>{
+ const {computeComparableForm,wilsonLowerBound}=await core();
+ const date=i=>new Date(Date.parse(TIME)-(1+i)*86400000).toISOString();
+ const wars=Array.from({length:68},(_,i)=>w("historic-"+i,i%7===0?"cwl":"normal",date(i)));
+ const hits=wars.flatMap((war,i)=>[
+  a(war.war_key,"#2PYL",i<55?3:2),
+  ...(i<4?[a(war.war_key,"#8PY",3)]:[]),
+  ...(i<2?[a(war.war_key,"#PQL",3)]:[])
+ ]);
+ const result=computeComparableForm(wars,hits,{asOf:TIME});
+ const longtime=result.profiles.get("#2PYL");
+ const four=result.profiles.get("#8PY");
+ const two=result.profiles.get("#PQL");
+ assert.equal(four.last90.hitRate,100);
+ assert.equal(two.last90.hitRate,100);
+ assert.equal(four.performanceIndex,null,"4 clean hits are not enough for ranked form");
+ assert.equal(two.performanceIndex,null,"2 clean hits are not enough for ranked form");
+ assert.ok(longtime.performanceIndex>0);
+ assert.ok(longtime.weighted90.effectiveAttacks>=5);
+ assert.ok(wilsonLowerBound(1,4)<wilsonLowerBound(55/68,68),
+  "Conservative lower bound corrects perfect tiny samples");
+});
+
+test("19 same-TH triples can be credible but not equal to an absolute guaranteed 100%",async()=>{
+ const {computeComparableForm}=await core();
+ const dates=Array.from({length:19},(_,i)=>w("p"+i,"cwl",
+  new Date(Date.parse(TIME)-(1+i)*86400000).toISOString()));
+ const p=computeComparableForm(dates,dates.map(war=>a(war.war_key,"#2PYL",3)),
+  {asOf:TIME}).profiles.get("#2PYL");
+ assert.equal(p.last90.hitRate,100);
+ assert.equal(p.quality,"solid");
+ assert.ok(p.performanceIndex>70&&p.performanceIndex<100);
+});
+
+test("Stale or low-coverage comparable form is unranked, while raw histories remain accessible",async()=>{
+ const {computeComparableForm}=await core();
+ const wars=Array.from({length:10},(_,i)=>w("old"+i,"normal",
+  new Date(Date.parse(TIME)-(38+i)*86400000).toISOString()));
+ const p=computeComparableForm(wars,wars.map(x=>a(x.war_key,"#2PYL",3)),
+  {asOf:TIME}).profiles.get("#2PYL");
+ assert.equal(p.last30.attacks,0);
+ assert.equal(p.quality,"stale");
+ assert.equal(p.performanceIndex,null);
+});
+
+test("Stats selection offers separate performance, raw rate and last-ten-war sorting",()=>{
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
+ assert.match(html,/option value="performance" selected/);
+ assert.match(html,/3★-Quote \(roh\)/);
+ assert.match(html,/option value="lastTen"/);
+ assert.match(ui,/viewComparableProfiles\.get\(cleanTag\(p\.tag\)\)\?\.performanceIndex/);
+ assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
+ assert.match(ui,/lastTen\.missedKnown/);
+ assert.match(ui,/stats-player-details/);
+});
