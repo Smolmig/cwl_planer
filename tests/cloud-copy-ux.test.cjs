@@ -39,7 +39,7 @@ test("Every Cloud user decision uses the planner's app-native modal",()=>{
 test("UX release metadata and cloud app references agree without changing offline PWA",()=>{
  const html=read("cloud-app.html"),sync=read("cloud-sync.mjs");
  const version=JSON.parse(read("cloud-version.json"));
- assert.equal(version.version,"v1.15.3");
+ assert.equal(version.version,"v1.15.4");
  assert.match(html,/const APP_VERSION="v1\.15\.3";/);
  assert.match(html,/cloud-sync\.mjs\?v=1\.15\.3/);
  assert.match(sync,/cloud-backups\.mjs\?v=1\.15\.3/);
