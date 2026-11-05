@@ -2827,7 +2827,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.3</strong><span>Spielerform & CWL-Hinweise</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.4</strong><span>Einsatzübersicht auf Mobilgeräten</span></div>
       <ul>
        <li><b>Formanalyse:</b> CWL/CW gegen gleiches Rathaus über 30 und 90 Tage separat nachvollziehen.</li>
        <li><b>Transparenz:</b> Stichprobe, aktuelle Ergebnisse, ältere Angriffe und unvollständige Gegnerdaten sichtbar.</li>
@@ -3183,9 +3183,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.3"></script>
+<script src="./cwl-planning-core.js?v=1.15.4"></script>
 <script>
-const APP_VERSION="v1.15.3";
+const APP_VERSION="v1.15.4";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4314,6 +4314,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.3"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.4"></script>
 </body>
 </html>
