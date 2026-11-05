@@ -74,6 +74,16 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
      assert.equal(await page.locator("#cloudAccessDetails").count(),1);
      assert.equal(await page.locator("#cloudBackupPanel").count(),1);
      assert.equal(await page.locator("#cloudAccountBack").isVisible(),true);
+     const backMetrics=await page.evaluate(()=>{
+      const title=document.getElementById("cloudAccountTitle").getBoundingClientRect();
+      const back=document.getElementById("cloudAccountBack").getBoundingClientRect();
+      return {titleLeft:title.left,titleBottom:title.bottom,backTop:back.top,
+       backLeft:back.left,backHeight:back.height};
+     });
+     assert.ok(backMetrics.backTop<backMetrics.titleBottom,
+      "Account back button should be on title row, including phones "+JSON.stringify(backMetrics));
+     assert.ok(backMetrics.backLeft>backMetrics.titleLeft+50,
+      "Account back button should be right aligned "+JSON.stringify(backMetrics));
      assert.equal(await page.evaluate(()=>document.body.classList.contains("modal-open")),false);
      const positions=await page.evaluate(()=>({
       viewport:innerWidth,document:document.documentElement.scrollWidth,

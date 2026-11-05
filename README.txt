@@ -1,3 +1,5 @@
+CLOUD-RELEASE 05.11.2026 (v1.15.1): Auf Wunsch Zurück-Button in Mehr > Clan & Konto auf dem Smartphone wieder rechts oben. Ausführliche technische und fachliche Recherche für statistische Spielerbewertung in docs/CWL_PLAYER_PERFORMANCE_RESEARCH_2026-11-05.md. Statistikberechnung/Solver, CWL-Live, Cloudprofile und Supabase bleiben unverändert.
+
 CLOUD-RELEASE 05.11.2026 (v1.15.0): Mobil-Layout des Zurück-Buttons in Clan & Konto vereinheitlicht. Read-only 8★-Fortschritt in aktiver CWL, konservative Datenlückenbehandlung und unverbindliche Wechselhinweise für einen faireren regulären Ligamedaillenanteil; keine Änderungen am Solver oder Cloud-Datenformat.
 
 CLOUD-RELEASE 05.11.2026 (v1.14.8): Button-Schriften in Handlungsbereichen vereinheitlicht (mobil i.d.R. 13px, Bottomnav 11–12px statt 9px), wichtige Touch-Flächen auf mindestens 44px erhöht. Desktop-Sekundäraktionen lesbarer; bewusst kompakte Icons, Tabellen/Badges und Landschaftsmodus bleiben erhalten. Keine Cloud-/CWL-Datenänderung.
@@ -149,7 +151,7 @@ CLOUD-RELEASE 03.11.2026 (v1.8.0):
 Site: https://smolmig.github.io/cwl_planer/
 
 AKTUELLE VERSIONIERUNG (seit v1.0.0):
-- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.0;
+- Die App nutzt Semantic Versioning (MAJOR.MINOR.PATCH). Cloud: aktuell v1.15.1;
   separate Offline-PWA: v1.0.2.
 - Dieser README bewahrt die ursprünglichen Änderungsnotizen mit den damals verwendeten
   Versionsnummern (v1 bis v9.6.1) unverändert als historische Referenz.
