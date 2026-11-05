@@ -224,13 +224,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
            "<img class='stats-th-icon' src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+p.th+".webp' width='28' height='28' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
           "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
-        "<div class='stats-hit-cell'><strong class='stats-rate'>"+pct(p.hitRate)+"</strong>"+
+        "<div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>"+pct(p.hitRate)+"</strong>"+
         "<small class='stats-rate-avg' title='Durchschnittliche Sterne pro Angriff'>"+
         (p.averageStars===null?"Ø –":"Ø "+p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★")+
-        "</small><small class='stats-form-score' title='Vorläufige, konservative Einordnung aus gleich-RH-Angriffen der letzten 90 Tage'>"+
-        esc(formText)+
         "</small></div>"+
-        "<span class='stats-number'>"+p.attacks+starChips+"</span>"+
+        "<span class='stats-number'><small class='stats-mobile-label'>Angriffe</small>"+p.attacks+starChips+"</span>"+
         "<span class='stats-number stats-missed-cell"+missedColor+"' title='"+esc(
           "CW: "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+
           " · CWL: "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)
@@ -239,12 +237,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           (summary.missedCoverage.normal.wars?displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete):"nicht ausgewählt")+
           ", CWL: "+
           (summary.missedCoverage.cwl.wars?displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete):"nicht ausgewählt")
-        )+"'><strong>"+displayMissed(p.missedKnown,p.missedComplete)+"</strong>"+
+        )+"'><small class='stats-mobile-label'>Verpasst</small><strong>"+displayMissed(p.missedKnown,p.missedComplete)+"</strong>"+
         (type==="all"&&summary.missedCoverage.normal.wars?
           "<small>CW "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+"</small>":"")+
         (type==="all"&&summary.missedCoverage.cwl.wars?
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span>"+
+        "<small class='stats-form-score' title='Vorläufige Form aus gleich-RH-Angriffen der letzten 90 Tage'>"+esc(formText)+"</small>"+
         "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
         "<summary>Letzte "+lastTen.wars+" Kriege · Details</summary>"+
         "<div>"+esc(lastTenLabel)+" · verpasst: "+esc(lastTenMissed)+
