@@ -2502,6 +2502,55 @@ html[data-theme] #view-more-settings .latest-changelog{
 .cwl-attack-attention span{font-size:12px;color:var(--text);font-weight:700}
 .cwl-attack-attention small{font-size:11px;color:var(--muted);line-height:1.5}
 .cwl-attack-attention[data-kind="confirmed"] strong{color:var(--red)}
+/* UI audit: the narrow-phone Einsatzverteilung is a list, not nested cards.
+   Search/filter have separate readable touch rows without modifying any filter state. */
+@media(max-width:470px) and (orientation:portrait){
+  #view-summary .summary-tools{
+    grid-template-columns:minmax(0,1fr);
+    gap:8px;
+    margin:12px 0 7px;
+  }
+  #view-summary .summary-tools :is(#summarySearch,#summaryFilter){
+    box-sizing:border-box;
+    display:block;
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    padding:10px 12px;
+    font-size:14px;
+    line-height:1.35;
+  }
+  #view-summary .summary-tools .summary-visible-count{
+    grid-column:1;
+    justify-self:end;
+    text-align:right;
+    font-size:12px;
+  }
+  #view-summary .summary-legend{
+    font-size:12px;
+    line-height:1.5;
+    margin:3px 0 9px;
+  }
+  #view-summary .summary-compact-grid{gap:0}
+  html[data-theme] #view-summary .summary-compact-row{
+    box-sizing:border-box;
+    min-height:52px;
+    margin:0;
+    padding:8px 3px;
+    border:0;
+    border-bottom:1px solid var(--line);
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  #view-summary .summary-compact-row:last-child{border-bottom:0}
+  #view-summary .summary-player-toggle{
+    min-height:44px;
+    justify-content:center;
+  }
+  #view-summary .summary-compact-name>b{font-size:13px}
+  #view-summary .summary-compact-meta{font-size:11px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
