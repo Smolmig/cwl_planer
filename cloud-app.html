@@ -3406,7 +3406,7 @@ function askInlineAction({title="Bitte bestätigen",message="",inputLabel="",inp
 async function confirmInline(message,{title="Bitte bestätigen",confirmText="Bestätigen",danger=false}={}){const r=await askInlineAction({title,message,buttons:[{value:"confirm",text:confirmText,primary:!danger,danger},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"}
 async function promptInline(title,inputLabel,inputValue="",maxLength=null){const r=await askInlineAction({title,inputLabel,inputValue,maxLength,message:"",buttons:[{value:"confirm",text:"Übernehmen",primary:true},{value:"cancel",text:"Abbrechen"}]});return r.value==="confirm"?r.input:null}
 
-function renderAll(message=""){lastPlan=calculatePlan();renderProfileUI();renderKpis();renderPlan();renderMembers();renderSummary();renderArchives();syncConfigInputs();renderRecoveryBanner();saveApp();window.CWLCloud?.afterRender?.();if(message)setTimeout(()=>showToast(message),0)}
+function renderAll(message="",{keepMemberList=false}={}){lastPlan=calculatePlan();renderProfileUI();renderKpis();renderPlan();if(!keepMemberList)renderMembers();renderSummary();renderArchives();syncConfigInputs();renderRecoveryBanner();saveApp();window.CWLCloud?.afterRender?.();if(message)setTimeout(()=>showToast(message),0)}
 function effectiveStatus(m,d){return m.statuses[d]||"auto"}
 function playedCount(){return state.locks.slice(0,state.config.days).filter(l=>l.locked).length}
 function playedPrefixLength(){let n=0;for(let i=0;i<state.config.days&&state.locks[i]?.locked;i++)n++;return n}
@@ -3747,7 +3747,9 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  expanded?openRulePanels.add(id):openRulePanels.delete(id);
  el.querySelector(".rule-panel")?.classList.toggle("open",expanded);
  el.querySelector(".toggle-rules").setAttribute("aria-expanded",String(expanded));
-};el.querySelector(".delete-member")?.addEventListener("click",()=>deleteMember(id));el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);markRosterAbsenceEdit(m,"statuses."+d);m.statuses[d]=m.statuses[d]==="auto"?"must":m.statuses[d]==="must"?"out":"auto";renderAll("Tagesregel gespeichert · Plan aktualisiert ✓")});});updateBulkBar();
+};el.querySelector(".delete-member")?.addEventListener("click",()=>deleteMember(id));el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);markRosterAbsenceEdit(m,"statuses."+d);const next=effectiveStatus(m,d)==="auto"?"must":effectiveStatus(m,d)==="must"?"out":"auto";m.statuses[d]=next;btn.classList.remove("auto","must","out");btn.classList.add(next);btn.innerHTML=`T${d+1}<br>${next==="auto"?"AUTO":next==="must"?"MUSS":"RAUS"}`;
+ // A single day rule must not rebuild the open member card or move its focus/scroll position.
+ renderAll("Tagesregel gespeichert · Plan aktualisiert ✓",{keepMemberList:true})});});updateBulkBar();
  if(memberViewportAnchor){
   const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===memberViewportAnchor.id);
   if(replacement){
