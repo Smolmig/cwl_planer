@@ -122,8 +122,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   const players=new Map();
   function player(tag,name="",th=null){
     const key=cleanTag(tag);
-    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,starsTotal:0,missedKnown:0,
-      missComplete:true,participated:new Set()});
+    if(!players.has(key))players.set(key,{tag:key,name,th,attacks:0,threes:0,starsTotal:0,missedKnown:0,missedKnownByType:{normal:0,cwl:0},participated:new Set()});
     const p=players.get(key);
     if(!p.name&&name)p.name=name;
     if(p.th===null&&Number.isInteger(th))p.th=th;
@@ -143,13 +142,28 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     w.roster_tags.length===w.team_size&&
     new Set(w.roster_tags.map(cleanTag)).size===w.team_size;
   const covered=w=>w.missed_log_complete===true||hasFullRoster(w);
+  // Coverage describes the selected wars, not just players who made an
+  // attack. An unlogged CWL war could contain an unseen missed attack.
+  const missedCoverage={
+    normal:{wars:0,coveredWars:0,missedKnown:0,complete:false},
+    cwl:{wars:0,coveredWars:0,missedKnown:0,complete:false}
+  };
   let totalMissedKnown=0;
+  function creditMiss(w,p,count){
+    if(!Number.isInteger(count)||count<=0)return;
+    p.missedKnown+=count;
+    p.missedKnownByType[w.war_type]+=count;
+    missedCoverage[w.war_type].missedKnown+=count;
+    totalMissedKnown+=count;
+  }
   for(const w of selected){
+    const coverage=missedCoverage[w.war_type];
+    coverage.wars++;
+    if(covered(w))coverage.coveredWars++;
     if(w.missed_log_complete===true){
       for(const m of knownMissed.filter(m=>m.war_key===w.war_key)){
         const p=player(m.player_tag,m.player_name);
-        p.missedKnown+=m.missed_count;
-        totalMissedKnown+=m.missed_count;
+        creditMiss(w,p,m.missed_count);
       }
     }else if(hasFullRoster(w)){
       const max=w.war_type==="cwl"?1:2;
@@ -159,32 +173,34 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
         p.participated.add(w.war_key);
         const used=chosen.filter(a=>a.war_key===w.war_key&&cleanTag(a.attacker_tag)===tag).length;
         const misses=Math.max(0,max-used);
-        p.missedKnown+=misses;totalMissedKnown+=misses;
+        creditMiss(w,p,misses);
       }
     }else{
       // A partially available Missed Log still proves individual missed
       // attacks. It does NOT prove there were zero other missed attacks.
       for(const m of knownMissed.filter(m=>m.war_key===w.war_key)){
         const p=player(m.player_tag,m.player_name);
-        p.missedKnown+=m.missed_count;totalMissedKnown+=m.missed_count;
+        creditMiss(w,p,m.missed_count);
       }
-      for(const p of players.values()){
-        if(p.participated.has(w.war_key))p.missComplete=false;
-      }
+
     }
   }
+  for(const category of Object.values(missedCoverage)){
+    category.complete=category.wars>0&&category.coveredWars===category.wars;
+  }
+  const complete=selected.length>0&&selected.every(covered);
   const rows=[...players.values()].map(p=>({
     tag:p.tag,name:p.name||p.tag,th:p.th,attacks:p.attacks,
     hitRate:p.attacks?Math.round(p.threes/p.attacks*100):null,threes:p.threes,
     averageStars:p.attacks?Math.round(p.starsTotal/p.attacks*100)/100:null,
-    missed:p.missComplete?p.missedKnown:null,missedKnown:p.missedKnown,
-    missedComplete:p.missComplete,
+    missed:complete?p.missedKnown:null,missedKnown:p.missedKnown,
+    missedKnownByType:{...p.missedKnownByType},
+    missedComplete:complete,
     former:currentTags.size>0&&!currentTags.has(p.tag)
   })).filter(p=>p.attacks>=minAttacks&&(showFormer||!p.former))
     .sort((a,b)=>(b.hitRate??-1)-(a.hitRate??-1)||b.attacks-a.attacks||
       a.name.localeCompare(b.name,"de"));
   const best=rows.find(r=>r.attacks>=5&&r.hitRate!==null)||null;
-  const complete=selected.length>0&&selected.every(covered);
   const attackSlots=selected.reduce((sum,w)=>sum+w.team_size*(w.war_type==="cwl"?1:2),0);
   const totalHits=filtered.filter(a=>a.stars===3).length;
   const allCwl= wars.filter(w=>w.war_type==="cwl");
@@ -204,7 +220,7 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
     hitRate:filtered.length?Math.round(totalHits/filtered.length*100):null,
     averageStars:filtered.length?Math.round(filtered.reduce((n,a)=>n+a.stars,0)/filtered.length*100)/100:null,
     misses:complete?totalMissedKnown:null,missesKnown:totalMissedKnown,
-    missingCoverage:!complete,best,rows,complete
+    missingCoverage:!complete,missedCoverage,best,rows,complete
   };
 }
 
