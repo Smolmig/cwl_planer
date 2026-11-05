@@ -1,5 +1,6 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.2";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
+import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.3";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
@@ -9,11 +10,65 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,search="",order="hitRate",ascending=false;
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
+  let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
   let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastMembersNotifiedVersion=-1;
   let historyAttacksByWar=new Map();
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
   function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
-  window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
+  function getComparablePlayerStats(tag){return scope===context().clanId?comparableProfiles.get(cleanTag(tag))||null:null}
+  window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,getComparablePlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
+  const formPct=rate=>rate===null||!Number.isFinite(rate)?"–":rate+" %";
+  const formStar=number=>number===null||!Number.isFinite(number)?"–":
+    number.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★";
+  function renderComparableForm(){
+    const panel=$("statsFormDetails"),host=$("statsFormRows"),desc=$("statsFormIntro");
+    if(!panel?.open||!host)return;
+    const ctx=context();
+    if(!ctx.active||scope!==ctx.clanId){
+      if(lastComparableRowsMarkup!==null){host.replaceChildren();lastComparableRowsMarkup=null}
+      if(desc)desc.textContent="Keine gespeicherte Cloud-Statistik verfügbar.";
+      return;
+    }
+    const current=new Set((ctx.memberTags||[]).map(cleanTag));
+    const term=search.trim().toLocaleLowerCase("de");
+    const rows=[...comparableProfiles.values()]
+      .filter(p=>(showFormer||!current.size||current.has(p.tag))&&
+        (!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term)))
+      .sort((a,b)=>Number(current.has(b.tag))-Number(current.has(a.tag))||
+        a.name.localeCompare(b.name,"de"));
+    if(desc&&comparableSummary){
+      const m=comparableSummary;
+      desc.textContent="Vergleichbare Angriffe aus den letzten 90 Tagen: "+m.comparableAttacks+
+        " gegen dieselbe Rathausstufe. "+m.lowerThExcluded+
+        " Angriffe auf niedrigere RH, "+m.higherThExcluded+" auf höhere RH und "+
+        m.unknownThExcluded+" ohne vollständige RH-Angabe sind nicht in dieser Quote enthalten. "+
+        "Weder Mirror-Position noch Erstangriff oder Basisausbau sind historisch vollständig belegt. "+
+        "Diese Testansicht ist unabhängig von den obigen Filtern; sie ändert keine Mitglieder- oder Planerwerte.";
+    }
+    const qualityLabel={none:"Keine vergleichbaren Angriffe",stale:"Älter als 30 Tage",
+      limited:"Wenig Vergleichsdaten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
+    const textFor=p=>{
+      const n=p.last30.attacks;
+      const recent=n?formPct(p.last30.hitRate)+" 3★ · Ø "+formStar(p.last30.averageStars):"Noch keine gleich-RH-Angriffe";
+      const combined=p.last90.attacks?
+        formPct(p.weighted90.hitRate)+" 3★ · Ø "+formStar(p.weighted90.averageStars)+
+        " · nₑₓₓ "+p.weighted90.effectiveAttacks.toLocaleString("de-AT"):
+        "Keine vergleichbaren Angriffe";
+      const breakdown="CWL "+p.cwl90.attacks+(p.cwl90.attacks?" · "+formPct(p.cwl90.hitRate):"")+
+        " / CW "+p.normal90.attacks+(p.normal90.attacks?" · "+formPct(p.normal90.hitRate):"");
+      const excluded=p.excluded.lower+p.excluded.higher+p.excluded.unknown;
+      return "<div class='stats-form-row'>"+
+        "<div class='stats-form-person'><b>"+esc(p.name)+"</b><small>"+esc(qualityLabel[p.quality]||"Wenig Daten")+
+        (excluded?" · "+excluded+" andere RH-Ziele nicht gewertet":"")+"</small></div>"+
+        "<div class='stats-form-results'>"+
+        "<div><strong>"+recent+"</strong><small>Letzte 30 Tage · "+n+" Angriffe</small></div>"+
+        "<div><span>90 Tage zeitgewichtet: "+combined+"</span><small>"+breakdown+"</small></div>"+
+        "</div></div>";
+    };
+    const markup=rows.length?rows.map(textFor).join(""):
+      "<p class='stats-note'>Keine vergleichbaren Angriffe in dieser Auswahl. Die Rohdaten bleiben erhalten.</p>";
+    if(markup!==lastComparableRowsMarkup){host.innerHTML=markup;lastComparableRowsMarkup=markup}
+  }
   function render(){
     const ctx=context(),view=$("view-stats");
     if(!view)return;
@@ -23,6 +78,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(!enabled){
       $("statsSummary").innerHTML="";
       if($("statsMissedCoverage"))$("statsMissedCoverage").textContent="";
+      if($("statsFormIntro"))$("statsFormIntro").textContent="";
+      if($("statsFormRows"))$("statsFormRows").replaceChildren();
+      lastComparableRowsMarkup=null;
       $("statsRows").innerHTML="";
       $("statsWarHistory").innerHTML="";
       $("statsWarHistory").removeAttribute("data-history-signature");
@@ -150,6 +208,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
+    renderComparableForm();
     // Avoid destroying player rows (and their decoded RH images) for identical results.
     const rowsHost=$("statsRows");
     if(lastRowsHost!==rowsHost||lastRowsMarkup!==nextRowsMarkup){
@@ -213,6 +272,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   }
   function reset(){
     scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();
+    comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
@@ -244,6 +304,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(epoch!==version||context().clanId!==id)return;
       scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;
       cachedRecentStats=computeRecentAttackStats(wars,attacks,7);
+      const comparable=computeComparableForm(wars,attacks);
+      comparableProfiles=comparable.profiles;comparableSummary=comparable.summary;
       notice(wars.length?"Statistik aktuell · "+wars.length+" Kriege gespeichert":
         "Noch keine Angriffsdaten. Importiere die vorbereitete Historie.");
     }catch(e){
@@ -256,8 +318,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(importing)throw Error("Import läuft bereits.");
     if(!file||file.size>4000000)throw Error("Bitte die vorbereitete JSON-Datei auswählen (maximal 4 MB).");
     const parsed=validateHistoryFile(JSON.parse(await file.text()),ctx.clanTag);
+    const missedCount=parsed.missed.reduce((sum,row)=>sum+row.missed_count,0);
     const message=parsed.wars.length+" Kriege, "+parsed.attacks.length+" Angriffe und "+
-      parsed.missed.length+" nicht genutzte Angriffe übernehmen? Bereits vorhandene Einträge werden aktualisiert statt doppelt angelegt. Der CWL-Plan bleibt unverändert.";
+      missedCount+" dokumentierte verpasste Angriffe in "+parsed.missed.length+
+      " Einträgen übernehmen? Bereits vorhandene Einträge werden aktualisiert statt doppelt angelegt. Der CWL-Plan bleibt unverändert.";
     if(!await confirmAction(message,{title:"Kampfverlauf importieren",confirmText:"Importieren"}))return;
     const id=ctx.clanId;importing=true;$("statsImportButton").disabled=true;
     try{
@@ -282,7 +346,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       }
       await load();
       notice("✓ Historie importiert: "+parsed.wars.length+" Kriege, "+parsed.attacks.length+
-        " Angriffe, "+parsed.missed.length+" Missed-Einträge.");
+        " Angriffe, "+missedCount+" verpasste Angriffe ("+parsed.missed.length+" Einträge).");
       notify("✓ Historische CW-Statistik importiert");
     }finally{importing=false;$("statsImportButton").disabled=false}
   }
@@ -376,6 +440,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       syncPeriodChoices();render();
     });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
+    e("statsFormDetails")?.addEventListener("toggle",()=>renderComparableForm());
     e("statsFormer")?.addEventListener("change",ev=>{showFormer=ev.target.checked;render()});
     e("statsSearch")?.addEventListener("input",ev=>{search=ev.target.value;render()});
     e("statsSort")?.addEventListener("change",ev=>{order=ev.target.value;render()});
