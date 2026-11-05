@@ -22,6 +22,13 @@
 - Nutze das Gold-Theme als kontrollierten Akzent, nicht als überall sichtbare Einfassung. Klare Kontraste und Lesbarkeit in allen Themes sind wichtiger als Zierlinien oder Hintergründe.
 - Maximal zwei bis drei sichtbare Hierarchieebenen in einer Ansicht; bei tieferem Detail besser eine Unteransicht/Disclosure verwenden.
 
+### Einstellungs-Unterseiten: ein Rahmen genügt (05.11.2026)
+
+- Desktop: Einstellungs-Unterseiten dürfen **einen gemeinsamen ruhigen Inhaltsrahmen** haben; innere Gruppen mit Weißraum oder feinen Trennlinien, nicht mit weiteren Karten.
+- Smartphone: Dieselben Inhalte **ohne äußeren Rahmen**, mit klaren Überschriften, guter Lesbarkeit und ausreichend großen Touch-Flächen.
+- Gold und Cyberpunk dürfen responsive Regeln nicht durch alte Theme-Spezifität überschreiben. Versionshinweise sind normale Inhalte statt einer Karte in der Karte.
+- Installationsanleitungen für iPhone, Android und Desktop jederzeit anwählbar, unabhängig vom besuchten Gerät; keine aufdringliche Installationsmeldung.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).

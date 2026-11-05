@@ -8,6 +8,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Einteilung und praktische iPhone-Abnahmen folgen separat (#46, #44).
 
+## [1.14.7] - 2026-11-05
+
+### Einstellungen und Installationsanleitungen
+- **Desktop:** Ein einzelner dezenter Inhaltsrahmen statt mehrfach verschachtelter Karten für CWL-Grunddaten, Design, Backups und lokale Profile.
+- **Smartphone:** Rahmenlose, mit Abstand und Trennlinien gegliederte Abschnitte; Gold, Cyberpunk und die übrigen Themes konsistent.
+- **Versionshinweise:** Keine zusätzliche umrandete Box innerhalb der Einstellungen.
+- **App installieren:** iPhone/iPad, Android und Desktop sind als Hilfe direkt auswählbar, unabhängig vom aktuellen Endgerät. Native Android-Installationsangebote bleiben unverändert.
+- Unveränderte CWL-Berechnung, Cloud-Start-URL, Supabase, Spielerprofile und Offline-PWA.
+
 ## [1.14.6] - 2026-11-04
 
 ### Einheitliches Logo für PWA und geteilte Links
