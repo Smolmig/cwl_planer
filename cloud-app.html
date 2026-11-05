@@ -2491,6 +2491,17 @@ html[data-theme] #view-more-settings .latest-changelog{
  .stats-form-score{font-size:9.5px}
  .stats-player-details>summary{min-height:42px}
 }
+/* CWL missed attacks: in-view guidance only, not an automatic penalty.
+   Reuse the overview flow with a separator rather than another nested card. */
+.cwl-attack-attention{
+  display:grid;gap:4px;width:100%;flex:1 0 100%;min-width:0;
+  border-top:1px solid var(--line);padding:10px 0 4px;margin-top:4px;
+  overflow-wrap:anywhere;line-height:1.45;
+}
+.cwl-attack-attention strong{font-size:13px;color:var(--amber)}
+.cwl-attack-attention span{font-size:12px;color:var(--text);font-weight:700}
+.cwl-attack-attention small{font-size:11px;color:var(--muted);line-height:1.5}
+.cwl-attack-attention[data-kind="confirmed"] strong{color:var(--red)}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2767,7 +2778,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.3</strong><span>Vergleichbare Spielerform</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.3</strong><span>Spielerform & CWL-Hinweise</span></div>
       <ul>
        <li><b>Formanalyse:</b> CWL/CW gegen gleiches Rathaus über 30 und 90 Tage separat nachvollziehen.</li>
        <li><b>Transparenz:</b> Stichprobe, aktuelle Ergebnisse, ältere Angriffe und unvollständige Gegnerdaten sichtbar.</li>
