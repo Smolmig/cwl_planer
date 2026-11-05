@@ -266,10 +266,10 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
  assert.match(html,/id="statsPeriodLabel"/);
  assert.match(html,/id="statsSeasonDetails"/);
- assert.match(ui,/cwlSeasons=3/);
+ assert.match(ui,/cwlSeasons="all"/);
  assert.match(html,/Letzte 1 CWL/);
  assert.match(html,/Letzte 3 CWLs/);
- assert.match(html,/Alle verfügbaren CWLs/);
+ assert.match(html,/Alle gespeicherten CWLs/);
  assert.match(ui,/gespeicherten CWL-Kriegstagen/);
  assert.match(ui,/von 7 Kriegstagen gespeichert/);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
