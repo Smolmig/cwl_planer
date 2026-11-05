@@ -73,7 +73,11 @@ test("Rathaus icons scale consistently and Arena surfaces avoid rectangular cut-
       for(const key of ["rowBg","innerBg","snapshotBg","detailsBg","toolsBg"]){
        assert.equal(result[key],"rgba(0, 0, 0, 0)","Arena nested background must be transparent: "+key+" "+JSON.stringify(result));
       }
-      assert.notEqual(result.tableBg,"rgba(0, 0, 0, 0)","Outer stats table must own the surface");
+      if(width>=700){
+        assert.notEqual(result.tableBg,"rgba(0, 0, 0, 0)","Desktop stats table owns its surface");
+      }else{
+        assert.equal(result.tableBg,"rgba(0, 0, 0, 0)","Mobile stats rows are deliberately unboxed");
+      }
      }
     }finally{await page.close()}
    }
