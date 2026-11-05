@@ -1,12 +1,11 @@
 // Experimental read-only historical evaluation. No Cloud, solver or database writes.
 // Predictions for a war only use other wars that started strictly before it.
 import {readFileSync} from "node:fs";
-import {pathToFileURL} from "node:url";
+import {fileURLToPath} from "node:url";
 import {resolve} from "node:path";
 import {computeComparableForm} from "../cwl-comparable-form.mjs";
 import {cleanTag} from "../cwl-stats-core.mjs";
 
-const DAY=86400000;
 const validStar=n=>Number.isInteger(n)&&n>=0&&n<=3;
 const validTh=n=>Number.isInteger(n)&&n>=3&&n<=30;
 const validWar=w=>w && (w.war_type==="normal"||w.war_type==="cwl") &&
@@ -41,6 +40,8 @@ export function backtestComparableForm(wars,attacks,{priorWeight=4}={}){
  const sourceWars=(Array.isArray(wars)?wars:[]).filter(validWar);
  const sorted=[...sourceWars].sort((a,b)=>Date.parse(a.started_at)-Date.parse(b.started_at));
  const sourceByKey=new Map(sorted.map(w=>[w.war_key,w]));
+ if(sourceByKey.size!==sorted.length)
+  throw new Error("Duplicate war_key entries must be resolved before testing.");
  const attackRows=(Array.isArray(attacks)?attacks:[]).filter(a=>
   sourceByKey.has(a?.war_key) && validStar(a.stars) &&
   /^#[0289PYLQGRJCUV]{3,15}$/.test(cleanTag(a.attacker_tag)));
@@ -55,7 +56,7 @@ export function backtestComparableForm(wars,attacks,{priorWeight=4}={}){
   const testKeys=new Set(sorted.slice(i,j).map(w=>w.war_key));
   const test=attackRows.filter(a=>testKeys.has(a.war_key)&&
    validTh(a.attacker_th)&&a.attacker_th===a.defender_th);
-  if(test.length)warsWithEligibleAttacks+=j-i;
+  warsWithEligibleAttacks+=new Set(test.map(a=>a.war_key)).size;
   eligible+=test.length;
   if(test.length){
    const historyWars=sorted.slice(0,i),historyKeys=new Set(historyWars.map(w=>w.war_key));
@@ -112,7 +113,7 @@ export function backtestComparableForm(wars,attacks,{priorWeight=4}={}){
  };
 }
 
-if(process.argv[1] && resolve(process.argv[1])===resolve(new URL(import.meta.url).pathname)){
+if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  try{
   if(process.argv.length!==3)throw new Error(
    "Usage: node scripts/backtest-comparable-form.mjs <private-export.json> (expects {wars, attacks})");
