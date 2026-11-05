@@ -42,6 +42,7 @@ test("Mobile install help stays in More, never takes over plan, hides hint after
     await page.locator(".more-tile[data-more-action='install']").click();
     assert.equal(await page.locator("#view-install.active").count(),1);
     assert.equal(await page.locator(".navbtn[data-view='more'].active").count(),1);
+    assert.equal(await page.locator("#installPlatforms [aria-pressed='true']").count(),1);
     const steps=await page.locator("#installGuideSteps").innerText();
     if(platform==="ios"){
      assert.match(steps,/Teilen/);
@@ -51,6 +52,14 @@ test("Mobile install help stays in More, never takes over plan, hides hint after
      assert.match(steps,/Chrome/);
      assert.match(steps,/Browsermenü/);
     }
+    await page.locator("#installPlatforms [data-install-platform='android']").click();
+    assert.match(await page.locator("#installGuideTitle").innerText(),/Android/);
+    assert.match(await page.locator("#installGuideSteps").innerText(),/Chrome|Samsung Internet|Firefox/);
+    assert.equal(await page.locator("#installPlatforms [data-install-platform='android']").getAttribute("aria-pressed"),"true");
+    await page.locator("#installPlatforms [data-install-platform='desktop']").click();
+    assert.match(await page.locator("#installGuideTitle").innerText(),/Computer/);
+    await page.locator("#installPlatforms [data-install-platform='ios']").click();
+    assert.match(await page.locator("#installGuideSteps").innerText(),/Zum Home-Bildschirm hinzufügen/);
     await page.locator("#installBack").click();
     assert.equal(await page.locator("#view-more.active").count(),1);
     if(platform==="ios"){
