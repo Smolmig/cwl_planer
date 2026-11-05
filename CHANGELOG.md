@@ -14,7 +14,7 @@ Weitere Unterseiten unter „Mehr“, die experimentelle statistikgestützte Ein
 - **Regel:** 8 eigene Kriegssterne in einer CWL-Saison schalten 100 % des regulären, platzierungsabhängigen Ligamedaillenanteils frei. Das ist **nicht** der freiwillige Anführerbonus.
 - **Plan:** Bei laufenden CWL-Kriegen zeigt eine aufklappbare, reine Lese-Übersicht die nachgewiesenen Einzelangriffssterne, die verbliebenen geplanten Angriffe und eine vorsichtige Erreichbarkeit.
 - **Datenqualität:** Mehrfach angegriffene Ziele ohne eindeutig bekannte Angriffsreihenfolge werden nicht fälschlich als sichere Sterne gezählt. Fehlende Kriegstage/Manuell-Locks werden kenntlich gemacht; keine erfundenen Erfolgschancen oder automatischen Umbuchungen.
-- **Prüfidee:** Wenn ein flexibler Rotationsspieler 8★ bereits sicher hat und ein anderer mit seinem aktuellen Plan selbst im Idealfall nicht mehr an 8★ kommt, kann ein künftiger Austausch vorgeschlagen werden – strikt lesend und ohne Fix-/MUSS-/RAUS-/Einsatzziel-Verletzung.
+- **Prüfidee:** Wenn ein flexibler Rotationsspieler 8★ bereits sicher hat und ein anderer mit seinem aktuellen Plan selbst im Idealfall nicht mehr an 8★ kommt, kann ein Austausch für einen von Clash bestätigten Vorbereitungstag vorgeschlagen werden – strikt lesend und ohne Fix-/MUSS-/RAUS-/Einsatzziel-Verletzung.
 - **Mehr → Clan & Konto:** Der Zurück-Button steht auf Handys wie in anderen Unterseiten unter der Überschrift links.
 - Standardplaner, CWL-Datenformat v9, Cloudrechte, Supabase, Offline-PWA und bestehende Aufstellungen unverändert. Weitergehende Statistik-/Leistungsoptimierung ist ein separat geprüftes Experiment (#44).
 

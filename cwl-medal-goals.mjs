@@ -85,7 +85,7 @@ export function evaluateEightStarGoals({snapshot,profile,dayPlans=[]}={}){
   uncertain:rows.filter(r=>r.status==="uncertain").length};
 }
 
-// Only a nonbinding *example* of a future-day swap, never an instruction to
+// Only a nonbinding *example* for a verified preparation day, never an instruction to
 // update Clash. Exact targets, fixed status, MUST/RAUS rules and started wars
 // are non-negotiable. A further solver-level validation is required to apply.
 export function findReadOnlyMedalSwap({assessment,profile,snapshot,dayPlans=[]}={}){
@@ -100,7 +100,7 @@ export function findReadOnlyMedalSwap({assessment,profile,snapshot,dayPlans=[]}=
   if(!receiver)continue;
   for(const plan of plans){
    const day=plan?.day,round=snapshot.rounds?.find(r=>r.day===day);
-   if(!Number.isInteger(day)||plan.locked||round?.state==="inWar"||round?.state==="warEnded"||
+   if(!Number.isInteger(day)||plan.locked||!round?.available||round.state!=="preparation"||
       !Array.isArray(plan.lineup)||plan.lineup.length!==profile.config?.slots||plan.warnings?.length||
       plan.lineup.includes(recipient.id)||receiver.statuses?.[day-1]!=="auto"&&receiver.statuses?.[day-1]!==undefined)continue;
    for(const donor of donors){
