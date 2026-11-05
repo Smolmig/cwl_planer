@@ -17,6 +17,19 @@ function summarize(rows){
    averageStars:n?round(stars/n,2):null};
 }
 
+// Conservative sample-size adjustment; Wilson lower-bound applied to the
+// time-weighted share and Kish effective sample size. This is a transparent
+// ranking heuristic, NOT a calibrated 3-star success probability or formal
+// confidence interval for dependent, selectively chosen attack observations.
+export function wilsonLowerBound(proportion,sampleSize,z=1.96){
+ if(!Number.isFinite(proportion)||!Number.isFinite(sampleSize)||
+    proportion<0||proportion>1||sampleSize<=0)return null;
+ const z2=z*z,denom=1+z2/sampleSize;
+ const center=proportion+z2/(2*sampleSize);
+ const distance=z*Math.sqrt(proportion*(1-proportion)/sampleSize+z2/(4*sampleSize*sampleSize));
+ return Math.max(0,Math.min(1,(center-distance)/denom));
+}
+
 function weighted(rows,halfLifeDays){
  let weight=0,weight2=0,hit=0,stars=0;
  for(const row of rows){
@@ -24,8 +37,11 @@ function weighted(rows,halfLifeDays){
   weight+=w;weight2+=w*w;
   hit+=w*Number(row.stars===3);stars+=w*row.stars;
  }
+ const nEff=weight2?weight*weight/weight2:0;
  return {attacks:rows.length,
-  effectiveAttacks:weight2?round(weight*weight/weight2,1):0,
+  effectiveAttacks:round(nEff,1),
+  effectiveAttacksExact:nEff,
+  tripleShare:weight?hit/weight:null,
   hitRate:weight?round(100*hit/weight):null,
   averageStars:weight?round(stars/weight,2):null};
 }
@@ -85,10 +101,19 @@ export function computeComparableForm(wars,attacks,{
     weighted90.effectiveAttacks>=12&&last30.attacks>=5?"solid":
     weighted90.effectiveAttacks>=5&&last30.attacks>=2?"trend":"limited";
   }
+  // Fewer than 5 effective equivalent-TH attacks (or fewer than 2 recent)
+  // are explicitly unranked; 4/4 triple hits must not outrank 55/68.
+  // On sufficiently observed profiles, use the conservative Wilson-style
+  // lower score as a *comparison index*, not a predicted win probability.
+  const rankable=weighted90.effectiveAttacksExact>=5&&last30.attacks>=2&&newestAge<=recentDays;
+  const lower=rankable?wilsonLowerBound(
+   weighted90.tripleShare,weighted90.effectiveAttacksExact):null;
+  const performanceIndex=lower===null?null:round(100*lower);
   profiles.set(tag,{
    tag,name:group.name,newestWar:group.newestWar,newestAgeDays:newestAge===null?null:round(newestAge,1),
    last30,last90,weighted90,normal90:summarize(cw),cwl90:summarize(cwl),
-   quality,excluded:{...group.excluded},
+   quality,performanceIndex,performanceRankable:rankable,
+   excluded:{...group.excluded},
    apiAttacks:group.rows.filter(r=>r.source==="api").length,
    importedAttacks:group.rows.filter(r=>r.source==="import").length,
    mirrorKnown:false,firstHitKnown:false
