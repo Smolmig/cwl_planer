@@ -2,6 +2,18 @@
 
 **Status:** Konzept (nicht produktiv aktivieren) · 03.11.2026
 
+## Zusatz: Fairness nach 8-Sterne-Medailenziel (05.11.2026)
+
+Ziel ist die Wahrscheinlichkeit zu erhöhen, dass **möglichst viele angemeldete Spieler mindestens acht eigene Kriegssterne erreichen**. Das betrifft den regulären Ligamedaillenanteil, **nicht** den gesonderten Anführerbonus. Ein Spieler mit bereits acht sicheren Sternen kann eher einen künftigen optionalen Einsatz abgeben als jemand, der bei sechs Sternen und wenig Zukunftskapazität noch eine zusätzliche Chance benötigt.
+
+**Produktive Basis ab v1.15.0:** reine Lese-Übersicht zu nachgewiesenen Sternen, geplanten Restangriffen und mathematisch maximal erreichbarem Sternenziel. Unverbindliche Wechselidee nur bei gesicherter Datenlage und ohne Verletzung offensichtlicher fester Regeln. Keine Änderung an Solver, Plänen oder Rollen.
+
+**Nächste experimentelle Stufe (noch nicht aktiviert):**
+1. Statistiken mit belastbarer Stichprobe und Gegner-RH auf die *Chance*, weitere Sterne zu erzielen, prüfen. Zwei Zweisterne-Angriffe erlauben keine präzise Aussage über den dritten; Datenqualität/Verfügbarkeit sichtbar machen.
+2. Eigene Angriffe mit gleicher oder höherer Rathausstufe getrennt von leichteren Gegnern betrachten; konservativ glätten und fehlende Daten neutral behandeln.
+3. Alternativpläne anhand Anzahl Spieler mit voraussichtlich 8★, Fairness-Spanne, Clan-Kampfstärke und geänderter Tage vergleichen. Immer zuerst harte Vorgaben erfüllen.
+4. Keine automatischen Änderungen; Rollen und Planfreigaben weiter beachten. Für den Übergang von reiner Anzeige zu Simulation/Übernahme braucht es Backtests über mehrere vollständige CWL-Saisons.
+
 ## Ausgangspunkt
 Der bisherige Planer verteilt verfügbare Spieler anhand von Fix/MUSS/RAUS, Einsatzzielen, Anzahl bisheriger Einsätze und Priorität. Er kennt letzte 7 Angriffe, 3★-Hit-Rate und Ø Sterne. Eine rohe Sortierung nach Hit-Rate wäre bei wenigen Angriffen irreführend und könnte die Fairness verschlechtern.
 

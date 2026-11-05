@@ -29,6 +29,14 @@
 - Gold und Cyberpunk dürfen responsive Regeln nicht durch alte Theme-Spezifität überschreiben. Versionshinweise sind normale Inhalte statt einer Karte in der Karte.
 - Installationsanleitungen für iPhone, Android und Desktop jederzeit anwählbar, unabhängig vom besuchten Gerät; keine aufdringliche Installationsmeldung.
 
+### CWL-Sternenziel und unverbindliche Empfehlungen (05.11.2026)
+
+- **8 Sterne** sind die offizielle Grenze für die **volle reguläre Ligamedaillen-Belohnung**, nicht für den zusätzlich verteilten Anführerbonus.
+- Im Live-Plan nur aus den tatsächlichen, aktuellen CWL-Angriffen abgeleitete Sterne zeigen; fehlende, doppelte oder alte Daten nicht als 0 oder garantiert interpretieren. Mehrfach angegriffene Gegnerbasen ohne sichere Zuordnung als Unsicherheit behandeln.
+- Künftige Einsätze ermöglichen maximal drei weitere Sterne je Angriff, keine sichere Prognose. Für exakte Einsatzziele, Fix, Muss, Raus, gespielte und laufende Kriege **keine Änderung oder Vorschläge gegen harte Regeln**.
+- Sternenziel-Hinweise bleiben **read-only** und erhalten geöffneten Zustand bei Live-Refresh. Automatische Umverteilung, Stärkeprofile und Ziel-RH-Prognosen nur im separat getesteten Experiment.
+- Zurück-Schaltflächen für Unterseiten von „Mehr“ auch unter **Clan & Konto** auf Smartphone unterhalb der Überschrift links und mit mindestens 44 px Touchfläche anordnen.
+
 ## 3. Verhalten und Aktualisierungen: Kontext erhalten (HARTE REGEL)
 
 - **Auto-Refresh darf niemals geöffnete Bereiche schließen.** Bewahre expandierte Saison-, Runden-, Team-, Filter- und Einstellungsbereiche mit **stabilen fachlichen Schlüsseln** (Clan + Saison + Tag + Spieler bzw. vergleichbare ID).
