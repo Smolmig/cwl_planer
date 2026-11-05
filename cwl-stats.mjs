@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.4.1";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,cleanTag} from "./cwl-stats-core.mjs?v=1.15.2";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -144,9 +144,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           ", CWL: "+
           (summary.missedCoverage.cwl.wars?displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete):"nicht ausgewählt")
         )+"'><strong>"+displayMissed(p.missedKnown,p.missedComplete)+"</strong>"+
-        (type==="all"?
-          "<small>CW "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+
-          "</small><small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
+        (type==="all"&&summary.missedCoverage.normal.wars?
+          "<small>CW "+displayMissed(p.missedKnownByType.normal,summary.missedCoverage.normal.complete)+"</small>":"")+
+        (type==="all"&&summary.missedCoverage.cwl.wars?
+          "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
     // Avoid destroying player rows (and their decoded RH images) for identical results.
