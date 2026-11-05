@@ -14,7 +14,7 @@ test("Stats explain 2-of-2 samples and no longer crown an unvalidated top player
  assert.match(html,/2 von 2 ergeben 100 %/);
  assert.match(html,/40 von 60/);
  assert.doesNotMatch(html,/id="statsBestPlayer"/);
- assert.match(html,/Formvergleich \\(90 Tage, gleiche RH\\)/);
+ assert.match(html,/Formvergleich \(90 Tage, gleiche RH\)/);
  assert.match(html,/id="statsFormDetails"/);
  assert.match(html,/id="statsFormMethod"/);
  assert.match(html,/id="statsCoverageGuide"/);
