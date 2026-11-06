@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.12] - 2026-11-06
+
+### Spielerform nachvollziehbar und stichprobenbewusst sortieren
+- **Spielerform:** Standardsortierung „Datenbasis & 3★-Quote“ verwendet die bestehenden Stichprobenklassen ab 15, 6–14, 1–5 und 0 dokumentierten gleich-RH-Angriffen; innerhalb einer Klasse nach roher 3★-Quote. 2/2 Dreier stehen damit nicht mehr allein wegen 100 % vor einer umfangreichen Datenlage.
+- **Wahlfreiheit:** Die reine 3★-Quote (roh), Angriffsanzahl und Name bleiben explizite Sortiermöglichkeiten. Listenpositionen sind keine Spielstärkeränge; Angriffszahlen und Quelle/Zeitraum bleiben sichtbar.
+- **Keine neue Leistungsformel:** Kein geheimer Skill-Score, keine Änderung an Angriffsdaten, Formfenstern (30/90/180 Tage), Solver oder Cloud-Speicherung.
+- **Regression:** Sortierung bei ungleichen Stichproben, 0 Daten, Zeitfensterwechsel, Rohquote und unveränderter Quellreihenfolge automatisiert geprüft.
+
+
 ## [1.16.11] - 2026-11-06
 
 ### Automatische Statistikerfassung verständlich überwachen
