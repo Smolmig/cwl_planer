@@ -2752,7 +2752,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 @media(prefers-reduced-motion:reduce){#view-stats .stats-section-tab{transition:none}}
 
 
-/* v1.16.5: contextual charts, player comparisons and CWL run labels. */
+/* Statistics contextual charts, player comparisons and CWL run labels. */
 #view-stats .stats-duel{padding-top:16px;margin-top:20px;border-top:1px solid var(--line)}
 #view-stats .stats-duel-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 #view-stats .stats-duel-controls .field{min-width:0}
@@ -3149,11 +3149,10 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.5</strong><span>Statistik 3.0 · Klare Auswertungen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.5</strong><span>Einladungslinks erneut kopieren</span></div>
       <ul>
-       <li><b>Spielerform:</b> Eigenständige 30-/90-/180-Tage-Analyse ohne versteckte Kriegsfilter.</li>
-       <li><b>Vergleiche:</b> Balken, Sternverteilungen und separate Kriegszeiträume.</li>
-       <li><b>Verlauf:</b> Entwicklung von 3★-Quote und Durchschnittssternen über Tage, Wochen oder Monate. Wo keine Angriffe dokumentiert sind, bleiben Lücken sichtbar.</li>
+       <li><b>Aktive Einladungen:</b> Neu erstellte Gruppen- und Einmal-Links können in „Clan & Konto“ erneut kopiert werden.</li>
+       <li><b>Alte Links:</b> Bleiben gültig, sind wegen der bisherigen sicheren Hash-Speicherung aber nicht nachträglich abrufbar.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
