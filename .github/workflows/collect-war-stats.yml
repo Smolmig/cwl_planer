@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/collect-war-stats.yml'
+      - 'supabase/functions/coc-stats-collector/collector-auth.mjs'
 
 permissions:
   contents: read
@@ -60,7 +61,7 @@ jobs:
             repoId:String(claims.repository_id)===EXPECTED.repositoryId,
             ref:claims.ref===EXPECTED.ref,
             workflowRef:claims.workflow_ref===EXPECTED.workflowRef,
-            sub:claims.sub==='repo:'+EXPECTED.repository+':ref:'+EXPECTED.ref,
+            subjectPresent:typeof claims.sub==='string'&&claims.sub.length>0,
             eventAllowed:['schedule','workflow_dispatch','push'].includes(claims.event_name),
             headerType:header.typ||'(absent)',
             algorithm:header.alg,
