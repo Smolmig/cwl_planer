@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.3] - 2026-11-06
+
+### CWL-Plan: originale Aufstellung und Bedienung wiederhergestellt
+- Behebt die Regression aus v1.16.2, die den gewohnten Button „Aufstellung aufklappen“ mitsamt der geplanten Teamliste versteckte, sobald eine vollständige Clash-Vorbereitung geladen war.
+- Der ursprüngliche Plan bleibt unabhängig vom API-Status aufklappbar. Direkte und knappe Markierungen in der Planliste: „Bereits in Clash“, „In Clash aufnehmen“ und unter der Aufstellung „Aus Clash nehmen“; Einwechselkandidaten in einer kleinen, gezielt aufklappbaren Gruppeninformation. Ein einzelner auszuwechselnder Spieler wird bei mehreren Kandidaten nicht fälschlich als fixes 1:1-Paar dargestellt.
+- Die separate Clash-Teamansicht zeigt wieder nur die Basisdaten, nicht an jedem Kriegstag erneut 8★-Zähler und Spielerform.
+- Die 8★-Gesamtbetrachtung und unverbindliche Einwechselreserve stehen bei **Einsätze**; der **Plan** fokussiert auf Kriegsstand, Gegner und den nächsten Aufstellungswechsel.
+- Fehlende, unvollständige oder veraltete Clash-Daten dürfen keine aktionsfähigen Wechselhinweise erzeugen. Kein neues Verteilungs-/Bewertungsmodell.
+- Tests decken die erhaltene Aufklappfunktion sowie passende, abweichende und veraltete Clash-Aufstellungen ab. Cloud- und Auth-Schema sowie Offline-PWA unverändert.
+
+
 ## [1.16.2] - 2026-11-06
 
 ### CWL-Plan ohne doppelte Teamliste
