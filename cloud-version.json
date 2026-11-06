@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.10",
+  "version": "v1.16.11",
   "released": "2026-11-06",
-  "summary": "Plan: mobile Kriegstage ohne schwebende Sticky-Überlagerung. Kompakte Spielerform mit detaillierter Datenbasis nur als Kontext. Mitglieder: Freigabe über denselben Button ein- und ausklappen; keine doppelten Linien oder Schließen-Karte."
+  "summary": "Statistik: automatischer Server-Abgleich wird nach mehr als drei Stunden ohne Erfolg deutlich als möglicherweise verspätet gekennzeichnet; Fehler bleiben erkennbar und laufende Kriege vorläufig. Keine Änderung an Planungslogik, Statistikdaten, API-Berechtigungen oder Offline-PWA."
 }
