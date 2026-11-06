@@ -361,7 +361,10 @@ const cloud={
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select,"+
     "#view-more-settings button,#view-more-settings input,#view-more-settings select")){
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
-    if(role==="viewer" && !keep.has(el.id) && !el.closest(".mobile-day-tabs") && !el.closest(".archive-list")){
+    const memberReadOnlyControl=el.closest("#view-members")&&el.matches(
+      "#memberSearch,#memberFilter,#memberSortSelect,.member-edit-toggle,.toggle-rules,.member-config-help,.dup-warning,.close-duplicate");
+    if(role==="viewer" && !keep.has(el.id) && !memberReadOnlyControl &&
+       !el.closest(".mobile-day-tabs") && !el.closest(".archive-list")){
       el.disabled=true;el.dataset.cloudDisabled="1";
     }
   }
