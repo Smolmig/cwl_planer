@@ -24,7 +24,7 @@ test("CWL Hitrate explicitly counts three-star attacks, not simply all attacks",
  assert.match(absent.label,/noch keine belegten Angriffe/);
  assert.doesNotMatch(html,/const cwlHitRate=currentCwlTripleRate/);
  assert.doesNotMatch(html,/cwl-performance-current/);
- assert.match(html,/<span class="cwl-performance-recent">/);
+ assert.match(html,/<span class="cwl-performance-recent" title=/);
 });
 test("seven recorded attacks disclose how many of this season are included",async()=>{
  const core=await import("file://"+path.join(root,"cwl-stats-core.mjs"));
@@ -71,5 +71,8 @@ test("arena day tabs have no separate gradient sheet or rectangular backdrop",()
  assert.match(html,/html\[data-theme="arena"\] #view-plan #mobileDaySwitcher\s*\{\s*background:transparent!important/);
  assert.doesNotMatch(html,/linear-gradient\(to bottom,rgba\(12,16,21/);
  assert.match(html,/#membersReviewManageHost #planReviewDisclosure>\.plan-review-summary\{display:none!important\}/);
+ assert.match(html,/#view-plan #mobileDaySwitcher,\\s*html\\[data-theme="arena"\\] #view-plan #mobileDaySwitcher\\{[\\s\\S]*?position:static!important/);
+ assert.doesNotMatch(html,/id="membersReviewClose"/);
+ assert.match(html,/aria-controls="membersReviewManageHost"/);
  assert.match(html,/prefers-reduced-motion:reduce/);
 });
