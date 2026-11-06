@@ -121,9 +121,9 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.match(result.originalSelection,/Alle 1 CW/);
     assert.match(result.scopeAfter,/1 ausgewählte/);
     assert.deepEqual(result.form.visible,["form"]);
-    assert.match(result.formIntro,/90 feste Kalendertage/);
+    assert.match(result.formIntro,/Letzte 90 Kalendertage/);
     assert.match(result.formData,/Beispiel/);
-    assert.match(result.shortForm,/30 feste Kalendertage/);
+    assert.match(result.shortForm,/Letzte 30 Kalendertage/);
     assert.equal(result.thirtySelected,"true");
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.compareScope,/2 abgeschlossene/);
