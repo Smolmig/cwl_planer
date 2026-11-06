@@ -39,7 +39,7 @@ test("preparation advice remains strictly read-only and cached lineups cannot im
  const live=read("cwl-live.mjs");
  assert.match(live,/let staleRoundDays=new Set\(\),lastSuccessfulProfile=null/);
  assert.match(live,/lastSuccessfulProfile===ctx\.profile/);
- assert.match(live,/Gespeicherter Stand – bitte CWL-Daten aktualisieren/);
+ assert.match(live,/Clash-Abgleich derzeit nicht aktuell/);
  assert.match(live,/lastSuccessfulAt>0/);
  assert.match(live,/const stillCurrent=\(\)=>/);
  assert.match(live,/!stillCurrent\(\)/);
