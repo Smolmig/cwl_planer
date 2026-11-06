@@ -12,7 +12,7 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  const live=read("cwl-live.mjs");
  const json=JSON.parse(read("cloud-version.json"));
  assert.equal(json.version,"v1.16.7");
- assert.match(json.summary,/Statistik|Vergleich|CWL|Form|Einsatz/);
+ assert.match(json.summary,/Statistik|Vergleich|CWL|Form|Einsatz|Freigabe|Vorschlag/);
  assert.equal(json.released,"2026-11-06");
  assert.match(html,/const APP_VERSION="v1\.16\.7"/);
  assert.match(html,/Neu in v1\.16\.7/);
