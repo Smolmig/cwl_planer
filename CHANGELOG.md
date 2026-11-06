@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.14] - 2026-11-06
+
+### Einsätze: Spieler-Detailansicht wieder erreichbar
+- **Hotfix:** Die Aufklappansicht zu gespielten und geplanten Kriegstagen in „Einsätze“ löste bei vorhandenen Clash-Angriffsergebnissen einen JavaScript-Fehler aus (Spieler-Tag im Tagesrendering nicht gebunden). Spieler-Tag wird wieder pro Anzeigezeile korrekt ermittelt; Sterne und Prozentwerte sind dem gewählten Spieler zugeordnet.
+- **Regression:** Ein Browserklick mit bereits gespieltem CWL-Tag und vorhandenen 3★/100%-Angriffsdaten öffnet und schließt die Tage auf Mobil und Desktop.
+- **Unverändert:** CWL-Solver, Tagesaufstellungen, Spielerdaten, Angriffshistorie, Rollen, Freigaben, API, Datenbank und Offline-App.
+
+
 ## [1.16.13] - 2026-11-06
 
 ### Kriegsverlauf mit echten Zeitabständen und sichtbaren Datenlücken
