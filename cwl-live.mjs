@@ -162,7 +162,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         "</span>"+
         (review.status==="changes"?
-         "<button type='button' class='btn small cwl-copy-live-swaps'>Wechseltext kopieren</button>":"")+
+         "<button type='button' class='btn small cwl-copy-live-swaps'>Aufstellungswechsel kopieren</button>":"")+
         "</div>";
     // Preparation has a separate optional Clash peek, but the planned chips
     // above are the primary place for additions and removals. Keep this quiet:
@@ -346,7 +346,6 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
       (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml;
-    if(medalFocused)node.querySelector(".cwl-medal-details>summary")?.focus({preventScroll:true});
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 
     for (let i=0;i<ctx.profile.config.days;i++){
