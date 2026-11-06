@@ -195,11 +195,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   function renderTimeline(){
     const chart=$("statsTrendChart"),detail=$("statsTrendTable");
     if(!chart||!detail)return;
-    const trend=computeStatsTimeline(wars,attacks,{type,last,cwlSeasons,granularity:trendGranularity});
-    const signature=[version,type,last,cwlSeasons,trendMetric,trendGranularity].join("|");
+    const ownWars=selectWarDateScope(wars,{type:trendType,days:trendDays});
+    const trend=computeStatsTimeline(ownWars,attacks,{type:"all",last:"all",cwlSeasons:"all",granularity:trendGranularity});
+    if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
+      " Kriege in dieser Verlaufsauswahl; "+trend.recordedAttacks+
+      " dokumentierte Angriffe. Wochenansicht ist Standard – bei einer einzelnen CWL kannst du auf Tage umstellen.";
+    const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
     if(chart.dataset.signature===signature)return;
     chart.dataset.signature=signature;
-    const all=trend.rows,rows=all.slice(-12);
+    const all=trend.rows,rows=all.slice(-20);
     const label=trendMetric==="hitRate"?"3★-Quote":"Ø Sterne";
     const colors={normal:"series-cw",cwl:"series-cwl"};
     if(!rows.length){
@@ -227,7 +231,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const axisStep=Math.max(1,Math.ceil(rows.length/6));
     const axis=rows.map((row,i)=>i%axisStep===0||i===rows.length-1?
       "<text class='axislabel' text-anchor='middle' x='"+x(i)+"' y='"+(H-18)+"'>"+
-      esc(trendGranularity==="week"?row.key.slice(5):row.key.slice(0,7))+"</text>":"").join("");
+      esc(trendGranularity==="month"?row.key.slice(0,7):row.key.slice(5))+"</text>":"").join("");
     const series=["normal","cwl"].map(kind=>{
       const pts=rows.map((row,i)=>point(kind,i,row)).filter(Boolean);
       if(!pts.length)return "";
@@ -235,19 +239,34 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       for(let i=0;i<rows.length;i++){
         const p=point(kind,i,rows[i]);
         if(!p){if(current.length>1)runs.push(current);current=[];}
-        else current.push(p);
+        else{
+          const previous=current.at(-1);
+          const maxGap=trendGranularity==="day"?1.5:
+            trendGranularity==="week"?8:35;
+          if(previous&&
+             (Date.parse(p.key)-Date.parse(previous.key))/86400000>maxGap){
+            if(current.length>1)runs.push(current);
+            current=[];
+          }
+          current.push(p);
+        }
       }
       if(current.length>1)runs.push(current);
       const lines=runs.map(segment=>"<polyline class='statline "+colors[kind]+
         "' points='"+segment.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ")+"'/>").join("");
-      const dots=pts.map(p=>"<circle class='statpoint "+colors[kind]+"' cx='"+
-        p.x.toFixed(1)+"' cy='"+p.y.toFixed(1)+"' r='5'><title>"+
-        esc(p.title)+"</title></circle>").join("");
+      const dots=pts.map(p=>kind==="cwl"?
+        "<polygon class='statpoint "+colors[kind]+"' points='"+
+          [[p.x,p.y-6],[p.x+6,p.y],[p.x,p.y+6],[p.x-6,p.y]]
+            .map(v=>v.map(n=>n.toFixed(1)).join(",")).join(" ")+"'><title>"+
+          esc(p.title)+"</title></polygon>":
+        "<circle class='statpoint "+colors[kind]+"' cx='"+
+          p.x.toFixed(1)+"' cy='"+p.y.toFixed(1)+"' r='5'><title>"+
+          esc(p.title)+"</title></circle>").join("");
       return lines+dots;
     }).join("");
     chart.innerHTML="<svg role='img' aria-label='"+esc(label+
-      " nach "+(trendGranularity==="week"?"Wochen":"Monaten")+
-      "; grün normaler CW, gold CWL; einzelne Fallzahlen in der Tabelle")+
+      " nach "+(trendGranularity==="week"?"Wochen":trendGranularity==="day"?"Tagen":"Monaten")+
+      "; Kreise: normale CWs, Rauten: CWL; Fallzahlen in der Datentabelle")+
       "' viewBox='0 0 "+W+" "+H+"' preserveAspectRatio='xMidYMid meet'>"+
       grid+axis+series+"</svg>";
     const wasOpen=detail.querySelector("details")?.open===true;
@@ -262,7 +281,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary><div class='stats-war-history-scroll'>"+
       "<table><thead><tr><th>Zeitraum</th><th>CW</th><th>CWL</th></tr></thead><tbody>"+
       table+"</tbody></table></div></details>"+
-      (all.length>12?"<p class='stats-note'>Im Diagramm die letzten 12 Zeitpunkte; Tabelle enthält alle.</p>":"");
+      (all.length>20?"<p class='stats-note'>Im Diagramm die letzten 20 Zeitpunkte; Tabelle enthält alle.</p>":"");
   }
   function render(){
     setStatsSection(section);
@@ -503,14 +522,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   function renderWarHistory(){
     const host=$("statsWarHistory");if(!host)return;
     const ctx=context();
-    const historySignature=[ctx.clanId,version,type,last,cwlSeasons].join("|");
+    const historySignature=[ctx.clanId,version,trendType,trendDays].join("|");
     if(host.dataset.historySignature===historySignature)return;
     const sameClan=host.dataset.historyClan===String(ctx.clanId||"");
     const openWars=new Set(sameClan?[...host.querySelectorAll(".war-history-item[open]")].map(el=>el.dataset.warKey):[]);
     const focusedWar=sameClan&&host.contains(document.activeElement)&&
       document.activeElement?.matches?.(".war-history-item>summary")?
       document.activeElement.parentElement.dataset.warKey:null;
-    const chosen=selectStatWars(wars,{type,last,cwlSeasons});
+    const chosen=selectWarDateScope(wars,{type:trendType,days:trendDays});
     const relevant=chosen.slice().sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at));
     // One index pass, instead of scanning all attacks separately for every war.
     const index=new Map();
