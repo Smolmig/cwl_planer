@@ -1,7 +1,7 @@
 // Durable, read-only CWL group histories. Separate from the planner's own
 // archived lineups. All queries use the logged-in Supabase session and RLS.
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.16.1";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.16.1";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.16.2";
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.16.2";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("de-AT",{maximumFractionDigits:1});

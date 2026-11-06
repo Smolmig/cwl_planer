@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.1";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.1";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.1";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.1";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.1";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.1";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.2";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.2";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.2";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.2";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.2";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.2";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -251,6 +251,7 @@ const cloud={
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
  getMedalOverview:()=>live.getMedalOverview(),
+ getPlayedAttackResults:()=>live.getPlayedAttackResults(),
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",

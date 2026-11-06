@@ -1204,6 +1204,8 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 .summary-player-days{display:flex;flex:1 1 100%;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 3px 2px;border-top:1px solid var(--line);margin-top:5px}
 .summary-day-chip{font-size:11px;border:1px solid var(--line);border-radius:7px;padding:5px 7px;background:var(--bluebg);color:var(--text)}
 .summary-day-chip.played{color:var(--green)}
+.summary-day-chip .summary-day-result{font-size:10px;font-weight:800;white-space:nowrap;color:var(--text)}
+@media(max-width:470px){.summary-player-days{gap:6px}.summary-day-chip{display:inline-flex;gap:4px;align-items:baseline;flex-wrap:wrap}}
 /* Manual ordering controls remain visible when the details are collapsed. */
 .member-snapshot-actions .member-order{display:inline-flex;align-items:center;gap:4px}
 .member-snapshot-actions .order-btn{min-width:34px;min-height:33px}
@@ -2397,21 +2399,29 @@ html[data-theme] #view-more-settings .latest-changelog{
   font-size:13px;line-height:1.3;
  }
 }
-/* Read-only Clash lineup and swap flags: density over nested cards. */
-#view-plan .cwl-actual-lineup{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px 0 8px;padding:9px 0}
-#view-plan .cwl-actual-lineup-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px 12px;margin-bottom:6px;font-size:13px}
-#view-plan .cwl-actual-lineup-head span{font-size:11px;color:var(--muted)}
-#view-plan .cwl-actual-member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
-#view-plan .cwl-actual-member{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;border-bottom:1px solid var(--line);padding:6px 2px}
-#view-plan .cwl-actual-member-main{display:flex;flex-direction:column;gap:2px;min-width:0}
-#view-plan .cwl-actual-member-main>b{overflow-wrap:anywhere;font-size:12px;line-height:1.35}
-#view-plan .cwl-actual-member-main>small{font-size:10px;line-height:1.35;color:var(--muted)}
-#view-plan .cwl-actual-member-status{font-size:10px;white-space:nowrap;color:var(--muted);font-weight:750}
-#view-plan .cwl-actual-member.outgoing .cwl-actual-member-status{color:var(--amber)}
-#view-plan .cwl-actual-member.incoming .cwl-actual-member-status{color:var(--green)}
-#view-plan .cwl-actual-incoming{margin-top:11px}
-#view-plan .cwl-actual-incoming>b{font-size:12px}
-@media(max-width:650px){#view-plan .cwl-actual-member-grid{grid-template-columns:minmax(0,1fr)}}
+/* One expandable preparation roster. The older planned chips remain a safe
+   fallback when Clash is unavailable or the API result cannot be trusted. */
+#view-plan .day-card.cwl-prep-merged>.lineup,
+#view-plan .day-card.cwl-prep-merged>.mobile-lineup-toggle{display:none!important}
+#view-plan .cwl-prep-swap-details{margin:7px 0;min-width:0}
+#view-plan .cwl-prep-swap-details>summary{min-height:42px;cursor:pointer;font-weight:700;font-size:12px;color:var(--text)}
+#view-plan .cwl-merged-roster{list-style:none;padding:0;margin:6px 0;display:grid;gap:4px}
+#view-plan .cwl-merged-roster .cwl-merged-member{box-sizing:border-box;min-width:0;display:flex;align-items:flex-start;gap:8px;
+ border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:transparent}
+#view-plan .cwl-merged-roster .cwl-merged-member.swap-needed{border:2px solid var(--amber);background:var(--amberbg);padding:8px 9px}
+#view-plan .cwl-merged-info{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:3px}
+#view-plan .cwl-merged-info .cwl-roster-name{font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+#view-plan .cwl-merged-info>small{font-size:11px;color:var(--muted);line-height:1.4}
+#view-plan .cwl-merged-state{flex:none;font-size:10px;line-height:1.4;font-weight:750;color:var(--muted);white-space:nowrap}
+#view-plan .swap-needed .cwl-merged-state{color:var(--amber)}
+#view-plan .cwl-actual-swap{min-width:0;margin:5px 0 0}
+#view-plan .cwl-actual-swap>summary{cursor:pointer;min-height:38px;font-size:12px;font-weight:750;color:var(--text)}
+#view-plan .cwl-swap-candidates{display:grid;gap:6px;border-top:1px solid var(--line);padding:8px 0 2px}
+#view-plan .cwl-swap-candidates>strong{font-size:11px}
+#view-plan .cwl-swap-candidates>div{display:flex;flex-wrap:wrap;gap:3px 10px;align-items:baseline;font-size:12px}
+#view-plan .cwl-swap-candidates small{font-size:11px;color:var(--muted);line-height:1.4}
+@media(max-width:470px){#view-plan .cwl-merged-roster .cwl-merged-member{flex-wrap:wrap}
+ #view-plan .cwl-merged-state{margin-left:auto}}
 /* CWL deployment context: a quiet, non-interactive information strip, not another card. */
 #view-summary .summary-medal-overview{margin:6px 0 12px;padding:9px 2px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;line-height:1.55;color:var(--text)}
 #view-summary .summary-medal-overview[hidden]{display:none}
@@ -2575,6 +2585,24 @@ html[data-theme] #view-more-settings .latest-changelog{
   #view-summary .summary-compact-name>b{font-size:13px}
   #view-summary .summary-compact-meta{font-size:11px}
 }
+/* Form and comparison: simple order, readable samples and only three main bars. */
+#view-stats .stats-form-person{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 9px}
+#view-stats .stats-form-person>small{flex:1 1 100%}
+#view-stats .stats-form-rank{font-size:13px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+#view-stats .stats-form-small-sample{font-weight:700;color:var(--amber)}
+#view-stats .stats-highlight-intro{font-size:13px;line-height:1.5;margin:8px 0 16px}
+#view-stats .stats-highlight-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,2vw,18px);min-width:0;align-items:end}
+#view-stats .stats-highlight-col{min-width:0;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+#view-stats .stats-highlight-col>strong{font-size:19px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}
+#view-stats .stats-highlight-plot{height:128px;width:100%;border-bottom:1px solid var(--line);display:flex;align-items:end;justify-content:center}
+#view-stats .stats-highlight-fill{width:clamp(28px,48%,80px);min-height:2px;background:var(--primary);border-radius:7px 7px 0 0}
+#view-stats .stats-highlight-col>span{font-size:12px;font-weight:750;line-height:1.45;overflow-wrap:anywhere;min-height:38px}
+#view-stats .stats-highlight-col>small{font-size:11px;line-height:1.45;color:var(--muted)}
+#view-stats .stats-matchup-breakdown{margin-top:18px;border-top:1px solid var(--line)}
+#view-stats .stats-matchup-breakdown>summary{font-weight:750;font-size:12px;min-height:44px;align-content:center;cursor:pointer}
+@media(max-width:420px){#view-stats .stats-highlight-col>strong{font-size:16px}
+ #view-stats .stats-highlight-col>span{font-size:11px}
+ #view-stats .stats-highlight-plot{height:110px}}
 /* Statistics UX: make observed results primary, evidence secondary, methodology optional. */
 #view-stats .stats-reading-copy{
   font-size:13px;line-height:1.6;color:var(--text);margin:4px 0 9px;
@@ -2696,7 +2724,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 @media(prefers-reduced-motion:reduce){#view-stats .stats-section-tab{transition:none}}
 
 
-/* v1.16.1: contextual charts, player comparisons and CWL run labels. */
+/* v1.16.2: contextual charts, player comparisons and CWL run labels. */
 #view-stats .stats-duel{padding-top:16px;margin-top:20px;border-top:1px solid var(--line)}
 #view-stats .stats-duel-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 #view-stats .stats-duel-controls .field{min-width:0}
@@ -3093,11 +3121,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.1</strong><span>Statistik 3.0 · Klare Auswertungen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.2</strong><span>Statistik 3.0 · Klare Auswertungen</span></div>
       <ul>
        <li><b>Spielerform:</b> Eigenständige 30-/90-/180-Tage-Analyse ohne versteckte Kriegsfilter.</li>
        <li><b>Vergleiche:</b> Balken, Sternverteilungen und separate Kriegszeiträume.</li>
-       <li><b>Verlauf:</b> Wöchentliche Ansicht, Tagesdetails und Theme-unabhängige Kennzeichnung.</li>
+       <li><b>Verlauf:</b> Entwicklung von 3★-Quote und Durchschnittssternen über Tage, Wochen oder Monate. Wo keine Angriffe dokumentiert sind, bleiben Lücken sichtbar.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3189,16 +3217,16 @@ html[data-theme] #view-more-settings .latest-changelog{
       <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
       <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
     </div>
-    <p class="stats-reading-copy">Ausgewertet werden nur Angriffe auf dieselbe Rathausstufe. Das zeigt einen vergleichbareren Ausschnitt, ersetzt aber keine Einordnung der gegnerischen Basis. Spieler mit wenigen oder keinen dokumentierten Angriffen werden nicht als schwach eingestuft.</p>
+    <p class="stats-reading-copy">Die Form zeigt die 3★-Quote gegen Gegner mit <strong>derselben Rathausstufe</strong> wie der Angreifer. Ein gleich-RH-Angriff ist deshalb nicht automatisch gleich schwierig: Basis, CW oder CWL und die Anzahl der Angriffe spielen ebenfalls eine Rolle.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="attacks">Vergleichbare Angriffe ↓</option><option value="name">Name</option><option value="hitRate">3★-Quote ↓ (mit Fallzahlen)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="hitRate" selected>3★-Quote (höchste zuerst)</option><option value="attacks">Anzahl gleich-RH-Angriffe</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
     <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
       <p>Die Fenster sind feste <strong>Kalendertage</strong> ab dem aktuellen Datum und verwenden alle verfügbaren abgeschlossenen CWs und CWL-Tage im ausgewählten Clan. Sie sind vollständig unabhängig vom Zeitraum unter Spielerstatistik.</p>
-      <p>Nur Angriffe gegen die gleiche Rathausstufe fließen in die Quote. Andere RH-Ziele und fehlende RH-Daten werden separat ausgewiesen. Niedrige Fallzahlen und alte Daten sind sichtbar; 0 Angriffe bedeuten „keine Daten“, nicht 0 %.</p>
+      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Die <strong>Anzahl</strong> der Angriffe ist wichtig: 100 % bei 2 Angriffen sagen weniger aus als 90 % bei 30. Angriffe gegen niedrigere/höhere Rathäuser oder mit unbekannter RH-Stufe werden hier nicht mitgezählt. 0 dokumentierte Angriffe heißen „keine Daten“, nicht 0 %.</p>
       <p>Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
     </details>
   </section>
@@ -3523,9 +3551,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.1"></script>
+<script src="./cwl-planning-core.js?v=1.16.2"></script>
 <script>
-const APP_VERSION="v1.16.1";
+const APP_VERSION="v1.16.2";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4027,6 +4055,7 @@ function renderSummary(){
   const goalState=window.CWLCloud?.getMedalOverview?.();
   const medal=goalState?.assessment;
   const goalByTag=new Map((medal?.rows||[]).map(row=>[normalizePlayerTag(row.playerTag),row]));
+  const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
   const goalBanner=document.getElementById("summaryMedalOverview");
   if(goalBanner){
     goalBanner.hidden=!window.CWLCloud?.active;
@@ -4054,6 +4083,13 @@ function renderSummary(){
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
     const goal=goalByTag.get(normalizePlayerTag(x.m.playerTag));
+    const playerTag=normalizePlayerTag(x.m.playerTag);
+    const cwResults=Object.values(dayResults).map(day=>day?.[playerTag])
+      .filter(result=>result&&!result.missed&&Number.isInteger(result.stars));
+    const cwTriples=cwResults.filter(result=>result.stars===3).length;
+    const cwlHitRate=cwResults.length>=2
+      ?"CWL bisher: "+Math.round(100*cwTriples/cwResults.length)+" % 3★ ("+cwTriples+"/"+cwResults.length+" AG)"
+      :cwResults.length===1?"CWL bisher: "+cwTriples+"/1 Dreier":"";
     const recent=x.m.playerTag?window.CWLCloudStats?.getRecentPlayerStats?.(x.m.playerTag):null;
     const recentText=recent?.attacks
       ?"Zuletzt "+recent.attacks+" AG: "+recent.hitRate+" % 3★"
@@ -4085,13 +4121,23 @@ function renderSummary(){
       ${goal||reserveAvailable?`<div class="summary-compact-insights" aria-label="CWL-Form, 8-Sterne-Ziel und Reserve">
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>
-        <span>${esc(recentText)}</span>`:""}
+        <span>${esc(recentText)}</span>
+        ${cwlHitRate?`<span>${esc(cwlHitRate)}</span>`:""}`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
       ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
-        (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>
-          '<span class="summary-day-chip'+(dp.locked?' played':'')+'">Tag '+dp.day+
-          (dp.locked?' · gespielt':' · geplant')+'</span>').join("")||
+        (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>{
+          const trulyPlayed=!!state.locks[dp.day-1]?.locked;
+          const fixedInClash=dp.locked&&!trulyPlayed;
+          const result=trulyPlayed?dayResults[dp.day]?.[playerTag]:null;
+          const resultLabel=result?(result.missed?" · kein Angriff":
+            " · "+result.stars+"★"+(Number.isFinite(result.percent)?" · "+result.percent+" %":"")):"";
+          const status=trulyPlayed?" · gespielt":fixedInClash?" · in Clash fix":" · geplant";
+          return '<span class="summary-day-chip'+(trulyPlayed?' played':'')+
+            '" title="'+(result?"Ergebnis laut Clash":"Planungsstand")+
+            '">Tag '+dp.day+status+
+            (result?'<small class="summary-day-result">'+resultLabel+'</small>':"")+'</span>';
+        }).join("")||
           '<span class="statusline">Keine Einsätze geplant</span>')+'</div>':""}
     </div>`;
   }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
@@ -4693,6 +4739,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.1"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.2"></script>
 </body>
 </html>

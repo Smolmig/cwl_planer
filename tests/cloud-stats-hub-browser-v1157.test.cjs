@@ -40,7 +40,7 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     page.on("pageerror",e=>jsErrors.push(e.message));
     await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
     const result=await page.evaluate(async()=>{
-      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.16.1");
+      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.16.2");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
       const wars=[
@@ -121,9 +121,9 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.match(result.originalSelection,/Alle 1 CW/);
     assert.match(result.scopeAfter,/1 ausgewählte/);
     assert.deepEqual(result.form.visible,["form"]);
-    assert.match(result.formIntro,/90 feste Kalendertage/);
+    assert.match(result.formIntro,/Letzte 90 Kalendertage/);
     assert.match(result.formData,/Beispiel/);
-    assert.match(result.shortForm,/30 feste Kalendertage/);
+    assert.match(result.shortForm,/Letzte 30 Kalendertage/);
     assert.equal(result.thirtySelected,"true");
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.compareScope,/2 abgeschlossene/);
