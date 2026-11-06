@@ -1,8 +1,10 @@
 name: Collect finished Clash war statistics
 on:
   schedule:
-    # Runs without app visits; minute 19 avoids minute-0 queue peaks.
-    - cron: '19 */2 * * *'
+    # Hourly off-peak UTC heartbeat. Scheduled runs can be delayed/dropped;
+    # the next hour gives a second chance before ephemeral war data expires.
+    # Changing the cron re-registers the schedule actor.
+    - cron: '27 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
