@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.8] - 2026-11-06
+
+### Transparente CWL-Hitrate und ruhige Oberflächen
+- **Plan + Einsätze:** derselbe 3★-Hitrate-Text aus bestätigten abgeschlossenen CWL-Tagen (x Dreisterne / y Angriffe). Auch für einen einzelnen Angriff kein Sonderformat mehr. Keine Angriffsdaten = keine künstliche 0%-Quote.
+- **Letzte sieben gespeicherte CW-/CWL-Angriffe:** weiterhin dieselbe berechnete Kurzform; jetzt steht zusätzlich, wie viele Angriffe aus dem aktuellen CWL-Monat enthalten sind. Live-Angriffe und persistierte Historie bleiben sauber getrennt.
+- **Mitglieder:** „Freigabe verwalten“ öffnet dieselben bewährten Planfreigabe- und Vorschlagsaktionen auf der Mitgliederseite, kein Tab-Wechsel.
+- **Plan-UI:** echter Chevron statt rohem Textzeichen. Freigabe erscheint als kompakter, leicht aufklappbarer Bereich. Gold-Mobil: die sticky Tagesnavigation blendet den Hintergrund sanft aus statt harte Flächen zu erzeugen.
+- **Statistik:** doppelte Warnung „wenige Angriffe“ in Spielerform korrigiert. Sternverteilung hat eine lesbare farbcodierte Legende mit der jeweiligen Anzahl. CW-Historie zeigt 15 vs. 15 etc., exakte Zahl dokumentierter Angriffe und markiert importierte Kriege ohne bestätigte Vollständigkeit.
+- Keine Änderung am CWL-Solver, an API-Angriffsergebnissen, an den archivierten Kriegen oder an der Offline-PWA.
+
+
 ## [1.16.7] - 2026-11-06
 
 ### Freigabe und Vorschläge dezent, verständlich und rollenabhängig
