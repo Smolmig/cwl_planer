@@ -82,7 +82,7 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
  const base={
    iss:EXPECTED.issuer,aud:EXPECTED.audience,repository:EXPECTED.repository,
    repository_id:EXPECTED.repositoryId,ref:EXPECTED.ref,workflow_ref:EXPECTED.workflowRef,
-   sub:"repo:"+EXPECTED.repository+":ref:"+EXPECTED.ref,
+   sub:EXPECTED.subject,
    event_name:"schedule",iat:timestamp,nbf:timestamp-1,exp:timestamp+300
  };
  const encode=x=>Buffer.from(JSON.stringify(x)).toString("base64url");
@@ -97,7 +97,7 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
  assert.equal(await verifyCollectorIdentity(valid+"altered",{jwksLoader}),false);
  for(const changes of [
    {aud:"other-project"},{repository:"SomeoneElse/cwl_planer"},
-   {repository_id:"12345"},{ref:"refs/heads/feature"},
+   {repository_id:"12345"},{sub:"repo:Smolmig/cwl_planer:ref:refs/heads/main"},{ref:"refs/heads/feature"},
    {workflow_ref:"Smolmig/cwl_planer/.github/workflows/evil.yml@refs/heads/main"},
    {event_name:"pull_request"},{exp:timestamp-1},
    {iat:timestamp-700,exp:timestamp+300}
