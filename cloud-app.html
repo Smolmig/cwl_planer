@@ -2585,6 +2585,24 @@ html[data-theme] #view-more-settings .latest-changelog{
   #view-summary .summary-compact-name>b{font-size:13px}
   #view-summary .summary-compact-meta{font-size:11px}
 }
+/* Form and comparison: simple order, readable samples and only three main bars. */
+#view-stats .stats-form-person{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 9px}
+#view-stats .stats-form-person>small{flex:1 1 100%}
+#view-stats .stats-form-rank{font-size:13px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+#view-stats .stats-form-small-sample{font-weight:700;color:var(--amber)}
+#view-stats .stats-highlight-intro{font-size:13px;line-height:1.5;margin:8px 0 16px}
+#view-stats .stats-highlight-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,2vw,18px);min-width:0;align-items:end}
+#view-stats .stats-highlight-col{min-width:0;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+#view-stats .stats-highlight-col>strong{font-size:19px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}
+#view-stats .stats-highlight-plot{height:128px;width:100%;border-bottom:1px solid var(--line);display:flex;align-items:end;justify-content:center}
+#view-stats .stats-highlight-fill{width:clamp(28px,48%,80px);min-height:2px;background:var(--primary);border-radius:7px 7px 0 0}
+#view-stats .stats-highlight-col>span{font-size:12px;font-weight:750;line-height:1.45;overflow-wrap:anywhere;min-height:38px}
+#view-stats .stats-highlight-col>small{font-size:11px;line-height:1.45;color:var(--muted)}
+#view-stats .stats-matchup-breakdown{margin-top:18px;border-top:1px solid var(--line)}
+#view-stats .stats-matchup-breakdown>summary{font-weight:750;font-size:12px;min-height:44px;align-content:center;cursor:pointer}
+@media(max-width:420px){#view-stats .stats-highlight-col>strong{font-size:16px}
+ #view-stats .stats-highlight-col>span{font-size:11px}
+ #view-stats .stats-highlight-plot{height:110px}}
 /* Statistics UX: make observed results primary, evidence secondary, methodology optional. */
 #view-stats .stats-reading-copy{
   font-size:13px;line-height:1.6;color:var(--text);margin:4px 0 9px;
@@ -3107,7 +3125,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <ul>
        <li><b>Spielerform:</b> Eigenständige 30-/90-/180-Tage-Analyse ohne versteckte Kriegsfilter.</li>
        <li><b>Vergleiche:</b> Balken, Sternverteilungen und separate Kriegszeiträume.</li>
-       <li><b>Verlauf:</b> Wöchentliche Ansicht, Tagesdetails und Theme-unabhängige Kennzeichnung.</li>
+       <li><b>Verlauf:</b> Entwicklung von 3★-Quote und Durchschnittssternen über Tage, Wochen oder Monate. Wo keine Angriffe dokumentiert sind, bleiben Lücken sichtbar.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3199,16 +3217,16 @@ html[data-theme] #view-more-settings .latest-changelog{
       <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
       <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
     </div>
-    <p class="stats-reading-copy">Ausgewertet werden nur Angriffe auf dieselbe Rathausstufe. Das zeigt einen vergleichbareren Ausschnitt, ersetzt aber keine Einordnung der gegnerischen Basis. Spieler mit wenigen oder keinen dokumentierten Angriffen werden nicht als schwach eingestuft.</p>
+    <p class="stats-reading-copy">Die Form zeigt die 3★-Quote gegen Gegner mit <strong>derselben Rathausstufe</strong> wie der Angreifer. Ein gleich-RH-Angriff ist deshalb nicht automatisch gleich schwierig: Basis, CW oder CWL und die Anzahl der Angriffe spielen ebenfalls eine Rolle.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="attacks">Vergleichbare Angriffe ↓</option><option value="name">Name</option><option value="hitRate">3★-Quote ↓ (mit Fallzahlen)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="hitRate" selected>3★-Quote (höchste zuerst)</option><option value="attacks">Anzahl gleich-RH-Angriffe</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
     <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
       <p>Die Fenster sind feste <strong>Kalendertage</strong> ab dem aktuellen Datum und verwenden alle verfügbaren abgeschlossenen CWs und CWL-Tage im ausgewählten Clan. Sie sind vollständig unabhängig vom Zeitraum unter Spielerstatistik.</p>
-      <p>Nur Angriffe gegen die gleiche Rathausstufe fließen in die Quote. Andere RH-Ziele und fehlende RH-Daten werden separat ausgewiesen. Niedrige Fallzahlen und alte Daten sind sichtbar; 0 Angriffe bedeuten „keine Daten“, nicht 0 %.</p>
+      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Die <strong>Anzahl</strong> der Angriffe ist wichtig: 100 % bei 2 Angriffen sagen weniger aus als 90 % bei 30. Angriffe gegen niedrigere/höhere Rathäuser oder mit unbekannter RH-Stufe werden hier nicht mitgezählt. 0 dokumentierte Angriffe heißen „keine Daten“, nicht 0 %.</p>
       <p>Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
     </details>
   </section>
