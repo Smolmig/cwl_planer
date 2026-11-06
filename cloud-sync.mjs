@@ -144,6 +144,7 @@ function renderPlanReview(){
  renderMembersReview();
  if(!active){if($("membersReviewManageHost")?.contains(panel))restorePlanReviewToPlan();return;}
  const locked=planIsLocked(),owner=role==="owner",editor=role==="editor";
+ const inMembers=!!$("membersReviewManageHost")?.contains(panel);
  const disclosure=$("planReviewDisclosure");
  const context=clanId+"|"+(planReview?.cycle_id||"")+"|"+role;
  if(disclosure&&panel.dataset.reviewContext!==context){
@@ -164,8 +165,11 @@ function renderPlanReview(){
  statusNode.textContent=locked?"Freigegeben":"Offen";
  statusNode.className="badge "+(locked?"ok":"");
  $("planReviewHint").textContent=owner?
-   (locked?"Du kannst weiterhin direkt bearbeiten. Vize senden Vorschläge, die du übernehmen oder ablehnen kannst.":
-    "Du und deine Vize könnt den Plan gemeinsam bearbeiten. Nach der Freigabe reichen Vize Änderungen nur noch als Vorschläge ein."):
+   (locked?(inMembers?
+     "Vorschläge prüfen oder die gemeinsame Bearbeitung wieder öffnen.":
+     "Du kannst weiterhin direkt bearbeiten. Vize senden Vorschläge, die du übernehmen oder ablehnen kannst."):
+     inMembers?"Vize dürfen mitbearbeiten. Mit der Freigabe reichst du ihre Änderungen zur Prüfung ein.":
+     "Du und deine Vize könnt den Plan gemeinsam bearbeiten. Nach der Freigabe reichen Vize Änderungen nur noch als Vorschläge ein."):
    (locked?"Du kannst Spieler und Tagesregeln ändern, aber erst durch „Vorschlag einreichen“ gelangt der Entwurf zum Clanführer.":
     "Deine Änderungen werden direkt für alle gespeichert.");
  const toggleButton=$("planReviewToggle");
@@ -1774,11 +1778,14 @@ function openPlanReviewInMembers(){
  if(!panel||!host||!details||!cloud.active||role!=="owner")return;
  host.hidden=false;host.append(panel);
  details.open=true;
- details.querySelector("summary")?.focus({preventScroll:true});
+ $("membersReviewClose")?.focus({preventScroll:true});
  host.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 bind("membersReviewOpenPlan","click",openPlanReviewInMembers);
-bind("membersReviewClose","click",restorePlanReviewToPlan);
+bind("membersReviewClose","click",()=>{
+ restorePlanReviewToPlan();
+ $("membersReviewOpenPlan")?.focus({preventScroll:true});
+});
 document.addEventListener("click",event=>{
  if(event.target.closest?.(".navbtn[data-view]"))restorePlanReviewToPlan();
 },true);
