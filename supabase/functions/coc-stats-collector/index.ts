@@ -11,6 +11,7 @@ const ERROR={api: "clash_api_unavailable",save:"stats_storage_unavailable",
 function response(body,status=200){
   return Response.json(body,{status,headers:{"Cache-Control":"no-store"}});
 }
+// Keep upstream failure classes without logging URLs, clan/player tags or keys.
 async function game(path,apiKey) {
   for(let attempt=0;attempt<2;attempt++){
     let r;
@@ -19,20 +20,29 @@ async function game(path,apiKey) {
         headers:{"Authorization":"Bearer "+apiKey,"Accept":"application/json"},
         signal:AbortSignal.timeout(8000)
       });
-    }catch{
+    }catch(e){
       if(attempt===0){await delay(400);continue}
-      throw Error(ERROR.api);
+      throw Error(ERROR.api+":"+(e?.name==="TimeoutError"?"timeout":"network"));
     }
     if(r.status===404)return null;
     if(!r.ok){
       if(attempt===0&&(r.status===429||r.status>=500)){
         await delay(r.status===429?1000:400);continue;
       }
-      throw Error(ERROR.api);
+      throw Error(ERROR.api+":http_"+r.status);
     }
     try{return await r.json()}catch{throw Error(ERROR.invalid)}
   }
-  throw Error(ERROR.api);
+  throw Error(ERROR.api+":network");
+}
+function apiDiagnostic(err,stage){
+  // Strictly whitelist public status classes. Error messages might contain
+  // upstream/tenant data, so never persist or return their original text.
+  const raw=String(err?.message||"");
+  const suffix=raw.startsWith(ERROR.api+":")?raw.slice(ERROR.api.length+1):"";
+  const kind=/^(?:http_[1-5][0-9]{2}|network|timeout)$/.test(suffix)?suffix:
+    raw===ERROR.invalid?"invalid_json":"invalid_war_data";
+  return (raw===ERROR.invalid?ERROR.invalid:ERROR.api)+":"+stage+":"+kind;
 }
 function adminSettings(){
   const url=String(Deno.env.get("SUPABASE_URL")||"").replace(/\/+$/,"");
@@ -116,44 +126,58 @@ async function loadFullyCapturedLeagueKeys(settings,clanIds){
 }
 async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set()){
   const snaps=[],seen=new Set(),notes=[];
-  // /currentwar is ephemeral; capture live snapshots to retain an incomplete
-  // record if the endpoint later disappears. Only warEnded is final/statistical.
+  // /currentwar is ephemeral. Keep non-final snapshots until the API
+  // actually confirms the war ended; do not invent a completed war.
   try{
     const current=await game("/clans/"+encodeURIComponent(gameTag)+"/currentwar",key);
     if(current&&current.type!=="cwl"&&current.type!=="league"){
       const snapshot=buildWarSnapshot(current,gameTag,{warType:"normal"});
       if(snapshot){snaps.push(snapshot);seen.add(snapshot.war.war_key)}
     }
-  }catch{notes.push(ERROR.api)}
-  // League war tags can remain available after each day. Poll every own
-  // round while the league group endpoint still provides its WarTags.
+  }catch(e){notes.push(apiDiagnostic(e,"currentwar"))}
   let group;
   try{group=await game("/clans/"+encodeURIComponent(gameTag)+
-    "/currentwar/leaguegroup",key);
-  }catch{notes.push(ERROR.api)}
+    "/currentwar/leaguegroup",key)}
+  catch(e){notes.push(apiDiagnostic(e,"leaguegroup"))}
   if(group?.rounds&&Array.isArray(group.rounds)){
     const requested=new Set();
+    let calls=0;
     for(const round of group.rounds.slice(0,7)){
       if(Date.now()>deadline-10000){notes.push("time_budget_exceeded");break}
       if(hasCapturedCwlRound(round.warTags,completedLeagueKeys))continue;
       const candidates=(Array.isArray(round.warTags)?round.warTags:[])
         .map(tag).filter(validTag).filter(t=>!requested.has(t)).slice(0,4);
-      if(requested.size+candidates.length>MAX_TAGS)break;
-      candidates.forEach(t=>requested.add(t));
-      const found=await Promise.all(candidates.map(async warTag=>{
-        try{
-          const raw=await game("/clanwarleagues/wars/"+encodeURIComponent(warTag),key);
-          return buildWarSnapshot(raw,gameTag,{warType:"cwl",warTag});
-        }catch{notes.push(ERROR.api);return null}
-      }));
-      const ours=found.find(Boolean);
+      let ours=null,identified=false;
+      const roundErrors=[];
+      // A league group lists all four match tags, but only one involves
+      // this clan. Do not fire four parallel requests after finding ours.
+      for(const warTag of candidates){
+        if(calls>=MAX_TAGS||Date.now()>deadline-10000){
+          roundErrors.push("time_budget_exceeded");break;
+        }
+        requested.add(warTag);calls++;
+        let raw;
+        try{raw=await game("/clanwarleagues/wars/"+encodeURIComponent(warTag),key)}
+        catch(e){roundErrors.push(apiDiagnostic(e,"leaguewar"));continue}
+        if(!raw)continue;
+        // Most tags belong to the other six clans; absence of our clan
+        // is not a malformed record or an error for the current tenant.
+        if(tag(raw.clan?.tag)!==gameTag&&tag(raw.opponent?.tag)!==gameTag)continue;
+        identified=true;
+        try{ours=buildWarSnapshot(raw,gameTag,{warType:"cwl",warTag})}
+        catch(e){roundErrors.push(apiDiagnostic(e,"leaguewar"))}
+        break;
+      }
       if(ours&&!seen.has(ours.war.war_key)){
         snaps.push(ours);seen.add(ours.war.war_key);
       }
+      // If the own match is verified, an earlier inaccessible unrelated
+      // match tag does not mean our archive is incomplete.
+      if(!identified&&roundErrors.length)notes.push(roundErrors[0]);
+      else if(identified&&!ours&&roundErrors.length)
+        notes.push(roundErrors[roundErrors.length-1]);
     }
   }
-  // Some CoC endpoints expose a league war via /currentwar as well.
-  // The same game must never appear under both 'normal' and 'cwl' keys.
   const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
     .map(x=>x.war.started_at));
   return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
