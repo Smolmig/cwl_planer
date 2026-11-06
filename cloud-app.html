@@ -4369,7 +4369,10 @@ function renderSummary(){
     const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
-    const goal=goalByTag.get(normalizePlayerTag(x.m.playerTag));
+    // Use this player's verified Clash tag for played-day results. The detail
+    // disclosure must not reference an unbound identifier when API data exists.
+    const playerTag=normalizePlayerTag(x.m.playerTag);
+    const goal=goalByTag.get(playerTag);
     const goalLabel=goal?.status==="reached"?"8★ erreicht":
       goal?.status==="not-reachable"?"8★ mit aktuellem Plan nicht erreichbar":
       goal?.status==="uncertain"?"8★-Stand unvollständig":"8★ rechnerisch möglich";
