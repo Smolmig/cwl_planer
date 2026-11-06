@@ -14,21 +14,21 @@ test("Stats explain 2-of-2 samples and no longer crown an unvalidated top player
  assert.match(html,/2 von 2 ergeben 100 %/);
  assert.match(html,/40 von 60/);
  assert.doesNotMatch(html,/id="statsBestPlayer"/);
- assert.match(html,/Formvergleich \(90 Tage, gleiche RH\)/);
+ assert.match(html,/data-stats-section="form"/);
  assert.match(html,/id="statsFormDetails"/);
- assert.match(html,/id="statsFormMethod"/);
+ assert.match(html,/id="statsFormDetails"/);
  assert.match(html,/id="statsCoverageGuide"/);
- assert.match(ui,/qualityLabel=\{none:/);
- assert.match(ui,/p\.last30\.triples/);
- assert.match(ui,/p\.last90\.attacks/);
- assert.match(ui,/p\.weighted90\.hitRate/);
- assert.match(ui,/form\.performanceRankable/);
+ assert.match(ui,/computePlayerFormWindows/);
+ assert.match(ui,/p\.windows\[formWindow\]/);
+ assert.match(ui,/lastComparableRowsMarkup/);
+ assert.match(ui,/b\.hitRate/);
+ assert.doesNotMatch(ui,/form\.performanceRankable/);
  assert.match(ui,/summary\.missedCoverage\.cwl/);
  assert.doesNotMatch(ui,/statsBestPlayer/);
  assert.doesNotMatch(ui,/n_eff/);
  assert.doesNotMatch(ui,/performanceIndex\+"\/100"/);
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(ui,/Mirror-Position/);
+ assert.match(html,/dieselbe Rathausstufe/);
 });
 
 test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL, not false zeroes",()=>{
@@ -38,7 +38,7 @@ test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL
  assert.match(ui,/guide\.hidden=!\(cwl\.wars>0&&!cwl\.complete\)/);
  assert.match(ui,/if\(guide\.hidden\)guide\.open=false/);
  assert.match(ui,/displayMissed=\(known,complete\)=>complete\?String\(known\)/);
- assert.match(ui,/computeComparableForm\(selection,attacks\)/);
+ assert.match(ui,/computeComparableForm\(wars,attacks\)/);
  assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
 });
 
@@ -58,6 +58,7 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
       document.getElementById("view-plan").classList.remove("active");
       document.getElementById("view-stats").classList.add("active");
       document.querySelector('[data-stats-panel="players"]').hidden=false;
+      document.querySelector('[data-stats-panel="form"]').hidden=false;
       const help=document.getElementById("statsExplain");
       const form=document.getElementById("statsFormDetails");
       const guide=document.getElementById("statsCoverageGuide");
@@ -91,7 +92,7 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
      const note=JSON.stringify({theme,width,metrics});
      assert.ok(metrics.docWidth<=width+3,note);
      assert.ok(metrics.rowWidth>0,note);
-     assert.equal(metrics.resultColumns,2,note);
+     assert.equal(metrics.resultColumns,1,note);
      assert.equal(metrics.guideBorderLeft,"0px",note);
      assert.ok(metrics.headHeights.every(n=>n>=43.5),note);
      assert.ok(metrics.mainText>=13,note);
