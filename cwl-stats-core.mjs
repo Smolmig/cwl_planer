@@ -529,8 +529,10 @@ export function computeRecentAttackStats(wars,attacks,maxAttacks=7){
   const normal=items.filter(a=>warInfo.get(a.war_key)?.war_type==="normal").length;
   const cwl=items.filter(a=>warInfo.get(a.war_key)?.war_type==="cwl").length;
   const imported=items.filter(a=>warInfo.get(a.war_key)?.source==="import").length;
+  const cwlBySeason={};
+  for(const a of items){const w=warInfo.get(a.war_key);if(w?.war_type==='cwl'){const s=String(w.started_at||'').slice(0,7);cwlBySeason[s]=(cwlBySeason[s]||0)+1;}}
   return [tag,{
-   attacks:items.length,threes:triples,starsTotal,normalAttacks:normal,cwlAttacks:cwl,
+   attacks:items.length,threes:triples,starsTotal,normalAttacks:normal,cwlAttacks:cwl,cwlBySeason,
    importedAttacks:imported,apiAttacks:items.length-imported,
    newestWar:warInfo.get(items[0]?.war_key)?.started_at||null,
    oldestWar:warInfo.get(items.at(-1)?.war_key)?.started_at||null,
