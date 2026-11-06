@@ -11,16 +11,16 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  const sync=read("cloud-sync.mjs");
  const live=read("cwl-live.mjs");
  const json=JSON.parse(read("cloud-version.json"));
- assert.equal(json.version,"v1.16.8");
+ assert.equal(json.version,"v1.16.9");
  assert.match(json.summary,/Statistik|Vergleich|CWL|Form|Einsatz|Freigabe|Vorschlag/);
  assert.equal(json.released,"2026-11-06");
- assert.match(html,/const APP_VERSION="v1\.16\.8"/);
- assert.match(html,/Neu in v1\.16\.8/);
- assert.match(html,/cloud-sync\.mjs\?v=1\.16\.8/);
- assert.match(html,/cwl-planning-core\.js\?v=1\.16\.8/);
+ assert.match(html,/const APP_VERSION="v1\.16\.9"/);
+ assert.match(html,/Neu in v1\.16\.9/);
+ assert.match(html,/cloud-sync\.mjs\?v=1\.16\.9/);
+ assert.match(html,/cwl-planning-core\.js\?v=1\.16\.9/);
  for(const mod of ["cloud-backups","cwl-live","cwl-stats","cwl-current-war"])
-  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.16.8"'),mod+" must be cache-busted");
- assert.match(live,/cwl-live-core\.mjs\?v=1\.16\.8/);
+  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.16.9"'),mod+" must be cache-busted");
+ assert.match(live,/cwl-live-core\.mjs\?v=1\.16\.9/);
  assert.doesNotMatch(html,/v1\.5\.2(?=["<])/,"old live version not visible");
 });
 test("offline planner format, file cache and existing profiles are not migrated",()=>{

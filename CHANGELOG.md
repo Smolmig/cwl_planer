@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.9] - 2026-11-06
+
+### Mobile Übersicht und Freigaben aufgeräumt
+- **Gold-Theme:** Kein eigener dunkler Rechteck-/Verlaufshintergrund mehr hinter den sieben Kriegstagen; transparente Tagesnavigation statt weiterer visueller Ebene.
+- **Planfreigabe:** Integrierte, unaufdringliche Statuszeile ohne zusätzliche Button-Karte. Auf der Mitgliederseite erscheinen dieselben Aktionen und Vorschläge ohne Kartenstapel und ohne doppelten Freigabetitel; die Tastatur-Fokussierung geht nicht in ein verborgenes Summary.
+- **CWL-Leistung:** Zusätzliche 3★-Hitrate der laufenden CWL aus den kompakten Plan-Spielerchips und der Einsatzübersicht entfernt. Die letzten gespeicherten sieben Angriffe inkl. Quellenhinweis sowie die 8★-Information und detaillierte Statistik bleiben unverändert verfügbar.
+- **Unverändert:** CWL-Solver, gespielte Aufstellungen, API/Statistik-Daten, Cloud-Freigaben, RLS und Offline-PWA. Collector #104 separat weiterhin ungeklärt.
+
+
 ## [1.16.8] - 2026-11-06
 
 ### Transparente CWL-Hitrate und ruhige Oberflächen

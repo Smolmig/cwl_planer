@@ -22,7 +22,9 @@ test("CWL Hitrate explicitly counts three-star attacks, not simply all attacks",
  const absent=run("#2PYL");
  assert.equal(absent.attacks,0);
  assert.match(absent.label,/noch keine belegten Angriffe/);
- assert.match(html,/const cwlHitRate=currentCwlTripleRate\(x\.m\.playerTag\)\.label/);
+ assert.doesNotMatch(html,/const cwlHitRate=currentCwlTripleRate/);
+ assert.doesNotMatch(html,/cwl-performance-current/);
+ assert.match(html,/<span class="cwl-performance-recent">/);
 });
 test("seven recorded attacks disclose how many of this season are included",async()=>{
  const core=await import("file://"+path.join(root,"cwl-stats-core.mjs"));
@@ -63,9 +65,11 @@ test("member tab opens actual approval controls on same page, not by switching t
  assert.match(sync,/function restorePlanReviewToPlan\(\)/);
  assert.doesNotMatch(sync.slice(sync.indexOf("function openPlanReviewInMembers()"),sync.indexOf('bind("planRefreshSuggestions"')),/\.navbtn\[data-view="plan"\]/);
 });
-test("arena mobile-day sheet fades instead of hard rectangular block",()=>{
+test("arena day tabs have no separate gradient sheet or rectangular backdrop",()=>{
  const html=read("cloud-app.html");
  assert.match(html,/html\[data-theme="arena"\] #view-plan #mobileDaySwitcher/);
- assert.match(html,/linear-gradient\(to bottom,rgba\(12,16,21/);
+ assert.match(html,/html\[data-theme="arena"\] #view-plan #mobileDaySwitcher\s*\{\s*background:transparent!important/);
+ assert.doesNotMatch(html,/linear-gradient\(to bottom,rgba\(12,16,21/);
+ assert.match(html,/#membersReviewManageHost #planReviewDisclosure>\.plan-review-summary\{display:none!important\}/);
  assert.match(html,/prefers-reduced-motion:reduce/);
 });
