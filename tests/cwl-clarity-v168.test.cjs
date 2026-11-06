@@ -61,7 +61,7 @@ test("member tab opens actual approval controls on same page, not by switching t
  assert.match(sync,/host\.append\(panel\)/);
  assert.match(sync,/bind\("membersReviewOpenPlan","click",openPlanReviewInMembers\)/);
  assert.match(sync,/function restorePlanReviewToPlan\(\)/);
- assert.doesNotMatch(sync,/document\.querySelector\('\.navbtn\[data-view="plan"\]'\)\?\.click\(\)/);
+ assert.doesNotMatch(sync.slice(sync.indexOf("function openPlanReviewInMembers()"),sync.indexOf('bind("planRefreshSuggestions"')),/\.navbtn\[data-view="plan"\]/);
 });
 test("arena mobile-day sheet fades instead of hard rectangular block",()=>{
  const html=read("cloud-app.html");
