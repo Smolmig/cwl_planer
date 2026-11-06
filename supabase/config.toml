@@ -6,3 +6,8 @@ verify_jwt = false
 # CWL read-only status proxy checks Supabase user JWT and clan membership internally.
 [functions.coc-cwl-status]
 verify_jwt = false
+
+# External GitHub Actions OIDC tokens are verified inside the function by
+# RS256 signature and exact repo/workflow/ref/audience claims. Never public-open.
+[functions.coc-stats-collector]
+verify_jwt = false
