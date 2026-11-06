@@ -115,7 +115,7 @@ async function retrieveGames(gameTag,key,deadline){
         try{
           const raw=await game("/clanwarleagues/wars/"+encodeURIComponent(warTag),key);
           return buildWarSnapshot(raw,gameTag,{warType:"cwl",warTag});
-        }catch{return null}
+        }catch{notes.push(ERROR.api);return null}
       }));
       const ours=found.find(Boolean);
       if(ours&&!seen.has(ours.war.war_key)){
@@ -123,9 +123,14 @@ async function retrieveGames(gameTag,key,deadline){
       }
     }
   }
-  return {snaps,notes};
+  // Some CoC endpoints expose a league war via /currentwar as well.
+  // The same game must never appear under both 'normal' and 'cwl' keys.
+  const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
+    .map(x=>x.war.started_at));
+  return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
+    !leagueStarts.has(x.war.started_at)),notes};
 }
-async function archiveForAppClan(settings,clanId,snapshots,checkedAt){
+async function archiveForAppClan(settings,clanId,snapshots,checkedAt,partialError=null){
   const unique=new Map(snapshots.map(s=>[s.war.war_key,s]));
   let warCount=0,attacksCount=0,finalCount=0;
   for(const snapshot of unique.values()){
@@ -152,8 +157,9 @@ async function archiveForAppClan(settings,clanId,snapshots,checkedAt){
     if(snapshot.war.finalized)finalCount++;
   }
   await upsert(settings,"cwl_stat_collector_status",[{
-    clan_id:clanId,last_checked_at:checkedAt,last_success_at:new Date().toISOString(),
-    last_error:null,observed_wars:warCount,observed_attacks:attacksCount,
+    clan_id:clanId,last_checked_at:checkedAt,
+    ...(partialError?{}:{last_success_at:new Date().toISOString()}),
+    last_error:partialError,observed_wars:warCount,observed_attacks:attacksCount,
     observed_final_wars:finalCount
   }],"clan_id");
   return {warCount,attacksCount,finalCount};
@@ -193,10 +199,11 @@ export default {
       catch{scan={snaps:[],notes:[ERROR.api]}}
       for(const id of clanIds){
         try{
-          if(scan.notes.length)throw Error(scan.notes[0]);
-          const result=await archiveForAppClan(settings,id,scan.snaps,checkedAt);
+          const result=await archiveForAppClan(settings,id,scan.snaps,checkedAt,
+            scan.notes[0]||null);
           observedWars+=result.warCount;observedAttacks+=result.attacksCount;
           completed+=result.finalCount;processed++;
+          if(scan.notes.length)errors++;
         }catch(e){
           errors++;
           await markFailure(settings,id,checkedAt,
