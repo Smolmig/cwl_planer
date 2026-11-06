@@ -50,7 +50,7 @@ test("relative RH comparison counts CW and CWL separately, including missing RH"
 test("form, list position and selected wars are explicitly separate from the seven recent member attacks",()=>{
  assert.match(script,/cwlSeasons="all"/);
  assert.match(script,/Diese Tabelle berücksichtigt ausschließlich /);
- assert.match(script,/30 feste Kalendertage|feste Kalendertage/);
+ assert.match(script,/formWindow\+" Kalendertage/);
  assert.doesNotMatch(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
  assert.match(script,/Listenposition /);
  assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
