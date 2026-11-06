@@ -21,6 +21,7 @@ function makeUi(role,locked,pending=[],draft=null){
    '<span id="membersReviewHint"></span><button id="membersSubmitSuggestion"></button>'+
    '<button id="membersReviewOpenPlan"></button></div>');
  const ctx={
+   $:id=>doc.window.document.getElementById(id),
    document:doc.window.document,cloud:{active:true},clanId:"clan",role,
    planReview:{season:"2026-11",cycle_id:"one",locked},planSuggestions:pending,
    planReviewPeople:new Map([["vize","Test-Vize"]]),user:{id:"owner"},
