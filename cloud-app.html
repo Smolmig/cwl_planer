@@ -2720,6 +2720,79 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-stats #statsCollectorHealth[data-health="ok"]{color:var(--muted)}
 #view-stats #statsCollectorHealth[data-health="error"]{color:var(--text)}
 #view-stats #statsCollectorHealth[data-health="none"]{color:var(--muted)}
+
+/* Statistics 3.0: self-contained scopes, readable desktop and theme-aware visual comparisons. */
+#view-stats .stats-section-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+#view-stats .stats-section-tab{font-size:13px;padding:11px 6px;min-height:48px}
+#view-stats .stats-form-window{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:17px 0 12px}
+#view-stats .stats-form-window button{font:inherit;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:10px;min-height:58px;padding:10px 5px;font-size:13px;font-weight:750;cursor:pointer}
+#view-stats .stats-form-window button small{display:block;font-size:11px;font-weight:550;margin-top:3px}
+#view-stats .stats-form-window button[aria-pressed="true"]{border-color:var(--primary);color:var(--text);background:color-mix(in srgb,var(--primary) 12%,transparent)}
+#view-stats .stats-form-controls,#view-stats .stats-context-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:12px 0}
+#view-stats :is(.stats-form-controls,.stats-context-controls) .field{min-width:0}
+#view-stats :is(.stats-form-controls,.stats-context-controls) label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
+#view-stats :is(.stats-form-controls,.stats-context-controls) select,
+#view-stats .stats-form-controls input{width:100%;min-width:0;min-height:43px;font:inherit;font-size:13px;padding:8px 9px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px}
+#view-stats .stats-query-explainer{color:var(--text);font-size:12px;line-height:1.5;margin:10px 0}
+#view-stats .stats-form-rows{margin:14px 0 18px}
+#view-stats .stats-form-row{grid-template-columns:minmax(165px,1fr) minmax(240px,2fr);gap:20px;padding:15px 0}
+#view-stats .stats-form-row .stats-form-results{display:block}
+#view-stats .stats-form-person b{font-size:15px}
+#view-stats .stats-form-person small{font-size:12px}
+#view-stats .stats-form-figure{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:13px}
+#view-stats .stats-form-figure strong{font-size:19px}
+#view-stats .stats-form-figure span{color:var(--muted)}
+#view-stats .stats-form-breakdown{margin:5px 0 0}
+#view-stats .stats-bar-track{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:8px 0}
+#view-stats .stats-bar-fill{height:100%;background:var(--primary);border-radius:999px;max-width:100%}
+#view-stats .stats-compare-bars{display:grid;gap:13px}
+#view-stats .stats-compare-line{min-width:0}
+#view-stats .stats-compare-line-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}
+#view-stats .stats-compare-line-head strong{font-variant-numeric:tabular-nums}
+#view-stats .stats-matchup-row{grid-template-columns:minmax(0,1fr);gap:0}
+#view-stats .stats-matchup-row>span{font-size:13px}
+#view-stats .stats-matchup-row>strong{text-align:left}
+#view-stats .stats-matchup-group h4{font-size:15px}
+#view-stats .stats-duel-person{padding:12px 0}
+#view-stats .stats-duel-person p{font-size:13px}
+#view-stats .stats-stacked-stars{display:flex;height:13px;border-radius:6px;overflow:hidden;background:var(--line);margin:10px 0 5px}
+#view-stats .stats-stacked-stars span{min-width:0}
+#view-stats .stats-stacked-stars .stars-0{background:var(--muted)}
+#view-stats .stats-stacked-stars .stars-1{background:var(--red)}
+#view-stats .stats-stacked-stars .stars-2{background:var(--amber)}
+#view-stats .stats-stacked-stars .stars-3{background:var(--green)}
+#view-stats .stats-chart-legend{display:inline-flex;gap:12px;margin-right:7px;flex-wrap:wrap}
+#view-stats .stats-chart-legend>span{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+#view-stats .stats-chart-legend i{display:inline-block;width:11px;height:11px}
+#view-stats .stats-chart-legend .legend-normal{border-radius:50%;background:var(--green)}
+#view-stats .stats-chart-legend .legend-cwl{background:var(--primary);transform:rotate(45deg);width:9px;height:9px;margin:1px}
+#view-stats .stats-trend-controls{grid-template-columns:repeat(4,minmax(0,1fr))}
+#view-stats .stats-trend-chart .statpoint{stroke-width:2}
+@media(min-width:900px){
+ #view-stats .stats-player-head,#view-stats .stats-player-row{
+   grid-template-columns:minmax(230px,2.4fr) minmax(140px,1.1fr) minmax(100px,.85fr) minmax(110px,1fr);
+   gap:18px;padding:15px 20px
+ }
+ #view-stats .stats-player-head{font-size:13px}
+ #view-stats .stats-player-row{min-height:76px}
+ #view-stats .stats-name b{font-size:16px}
+ #view-stats .stats-name small{font-size:12px}
+ #view-stats .stats-rate{font-size:18px}
+ #view-stats .stats-hit-cell .stats-rate-avg{font-size:12px}
+ #view-stats .stats-row-number{font-size:13px}
+ #view-stats .stats-number{font-size:15px}
+}
+@media(max-width:720px){
+ #view-stats .stats-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-stats .stats-section-tab{min-height:43px;font-size:12px}
+ #view-stats .stats-trend-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-stats .stats-form-row{grid-template-columns:1fr;gap:8px}
+}
+@media(max-width:375px){
+ #view-stats .stats-form-controls,#view-stats .stats-context-controls{grid-template-columns:minmax(0,1fr)}
+ #view-stats .stats-form-window button{font-size:11px}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3015,29 +3088,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <div class="card stats-header">
     <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">Angriffe, Sterne und Zuverlässigkeit – aus den Kriegen, die tatsächlich erfasst wurden.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
     <p id="statsCollectorHealth" class="stats-note" role="status" aria-live="polite">Automatische Statistikerfassung wird geprüft …</p>
-    <div class="stats-filters">
-      <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel">Kriege für Auswertung</label>
-        <details class="stats-period" id="statsPeriodConfig">
-          <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
-          <div class="stats-period-options">
-            <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
-              <option value="1">Letzter 1 CW</option><option value="2">Letzte 2 CWs</option>
-              <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
-              <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
-              <option value="50" selected>Letzte 50 CWs</option>
-            </select></div>
-            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Durchgänge</label><select id="statsCwlRange">
-              <option value="1">Letzter CWL-Durchgang</option><option value="2">Letzte 2 CWL-Durchgänge</option>
-              <option value="3">Letzte 3 CWL-Durchgänge</option><option value="all" selected>Alle gespeicherten CWL-Durchgänge</option>
-            </select></div>
-          </div>
-        </details></div>
-    </div>
   </div>
   <nav id="statsSectionTabs" class="stats-section-tabs" aria-label="Statistikbereiche">
     <button type="button" class="stats-section-tab active" data-stats-section="overview" aria-pressed="true">Überblick</button>
-    <button type="button" class="stats-section-tab" data-stats-section="players" aria-pressed="false">Spieler</button>
+    <button type="button" class="stats-section-tab" data-stats-section="players" aria-pressed="false">Spielerstatistik</button>
+    <button type="button" class="stats-section-tab" data-stats-section="form" aria-pressed="false">Spielerform</button>
     <button type="button" class="stats-section-tab" data-stats-section="compare" aria-pressed="false">Vergleiche</button>
     <button type="button" class="stats-section-tab" data-stats-section="history" aria-pressed="false">Verlauf & Kriege</button>
   </nav>
@@ -3049,13 +3104,36 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
   </section>
-  <section class="card stats-table-card" data-stats-panel="players" aria-label="Spielerauswertung" hidden>
-    <div class="section-title"><h3>Spieler im Vergleich</h3></div>
+  <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
+    <div class="section-title"><h3>Spielerstatistik</h3></div>
+    <p class="stats-note">Hier bestimmst du selbst, welche Kriege für alle Ergebnisse dieser Tabelle zählen. Die separate Spielerform hat ihren eigenen Zeitraum.</p>
+    <div class="stats-player-scope">    <div class="stats-filters">
+      <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
+      <div class="field"><label id="statsPeriodLabel">Kriege für Auswertung</label>
+        <details class="stats-period" id="statsPeriodConfig">
+          <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
+          <div class="stats-period-options">
+            <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
+              <option value="1">Letzter 1 CW</option><option value="2">Letzte 2 CWs</option>
+              <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
+              <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
+              <option value="50">Letzte 50 CWs</option><option value="all" selected>Alle verfügbaren CWs</option>
+            </select></div>
+            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Durchgänge</label><select id="statsCwlRange">
+              <option value="1">Letzter CWL-Durchgang</option><option value="2">Letzte 2 CWL-Durchgänge</option>
+              <option value="3">Letzte 3 CWL-Durchgänge</option><option value="all" selected>Alle gespeicherten CWL-Durchgänge</option>
+            </select></div>
+          </div>
+        </details></div>
+    </div>
+
+    </div>
+    <div class="stats-query-explainer" id="statsScopeExplainer" role="status" aria-live="polite"></div>
     <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
     <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Kriegszeitraum. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
     <details class="stats-explain" id="statsExplain"><summary>Wie wird hier sortiert?</summary>
-      <p>Standardmäßig stehen Spieler mit ausreichend dokumentierten, neueren gleich-RH-Angriffen oben. Diese Listenposition ist kein objektiver Stärkerang. Dafür betrachtet die App nur Angriffe auf die <strong>gleiche Rathausstufe</strong>, gewichtet neuere Ergebnisse stärker und berücksichtigt, wie viele Angriffe vorliegen. Spieler mit sehr wenigen oder nur alten Vergleichsdaten werden nicht künstlich an die Spitze gesetzt.</p>
-      <p>Der Vergleich ist eine <strong>Orientierung, keine endgültige Rangliste</strong>: Ein gerushtes RH18, eine schwere Base, Mirror und Aufräumangriffe können wir historisch noch nicht sicher auseinanderhalten. Der RH-Filter darunter bezieht sich auf die Rohstatistik; der Formvergleich verwendet immer nur das gleiche RH.</p>
+      <p>Standardmäßig wird nach Anzahl der dokumentierten Angriffe sortiert. Bei jeder anderen Sortierung gilt exakt die oben angezeigte Kriegsmenge. Die Nummern sind Listenpositionen und keine Aussage über Spielerstärke. Eine 100%-Quote aus zwei Angriffen ist weniger belastbar als eine Quote aus vielen Angriffen. Die unabhängige Bewertung der jüngeren Form findest du unter „Spielerform“.</p>
+      <p>Alle sichtbaren Werte beziehen sich auf die gewählten Kriege. Gegnerrathaus, Basis-Schwierigkeit, Mirror und Angriffsrolle unterscheiden sich weiterhin; diese Tabelle ist ein Rohdatenvergleich und keine berechnete Stärke-Rangliste.</p>
     </details>
     <div class="stats-toggles">
       <label><input type="checkbox" id="statsSameTH"> Nur Angriffe gegen gleiches oder höheres RH</label>
@@ -3063,7 +3141,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     </div>
     <div class="stats-filters">
       <div class="field"><label for="statsSearch">Spieler suchen</label><input type="search" id="statsSearch" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="performance" selected>Formvergleich (90 Tage, gleiche RH)</option><option value="hitRate">3★-Quote (roh) ↓</option><option value="attacks">Angriffe ↓</option><option value="averageStars">Ø Sterne (roh) ↓</option><option value="lastTen">Ø Sterne · 10 ausgewählte Kriege ↓</option><option value="missed">Verpasst (belegt) ↓</option><option value="name">Name</option></select></div>
+      <div class="field"><label for="statsSort">Sortieren nach</label><select id="statsSort"><option value="hitRate">3★-Quote ↓</option><option value="attacks" selected>Angriffe ↓</option><option value="averageStars">Ø Sterne ↓</option><option value="missed">Verpasst (belegt) ↓</option><option value="name">Name</option></select></div>
     </div>
     <div class="stats-player-table" aria-label="Spielerstatistik">
       <div class="stats-player-head"><span>Nr. · Spieler</span><span>3★-Quote</span><span>Angriffe</span><span>Verpasst</span></div>
@@ -3075,21 +3153,38 @@ html[data-theme] #view-more-settings .latest-changelog{
       <p>Für ältere CWL-Tage brauchen wir <strong>die tatsächliche Aufstellung jedes Tages</strong> und einen Nachweis, wer einen Angriff ausgelassen hat. ClashPerk bietet CWL-Missed-Attack- und Lineup-Change-Logs; nicht jeder alte Krieg ist rückwirkend vollständig verfügbar. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">Welche Logs es gibt</a>.</p>
       <p>Bitte erst die Originaldaten je CWL-Tag prüfen, nicht fehlende Datensätze als null versäumte Angriffe zählen. Der normale Statistik-JSON-Import akzeptiert keine beliebigen Screenshots oder ClashPerk-Dateien direkt.</p>
     </details>
-    <details class="stats-form-panel" id="statsFormDetails">
-      <summary>Formvergleich: gleiches RH <span>30 / 90 Tage</span></summary>
-      <p class="stats-note" id="statsFormIntro">Gleichwertige RH-Angriffe werden geladen …</p>
-      <div id="statsFormRows" class="stats-form-rows" aria-live="polite"></div>
-<details class="stats-form-method" id="statsFormMethod"><summary>Wie entsteht die Form-Einordnung?</summary>
-        <p>Der Vergleich berücksichtigt nur Angriffe gegen dieselbe Rathausstufe. Innerhalb der oben ausgewählten Kriege siehst du für die <strong>letzten 30 Tage</strong> die unveränderte Trefferquote; beim <strong>90-Tage-Trend</strong> zählen neuere Angriffe stärker. Erst bei genügend aktuellen Vergleichsangriffen bekommt ein Spieler eine einordenbare Form.</p>
-        <p>Intern wird die Rangfolge vorsichtig nach Stichprobengröße korrigiert (Wilson-basierter Vergleichswert, mindestens fünf effektiv gewichtete und zwei aktuelle Angriffe). Dieser Wert ist <strong>keine vorhergesagte Dreisterne-Chance</strong> und deshalb bewusst nicht als 0–100-Punktzahl dargestellt. Gleiche RH-Stufe bedeutet nicht automatisch gleiche Basisschwierigkeit.</p>
-      </details>
-    </details>
     <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
     <p class="stats-asset-credit">Rathausbilder: <a href="https://github.com/ClashKingInc/ClashKingAssets" target="_blank" rel="noopener noreferrer">ClashKingAssets</a> · inoffizielle Fan-App, nicht von Supercell unterstützt.</p>
     <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </section>
+  <section class="card stats-form-card" data-stats-panel="form" aria-label="Unabhängige Spielerform" hidden>
+    <div class="section-title"><div><h3>Spielerform</h3><p class="statusline">Eigenständige Formanalyse aus der gesamten verfügbaren Clan-Historie – unabhängig von der frei gewählten Spielerstatistik.</p></div></div>
+    <div class="stats-form-window" role="group" aria-label="Zeitraum für Spielerform wählen">
+      <button type="button" data-form-window="30" aria-pressed="false">Kurzfristig <small>30 Tage</small></button>
+      <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
+      <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
+    </div>
+    <p class="stats-reading-copy">Ausgewertet werden nur Angriffe auf dieselbe Rathausstufe. Das zeigt einen vergleichbareren Ausschnitt, ersetzt aber keine Einordnung der gegnerischen Basis. Spieler mit wenigen oder keinen dokumentierten Angriffen werden nicht als schwach eingestuft.</p>
+    <div class="stats-form-controls">
+      <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="attacks">Vergleichbare Angriffe ↓</option><option value="name">Name</option><option value="hitRate">3★-Quote ↓ (mit Fallzahlen)</option></select></div>
+    </div>
+    <p class="stats-note" id="statsFormIntro"></p>
+    <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
+    <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
+      <p>Die Fenster sind feste <strong>Kalendertage</strong> ab dem aktuellen Datum und verwenden alle verfügbaren abgeschlossenen CWs und CWL-Tage im ausgewählten Clan. Sie sind vollständig unabhängig vom Zeitraum unter Spielerstatistik.</p>
+      <p>Nur Angriffe gegen die gleiche Rathausstufe fließen in die Quote. Andere RH-Ziele und fehlende RH-Daten werden separat ausgewiesen. Niedrige Fallzahlen und alte Daten sind sichtbar; 0 Angriffe bedeuten „keine Daten“, nicht 0 %.</p>
+      <p>Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
+    </details>
+  </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
+    <div class="section-title"><div><h3>Vergleiche</h3><p class="statusline">Eigene Auswahl für alle Vergleiche – unabhängig von der Spielerstatistik.</p></div></div>
+    <div class="stats-context-controls">
+      <div class="field"><label for="statsCompareType">Kriegsart</label><select id="statsCompareType"><option value="all">CW und CWL</option><option value="normal">Nur CW</option><option value="cwl">Nur CWL</option></select></div>
+      <div class="field"><label for="statsCompareDays">Zeitraum</label><select id="statsCompareDays"><option value="all">Alle erfassten Kriege</option><option value="30">Letzte 30 Tage</option><option value="90">Letzte 90 Tage</option><option value="180">Letzte 180 Tage</option></select></div>
+    </div>
+    <p class="stats-note" id="statsCompareScope"></p>
     <div class="section-title"><div><h3>Angriffe nach Gegner-Rathaus</h3><p class="statusline">Tatsächliche Ergebnisse – getrennt nach normalem Clankrieg und CWL.</p></div></div>
     <p class="stats-note">Niedriger / gleich / höher vergleicht das Rathaus des Gegners mit dem des Angreifers. Gleiche Rathausstufe bedeutet nicht automatisch gleich starke Basen. Bei fehlendem RH zählen Angriffe separat als „Unbekannt“.</p>
     <div id="statsMatchupComparison" class="stats-matchup-comparison" aria-live="polite"></div>
@@ -3106,10 +3201,13 @@ html[data-theme] #view-more-settings .latest-changelog{
   <section class="card stats-war-history-card" data-stats-panel="history" aria-label="Kriegsverlauf" hidden>
     <div class="section-title"><div><h3>Verlauf & einzelne Kriege</h3><p class="statusline">Dreierquote oder Ø Sterne im zeitlichen Verlauf und vollständige Kriegsdetails.</p></div></div>
     <div class="stats-trend-controls">
+      <div class="field"><label for="statsTrendType">Kriegsart</label><select id="statsTrendType"><option value="all">CW und CWL</option><option value="normal">Nur CW</option><option value="cwl">Nur CWL</option></select></div>
+      <div class="field"><label for="statsTrendDays">Zeitraum</label><select id="statsTrendDays"><option value="all">Gesamter Datenbestand</option><option value="30">30 Tage</option><option value="90">90 Tage</option><option value="180">180 Tage</option><option value="365">365 Tage</option></select></div>
       <div class="field"><label for="statsTrendMetric">Kennzahl</label><select id="statsTrendMetric"><option value="hitRate">3★-Quote</option><option value="averageStars">Ø Sterne je Angriff</option></select></div>
-      <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="month">Monat</option><option value="week">Woche</option></select></div>
+      <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="week" selected>Woche</option><option value="day">Tag</option><option value="month">Monat</option></select></div>
     </div>
-    <p class="stats-note">Grün = normaler CW · Gold = CWL. Punkte zeigen nur Zeiträume mit tatsächlich erfassten Angriffen; fehlende Kriege werden nicht als 0 % gewertet.</p>
+    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Die Farbe passt sich dem Theme an. Kreise stehen für CW, Rauten für CWL. Fehlende Kriege werden nicht als 0 % gewertet.</p>
+    <p id="statsTrendScope" class="stats-note" aria-live="polite"></p>
     <div id="statsTrendChart" class="stats-trend-chart" aria-live="polite"></div>
     <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Stichprobengröße"></div>
     <div class="section-title stats-war-list-title"><h3>Einzelne Kriege</h3></div>
