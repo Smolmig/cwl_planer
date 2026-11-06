@@ -147,7 +147,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     doc.body.append(popup);
     const onOutside=e=>{if(!popup.contains(e.target)&&!anchor.contains(e.target))closeSwapPopover()};
     const onEscape=e=>{if(e.key==="Escape"){e.preventDefault();closeSwapPopover();anchor.focus()}};
-    const onScroll=()=>closeSwapPopover();
+    const onScroll=e=>{if(!popup.contains(e.target))closeSwapPopover()};
     const onResize=()=>positionSwapPopover(anchor,popup);
     activeSwap={key,anchor,popup,doc,win,onOutside,onEscape,onScroll,onResize};
     openedOutgoing.add(key);
