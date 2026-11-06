@@ -299,22 +299,24 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(type==="cwl"){
       if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
         " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
-        " von "+summary.totalCwlSeasons+" Saisons · "+summary.attacks+" Angriffe";
-      if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({season,days})=>{
-        const date=new Date(season+"-01T12:00:00Z");
-        return date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"})+
-          ": "+days+" von 7 Kriegstagen gespeichert";
+        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe";
+      if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({from,to,days,inferred})=>{
+        const fmt=value=>new Date(value+"T12:00:00Z").toLocaleDateString("de-AT",
+          {day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
+        return fmt(from)+(from!==to?" – "+fmt(to):"")+
+          ": "+days+" erfasste Kriegstage"+(inferred?" (zeitlich zugeordnet)":"");
       }).join(" · ");
     }else{
       const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
       const normalDays=summary.wars-leagueDays;
       if(type==="all"){
         if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
-          " CWL-Kriegstage · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden die letzten "+last+
-          " normalen Clankriege und "+(cwlSeasons==="all"?"alle verfügbaren CWL-Saisons":
-          "bis zu "+cwlSeasons+" CWL-Saison"+(cwlSeasons===1?"":"s"))+
-          ". Ältere Daten bleiben erhalten.";
+          " CWL-Kriegstage aus "+summary.cwlSeasonBreakdown.length+
+          " Durchgängen · "+summary.attacks+" Angriffe";
+        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden "+normalDays+
+          " normale CWs und "+summary.cwlSeasonBreakdown.length+
+          " der "+summary.totalCwlSeasons+" erfassten CWL-Durchgänge. "+
+          "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.";
       }else{
         if(count)count.textContent=summary.wars+" von "+
           wars.filter(w=>w.war_type==="normal").length+
@@ -705,12 +707,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(leagueField)leagueField.hidden=type==="normal";
     const parts=[];
     const normalCount=wars.filter(w=>w.war_type==="normal").length;
-    const cwlCount=new Set(wars.filter(w=>w.war_type==="cwl").map(w=>w.started_at?.slice(0,7)).filter(Boolean)).size;
+    const cwlCount=groupCwlRuns(wars.filter(w=>
+      w.war_type==="cwl"&&(w.source!=="api"||w.finalized===true))).length;
     if(type!=="cwl")parts.push(normalCount?
       Math.min(last,normalCount)+"/"+normalCount+" CWs":"bis zu "+last+" CWs");
     if(type!=="normal")parts.push(cwlCount?
-      (cwlSeasons==="all"?cwlCount:Math.min(Number(cwlSeasons),cwlCount))+"/"+cwlCount+" CWL-Monate":
-      "alle gespeicherten CWLs");
+      (cwlSeasons==="all"?cwlCount:Math.min(Number(cwlSeasons),cwlCount))+"/"+cwlCount+" CWL-Durchgänge":
+      "alle gespeicherten CWL-Durchgänge");
     const summary=$("statsPeriodSummary");
     if(summary)summary.textContent=parts.join(" + ");
   }
