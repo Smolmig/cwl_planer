@@ -4040,22 +4040,31 @@ function rotationWeightLabel(m){
  if(m.rotationWeight==="balanced"||!(m.priority>0))return "Ausgewogen";
  return "Bisher Prio "+m.priority;
 }
+function currentCwlTripleRate(tag){
+ const normalized=normalizePlayerTag(tag);
+ const results=Object.values(window.CWLCloud?.getPlayedAttackResults?.()||{})
+   .map(day=>day?.[normalized]).filter(r=>r&&!r.missed&&Number.isInteger(r.stars));
+ const triples=results.filter(r=>r.stars===3).length;
+ const attacks=results.length;
+ return {triples,attacks,label:attacks?
+  "CWL aktuell · 3★-Hitrate: "+Math.round(100*triples/attacks)+" % ("+
+  triples+"/"+attacks+" Dreier)": "CWL aktuell · 3★-Hitrate: noch keine belegten Angriffe"};
+}
 function memberCompactPerformance(m){
  if(!window.CWLCloud?.active)return esc(STRENGTH_SHORT[m.threeStar]||"3★ ?");
  const recent=m.playerTag?window.CWLCloudStats?.getRecentPlayerStats?.(m.playerTag):null;
- const tag=normalizePlayerTag(m.playerTag);
- const results=Object.values(window.CWLCloud?.getPlayedAttackResults?.()||{})
-   .map(day=>day?.[tag]).filter(r=>r&&!r.missed&&Number.isInteger(r.stars));
- const triple=results.filter(r=>r.stars===3).length;
- const current=results.length
-  ?"CWL aktuell: "+Math.round(triple/results.length*100)+" % 3★ ("+triple+"/"+results.length+" AG)"
-  :"CWL aktuell: noch kein belegter Angriff";
- const form=recent?.attacks
-  ?"Letzte "+recent.attacks+" AG (CW/CWL): "+recent.hitRate+" % 3★"
-  :"Letzte 7 AG (CW/CWL): keine Daten";
+ const current=currentCwlTripleRate(m.playerTag).label;
+ const season=String(state.cwlLive?.season||"");
+ const included=season?Number(recent?.cwlBySeason?.[season]||0):null;
+ const basis=recent?.attacks?
+  "Letzte "+recent.attacks+" gespeicherte AG (CW/CWL) · 3★-Hitrate: "+
+  recent.hitRate+" %":"Letzte 7 gespeicherte AG (CW/CWL) · keine Daten";
+ const note=included===null?"":included?
+  " · "+included+" AG dieser CWL enthalten":
+  " · aktuelle CWL noch nicht enthalten";
  const played=lastPlan?.playedCounts?.[m.id]||0,planned=lastPlan?.counts?.[m.id]||0;
  return '<span class="cwl-performance-current">'+esc(current)+'</span>'+
-  '<span class="cwl-performance-recent">'+esc(form)+'</span>'+
+  '<span class="cwl-performance-recent">'+esc(basis+note)+'</span>'+
   '<span class="cwl-performance-schedule">'+played+' gespielt · '+Math.max(0,planned-played)+' geplant</span>';
 }
 function memberPerformance(m){
