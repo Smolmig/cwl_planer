@@ -62,6 +62,14 @@ test("incomplete/malformed official snapshots are rejected without creating fake
  assert.throws(()=>buildWarSnapshot(absent,own,{now}),/invalid_defender_townhall/);
 });
 
+test("captured league round is identified by war tag, not calendar month",async()=>{
+ const {hasCapturedCwlRound}=await importCore();
+ const known=new Set(["cwl:#8PYL"]);
+ assert.equal(hasCapturedCwlRound(["#QPYL","#8PYL","#2PYL"],known),true);
+ assert.equal(hasCapturedCwlRound(["#QPYL","#2PYL"],known),false);
+ assert.equal(hasCapturedCwlRound([],known),false);
+});
+
 test("GitHub OIDC verification requires signed exact workload identity",async()=>{
  const {verifyCollectorIdentity,EXPECTED}=await importAuth();
  const pair=await webcrypto.subtle.generateKey({
