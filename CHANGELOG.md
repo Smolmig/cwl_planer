@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.5] - 2026-11-06
+
+### Cloud-Einladungen wiederholt kopierbar
+- Neu erstellte **Gruppenlinks und Einmal-Einladungen** haben unter „Clan & Konto → Aktive Einladungslinks“ eine direkte Aktion **„Link kopieren“**. Der Link muss nicht neu erstellt werden.
+- Berechtigungssicher: Nur der Clanbesitzer oder der erstellende Vize können einen aktiven Link erneut abrufen; die allgemeinen Listen liefern **keine Einladungscodes** aus. Die Codes werden ausschließlich in einer gesperrten privaten Datenbanktabelle abgelegt.
+- Bereits vorhandene Einladungen mit ausschließlich gehashtem Code bleiben unverändert gültig, können aber nicht nachträglich aus dem Hash rekonstruiert werden. Die Oberfläche erklärt diesen Sonderfall beim Kopierversuch.
+- Keine Änderung an Kader, CWL-Plan, Statistik, bestehenden Einladungen, lokalen Profilen oder Offline-PWA. Migration `20261106134441_cwl_invite_copy_secure.sql` ist in Supabase angewendet.
+
+
 ## [1.16.4] - 2026-11-06
 
 ### Plan und Einsätze: sichtbarer Aufstellungswechsel und 8★-Fortschritt
