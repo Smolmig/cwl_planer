@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.6] - 2026-11-06
+
+### CWL-Aufstellungswechsel als Overlay, Einsätze vereinfacht
+- Die tatsächlichen Clash-Spieler in der bisherigen 15er-Aufstellung nutzen nun denselben vollständigen Spieler-Chip-Renderer wie die geplanten Spieler (RH, FIX, aktuelle CWL-Quote, letzte 7 Angriffe und Einsätze). Auch ein auszuwechselnder Spieler verliert beim roten Hervorheben keine Informationen.
+- Tippen auf den rot markierten Spieler öffnet eine **schwebende grüne Einwechselkarte** direkt an dieser Position. Sie ist dieselbe Kartengröße/-struktur, liegt außerhalb des Rasters, verschiebt keine Spieler und kann mit Escape, erneutem Tippen, Schließen oder Außentippen geschlossen werden. Bei Live-Refresh wird der geöffnete Zustand bei gültigem Abgleich wiederhergestellt.
+- Die zusätzliche **Form**-Zeile in `Einsätze` war nur eine Dublette der Kurzfrist-Quote aus bis zu 7 Angriffsresultaten. Sie wurde entfernt; bestehende 8★-Bewertung, tatsächlich erspielte CWL-Sterne und CWL-3★-Quote bleiben erhalten.
+- Nach Laden der Statistik aktualisiert sich auch die Einsatzübersicht und nicht nur Plan/Mitglieder.
+- Erster dezenter Overlay-Übergang unter Beachtung von `prefers-reduced-motion`. Ein appweites Motion-System wird getrennt in Issue #118 geplant.
+- Keine Änderung an Planer-Solver, Cloud-Profilformat, bestehenden Einladungen, Kampfstatistik-Berechnung oder Offline-PWA.
+
+
 ## [1.16.5] - 2026-11-06
 
 ### Cloud-Einladungen wiederholt kopierbar
