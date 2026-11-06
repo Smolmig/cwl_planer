@@ -67,6 +67,17 @@ const upsert=(settings,table,rows,conflict)=>{
   if(!rows.length)return Promise.resolve();
   return rest(settings,table,{method:"POST",rows,conflict});
 };
+async function saveCollectorHealth(settings,clanId,changes){
+  // Preserve the last known successful collection on partial/failed runs.
+  // Explicitly merge prior values: PostgREST's missing-columns upsert
+  // behavior differs with 'Prefer: missing=default' and schema defaults.
+  const rows=await rest(settings,
+    "cwl_stat_collector_status?select=*&clan_id=eq."+
+    encodeURIComponent(clanId)+"&limit=1");
+  await upsert(settings,"cwl_stat_collector_status",[{
+    ...(rows[0]||{}),...changes,clan_id:clanId
+  }],"clan_id");
+}
 async function loadLinkedClans(settings){
   // All app tenants are eligible, not just United Fighters. A duplicate
   // Clash tag can belong to multiple independently permissioned app clans.
@@ -174,20 +185,20 @@ async function archiveForAppClan(settings,clanId,snapshots,checkedAt,partialErro
     warCount++;attacksCount+=attacks.length;
     if(snapshot.war.finalized)finalCount++;
   }
-  await upsert(settings,"cwl_stat_collector_status",[{
-    clan_id:clanId,last_checked_at:checkedAt,
+  await saveCollectorHealth(settings,clanId,{
+    last_checked_at:checkedAt,
     ...(partialError?{}:{last_success_at:new Date().toISOString()}),
     last_error:partialError,observed_wars:warCount,observed_attacks:attacksCount,
     observed_final_wars:finalCount
-  }],"clan_id");
+  });
   return {warCount,attacksCount,finalCount};
 }
 async function markFailure(settings,clanId,checkedAt,code){
   // Preserve last_success_at and prior totals on failures; do not claim data freshness.
   try{
-    await upsert(settings,"cwl_stat_collector_status",[
-      {clan_id:clanId,last_checked_at:checkedAt,last_error:String(code).slice(0,80)}
-    ],"clan_id");
+    await saveCollectorHealth(settings,clanId,{
+      last_checked_at:checkedAt,last_error:String(code).slice(0,80)
+    });
   }catch{/* Best-effort monitoring cannot leak tenant data or block others. */}
 }
 export default {
