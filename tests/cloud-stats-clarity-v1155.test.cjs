@@ -10,25 +10,23 @@ const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
 const staticHtml=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
  .replace(/<link\b[^>]*>/gi,"");
 
-test("Stats explain 2-of-2 samples and no longer crown an unvalidated top player",()=>{
+test("Raw statistics never mix a selected-war lookback with independent 14/30/90-day form",()=>{
  assert.match(html,/2 von 2 ergeben 100 %/);
  assert.match(html,/40 von 60/);
- assert.doesNotMatch(html,/id="statsBestPlayer"/);
- assert.match(html,/Formvergleich \(90 Tage, gleiche RH\)/);
- assert.match(html,/id="statsFormDetails"/);
+ assert.match(html,/data-stats-panel="form"/);
  assert.match(html,/id="statsFormMethod"/);
+ assert.match(html,/id="statsFormRows"/);
  assert.match(html,/id="statsCoverageGuide"/);
- assert.match(ui,/qualityLabel=\{none:/);
- assert.match(ui,/p\.last30\.triples/);
- assert.match(ui,/p\.last90\.attacks/);
- assert.match(ui,/p\.weighted90\.hitRate/);
- assert.match(ui,/form\.performanceRankable/);
- assert.match(ui,/summary\.missedCoverage\.cwl/);
+ assert.doesNotMatch(html,/id="statsFormDetails"/);
+ assert.doesNotMatch(html,/id="statsBestPlayer"/);
+ assert.match(ui,/computeComparableForm\(inputWars,attacks,options\[days\]\)/);
+ assert.match(ui,/windowDays:14,recentDays:7/);
+ assert.match(ui,/windowDays:30,recentDays:14/);
+ assert.match(ui,/windowDays:90,recentDays:30/);
+ assert.match(ui,/periodBySection/);
+ assert.doesNotMatch(ui,/computeComparableForm\(selection,attacks\)/);
  assert.doesNotMatch(ui,/statsBestPlayer/);
- assert.doesNotMatch(ui,/n_eff/);
- assert.doesNotMatch(ui,/performanceIndex\+"\/100"/);
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(ui,/Mirror-Position/);
 });
 
 test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL, not false zeroes",()=>{
@@ -38,11 +36,11 @@ test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL
  assert.match(ui,/guide\.hidden=!\(cwl\.wars>0&&!cwl\.complete\)/);
  assert.match(ui,/if\(guide\.hidden\)guide\.open=false/);
  assert.match(ui,/displayMissed=\(known,complete\)=>complete\?String\(known\)/);
- assert.match(ui,/computeComparableForm\(selection,attacks\)/);
+ assert.doesNotMatch(ui,/computeComparableForm\(selection,attacks\)/);
  assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
 });
 
-test("Statistics layout is legible and border-light across 320–1366px and all themes",{
+test("Statistics layout is legible across 320–1366px and five themes",{
  timeout:120000
 },async()=>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -57,30 +55,35 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
       document.body.classList.add("cloud-mode");
       document.getElementById("view-plan").classList.remove("active");
       document.getElementById("view-stats").classList.add("active");
-      document.querySelector('[data-stats-panel="players"]').hidden=false;
+      const players=document.querySelector('[data-stats-panel="players"]');
+      const form=document.querySelector('[data-stats-panel="form"]');
+      players.hidden=false;form.hidden=false;
       const help=document.getElementById("statsExplain");
-      const form=document.getElementById("statsFormDetails");
+      const method=document.getElementById("statsFormMethod");
       const guide=document.getElementById("statsCoverageGuide");
+      guide.hidden=false;help.open=true;method.open=true;guide.open=true;
       const rows=document.getElementById("statsFormRows");
-      guide.hidden=false;form.open=true;help.open=true;guide.open=true;
-      rows.innerHTML="<div class='stats-form-row'><div class='stats-form-person'><b>Very Long Player Name RH18</b><span class='stats-form-quality'>Wenig Daten</span><small>Keine belastbare Rang-Einordnung</small></div><div class='stats-form-results'><div class='stats-form-cell'><span>Letzte 30 Tage</span><strong>100 %</strong><small>2 von 2 Angriffen mit 3★</small></div><div class='stats-form-cell'><span>90-Tage-Trend</span><strong>87 %</strong><small>2 gleich-RH-Angriffe · neuere zählen stärker</small></div><small class='stats-form-breakdown'>CWL: 1 Angriff · normaler CW: 1 Angriff</small></div></div>";
+      rows.innerHTML="<div class='stats-form-row'><div class='stats-form-person'><b>Very Long Player Name RH18</b><small>Wenig Daten – keine sichere Einstufung</small></div>"+
+       "<div class='stats-form-barcell' data-days='14'><strong>100 %</strong><small>2/2</small><span class='stats-percent-track'><span class='stats-percent-fill' style='width:100%'></span></span></div>"+
+       "<div class='stats-form-barcell' data-days='30'><strong>67 %</strong><small>2/3</small><span class='stats-percent-track'><span class='stats-percent-fill' style='width:67%'></span></span></div>"+
+       "<div class='stats-form-barcell' data-days='90'><strong>45 %</strong><small>10/22</small><span class='stats-percent-track'><span class='stats-percent-fill' style='width:45%'></span></span></div>"+
+       "<small class='stats-form-source'>CW: 10 · CWL: 12</small></div>";
       const statsRows=document.getElementById("statsRows");
-      statsRows.innerHTML="<div class='stats-player-row'><div class='stats-player'><span class='stats-th'>RH18</span><div class='stats-name'><b>LongPlayerName</b></div></div><div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>100 %</strong><small class='stats-rate-avg'>Ø 3,00 ★</small></div><span class='stats-number'><small class='stats-mobile-label'>Angriffe</small>2</span><span class='stats-number stats-missed-cell'><small class='stats-mobile-label'>Verpasst</small><strong>k. A.</strong></span><small class='stats-form-score'>Vergleich: Wenig Daten · 2 gleich-RH-Angriffe</small><details class='stats-player-details'><summary>Letzte Kriege</summary></details></div>";
-      const playerRow=statsRows.querySelector(".stats-player-row");
+      statsRows.innerHTML="<div class='stats-player-row'><div class='stats-player'><span class='stats-th'>RH18</span><div class='stats-name'><b>LongPlayerName</b></div></div><div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>100 %</strong><small class='stats-rate-avg'>Ø 3,00 ★</small></div><span class='stats-number'><small class='stats-mobile-label'>Angriffe</small>2</span><span class='stats-number stats-missed-cell'><small class='stats-mobile-label'>Verpasst</small><strong>k. A.</strong></span><details class='stats-player-details'><summary>Datengrundlage</summary></details></div>";
       const rect=x=>x.getBoundingClientRect();
-      const row=rows.querySelector(".stats-form-row"),results=row.querySelector(".stats-form-results");
+      const row=rows.querySelector(".stats-form-row");
+      const formBars=[...row.querySelectorAll(".stats-form-barcell")];
       const panel=getComputedStyle(guide);
       const reads=[...document.querySelectorAll("#view-stats :is(.stats-explain,.stats-form-method,.stats-coverage-guide)>summary")];
+      const playerRow=statsRows.querySelector(".stats-player-row");
       return {
-       docWidth:document.documentElement.scrollWidth,
-       viewport:innerWidth,
-       rowWidth:rect(row).width,
-       rowChildren:[...row.children].map(x=>rect(x).width),
-       resultColumns:getComputedStyle(results).gridTemplateColumns.split(" ").length,
-       guideBorderLeft:panel.borderLeftWidth,
-       headHeights:reads.map(x=>rect(x).height),
+       docWidth:document.documentElement.scrollWidth,viewport:innerWidth,
+       rowWidth:rect(row).width,rowChildren:[...row.children].map(x=>rect(x).width),
+       formColumns:getComputedStyle(row).gridTemplateColumns.split(" ").length,
+       visibleFormBars:formBars.filter(el=>rect(el).width>0).length,
+       guideBorderLeft:panel.borderLeftWidth,headHeights:reads.map(x=>rect(x).height),
        mainText:parseFloat(getComputedStyle(document.querySelector(".stats-reading-copy")).fontSize),
-       methodVisible:form.open&&help.open&&guide.open,
+       methodVisible:!form.hidden&&method.open&&help.open&&guide.open,
        playerColumns:getComputedStyle(playerRow).gridTemplateColumns.split(" ").length,
        mobileLabel:getComputedStyle(playerRow.querySelector(".stats-mobile-label")).display,
        tableHead:getComputedStyle(document.querySelector(".stats-player-head")).display,
@@ -91,20 +94,21 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
      const note=JSON.stringify({theme,width,metrics});
      assert.ok(metrics.docWidth<=width+3,note);
      assert.ok(metrics.rowWidth>0,note);
-     assert.equal(metrics.resultColumns,2,note);
+     assert.equal(metrics.formColumns,width<=699?3:4,note);
+     assert.equal(metrics.visibleFormBars,3,note);
      assert.equal(metrics.guideBorderLeft,"0px",note);
      assert.ok(metrics.headHeights.every(n=>n>=43.5),note);
      assert.ok(metrics.mainText>=13,note);
      assert.equal(metrics.methodVisible,true,note);
      if(width<=699){
-      assert.ok(metrics.rowChildren.every(w=>w<=metrics.rowWidth+2),note);
-      assert.equal(metrics.playerColumns,3,note);
-      assert.equal(metrics.mobileLabel,"block",note);
-      assert.equal(metrics.tableHead,"none",note);
-      assert.ok(metrics.playerChildren.every(w=>w<=metrics.playerWidth+2),note);
+       assert.ok(metrics.rowChildren.every(w=>w<=metrics.rowWidth+2),note);
+       assert.equal(metrics.playerColumns,3,note);
+       assert.equal(metrics.mobileLabel,"block",note);
+       assert.equal(metrics.tableHead,"none",note);
+       assert.ok(metrics.playerChildren.every(w=>w<=metrics.playerWidth+2),note);
      }else{
-      assert.equal(metrics.playerColumns,4,note);
-      assert.equal(metrics.mobileLabel,"none",note);
+       assert.equal(metrics.playerColumns,4,note);
+       assert.equal(metrics.mobileLabel,"none",note);
      }
     }finally{await page.close()}
    }

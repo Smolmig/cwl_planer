@@ -40,7 +40,7 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     page.on("pageerror",e=>jsErrors.push(e.message));
     await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
     const result=await page.evaluate(async()=>{
-      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.15.9");
+      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.16.0");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
       const wars=[
@@ -78,7 +78,19 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const players=show("players");
       const numbered=document.querySelector("#statsRows .stats-row-number")?.textContent;
       const playerScope=document.getElementById("statsPlayerScope").textContent;
+      const warType=document.getElementById("statsType");
+      warType.value="normal";warType.dispatchEvent(new Event("change",{bubbles:true}));
+      const filteredPlayerCount=document.getElementById("statsPlayerScope").textContent;
+      const formView=show("form");
+      const formHtml=document.getElementById("statsFormRows").textContent;
+      const formDescription=document.getElementById("statsFormIntro").textContent;
+      const formFilterHidden=document.getElementById("statsContextFilter").hidden;
+      const formEvidence=document.getElementById("statsFormRows").textContent;
       const compare=show("compare");
+      const compareWarType=document.getElementById("statsType").value;
+      show("players");
+      const restoredWarType=document.getElementById("statsType").value;
+      show("compare");
       const comparison=document.getElementById("statsMatchupComparison").textContent;
       const duelBefore=document.getElementById("statsDuelResults").textContent;
       const duelLeft=document.getElementById("statsDuelLeft"),duelRight=document.getElementById("statsDuelRight");
@@ -93,16 +105,27 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
       const trendTable=document.getElementById("statsTrendTable").textContent;
       const back=show("overview");
-      return {initial,overviewText,players,numbered,playerScope,compare,comparison,duelBefore,duel,
+      return {initial,overviewText,players,numbered,playerScope,filteredPlayerCount,
+        formView,formHtml,formDescription,formFilterHidden,formEvidence,compareWarType,
+        restoredWarType,compare,comparison,duelBefore,duel,
         history,warNames,timelineBefore,timelineAfter,trendTable,back,
        tabs:tabs.length,finalWidth:document.documentElement.scrollWidth,viewport:innerWidth};
     });
     assert.deepEqual(result.initial,["overview"]);
-    assert.equal(result.tabs,4);
+    assert.equal(result.tabs,5);
     assert.equal(result.players.active,"true");
     assert.deepEqual(result.players.visible,["players"]);
     assert.equal(result.numbered,"1.");
-    assert.match(result.playerScope,/2 ausgewählten Kriegen/);
+    assert.match(result.playerScope,/2 hier ausgewählten Kriegen/);
+    assert.deepEqual(result.formView.visible,["form"]);
+    assert.match(result.formHtml,/Beispiel/);
+    assert.match(result.formHtml,/Vergleich/);
+    assert.match(result.formDescription,/feste Zeitfenster|90 Tagen|90 Tage/i);
+    assert.equal(result.formFilterHidden,true);
+    assert.match(result.filteredPlayerCount,/1 hier ausgewählten Kriegen/);
+    assert.match(result.formEvidence,/CW 1 · CWL 1/);
+    assert.equal(result.compareWarType,"all","comparison must not inherit player selection");
+    assert.equal(result.restoredWarType,"normal","player selection persists across sections");
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.comparison,/Gegner-RH niedriger/);
     assert.match(result.comparison,/Gleiches Rathaus/);
