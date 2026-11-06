@@ -101,7 +101,7 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
     "stale API preparation must not show actionable swap markings");
   apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"complete",rounds:[round]};
   await live.refresh();
-  assert.match(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/stimmt mit Clash überein/);
 
   round.clan.members.pop();
   live.render();
