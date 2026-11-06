@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.14] - 2026-11-06
+
+### Statistik-Vergleiche ohne Karten- und Balkenüberladung
+- **Spielerduelle:** Ein primärer direkter Vergleich zeigt zwei Spieler mit ihren echten 3★-Quoten, gezählten Dreiern, dokumentierten Angriffen und Datenqualität. CW und CWL stehen darunter in zwei übersichtlichen, ausgerichteten Zeilen.
+- **Optionale Details:** Sternverteilung, Ø Sterne, Kriege und letzter berücksichtigter Krieg sind in einer einzigen aufklappbaren Gruppe statt in doppelten, ständig sichtbaren Diagrammen. Geöffnet bleibt geöffnet, auch beim Wechsel der Gegner-RH-Filterung.
+- **Rathaus-Hauptvergleich:** Die drei vorhandenen Kennzahlen bleiben; jeder Balken nennt jetzt neben der Prozentquote auch die tatsächliche Anzahl von Dreisternen und Angriffen. Kleine Stichproben sind unmittelbar kenntlich.
+- **Keine Stärkerangfolge:** 2/2 Dreier werden nicht als automatischer Sieger gegen 30/33 dargestellt. Unterschiede in Gegnern und Stichprobengrößen werden klar benannt.
+- **Unverändert:** Rohdaten, Prozentformeln, Kriegsfilter, Solver, Rollen, Supabase und lokale Offline-PWA.
+
+
 ## [1.16.13] - 2026-11-06
 
 ### Kriegsverlauf mit echten Zeitabständen und sichtbaren Datenlücken
