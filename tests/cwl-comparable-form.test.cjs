@@ -133,7 +133,7 @@ test("App keeps old 7-hit member badges and solver unchanged while exposing comp
  assert.match(ui,/getComparablePlayerStats/);
  assert.match(html,/statsFormDetails/);
  assert.match(html,/statsFormRows/);
- assert.match(ui,/Mirror-Position/);
+ assert.match(html,/Basis-Schwierigkeit/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.ok(solver.length>100);
 });
@@ -190,14 +190,16 @@ test("Stale or low-coverage comparable form is unranked, while raw histories rem
  assert.equal(p.performanceIndex,null);
 });
 
-test("Stats selection offers separate performance, raw rate and last-ten-war sorting",()=>{
+test("Raw statistics never inherit hidden form ranking or a nested last-ten-war window",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
- assert.match(html,/option value="performance" selected/);
- assert.match(html,/3★-Quote \(roh\)/);
- assert.match(html,/option value="lastTen"/);
- assert.match(ui,/viewComparableProfiles\.get\(cleanTag\(p\.tag\)\)\?\.performanceIndex/);
- assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
- assert.match(ui,/lastTen\.missedKnown/);
+ assert.match(html,/option value="attacks" selected/);
+ assert.match(html,/data-stats-section="form"/);
+ assert.match(html,/statsFormSearch/);
+ assert.match(html,/stats-player-details/);
+ assert.doesNotMatch(html,/option value="performance"/);
+ assert.doesNotMatch(html,/option value="lastTen"/);
+ assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons\}\)/);
+ assert.match(ui,/computePlayerFormWindows/);
  assert.match(ui,/stats-player-details/);
 });
