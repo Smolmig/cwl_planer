@@ -5,6 +5,27 @@ const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
+/* Server freshness is distinct from historical completeness. GitHub's
+   scheduled collector may be delayed; an old success must not look current. */
+export function collectorHealthDisplay(health,enabled,now=Date.now()){
+  if(!enabled)return {state:"none",
+    text:"Automatische Statistikerfassung ist für verbundene Cloud-Clans verfügbar."};
+  const last=health?.last_success_at?new Date(health.last_success_at):null;
+  const valid=last&&!Number.isNaN(last.getTime());
+  const lastText=valid?
+    last.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):
+    "noch kein erfolgreicher Abgleich";
+  if(health?.last_error)return {state:"error",
+    text:"Automatische Erfassung: letzter Versuch fehlgeschlagen. Letzter erfolgreicher Server-Abgleich: "+lastText+"."};
+  if(!valid)return {state:"none",
+    text:"Automatische Erfassung: bisher noch kein erfolgreicher Server-Abgleich nachgewiesen."};
+  const hoursSinceSuccess=now-last.getTime();
+  if(!Number.isFinite(hoursSinceSuccess)||hoursSinceSuccess>3*60*60*1000)
+    return {state:"stale",
+      text:"Automatische Erfassung möglicherweise verspätet. Letzter erfolgreicher Server-Abgleich: "+lastText+". Neue Angriffe könnten noch fehlen."};
+  return {state:"ok",
+    text:"Automatische Erfassung: letzter erfolgreicher Server-Abgleich "+lastText+". Laufende Kriege bleiben bis zum Abschluss vorläufig."};
+}
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",ascending=false,section="overview";
@@ -328,18 +349,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const enabled=!!ctx.active&&!!ctx.clanId;
     const freshness=$("statsCollectorHealth");
     if(freshness){
-      const health=enabled?collectorHealth:null;
-      const last=health?.last_success_at?new Date(health.last_success_at):null;
-      const lastText=last&&!Number.isNaN(last.getTime())?
-        last.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):"noch kein erfolgreicher Abgleich";
-      freshness.textContent=!enabled?"Automatische Statistikerfassung ist für verbundene Cloud-Clans verfügbar.":
-        health?.last_error?
-          "Automatische Erfassung: zuletzt ein Fehler bei der Clash-Abfrage. Letzte erfolgreiche Prüfung: "+lastText+".":
-          health?.last_success_at?
-            "Automatische Erfassung: letzter erfolgreicher Server-Abgleich "+lastText+". Neue Kriege erscheinen nach ihrem Abschluss.":
-            "Automatische Erfassung: bisher noch kein erfolgreicher Server-Abgleich nachgewiesen.";
-      freshness.dataset.health=!enabled||!health?.last_success_at?"none":
-        health?.last_error?"error":"ok";
+      const presentation=collectorHealthDisplay(collectorHealth,enabled);
+      freshness.textContent=presentation.text;
+      freshness.dataset.health=presentation.state;
     }
     const ctl=$("statsImportButton");if(ctl)ctl.hidden=!enabled||ctx.role==="viewer";
     const copy=$("statsNoCloud");if(copy)copy.hidden=enabled;
