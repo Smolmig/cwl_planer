@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.3",
+  "version": "v1.16.4",
   "released": "2026-11-06",
-  "summary": "CWL-Plan: ursprüngliche aufklappbare geplante Aufstellung wieder sichtbar, auch wenn Clash-Daten aktuell sind und der Plan übereinstimmt. Bei sicherem Clash-Abgleich sind die Statushinweise 'Bereits in Clash', 'In Clash aufnehmen' und 'Aus Clash nehmen' direkt in diese Liste integriert; Einwechselkandidaten aufklappbar. Einfache Clash-Detailansicht ohne redundante Sterne/Form-Angaben; 8★-Medailenziel und optionaler Reservehinweis gebündelt unter Einsätze. Cloud-Daten, Planung, Statistikmethodik und Offline-PWA unverändert."
+  "summary": "CWL-Plan: tatsächliche Clash-Vorbereitung direkt in der ursprünglichen aufklappbaren Aufstellung; Spielerwechsel über rote Spielerkarte mit Inline-Ersatz und Raus-/Rein-Überblick. Einsätze: 8★-Medaillenstatus durch Reparatur des bereits verarbeiteten CWL-Snapshots sichtbar. Eindeutige getrennte Quoten für aktuelle CWL und letzte sieben CW/CWL-Angriffe. Mobile Tagesnavigation bleibt unter dem Header. Keine Änderung an Solver, Datenbank, Profilen oder Offline-PWA."
 }
