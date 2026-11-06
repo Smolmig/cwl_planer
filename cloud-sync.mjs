@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.4";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.4";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.4";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.4";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.4";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.4";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.5";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.5";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.5";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.5";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.5";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.5";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -1056,6 +1056,14 @@ async function loadAccessList(expected=clanId){
   details.append(title,date);row.append(details);
   if(role==="owner"||role==="editor"&&inv.created_by===user.id){
    const actions=document.createElement("div");actions.className="cloud-access-controls";
+   const copy=document.createElement("button");copy.type="button";copy.className="btn small";
+   copy.textContent="Link kopieren";copy.setAttribute("aria-label","Einladungslink "+(inv.link_label||inv.id)+" erneut kopieren");
+   copy.onclick=async()=>{
+    copy.disabled=true;
+    try{await copyExistingInvite(expected,inv)}catch(e){error(e)}
+    finally{copy.disabled=false}
+   };
+   actions.append(copy);
    if(inv.reusable){
     const edit=document.createElement("button");edit.type="button";edit.className="btn small";edit.textContent="Bearbeiten";
     edit.onclick=()=>editReusableInvite(expected,inv).catch(error);actions.append(edit);
@@ -1154,18 +1162,35 @@ async function revokeInvite(expected,inv){
  if(e)throw e;if(!data?.length)throw Error("Einladung bereits eingelöst oder nicht mehr verfügbar.");
  if(expected===clanId){storage.toast("✓ Einladung zurückgezogen");await loadAccessList(expected)}
 }
+function inviteUrlForCode(code){
+ return location.origin+location.pathname+"?invite="+encodeURIComponent(code);
+}
+async function copyExistingInvite(expected,inv){
+ if(!user||expected!==clanId||
+    !(role==="owner"||(role==="editor"&&inv.created_by===user.id)))
+   throw Error("Keine Berechtigung für diese Einladung.");
+ const {data, error:err}=await sb.rpc("cwl_read_copyable_invite",{p_id:inv.id});
+ if(err)throw err;
+ // Historic invitation codes are deliberately irretrievable: only their
+ // SHA-256 hashes exist. The old invitations remain valid and unmodified.
+ if(typeof data!=="string"||!/^[A-Za-z0-9_-]{12}(?:[A-Za-z0-9_-]{12})?$/.test(data)){
+  storage.toast("Dieser ältere Link kann nicht erneut angezeigt werden. Er bleibt gültig. Neue Links lassen sich jederzeit wieder kopieren.");
+  return;
+ }
+ await navigator.clipboard.writeText(inviteUrlForCode(data));
+ storage.toast("✓ Einladungslink kopiert");
+}
 async function createInvite(){
  if(!["owner","editor"].includes(role))throw Error("Nur Besitzer und Vize können einladen.");
  const reusable=$("cloudInviteKind").value==="reusable";
  const label=$("cloudInviteLabel").value.trim();
  if(label.length>60)throw Error("Die Bezeichnung darf maximal 60 Zeichen haben.");
- const {data,error:err}=reusable?
-  await sb.rpc("cwl_create_reusable_invite",{
-   p_clan:clanId,p_role:$("cloudInviteRole").value,
-   p_duration:$("cloudInviteDuration").value,p_label:label||null
-  }):await sb.rpc("cwl_create_short_invite",{p_clan:clanId,p_role:$("cloudInviteRole").value});
+ const {data,error:err}=await sb.rpc("cwl_create_copyable_invite",{
+  p_clan:clanId,p_role:$("cloudInviteRole").value,p_reusable:reusable,
+  p_duration:reusable?$("cloudInviteDuration").value:"7d",p_label:reusable?label||null:null
+ });
  if(err)throw err;
- inviteLink=location.origin+location.pathname+"?invite="+encodeURIComponent(data);
+ inviteLink=inviteUrlForCode(data);
  toggle("cloudInviteOutput",true);
  text("cloudInviteOutput",reusable?
   "Gruppenlink erstellt · beliebig viele Beitritte während der eingestellten Gültigkeit. Link jetzt kopieren und teilen.":
