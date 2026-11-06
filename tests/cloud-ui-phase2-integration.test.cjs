@@ -25,10 +25,10 @@ test("merged UI retains Cloud account/help navigation together with fast members
  assert.ok(html.includes("https://assets.clashk.ing/buildings/home-village/town_hall/level_"));
 });
 
-test("v1.16.13 preserves Cloud data format and independent offline PWA",()=>{
+test("v1.16.14 preserves Cloud data format and independent offline PWA",()=>{
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(html,/const APP_VERSION="v1\.16\.13"/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.16.13");
+ assert.match(html,/const APP_VERSION="v1\.16\.14"/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.16.14");
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
  assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
  assert.match(read("docs/UI_PHASE2_INTEGRATION.md"),/Versions-\/Cachekennungen/);
