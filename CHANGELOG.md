@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.4] - 2026-11-06
+
+### Plan und Einsätze: sichtbarer Aufstellungswechsel und 8★-Fortschritt
+- In der bestehenden aufklappbaren Tagesaufstellung wird bei frisch bestätigter Vorbereitung **die tatsächliche Clash-Aufstellung** gezeigt. Rote Spieler im selben Raster lassen sich antippen und zeigen die vorgesehenen Einwechselkandidaten, ohne unbelegte feste Tauschpaare. Fällt der sichere API-Abgleich weg, wird wieder der unveränderte Plan angezeigt.
+- Der frühere Überblick mit **Raus-/Rein-Namen** und die Kopieraktion stehen wieder oberhalb der Spielerkarte.
+- iPhone: die sieben Tagesreiter bleiben beim Scrollen unterhalb der tatsächlichen Kopfleistenhöhe sichtbar, statt von der Kopfzeile verdeckt zu werden.
+- Fehlerkorrektur: Bereits bereinigte CWL-Snapshots wurden für das Medaillenziel ein zweites Mal wie rohe API-Daten bereinigt; dadurch waren die 8★-Zeilen leer. Jetzt werden vorhandene, belegte Kriegsangriffe wieder ausgewertet, unsichere Daten weiterhin gekennzeichnet.
+- Im Plan sind **aktuelle CWL-3★-Quote aus belegten abgeschlossenen Kriegstagen** und die **unverändert berechnete 3★-Quote aus den letzten sieben CW/CWL-Angriffen** getrennt beschriftet. Keine Änderung an Stärke-/Formwerten, Verteilung, Datenbank oder lokaler Offline-PWA.
+
+
 ## [1.16.3] - 2026-11-06
 
 ### CWL-Plan: originale Aufstellung und Bedienung wiederhergestellt
