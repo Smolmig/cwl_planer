@@ -257,7 +257,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const button=document.getElementById("cwlLiveRefresh");
     if(!ctx.active || !ctx.clanId || !ctx.hasClanTag || !view){
       old?.remove();button?.remove();
-      document.querySelectorAll(".cwl-live-day").forEach(n=>n.remove());return;
+      document.querySelectorAll(".cwl-live-day").forEach(n=>n.remove());
+      document.querySelectorAll(".cwl-prep-merged").forEach(n=>n.classList.remove("cwl-prep-merged"));return;
     }
     let refresh=button;
     if (!refresh) {
@@ -282,6 +283,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       node.hidden=!offlineReason;
       node.textContent=offlineReason||"";
       document.querySelectorAll(".cwl-live-day").forEach(n=>n.remove());
+      document.querySelectorAll(".cwl-prep-merged").forEach(n=>n.classList.remove("cwl-prep-merged"));
       return;
     }
     node.hidden=false;
