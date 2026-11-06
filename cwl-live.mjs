@@ -119,7 +119,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const memberRow=(member,{incoming=false}={})=>{
       const playerTag=tagOf(member?.tag);
       const goal=medalRows.find(r=>tagOf(r.playerTag)===playerTag);
-      const recent=window.CWLCloudStats?.getRecentPlayerStats?.(playerTag);
+      const recent=typeof window!=="undefined" ? window.CWLCloudStats?.getRecentPlayerStats?.(playerTag) : null;
       const historical=recent?.attacks
         ?"Letzte "+recent.attacks+" AG · 3★ "+recent.hitRate+" %"
         :"Letzte Angriffe · keine Auswertung";
