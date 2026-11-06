@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.11",
+  "version": "v1.16.12",
   "released": "2026-11-06",
-  "summary": "Statistik: automatischer Server-Abgleich wird nach mehr als drei Stunden ohne Erfolg deutlich als möglicherweise verspätet gekennzeichnet; Fehler bleiben erkennbar und laufende Kriege vorläufig. Keine Änderung an Planungslogik, Statistikdaten, API-Berechtigungen oder Offline-PWA."
+  "summary": "Spielerform: Standardsortierung berücksichtigt die belegte Angriffszahl (15+, 6–14, 1–5, keine Daten), innerhalb der Gruppen die 3★-Quote. Reine Quote bleibt ausdrücklich auswählbar; kein neues Spielstärkemodell, keine Änderung an Daten, Planungslogik oder Offline-PWA."
 }
