@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.15.8] - 2026-11-06
+
+### Datengestützte Statistik: echte CWL-Durchgänge, Spielerduelle und Verlauf
+- **CWL-Durchgänge:** Bisherige Monatsgruppierung durch Gruppierung abgeschlossener CWL-Kriegstage nach echtem Zeitabstand (maximal 7 Tage / bis 4 Tage Lücke) ersetzt. Damit bleiben die beiden belegten Juni-2026-Ligen getrennt, ebenso können 7 Tage über eine Monatsgrenze reichen. Durchgänge ohne offizielle Gruppenkennung werden ausdrücklich als zeitlich zugeordnet ausgewiesen – Datenlücken sind weiterhin möglich.
+- **Direkter Spielervergleich:** Zwei Spieler nebeneinander, mit denselben aktuell gewählten Kriegen, CW/CWL getrennt, Trefferquote, Sterne und Angriffsanzahl; optional nur gleiche Rathausstufe. Keine automatische Spielerbewertung oder Aufstellung.
+- **Verlauf:** Echte zeitliche Serien nach Monat oder Woche für 3★-Rate und Ø Sterne je Angriff; normale CWs/CWL getrennt, visuelle Punkte mit Fallzahlen und vollständige barrierearme Tabelle. Fehlende Perioden gelten nicht als 0 %.
+- **Keine Datenmigration:** Ältere private ClashPerk-Exporte wurden nicht automatisch importiert. Hintergrundsammlung ohne App-Besuche und freiwillige Mehrclan-Statistikfreigaben sind eigene Sicherheits-/Infrastruktur-Arbeitspakete (#104/#103), keine stillen Freigaben. Alle CWL-Pläne, Cloudprofile/RLS und Offline-PWA unverändert.
+- **Regressionen:** Getrennte Juni-Ligen, Cross-Month-CWL, unvollständige Saisons, identisch gefilterte Spielerduelle und Zeitreihen, Browsertests für 320/390/1366px.
+
+
 ## [1.15.7] - 2026-11-05
 
 ### Statistikbereich und Klarheit der Einsatzübersicht
