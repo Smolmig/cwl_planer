@@ -770,6 +770,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
   }
   function syncPeriodChoices(){
+    // Reflect section-local historical scope in the actual control as well
+    // as in the calculation. Never display the previous tab's selection.
+    const warType=$("statsType");if(warType)warType.value=type;
     const periodLabel=$("statsPeriodLabel");
     if(periodLabel)periodLabel.textContent="Umfang dieser Auswertung";
     const cw=$("statsRange"),league=$("statsCwlRange");
