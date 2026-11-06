@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.13",
+  "version": "v1.16.14",
   "released": "2026-11-06",
-  "summary": "Verlauf & Kriege: zeitlicher Abstand im CW-/CWL-Diagramm bildet echte Wochen, Tage oder Monate ab. Zeiträume ohne dokumentierte Angriffe bleiben sichtbare Lücken und werden nicht als 0 % oder fortlaufende Werte dargestellt. Keine Änderung an Rohstatistiken, Planungslogik, Rollen oder Offline-PWA."
+  "summary": "Einsätze: Ein Klick auf einen Spieler öffnet die gespielten und geplanten Kriegstage wieder zuverlässig. Die Ansicht verwendet das korrekte Spieler-Tag für vorhandene Clash-Angriffsergebnisse. Gezielter Bugfix ohne Änderung an CWL-Planungslogik, Statistikdaten, Rollen oder Offline-PWA."
 }

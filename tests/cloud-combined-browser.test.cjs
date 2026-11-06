@@ -139,3 +139,54 @@ test("Chromium: linked Clash roster rejects manual mutations until emergency is 
   }finally{await page.close()}
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 });
+
+
+test("Einsätze: tapping a player opens played and planned days even with real Clash results",{
+ timeout:120000
+},async()=>{
+ const profile=guestProfile();
+ const p=profile.profiles[0];
+ p.locks[0]={locked:true,lineup:[
+  ...Array.from({length:14},(_,i)=>"fix"+i),"A"
+ ]};
+ const server=makeServer();
+ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [390,1280]){
+   const page=await browser.newPage({viewport:{width,height:850}});
+   const errors=[];page.on("pageerror",e=>errors.push(e.message));
+   try{
+    await page.addInitScript(data=>
+      localStorage.setItem("cwl_planer_mobile_v9",JSON.stringify(data)),profile);
+    await page.goto("http://127.0.0.1:"+server.address().port+
+      "/cloud-app.html",{waitUntil:"domcontentloaded"});
+    // Force a verified result that previously reached an unbound playerTag
+    // inside renderSummary(), but only after a player disclosure was opened.
+    await page.evaluate(()=>{
+      window.CWLCloud={...(window.CWLCloud||{}),active:false,
+       getPlayedAttackResults:()=>({1:{"#AAA":{
+        stars:3,percent:100,missed:false
+       }}})};
+    });
+    await page.locator('.navbtn[data-view="summary"]').first().click();
+    const button=page.locator(
+      '#summaryList .summary-player-toggle[data-member-id="A"]');
+    await button.waitFor();
+    assert.equal(await button.getAttribute("aria-expanded"),"false");
+    await button.click();
+    assert.equal(await button.getAttribute("aria-expanded"),"true");
+    const detail=page.locator("#summaryList .summary-player-days");
+    assert.equal(await detail.count(),1);
+    assert.match((await detail.innerText()).replace(/\s+/g," "),/Tag 1.*gespielt.*3★.*100 %/);
+    await button.click();
+    assert.equal(await button.getAttribute("aria-expanded"),"false");
+    assert.equal(await detail.count(),0);
+    assert.deepEqual(errors,[],"No JavaScript errors at width "+width+": "+errors);
+   }finally{await page.close()}
+  }
+ }finally{
+  await browser.close();
+  await new Promise(resolve=>server.close(resolve));
+ }
+});

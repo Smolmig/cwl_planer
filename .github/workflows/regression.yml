@@ -8,7 +8,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 Chromium is not supported on ubuntu26.04-x64.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
