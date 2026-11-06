@@ -551,7 +551,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
-    duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="month";
+    duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
+    formWindow=90;formSearch="";formSort="attacks";
+    compareType="all";compareDays="all";trendType="all";trendDays="all";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
@@ -716,6 +718,35 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const button=event.target.closest("button[data-stats-section]");
       if(!button)return;
       setStatsSection(button.dataset.statsSection);
+      render();
+    });
+    document.getElementById("view-stats")?.querySelector(".stats-form-window")
+      ?.addEventListener("click",ev=>{
+        const button=ev.target.closest("[data-form-window]");
+        if(!button)return;
+        formWindow=Number(button.dataset.formWindow);
+        lastComparableRowsMarkup=null;
+        renderComparableForm();
+      });
+    e("statsFormSearch")?.addEventListener("input",ev=>{
+      formSearch=ev.target.value;renderComparableForm();
+    });
+    e("statsFormSort")?.addEventListener("change",ev=>{
+      formSort=ev.target.value;renderComparableForm();
+    });
+    e("statsCompareType")?.addEventListener("change",ev=>{
+      compareType=ev.target.value;renderMatchups();renderDuel();
+    });
+    e("statsCompareDays")?.addEventListener("change",ev=>{
+      compareDays=ev.target.value==="all"?"all":Number(ev.target.value);
+      renderMatchups();renderDuel();
+    });
+    e("statsTrendType")?.addEventListener("change",ev=>{
+      trendType=ev.target.value;renderTimeline();renderWarHistory();
+    });
+    e("statsTrendDays")?.addEventListener("change",ev=>{
+      trendDays=ev.target.value==="all"?"all":Number(ev.target.value);
+      renderTimeline();renderWarHistory();
     });
     e("statsDuelLeft")?.addEventListener("change",ev=>{
       duelLeft=cleanTag(ev.target.value);renderDuel();
@@ -731,7 +762,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       renderTimeline();
     });
     e("statsTrendGranularity")?.addEventListener("change",ev=>{
-      trendGranularity=ev.target.value==="week"?"week":"month";
+      trendGranularity=["day","week","month"].includes(ev.target.value)?ev.target.value:"week";
       renderTimeline();
     });
     e("statsType")?.addEventListener("change",ev=>{
@@ -740,7 +771,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       render();
     });
     e("statsRange")?.addEventListener("change",ev=>{
-      last=Math.max(1,Math.min(50,Number(ev.target.value)||50));
+      last=ev.target.value==="all"?"all":Math.max(1,Math.min(50,Number(ev.target.value)||50));
       syncPeriodChoices();render();
     });
     e("statsCwlRange")?.addEventListener("change",ev=>{
@@ -748,7 +779,6 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       syncPeriodChoices();render();
     });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
-    e("statsFormDetails")?.addEventListener("toggle",()=>renderComparableForm());
     e("statsFormer")?.addEventListener("change",ev=>{showFormer=ev.target.checked;render()});
     e("statsSearch")?.addEventListener("input",ev=>{search=ev.target.value;render()});
     e("statsSort")?.addEventListener("change",ev=>{order=ev.target.value;render()});
@@ -768,24 +798,25 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   }
   function syncPeriodChoices(){
     const periodLabel=$("statsPeriodLabel");
-    if(periodLabel)periodLabel.textContent="Kriege für Auswertung";
+    if(periodLabel)periodLabel.textContent="Nur für Spielerstatistik";
     const cw=$("statsRange"),league=$("statsCwlRange");
     if(cw)cw.value=String(last);
     if(league)league.value=String(cwlSeasons);
-    const cwField=$("statsCwField"),leagueField=$("statsCwlField");
-    if(cwField)cwField.hidden=type==="cwl";
-    if(leagueField)leagueField.hidden=type==="normal";
+    if($("statsCwField"))$("statsCwField").hidden=type==="cwl";
+    if($("statsCwlField"))$("statsCwlField").hidden=type==="normal";
+    const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons});
     const parts=[];
-    const normalCount=wars.filter(w=>w.war_type==="normal").length;
-    const cwlCount=groupCwlRuns(wars.filter(w=>
-      w.war_type==="cwl"&&(w.source!=="api"||w.finalized===true))).length;
-    if(type!=="cwl")parts.push(normalCount?
-      Math.min(last,normalCount)+"/"+normalCount+" CWs":"bis zu "+last+" CWs");
-    if(type!=="normal")parts.push(cwlCount?
-      (cwlSeasons==="all"?cwlCount:Math.min(Number(cwlSeasons),cwlCount))+"/"+cwlCount+" CWL-Durchgänge":
-      "alle gespeicherten CWL-Durchgänge");
-    const summary=$("statsPeriodSummary");
-    if(summary)summary.textContent=parts.join(" + ");
+    if(type!=="cwl"){
+      parts.push(last==="all"?
+        "Alle "+scopeInfo.allNormal+" CWs":
+        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" CWs (Limit "+last+")");
+    }
+    if(type!=="normal"){
+      parts.push(cwlSeasons==="all"?
+        "Alle "+scopeInfo.allCwl+" CWL-Durchgänge":
+        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen");
+    }
+    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" + ");
   }
   syncPeriodChoices();
   bind();
