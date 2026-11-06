@@ -178,7 +178,7 @@ test("Einsätze: tapping a player opens played and planned days even with real C
     assert.equal(await button.getAttribute("aria-expanded"),"true");
     const detail=page.locator("#summaryList .summary-player-days");
     assert.equal(await detail.count(),1);
-    assert.match(await detail.innerText(),/Tag 1.*gespielt.*3★.*100 %/);
+    assert.match((await detail.innerText()).replace(/\s+/g," "),/Tag 1.*gespielt.*3★.*100 %/);
     await button.click();
     assert.equal(await button.getAttribute("aria-expanded"),"false");
     assert.equal(await detail.count(),0);
