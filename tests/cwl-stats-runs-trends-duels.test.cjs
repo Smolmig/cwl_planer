@@ -78,7 +78,7 @@ test("selected CW and CWL attacks are placed in monthly and weekly trend groups 
  const wars=[cw1,cw2,cwl1];
  const attacks=[atk(cw1,"#PYL",3),atk(cw1,"#2PYL",2),
   atk(cw2,"#PYL",0),atk(cwl1,"#PYL",3),atk(cwl1,"#2PYL",3)];
- const monthly=computeStatsTimeline(wars,attacks);
+ const monthly=computeStatsTimeline(wars,attacks,{granularity:"month"});
  assert.deepEqual(monthly.rows.map(r=>r.key),["2026-10-01","2026-11-01"]);
  assert.equal(monthly.rows[0].normal.attacks,2);
  assert.equal(monthly.rows[0].normal.hitRate,50);
