@@ -52,7 +52,7 @@ test("Invitations have 24h, 7d, indefinite and a strict role hierarchy",()=>{
    "20261101032623_cwl_block_removed_members_rejoin.sql"].map(x=>file("supabase/migrations/"+x));
  for(const v of ["24h","7d","never"])assert.ok(html.includes('value="'+v+'"'));
  for(const id of ["cloudInviteKind","cloudInviteRole","cloudBlockedList","cloudBlockedDetails"])assert.ok(html.includes('id="'+id+'"'));
- for(const fn of ["cwl_create_reusable_invite","cwl_update_reusable_invite","cwl_remove_clan_member","cwl_unblock_clan_member","cwl_redeem_reusable_invite"])
+ for(const fn of ["cwl_create_copyable_invite","cwl_update_reusable_invite","cwl_remove_clan_member","cwl_unblock_clan_member","cwl_redeem_reusable_invite"])
   assert.ok(sync.includes(fn),fn);
  assert.match(sync,/inv\.created_by===user\.id/);
  assert.match(sync,/role==="editor"&&m\.role==="viewer"/);
