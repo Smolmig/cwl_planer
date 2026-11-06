@@ -133,7 +133,7 @@ test("App keeps old 7-hit member badges and solver unchanged while exposing comp
  assert.match(ui,/getComparablePlayerStats/);
  assert.match(html,/data-stats-panel="form"/);
  assert.match(html,/statsFormRows/);
- assert.match(ui,/Mirror-Position/);
+ assert.match(html,/Mirror und Aufräumangriffe/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.ok(solver.length>100);
 });
