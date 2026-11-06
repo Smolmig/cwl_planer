@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.8",
+  "version": "v1.15.9",
   "released": "2026-11-06",
-  "summary": "Statistik: getrennte echte CWL-Durchgänge (auch zwei im selben Monat), direkter Spieler-zu-Spieler-Vergleich mit identischen Filtern und CW/CWL-Zeitreihen nach Woche/Monat mit n. Mehrclan-Sharing und unabhängige automatische Angriffserfassung sind separate Sicherheitsprojekte; Plan, DB und Offline-PWA unverändert."
+  "summary": "Serverseitige automatische CW-/CWL-Datenerfassung aller verknüpften Cloud-Clans ohne geöffnete App, geschützt durch signiertes GitHub OIDC. Sichere vorläufige Live-Kriege, abgeschlossene Ergebnisse, clanbezogener Erfassungsstatus. Keine Änderungen am Planer oder Profilformat."
 }
