@@ -33,7 +33,7 @@ test("the candidate view is a non-displacing accessible overlay, not inline disc
 
 test("Einsätze shows actual CWL results and medal progress without duplicate not-yet-finalized form",()=>{
  const html=read("cloud-app.html");
- assert.match(html,/CWL bisher:/);
+ assert.match(html,/const cwlHitRate=currentCwlTripleRate\(x\.m\.playerTag\)\.label/);
  assert.match(html,/CWL: \$\{goal\.unknown/);
  assert.doesNotMatch(html,/Form: keine erfassten Angriffe/);
  assert.doesNotMatch(html,/\$\{esc\(recentText\)\}/);
