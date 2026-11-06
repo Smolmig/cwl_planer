@@ -91,71 +91,106 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     for(const panel of document.querySelectorAll("#view-stats [data-stats-panel]"))
       panel.hidden=panel.dataset.statsPanel!==section;
   }
+  function comparisonWars(){
+    return selectWarDateScope(wars,{type:compareType,days:compareDays});
+  }
+  function starStack(dist,count){
+    if(!count)return "<p class='stats-note'>Keine Sternverteilung dokumentiert.</p>";
+    return "<div class='stats-stacked-stars' role='img' aria-label='"+
+      esc([0,1,2,3].map(i=>i+" Sterne: "+dist[i]+" von "+count).join("; "))+"'>"+
+      dist.map((n,i)=>"<span class='stars-"+i+"' style='width:"+
+        (n/count*100).toFixed(2)+"%'></span>").join("")+"</div>"+
+      "<small>0★ "+dist[0]+" · 1★ "+dist[1]+" · 2★ "+dist[2]+" · 3★ "+dist[3]+"</small>";
+  }
   function renderMatchups(){
-    const host=$("statsMatchupComparison");
+    const host=$("statsMatchupComparison"),label=$("statsCompareScope");
     if(!host)return;
-    const data=computeThMatchupComparison(wars,attacks,{type,last,cwlSeasons});
+    const chosen=comparisonWars();
+    if(label)label.textContent="Verglichen werden "+chosen.length+
+      " abgeschlossene CW-/CWL-Kriegstage im gewählten Vergleichszeitraum. "+
+      "Die freie Spielerstatistik und Spielerform bleiben davon unabhängig.";
+    const data=computeThMatchupComparison(chosen,attacks,{type:"all",last:"all",cwlSeasons:"all"});
     const labels={lower:"Gegner-RH niedriger",same:"Gleiches Rathaus",higher:"Gegner-RH höher",unknown:"RH unbekannt"};
     const kinds=[["normal","Normale Clankriege"],["cwl","CWL"]];
     host.innerHTML="<div class='stats-matchup-grid'>"+kinds.map(([kind,title])=>{
       const rows=data.filter(row=>row.type===kind);
       const n=rows.reduce((sum,row)=>sum+row.attacks,0);
       return "<div class='stats-matchup-group'><h4>"+title+" · "+n+" Angriffe</h4>"+
-        rows.map(row=>"<div class='stats-matchup-row'><span>"+labels[row.matchup]+"</span>"+
-          "<strong>"+(row.attacks?(row.hitRate+" % 3★"):"–")+"</strong>"+
-          "<small>"+(row.attacks?(row.triples+" von "+row.attacks+" Dreier · Ø "+row.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"):"Keine Angriffe dokumentiert")+"</small></div>").join("")+
-        "</div>";
+        "<div class='stats-compare-bars'>"+
+        rows.map(row=>"<div class='stats-compare-line'>"+
+          "<div class='stats-compare-line-head'><span>"+labels[row.matchup]+"</span>"+
+          "<strong>"+(row.attacks?row.hitRate+" % 3★":"–")+"</strong></div>"+
+          "<div class='stats-bar-track' role='img' aria-label='"+esc(labels[row.matchup]+": "+
+            (row.attacks?row.hitRate+" Prozent aus "+row.attacks+" Angriffen":"Keine Angriffe"))+"'>"+
+            (row.attacks?"<div class='stats-bar-fill' style='width:"+row.hitRate+"%'></div>":"")+
+          "</div><small>"+(row.attacks?row.triples+" von "+row.attacks+
+            " Dreier · Ø "+row.averageStars.toLocaleString("de-AT",
+              {minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
+            "Keine Angriffe dokumentiert")+"</small>"+
+          (row.attacks?starStack(row.starDistribution,row.attacks):"")+
+        "</div>").join("")+"</div></div>";
     }).join("")+"</div>";
   }
   function renderDuel(){
     const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
-    if(!host||!first||!second||!cachedSummary)return;
-    const available=cachedSummary.rows.slice()
+    if(!host||!first||!second)return;
+    const chosen=comparisonWars();
+    const available=computeWarStats(chosen,attacks,{type:"all",last:"all",
+      cwlSeasons:"all",showFormer:true}).rows
       .filter(p=>p.tag&&p.attacks>0).sort((a,b)=>a.name.localeCompare(b.name,"de"));
     const keyed=new Map(available.map(p=>[cleanTag(p.tag),p]));
     if(!keyed.has(duelLeft))duelLeft=available[0]?.tag||"";
     if(!keyed.has(duelRight)||duelRight===duelLeft)
       duelRight=available.find(p=>p.tag!==duelLeft)?.tag||"";
-    const optionMarkup="<option value=''>Spieler wählen</option>"+available
+    const options="<option value=''>Spieler wählen</option>"+available
       .map(p=>"<option value='"+esc(p.tag)+"'>"+esc(p.name)+"</option>").join("");
     const signature=available.map(p=>p.tag+":"+p.name).join("|");
     for(const select of [first,second]){
       if(select.dataset.optionSignature!==signature){
-        select.innerHTML=optionMarkup;
-        select.dataset.optionSignature=signature;
+        select.innerHTML=options;select.dataset.optionSignature=signature;
       }
     }
     first.value=duelLeft;second.value=duelRight;
     if($("statsDuelSameTH"))$("statsDuelSameTH").checked=duelSameTH;
     if(!duelLeft||!duelRight){
-      host.innerHTML="<p class='stats-note'>Für einen direkten Vergleich brauchen wir mindestens zwei Spieler mit dokumentierten Angriffen im gewählten Zeitraum.</p>";
+      host.innerHTML="<p class='stats-note'>Hierfür benötigen wir zwei Spieler mit dokumentierten Angriffen im ausgewählten Vergleichszeitraum.</p>";
       return;
     }
-    const results=computePlayerDuel(wars,attacks,duelLeft,duelRight,
-      {type,last,cwlSeasons,sameTH:duelSameTH});
-    const human=(n)=>n===null?"–":String(n)+" %";
+    const results=computePlayerDuel(chosen,attacks,duelLeft,duelRight,{
+      type:"all",last:"all",cwlSeasons:"all",sameTH:duelSameTH
+    });
+    const human=n=>n===null?"–":String(n)+" %";
     const fmtAvg=n=>n===null?"–":n.toLocaleString("de-AT",
       {minimumFractionDigits:2,maximumFractionDigits:2})+" ★";
-    const markup=results.players.map(p=>{
+    const renderOne=p=>{
       const name=keyed.get(cleanTag(p.tag))?.name||p.tag;
-      const mini=(g,label)=>label+": "+(g.attacks?
-        (human(g.hitRate)+" aus "+g.attacks+" Angriffen"):"keine passenden Angriffe");
+      const mini=(g,label)=>"<div class='stats-compare-line'>"+
+        "<div class='stats-compare-line-head'><span>"+label+"</span><strong>"+
+          (g.attacks?human(g.hitRate):"–")+"</strong></div>"+
+        "<div class='stats-bar-track'>"+
+          (g.attacks?"<div class='stats-bar-fill' style='width:"+g.hitRate+"%'></div>":"")+
+        "</div><small>"+g.triples+" / "+g.attacks+" Dreier</small></div>";
       return "<div class='stats-duel-person'><h4>"+esc(name)+"</h4>"+
-        "<strong>"+human(p.hitRate)+" 3★</strong><p>"+p.triples+" von "+p.attacks+
-        " Angriffen · "+p.wars+" Kriege</p>"+
-        "<p>Ø Sterne: "+fmtAvg(p.averageStars)+"</p>"+
-        "<p>"+mini(p.normal,"CW")+"<br>"+mini(p.cwl,"CWL")+"</p>"+
-        (p.attacks>0&&p.attacks<5?
-          "<small>Wenig Vergleichsdaten – nicht als klare Stärkeaussage verwenden.</small>":"")+
+        "<div class='stats-form-figure'><span>3★-Quote</span><strong>"+human(p.hitRate)+"</strong></div>"+
+        "<div class='stats-bar-track' role='img' aria-label='"+esc(
+          p.triples+" von "+p.attacks+" Dreier, "+human(p.hitRate))+"'>"+
+          (p.attacks?"<div class='stats-bar-fill' style='width:"+p.hitRate+"%'></div>":"")+
+        "</div><p>"+p.triples+" von "+p.attacks+" Angriffen · "+p.wars+
+        " Kriege · Ø "+fmtAvg(p.averageStars)+"</p>"+
+        starStack(p.starDistribution,p.attacks)+
+        "<div class='stats-compare-bars'>"+mini(p.normal,"Normaler CW")+
+          mini(p.cwl,"CWL")+"</div>"+
+        (p.attacks>0&&p.attacks<6?
+          "<small>Wenige Angriffe – Quote ist nur bedingt vergleichbar.</small>":"")+
         (p.lastWar?"<small>Letzter berücksichtigter Krieg: "+
           esc(new Date(p.lastWar).toLocaleDateString("de-AT"))+"</small>":"")+
         "</div>";
-    }).join("");
-    host.innerHTML="<div class='stats-duel-grid'>"+markup+"</div>"+
+    };
+    host.innerHTML="<div class='stats-duel-grid'>"+results.players.map(renderOne).join("")+"</div>"+
       "<p class='stats-note'>"+(duelSameTH?
-        "Nur Angriffe auf dieselbe Rathausstufe,":"Alle belegten Angriffe unabhängig vom Rathaus,")+
-      " jeweils aus denselben "+results.selectedWars+" ausgewählten Kriegen/CWL-Tagen. "+
-      "Unterschiedliche Gegnerbasen, Angriffsrollen und Stichprobengrößen können den Vergleich verzerren.</p>";
+        "Nur Angriffe gegen gleiches RH.":"Alle RH-Gegner, auch niedrigere/höhere.")+
+      " Identischer Zeitraum und dieselben "+results.selectedWars+
+      " ausgewählten Kriege für beide Spieler; Stichproben und Basisschwierigkeit können trotzdem verschieden sein.</p>";
   }
   function renderTimeline(){
     const chart=$("statsTrendChart"),detail=$("statsTrendTable");
