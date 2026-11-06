@@ -130,7 +130,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       return "<div class='stats-matchup-group'><h4>"+title+" · "+n+" Angriffe</h4>"+
         rows.map(row=>"<div class='stats-matchup-row'><span>"+labels[row.matchup]+"</span>"+
           "<strong>"+(row.attacks?(row.hitRate+" % 3★"):"–")+"</strong>"+
-          "<small>"+(row.attacks?(row.triples+" von "+row.attacks+" Dreier · Ø "+row.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"):"Keine Angriffe dokumentiert")+"</small></div>").join("")+
+          "<small>"+(row.attacks?(row.triples+" von "+row.attacks+" Dreier · Ø "+row.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"):"Keine Angriffe dokumentiert")+"</small>"+
+          "<div class='stats-matchup-track' role='img' aria-label='"+
+            esc(row.attacks?row.hitRate+" Prozent Dreierquote bei "+row.attacks+" Angriffen":"Keine Angriffe")+
+          "'><span class='stats-matchup-fill' style='width:"+(row.hitRate??0)+"%'></span></div></div>").join("")+
         "</div>";
     }).join("")+"</div>";
   }
@@ -168,8 +171,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const mini=(g,label)=>label+": "+(g.attacks?
         (human(g.hitRate)+" aus "+g.attacks+" Angriffen"):"keine passenden Angriffe");
       return "<div class='stats-duel-person'><h4>"+esc(name)+"</h4>"+
-        "<strong>"+human(p.hitRate)+" 3★</strong><p>"+p.triples+" von "+p.attacks+
-        " Angriffen · "+p.wars+" Kriege</p>"+
+        "<strong>"+human(p.hitRate)+" 3★</strong>"+
+        "<div class='stats-duel-track' role='img' aria-label='"+esc(human(p.hitRate)+
+          " Dreierquote aus "+p.attacks+" Angriffen")+"'><span class='stats-duel-fill' style='width:"+
+          (p.hitRate??0)+"%'></span></div>"+
+        "<p>"+p.triples+" von "+p.attacks+" Angriffen · "+p.wars+" Kriege</p>"+
         "<p>Ø Sterne: "+fmtAvg(p.averageStars)+"</p>"+
         "<p>"+mini(p.normal,"CW")+"<br>"+mini(p.cwl,"CWL")+"</p>"+
         (p.attacks>0&&p.attacks<5?
