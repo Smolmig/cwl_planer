@@ -138,13 +138,30 @@ function renderMembersReview(){
 }
 function renderPlanReview(){
  const panel=$("planReviewPanel");if(!panel)return;
- const active=cloud.active&&!!clanId;
+ const active=cloud.active&&!!clanId&&role!=="viewer";
  panel.hidden=!active;
+ renderMembersReview();
  if(!active)return;
  const locked=planIsLocked(),owner=role==="owner",editor=role==="editor";
+ const disclosure=$("planReviewDisclosure");
+ const context=clanId+"|"+(planReview?.cycle_id||"")+"|"+role;
+ if(disclosure&&panel.dataset.reviewContext!==context){
+   disclosure.open=false;panel.dataset.reviewContext=context;
+   delete $("planReviewSuggestions").dataset.reviewSignature;
+ }
+ const pending=planSuggestions.filter(s=>s.status==="pending"&&planReview?.season===currentSeason());
+ panel.classList.toggle("has-pending",owner&&pending.length>0);
+ $("planReviewSummaryTitle").textContent=locked?"Plan freigegeben":"Gemeinsam bearbeitbar";
+ $("planReviewSummaryDetail").textContent=owner?
+   (locked?"Nur du änderst direkt · Vize senden Vorschläge":"Vize planen mit · Freigabe verwalten"):
+   (locked?changedSerial?"Entwurf offen · Noch nicht eingereicht":"Änderungen nur als Vorschlag":
+    "Änderungen werden gemeinsam gespeichert");
+ const count=$("planReviewPendingCount");
+ count.hidden=!(owner&&pending.length);
+ if(owner&&pending.length)count.textContent=pending.length+" "+(pending.length===1?"Vorschlag":"Vorschläge")+" offen";
  const statusNode=$("planReviewStatus");
- statusNode.textContent=locked?"Freigegeben":"In Bearbeitung";
- statusNode.className="badge "+(locked?"ok":"warn");
+ statusNode.textContent=locked?"Freigegeben":"Offen";
+ statusNode.className="badge "+(locked?"ok":"");
  $("planReviewHint").textContent=locked?
    "Der Clanführer hat die Planung freigegeben. Vize können Änderungswünsche zur Bestätigung einreichen.":
    "Der Plan ist offen und für Clanführer und Vize direkt bearbeitbar.";
