@@ -49,18 +49,23 @@ test("relative RH comparison counts CW and CWL separately, including missing RH"
 
 test("form, list position and selected wars are explicitly separate from the seven recent member attacks",()=>{
  assert.match(script,/cwlSeasons="all"/);
- assert.match(script,/Spielerwerte aus /);
- assert.match(script,/innerhalb dieser Auswahl/);
- assert.match(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
+ assert.match(script,/Spielerstatistik aus /);
+ assert.match(script,/unabhängige Form über 14 \/ 30 \/ 90 Tage/);
+ assert.doesNotMatch(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
  assert.match(script,/Listenposition /);
  assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
  assert.match(html,/data-stats-section="overview"/);
- for(const section of ["players","compare","history"])
+ for(const section of ["players","form","compare","history"])
   assert.match(html,new RegExp('data-stats-panel="'+section+'"'));
  assert.match(html,/statsMatchupComparison/);
  assert.match(html,/Nr\. · Spieler/);
- assert.match(html,/Kriege für Auswertung/);
+ assert.match(html,/Auswahl für diesen Bereich/);
  assert.doesNotMatch(html,/50 CWs \+ 3 CWLs/);
+ assert.match(script,/periodBySection/);
+ assert.match(html,/data-stats-section="form"/);
+ assert.match(html,/14 Tage/);
+ assert.match(html,/30 Tage/);
+ assert.match(html,/90 Tage/);
 });
 
 test("deployment overview labels availability and counted assignments, not unknown manual three-star strength",()=>{
