@@ -107,12 +107,12 @@ test("No active league results, no roster tags or incomplete plans cannot produc
  assert.equal(findReadOnlyMedalSwap({...none,assessment:read}),null);
 });
 
-test("CWL live UI has read-only disclosure, preserves opening on refresh and never changes solver",()=>{
+test("CWL medal progress and rescue guidance move to deployment without changing solver",()=>{
  assert.match(live,/evaluateEightStarGoals/);
  assert.match(live,/findReadOnlyMedalSwap/);
- assert.match(live,/wasMedalOpen/);
- assert.match(live,/cwl-medal-details/);
- assert.match(live,/Keine automatische Änderung/);
+ assert.match(live,/getMedalOverview/);
+ assert.match(page,/summaryMedalOverview/);
+ assert.match(page,/Mögliche 8★-Reserve/);
  assert.doesNotMatch(live,/updateMedalTarget|applyMedalSwap|persistMedalSwap/);
  assert.match(page,/#view-account #cloudAccountBack/);
 });
