@@ -78,7 +78,21 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const players=show("players");
       const numbered=document.querySelector("#statsRows .stats-row-number")?.textContent;
       const playerScope=document.getElementById("statsPlayerScope").textContent;
+      const originalSelection=document.getElementById("statsPeriodSummary").textContent;
+      const statsType=document.getElementById("statsType");
+      statsType.value="normal";statsType.dispatchEvent(new Event("change",{bubbles:true}));
+      const scopeAfter=document.getElementById("statsPlayerScope").textContent;
+      const form=show("form");
+      const formIntro=document.getElementById("statsFormIntro").textContent;
+      const formData=document.getElementById("statsFormRows").textContent;
+      const ninetyButton=document.querySelector('[data-form-window="90"]');
+      const thirtyButton=document.querySelector('[data-form-window="30"]');
+      thirtyButton.click();
+      const shortForm=document.getElementById("statsFormIntro").textContent;
+      const thirtySelected=thirtyButton.getAttribute("aria-pressed");
+      ninetyButton.click();
       const compare=show("compare");
+      const compareScope=document.getElementById("statsCompareScope").textContent;
       const comparison=document.getElementById("statsMatchupComparison").textContent;
       const duelBefore=document.getElementById("statsDuelResults").textContent;
       const duelLeft=document.getElementById("statsDuelLeft"),duelRight=document.getElementById("statsDuelRight");
@@ -87,23 +101,32 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const duel=document.getElementById("statsDuelResults").textContent;
       const history=show("history");
       const warNames=document.getElementById("statsWarHistory").textContent;
-      const timelineBefore=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
+      const timelineBefore=document.getElementById("statsTrendChart").querySelectorAll(".statpoint").length;
       document.getElementById("statsTrendGranularity").value="week";
       document.getElementById("statsTrendGranularity").dispatchEvent(new Event("change",{bubbles:true}));
-      const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
+      const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll(".statpoint").length;
       const trendTable=document.getElementById("statsTrendTable").textContent;
       const back=show("overview");
-      return {initial,overviewText,players,numbered,playerScope,compare,comparison,duelBefore,duel,
+      return {initial,overviewText,players,numbered,playerScope,originalSelection,scopeAfter,
+        form,formIntro,formData,shortForm,thirtySelected,compare,compareScope,comparison,duelBefore,duel,
         history,warNames,timelineBefore,timelineAfter,trendTable,back,
        tabs:tabs.length,finalWidth:document.documentElement.scrollWidth,viewport:innerWidth};
     });
     assert.deepEqual(result.initial,["overview"]);
-    assert.equal(result.tabs,4);
+    assert.equal(result.tabs,5);
     assert.equal(result.players.active,"true");
     assert.deepEqual(result.players.visible,["players"]);
     assert.equal(result.numbered,"1.");
-    assert.match(result.playerScope,/2 ausgewählten Kriegen/);
+    assert.match(result.playerScope,/2 ausgewählten/);
+    assert.match(result.originalSelection,/Alle 1 CWs/);
+    assert.match(result.scopeAfter,/1 ausgewählten/);
+    assert.deepEqual(result.form.visible,["form"]);
+    assert.match(result.formIntro,/90 feste Kalendertage/);
+    assert.match(result.formData,/Beispiel/);
+    assert.match(result.shortForm,/30 feste Kalendertage/);
+    assert.equal(result.thirtySelected,"true");
     assert.deepEqual(result.compare.visible,["compare"]);
+    assert.match(result.compareScope,/2 abgeschlossene/);
     assert.match(result.comparison,/Gegner-RH niedriger/);
     assert.match(result.comparison,/Gleiches Rathaus/);
     assert.match(result.comparison,/100 % 3★/);
@@ -113,7 +136,7 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.deepEqual(result.history.visible,["history"]);
     assert.match(result.warNames,/CW Gegner/);
     assert.match(result.warNames,/CWL Gegner/);
-    assert.ok(result.timelineBefore>0,"monthly timeline points missing");
+    assert.ok(result.timelineBefore>0,"default weekly timeline points missing");
     assert.ok(result.timelineAfter>0,"weekly timeline points missing");
     assert.match(result.trendTable,/erfassten Zeiträume/);
     assert.deepEqual(result.back.visible,["overview"]);
