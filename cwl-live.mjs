@@ -441,7 +441,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   });
   return {start,stop,render,refresh:()=>refreshNow(true),getMedalOverview:()=>{
     const ctx=context(),info=effective();
-    if(!info?.active||!ctx.active||!ctx.clanId)return null;
+    if(!info?.season||!ctx.active||!ctx.clanId)return null;
     const clean=sanitizeSnapshot(info);
     if(!clean)return null;
     if(staleRoundDays.size)clean.rounds=clean.rounds.map(round=>
