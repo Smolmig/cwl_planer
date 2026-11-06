@@ -256,14 +256,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     });
     const missingLabel=trendGranularity==="week"?"Wochen":
       trendGranularity==="day"?"Tage":"Monate";
+    const coverage=rows.length===0?
+      "Keine beobachteten Zeiträume für diese Auswahl.":
+      rows.length===1?
+        "Nur ein beobachteter Zeitraum – ein Trend ist daraus nicht ableitbar.":
+        layout.missingPeriods?
+          "Zwischen den dargestellten Punkten liegen "+layout.missingPeriods+" "+
+            missingLabel+" ohne dokumentierte Angriffe – keine 0-%-Werte.":
+          "Zwischen den dargestellten Punkten gibt es keine ganzen unbeobachteten "+missingLabel+".";
     if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
       " ausgewählte Kriege · "+trend.recordedAttacks+
       " dokumentierte Angriffe. Die Zeitachse zeigt echte Kalenderabstände. "+
-      (layout.missingPeriods?
-        "Zwischen den dargestellten Punkten liegen "+layout.missingPeriods+" "+
-          missingLabel+" ohne dokumentierte Angriffe – keine 0-%-Werte. ":
-        "Zwischen den dargestellten Punkten gibt es keine ganzen unbeobachteten "+missingLabel+". ")+
-      "Verbunden werden nur direkt aufeinanderfolgende Zeiträume derselben Kriegsart.";
+      coverage+(rows.length>1?
+        " Verbunden werden nur direkt aufeinanderfolgende Zeiträume derselben Kriegsart.":"");
     const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
     if(chart.dataset.signature===signature)return;
     chart.dataset.signature=signature;
@@ -300,7 +305,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         esc(trendGranularity==="month"?row.key.slice(0,7):row.key.slice(5))+"</text>";
     }).join("");
     const gaps=layout.gaps.map(g=>{
-      const xx=g.midX.toFixed(1),yy=H-B+8;
+      const yy=H-B+8;
       return "<path class='stats-gap-mark' d='M "+(g.midX-6).toFixed(1)+" "+
         yy+" l4 -7 m3 7 l4 -7'><title>"+
         esc(g.skipped+" "+(g.skipped===1?
