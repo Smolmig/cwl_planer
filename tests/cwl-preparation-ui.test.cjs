@@ -62,18 +62,27 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.match(doc.querySelector(".lineup .cwl-plan-actual-exit").textContent,/Spieler B/);
   assert.match(doc.querySelector(".lineup [data-player-tag='#2PYL']").textContent,/Bereits in Clash/);
   assert.equal(doc.querySelectorAll(".lineup .cwl-plan-candidate-hidden").length,1);
-  const candidate=doc.querySelector(".lineup .cwl-plan-actual-exit details");
-  assert.ok(candidate&&!candidate.open,"outgoing player opens inline");
-  assert.match(candidate.textContent,/Spieler C/);
+  const candidate=doc.querySelector(".lineup .cwl-plan-actual-exit");
+  assert.equal(candidate.tagName,"BUTTON","the whole actual roster card is a keyboard-usable action");
+  assert.equal(candidate.getAttribute("aria-expanded"),"false");
+  assert.equal(doc.querySelectorAll(".lineup .cwl-swap-popover").length,0);
+  candidate.click();
+  const popup=doc.querySelector(".cwl-swap-popover");
+  assert.ok(popup,"outgoing player opens a portal outside the roster grid");
+  assert.ok(doc.body.contains(popup));
+  assert.equal(candidate.getAttribute("aria-expanded"),"true");
+  assert.equal(popup.querySelectorAll(".cwl-plan-incoming").length,1);
+  assert.match(popup.textContent,/Spieler C/);
   assert.match(review.textContent,/Raus: Spieler B/);
   assert.match(review.textContent,/Rein: Spieler C/);
   assert.equal(live.getMedalOverview().assessment.rows.length,3,
     "medal progress is available even when there are no completed attacks");
-  candidate.open=true;
-  candidate.dispatchEvent(new dom.window.Event("toggle"));
   live.render();
-  assert.equal(doc.querySelector(".lineup .cwl-plan-actual-exit details").open,true,
-    "open swap survives live re-render");
+  assert.equal(doc.querySelectorAll(".cwl-swap-popover").length,1,
+    "open overlay survives live re-render without becoming an inline detail");
+  assert.equal(doc.querySelector(".lineup .cwl-plan-actual-exit").getAttribute("aria-expanded"),"true");
+  doc.querySelector(".cwl-swap-popover-close").click();
+  assert.equal(doc.querySelectorAll(".cwl-swap-popover").length,0);
   assert.doesNotMatch(review.textContent,/Aus Clash raus|In Clash rein/);
   assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Aufstellungswechsel kopieren/);
   assert.equal(doc.querySelectorAll(".cwl-live-details .cwl-merged-member").length,0,
