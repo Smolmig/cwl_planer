@@ -2963,6 +2963,54 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){.plan-review-chevron{transition:none}}
 
+
+/* Cloud approval: a short, native-feeling disclosure instead of a full-width rule. */
+#view-plan #planReviewPanel,#membersReviewManageHost #planReviewPanel{width:100%;margin:8px 0 13px!important}
+#planReviewDisclosure{border:0!important}
+#planReviewDisclosure>.plan-review-summary{
+ width:fit-content;max-width:100%;display:inline-flex;min-height:43px;
+ gap:8px;padding:8px 12px!important;
+ border:1px solid var(--line);border-radius:11px;background:var(--card);
+ transition:border-color .16s ease,background-color .16s ease;
+}
+#planReviewDisclosure>.plan-review-summary:hover{border-color:var(--primary)}
+#planReviewDisclosure .plan-review-headings{flex:0 1 auto;gap:3px 9px}
+#planReviewDisclosure .plan-review-headings strong{font-size:12px}
+#planReviewDisclosure .plan-review-headings small{font-size:11px}
+#planReviewDisclosure .plan-review-chevron{display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+#planReviewDisclosure .plan-review-chevron svg{display:block}
+#planReviewDisclosure[open]>.plan-review-summary{border-color:var(--primary)}
+#planReviewDisclosure .plan-review-body{padding:9px 3px 6px}
+#planReviewPanel.has-pending .plan-review-summary{border-left:2px solid var(--primary);padding-left:11px!important}
+#membersReviewManageHost{margin:3px 0 12px;padding:10px 10px 4px;
+ border:1px solid var(--line);border-radius:12px;background:var(--card)}
+#membersReviewManageHost[hidden]{display:none!important}
+#membersReviewManageHost #membersReviewClose{float:right;position:relative;z-index:2;min-height:36px}
+#membersReviewManageHost #planReviewPanel{clear:both;margin-top:3px!important}
+#view-stats .stats-star-legend{display:flex;flex-wrap:wrap;gap:6px 15px;margin:8px 0 12px;font-size:11px;line-height:1.4}
+#view-stats .stats-star-key{display:inline-flex;align-items:center;gap:5px;min-width:65px;white-space:nowrap}
+#view-stats .stats-star-key i{width:9px;height:9px;border-radius:3px;flex:none}
+#view-stats .stats-star-key b{font-weight:800;font-variant-numeric:tabular-nums}
+#view-stats .stats-star-key span{color:var(--muted);font-variant-numeric:tabular-nums}
+#view-stats .stats-star-key.stars-0 i{background:var(--muted)}
+#view-stats .stats-star-key.stars-1 i{background:var(--red)}
+#view-stats .stats-star-key.stars-2 i{background:var(--amber)}
+#view-stats .stats-star-key.stars-3 i{background:var(--green)}
+/* Gold/Arena: the old !important solid sheet overrode the transparent tabs
+   and created a harsh rectangular block on iPhone. Blend its edge instead. */
+@media(max-width:699px){
+ html[data-theme="arena"] #view-plan #mobileDaySwitcher{
+   background:linear-gradient(to bottom,rgba(12,16,21,.96) 0%,rgba(12,16,21,.91) 80%,transparent 100%)!important;
+   box-shadow:none!important;border:0!important;
+ }
+ html[data-theme="arena"] #view-plan #mobileDaySwitcher .mobile-day-tabs{
+   background:transparent!important;box-shadow:none!important;border:0!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #planReviewDisclosure>.plan-review-summary{transition:none}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3026,7 +3074,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <summary class="plan-review-summary">
         <span class="plan-review-headings"><strong id="planReviewSummaryTitle">Gemeinsam bearbeitbar</strong><small id="planReviewSummaryDetail">Freigabe und Zusammenarbeit</small></span>
         <span class="plan-review-pending" id="planReviewPendingCount" hidden></span>
-        <span class="plan-review-chevron" aria-hidden="true">⌄</span>
+        <span class="plan-review-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
       </summary>
       <div class="plan-review-body">
         <div class="plan-review-explanation"><span class="badge" id="planReviewStatus">In Bearbeitung</span><span id="planReviewHint">Gemeinsame Planung</span></div>
@@ -3057,6 +3105,9 @@ html[data-theme] #view-more-settings .latest-changelog{
         <button type="button" class="btn small" id="membersReviewOpenPlan" hidden>Planfreigabe ansehen</button>
       </div>
     </div>
+    <section id="membersReviewManageHost" class="members-review-manage" hidden aria-label="Planfreigabe und Vorschläge">
+      <button class="btn small" type="button" id="membersReviewClose">Schließen</button>
+    </section>
     <div id="guestMembersTools" class="cloud-member-tools">
       <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
       <div class="cloud-members-hint">Ohne Anmeldung: manuelle Liste oder CSV auf diesem Gerät verwalten.</div>
