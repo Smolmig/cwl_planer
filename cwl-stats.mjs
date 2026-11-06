@@ -157,7 +157,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<div class='stats-highlight-plot' role='img' aria-label='"+esc(item.label+": "+
             (quote===null?"keine Daten":quote+" Prozent aus "+count+" Angriffen"))+"'>"+
             (quote===null?"":"<div class='stats-highlight-fill' style='height:"+height+"%'></div>")+
-          "</div><span>"+esc(item.label)+"</span><small>"+count+" Angriffe</small></div>";
+          "</div><span>"+esc(item.label)+"</span><small>"+
+            (count?row.triples+" von "+count+" Angriffen": "Keine Angriffe")+
+            (count>0&&count<6?" · wenige Daten":"")+"</small></div>";
       }).join("")+"</div>"+
       "<p class='stats-note'>Die Werte beschreiben eure dokumentierten Angriffe. "+
       "Unterschiedliche Gegnerbasen, Anzahl der Angriffe und CWL-Bedingungen können die Quoten beeinflussen.</p>";
