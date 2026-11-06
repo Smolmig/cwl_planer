@@ -605,6 +605,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
     formWindow=90;formSearch="";formSort="evidence";
+    // Clan switch: no stale dropdown label for a reset view-model.
+    if($("statsFormSort"))$("statsFormSort").value=formSort;
+    if($("statsFormSearch"))$("statsFormSearch").value="";
     compareType="all";compareDays="all";trendType="all";trendDays="all";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     // The history is now lazy-loaded per view. On clan switch it MUST
