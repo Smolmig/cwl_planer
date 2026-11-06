@@ -2714,6 +2714,12 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-trend-chart svg{min-height:165px}
  #view-stats .stats-duel-controls{gap:8px}
 }
+
+/* Transparent collector freshness without another decorative card. */
+#view-stats #statsCollectorHealth{margin:9px 0 0;line-height:1.5;font-size:12px}
+#view-stats #statsCollectorHealth[data-health="ok"]{color:var(--muted)}
+#view-stats #statsCollectorHealth[data-health="error"]{color:var(--text)}
+#view-stats #statsCollectorHealth[data-health="none"]{color:var(--muted)}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3008,6 +3014,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
     <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">Angriffe, Sterne und Zuverlässigkeit – aus den Kriegen, die tatsächlich erfasst wurden.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <p id="statsCollectorHealth" class="stats-note" role="status" aria-live="polite">Automatische Statistikerfassung wird geprüft …</p>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
       <div class="field"><label id="statsPeriodLabel">Kriege für Auswertung</label>
