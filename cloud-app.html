@@ -4251,13 +4251,7 @@ function renderSummary(){
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
     const goal=goalByTag.get(normalizePlayerTag(x.m.playerTag));
-    const playerTag=normalizePlayerTag(x.m.playerTag);
-    const cwResults=Object.values(dayResults).map(day=>day?.[playerTag])
-      .filter(result=>result&&!result.missed&&Number.isInteger(result.stars));
-    const cwTriples=cwResults.filter(result=>result.stars===3).length;
-    const cwlHitRate=cwResults.length>=2
-      ?"CWL bisher: "+Math.round(100*cwTriples/cwResults.length)+" % 3★ ("+cwTriples+"/"+cwResults.length+" AG)"
-      :cwResults.length===1?"CWL bisher: "+cwTriples+"/1 Dreier":"";
+    const cwlHitRate=currentCwlTripleRate(x.m.playerTag).label;
     const goalLabel=goal?.status==="reached"?"8★ erreicht":
       goal?.status==="not-reachable"?"8★ mit aktuellem Plan nicht erreichbar":
       goal?.status==="uncertain"?"8★-Stand unvollständig":"8★ rechnerisch möglich";
@@ -4285,7 +4279,7 @@ function renderSummary(){
       ${goal||reserveAvailable?`<div class="summary-compact-insights" aria-label="CWL-Angriffe, 8-Sterne-Ziel und Reserve">
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>
-        ${cwlHitRate?`<span>${esc(cwlHitRate)}</span>`:""}`:""}
+        <span>${esc(cwlHitRate)}</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
       ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
