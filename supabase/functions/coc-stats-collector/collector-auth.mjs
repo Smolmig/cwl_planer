@@ -5,6 +5,9 @@ export const EXPECTED={
  audience:"cwl-stats-collector:yjldnvfwposfwmzmcsow",
  repository:"Smolmig/cwl_planer",
  repositoryId:"1360107984",
+ // GitHub currently provides the repository_id/owner_id-bound subject.
+ // Match this *exact* signed value, never a wildcard or a prefix.
+ subject:"repo:Smolmig@323628566/cwl_planer@1360107984:ref:refs/heads/main",
  ref:"refs/heads/main",
  workflowRef:"Smolmig/cwl_planer/.github/workflows/collect-war-stats.yml@refs/heads/main"
 };
@@ -32,7 +35,7 @@ export async function verifyCollectorIdentity(jwt,{
        claims.repository!==expected.repository||
        String(claims.repository_id)!==expected.repositoryId||
        claims.ref!==expected.ref||claims.workflow_ref!==expected.workflowRef||
-       claims.sub!=="repo:"+expected.repository+":ref:"+expected.ref||
+       claims.sub!==expected.subject||
        !["schedule","workflow_dispatch","push"].includes(claims.event_name)||
        !Number.isInteger(claims.exp)||claims.exp<=seconds||
        !Number.isInteger(claims.iat)||claims.iat>seconds+30||
