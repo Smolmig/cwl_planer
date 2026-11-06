@@ -2444,6 +2444,10 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-summary .summary-compact-insights .summary-goal.warning{color:var(--amber)}
 #view-summary .summary-compact-insights .summary-reserve{font-weight:700;color:var(--primary)}
 @media(max-width:470px){#view-summary .summary-compact-insights{gap:3px 10px;font-size:11px}}
+/* Medal rescue guidance belongs with deployment fairness, not the daily war board. */
+#view-summary .summary-medal-suggestion{margin:5px 0 0;border-top:1px solid var(--line);padding:4px 0 0}
+#view-summary .summary-medal-suggestion>summary{cursor:pointer;min-height:40px;align-content:center;font-size:12px;font-weight:750;color:var(--text)}
+#view-summary .summary-medal-suggestion>p{font-size:11px;line-height:1.6;color:var(--muted);margin:3px 0 6px}
 /* CWL medal progress stays inside the existing live-information area:
    dividers, not another card in a card. */
 .cwl-live-overview .cwl-medal-details{
@@ -4079,6 +4083,17 @@ function renderSummary(){
       goalBanner.textContent="8★-Medailenziel · "+medal.reached+"/"+medal.rows.length+
         " Spieler sicher am Ziel · "+medal.notReachable+" rechnerisch gefährdet · Datenstand: "+dataState+
         ". Offene Angriffe sind Chancen, keine zugesicherten Sterne.";
+    }
+    const suggestion=goalState?.suggestion;
+    if(suggestion&&goalState?.fresh){
+      const hint=document.createElement("details");
+      hint.className="summary-medal-suggestion";
+      const summary=document.createElement("summary");
+      summary.textContent="Mögliche 8★-Reserve für Tag "+suggestion.day+" prüfen";
+      const body=document.createElement("p");
+      body.textContent=suggestion.inName+" statt "+suggestion.outName+"? "+suggestion.reason+
+        " Unverbindliche Prüfidee. Kein automatischer Wechsel; Vorgaben und Fixspieler bleiben verbindlich.";
+      hint.append(summary,body);goalBanner.append(hint);
     }
   }
   const query=summarySearch.trim().toLocaleLowerCase("de");
