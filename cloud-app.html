@@ -1204,6 +1204,8 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 .summary-player-days{display:flex;flex:1 1 100%;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 3px 2px;border-top:1px solid var(--line);margin-top:5px}
 .summary-day-chip{font-size:11px;border:1px solid var(--line);border-radius:7px;padding:5px 7px;background:var(--bluebg);color:var(--text)}
 .summary-day-chip.played{color:var(--green)}
+.summary-day-chip .summary-day-result{font-size:10px;font-weight:800;white-space:nowrap;color:var(--text)}
+@media(max-width:470px){.summary-player-days{gap:6px}.summary-day-chip{display:inline-flex;gap:4px;align-items:baseline;flex-wrap:wrap}}
 /* Manual ordering controls remain visible when the details are collapsed. */
 .member-snapshot-actions .member-order{display:inline-flex;align-items:center;gap:4px}
 .member-snapshot-actions .order-btn{min-width:34px;min-height:33px}
@@ -4035,6 +4037,7 @@ function renderSummary(){
   const goalState=window.CWLCloud?.getMedalOverview?.();
   const medal=goalState?.assessment;
   const goalByTag=new Map((medal?.rows||[]).map(row=>[normalizePlayerTag(row.playerTag),row]));
+  const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
   const goalBanner=document.getElementById("summaryMedalOverview");
   if(goalBanner){
     goalBanner.hidden=!window.CWLCloud?.active;
@@ -4062,6 +4065,13 @@ function renderSummary(){
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
     const goal=goalByTag.get(normalizePlayerTag(x.m.playerTag));
+    const playerTag=normalizePlayerTag(x.m.playerTag);
+    const cwResults=Object.values(dayResults).map(day=>day?.[playerTag])
+      .filter(result=>result&&!result.missed&&Number.isInteger(result.stars));
+    const cwTriples=cwResults.filter(result=>result.stars===3).length;
+    const cwlHitRate=cwResults.length>=2
+      ?"CWL bisher: "+Math.round(100*cwTriples/cwResults.length)+" % 3★ ("+cwTriples+"/"+cwResults.length+" AG)"
+      :cwResults.length===1?"CWL bisher: "+cwTriples+"/1 Dreier":"";
     const recent=x.m.playerTag?window.CWLCloudStats?.getRecentPlayerStats?.(x.m.playerTag):null;
     const recentText=recent?.attacks
       ?"Zuletzt "+recent.attacks+" AG: "+recent.hitRate+" % 3★"
@@ -4093,13 +4103,23 @@ function renderSummary(){
       ${goal||reserveAvailable?`<div class="summary-compact-insights" aria-label="CWL-Form, 8-Sterne-Ziel und Reserve">
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>
-        <span>${esc(recentText)}</span>`:""}
+        <span>${esc(recentText)}</span>
+        ${cwlHitRate?`<span>${esc(cwlHitRate)}</span>`:""}`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
       ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
-        (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>
-          '<span class="summary-day-chip'+(dp.locked?' played':'')+'">Tag '+dp.day+
-          (dp.locked?' · gespielt':' · geplant')+'</span>').join("")||
+        (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>{
+          const trulyPlayed=!!state.locks[dp.day-1]?.locked;
+          const fixedInClash=dp.locked&&!trulyPlayed;
+          const result=trulyPlayed?dayResults[dp.day]?.[playerTag]:null;
+          const resultLabel=result?(result.missed?" · kein Angriff":
+            " · "+result.stars+"★"+(Number.isFinite(result.percent)?" · "+result.percent+" %":"")):"";
+          const status=trulyPlayed?" · gespielt":fixedInClash?" · in Clash fix":" · geplant";
+          return '<span class="summary-day-chip'+(trulyPlayed?' played':'')+
+            '" title="'+(result?"Ergebnis laut Clash":"Planungsstand")+
+            '">Tag '+dp.day+status+
+            (result?'<small class="summary-day-result">'+resultLabel+'</small>':"")+'</span>';
+        }).join("")||
           '<span class="statusline">Keine Einsätze geplant</span>')+'</div>':""}
     </div>`;
   }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
