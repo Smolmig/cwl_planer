@@ -179,14 +179,24 @@ function renderPlanReview(){
  submitButton.hidden=!(editor&&locked);
  submitButton.disabled=!changedSerial||storage.getPlanningState?.()?.ok===false;
  submitButton.title=storage.getPlanningState?.()?.ok===false?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":changedSerial?"Vorschlag zur Freigabe einreichen":"Ändere zuerst Spieler oder Tagesregeln";
- const host=$("planReviewSuggestions");host.replaceChildren();
+ const host=$("planReviewSuggestions");
  const visible=planSuggestions.filter(x=>planReview?.season===currentSeason()&&(owner?x.status==="pending":x.author_id===user?.id)).slice(0,20);
- if(!visible.length){const text=document.createElement("div");text.className="statusline";text.textContent=locked?
-   "Keine offenen Änderungsvorschläge.":"Noch keine Planfreigabe aktiv.";host.append(text);return;}
+ // Do not replace an unchanged review list every 15 seconds (focus and open context).
+ const signature=JSON.stringify(visible.map(s=>[s.id,s.status,s.base_revision,s.submitted_at,s.suggested_profile]));
+ if(host.dataset.reviewSignature===signature)return;
+ host.dataset.reviewSignature=signature;host.replaceChildren();
+ if(!visible.length){
+   if(editor&&locked){const text=document.createElement("div");text.className="statusline";
+     text.textContent="Noch keine Vorschläge eingereicht. Deine Änderungen werden erst nach dem Einreichen verschickt.";
+     host.append(text);}
+   return;
+ }
  for(const item of visible){
    const row=document.createElement("div");row.className="plan-review-suggestion";
    const heading=document.createElement("div");heading.className="plan-review-suggestion-head";
-   const title=document.createElement("strong");title.textContent=owner?"Offener Vorschlag":"Dein Vorschlag · "+({pending:"Eingereicht",accepted:"Angenommen",rejected:"Abgelehnt",stale:"Veraltet",withdrawn:"Zurückgezogen"}[item.status]||item.status);
+   const title=document.createElement("strong");title.textContent=owner?
+     "Vorschlag von "+(planReviewPeople.get(item.author_id)||"Vize"):
+     "Dein Vorschlag · "+({pending:"Eingereicht",accepted:"Angenommen",rejected:"Abgelehnt",stale:"Veraltet",withdrawn:"Zurückgezogen"}[item.status]||item.status);
    const date=document.createElement("small");date.textContent=new Date(item.submitted_at).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
    heading.append(title,date);row.append(heading);
    const list=document.createElement("ul");list.className="plan-review-diff";
