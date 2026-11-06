@@ -112,6 +112,30 @@ function suggestionChanges(suggestion){
  if(JSON.stringify(prev.config)!==JSON.stringify(draft.config))result.push("CWL-Grunddaten geändert");
  return result.length?result.slice(0,25):["Keine unterscheidbaren Planänderungen"];
 }
+function renderMembersReview(){
+ const bar=$("membersReviewContext");if(!bar)return;
+ const active=cloud.active&&!!clanId;
+ bar.hidden=!active;if(!active)return;
+ const owner=role==="owner",editor=role==="editor",viewer=role==="viewer";
+ const locked=planIsLocked(),draft=editor&&locked&&!!changedSerial;
+ const pending=planSuggestions.filter(s=>s.status==="pending").length;
+ bar.classList.toggle("has-draft",draft);
+ $("membersReviewTitle").textContent=viewer?"Beobachter · Lesemodus":
+   locked?"Plan freigegeben":"Gemeinsam bearbeitbar";
+ $("membersReviewHint").textContent=viewer?
+   "Du kannst die Mitglieder, Einsätze und Tagesregeln ansehen, aber nicht verändern.":
+   owner?(locked?"Nur du bearbeitest direkt. Vize reichen Änderungen als Vorschlag ein.":
+     "Vize können mitplanen. Du kannst die Planung jederzeit freigeben und für Vize sperren."):
+   locked?(draft?"Dein Entwurf ist noch nicht eingereicht. Erst nach Freigabe durch den Clanführer werden Änderungen übernommen.":
+      "Du kannst Einstellungen ändern und als Vorschlag an den Clanführer senden."):
+     "Deine Änderungen werden direkt für den Clan gespeichert.";
+ const submit=$("membersSubmitSuggestion");submit.hidden=!(editor&&locked);
+ submit.disabled=!draft||storage.getPlanningState?.()?.ok===false;
+ submit.title=!draft?"Ändere zuerst Mitglieder oder Tagesregeln.":submit.disabled?
+   "Bitte Konflikte in der Planung beheben.":"Änderungsvorschlag dem Clanführer vorlegen.";
+ const open=$("membersReviewOpenPlan");open.hidden=!owner;
+ if(owner)open.textContent=pending?pending+" offene Vorschläge prüfen":locked?"Freigabe verwalten":"Planfreigabe ansehen";
+}
 function renderPlanReview(){
  const panel=$("planReviewPanel");if(!panel)return;
  const active=cloud.active&&!!clanId;
