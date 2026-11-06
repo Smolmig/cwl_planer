@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.15.9] - 2026-11-06
+
+### Automatische Erfassung abgeschlossener CWs und CWL-Tage
+- **Unabhängig vom Browser:** Geschützter Server-Abgleich über GitHub Actions alle zwei Stunden; alle mit der App verknüpften Clash-Clan-Tags werden berücksichtigt, auch getrennt konfigurierte App-Clans mit identischem Clash-Tag.
+- **Keine langlebigen GitHub-Zugangsdaten:** Kurzlebiger GitHub-OIDC-JWT mit strikter Signaturprüfung und Bindung an Repo-ID, Hauptbranch, exakten Workflow und Service-Ziel. Clash-API- und Supabase-Service-Rollen-Schlüssel liegen weiterhin nur im Edge-Server.
+- **Ausfallsicherer:** Spielende Kriege gehen erst als `finalized=true` in die Statistik ein. Während laufender Kriege bleiben mögliche Angriffe als vorläufige Daten erhalten. Normaler CW und CWL werden voneinander unterschieden, Angriffe über bestehende Primärschlüssel ohne Duplikate übernommen; unvollständige API-Daten lösen keine fiktiven 0-/3-Sterne-Werte aus.
+- **Status:** Je Cloud-Clan sind letzter erfolgreicher Server-Abgleich und mögliche Datenabrufprobleme sichtbar. Lesen bleibt durch bestehende private Clanrechte geschützt; der Collector kann keine CWL-Planungen ändern.
+- **Grenzen:** Das regelmäßige Abrufintervall ist keine Garantie, wenn Clash eine längst verschwundene Kriegshistorie nicht mehr ausliefert. Für solche Lücken ist ein geprüfter ClashPerk-Nachimport vorgesehen. Clanübergreifende Spieleranalysen erfordern weiterhin explizite, gesonderte Freigaben (#103).
+
+
 ## [1.15.8] - 2026-11-06
 
 ### Datengestützte Statistik: echte CWL-Durchgänge, Spielerduelle und Verlauf
