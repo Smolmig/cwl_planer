@@ -61,6 +61,12 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
       sb:{functions:{invoke:async()=>({data:{ok:true,active:true,season,clanTag:"#2PYG",rounds:[round]}})}},
       context:()=>({active:true,hasClanTag:true,clanId:"fixture",role:"viewer",profile}),
       storage:{getPlannedLineups:()=>[dayPlan],getPlanningState:()=>({ok:true}),
+       createPlanPlayerChip:member=>{
+        const el=document.createElement("div");el.className="player-chip";
+        el.dataset.playerTag=member.playerTag;
+        el.innerHTML="<b>"+member.name+"</b><span class='player-meta'>RH19 · CWL aktuell: 100 % 3★ · 2 gespielt</span>";
+        return el;
+       },
        getProfile:()=>profile,rerender:()=>{throw Error("Read-only preview mutated a plan")}},
       notify:()=>{throw Error("Unexpected Cloud write")}
      });
@@ -87,6 +93,21 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
     assert.equal(dimensions.overflow,0,"no horizontal overflow on "+width);
     assert.equal(dimensions.count,15);
     assert.equal(dimensions.exitVisible,2);
+    assert.match(await page.locator(".cwl-plan-actual-exit .player-meta").first().textContent(),
+      /CWL aktuell/,"outgoing players keep the same metadata as ordinary player cards");
+    const heightBefore=await page.locator(".lineup").evaluate(n=>n.getBoundingClientRect().height);
+    await page.locator(".cwl-plan-actual-exit").first().click();
+    await page.locator(".cwl-swap-popover").waitFor();
+    const heightAfter=await page.locator(".lineup").evaluate(n=>n.getBoundingClientRect().height);
+    assert.ok(Math.abs(heightAfter-heightBefore)<1,
+      "opening a candidate never shifts or enlarges the original player grid");
+    assert.equal(await page.locator(".cwl-swap-popover .cwl-plan-incoming").count(),2);
+    assert.match(await page.locator(".cwl-swap-popover .cwl-plan-incoming .player-meta").first().textContent(),
+      /CWL aktuell/,"candidate popover shows the complete green player card");
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth),0,
+      "floating candidate list stays inside the screen on "+width);
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator(".cwl-swap-popover").count(),0,"Escape dismisses the overlay");
     await page.locator(".cwl-opponent-details > summary").click();
     assert.equal(await page.locator(".cwl-opponent-details .cwl-roster-member").count(),15);
     assert.equal(await page.locator(".cwl-opponent-details").evaluate(n=>n.open),true);

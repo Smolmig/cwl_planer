@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.5";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.5";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.6";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.6";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -59,16 +59,109 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const now=new Date(),diff=now.getFullYear()*12+now.getMonth()+1-month;
     return diff>=0&&diff<=1?prior:null;
   };
-  // Decorate the ORIGINAL collapsible planned lineup, never replace it with a
-  // separate Clash roster. Only a fresh, fully verified preparation may mark swaps.
+  // The live Clash roster occupies the original grid. Swaps never modify
+  // the solver plan; the optional candidate view is a floating popover and
+  // never pushes the next row of player cards down.
   const openedOutgoing=new Set();
-  // Always keep the original planned chips for safe fallback. During a fresh
-  // preparation comparison, show the ACTUAL Clash roster in that same grid.
-  function annotatePlannedLineup(dayCard,review,verified,round){
+  let activeSwap=null;
+  function closeSwapPopover({preserve=false}={}){
+    if(!activeSwap)return;
+    const {key,anchor,popup,doc,win,onOutside,onEscape,onScroll,onResize}=activeSwap;
+    if(preserve)openedOutgoing.add(key);else openedOutgoing.delete(key);
+    anchor.setAttribute("aria-expanded","false");
+    anchor.removeAttribute("aria-controls");
+    doc.removeEventListener("pointerdown",onOutside,true);
+    doc.removeEventListener("keydown",onEscape,true);
+    win?.removeEventListener("scroll",onScroll,true);
+    win?.removeEventListener("resize",onResize);
+    popup.remove();
+    activeSwap=null;
+  }
+  function positionSwapPopover(anchor,popup){
+    const doc=anchor.ownerDocument,win=doc.defaultView;
+    if(!win||!anchor.isConnected){closeSwapPopover();return}
+    const rect=anchor.getBoundingClientRect();
+    const width=Math.min(Math.max(164,rect.width),win.innerWidth-16);
+    const left=Math.max(8,Math.min(rect.left,win.innerWidth-width-8));
+    popup.style.width=width+"px";
+    popup.style.left=left+"px";
+    const safeBottom=win.innerHeight-90; // keep the mobile bottom navigation free
+    const topbarBottom=doc.querySelector(".topbar")?.getBoundingClientRect().bottom||0;
+    const safeTop=Math.max(8,topbarBottom+6);
+    const below=Math.max(0,safeBottom-rect.bottom-8);
+    const above=Math.max(0,rect.top-safeTop-8);
+    const preferredHeight=Math.min(360,popup.scrollHeight||300);
+    const openAbove=below<Math.min(preferredHeight,165)&&above>below;
+    const available=openAbove?above:below;
+    const maximum=Math.max(80,Math.min(360,available));
+    popup.style.maxHeight=maximum+"px";
+    const height=Math.min(popup.scrollHeight,maximum);
+    const desired=openAbove?rect.top-height-8:rect.bottom+8;
+    popup.style.top=Math.max(safeTop,Math.min(desired,Math.max(safeTop,safeBottom-height)))+"px";
+  }
+  function showSwapPopover(anchor,dayCard,review,profile){
+    const tag=tagOf(anchor.dataset.playerTag),key=dayCard.id+"|"+tag;
+    if(activeSwap?.key===key){closeSwapPopover();return}
+    closeSwapPopover();
+    const doc=anchor.ownerDocument,win=doc.defaultView;
+    const popup=doc.createElement("div");
+    popup.className="cwl-swap-popover";
+    popup.id="cwl-swap-"+dayCard.id+"-"+tag.replace(/[^a-zA-Z0-9]/g,"");
+    popup.setAttribute("role","dialog");
+    popup.setAttribute("aria-label","Geplante Einwechselspieler");
+    const header=doc.createElement("div");
+    header.className="cwl-swap-popover-header";
+    const heading=doc.createElement("strong");
+    heading.textContent="In Clash aufnehmen";
+    const close=doc.createElement("button");
+    close.type="button";close.className="cwl-swap-popover-close";
+    close.textContent="×";close.setAttribute("aria-label","Wechselanzeige schließen");
+    close.onclick=()=>closeSwapPopover();
+    header.append(heading,close);popup.append(header);
+    const cards=doc.createElement("div");
+    cards.className="cwl-swap-popover-cards";
+    const known=[...(profile?.members||[]),...(profile?.archivedMembers||[])];
+    for(const candidate of review.toAdd||[]){
+      const tag=tagOf(candidate.tag);
+      const knownMember=known.find(m=>tagOf(m.playerTag)===tag);
+      const member=knownMember||{name:candidate.name||tag,playerTag:tag,townHall:candidate.townHallLevel};
+      const card=storage.createPlanPlayerChip?.(member)||doc.createElement("div");
+      if(!card.classList.contains("player-chip")){
+        card.className="player-chip";
+        card.textContent=member.name||tag;
+        const rh=doc.createElement("span");rh.className="player-meta";rh.textContent="RH "+(member.townHall||"?");
+        card.append(rh);
+      }
+      card.classList.add("cwl-plan-incoming");
+      const status=doc.createElement("span");
+      status.className="cwl-plan-state";status.textContent="↑ In Clash aufnehmen";
+      card.append(status);cards.append(card);
+    }
+    popup.append(cards);
+    const hint=doc.createElement("p");
+    hint.className="cwl-swap-popover-note";
+    hint.textContent=(review.toAdd||[]).length===1?
+      "Geplanter Ersatz laut Aufstellung. Wechsel direkt in Clash durchführen.":
+      "Geplante Einwechselspieler. Keine fest zugewiesenen 1:1-Tauschpaare.";
+    popup.append(hint);
+    doc.body.append(popup);
+    const onOutside=e=>{if(!popup.contains(e.target)&&!anchor.contains(e.target))closeSwapPopover()};
+    const onEscape=e=>{if(e.key==="Escape"){e.preventDefault();closeSwapPopover();anchor.focus()}};
+    const onScroll=e=>{if(!popup.contains(e.target))positionSwapPopover(anchor,popup)};
+    const onResize=()=>positionSwapPopover(anchor,popup);
+    activeSwap={key,anchor,popup,doc,win,onOutside,onEscape,onScroll,onResize};
+    openedOutgoing.add(key);
+    anchor.setAttribute("aria-expanded","true");
+    anchor.setAttribute("aria-controls",popup.id);
+    positionSwapPopover(anchor,popup);
+    doc.addEventListener("pointerdown",onOutside,true);
+    doc.addEventListener("keydown",onEscape,true);
+    win?.addEventListener("scroll",onScroll,true);
+    win?.addEventListener("resize",onResize);
+  }
+  function annotatePlannedLineup(dayCard,review,verified,round,profile){
     const lineup=dayCard.querySelector(".lineup");
     if(!lineup)return;
-    for(const detail of lineup.querySelectorAll(".cwl-plan-swap[open]"))
-      openedOutgoing.add(dayCard.id+"|"+tagOf(detail.dataset.playerTag));
     lineup.querySelectorAll(".cwl-plan-state,.cwl-plan-actual-exit").forEach(el=>el.remove());
     const chips=[...lineup.querySelectorAll(".player-chip[data-player-tag]")];
     chips.forEach((chip,i)=>{
@@ -81,6 +174,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const incoming=new Set((review.toAdd||[]).map(m=>tagOf(m.tag)));
     const outgoing=new Set((review.toRemove||[]).map(m=>tagOf(m.tag)));
     const planned=new Map(chips.map(chip=>[tagOf(chip.dataset.playerTag),chip]));
+    const known=[...(profile?.members||[]),...(profile?.archivedMembers||[])];
+    const exits=[];
     for(const member of round?.clan?.members||[]){
       const tag=tagOf(member.tag);
       let chip=planned.get(tag);
@@ -91,46 +186,37 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         status.textContent="✓ Bereits in Clash";
         chip.append(status);
       }else if(outgoing.has(tag)){
-        chip=document.createElement("div");
-        chip.className="player-chip cwl-plan-actual-exit";
+        const knownMember=known.find(m=>tagOf(m.playerTag)===tag)||
+          {name:member.name||tag,playerTag:tag,townHall:member.townHallLevel};
+        const base=storage.createPlanPlayerChip?.(knownMember);
+        chip=document.createElement("button");
+        chip.type="button";
+        chip.className=(base?.className||"player-chip")+" cwl-plan-actual-exit";
         chip.dataset.playerTag=tag;
-        const details=document.createElement("details");
-        details.className="cwl-plan-swap";
-        details.dataset.playerTag=tag;
-        details.open=openedOutgoing.has(dayCard.id+"|"+tag);
-        const title=document.createElement("summary");
-        const name=document.createElement("b");
-        name.textContent=member.name||tag;
-        const rh=document.createElement("span");
-        rh.className="player-meta";
-        rh.textContent="RH "+(member.townHallLevel??"?");
-        const state=document.createElement("span");
-        state.className="cwl-plan-state";
+        if(base)chip.innerHTML=base.innerHTML;
+        else{
+          const name=document.createElement("b");name.textContent=member.name||tag;
+          const rh=document.createElement("span");rh.className="player-meta";
+          rh.textContent="RH "+(member.townHallLevel??"?");
+          chip.append(name,rh);
+        }
+        chip.setAttribute("aria-expanded","false");
+        chip.setAttribute("aria-label",(member.name||tag)+" aus Clash nehmen. Einwechselspieler anzeigen");
+        const state=document.createElement("span");state.className="cwl-plan-state";
         state.textContent="↓ Aus Clash nehmen · Wechsel anzeigen";
-        title.append(name,rh,state);
-        const content=document.createElement("div");
-        content.className="cwl-plan-candidates";
-        const heading=document.createElement("strong");
-        heading.textContent="In Clash aufnehmen:";
-        const names=document.createElement("span");
-        names.textContent=(review.toAdd||[]).map(m=>m.name||tagOf(m.tag)).join(", ");
-        const hint=document.createElement("small");
-        hint.textContent=review.toAdd?.length===1?
-          "Geplanter Ersatz laut Plan. Wechsel in Clash manuell durchführen.":
-          "Alle geplanten Einwechselspieler – keine festen 1:1-Tauschpaare.";
-        content.append(heading,names,hint);
-        details.append(title,content);
-        details.addEventListener("toggle",()=>{
-          const key=dayCard.id+"|"+tag;
-          if(details.open)openedOutgoing.add(key);else openedOutgoing.delete(key);
-        });
-        chip.append(details);
+        chip.append(state);
+        chip.onclick=()=>showSwapPopover(chip,dayCard,review,profile);
+        exits.push(chip);
       }
       if(chip)lineup.append(chip);
     }
     for(const chip of chips)
       if(incoming.has(tagOf(chip.dataset.playerTag)))
         chip.classList.add("cwl-plan-candidate-hidden");
+    for(const chip of exits){
+      const key=dayCard.id+"|"+tagOf(chip.dataset.playerTag);
+      if(openedOutgoing.has(key)){showSwapPopover(chip,dayCard,review,profile);break}
+    }
   }
   function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0}={}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
@@ -165,7 +251,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const review=reviewPreparationLineup(profile,dayPlan,round,{planningOk:planning?.ok!==false});
     const reviewFresh=fresh&&round.state==="preparation";
     const usableReview=reviewFresh&&["match","changes"].includes(review?.status);
-    annotatePlannedLineup(dayCard,review,usableReview,round);
+    annotatePlannedLineup(dayCard,review,usableReview,round,profile);
     const reviewHtml=!review?"":!reviewFresh
       ?"<div class='cwl-prep-review'><span class='statusline'>Clash-Abgleich derzeit nicht aktuell. "+
         "Die geplante Aufstellung bleibt sichtbar; bitte vor einem Wechsel CWL-Daten aktualisieren.</span></div>"
@@ -293,6 +379,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     dayCard.querySelector(".day-head")?.after(section);
   }
   function render() {
+    // Re-rendering after an API refresh must not discard a user's open swap.
+    closeSwapPopover({preserve:true});
     const ctx=context(),view=document.getElementById("view-plan");
     const old=document.getElementById("cwlLiveOverview");
     const button=document.getElementById("cwlLiveRefresh");
@@ -443,6 +531,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
     activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;
+    closeSwapPopover();openedOutgoing.clear();
     expandedDays.clear();expandedOpponentDays.clear();staleRoundDays.clear();
     render();
   }
