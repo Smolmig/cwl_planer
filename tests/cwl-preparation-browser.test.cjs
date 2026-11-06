@@ -71,8 +71,8 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
     },theme);
     await page.locator(".cwl-prep-review").waitFor();
     assert.match(await page.locator(".cwl-prep-review").textContent(),/2 raus, 2 rein/);
-    assert.equal(await page.locator(".lineup .cwl-plan-chip-enter").count(),2);
-    assert.equal(await page.locator(".lineup .cwl-plan-exit").count(),2);
+    assert.equal(await page.locator(".lineup .cwl-plan-candidate-hidden").count(),2);
+    assert.equal(await page.locator(".lineup .cwl-plan-actual-exit").count(),2);
     assert.equal(await page.locator(".mobile-lineup-toggle").count(),1,
       "the original planned lineup toggle must not disappear");
     const dimensions=await page.evaluate(()=>{
@@ -81,8 +81,8 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
      const lineup=card.querySelector(".lineup");
      return {overflow:document.documentElement.scrollWidth-innerWidth,
       box:lineup.getBoundingClientRect().width,
-      count:lineup.querySelectorAll(".player-chip").length,
-      exitVisible:lineup.querySelectorAll(".cwl-plan-exit").length};
+      count:lineup.querySelectorAll(".player-chip:not(.cwl-plan-candidate-hidden)").length,
+      exitVisible:lineup.querySelectorAll(".cwl-plan-actual-exit").length};
     });
     assert.equal(dimensions.overflow,0,"no horizontal overflow on "+width);
     assert.equal(dimensions.count,15);
