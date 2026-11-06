@@ -17,7 +17,7 @@ const makeWar=(our=false,state="warEnded")=>({
 function harness(handler){
  const calls=[];
  const env={
-  Date,Set,Map,encodeURIComponent,ERROR:{
+  Date,Set,Map,encodeURIComponent,MAX_TAGS:32,ERROR:{
    api:"clash_api_unavailable",invalid:"war_data_incomplete"
   },
   tag:normalize,validTag:v=>/^#[0289PYLQGRJCUV]{3,15}$/.test(v),
