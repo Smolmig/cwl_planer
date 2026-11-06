@@ -215,8 +215,10 @@ function renderPlanReview(){
 }
 async function loadPlanReview(expected=clanId){
  if(!expected||!cloud.active)return;
+ const wasLocked=planIsLocked();
  const [stateResult,suggestionResult]=await Promise.all([
    sb.from("cwl_plan_review_state").select("cycle_id,season,locked").eq("clan_id",expected).maybeSingle(),
+   role==="viewer"?Promise.resolve({data:[],error:null}):
    sb.from("cwl_plan_suggestions")
      .select("id,cycle_id,author_id,base_revision,suggested_profile,status,submitted_at")
      .eq("clan_id",expected).order("submitted_at",{ascending:false}).limit(40)
@@ -227,6 +229,7 @@ async function loadPlanReview(expected=clanId){
  planReview=stateResult.data||null;
  planSuggestions=(suggestionResult.data||[]).filter(x=>x.cycle_id===planReview?.cycle_id);
  renderPlanReview();
+ if(wasLocked!==planIsLocked())cloud.afterRender();
 }
 async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
@@ -1755,6 +1758,13 @@ async function importCloud(){
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("planReviewToggle","click",togglePlanLock);
 bind("planSubmitSuggestion","click",submitPlanSuggestion);
+bind("membersSubmitSuggestion","click",submitPlanSuggestion);
+bind("membersReviewOpenPlan","click",()=>{
+ document.querySelector('.navbtn[data-view="plan"]')?.click();
+ const details=$("planReviewDisclosure");
+ if(details){details.open=true;details.querySelector("summary")?.focus({preventScroll:true});
+   details.scrollIntoView({block:"nearest",behavior:"smooth"});}
+});
 bind("planRefreshSuggestions","click",()=>loadPlanReview());
 $("planReviewSuggestions").addEventListener("click",event=>{
  const button=event.target.closest("[data-plan-action][data-suggestion-id]");
