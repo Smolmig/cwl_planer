@@ -2772,6 +2772,20 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-form-controls{grid-template-columns:1fr}
  #view-stats .stats-form-source{margin-top:0}
 }
+
+#view-stats .stats-star-analysis{padding-top:16px;margin-top:20px;border-top:1px solid var(--line)}
+#view-stats .stats-star-group{padding:9px 0}
+#view-stats .stats-star-group h4{font-size:13px;margin:0 0 9px}
+#view-stats .stats-star-stack{display:flex;width:100%;height:16px;border-radius:8px;overflow:hidden;background:var(--line);gap:1px}
+#view-stats .stats-star-piece{height:100%;min-width:0}
+#view-stats .stats-star-piece[data-stars="0"]{background:var(--muted)}
+#view-stats .stats-star-piece[data-stars="1"]{background:var(--red)}
+#view-stats .stats-star-piece[data-stars="2"]{background:var(--primary)}
+#view-stats .stats-star-piece[data-stars="3"]{background:var(--green)}
+#view-stats .stats-star-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:9px}
+#view-stats .stats-star-values span{font-size:11px;color:var(--muted)}
+#view-stats .stats-star-values strong{display:block;font-size:12px;color:var(--text)}
+@media(max-width:500px){#view-stats .stats-star-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3157,6 +3171,10 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="section-title"><div><h3>Angriffe nach Gegner-Rathaus</h3><p class="statusline">Tatsächliche Ergebnisse – getrennt nach normalem Clankrieg und CWL.</p></div></div>
     <p class="stats-note">Niedriger / gleich / höher vergleicht das Rathaus des Gegners mit dem des Angreifers. Gleiche Rathausstufe bedeutet nicht automatisch gleich starke Basen. Bei fehlendem RH zählen Angriffe separat als „Unbekannt“.</p>
     <div id="statsMatchupComparison" class="stats-matchup-comparison" aria-live="polite"></div>
+    <div class="stats-star-analysis">
+      <div class="section-title"><div><h3>Sterneverteilung</h3><p class="statusline">Wie häufig wurden 0, 1, 2 oder 3 Sterne erreicht? Nur tatsächlich dokumentierte Angriffe.</p></div></div>
+      <div id="statsStarDistribution" class="stats-star-distribution" aria-live="polite"></div>
+    </div>
     <div class="stats-duel">
       <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Gleicher Auswertungszeitraum, gleiche Kriegsarten. Ohne versteckte Stärkegewichtung.</p></div></div>
       <div class="stats-duel-controls">
