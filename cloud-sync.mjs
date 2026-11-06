@@ -251,6 +251,7 @@ const cloud={
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
  getMedalOverview:()=>live.getMedalOverview(),
+ getPlayedAttackResults:()=>live.getPlayedAttackResults(),
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
