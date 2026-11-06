@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.1",
+  "version": "v1.16.2",
   "released": "2026-11-06",
-  "summary": "CWL-Einsätze mit 8★-Medaillenstand und Spielerform; echte Clash-Aufstellung und Wechselhinweise im Plan. Drei-Einsatz-Spieler möglichst bis Tag 6 einteilen, damit Tag 7 als Reserve offenbleibt. Robuster Mitglieder-API-Abruf. Gespielte Tage, Tagesregeln und exakte Einsatzziele bleiben verbindlich; Offline-PWA, DB und Statistikmethodik unverändert."
+  "summary": "CWL-Plan: eine aufklappbare Clash-Teamansicht mit Wechselmarkierungen und passenden Einwechselkandidaten statt doppelter vollständiger Listen. Einsätze: tatsächliche Sterne an abgeschlossenen Tagen und aktuelle CWL-Quote samt Angriffsanzahl. Spielerform: klare gleich-RH-Erklärung, nummerierte Reihenfolge und standardmäßig sortierte 3★-Quote. Vergleiche: kompakter dreiteiliger CW/CWL-Rathausvergleich und optionale Details; Verlauf: verständliche Hinweise auf Datenlücken. Keine Änderungen am Supabase-Schema, an historischen Daten oder an der Offline-PWA."
 }
