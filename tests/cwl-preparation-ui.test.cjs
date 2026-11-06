@@ -85,7 +85,7 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   changed.dataset.playerTag="#2PYQ";
   changed.textContent="Spieler B";
   live.render();
-  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Aufstellung stimmt überein/);
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Aufstellung stimmt mit Clash überein/);
   assert.equal(doc.querySelectorAll(".lineup .cwl-plan-exit").length,0);
   assert.equal(doc.querySelectorAll(".lineup .cwl-plan-chip-present").length,2);
   assert.ok(doc.querySelector(".mobile-lineup-toggle"));
@@ -96,7 +96,7 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
     rounds:[{day:1,available:false}]};
   await live.refresh();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/nicht aktuell/);
-  assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+  assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt mit Clash überein/);
   assert.equal(doc.querySelectorAll(".lineup .cwl-plan-exit").length,0,
     "stale API preparation must not show actionable swap markings");
   apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"complete",rounds:[round]};
