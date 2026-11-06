@@ -231,8 +231,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const ownWars=selectWarDateScope(wars,{type:trendType,days:trendDays});
     const trend=computeStatsTimeline(ownWars,attacks,{type:"all",last:"all",cwlSeasons:"all",granularity:trendGranularity});
     if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
-      " Kriege in dieser Verlaufsauswahl; "+trend.recordedAttacks+
-      " dokumentierte Angriffe. Wochenansicht ist Standard – bei einer einzelnen CWL kannst du auf Tage umstellen.";
+      " ausgewählte Kriege · "+trend.recordedAttacks+
+      " dokumentierte Angriffe. Jeder Punkt steht für einen Zeitraum mit Angriffen. "+
+      "Linien verbinden nur aufeinanderfolgende Zeiträume derselben Kriegsart mit Daten; "+
+      "bei Lücken bleiben einzelne Punkte stehen. Für eine CWL kannst du auf „Tag“ umstellen.";
     const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
     if(chart.dataset.signature===signature)return;
     chart.dataset.signature=signature;
@@ -299,14 +301,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
     chart.innerHTML="<svg role='img' aria-label='"+esc(label+
       " nach "+(trendGranularity==="week"?"Wochen":trendGranularity==="day"?"Tagen":"Monaten")+
-      "; Kreise: normale CWs, Rauten: CWL; Fallzahlen in der Datentabelle")+
+      "; Kreise: normale CWs, Rauten: CWL. Die jeweilige Anzahl erfasster Angriffe steht in der Datentabelle")+
       "' viewBox='0 0 "+W+" "+H+"' preserveAspectRatio='xMidYMid meet'>"+
       grid+axis+series+"</svg>";
     const wasOpen=detail.querySelector("details")?.open===true;
     const fmt=(data)=>{
       const val=data[trendMetric];
       return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
-        " (n="+data.attacks+")"):"–";
+        " ("+data.attacks+" Angriffe)"):"–";
     };
     const table=all.slice().reverse().map(row=>"<tr><td>"+esc(row.key)+
       "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
