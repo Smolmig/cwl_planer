@@ -1,0 +1,45 @@
+name: Collect finished Clash war statistics
+on:
+  schedule:
+    # Runs without app visits; minute 19 avoids minute-0 queue peaks.
+    - cron: '19 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: cwl-clash-stats-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Obtain short-lived GitHub workload identity
+        id: oidc
+        shell: bash
+        env:
+          COLLECT_AUDIENCE: cwl-stats-collector:yjldnvfwposfwmzmcsow
+        run: |
+          set -euo pipefail
+          encoded="$(jq -nr --arg audience "$COLLECT_AUDIENCE" '$audience | @uri')"
+          response="$(curl --fail --silent --show-error --max-time 12 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${encoded}")"
+          jwt="$(jq -r '.value // empty' <<<"$response")"
+          if [[ -z "$jwt" ]]; then
+            echo "::error::GitHub OIDC token unavailable"
+            exit 1
+          fi
+          echo "::add-mask::$jwt"
+          echo "collector_jwt=$jwt" >> "$GITHUB_OUTPUT"
+
+      - name: Collect stats for linked clans
+        shell: bash
+        env:
+          COLLECTOR_JWT: ${{ steps.oidc.outputs.collector_jwt }}
+          COLLECTOR_URL: https://yjldnvfwposfwmzmcsow.supabase.co/functions/v1/coc-stats-collector
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 170 --retry 1 --retry-delay 10 --request POST --header "Authorization: Bearer ${COLLECTOR_JWT}" --header "Content-Type: application/json" --data '{}' "$COLLECTOR_URL"
+          echo "Protected collection completed"
