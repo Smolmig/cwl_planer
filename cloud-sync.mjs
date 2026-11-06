@@ -250,6 +250,7 @@ const cloud={
  isEmergencyEditing:()=>manualRosterPending(),
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
+ getMedalOverview:()=>live.getMedalOverview(),
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
