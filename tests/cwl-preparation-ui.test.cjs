@@ -9,7 +9,10 @@ const player=(id,tag)=>({id,name:"Spieler "+id,playerTag:tag,townHall:19,partici
  statuses:Array(7).fill("auto")});
 test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only preview",{timeout:30000},async()=>{
  const dom=new JSDOM('<main id="view-plan"><div class="plan-actions"></div><div class="plan-overview"></div>'+
-  '<article id="day-card-0"><div class="day-head">Tag 1</div></article></main>');
+  '<article id="day-card-0"><div class="day-head">Tag 1</div>'+
+  '<button type="button" class="mobile-lineup-toggle" aria-expanded="false">Aufstellung aufklappen</button>'+
+  '<div class="lineup"><div class="player-chip" data-player-tag="#2PYL">Spieler A</div>'+
+  '<div class="player-chip" data-player-tag="#2PYV">Spieler C</div></div></article></main>');
  const oldDocument=global.document;global.document=dom.window.document;
  const priorNavigator=Object.getOwnPropertyDescriptor(globalThis,"navigator");
  Object.defineProperty(globalThis,"navigator",{value:dom.window.navigator,configurable:true});
@@ -41,30 +44,31 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   });
   live.render();
   const doc=dom.window.document;
-  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/nicht aktuell/);
   assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/Wechsel nötig|stimmt überein/);
   await live.refresh(); // fresh API response, no Cloud mutation (viewer role)
   const review=doc.querySelector(".cwl-prep-review");
   assert.ok(review,"comparison must appear inside the war card");
-  assert.match(review.textContent,/1 Wechsel nötig/);
+  assert.match(review.textContent,/1 raus, 1 rein/);
   assert.equal(doc.querySelectorAll(".cwl-actual-lineup").length,0,
-    "do not render a second complete Clash roster above the existing team disclosure");
-  assert.equal(doc.querySelectorAll(".cwl-live-details .cwl-merged-member").length,2);
-  assert.equal(doc.querySelectorAll(".cwl-live-details .swap-needed").length,1);
-  assert.ok(doc.getElementById("day-card-0").classList.contains("cwl-prep-merged"));
-  const candidate=doc.querySelector(".cwl-actual-swap");
-  assert.ok(candidate&&!candidate.open,"replacement names start collapsed");
+    "do not render a second always-visible Clash roster");
+  assert.ok(doc.querySelector(".mobile-lineup-toggle"),
+    "original planned lineup toggle always exists");
+  assert.ok(!doc.getElementById("day-card-0").classList.contains("cwl-prep-merged"),
+    "API data must not hide the original planned lineup");
+  assert.equal(doc.querySelectorAll(".lineup .player-chip").length,2);
+  assert.equal(doc.querySelectorAll(".lineup .cwl-plan-chip-enter").length,1);
+  assert.match(doc.querySelector(".lineup .cwl-plan-chip-enter").textContent,/Spieler C.*In Clash aufnehmen/);
+  assert.match(doc.querySelector(".lineup [data-player-tag='#2PYL']").textContent,/Bereits in Clash/);
+  assert.equal(doc.querySelectorAll(".lineup .cwl-plan-exit").length,1);
+  assert.match(doc.querySelector(".lineup .cwl-plan-exit").textContent,/Spieler B/);
+  const candidate=doc.querySelector(".lineup .cwl-plan-exit details");
+  assert.ok(candidate&&!candidate.open,"swap group starts collapsed");
   assert.match(candidate.textContent,/Spieler C/);
-  assert.ok(!review.querySelector(".cwl-prep-swap-details").open,
-    "additional swap overview does not create an always-expanded duplicate list");
-  assert.match(review.querySelector(".cwl-prep-group.remove").textContent,/Spieler B/);
-  assert.match(review.querySelector(".cwl-prep-group.add").textContent,/Spieler C/);
-  assert.match(review.querySelector(".cwl-prep-group.remove > b").textContent,/Aus der Kriegsaufstellung nehmen/);
-  assert.match(review.querySelector(".cwl-prep-group.add > b").textContent,/In die Kriegsaufstellung aufnehmen/);
   assert.doesNotMatch(review.textContent,/Aus Clash raus|In Clash rein/);
-  assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Aufstellungswechsel kopieren/);
-  assert.equal(review.querySelector(".cwl-prep-group.remove .cwl-roster-tag").textContent,"#2PYQ");
-  assert.equal(review.querySelector(".cwl-prep-group.add .cwl-roster-tag").textContent,"#2PYV");
+  assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Wechseltext kopieren/);
+  assert.equal(doc.querySelectorAll(".cwl-live-details .cwl-merged-member").length,0,
+    "Clash peek contains no extra performance-heavy member cards");
   assert.match(doc.querySelector(".cwl-live-day > .statusline").textContent,/Aufstellung vorläufig/);
   assert.doesNotMatch(doc.querySelector(".cwl-live-day > .statusline").textContent,/Angriffe erfasst/);
   assert.equal(doc.querySelectorAll(".cwl-opponent-details .cwl-roster-member").length,2);
@@ -77,18 +81,23 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.equal(doc.querySelector(".cwl-opponent-details").open,true,
     "opponent list should stay open after plan re-render");
   plan.lineup=["A","B"];
+  const changed=doc.querySelector(".lineup [data-player-tag='#2PYV']");
+  changed.dataset.playerTag="#2PYQ";
+  changed.textContent="Spieler B";
   live.render();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/Aufstellung stimmt überein/);
-  assert.equal(doc.querySelectorAll(".cwl-prep-group").length,0);
+  assert.equal(doc.querySelectorAll(".lineup .cwl-plan-exit").length,0);
+  assert.equal(doc.querySelectorAll(".lineup .cwl-plan-chip-present").length,2);
+  assert.ok(doc.querySelector(".mobile-lineup-toggle"));
   assert.equal(edits,0,"preview must not save or change Cloud data");
 
   // A successful *partial* refresh must not make older, saved war data look fresh.
   apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"partial",
     rounds:[{day:1,available:false}]};
   await live.refresh();
-  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/nicht aktuell/);
   assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
-  assert.equal(doc.querySelectorAll(".cwl-merged-member.swap-needed").length,0,
+  assert.equal(doc.querySelectorAll(".lineup .cwl-plan-exit").length,0,
     "stale API preparation must not show actionable swap markings");
   apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"complete",rounds:[round]};
   await live.refresh();
@@ -109,7 +118,7 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   round.clan.members.push({tag:b.playerTag,name:b.name,townHallLevel:18});
   activeProfile={...profile};
   live.render();
-  assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
+  assert.match(doc.querySelector(".cwl-prep-review").textContent,/nicht aktuell/);
   assert.equal(edits,0);
   live.stop();
  }finally{
