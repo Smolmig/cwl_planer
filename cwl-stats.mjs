@@ -556,6 +556,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     formWindow=90;formSearch="";formSort="attacks";
     compareType="all";compareDays="all";trendType="all";trendDays="all";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
+    // The history is now lazy-loaded per view. On clan switch it MUST
+    // discard old mounted content immediately, even while the history tab
+    // is hidden, to prevent stale private data from another tenant.
+    for(const id of ["statsWarHistory","statsRows","statsFormRows",
+      "statsMatchupComparison","statsDuelResults","statsTrendChart","statsTrendTable"]){
+      $(id)?.replaceChildren();
+    }
+    const historyHost=$("statsWarHistory");
+    historyHost?.removeAttribute("data-history-signature");
+    historyHost?.removeAttribute("data-history-clan");
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
