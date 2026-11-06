@@ -277,6 +277,30 @@ export function computePlayerFormWindows(wars,attacks,{
 }
 
 /**
+ * Player-form list ordering is not a skill model. The evidence-first view
+ * keeps tiny perfect samples behind documented, more substantive samples.
+ * Quality buckets use the same boundaries as computePlayerFormWindows().
+ * Within each bucket the raw 3-star percentage remains visible and sorts.
+ */
+export function sortPlayerFormRows(players,windowDays,mode="evidence"){
+  if(!["evidence","hitRate","attacks","name"].includes(mode))
+    throw Error("Ungültige Sortierung für Spielerform.");
+  const nameSort=(a,b)=>a.name.localeCompare(b.name,"de");
+  const evidenceLevel=n=>n>=15?0:n>=6?1:n>0?2:3;
+  return (players||[]).slice().sort((a,b)=>{
+    const left=a.windows[windowDays],right=b.windows[windowDays];
+    if(!left||!right)throw Error("Formzeitraum ist nicht verfügbar.");
+    const rateDelta=(right.hitRate??-1)-(left.hitRate??-1);
+    const volumeDelta=right.attacks-left.attacks;
+    if(mode==="name")return nameSort(a,b);
+    if(mode==="attacks")return volumeDelta||rateDelta||nameSort(a,b);
+    if(mode==="hitRate")return rateDelta||volumeDelta||nameSort(a,b);
+    const evidenceDelta=evidenceLevel(left.attacks)-evidenceLevel(right.attacks);
+    return evidenceDelta||rateDelta||volumeDelta||nameSort(a,b);
+  });
+}
+
+/**
  * One comparable date bucket per observed week or month, grouped by CW/CWL.
  * Missing periods are not zero-win periods; consumers must show n for each dot.
  */

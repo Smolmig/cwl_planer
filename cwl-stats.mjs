@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.11";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.12";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -29,7 +29,7 @@ export function collectorHealthDisplay(health,enabled,now=Date.now()){
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",ascending=false,section="overview";
-  let formWindow=90,formSearch="",formSort="hitRate",compareType="all",compareDays="all";
+  let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="week";
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
@@ -54,15 +54,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       windows:[30,90,180],memberTags:ctx.memberTags||[]
     });
     const term=formSearch.trim().toLocaleLowerCase("de");
-    const rows=data.players.filter(p=>
+    const rows=sortPlayerFormRows(data.players.filter(p=>
       !term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term)
-    ).sort((a,b)=>{
-      const av=a.windows[formWindow],bv=b.windows[formWindow];
-      const diff=formSort==="name"?a.name.localeCompare(b.name,"de"):
-        formSort==="hitRate"?(bv.hitRate??-1)-(av.hitRate??-1):
-          bv.attacks-av.attacks;
-      return diff||bv.attacks-av.attacks||a.name.localeCompare(b.name,"de");
-    });
+    ),formWindow,formSort);
     for(const button of document.querySelectorAll("#view-stats [data-form-window]")){
       const active=Number(button.dataset.formWindow)===formWindow;
       button.classList.toggle("active",active);
@@ -71,11 +65,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     if(desc)desc.textContent="Letzte "+formWindow+" Kalendertage · "+usable+
       " Spieler mit dokumentierten Angriffen auf gleiches RH. "+
-      (formSort==="hitRate"?"Nach 3★-Quote sortiert, höchste zuerst. ":
+      (formSort==="evidence"?
+        "Nach Datenbasis gruppiert: ab 15, 6–14, 1–5 und 0 gleich-RH-Angriffe. Innerhalb der Gruppen zählt die 3★-Quote. ":
+        formSort==="hitRate"?"Reine 3★-Quote, ohne Berücksichtigung der Stichprobengröße. ":
         formSort==="attacks"?"Nach Anzahl der gleich-RH-Angriffe sortiert. ":
         "Alphabetisch sortiert. ")+
-      "Die Platznummer zeigt die Reihenfolge in dieser Liste, kein allgemeines Stärke-Ranking. "+
-      "Wenige Angriffe machen Prozentwerte weniger aussagekräftig.";
+      "Die Nummern sind Listenpositionen, kein Stärke-Ranking.";
     const markup=rows.length?rows.map((p,i)=>{
       const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
       const why=b.excludedDifferentRH+b.excludedUnknownRH;
@@ -609,7 +604,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
-    formWindow=90;formSearch="";formSort="hitRate";
+    formWindow=90;formSearch="";formSort="evidence";
+    // Clan switch: no stale dropdown label for a reset view-model.
+    if($("statsFormSort"))$("statsFormSort").value=formSort;
+    if($("statsFormSearch"))$("statsFormSearch").value="";
     compareType="all";compareDays="all";trendType="all";trendDays="all";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     // The history is now lazy-loaded per view. On clan switch it MUST

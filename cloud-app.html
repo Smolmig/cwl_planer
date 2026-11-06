@@ -3369,11 +3369,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.11</strong><span>Statistik · Datenfrische</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.12</strong><span>Spielerform · faire Datenbasis</span></div>
       <ul>
-       <li><b>Erfassung:</b> Bei mehr als drei Stunden ohne erfolgreichen Server-Abgleich erscheint ein dezenter Hinweis in der Statistik.</li>
-       <li><b>Transparenz:</b> Fehlgeschlagene Abgleiche sind von alten Erfolgen unterscheidbar. Laufende Kriege bleiben vorläufig.</li>
-       <li><b>Unverändert:</b> Spielerdaten, historische Angriffe und die CWL-Planung.</li>
+       <li><b>Spielerform:</b> Standardmäßig zuerst nach Aussagekraft der Datenmenge, innerhalb der Gruppen nach echter 3★-Quote sortiert.</li>
+       <li><b>Transparenz:</b> Reine 3★-Quote bleibt separat auswählbar; kleine Stichproben erscheinen nicht mehr automatisch ganz oben.</li>
+       <li><b>Unverändert:</b> Angriffsdaten, CWL-Planung, Berechnungen und alle anderen Statistikansichten.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3465,16 +3465,16 @@ html[data-theme] #view-more-settings .latest-changelog{
       <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
       <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
     </div>
-    <p class="stats-reading-copy">Die Form zeigt die 3★-Quote gegen Gegner mit <strong>derselben Rathausstufe</strong> wie der Angreifer. Ein gleich-RH-Angriff ist deshalb nicht automatisch gleich schwierig: Basis, CW oder CWL und die Anzahl der Angriffe spielen ebenfalls eine Rolle.</p>
+    <p class="stats-reading-copy">Die Form zeigt die 3★-Quote gegen Gegner mit <strong>derselben Rathausstufe</strong>. Standardmäßig stehen Spieler mit mehr belegten Angriffen zuerst – innerhalb vergleichbarer Datenmengen nach Quote. Das ist keine Stärkerangliste.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="hitRate" selected>3★-Quote (höchste zuerst)</option><option value="attacks">Anzahl gleich-RH-Angriffe</option><option value="name">Spielername (A–Z)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Datenbasis &amp; 3★-Quote</option><option value="hitRate">Nur 3★-Quote (roh)</option><option value="attacks">Anzahl gleich-RH-Angriffe</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
     <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
       <p>Die Fenster sind feste <strong>Kalendertage</strong> ab dem aktuellen Datum und verwenden alle verfügbaren abgeschlossenen CWs und CWL-Tage im ausgewählten Clan. Sie sind vollständig unabhängig vom Zeitraum unter Spielerstatistik.</p>
-      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Die <strong>Anzahl</strong> der Angriffe ist wichtig: 100 % bei 2 Angriffen sagen weniger aus als 90 % bei 30. Angriffe gegen niedrigere/höhere Rathäuser oder mit unbekannter RH-Stufe werden hier nicht mitgezählt. 0 dokumentierte Angriffe heißen „keine Daten“, nicht 0 %.</p>
+      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Die <strong>Standard-Sortierung</strong> trennt Datenmengen ab 15, 6–14, 1–5 und 0 Angriffen; innerhalb dieser Gruppen wird nach der echten 3★-Quote sortiert. Du kannst die reine Quote ausdrücklich wählen. 100 % aus 2 Angriffen sind nicht so aussagekräftig wie 90 % aus 30 – die Gruppen sind aber keine statistische Spielstärkebewertung. Angriffe gegen niedrigere/höhere oder unbekannte Rathausstufen zählen hier nicht. 0 belegte Angriffe heißen „keine Daten“, nicht 0 %.</p>
       <p>Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
     </details>
   </section>
@@ -3799,9 +3799,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.11"></script>
+<script src="./cwl-planning-core.js?v=1.16.12"></script>
 <script>
-const APP_VERSION="v1.16.11";
+const APP_VERSION="v1.16.12";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5026,6 +5026,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.11"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.12"></script>
 </body>
 </html>
