@@ -32,7 +32,9 @@ export async function verifyCollectorIdentity(jwt,{
        claims.repository!==expected.repository||
        String(claims.repository_id)!==expected.repositoryId||
        claims.ref!==expected.ref||claims.workflow_ref!==expected.workflowRef||
-       claims.sub!=="repo:"+expected.repository+":ref:"+expected.ref||
+       // GitHub permits custom subject claim templates. The immutable
+       // repository_id, ref and workflow_ref checks above are authoritative.
+       typeof claims.sub!=="string"||claims.sub.length<1||claims.sub.length>512||
        !["schedule","workflow_dispatch","push"].includes(claims.event_name)||
        !Number.isInteger(claims.exp)||claims.exp<=seconds||
        !Number.isInteger(claims.iat)||claims.iat>seconds+30||
