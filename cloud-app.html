@@ -2770,6 +2770,42 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-stats .stats-duel-person strong{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 #view-stats .stats-duel-person p{margin:4px 0;font-size:12px;line-height:1.5;color:var(--muted)}
 #view-stats .stats-duel-person small{font-size:11px;color:var(--muted)}
+/* Comparison hierarchy: two compact players, one aligned CW/CWL detail
+   list and a single optional disclosure. Avoid stacking duplicate charts. */
+#view-stats .stats-duel-grid{gap:16px;align-items:start}
+#view-stats .stats-duel-grid .stats-duel-person{padding:6px 0 0}
+#view-stats .stats-duel-person h4{margin:0 0 7px;font-size:14px}
+#view-stats .stats-duel-person .stats-form-figure strong{font-size:21px}
+#view-stats .stats-duel-person .stats-duel-sample{font-size:12px;margin:3px 0 1px;color:var(--text)}
+#view-stats .stats-duel-person .stats-duel-quality{display:block;font-size:11px;color:var(--muted);line-height:1.35}
+#view-stats .stats-duel-splits{margin:15px 0 0;border-top:1px solid var(--line)}
+#view-stats .stats-duel-splits-intro{margin:10px 0 2px;font-size:11px;color:var(--muted)}
+#view-stats .stats-duel-split-row{
+ display:grid;grid-template-columns:minmax(78px,.84fr) repeat(2,minmax(0,1fr));
+ gap:9px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)
+}
+#view-stats .stats-duel-split-label{font-size:12px;font-weight:650;color:var(--text)}
+#view-stats .stats-duel-split-value{font-size:12px;line-height:1.5;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#view-stats .stats-duel-caveat{margin:10px 0 8px;line-height:1.5}
+#view-stats .stats-duel-details{margin-top:3px;border-top:1px solid var(--line)}
+#view-stats .stats-duel-details summary{
+ display:flex;align-items:center;min-height:44px;cursor:pointer;
+ font-size:12px;font-weight:650;color:var(--text)
+}
+#view-stats .stats-duel-extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:6px 0 9px}
+#view-stats .stats-duel-extra{min-width:0}
+#view-stats .stats-duel-extra h4{font-size:12px;margin:4px 0 5px;overflow-wrap:anywhere}
+#view-stats .stats-duel-extra p{font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 6px}
+@media(max-width:550px){
+ #view-stats .stats-duel-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #view-stats .stats-duel-grid .stats-duel-person+.stats-duel-person{
+  border:0;border-left:1px solid var(--line);padding:6px 0 0 12px
+ }
+ #view-stats .stats-duel-split-row{grid-template-columns:minmax(66px,.8fr) repeat(2,minmax(0,1fr));gap:6px}
+ #view-stats .stats-duel-extra-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+}
+
+
 #view-stats .stats-trend-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 #view-stats .stats-trend-chart{max-width:100%;overflow:hidden}
 #view-stats .stats-trend-chart svg{display:block;width:100%;max-width:900px;height:auto;min-height:190px}
@@ -2789,7 +2825,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-stats .stats-war-list-title{margin-top:21px;border-top:1px solid var(--line);padding-top:16px}
 #view-stats #statsSeasonDetails{line-height:1.7}
 @media(max-width:550px){
- #view-stats .stats-duel-grid{grid-template-columns:minmax(0,1fr);gap:4px}
+ #view-stats .stats-duel-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
  #view-stats .stats-duel-person+.stats-duel-person{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}
  #view-stats .stats-trend-chart svg{min-height:165px}
  #view-stats .stats-duel-controls{gap:8px}
@@ -3490,7 +3526,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <p class="stats-note">Niedriger / gleich / höher vergleicht das Rathaus des Gegners mit dem des Angreifers. Gleiche Rathausstufe bedeutet nicht automatisch gleich starke Basen. Bei fehlendem RH zählen Angriffe separat als „Unbekannt“.</p>
     <div id="statsMatchupComparison" class="stats-matchup-comparison" aria-live="polite"></div>
     <div class="stats-duel">
-      <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Gleicher Auswertungszeitraum, gleiche Kriegsarten. Ohne versteckte Stärkegewichtung.</p></div></div>
+      <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Gleiche Kriege, aber nicht unbedingt gleich viele Angriffe oder gleich starke Gegner.</p></div></div>
       <div class="stats-duel-controls">
         <div class="field"><label for="statsDuelLeft">Spieler A</label><select id="statsDuelLeft" aria-label="Ersten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
         <div class="field"><label for="statsDuelRight">Spieler B</label><select id="statsDuelRight" aria-label="Zweiten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
