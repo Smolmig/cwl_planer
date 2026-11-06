@@ -40,7 +40,7 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     page.on("pageerror",e=>jsErrors.push(e.message));
     await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
     const result=await page.evaluate(async()=>{
-      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.15.7");
+      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.15.8");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
       const wars=[
