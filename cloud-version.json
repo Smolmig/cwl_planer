@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.4",
+  "version": "v1.16.5",
   "released": "2026-11-06",
-  "summary": "CWL-Plan: tatsächliche Clash-Vorbereitung direkt in der ursprünglichen aufklappbaren Aufstellung; Spielerwechsel über rote Spielerkarte mit Inline-Ersatz und Raus-/Rein-Überblick. Einsätze: 8★-Medaillenstatus durch Reparatur des bereits verarbeiteten CWL-Snapshots sichtbar. Eindeutige getrennte Quoten für aktuelle CWL und letzte sieben CW/CWL-Angriffe. Mobile Tagesnavigation bleibt unter dem Header. Keine Änderung an Solver, Datenbank, Profilen oder Offline-PWA."
+  "summary": "Aktive Einladungslinks für neu erstellte Gruppen- und Einmal-Einladungen im Clan & Konto erneut kopierbar: private Speicherung mit Rollenprüfung, keine neuen Links nötig. Ältere Hash-only-Einladungen bleiben unverändert gültig. Keine Änderung an CWL-Planung, Mitgliedern, Historie oder Offline-PWA."
 }
