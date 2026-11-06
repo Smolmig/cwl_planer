@@ -342,14 +342,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const formatDate=value=>value?new Date(value).toLocaleDateString("de-AT"):"–";
     if($("statsPlayerScope"))$("statsPlayerScope").textContent=
       "Diese Tabelle berücksichtigt ausschließlich "+scopeInfo.selectedWars+
-      " ausgewählte abgeschlossene Kriege / CWL-Tage ("+
+      " ausgewählte abgeschlossene Kriege bzw. CWL-Tage ("+
       formatDate(scopeInfo.first)+" – "+formatDate(scopeInfo.recent)+"). "+
       "Kein zusätzliches 10- oder 90-Tage-Fenster.";
     if($("statsScopeExplainer")){
       const normal=type==="cwl"?"":last==="all"?
-        "Alle "+scopeInfo.allNormal+" verfügbaren normalen CWs":
+        "Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
         scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+
-        " normalen CWs (Auswahllimit: "+last+")";
+        " normalen CWs (Obergrenze: "+last+")";
       const league=type==="normal"?"":cwlSeasons==="all"?
         "alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
         scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
@@ -381,7 +381,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     ].map(([title,value])=>"<div class='stats-kpi'><span>"+esc(title)+"</span><strong>"+esc(value)+"</strong></div>").join("");
     const count=$("statsDataCount");
     const seasonDetails=$("statsSeasonDetails");
-    if(type==="cwl"){
+    const displayType=section==="overview"?"all":type;
+    if(displayType==="cwl"){
       if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
         " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
         " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe";
@@ -394,7 +395,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }else{
       const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
       const normalDays=summary.wars-leagueDays;
-      if(type==="all"){
+      if(displayType==="all"){
         if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
           " CWL-Kriegstage aus "+summary.cwlSeasonBreakdown.length+
           " Durchgängen · "+summary.attacks+" Angriffe";
@@ -808,7 +809,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const parts=[];
     if(type!=="cwl"){
       parts.push(last==="all"?
-        "Alle "+scopeInfo.allNormal+" CWs":
+        "Alle "+scopeInfo.allNormal+" "+(scopeInfo.allNormal===1?"CW":"CWs"):
         scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" CWs (Limit "+last+")");
     }
     if(type!=="normal"){
