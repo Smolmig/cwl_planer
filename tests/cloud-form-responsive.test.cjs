@@ -22,7 +22,7 @@ test("Comparable 30/90-day form disclosure stays within mobile stats width in al
       document.body.classList.add("cloud-mode");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
-      document.querySelector('[data-stats-panel="players"]').hidden=false;
+      document.querySelector('[data-stats-panel="form"]').hidden=false;
       const details=document.getElementById("statsFormDetails");details.open=true;
       document.getElementById("statsFormIntro").textContent=
        "90 Tage: 1004 Angriffe gegen gleiches Rathaus. Mirror-Positionen nicht belegt.";
@@ -35,14 +35,14 @@ test("Comparable 30/90-day form disclosure stays within mobile stats width in al
        "<div><span>90 Tage zeitgewichtet: 66 % 3★ · Ø 2,62 ★ · n_eff 13,5</span>"+
        "<small>CWL 8 · 50 % / CW 14 · 71 %</small></div></div></div>";
       const detailsRect=details.getBoundingClientRect();
-      const row=details.querySelector(".stats-form-row");
-      const small=details.querySelector(".stats-form-person small");
+      const row=document.getElementById("statsFormRows").querySelector(".stats-form-row");
+      const small=document.getElementById("statsFormRows").querySelector(".stats-form-person small");
       return {
        viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
        panelLeft:detailsRect.left,panelRight:detailsRect.right,
        rowScroll:row.scrollWidth,rowWidth:row.clientWidth,
        summaryHeight:details.querySelector("summary").getBoundingClientRect().height,
-       nameSize:parseFloat(getComputedStyle(details.querySelector("b")).fontSize),
+       nameSize:parseFloat(getComputedStyle(row.querySelector("b")).fontSize),
        descriptionSize:parseFloat(getComputedStyle(small).fontSize)
       };
      },theme);

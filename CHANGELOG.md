@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-11-06
+
+### Statistik 3.0: eigenständige Auswertungen statt verschachtelter Zeitfilter
+- **Klare Bereiche:** Überblick, Spielerstatistik, Spielerform, Vergleiche und Verlauf & Kriege. Jede Ansicht hat ihre eigene fachlich passende Filterkonfiguration. Die freie Kriegsanzahl wirkt nicht mehr still auf 30/90/180-Tage-Form, Spielervergleiche oder Verlauf.
+- **Rohdaten verständlich:** Standard `Alle verfügbaren CWs` statt einer irreführenden 50-CW-Obergrenze, tatsächlicher ausgewerteter/gespeicherter Umfang direkt an der Tabelle sichtbar. Keine Form-Rangfolge oder versteckte „letzte zehn Kriege“ mehr innerhalb der Spielerstatistik.
+- **Spielerform:** Separate feste 30-, 90- und 180-Kalendertage-Fenster aus allen verfügbaren Clan-Kriegen; nur Angriffe auf gleiches RH, Stichprobengröße, CW/CWL-Zahlen und ausgeschlossene Angriffe anderer/unbekannter RH-Kategorien separat. Keine Daten ≠ 0 %.
+- **Vergleiche:** Eigene Kriegsart-/Datumswahl, Spielerduell und Gegner-RH-Gruppen mit Prozentbalken, 0/1/2/3-Sterne-Verteilung, Anzahl tatsächlicher Angriffe und CW/CWL-Anteilen.
+- **Verlauf:** Wochen als Standard, eigene Zeitraumwahl, optionale Tage/Monate, deutlich mehr Punkte und zugängliche Zeitreihentabelle. Keine Verbindungen über lange Datenlücken, CW/CWL durch Kreise/Rauten und Theme-Tokens statt hart codierter Farbnamen unterschieden.
+- **Desktop:** Größere Spielerzeilen, lesbare Schrift und breitere Spalten, auf Mobil weiterhin platzsparend. Keine Änderung am Planer, Supabase-Schema, historischen Kriegsdaten, Clanfreigaben oder Offline-PWA.
+- **Tests:** Erfassungsfenster, unabhängige Queries, fehlende RH-Daten, kleine Stichproben, WCAG-freundliche Legenden, fünf Bereiche im Browser (320/390/1366 px) und bestehende Planungsregressionen.
+
+
 ## [1.15.9] - 2026-11-06
 
 ### Automatische Erfassung abgeschlossener CWs und CWL-Tage

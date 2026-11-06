@@ -129,7 +129,7 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
       String(a.war_key).localeCompare(String(b.war_key)));
   const normal=sorted.filter(w=>w.war_type==="normal");
   const league=sorted.filter(w=>w.war_type==="cwl");
-  const cap=Math.max(1,Math.min(50,last));
+  const cap=last==="all"?normal.length:Math.max(1,Math.min(50,Number(last)||50));
   if(type==="normal")return normal.slice(0,cap);
   const runs=groupCwlRuns(league);
   const limit=cwlSeasons==="all"?runs.length:
@@ -153,7 +153,8 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
   const selected = selectStatWars(wars,{type,last,cwlSeasons});
   const byWar = new Map(selected.map(w=>[w.war_key,w]));
   const groups = ["normal","cwl"].flatMap(kind=>["lower","same","higher","unknown"].map(matchup=>({
-    type:kind,matchup,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null
+    type:kind,matchup,attacks:0,triples:0,stars:0,
+    starDistribution:[0,0,0,0],hitRate:null,averageStars:null
   })));
   const byGroup = new Map(groups.map(g=>[g.type+":"+g.matchup,g]));
   for(const attack of attacks||[]){
@@ -167,6 +168,7 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
     if(!group)continue;
     group.attacks++;
     group.stars+=attack.stars;
+    group.starDistribution[attack.stars]++;
     if(attack.stars===3)group.triples++;
   }
   for(const group of groups){
@@ -177,11 +179,109 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
 }
 
 /**
+ * A scope describes what was actually considered, independently of its view.
+ * "all" never becomes a misleading "last 50" limit. Past, non-final wars
+ * never count as observed outcomes.
+ */
+export function describeWarSelection(wars,{type="all",last="all",cwlSeasons="all"}={}){
+  const finalized=(wars||[]).filter(w=>(w.source!=="api"||w.finalized===true)&&
+    ["normal","cwl"].includes(w.war_type));
+  const selected=selectStatWars(finalized,{type,last,cwlSeasons});
+  const allNormal=finalized.filter(w=>w.war_type==="normal").length;
+  const allCwl=groupCwlRuns(finalized).length;
+  const selectedNormal=selected.filter(w=>w.war_type==="normal").length;
+  const selectedCwl=groupCwlRuns(selected).length;
+  const chronological=selected.slice().sort((a,b)=>Date.parse(a.started_at)-Date.parse(b.started_at));
+  const first=chronological[0]?.started_at||null;
+  const recent=chronological.at(-1)?.started_at||null;
+  return {selected,allNormal,allCwl,selectedNormal,selectedCwl,first,recent,
+    allWars:finalized.length,selectedWars:selected.length,
+    limitNormal:last,limitCwl:cwlSeasons};
+}
+
+/** A different independent query for every functional tab.
+ * No implicitly inherited global player-statistics filter.
+ */
+export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}={}){
+  const now=typeof asOf==="number"?asOf:Date.parse(asOf);
+  const span=days==="all"?Infinity:Number(days)*86400000;
+  if(!Number.isFinite(now)||!(span>0))throw Error("Ungültiger Analysezeitraum");
+  return (wars||[]).filter(w=>
+    (w.source!=="api"||w.finalized===true)&&
+    (type==="all"||w.war_type===type)&&
+    ["normal","cwl"].includes(w.war_type)&&
+    Number.isFinite(Date.parse(w.started_at))&&
+    now-Date.parse(w.started_at)>=0&&now-Date.parse(w.started_at)<=span);
+}
+
+/**
+ * Current form uses fixed CALENDAR windows, never the user's raw-statistic
+ * selection. Each window includes normal CW and CWL for the same player tag,
+ * but ONLY attacks at exactly the same Town Hall level. No fake zeros for
+ * players without documented attacks; n and date are displayed alongside %.
+ */
+export function computePlayerFormWindows(wars,attacks,{
+  asOf=Date.now(),windows=[30,90,180],memberTags=[]
+}={}){
+  const now=typeof asOf==="number"?asOf:Date.parse(asOf);
+  if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
+     windows.some(x=>!Number.isInteger(x)||x<1||x>730))
+    throw Error("Ungültige Fenster für Formanalyse.");
+  const byWar=new Map((wars||[]).filter(w=>
+    (w.source!=="api"||w.finalized===true)&&
+    ["normal","cwl"].includes(w.war_type)).map(w=>[w.war_key,w]));
+  const profiles=new Map();
+  const ensure=(tag,name="")=>{
+    const key=cleanTag(tag);
+    if(!validTag(key))return null;
+    if(!profiles.has(key)){
+      profiles.set(key,{tag:key,name:String(name||key),
+        windows:Object.fromEntries(windows.map(days=>[days,{
+          days,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null,
+          normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null
+        }]))});
+    }
+    const p=profiles.get(key);
+    if(name&&(!p.name||p.name===key))p.name=String(name);
+    return p;
+  };
+  for(const a of attacks||[]){
+    const w=byWar.get(a.war_key);
+    if(!w||!int(a.stars,0,3))continue;
+    const time=Date.parse(w.started_at),age=(now-time)/86400000;
+    if(!Number.isFinite(age)||age<0)continue;
+    const p=ensure(a.attacker_tag,a.attacker_name);
+    if(!p)continue;
+    const thA=int(a.attacker_th,3,30),thD=int(a.defender_th,3,30);
+    for(const days of windows){
+      if(age>days)continue;
+      const b=p.windows[days];
+      if(!thA||!thD){b.excludedUnknownRH++;continue}
+      if(a.attacker_th!==a.defender_th){b.excludedDifferentRH++;continue}
+      b.attacks++;b.triples+=(a.stars===3?1:0);b.stars+=a.stars;
+      if(w.war_type==="normal")b.normal++;else b.cwl++;
+      if(!b.newest||time>Date.parse(b.newest))b.newest=w.started_at;
+    }
+  }
+  const current=new Set(memberTags.map(cleanTag));
+  const rows=[...profiles.values()].map(p=>{
+    for(const b of Object.values(p.windows)){
+      b.hitRate=b.attacks?Math.round(100*b.triples/b.attacks):null;
+      b.averageStars=b.attacks?Math.round(100*b.stars/b.attacks)/100:null;
+      b.quality=b.attacks>=15?"umfangreicher":b.attacks>=6?"erste Tendenz":
+        b.attacks?"wenige Angriffe":"keine Daten";
+    }
+    return {...p,former:current.size>0&&!current.has(p.tag)};
+  }).sort((a,b)=>a.name.localeCompare(b.name,"de"));
+  return {windows:windows.slice(),asOf:new Date(now).toISOString(),players:rows};
+}
+
+/**
  * One comparable date bucket per observed week or month, grouped by CW/CWL.
  * Missing periods are not zero-win periods; consumers must show n for each dot.
  */
 export function computeStatsTimeline(wars,attacks,{
-  type="all",last=50,cwlSeasons="all",granularity="month"
+  type="all",last="all",cwlSeasons="all",granularity="week"
 }={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});
   const index=new Map(selected.map(w=>[w.war_key,w]));
@@ -194,7 +294,8 @@ export function computeStatsTimeline(wars,attacks,{
     const year=date.getUTCFullYear(),month=date.getUTCMonth(),day=date.getUTCDate();
     const monday=new Date(Date.UTC(year,month,day));
     monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
-    const period=granularity==="week"?monday:new Date(Date.UTC(year,month,1));
+    const period=granularity==="day"?new Date(Date.UTC(year,month,day)):
+      granularity==="week"?monday:new Date(Date.UTC(year,month,1));
     const key=period.toISOString().slice(0,10);
     if(!buckets.has(key))buckets.set(key,{
       key,normal:{attacks:0,triples:0,stars:0},
@@ -212,7 +313,7 @@ export function computeStatsTimeline(wars,attacks,{
       });
       return {key:row.key,normal:format(row.normal),cwl:format(row.cwl)};
     });
-  return {granularity:granularity==="week"?"week":"month",selectedWars:selected.length,
+  return {granularity:["week","month","day"].includes(granularity)?granularity:"week",selectedWars:selected.length,
     recordedAttacks:rows.reduce((n,r)=>n+r.normal.attacks+r.cwl.attacks,0),rows};
 }
 
@@ -227,9 +328,9 @@ export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
   const byWar=new Map(chosen.map(w=>[w.war_key,w]));
   const tags=[cleanTag(firstTag),cleanTag(secondTag)];
   const empty=tag=>({tag,attacks:0,triples:0,hitRate:null,averageStars:null,
-    stars:0,wars:0,lastWar:null,
-    normal:{attacks:0,triples:0,hitRate:null},
-    cwl:{attacks:0,triples:0,hitRate:null}});
+    stars:0,wars:0,lastWar:null,starDistribution:[0,0,0,0],
+    normal:{attacks:0,triples:0,hitRate:null,starDistribution:[0,0,0,0]},
+    cwl:{attacks:0,triples:0,hitRate:null,starDistribution:[0,0,0,0]}});
   const results=tags.map(empty),visited=results.map(()=>new Set());
   const names=new Map(tags.map((tag,i)=>[tag,i]));
   for(const a of attacks||[]){
@@ -241,7 +342,9 @@ export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
     if(!kind)continue;
     p.attacks++;p.stars+=a.stars;
     p.triples+=(a.stars===3?1:0);
+    p.starDistribution[a.stars]++;
     kind.attacks++;kind.triples+=(a.stars===3?1:0);
+    kind.starDistribution[a.stars]++;
     visited[i].add(war.war_key);
     if(!p.lastWar||Date.parse(war.started_at)>Date.parse(p.lastWar))
       p.lastWar=war.started_at;
