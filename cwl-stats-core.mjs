@@ -153,7 +153,8 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
   const selected = selectStatWars(wars,{type,last,cwlSeasons});
   const byWar = new Map(selected.map(w=>[w.war_key,w]));
   const groups = ["normal","cwl"].flatMap(kind=>["lower","same","higher","unknown"].map(matchup=>({
-    type:kind,matchup,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null
+    type:kind,matchup,attacks:0,triples:0,stars:0,
+    starDistribution:[0,0,0,0],hitRate:null,averageStars:null
   })));
   const byGroup = new Map(groups.map(g=>[g.type+":"+g.matchup,g]));
   for(const attack of attacks||[]){
@@ -167,6 +168,7 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
     if(!group)continue;
     group.attacks++;
     group.stars+=attack.stars;
+    group.starDistribution[attack.stars]++;
     if(attack.stars===3)group.triples++;
   }
   for(const group of groups){
@@ -279,7 +281,7 @@ export function computePlayerFormWindows(wars,attacks,{
  * Missing periods are not zero-win periods; consumers must show n for each dot.
  */
 export function computeStatsTimeline(wars,attacks,{
-  type="all",last=50,cwlSeasons="all",granularity="month"
+  type="all",last="all",cwlSeasons="all",granularity="week"
 }={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});
   const index=new Map(selected.map(w=>[w.war_key,w]));
@@ -292,7 +294,8 @@ export function computeStatsTimeline(wars,attacks,{
     const year=date.getUTCFullYear(),month=date.getUTCMonth(),day=date.getUTCDate();
     const monday=new Date(Date.UTC(year,month,day));
     monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
-    const period=granularity==="week"?monday:new Date(Date.UTC(year,month,1));
+    const period=granularity==="day"?new Date(Date.UTC(year,month,day)):
+      granularity==="week"?monday:new Date(Date.UTC(year,month,1));
     const key=period.toISOString().slice(0,10);
     if(!buckets.has(key))buckets.set(key,{
       key,normal:{attacks:0,triples:0,stars:0},
@@ -310,7 +313,7 @@ export function computeStatsTimeline(wars,attacks,{
       });
       return {key:row.key,normal:format(row.normal),cwl:format(row.cwl)};
     });
-  return {granularity:granularity==="week"?"week":"month",selectedWars:selected.length,
+  return {granularity:["week","month","day"].includes(granularity)?granularity:"week",selectedWars:selected.length,
     recordedAttacks:rows.reduce((n,r)=>n+r.normal.attacks+r.cwl.attacks,0),rows};
 }
 
@@ -325,9 +328,9 @@ export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
   const byWar=new Map(chosen.map(w=>[w.war_key,w]));
   const tags=[cleanTag(firstTag),cleanTag(secondTag)];
   const empty=tag=>({tag,attacks:0,triples:0,hitRate:null,averageStars:null,
-    stars:0,wars:0,lastWar:null,
-    normal:{attacks:0,triples:0,hitRate:null},
-    cwl:{attacks:0,triples:0,hitRate:null}});
+    stars:0,wars:0,lastWar:null,starDistribution:[0,0,0,0],
+    normal:{attacks:0,triples:0,hitRate:null,starDistribution:[0,0,0,0]},
+    cwl:{attacks:0,triples:0,hitRate:null,starDistribution:[0,0,0,0]}});
   const results=tags.map(empty),visited=results.map(()=>new Set());
   const names=new Map(tags.map((tag,i)=>[tag,i]));
   for(const a of attacks||[]){
@@ -339,7 +342,9 @@ export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
     if(!kind)continue;
     p.attacks++;p.stars+=a.stars;
     p.triples+=(a.stars===3?1:0);
+    p.starDistribution[a.stars]++;
     kind.attacks++;kind.triples+=(a.stars===3?1:0);
+    kind.starDistribution[a.stars]++;
     visited[i].add(war.war_key);
     if(!p.lastWar||Date.parse(war.started_at)>Date.parse(p.lastWar))
       p.lastWar=war.started_at;
