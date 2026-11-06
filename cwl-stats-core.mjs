@@ -342,6 +342,60 @@ export function computeStatsTimeline(wars,attacks,{
 }
 
 /**
+ * Plot layout uses ACTUAL UTC periods rather than equally spaced recorded rows.
+ * Each missing date/week/month consumes axis space, but creates no fabricated
+ * point and cannot be bridged by a series. This is visualization only.
+ */
+export function computeTrendPlotGeometry(rows,{granularity="week",width=760,left=48,right=18}={}){
+  if(!["day","week","month"].includes(granularity))
+    throw Error("Ungültige Zeitachse.");
+  const source=rows||[];
+  const unit=key=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||"")))
+      throw Error("Ungültiges Verlaufsdatum.");
+    const ms=Date.parse(key+"T00:00:00Z");
+    if(!Number.isFinite(ms))throw Error("Ungültiges Verlaufsdatum.");
+    if(granularity==="month"){
+      const date=new Date(ms);
+      return date.getUTCFullYear()*12+date.getUTCMonth();
+    }
+    return Math.floor((ms-Date.UTC(1970,0,5))/
+      (granularity==="week"?604800000:86400000));
+  };
+  const periods=source.map(row=>unit(row.key));
+  for(let i=1;i<periods.length;i++)
+    if(periods[i]<=periods[i-1])
+      throw Error("Verlaufsdaten sind nicht chronologisch.");
+  const plotWidth=width-left-right;
+  const span=periods.length>1?periods.at(-1)-periods[0]:0;
+  const positions=periods.map(p=>span?left+(p-periods[0])/span*plotWidth:
+    left+plotWidth/2);
+  const gaps=[];
+  for(let i=1;i<source.length;i++){
+    const skipped=periods[i]-periods[i-1]-1;
+    if(skipped>0)gaps.push({
+      after:i-1,before:i,skipped,midX:(positions[i-1]+positions[i])/2
+    });
+  }
+  const segments={normal:[],cwl:[]};
+  for(const kind of ["normal","cwl"]){
+    let current=[];
+    const end=()=>{
+      if(current.length>1)segments[kind].push(current);
+      current=[];
+    };
+    source.forEach((row,i)=>{
+      if(!row?.[kind]?.attacks){end();return}
+      if(current.length&&periods[i]-periods[current.at(-1)]!==1)end();
+      current.push(i);
+    });
+    end();
+  }
+  return {positions,gaps,segments,
+    missingPeriods:gaps.reduce((n,g)=>n+g.skipped,0)};
+}
+
+/**
  * Side-by-side factual player comparison with the exact same war selection.
  * "sameTH" excludes missing RH values; no weighting, skill grade or solver use.
  */

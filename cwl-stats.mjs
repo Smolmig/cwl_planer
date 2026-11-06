@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.12";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.13";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -249,24 +249,37 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(!chart||!detail)return;
     const ownWars=selectWarDateScope(wars,{type:trendType,days:trendDays});
     const trend=computeStatsTimeline(ownWars,attacks,{type:"all",last:"all",cwlSeasons:"all",granularity:trendGranularity});
+    const all=trend.rows,rows=all.slice(-20);
+    const W=760,H=252,L=48,R=18,T=20,B=43;
+    const layout=computeTrendPlotGeometry(rows,{
+      granularity:trendGranularity,width:W,left:L,right:R
+    });
+    const missingLabel=trendGranularity==="week"?"Wochen":
+      trendGranularity==="day"?"Tage":"Monate";
+    const coverage=rows.length===0?
+      "Keine beobachteten Zeiträume für diese Auswahl.":
+      rows.length===1?
+        "Nur ein beobachteter Zeitraum – ein Trend ist daraus nicht ableitbar.":
+        layout.missingPeriods?
+          "Zwischen den dargestellten Punkten liegen "+layout.missingPeriods+" "+
+            missingLabel+" ohne dokumentierte Angriffe – keine 0-%-Werte.":
+          "Zwischen den dargestellten Punkten gibt es keine ganzen unbeobachteten "+missingLabel+".";
     if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
       " ausgewählte Kriege · "+trend.recordedAttacks+
-      " dokumentierte Angriffe. Jeder Punkt steht für einen Zeitraum mit Angriffen. "+
-      "Linien verbinden nur aufeinanderfolgende Zeiträume derselben Kriegsart mit Daten; "+
-      "bei Lücken bleiben einzelne Punkte stehen. Für eine CWL kannst du auf „Tag“ umstellen.";
+      " dokumentierte Angriffe. Die Zeitachse zeigt echte Kalenderabstände. "+
+      coverage+(rows.length>1?
+        " Verbunden werden nur direkt aufeinanderfolgende Zeiträume derselben Kriegsart.":"");
     const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
     if(chart.dataset.signature===signature)return;
     chart.dataset.signature=signature;
-    const all=trend.rows,rows=all.slice(-20);
     const label=trendMetric==="hitRate"?"3★-Quote":"Ø Sterne";
     const colors={normal:"series-cw",cwl:"series-cwl"};
     if(!rows.length){
       chart.innerHTML="<p class='stats-note'>Noch keine Angriffe für einen Verlauf in dieser Auswahl.</p>";
       detail.replaceChildren();return;
     }
-    const W=760,H=252,L=48,R=18,T=20,B=43;
-    const plotW=W-L-R,plotH=H-T-B,maximum=trendMetric==="hitRate"?100:3;
-    const x=i=>L+(rows.length===1?plotW/2:i*plotW/(rows.length-1));
+    const plotH=H-T-B,maximum=trendMetric==="hitRate"?100:3;
+    const x=i=>layout.positions[i];
     const y=value=>T+(maximum-value)/maximum*plotH;
     const point=(kind,i,row)=>{
       const v=row[kind][trendMetric],n=row[kind].attacks;
@@ -282,32 +295,32 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<text class='axislabel' text-anchor='end' x='"+(L-8)+"' y='"+(yy+4)+"'>"+
         (trendMetric==="hitRate"?Math.round(v)+"%":v.toFixed(2).replace(".",","))+"</text>";
     }).join("");
-    const axisStep=Math.max(1,Math.ceil(rows.length/6));
-    const axis=rows.map((row,i)=>i%axisStep===0||i===rows.length-1?
-      "<text class='axislabel' text-anchor='middle' x='"+x(i)+"' y='"+(H-18)+"'>"+
-      esc(trendGranularity==="month"?row.key.slice(0,7):row.key.slice(5))+"</text>":"").join("");
+    // Tick labels are spaced by actual pixels, not by number of observations.
+    let previousTick=-Infinity;
+    const axis=rows.map((row,i)=>{
+      if(i!==0&&x(i)-previousTick<95)return "";
+      previousTick=x(i);
+      return "<text class='axislabel' text-anchor='middle' x='"+x(i).toFixed(1)+
+        "' y='"+(H-18)+"'>"+
+        esc(trendGranularity==="month"?row.key.slice(0,7):row.key.slice(5))+"</text>";
+    }).join("");
+    const gaps=layout.gaps.map(g=>{
+      const yy=H-B+8;
+      return "<path class='stats-gap-mark' d='M "+(g.midX-6).toFixed(1)+" "+
+        yy+" l4 -7 m3 7 l4 -7'><title>"+
+        esc(g.skipped+" "+(g.skipped===1?
+          (trendGranularity==="month"?"Monat":trendGranularity==="week"?"Woche":"Tag"):
+          missingLabel)+" ohne dokumentierte Angriffe")+"</title></path>";
+    }).join("");
     const series=["normal","cwl"].map(kind=>{
       const pts=rows.map((row,i)=>point(kind,i,row)).filter(Boolean);
       if(!pts.length)return "";
-      const runs=[];let current=[];
-      for(let i=0;i<rows.length;i++){
-        const p=point(kind,i,rows[i]);
-        if(!p){if(current.length>1)runs.push(current);current=[];}
-        else{
-          const previous=current.at(-1);
-          const maxGap=trendGranularity==="day"?1.5:
-            trendGranularity==="week"?8:35;
-          if(previous&&
-             (Date.parse(p.key)-Date.parse(previous.key))/86400000>maxGap){
-            if(current.length>1)runs.push(current);
-            current=[];
-          }
-          current.push(p);
-        }
-      }
-      if(current.length>1)runs.push(current);
-      const lines=runs.map(segment=>"<polyline class='statline "+colors[kind]+
-        "' points='"+segment.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ")+"'/>").join("");
+      const lines=layout.segments[kind].map(indices=>
+        "<polyline class='statline "+colors[kind]+
+        "' points='"+indices.map(i=>{
+          const p=point(kind,i,rows[i]);
+          return p.x.toFixed(1)+","+p.y.toFixed(1);
+        }).join(" ")+"'/>").join("");
       const dots=pts.map(p=>kind==="cwl"?
         "<polygon class='statpoint "+colors[kind]+"' points='"+
           [[p.x,p.y-6],[p.x+6,p.y],[p.x,p.y+6],[p.x-6,p.y]]
@@ -320,9 +333,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
     chart.innerHTML="<svg role='img' aria-label='"+esc(label+
       " nach "+(trendGranularity==="week"?"Wochen":trendGranularity==="day"?"Tagen":"Monaten")+
-      "; Kreise: normale CWs, Rauten: CWL. Die jeweilige Anzahl erfasster Angriffe steht in der Datentabelle")+
+      "; Kalenderabstände maßstabsgetreu; Lücken ohne gemessene Angriffe bleiben ohne Linie. Kreise: normale CWs, Rauten: CWL. Angriffsanzahl steht in der Datentabelle")+
       "' viewBox='0 0 "+W+" "+H+"' preserveAspectRatio='xMidYMid meet'>"+
-      grid+axis+series+"</svg>";
+      grid+gaps+axis+series+"</svg>";
     const wasOpen=detail.querySelector("details")?.open===true;
     const fmt=(data)=>{
       const val=data[trendMetric];

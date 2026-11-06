@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.13] - 2026-11-06
+
+### Kriegsverlauf mit echten Zeitabständen und sichtbaren Datenlücken
+- **Verlauf & Kriege:** CW-/CWL-Kreise und -Rauten erhalten eine echte UTC-Kalenderachse statt gleichmäßig verteilter beobachteter Zeitpunkte. Große Lücken zwischen dokumentierten Kriegswochen erscheinen auch geometrisch groß.
+- **Fehlende Beobachtungen:** Zwischen unverbundenen Zeiträumen kleine Achsenbruch-Markierungen und ein verständlicher Hinweis zur Anzahl nicht dokumentierter Wochen/Tage/Monate; keine interpolierten 0-%-Werte oder Linien über unbeobachtete Wochen.
+- **Verschiedene Kriegsarten:** CW und CWL bleiben eigenständige Kurven; ein CW-Wert wird nicht durch eine reine CWL-Woche hindurch verbunden.
+- **Technisch:** Neue reine Layoutfunktion mit Tests für unregelmäßige Wochen, Monatswechsel, Schalttage, Einzelpunkte, Statistik-Quellen und Gold-/Dark-Responsivität.
+- **Unverändert:** Kriegs-/Angriffsdaten, Statistikkernberechnungen, Filterzustände, CWL-Solver, Supabase, Rollen, Offline-PWA.
+
+
 ## [1.16.12] - 2026-11-06
 
 ### Spielerform nachvollziehbar und stichprobenbewusst sortieren
