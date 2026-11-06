@@ -212,7 +212,7 @@ test("Historical import always produces a concrete boolean for every war",async(
 });
 
 
-test("CWL season selection groups 21 league days into Aug/Sep/Oct, never 10 seasons",async()=>{
+test("CWL run selection groups 21 league days into Aug/Sep/Oct, never one season per day",async()=>{
  const {computeWarStats,selectStatWars,cwlSeasonOf}=await load();
  const months=["2026-08","2026-09","2026-10"];
  const wars=months.flatMap(month=>Array.from({length:7},(_,i)=>({
@@ -227,7 +227,7 @@ test("CWL season selection groups 21 league days into Aug/Sep/Oct, never 10 seas
  const one=computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:1});
  assert.equal(one.wars,7);
  assert.equal(one.attacks,7);
- assert.deepEqual(one.cwlSeasonBreakdown,[{season:"2026-10",days:7}]);
+ assert.deepEqual(one.cwlSeasonBreakdown.map(({season,days})=>({season,days})),[{season:"2026-10",days:7}]);
  const two=computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:2});
  assert.equal(two.wars,14);
  assert.equal(two.attacks,14);
@@ -238,7 +238,7 @@ test("CWL season selection groups 21 league days into Aug/Sep/Oct, never 10 seas
  assert.equal(three.rows[0].attacks,21);
  assert.equal(three.totalCwlSeasons,3);
  assert.equal(three.totalCwlDays,21);
- assert.deepEqual(three.cwlSeasonBreakdown,[
+ assert.deepEqual(three.cwlSeasonBreakdown.map(({season,days})=>({season,days})),[
    {season:"2026-08",days:7},{season:"2026-09",days:7},{season:"2026-10",days:7}
  ]);
  assert.equal(computeWarStats(wars,attacks,{type:"cwl",cwlSeasons:"all"}).wars,21);
@@ -257,7 +257,7 @@ test("Partial league seasons are not silently expanded to seven days",async()=>{
  }));
  const r=computeWarStats([...full,...partial],[],{type:"cwl",cwlSeasons:1});
  assert.equal(r.wars,3);
- assert.deepEqual(r.cwlSeasonBreakdown,[{season:"2026-10",days:3}]);
+ assert.deepEqual(r.cwlSeasonBreakdown.map(({season,days})=>({season,days})),[{season:"2026-10",days:3}]);
  assert.equal(r.totalCwlDays,10);
  assert.equal(r.totalCwlSeasons,2);
 });
@@ -267,11 +267,11 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  assert.match(html,/id="statsPeriodLabel"/);
  assert.match(html,/id="statsSeasonDetails"/);
  assert.match(ui,/cwlSeasons="all"/);
- assert.match(html,/Letzte 1 CWL/);
- assert.match(html,/Letzte 3 CWLs/);
- assert.match(html,/Alle gespeicherten CWLs/);
+ assert.match(html,/Letzter CWL-Durchgang/);
+ assert.match(html,/Letzte 3 CWL-Durchgänge/);
+ assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
  assert.match(ui,/gespeicherten CWL-Kriegstagen/);
- assert.match(ui,/von 7 Kriegstagen gespeichert/);
+ assert.match(ui,/erfasste Kriegstage/);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
 });
 
