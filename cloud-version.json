@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.7",
-  "released": "2026-11-05",
-  "summary": "Statistik in vier klaren Bereichen mit RH-Vergleichen nach CW/CWL, nummerierten Spielern, verständlichen Filterumfängen und standardmäßig allen gespeicherten CWLs. Einsatzübersicht benennt Verfügbarkeit sowie gespielt, geplant und gesamt; keine Änderungen an Planungslogik, Datenbank oder Offline-PWA."
+  "version": "v1.15.8",
+  "released": "2026-11-06",
+  "summary": "Statistik: getrennte echte CWL-Durchgänge (auch zwei im selben Monat), direkter Spieler-zu-Spieler-Vergleich mit identischen Filtern und CW/CWL-Zeitreihen nach Woche/Monat mit n. Mehrclan-Sharing und unabhängige automatische Angriffserfassung sind separate Sicherheitsprojekte; Plan, DB und Offline-PWA unverändert."
 }
