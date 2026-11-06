@@ -116,7 +116,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     out.append(rows);
     lineup.append(out);
   }
-  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0,medalRows=[]}={}) {
+  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0}={}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     const wasOpponentOpen=expandedOpponentDays.has(round?.day)||!!dayCard.querySelector(".cwl-opponent-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
@@ -319,38 +319,6 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       current.season===info.season&&lastSuccessfulProfile===ctx.profile&&lastSuccessfulAt>0&&
       Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&!offlineReason);
     const ended=info.rounds.filter(r=>r.state==="warEnded").length;
-    const wasMedalOpen=!!node.querySelector(".cwl-medal-details[open]");
-    const medalFocused=node.querySelector(".cwl-medal-details>summary")===document.activeElement;
-    const planned=storage.getPlannedLineups?.()||[];
-    const medal=evaluateEightStarGoals({snapshot:info,profile:ctx.profile,dayPlans:planned});
-    const memberStatus=row=>row.status==="reached"
-      ?"8★ erreicht · 100 % reguläre Ligamedaillen":row.status==="not-reachable"
-      ?"Mit den geplanten Einsätzen rechnerisch nicht mehr erreichbar":row.status==="uncertain"
-      ?"Daten unvollständig – kein sicherer Schluss":"Mit verbleibenden Einsätzen rechnerisch erreichbar";
-    const medalRows=medal?.rows.map(row=>
-      "<div class='cwl-medal-row' data-medal-status='"+esc(row.status)+"'>"+
-      "<span class='cwl-medal-row-name'>"+esc(row.name)+"</span>"+
-      "<span class='cwl-medal-row-count'>"+(row.unknown?"mind. ":"")+row.stars+
-      " / 8 ★ · "+row.futureAttacks+" offen</span>"+
-      "<span class='cwl-medal-row-state'>"+esc(memberStatus(row))+"</span></div>"
-    ).join("")||"";
-    // Never suggest a Clash lineup change from cached or partially stale preparation data.
-    const suggestion=medal?.hasResults&&fresh&&!staleRoundDays.size?
-      findReadOnlyMedalSwap({assessment:medal,profile:ctx.profile,snapshot:info,dayPlans:planned}):null;
-    const suggestionHtml=suggestion?
-      "<p class='cwl-medal-suggestion'><b>Unverbindliche Prüfidee – Tag "+suggestion.day+":</b> "+
-      esc(suggestion.inName)+" statt "+esc(suggestion.outName)+
-      " einplanen? "+esc(suggestion.reason)+
-      " Fixspieler, Tagesregeln und Einsatzziele bleiben verbindlich. Keine automatische Änderung.</p>":"";
-    const medalHtml=medal?.hasResults&&medal.rows.length?
-      "<details class='cwl-medal-details'"+(wasMedalOpen?" open":"")+">"+
-      "<summary>8★-Medailenziel · "+medal.reached+" von "+medal.rows.length+
-      " Spielern sicher am Ziel"+(medal.notReachable?" · "+medal.notReachable+" Prüfhinweise":"")+"</summary>"+
-      "<p class='cwl-medal-notice'>8 Sterne ergeben 100 % der regulären Ligamedaillen, nicht den separat vergebenen Anführerbonus. "+
-      "Die Anzeige nutzt dokumentierte Einzelangriffe und aktuelle Planplätze; offene Angriffe sind maximal mit 3★ gerechnet, keine Erfolgsprognose. "+
-      "Mehrfach angegriffene Ziele, fehlende Kriegsdaten und gespeicherte Stände werden vorsichtig behandelt."+
-      (!fresh?" Stand ist gespeichert bzw. noch nicht frisch bestätigt.":"")+"</p>"+
-      "<div class='cwl-medal-list'>"+medalRows+"</div>"+suggestionHtml+"</details>":"";
     // Alert only from a fresh API snapshot, not an older cached league.
     // No auto-pause, no schedule mutation, no pretended push notifications.
     const attention=fresh?info.rounds
@@ -377,14 +345,14 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     })():"";
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
-      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml+medalHtml;
+      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml;
     if(medalFocused)node.querySelector(".cwl-medal-details>summary")?.focus({preventScroll:true});
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
       if(dayCard)renderDay(byDay.get(i+1),dayCard,ctx.profile,
-        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt,medalRows:medal?.rows||[]});
+        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt});
     }
   }
   async function refreshNow(manual=false) {
@@ -505,7 +473,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       current.season===info.season&&lastSuccessfulProfile===ctx.profile&&
       lastSuccessfulAt>0&&Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&
       !offlineReason&&!staleRoundDays.size&&current.detailsStatus==="complete");
-    return {assessment,fresh,partial:!!(current?.detailsStatus&&
+    const suggestion=assessment?.hasResults&&fresh?
+      findReadOnlyMedalSwap({
+        assessment,profile:ctx.profile,snapshot:clean,dayPlans:storage.getPlannedLineups?.()||[]
+      }):null;
+    return {assessment,fresh,suggestion,partial:!!(current?.detailsStatus&&
       current.detailsStatus!=="complete")||!!staleRoundDays.size};
   },getGroupSnapshot:()=>{
     const ctx=context();
