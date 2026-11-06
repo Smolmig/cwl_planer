@@ -6,6 +6,21 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.2] - 2026-11-06
+
+### CWL-Plan ohne doppelte Teamliste
+- Der zusätzliche vollständige Clash-Kader aus v1.16.1 wurde entfernt. Die bisherige aufklappbare Ansicht „Unser Team“ zeigt in der Vorbereitung direkt den tatsächlichen Clash-Kader, markiert auszuwechselnde Spieler und bietet beim Antippen die geplanten Einwechselkandidaten samt RH/8★ und aktueller Spielerform.
+- Ein eigener kompakter Abgleich bleibt erhalten; eine zweite Namensliste wird nur auf ausdrücklichen Wunsch aufgeklappt. Bei veralteten oder fehlenden API-Daten keine aktionsfähige Wechselmarkierung; die geplante Aufstellung bleibt sichtbar.
+- In **Einsätze** stehen bestätigte 0–3★-Ergebnisse (ggf. Zerstörungsgrad) an bereits gespielten Kriegstagen. Bei sicher dokumentiert ausgelassenem Angriff steht „kein Angriff“, bei unbekanntem API-Stand kein erfundenes Ergebnis. Die laufende CWL-3★-Quote zeigt ihre Anzahl an Angriffen.
+
+### Statistiken verständlicher
+- **Spielerform:** 3★-Quote standardmäßig absteigend, nummerierte angezeigte Reihenfolge und konkrete Erklärung für „Angriffe gegen gleiches Rathaus“ und geringe Stichproben. Eine Platznummer ist keine absolute Rangliste nach Spielerstärke.
+- **Vergleiche:** Drei hochkantige Balken nebeneinander zeigen CW gegen niedrigeres RH, CW gegen gleiches RH und CWL gegen gleiches RH. Unterschiedliche Angriffsanzahlen werden ausgewiesen. Umfangreiche Rathaus-Kombinationen und Sternverteilungen bleiben aufklappbar.
+- **Verlauf:** Erklärungen für einzelne Punkte bei Datenlücken und verständliche Angriffsanzahl statt interner Kürzel. Entwicklungsbegriffe wurden aus entsprechenden Nutzerhinweisen entfernt.
+- Fortsetzung: Gesamte Text-/UI-Revision und weitergehende Verbesserung des Kriegsverlaufs bleiben getrennte Folgeaufgaben.
+- Gespeicherte CWL-Profile, Solver, Datenbank, Supabase-Authentifizierung und lokale Offline-PWA wurden nicht verändert.
+
+
 ## [1.16.1] - 2026-11-06
 
 ### CWL-Plan und Einsätze: tatsächliche Aufstellung, Medaillenziel und Reserve
