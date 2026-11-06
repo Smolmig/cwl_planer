@@ -6,7 +6,7 @@ const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;
 const pct=x=>x===null?"–":x+"%";
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 export function createCloudStats({sb,context,notify,confirmAction}) {
-  let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
+  let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="performance",ascending=false,section="overview";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="month";
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
@@ -230,6 +230,21 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const ctx=context(),view=$("view-stats");
     if(!view)return;
     const enabled=!!ctx.active&&!!ctx.clanId;
+    const freshness=$("statsCollectorHealth");
+    if(freshness){
+      const health=enabled?collectorHealth:null;
+      const last=health?.last_success_at?new Date(health.last_success_at):null;
+      const lastText=last&&!Number.isNaN(last.getTime())?
+        last.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):"noch kein erfolgreicher Abgleich";
+      freshness.textContent=!enabled?"Automatische Statistikerfassung ist für verbundene Cloud-Clans verfügbar.":
+        health?.last_error?
+          "Automatische Erfassung: zuletzt ein Fehler bei der Clash-Abfrage. Letzte erfolgreiche Prüfung: "+lastText+".":
+          health?.last_success_at?
+            "Automatische Erfassung: letzter erfolgreicher Server-Abgleich "+lastText+". Neue Kriege erscheinen nach ihrem Abschluss.":
+            "Automatische Erfassung: bisher noch kein erfolgreicher Server-Abgleich nachgewiesen.";
+      freshness.dataset.health=!enabled||!health?.last_success_at?"none":
+        health?.last_error?"error":"ok";
+    }
     const ctl=$("statsImportButton");if(ctl)ctl.hidden=!enabled||ctx.role==="viewer";
     const copy=$("statsNoCloud");if(copy)copy.hidden=enabled;
     if(!enabled){
@@ -485,7 +500,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();
+    scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="month";
@@ -517,8 +532,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         missedRows.push(...(mm||[]));
         if(!mm||mm.length<800)break;
       }
+      let latestHealth=null;
+      try{
+        const {data:healthRows,error:healthError}=await sb.from("cwl_stat_collector_status")
+          .select("last_checked_at,last_success_at,last_error,observed_wars,observed_attacks")
+          .eq("clan_id",id).limit(1);
+        if(!healthError)latestHealth=healthRows?.[0]||null;
+      }catch{/* The stats panel stays usable during an older DB migration. */}
       if(epoch!==version||context().clanId!==id)return;
-      scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;
+      scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;collectorHealth=latestHealth;
       cachedRecentStats=computeRecentAttackStats(wars,attacks,7);
       const comparable=computeComparableForm(wars,attacks);
       comparableProfiles=comparable.profiles;comparableSummary=comparable.summary;
