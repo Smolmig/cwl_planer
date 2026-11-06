@@ -1,5 +1,5 @@
 {
-  "version": "v1.15.9",
+  "version": "v1.16.0",
   "released": "2026-11-06",
-  "summary": "Serverseitige automatische CW-/CWL-Datenerfassung aller verknüpften Cloud-Clans ohne geöffnete App, geschützt durch signiertes GitHub OIDC. Sichere vorläufige Live-Kriege, abgeschlossene Ergebnisse, clanbezogener Erfassungsstatus. Keine Änderungen am Planer oder Profilformat."
+  "summary": "Statistik-UX umfassend neu strukturiert: getrennte historische Spielerstatistik und unabhängige 14/30/90-Tage-Spielerform; eigene Filter je Auswertung; visuelle CW/CWL-/RH-Vergleiche, Spielervergleiche und Sterneverteilung; Wochenverlauf als Standard, themeunabhängige Legende, größere Desktop-Tabelle. Keine Änderungen an Cloud-Daten, Clanrechten oder CWL-Planungslogik."
 }
