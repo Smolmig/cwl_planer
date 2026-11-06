@@ -168,6 +168,45 @@ function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, da
       addConflict('Einsatzziele, Tagesregeln und verfügbare Plätze lassen sich über alle Kriegstage nicht gleichzeitig erfüllen. Bitte die Regeln prüfen.');
     } else for (const {id, day, edge} of assignmentEdges) if (edge.cap === 0) assigned[day].push(id);
   }
+  // Preserve a tactical seventh-day reserve for players with exactly three
+  // appearances: when possible, finish their third appearance by day 6.
+  // This is a permutation ONLY: no extra attack is scheduled, no fixed/MUSS/RAUS
+  // rule is changed, and all exact target counts remain intact.
+  // A 4-appearance donor is preferred for day 7, so leaders can manually
+  // exchange that slot later if the three-appearance player still needs stars.
+  if (!conflicts.length && days === 7 && !locked[6]) {
+    const plannedIds = d => new Set([...required[d], ...assigned[d]]);
+    const totals = new Map(participants.map(m => [m.id, (lockedCount.get(m.id) || 0) +
+      (forcedCount.get(m.id) || 0) +
+      assigned.reduce((n, group) => n + Number(group.includes(m.id)), 0)]));
+    const finalDay = plannedIds(6);
+    const shortFinals = assigned[6]
+      .filter(id => totals.get(id) === 3 && active.get(id)?.statuses?.[6] !== 'must');
+    for (const id of shortFinals) {
+      const receiver = active.get(id);
+      if (!receiver || !assigned[6].includes(id)) continue;
+      let moved = false;
+      for (let d = 5; d >= 0 && !moved; d--) {
+        if (locked[d] || receiver.statuses?.[d] === 'out' || plannedIds(d).has(id)) continue;
+        const donors = assigned[d].filter(donorId => {
+          const donor = active.get(donorId);
+          return donorId !== id && !finalDay.has(donorId) &&
+            donor?.statuses?.[6] !== 'out' && (totals.get(donorId) || 0) >= 4;
+        }).sort((a,b)=>(totals.get(b)||0)-(totals.get(a)||0) ||
+          String(a).localeCompare(String(b)));
+        if (!donors.length) continue;
+        const donorId = donors[0];
+        assigned[d].splice(assigned[d].indexOf(donorId), 1, id);
+        assigned[6].splice(assigned[6].indexOf(id), 1, donorId);
+        finalDay.delete(id);
+        finalDay.add(donorId);
+        moved = true;
+      }
+      if (!moved) {
+        notices.push(`${receiver.name}: Dritter Einsatz bleibt an Tag 7, da ein früherer Tausch ohne Verletzung der Tagesregeln oder Einsatzziele nicht möglich ist.`);
+      }
+    }
+  }
   const order = new Map(roster.map((m, i) => [m.id, i]));
   const running = Object.fromEntries(Object.keys(counts).map(id => [id, 0]));
   for (let d = 0; d < days; d++) {
