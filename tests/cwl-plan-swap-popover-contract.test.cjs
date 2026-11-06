@@ -9,7 +9,7 @@ const read=name=>fs.readFileSync(path.join(root,name),"utf8");
 test("ordinary and actual Clash player cards share identical performance markup",()=>{
  const html=read("cloud-app.html"),live=read("cwl-live.mjs");
  assert.match(html,/function planLineupPlayerChip\(m\)/);
- assert.match(html,/const chipHtml=names\.map\(planLineupPlayerChip\)\.join\("","?\)/);
+ assert.match(html,/names\.map\(planLineupPlayerChip\)\.join\(""\)/);
  assert.match(html,/createPlanPlayerChip:member=>/);
  assert.match(html,/memberCompactPerformance\(m\)/);
  assert.match(live,/storage\.createPlanPlayerChip\?\.\(knownMember\)/);
