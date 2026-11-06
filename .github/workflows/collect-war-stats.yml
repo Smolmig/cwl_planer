@@ -38,6 +38,40 @@ jobs:
           echo "::add-mask::$jwt"
           echo "collector_jwt=$jwt" >> "$GITHUB_OUTPUT"
 
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify GitHub identity claims before invoking the Edge Function
+        shell: bash
+        env:
+          COLLECTOR_JWT: ${{ steps.oidc.outputs.collector_jwt }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {verifyCollectorIdentity,EXPECTED} from './supabase/functions/coc-stats-collector/collector-auth.mjs';
+          const jwt=process.env.COLLECTOR_JWT;
+          const [rawHead,rawClaims]=jwt.split('.');
+          const header=JSON.parse(Buffer.from(rawHead,'base64url').toString('utf8'));
+          const claims=JSON.parse(Buffer.from(rawClaims,'base64url').toString('utf8'));
+          const checks={
+            issuer:claims.iss===EXPECTED.issuer,
+            audience:claims.aud===EXPECTED.audience,
+            repository:claims.repository===EXPECTED.repository,
+            repoId:String(claims.repository_id)===EXPECTED.repositoryId,
+            ref:claims.ref===EXPECTED.ref,
+            workflowRef:claims.workflow_ref===EXPECTED.workflowRef,
+            sub:claims.sub==='repo:'+EXPECTED.repository+':ref:'+EXPECTED.ref,
+            eventAllowed:['schedule','workflow_dispatch','push'].includes(claims.event_name),
+            headerType:header.typ||'(absent)',
+            algorithm:header.alg,
+            lifetimeSeconds:claims.exp-claims.iat
+          };
+          console.log('OIDC public-claims verification:',JSON.stringify(checks));
+          const valid=await verifyCollectorIdentity(jwt);
+          console.log('Local signature+claims valid:',valid);
+          if(!valid)process.exitCode=1;
+          NODE
+
       - name: Collect stats for linked clans
         shell: bash
         env:
