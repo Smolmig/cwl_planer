@@ -63,6 +63,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     const wasOpponentOpen=expandedOpponentDays.has(round?.day)||!!dayCard.querySelector(".cwl-opponent-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
+    dayCard.classList.remove("cwl-prep-merged");
     const section=document.createElement("section");
     section.className="cwl-live-day";
     if(!round?.available){
@@ -104,9 +105,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<span class='cwl-prep-result "+(review.status==="match"?"matched":"changes")+"'>"+
         (review.status==="match"?"Aufstellung stimmt überein":review.toAdd.length+" Wechsel nötig")+
         "</span></div>"+
-        (review.status==="changes"?"<div class='cwl-prep-groups'>"+
+        (review.status==="changes"?"<details class='cwl-prep-swap-details'><summary>Wechsel im Überblick anzeigen</summary><div class='cwl-prep-groups'>"+
           group("Aus der Kriegsaufstellung nehmen",review.toRemove,"remove")+
-          group("In die Kriegsaufstellung aufnehmen",review.toAdd,"add")+"</div>":"")+
+          group("In die Kriegsaufstellung aufnehmen",review.toAdd,"add")+"</div></details>":"")+
         "<button type='button' class='btn small cwl-copy-live-swaps' title='Einzeiligen Text zum Einfügen im Clash-Clan-Chat kopieren'>"+
         (review.status==="match"?"Status als Text kopieren":"Aufstellungswechsel kopieren")+"</button>"+
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
@@ -114,41 +115,39 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
     // Clash's actual roster is primary. Planned entries are a separate recommendation,
     // and no player is marked for removal unless this specific preparation round is fresh.
-    const removedTags=new Set(reviewFresh&&review?.status==="changes"
-      ?review.toRemove.map(m=>tagOf(m.tag)):[]);
-    const memberRow=(member,{incoming=false}={})=>{
-      const playerTag=tagOf(member?.tag);
-      const goal=medalRows.find(r=>tagOf(r.playerTag)===playerTag);
-      const recent=typeof window!=="undefined" ? window.CWLCloudStats?.getRecentPlayerStats?.(playerTag) : null;
-      const historical=recent?.attacks
-        ?"Letzte "+recent.attacks+" AG · 3★ "+recent.hitRate+" %"
-        :"Letzte Angriffe · keine Auswertung";
-      const season=goal?(goal.unknown?"mind. ":"")+goal.stars+"/8 ★":"8★-Stand –";
-      const perWar=(Array.isArray(member?.attacks)?member.attacks:[])
-        .filter(a=>Number.isInteger(a.stars)&&a.stars>=0&&a.stars<=3)
-        .map(a=>a.stars+"★").join(" + ");
-      const fight=round.state==="preparation"?"":perWar
-        ?" · Dieser Krieg: "+perWar
-        :round.state==="warEnded"?" · Kein Angriff erfasst":" · Angriff offen";
-      const outgoing=!incoming&&removedTags.has(playerTag);
-      const status=incoming?"Geplant rein":outgoing?"Wechsel: raus":reviewFresh?"Bleibt drin":"In Clash erfasst";
-      return "<div class='cwl-actual-member"+(outgoing?" outgoing":incoming?" incoming":"")+"'>"+
-        "<div class='cwl-actual-member-main'><b>"+esc(member?.name||playerTag)+"</b>"+
-        "<small>RH"+esc(member?.townHallLevel??"?")+" · "+esc(season)+esc(fight)+"</small>"+
-        "<small>"+esc(historical)+"</small></div>"+
-        "<span class='cwl-actual-member-status'>"+esc(status)+"</span></div>";
-    };
     const actualReady=rosterReady(own);
-    const actualHtml=actualReady
-      ?"<div class='cwl-actual-lineup'><div class='cwl-actual-lineup-head'><b>"+
-        (round.state==="preparation"?"Derzeit in Clash":"Tatsächlich eingesetztes Team")+
-        "</b><span>"+(fresh?"Aktueller API-Abruf":"Gespeicherter Stand · vor Wechseln aktualisieren")+
-        "</span></div><div class='cwl-actual-member-grid'>"+
-        own.map(m=>memberRow(m)).join("")+"</div>"+
-        (reviewFresh&&review?.status==="changes"
-          ?"<div class='cwl-actual-incoming'><b>Stattdessen geplant rein</b><div class='cwl-actual-member-grid'>"+
-            review.toAdd.map(m=>memberRow(m,{incoming:true})).join("")+"</div></div>":"")+
-        "</div>":"";
+    const merged=reviewFresh&&actualReady&&review?.status!=="unavailable";
+    // In a complete, fresh preparation the existing "Unser Team" disclosure
+    // owns the lineup. Hide the older planned chips instead of duplicating 15 rows.
+    dayCard.classList.toggle("cwl-prep-merged",!!merged);
+    const removedTags=new Set(merged&&review?.status==="changes"
+      ?review.toRemove.map(m=>tagOf(m.tag)):[]);
+    const candidates=merged&&review?.status==="changes"?review.toAdd:[];
+    const playerNote=m=>{
+      const tag=tagOf(m?.tag),goal=medalRows.find(r=>tagOf(r.playerTag)===tag);
+      const stats=typeof window!=="undefined" ? window.CWLCloudStats?.getRecentPlayerStats?.(tag) : null;
+      return "RH"+(m?.townHallLevel??"?")+" · "+
+        (goal?(goal.unknown?"mind. ":"")+goal.stars+"/8 ★":"8★ noch nicht belegt")+
+        (stats?.attacks?" · 3★ "+stats.hitRate+" % ("+stats.attacks+" AG)":"");
+    };
+    const entryLine=m=>{
+      const goingOut=removedTags.has(tagOf(m.tag));
+      const possible=goingOut&&candidates.length
+        ?"<details class='cwl-actual-swap'><summary>Wechsel nötig · "+
+          candidates.length+" "+(candidates.length===1?"Einwechselspieler":"Einwechselspieler")+" ansehen</summary>"+
+          "<div class='cwl-swap-candidates'><strong>Im Plan vorgesehen:</strong>"+
+          candidates.map(candidate=>"<div><b>"+esc(candidate.name)+"</b><small>"+
+            esc(playerNote({tag:candidate.tag,townHallLevel:candidate.townHallLevel}))+
+            "</small></div>").join("")+
+          "<small>Die Namen sind keine festen 1:1-Tauschpaare. Entscheidend ist die vollständige geplante Aufstellung.</small></div></details>"
+        :"";
+      return "<li class='cwl-roster-member cwl-merged-member"+(goingOut?" swap-needed":"")+"'>"+
+        "<span class='cwl-live-rh'>RH"+esc(m.townHallLevel??"?")+"</span>"+
+        "<div class='cwl-merged-info'><b class='cwl-roster-name'>"+esc(m.name||"Unbekannt")+"</b>"+
+          "<small>"+esc(playerNote(m))+"</small>"+possible+"</div>"+
+        "<span class='cwl-merged-state'>"+(goingOut?"RAUS":merged?"Ist in Clash":"Clash-Stand gespeichert")+
+        "</span></li>";
+    };
     const renderAttackRow=({player,attack,target})=>{
       const didAttack=!!attack;
       const stars=didAttack?attack.stars:null;
@@ -171,7 +170,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "</div></div>";
     };
     const players=round.state==="preparation"
-      ?(rosterReady(own)?"<ol class='cwl-roster-list'>"+own.map(rosterLine).join("")+"</ol>":
+      ?(rosterReady(own)?"<ol class='cwl-roster-list cwl-merged-roster'>"+own.map(entryLine).join("")+"</ol>":
         "<p class='cwl-live-attack-empty'>Eigene Aufstellung noch nicht vollständig verfügbar.</p>")
       :(attackRows.length?attackRows.map(renderAttackRow).join(""):
         "<p class='cwl-live-attack-empty'>Noch keine eigenen Spieler-/Angriffsdaten verfügbar.</p>");
@@ -205,7 +204,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+
       sideHtml(round.opponent,"Gegner")+"</div>"+
       destruct+"<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'><strong>Gegner-Aufstellung</strong> "+townHallSummary(enemy)+"</div>"+
-      reviewHtml+actualHtml+
+      reviewHtml+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       (round.state==="preparation"?(fresh?
         "Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
