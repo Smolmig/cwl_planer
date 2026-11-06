@@ -239,7 +239,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }).join("");
     chart.innerHTML="<svg role='img' aria-label='"+esc(label+
       " nach "+(trendGranularity==="week"?"Wochen":"Monaten")+
-      "; grün normaler CW, gold CWL; einzelne Fallzahlen in der Tabelle")+
+      "; normale CWs durchgezogen und CWL gestrichelt; Fallzahlen in der Tabelle")+
       "' viewBox='0 0 "+W+" "+H+"' preserveAspectRatio='xMidYMid meet'>"+
       grid+axis+series+"</svg>";
     const wasOpen=detail.querySelector("details")?.open===true;
@@ -398,8 +398,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
-        const metric=p=>order==="performance"?viewComparableProfiles.get(cleanTag(p.tag))?.performanceIndex:
-          order==="missed"?p.missedKnown:order==="lastTen"?p.lastTen.averageStars:p[order];
+        const metric=p=>order==="missed"?p.missedKnown:p[order];
         const rawA=metric(a),rawB=metric(b);
         const av=rawA??-1,bv=rawB??-1;
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
@@ -411,24 +410,6 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const nextRowsMarkup=visible.length?visible.map((p,index)=>{
       // Raw hit rates are evidence, not green/red player grades.
       const missedColor=p.missedKnown>0?" warn":"";
-      const form=viewComparableProfiles.get(cleanTag(p.tag));
-      const qualityLabels={none:"Keine Vergleichsdaten",stale:"Nur ältere Angriffe",
-        limited:"Wenig Daten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
-      const matched=form?.last90?.attacks??0;
-      const quality=qualityLabels[form?.quality]||"Keine Vergleichsdaten";
-      const formText=matched?
-        (form.performanceRankable?
-          "90-Tage-Trend "+formPct(form.weighted90.hitRate)+" · "+matched+" gleich-RH-Angriffe":
-          "Vergleich: "+quality+" · "+matched+" gleich-RH-Angriffe"):
-        "Vergleich: keine gleich-RH-Angriffe (90 Tage)";
-      const lastTen=p.lastTen;
-      const lastTenMissed=lastTen.recordedParticipations===0?"– (keine Teilnahme dokumentiert)":lastTen.missed===null?
-        (lastTen.missedKnown>0?"mind. "+lastTen.missedKnown:"k. A."):
-        String(lastTen.missed);
-      const lastTenLabel=lastTen.attacks?
-        lastTen.attacks+" Angriffe · "+lastTen.hitRate+" % 3★ · Ø "+
-        lastTen.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
-        "Keine Angriffe in diesem Kriegsfenster belegt";
       const detailsOpen=openStatsPlayers.has(p.tag)?" open":"";
       const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
       const recent=oneWar?attacks.filter(a=>a.war_key===oneWar.war_key&&cleanTag(a.attacker_tag)===cleanTag(p.tag))
@@ -462,13 +443,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         (type==="all"&&summary.missedCoverage.cwl.wars?
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span>"+
-        "<small class='stats-form-score' title='Vorläufige Form aus gleich-RH-Angriffen der letzten 90 Tage'>"+esc(formText)+"</small>"+
         "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
-        "<summary>Letzte "+lastTen.wars+" ausgewählte Kriege · Details</summary>"+
-        "<div>"+esc(lastTenLabel)+" · verpasst: "+esc(lastTenMissed)+
-        "</div><small>Betrachtet werden die "+lastTen.wars+" zuletzt ausgewählten Kriege · "+lastTen.coveredWars+"/"+lastTen.wars+" vollständig erfasst. "+
-        "Ohne vollständige CWL-Tagesdaten können weitere Fehlangriffe unbekannt sein. "+
-        "Ein nicht eingeplanter Spieler hat keinen verpassten Angriff.</small></details></div>";
+        "<summary>Details zur gewählten Auswertung</summary>"+
+        "<div>"+p.threes+" Dreier bei "+p.attacks+" Angriffen · Ø "+
+          (p.averageStars===null?"–":p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2}))+
+          " Sterne</div><small>Hier zählen ausschließlich die "+summary.wars+
+          " in diesem Reiter ausgewählten Kriege. Ein anderer Kriegsfilter verändert diese Werte. "+
+          "Verpasste Angriffe werden nur als sicher gezählt, wenn sie belegbar sind. "+
+          "Die unabhängige 14-/30-/90-Tage-Form findest du unter Spielerform.</small></details></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
     renderComparableForm();
     // Avoid destroying player rows (and their decoded RH images) for identical results.
