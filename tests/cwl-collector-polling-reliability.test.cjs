@@ -72,7 +72,7 @@ test("Unresolved own CWL round reports sanitized stage and upstream response cla
 });
 test("Inaccessible current-war endpoint reports failure without dropping a valid league snapshot",async()=>{
  const h=harness(async url=>{
-  if(url.includes("leaguegroup"))return {rounds:[{warTags:[tags[0]}]};
+  if(url.includes("leaguegroup"))return {rounds:[{warTags:[tags[0]]}]};
   if(url.includes("currentwar"))throw Error("clash_api_unavailable:timeout");
   return makeWar(true);
  });
