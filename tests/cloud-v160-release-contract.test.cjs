@@ -13,7 +13,7 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  const json=JSON.parse(read("cloud-version.json"));
  assert.equal(json.version,"v1.15.8");
  assert.match(json.summary,/Statistik|Vergleich|CWL|Form|Einsatz/);
- assert.equal(json.released,"2026-11-05");
+ assert.equal(json.released,"2026-11-06");
  assert.match(html,/const APP_VERSION="v1\.15\.8"/);
  assert.match(html,/Neu in v1\.15\.8/);
  assert.match(html,/cloud-sync\.mjs\?v=1\.15\.8/);
