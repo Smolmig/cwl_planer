@@ -50,6 +50,7 @@ const backups=createCloudBackups({
 });
 
 let planReview=null,planSuggestions=[],rawSavedProfile=null,rosterApiFailed=false;
+let planReviewPeople=new Map();
 function manualRosterPending(){return !!storage.getProfile()?.cocManualEmergency?.pending;}
 function refreshRosterEmergencyUI(){
  const managed=cloud.active&&cloud.hasApiClan?.();
@@ -94,8 +95,8 @@ function suggestionChanges(suggestion){
  const prev=storage.getProfile(),draft=suggestion.suggested_profile;
  if(!prev||!draft)return ["Vorgeschlagene Planänderung"];
  const old=new Map((prev.members||[]).map(m=>[m.id,m]));
- const fields=["participating","fixed","priority","rotationWeight","townHall","threeStar","targetDays","statuses"];
- const labels={participating:"Dabei",fixed:"Fix",priority:"Alte Priorität",rotationWeight:"Rotation",townHall:"Rathaus",
+ const fields=["name","note","participating","fixed","priority","rotationWeight","townHall","threeStar","targetDays","statuses"];
+ const labels={name:"Name",note:"Spielernotiz",participating:"Dabei",fixed:"Fix",priority:"Alte Priorität",rotationWeight:"Rotation",townHall:"Rathaus",
    threeStar:"3★-Stärke",targetDays:"Einsatzziel",statuses:"Tagesregeln"};
  const result=[];
  for(const m of draft.members||[]){
@@ -1048,6 +1049,9 @@ async function loadAccessList(expected=clanId){
    Promise.resolve({data:[],error:null})
  ]);
  if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;if(expected!==clanId)return;
+ planReviewPeople=new Map((members||[]).map(m=>[m.user_id,m.display_name||"Vize"]));
+ delete $("planReviewSuggestions")?.dataset.reviewSignature;
+ renderPlanReview();
  const list=$("cloudAccessList");list.replaceChildren();
  for(const m of members||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
