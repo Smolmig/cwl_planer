@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.2",
+  "version": "v1.16.3",
   "released": "2026-11-06",
-  "summary": "CWL-Plan: eine aufklappbare Clash-Teamansicht mit Wechselmarkierungen und passenden Einwechselkandidaten statt doppelter vollständiger Listen. Einsätze: tatsächliche Sterne an abgeschlossenen Tagen und aktuelle CWL-Quote samt Angriffsanzahl. Spielerform: klare gleich-RH-Erklärung, nummerierte Reihenfolge und standardmäßig sortierte 3★-Quote. Vergleiche: kompakter dreiteiliger CW/CWL-Rathausvergleich und optionale Details; Verlauf: verständliche Hinweise auf Datenlücken. Keine Änderungen am Supabase-Schema, an historischen Daten oder an der Offline-PWA."
+  "summary": "CWL-Plan: ursprüngliche aufklappbare geplante Aufstellung wieder sichtbar, auch wenn Clash-Daten aktuell sind und der Plan übereinstimmt. Bei sicherem Clash-Abgleich sind die Statushinweise 'Bereits in Clash', 'In Clash aufnehmen' und 'Aus Clash nehmen' direkt in diese Liste integriert; Einwechselkandidaten aufklappbar. Einfache Clash-Detailansicht ohne redundante Sterne/Form-Angaben; 8★-Medailenziel und optionaler Reservehinweis gebündelt unter Einsätze. Cloud-Daten, Planung, Statistikmethodik und Offline-PWA unverändert."
 }
