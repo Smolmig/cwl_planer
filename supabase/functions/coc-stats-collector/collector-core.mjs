@@ -87,3 +87,10 @@ export function buildWarSnapshot(raw,clanTag,{warType="normal",warTag="",now=Dat
       source:"api",roster_tags:ownTags,finalized:final,missed_log_complete:false
     },attacks:rows,state:raw.state};
 }
+
+/** Skip a CWL round only if its own real war tag was finalized in ALL
+ * independently permissioned app-clan profiles sharing this Clash tag. */
+export function hasCapturedCwlRound(warTags,completedKeys){
+  return Array.isArray(warTags)&&warTags.some(value=>
+    completedKeys.has("cwl:"+tag(value)));
+}
