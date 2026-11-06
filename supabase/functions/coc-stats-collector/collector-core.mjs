@@ -61,16 +61,15 @@ export function buildWarSnapshot(raw,clanTag,{warType="normal",warTag="",now=Dat
     const rawAttacks=member.attacks||[];
     if(!Array.isArray(rawAttacks)||rawAttacks.length>(warType==="cwl"?1:4))
       throw Error("invalid_attacks_count");
-    const seenOrders=new Set();
     for(let j=0;j<rawAttacks.length;j++){
       const attack=rawAttacks[j],enemyTag=tag(attack.defenderTag);
       const target=opponentLookup.get(enemyTag);
       if(!target||!validStars(attack.stars)||!validPercentage(attack.destructionPercentage)||
          (attack.attackerTag&&tag(attack.attackerTag)!==memberTag))
         throw Error("incomplete_attack_evidence");
-      const order=Number.isInteger(attack.order)?attack.order:j+1;
-      if(order<0||order>200||seenOrders.has(order))throw Error("duplicate_attack_order");
-      seenOrders.add(order);
+      // Match the browser's existing (member, 1-based attack index) key.
+      // Clash's global battle "order" is not the same identity.
+      const order=j+1;
       const defenderTH=target.townhallLevel??null;
       if(defenderTH!==null&&(!Number.isInteger(defenderTH)||defenderTH<3||defenderTH>30))
         throw Error("invalid_defender_townhall");
