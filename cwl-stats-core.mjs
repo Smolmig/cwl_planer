@@ -149,6 +149,26 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
  * Read-only, descriptive counts; unlike the Form comparison it does not rank players.
  * Unknown THs are a separate category rather than silently removed from denominators.
  */
+/**
+ * Actual 0/1/2/3-star outcomes in the same selected wars, without inferring
+ * missing attacks as zero stars. Never treats unknown data as success/failure.
+ */
+export function computeStarDistribution(wars, attacks,{type="all",last=50,cwlSeasons="all"}={}){
+  const selected=new Map(selectStatWars(wars,{type,last,cwlSeasons})
+    .map(w=>[w.war_key,w.war_type]));
+  const grouped=["normal","cwl"].map(kind=>({type:kind,counts:[0,0,0,0],total:0}));
+  const lookup=new Map(grouped.map(g=>[g.type,g]));
+  for(const attack of attacks||[]){
+    const warType=selected.get(attack.war_key),stars=attack.stars;
+    if(!warType||!Number.isInteger(stars)||stars<0||stars>3)continue;
+    const group=lookup.get(warType);
+    if(!group)continue;
+    group.counts[stars]++;group.total++;
+  }
+  return grouped.map(g=>({...g,shares:g.counts.map(n=>
+    g.total?Math.round(n/g.total*1000)/10:null)}));
+}
+
 export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cwlSeasons="all"}={}) {
   const selected = selectStatWars(wars,{type,last,cwlSeasons});
   const byWar = new Map(selected.map(w=>[w.war_key,w]));
