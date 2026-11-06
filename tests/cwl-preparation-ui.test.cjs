@@ -47,6 +47,16 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   const review=doc.querySelector(".cwl-prep-review");
   assert.ok(review,"comparison must appear inside the war card");
   assert.match(review.textContent,/1 Wechsel nötig/);
+  assert.equal(doc.querySelectorAll(".cwl-actual-lineup").length,0,
+    "do not render a second complete Clash roster above the existing team disclosure");
+  assert.equal(doc.querySelectorAll(".cwl-live-details .cwl-merged-member").length,2);
+  assert.equal(doc.querySelectorAll(".cwl-live-details .swap-needed").length,1);
+  assert.ok(doc.getElementById("day-card-0").classList.contains("cwl-prep-merged"));
+  const candidate=doc.querySelector(".cwl-actual-swap");
+  assert.ok(candidate&&!candidate.open,"replacement names start collapsed");
+  assert.match(candidate.textContent,/Spieler C/);
+  assert.ok(!review.querySelector(".cwl-prep-swap-details").open,
+    "additional swap overview does not create an always-expanded duplicate list");
   assert.match(review.querySelector(".cwl-prep-group.remove").textContent,/Spieler B/);
   assert.match(review.querySelector(".cwl-prep-group.add").textContent,/Spieler C/);
   assert.match(review.querySelector(".cwl-prep-group.remove > b").textContent,/Aus der Kriegsaufstellung nehmen/);
@@ -78,6 +88,8 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   await live.refresh();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/Gespeicherter Stand/);
   assert.doesNotMatch(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
+  assert.equal(doc.querySelectorAll(".cwl-merged-member.swap-needed").length,0,
+    "stale API preparation must not show actionable swap markings");
   apiData={ok:true,active:true,clanTag:"#2PYG",season,detailsStatus:"complete",rounds:[round]};
   await live.refresh();
   assert.match(doc.querySelector(".cwl-prep-review").textContent,/stimmt überein/);
