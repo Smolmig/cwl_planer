@@ -2963,6 +2963,54 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){.plan-review-chevron{transition:none}}
 
+
+/* Cloud approval: a short, native-feeling disclosure instead of a full-width rule. */
+#view-plan #planReviewPanel,#membersReviewManageHost #planReviewPanel{width:100%;margin:8px 0 13px!important}
+#planReviewDisclosure{border:0!important}
+#planReviewDisclosure>.plan-review-summary{
+ width:fit-content;max-width:100%;display:inline-flex;min-height:43px;
+ gap:8px;padding:8px 12px!important;
+ border:1px solid var(--line);border-radius:11px;background:var(--card);
+ transition:border-color .16s ease,background-color .16s ease;
+}
+#planReviewDisclosure>.plan-review-summary:hover{border-color:var(--primary)}
+#planReviewDisclosure .plan-review-headings{flex:0 1 auto;gap:3px 9px}
+#planReviewDisclosure .plan-review-headings strong{font-size:12px}
+#planReviewDisclosure .plan-review-headings small{font-size:11px}
+#planReviewDisclosure .plan-review-chevron{display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+#planReviewDisclosure .plan-review-chevron svg{display:block}
+#planReviewDisclosure[open]>.plan-review-summary{border-color:var(--primary)}
+#planReviewDisclosure .plan-review-body{padding:9px 3px 6px}
+#planReviewPanel.has-pending .plan-review-summary{border-left:2px solid var(--primary);padding-left:11px!important}
+#membersReviewManageHost{margin:3px 0 12px;padding:10px 10px 4px;
+ border:1px solid var(--line);border-radius:12px;background:var(--card)}
+#membersReviewManageHost[hidden]{display:none!important}
+#membersReviewManageHost #membersReviewClose{float:right;position:relative;z-index:2;min-height:36px}
+#membersReviewManageHost #planReviewPanel{clear:both;margin-top:3px!important}
+#view-stats .stats-star-legend{display:flex;flex-wrap:wrap;gap:6px 15px;margin:8px 0 12px;font-size:11px;line-height:1.4}
+#view-stats .stats-star-key{display:inline-flex;align-items:center;gap:5px;min-width:65px;white-space:nowrap}
+#view-stats .stats-star-key i{width:9px;height:9px;border-radius:3px;flex:none}
+#view-stats .stats-star-key b{font-weight:800;font-variant-numeric:tabular-nums}
+#view-stats .stats-star-key span{color:var(--muted);font-variant-numeric:tabular-nums}
+#view-stats .stats-star-key.stars-0 i{background:var(--muted)}
+#view-stats .stats-star-key.stars-1 i{background:var(--red)}
+#view-stats .stats-star-key.stars-2 i{background:var(--amber)}
+#view-stats .stats-star-key.stars-3 i{background:var(--green)}
+/* Gold/Arena: the old !important solid sheet overrode the transparent tabs
+   and created a harsh rectangular block on iPhone. Blend its edge instead. */
+@media(max-width:699px){
+ html[data-theme="arena"] #view-plan #mobileDaySwitcher{
+   background:linear-gradient(to bottom,rgba(12,16,21,.96) 0%,rgba(12,16,21,.91) 80%,transparent 100%)!important;
+   box-shadow:none!important;border:0!important;
+ }
+ html[data-theme="arena"] #view-plan #mobileDaySwitcher .mobile-day-tabs{
+   background:transparent!important;box-shadow:none!important;border:0!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #planReviewDisclosure>.plan-review-summary{transition:none}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3026,7 +3074,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <summary class="plan-review-summary">
         <span class="plan-review-headings"><strong id="planReviewSummaryTitle">Gemeinsam bearbeitbar</strong><small id="planReviewSummaryDetail">Freigabe und Zusammenarbeit</small></span>
         <span class="plan-review-pending" id="planReviewPendingCount" hidden></span>
-        <span class="plan-review-chevron" aria-hidden="true">⌄</span>
+        <span class="plan-review-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
       </summary>
       <div class="plan-review-body">
         <div class="plan-review-explanation"><span class="badge" id="planReviewStatus">In Bearbeitung</span><span id="planReviewHint">Gemeinsame Planung</span></div>
@@ -3057,6 +3105,9 @@ html[data-theme] #view-more-settings .latest-changelog{
         <button type="button" class="btn small" id="membersReviewOpenPlan" hidden>Planfreigabe ansehen</button>
       </div>
     </div>
+    <section id="membersReviewManageHost" class="members-review-manage" hidden aria-label="Planfreigabe und Vorschläge">
+      <button class="btn small" type="button" id="membersReviewClose">Schließen</button>
+    </section>
     <div id="guestMembersTools" class="cloud-member-tools">
       <button class="btn primary" type="button" id="guestImportMembersBtn">Mitgliederliste importieren</button>
       <div class="cloud-members-hint">Ohne Anmeldung: manuelle Liste oder CSV auf diesem Gerät verwalten.</div>
@@ -3255,10 +3306,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.7</strong><span>Teamfreigabe und Vorschläge klarer</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.8</strong><span>Hitrates klarer · UI-Feinschliff</span></div>
       <ul>
-       <li><b>Plan:</b> Eine kompakte Statuszeile ersetzt die große Planfreigabe-Karte. Offene Vorschläge sind sofort erkennbar und bei Bedarf prüfbar.</li>
-       <li><b>Mitglieder:</b> Vize können Entwürfe direkt einreichen; Beobachter sehen eine übersichtliche Leseansicht ohne Bearbeitungselemente.</li>
+       <li><b>CWL:</b> Plan und Einsätze verwenden dieselbe eindeutige 3★-Hitrate. Die Kurzform zeigt, ob Angriffe aus der laufenden CWL enthalten sind.</li>
+       <li><b>UI:</b> Freigabe direkt bei Mitglieder verwalten, dezenter Pfeil und sanfter Gold-Tageshintergrund.</li>
+       <li><b>Statistik:</b> Sternbalken besser lesbar, keine doppelten Formhinweise, Kriegsgröße und Importstatus im Verlauf.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3684,9 +3736,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.7"></script>
+<script src="./cwl-planning-core.js?v=1.16.8"></script>
 <script>
-const APP_VERSION="v1.16.7";
+const APP_VERSION="v1.16.8";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4040,22 +4092,31 @@ function rotationWeightLabel(m){
  if(m.rotationWeight==="balanced"||!(m.priority>0))return "Ausgewogen";
  return "Bisher Prio "+m.priority;
 }
+function currentCwlTripleRate(tag){
+ const normalized=normalizePlayerTag(tag);
+ const results=Object.values(window.CWLCloud?.getPlayedAttackResults?.()||{})
+   .map(day=>day?.[normalized]).filter(r=>r&&!r.missed&&Number.isInteger(r.stars));
+ const triples=results.filter(r=>r.stars===3).length;
+ const attacks=results.length;
+ return {triples,attacks,label:attacks?
+  "CWL aktuell · 3★-Hitrate: "+Math.round(100*triples/attacks)+" % ("+
+  triples+"/"+attacks+" Dreier)": "CWL aktuell · 3★-Hitrate: noch keine belegten Angriffe"};
+}
 function memberCompactPerformance(m){
  if(!window.CWLCloud?.active)return esc(STRENGTH_SHORT[m.threeStar]||"3★ ?");
  const recent=m.playerTag?window.CWLCloudStats?.getRecentPlayerStats?.(m.playerTag):null;
- const tag=normalizePlayerTag(m.playerTag);
- const results=Object.values(window.CWLCloud?.getPlayedAttackResults?.()||{})
-   .map(day=>day?.[tag]).filter(r=>r&&!r.missed&&Number.isInteger(r.stars));
- const triple=results.filter(r=>r.stars===3).length;
- const current=results.length
-  ?"CWL aktuell: "+Math.round(triple/results.length*100)+" % 3★ ("+triple+"/"+results.length+" AG)"
-  :"CWL aktuell: noch kein belegter Angriff";
- const form=recent?.attacks
-  ?"Letzte "+recent.attacks+" AG (CW/CWL): "+recent.hitRate+" % 3★"
-  :"Letzte 7 AG (CW/CWL): keine Daten";
+ const current=currentCwlTripleRate(m.playerTag).label;
+ const season=String(state.cwlLive?.season||"");
+ const included=season?Number(recent?.cwlBySeason?.[season]||0):null;
+ const basis=recent?.attacks?
+  "Letzte "+recent.attacks+" gespeicherte AG (CW/CWL) · 3★-Hitrate: "+
+  recent.hitRate+" %":"Letzte 7 gespeicherte AG (CW/CWL) · keine Daten";
+ const note=included===null?"":included?
+  " · "+included+" AG dieser CWL enthalten":
+  " · aktuelle CWL noch nicht enthalten";
  const played=lastPlan?.playedCounts?.[m.id]||0,planned=lastPlan?.counts?.[m.id]||0;
  return '<span class="cwl-performance-current">'+esc(current)+'</span>'+
-  '<span class="cwl-performance-recent">'+esc(form)+'</span>'+
+  '<span class="cwl-performance-recent">'+esc(basis+note)+'</span>'+
   '<span class="cwl-performance-schedule">'+played+' gespielt · '+Math.max(0,planned-played)+' geplant</span>';
 }
 function memberPerformance(m){
@@ -4242,13 +4303,7 @@ function renderSummary(){
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
       available=active?Array.from({length:state.config.days},(_,i)=>i).filter(day=>effectiveStatus(x.m,day)!=="out").length:0;
     const goal=goalByTag.get(normalizePlayerTag(x.m.playerTag));
-    const playerTag=normalizePlayerTag(x.m.playerTag);
-    const cwResults=Object.values(dayResults).map(day=>day?.[playerTag])
-      .filter(result=>result&&!result.missed&&Number.isInteger(result.stars));
-    const cwTriples=cwResults.filter(result=>result.stars===3).length;
-    const cwlHitRate=cwResults.length>=2
-      ?"CWL bisher: "+Math.round(100*cwTriples/cwResults.length)+" % 3★ ("+cwTriples+"/"+cwResults.length+" AG)"
-      :cwResults.length===1?"CWL bisher: "+cwTriples+"/1 Dreier":"";
+    const cwlHitRate=currentCwlTripleRate(x.m.playerTag).label;
     const goalLabel=goal?.status==="reached"?"8★ erreicht":
       goal?.status==="not-reachable"?"8★ mit aktuellem Plan nicht erreichbar":
       goal?.status==="uncertain"?"8★-Stand unvollständig":"8★ rechnerisch möglich";
@@ -4276,7 +4331,7 @@ function renderSummary(){
       ${goal||reserveAvailable?`<div class="summary-compact-insights" aria-label="CWL-Angriffe, 8-Sterne-Ziel und Reserve">
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>
-        ${cwlHitRate?`<span>${esc(cwlHitRate)}</span>`:""}`:""}
+        <span>${esc(cwlHitRate)}</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
       ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
@@ -4907,6 +4962,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.7"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.8"></script>
 </body>
 </html>

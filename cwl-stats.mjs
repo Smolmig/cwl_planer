@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.3";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.8";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -66,7 +66,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Position "+(i+1)+"'>"+
           (i+1)+".</span><b>"+esc(p.name)+"</b>"+
         "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+
-          (few?" · Wenige Angriffe – Quote vorläufig":"")+"</small></div>"+
+          (few&&!/wenige Angriffe/i.test(quality)?" · Kleine Stichprobe":"")+"</small></div>"+
         "<div class='stats-form-results'>"+
           "<div class='stats-form-figure'><span>3★-Quote · Gegner mit gleichem RH</span>"+
             "<strong>"+pct+"</strong></div>"+
@@ -106,7 +106,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       esc([0,1,2,3].map(i=>i+" Sterne: "+dist[i]+" von "+count).join("; "))+"'>"+
       dist.map((n,i)=>"<span class='stars-"+i+"' style='width:"+
         (n/count*100).toFixed(2)+"%'></span>").join("")+"</div>"+
-      "<small>0★ "+dist[0]+" · 1★ "+dist[1]+" · 2★ "+dist[2]+" · 3★ "+dist[3]+"</small>";
+      "<div class='stats-star-legend'>"+dist.map((n,i)=>
+        "<span class='stats-star-key stars-"+i+"'><i aria-hidden='true'></i>"+
+        "<b>"+i+"★</b><span>"+n+" Angriff"+(n===1?"":"e")+"</span></span>"
+      ).join("")+"</div>";
   }
   function renderMatchups(){
     const host=$("statsMatchupComparison"),label=$("statsCompareScope");
@@ -572,10 +575,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const when=new Date(w.started_at).toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric"});
       const stars=entries.reduce((n,a)=>n+(Number(a.stars)||0),0);
       const kind=w.war_type==="cwl"?"CWL":"CW";
+      const team=Number(w.team_size);
+      const size=Number.isInteger(team)&&team>=1&&team<=50?team+" vs. "+team:"Größe unbekannt";
+      const uncertainty=w.source==="import"&&!w.finalized?
+        " · Import (Vollständigkeit nicht bestätigt)":"";
       return "<details class='war-history-item' data-war-key='"+esc(w.war_key)+"'"+
-        (openWars.has(w.war_key)?" open":"")+"><summary><span><strong>"+esc(kind+" · "+when)+"</strong><small>gegen "+
-        esc(w.opponent_name||"unbekannt")+"</small></span><span>"+entries.length+" Angriffe · "+stars+
-        " ★</span></summary><div class='war-history-detail'></div></details>";
+        (openWars.has(w.war_key)?" open":"")+"><summary><span><strong>"+
+        esc(kind+" · "+when+" · "+size)+"</strong><small>gegen "+
+        esc(w.opponent_name||"unbekannt")+uncertainty+"</small></span><span>"+
+        entries.length+" erfasste Angriffe · "+stars+" ★</span></summary>"+
+        "<div class='war-history-detail'></div></details>";
     }).join("");
     for(const disclosure of host.querySelectorAll(".war-history-item[open]"))renderHistoryAttacks(disclosure);
     if(focusedWar){

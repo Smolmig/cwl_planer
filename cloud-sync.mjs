@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.7";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.7";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.7";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.7";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.7";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.7";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.8";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.8";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.8";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.8";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.8";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.8";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -142,7 +142,7 @@ function renderPlanReview(){
  const active=cloud.active&&!!clanId&&role!=="viewer";
  panel.hidden=!active;
  renderMembersReview();
- if(!active)return;
+ if(!active){if($("membersReviewManageHost")?.contains(panel))restorePlanReviewToPlan();return;}
  const locked=planIsLocked(),owner=role==="owner",editor=role==="editor";
  const disclosure=$("planReviewDisclosure");
  const context=clanId+"|"+(planReview?.cycle_id||"")+"|"+role;
@@ -1762,12 +1762,26 @@ function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.pr
 bind("planReviewToggle","click",togglePlanLock);
 bind("planSubmitSuggestion","click",submitPlanSuggestion);
 bind("membersSubmitSuggestion","click",submitPlanSuggestion);
-bind("membersReviewOpenPlan","click",()=>{
- document.querySelector('.navbtn[data-view="plan"]')?.click();
- const details=$("planReviewDisclosure");
- if(details){details.open=true;details.querySelector("summary")?.focus({preventScroll:true});
-   details.scrollIntoView({block:"nearest",behavior:"smooth"});}
-});
+// Reuse the *same* approval controls and server-backed proposal list on either
+// tab. The controls are relocated, not duplicated or replaced by navigation.
+function restorePlanReviewToPlan(){
+ const panel=$("planReviewPanel"),host=$("membersReviewManageHost"),anchor=$("mobileDaySwitcher");
+ if(panel&&anchor&&panel.parentElement===host)anchor.before(panel);
+ if(host)host.hidden=true;
+}
+function openPlanReviewInMembers(){
+ const panel=$("planReviewPanel"),host=$("membersReviewManageHost"),details=$("planReviewDisclosure");
+ if(!panel||!host||!details||!cloud.active||role!=="owner")return;
+ host.hidden=false;host.append(panel);
+ details.open=true;
+ details.querySelector("summary")?.focus({preventScroll:true});
+ host.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+bind("membersReviewOpenPlan","click",openPlanReviewInMembers);
+bind("membersReviewClose","click",restorePlanReviewToPlan);
+document.addEventListener("click",event=>{
+ if(event.target.closest?.(".navbtn[data-view]"))restorePlanReviewToPlan();
+},true);
 bind("planRefreshSuggestions","click",()=>loadPlanReview());
 $("planReviewSuggestions").addEventListener("click",event=>{
  const button=event.target.closest("[data-plan-action][data-suggestion-id]");
