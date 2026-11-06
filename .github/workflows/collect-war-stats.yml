@@ -4,6 +4,10 @@ on:
     # Runs without app visits; minute 19 avoids minute-0 queue peaks.
     - cron: '19 */2 * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/collect-war-stats.yml'
 
 permissions:
   contents: read
