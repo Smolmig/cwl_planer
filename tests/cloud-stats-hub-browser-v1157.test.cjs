@@ -78,6 +78,10 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const players=show("players");
       const numbered=document.querySelector("#statsRows .stats-row-number")?.textContent;
       const playerScope=document.getElementById("statsPlayerScope").textContent;
+      const formView=show("form");
+      const formHtml=document.getElementById("statsFormRows").textContent;
+      const formDescription=document.getElementById("statsFormIntro").textContent;
+      const formFilterHidden=document.getElementById("statsContextFilter").hidden;
       const compare=show("compare");
       const comparison=document.getElementById("statsMatchupComparison").textContent;
       const duelBefore=document.getElementById("statsDuelResults").textContent;
@@ -93,16 +97,22 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
       const trendTable=document.getElementById("statsTrendTable").textContent;
       const back=show("overview");
-      return {initial,overviewText,players,numbered,playerScope,compare,comparison,duelBefore,duel,
+      return {initial,overviewText,players,numbered,playerScope,formView,formHtml,formDescription,
+        formFilterHidden,compare,comparison,duelBefore,duel,
         history,warNames,timelineBefore,timelineAfter,trendTable,back,
        tabs:tabs.length,finalWidth:document.documentElement.scrollWidth,viewport:innerWidth};
     });
     assert.deepEqual(result.initial,["overview"]);
-    assert.equal(result.tabs,4);
+    assert.equal(result.tabs,5);
     assert.equal(result.players.active,"true");
     assert.deepEqual(result.players.visible,["players"]);
     assert.equal(result.numbered,"1.");
-    assert.match(result.playerScope,/2 ausgewählten Kriegen/);
+    assert.match(result.playerScope,/2 hier ausgewählten Kriegen/);
+    assert.deepEqual(result.formView.visible,["form"]);
+    assert.match(result.formHtml,/Beispiel/);
+    assert.match(result.formHtml,/Vergleich/);
+    assert.match(result.formDescription,/feste Zeitfenster|90 Tagen|90 Tage/i);
+    assert.equal(result.formFilterHidden,true);
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.comparison,/Gegner-RH niedriger/);
     assert.match(result.comparison,/Gleiches Rathaus/);
