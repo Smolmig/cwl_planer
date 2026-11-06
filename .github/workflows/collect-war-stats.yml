@@ -60,13 +60,12 @@ jobs:
             repoId:String(claims.repository_id)===EXPECTED.repositoryId,
             ref:claims.ref===EXPECTED.ref,
             workflowRef:claims.workflow_ref===EXPECTED.workflowRef,
-            sub:claims.sub==='repo:'+EXPECTED.repository+':ref:'+EXPECTED.ref,
+            sub:claims.sub===EXPECTED.subject,
             eventAllowed:['schedule','workflow_dispatch','push'].includes(claims.event_name),
             headerType:header.typ||'(absent)',
             algorithm:header.alg,
             lifetimeSeconds:claims.exp-claims.iat
           };
-          console.log('OIDC public-subject:',JSON.stringify(String(claims.sub||'')));
           console.log('OIDC public-claims verification:',JSON.stringify(checks));
           const valid=await verifyCollectorIdentity(jwt);
           console.log('Local signature+claims valid:',valid);
