@@ -43,7 +43,7 @@ function startServer(){
   const file=new URL(req.url,"http://localhost").pathname.slice(1);
   if(file==="fixture"){
    res.writeHead(200,{"content-type":"text/html; charset=utf-8"});
-   res.end('<!doctype html><html lang="de" data-theme="arena"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style></head><body class="cloud-mode"><section id="view-stats" class="view active"><div id="statsSummary" class="stats-kpis"></div><span id="statsFeedback"></span><input id="statsSearch" type="search"><select id="statsSort"><option value="hitRate">Hit</option></select><div class="stats-player-table"><div id="statsRows"></div></div><div id="statsWarHistory"></div></section><script type="module" src="./fixture.mjs"></script></body></html>');
+   res.end('<!doctype html><html lang="de" data-theme="arena"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style></head><body class="cloud-mode"><section id="view-stats" class="view active"><div id="statsSummary" class="stats-kpis"></div><span id="statsFeedback"></span><nav id="statsSectionTabs"><button data-stats-section="history">History</button><button data-stats-section="players">Players</button></nav><input id="statsSearch" type="search"><select id="statsSort"><option value="hitRate">Hit</option></select><div class="stats-player-table"><div id="statsRows"></div></div><div id="statsWarHistory"></div></section><script type="module" src="./fixture.mjs"></script></body></html>');
    return;
   }
   if(file==="fixture.mjs"){
@@ -70,6 +70,7 @@ test("Stats: 1000 hidden attacks mount on demand; filters reuse existing DOM",{
    const exceptions=[];page.on("pageerror",e=>exceptions.push(e.message));
    await page.goto("http://127.0.0.1:"+server.address().port+"/fixture",{waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>window.__ready===true);
+   await page.locator('[data-stats-section="history"]').click();
    assert.equal(await page.locator(".war-history-item").count(),40);
    assert.equal(await page.locator(".war-history-attack").count(),0,
     "closed history should not contain all 1000 attacks");
@@ -78,6 +79,7 @@ test("Stats: 1000 hidden attacks mount on demand; filters reuse existing DOM",{
    const snapshot=await page.evaluate(()=>{
     const host=document.getElementById("statsWarHistory");
     window.__warEl=host.querySelector(".war-history-item");
+    document.querySelector('[data-stats-section="players"]').click();
     window.__statRow=document.querySelector("#statsRows .stats-player-row");
     document.getElementById("statsSearch").value="Spieler";
     document.getElementById("statsSearch").dispatchEvent(new Event("input",{bubbles:true}));
