@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.15] - 2026-11-06
+
+### Spielerduelle und Vergleichsübersicht aufgeräumt
+- **Spielerduelle:** Zwei Spieler, ihre tatsächlichen 3★-Quoten und Fallzahlen stehen nebeneinander; darunter zwei ausgerichtete Zeilen für normalen CW und CWL. Keine zweite ständig sichtbare Diagrammwand.
+- **Datenlage:** Qualitative Einordnung der Angriffszahl (Wenige Daten, Erste Tendenz, Mehr Vergleichsdaten), keine automatische Sieger-/Stärkeentscheidung bei 2/2 vs. 30/33.
+- **Optionale Details:** Gemeinsame, aufklappbare Sternverteilung mit Ø Sternen, Kriegsanzahl und Datum; der geöffnete Zustand bleibt beim Wechsel des RH-Filters.
+- **Rathaus-Vergleich:** Die drei Hauptbalken zeigen jetzt zusätzlich Dreieranzahl / Gesamtangriffe; sehr kleine Stichproben sind kenntlich.
+- **Bewahrter Hotfix:** Einsätze-Spielertage mit vorhandenen CWL-Angriffen bleiben nach v1.16.14 aufklappbar. GitHub-Testumgebung bleibt auf Ubuntu 24.04 gepinnt.
+- **Unverändert:** Angriffsstatistik-Berechnungen, Cloud-Plan, Solver, RLS, Backend, Rollen und lokale Offline-PWA.
+
+
 ## [1.16.14] - 2026-11-06
 
 ### Einsätze: Spieler-Detailansicht wieder erreichbar
