@@ -2672,7 +2672,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 @media(prefers-reduced-motion:reduce){#view-stats .stats-section-tab{transition:none}}
 
 
-/* v1.15.8: contextual charts, player comparisons and CWL run labels. */
+/* v1.15.9: contextual charts, player comparisons and CWL run labels. */
 #view-stats .stats-duel{padding-top:16px;margin-top:20px;border-top:1px solid var(--line)}
 #view-stats .stats-duel-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 #view-stats .stats-duel-controls .field{min-width:0}
@@ -2714,6 +2714,12 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-trend-chart svg{min-height:165px}
  #view-stats .stats-duel-controls{gap:8px}
 }
+
+/* Transparent collector freshness without another decorative card. */
+#view-stats #statsCollectorHealth{margin:9px 0 0;line-height:1.5;font-size:12px}
+#view-stats #statsCollectorHealth[data-health="ok"]{color:var(--muted)}
+#view-stats #statsCollectorHealth[data-health="error"]{color:var(--text)}
+#view-stats #statsCollectorHealth[data-health="none"]{color:var(--muted)}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2990,11 +2996,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.8</strong><span>Statistik: Verlauf &amp; Spielervergleiche</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.9</strong><span>Automatische Statistik-Erfassung</span></div>
       <ul>
-       <li><b>Vollständigerer Überblick:</b> CWL-Durchgänge nach tatsächlichem Zeitblock getrennt, auch zwei CWLs in einem Monat.</li>
-       <li><b>Vergleiche:</b> Zwei Spieler mit den gleichen Angriffsfiltern vergleichen, getrennt nach CW und CWL.</li>
-       <li><b>Verlauf:</b> Diagramme und Tabellen nach Wochen/Monaten für Dreierquote und Ø Sterne mit Stichproben.</li>
+       <li><b>Unabhängig:</b> Ein Server-Abgleich erfasst Kriege auch ohne geöffnete App.</li>
+       <li><b>Nachvollziehbar:</b> Die Statistik zeigt den letzten erfolgreichen Hintergrund-Abgleich.</li>
+       <li><b>Sicher:</b> Angefangene Kriege bleiben vorläufig, bis ihr Ergebnis feststeht.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3008,6 +3014,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 <section id="view-stats" class="view" aria-label="Clankrieg Statistik">
   <div class="card stats-header">
     <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">AUSWERTUNG</span><h3>Clan-Statistik</h3><div class="statusline">Angriffe, Sterne und Zuverlässigkeit – aus den Kriegen, die tatsächlich erfasst wurden.</div></div><button type="button" class="btn small" id="statsRefresh">↻ Aktualisieren</button></div>
+    <p id="statsCollectorHealth" class="stats-note" role="status" aria-live="polite">Automatische Statistikerfassung wird geprüft …</p>
     <div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
       <div class="field"><label id="statsPeriodLabel">Kriege für Auswertung</label>
@@ -3394,9 +3401,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.8"></script>
+<script src="./cwl-planning-core.js?v=1.15.9"></script>
 <script>
-const APP_VERSION="v1.15.8";
+const APP_VERSION="v1.15.9";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4527,6 +4534,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.8"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.9"></script>
 </body>
 </html>
