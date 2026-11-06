@@ -176,6 +176,86 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
   return groups;
 }
 
+/**
+ * One comparable date bucket per observed week or month, grouped by CW/CWL.
+ * Missing periods are not zero-win periods; consumers must show n for each dot.
+ */
+export function computeStatsTimeline(wars,attacks,{
+  type="all",last=50,cwlSeasons="all",granularity="month"
+}={}){
+  const selected=selectStatWars(wars,{type,last,cwlSeasons});
+  const index=new Map(selected.map(w=>[w.war_key,w]));
+  const buckets=new Map();
+  for(const a of attacks||[]){
+    const war=index.get(a.war_key);
+    if(!war||!int(a.stars,0,3))continue;
+    const date=new Date(war.started_at);
+    if(!Number.isFinite(date.getTime()))continue;
+    const year=date.getUTCFullYear(),month=date.getUTCMonth(),day=date.getUTCDate();
+    const monday=new Date(Date.UTC(year,month,day));
+    monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
+    const period=granularity==="week"?monday:new Date(Date.UTC(year,month,1));
+    const key=period.toISOString().slice(0,10);
+    if(!buckets.has(key))buckets.set(key,{
+      key,normal:{attacks:0,triples:0,stars:0},
+      cwl:{attacks:0,triples:0,stars:0}
+    });
+    const g=buckets.get(key)[war.war_type];if(!g)continue;
+    g.attacks++;g.stars+=a.stars;if(a.stars===3)g.triples++;
+  }
+  const rows=[...buckets.values()].sort((a,b)=>a.key.localeCompare(b.key))
+    .map(row=>{
+      const format=g=>({
+        attacks:g.attacks,triples:g.triples,
+        hitRate:g.attacks?Math.round(g.triples/g.attacks*100):null,
+        averageStars:g.attacks?Math.round(g.stars/g.attacks*100)/100:null
+      });
+      return {key:row.key,normal:format(row.normal),cwl:format(row.cwl)};
+    });
+  return {granularity:granularity==="week"?"week":"month",selectedWars:selected.length,
+    recordedAttacks:rows.reduce((n,r)=>n+r.normal.attacks+r.cwl.attacks,0),rows};
+}
+
+/**
+ * Side-by-side factual player comparison with the exact same war selection.
+ * "sameTH" excludes missing RH values; no weighting, skill grade or solver use.
+ */
+export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
+  type="all",last=50,cwlSeasons="all",sameTH=true
+}={}){
+  const chosen=selectStatWars(wars,{type,last,cwlSeasons});
+  const byWar=new Map(chosen.map(w=>[w.war_key,w]));
+  const tags=[cleanTag(firstTag),cleanTag(secondTag)];
+  const empty=tag=>({tag,attacks:0,triples:0,hitRate:null,averageStars:null,
+    stars:0,wars:0,lastWar:null,
+    normal:{attacks:0,triples:0,hitRate:null},
+    cwl:{attacks:0,triples:0,hitRate:null}});
+  const results=tags.map(empty),visited=results.map(()=>new Set());
+  const names=new Map(tags.map((tag,i)=>[tag,i]));
+  for(const a of attacks||[]){
+    const war=byWar.get(a.war_key),i=names.get(cleanTag(a.attacker_tag));
+    if(!war||i===undefined||!int(a.stars,0,3))continue;
+    if(sameTH&&(!int(a.attacker_th,3,30)||!int(a.defender_th,3,30)||
+      a.attacker_th!==a.defender_th))continue;
+    const p=results[i],kind=p[war.war_type];
+    if(!kind)continue;
+    p.attacks++;p.stars+=a.stars;
+    p.triples+=(a.stars===3?1:0);
+    kind.attacks++;kind.triples+=(a.stars===3?1:0);
+    visited[i].add(war.war_key);
+    if(!p.lastWar||Date.parse(war.started_at)>Date.parse(p.lastWar))
+      p.lastWar=war.started_at;
+  }
+  for(let i=0;i<results.length;i++){
+    const p=results[i];p.wars=visited[i].size;
+    p.hitRate=p.attacks?Math.round(p.triples/p.attacks*100):null;
+    p.averageStars=p.attacks?Math.round(p.stars/p.attacks*100)/100:null;
+    for(const kind of [p.normal,p.cwl])
+      kind.hitRate=kind.attacks?Math.round(kind.triples/kind.attacks*100):null;
+  }
+  return {sameTH:!!sameTH,selectedWars:chosen.length,players:results};
+}
+
 export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,
   memberTags=[],minAttacks=0,missedEvents=[]}={}){
   const selected=selectStatWars(wars,{type,last,cwlSeasons});
