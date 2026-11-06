@@ -49,6 +49,13 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
       cwlLive:{season,clanTag:"#2PYG",rounds:[round]}};
      const dayPlan={day:1,locked:false,warnings:[],
       lineup:[...members.slice(0,13),...members.slice(15)].map(m=>m.id)};
+     document.getElementById("planDays").innerHTML=
+      '<div id="day-card-0" class="card day-card"><div class="day-head">Tag 1</div>'+
+      '<button type="button" class="mobile-lineup-toggle">Aufstellung aufklappen</button>'+
+      '<div class="lineup">'+dayPlan.lineup.map(id=>{
+       const m=members.find(member=>member.id===id);
+       return '<div class="player-chip" data-player-tag="'+m.playerTag+'">'+m.name+'</div>';
+      }).join("")+'</div></div>';
      const {createCwlLive}=await import("/cwl-live.mjs");
      window.__reviewLive=createCwlLive({
       sb:{functions:{invoke:async()=>({data:{ok:true,active:true,season,clanTag:"#2PYG",rounds:[round]}})}},
@@ -58,21 +65,28 @@ test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the v
       notify:()=>{throw Error("Unexpected Cloud write")}
      });
      window.__reviewLive.render();
-     if(!document.querySelector(".cwl-prep-review")?.textContent.includes("Gespeicherter Stand"))
+     if(!document.querySelector(".cwl-prep-review")?.textContent.includes("nicht aktuell"))
        throw Error("Stored CWL data must never produce authoritative swap advice");
      await window.__reviewLive.refresh();
     },theme);
     await page.locator(".cwl-prep-review").waitFor();
-    assert.match(await page.locator(".cwl-prep-result").textContent(),/2 Wechsel nötig/);
-    assert.equal(await page.locator(".cwl-prep-group.remove li").count(),2);
-    assert.equal(await page.locator(".cwl-prep-group.add li").count(),2);
+    assert.match(await page.locator(".cwl-prep-review").textContent(),/2 raus, 2 rein/);
+    assert.equal(await page.locator(".lineup .cwl-plan-chip-enter").count(),2);
+    assert.equal(await page.locator(".lineup .cwl-plan-exit").count(),2);
+    assert.equal(await page.locator(".mobile-lineup-toggle").count(),1,
+      "the original planned lineup toggle must not disappear");
     const dimensions=await page.evaluate(()=>{
-     const a=document.querySelector(".cwl-prep-group.add").getBoundingClientRect();
-     const b=document.querySelector(".cwl-prep-group.remove").getBoundingClientRect();
-     return {overflow:document.documentElement.scrollWidth-innerWidth,sameRow:Math.abs(a.top-b.top)<4};
+     const card=document.getElementById("day-card-0");
+     card.classList.add("mobile-lineup-expanded");
+     const lineup=card.querySelector(".lineup");
+     return {overflow:document.documentElement.scrollWidth-innerWidth,
+      box:lineup.getBoundingClientRect().width,
+      count:lineup.querySelectorAll(".player-chip").length,
+      exitVisible:lineup.querySelectorAll(".cwl-plan-exit").length};
     });
     assert.equal(dimensions.overflow,0,"no horizontal overflow on "+width);
-    assert.equal(dimensions.sameRow,width>480,"mobile stacks swaps; desktop shows two columns");
+    assert.equal(dimensions.count,15);
+    assert.equal(dimensions.exitVisible,2);
     await page.locator(".cwl-opponent-details > summary").click();
     assert.equal(await page.locator(".cwl-opponent-details .cwl-roster-member").count(),15);
     assert.equal(await page.locator(".cwl-opponent-details").evaluate(n=>n.open),true);
