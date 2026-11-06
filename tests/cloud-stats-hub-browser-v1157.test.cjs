@@ -40,7 +40,7 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     page.on("pageerror",e=>jsErrors.push(e.message));
     await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
     const result=await page.evaluate(async()=>{
-      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.15.7");
+      const {createCloudStats}=await import("./cwl-stats.mjs?v=1.15.8");
       document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
       document.getElementById("view-stats").classList.add("active");
       const wars=[
@@ -49,7 +49,9 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       ];
       const attacks=[
        {war_key:"normal:1",attacker_tag:"#PPPP",attacker_name:"Beispiel",attacker_th:18,defender_th:17,attack_order:1,stars:3,destruction:100},
-       {war_key:"cwl:1",attacker_tag:"#PPPP",attacker_name:"Beispiel",attacker_th:18,defender_th:18,attack_order:1,stars:2,destruction:95}
+       {war_key:"cwl:1",attacker_tag:"#PPPP",attacker_name:"Beispiel",attacker_th:18,defender_th:18,attack_order:1,stars:2,destruction:95},
+       {war_key:"normal:1",attacker_tag:"#2PYL",attacker_name:"Vergleich",attacker_th:18,defender_th:18,attack_order:1,stars:3,destruction:100},
+       {war_key:"cwl:1",attacker_tag:"#2PYL",attacker_name:"Vergleich",attacker_th:18,defender_th:18,attack_order:1,stars:3,destruction:100}
       ];
       const sb={from(name){
        const data=name==="cwl_stat_wars"?wars:name==="cwl_stat_attacks"?attacks:[];
@@ -78,10 +80,21 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const playerScope=document.getElementById("statsPlayerScope").textContent;
       const compare=show("compare");
       const comparison=document.getElementById("statsMatchupComparison").textContent;
+      const duelBefore=document.getElementById("statsDuelResults").textContent;
+      const duelLeft=document.getElementById("statsDuelLeft"),duelRight=document.getElementById("statsDuelRight");
+      duelLeft.value="#PPPP";duelLeft.dispatchEvent(new Event("change",{bubbles:true}));
+      duelRight.value="#2PYL";duelRight.dispatchEvent(new Event("change",{bubbles:true}));
+      const duel=document.getElementById("statsDuelResults").textContent;
       const history=show("history");
       const warNames=document.getElementById("statsWarHistory").textContent;
+      const timelineBefore=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
+      document.getElementById("statsTrendGranularity").value="week";
+      document.getElementById("statsTrendGranularity").dispatchEvent(new Event("change",{bubbles:true}));
+      const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
+      const trendTable=document.getElementById("statsTrendTable").textContent;
       const back=show("overview");
-      return {initial,overviewText,players,numbered,playerScope,compare,comparison,history,warNames,back,
+      return {initial,overviewText,players,numbered,playerScope,compare,comparison,duelBefore,duel,
+        history,warNames,timelineBefore,timelineAfter,trendTable,back,
        tabs:tabs.length,finalWidth:document.documentElement.scrollWidth,viewport:innerWidth};
     });
     assert.deepEqual(result.initial,["overview"]);
@@ -94,9 +107,15 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.match(result.comparison,/Gegner-RH niedriger/);
     assert.match(result.comparison,/Gleiches Rathaus/);
     assert.match(result.comparison,/100 % 3★/);
+    assert.match(result.duel,/Beispiel/);
+    assert.match(result.duel,/Vergleich/);
+    assert.match(result.duel,/Angriffen/);
     assert.deepEqual(result.history.visible,["history"]);
     assert.match(result.warNames,/CW Gegner/);
     assert.match(result.warNames,/CWL Gegner/);
+    assert.ok(result.timelineBefore>0,"monthly timeline points missing");
+    assert.ok(result.timelineAfter>0,"weekly timeline points missing");
+    assert.match(result.trendTable,/erfassten Zeiträume/);
     assert.deepEqual(result.back.visible,["overview"]);
     assert.ok(result.finalWidth<=width+3,JSON.stringify(result));
     assert.deepEqual(jsErrors,[],"Browser errors: "+width+" "+jsErrors.join(";"));

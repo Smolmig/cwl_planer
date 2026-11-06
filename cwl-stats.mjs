@@ -1,6 +1,6 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,cleanTag} from "./cwl-stats-core.mjs?v=1.15.7";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,cleanTag} from "./cwl-stats-core.mjs?v=1.15.8";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
-import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.7";
+import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.8";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
@@ -8,6 +8,7 @@ const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last=50,cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="performance",ascending=false,section="overview";
+  let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="month";
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
   let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
   let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
@@ -102,6 +103,128 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "</div>";
     }).join("")+"</div>";
   }
+  function renderDuel(){
+    const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
+    if(!host||!first||!second||!cachedSummary)return;
+    const available=cachedSummary.rows.slice()
+      .filter(p=>p.tag&&p.attacks>0).sort((a,b)=>a.name.localeCompare(b.name,"de"));
+    const keyed=new Map(available.map(p=>[cleanTag(p.tag),p]));
+    if(!keyed.has(duelLeft))duelLeft=available[0]?.tag||"";
+    if(!keyed.has(duelRight)||duelRight===duelLeft)
+      duelRight=available.find(p=>p.tag!==duelLeft)?.tag||"";
+    const optionMarkup="<option value=''>Spieler wählen</option>"+available
+      .map(p=>"<option value='"+esc(p.tag)+"'>"+esc(p.name)+"</option>").join("");
+    const signature=available.map(p=>p.tag+":"+p.name).join("|");
+    for(const select of [first,second]){
+      if(select.dataset.optionSignature!==signature){
+        select.innerHTML=optionMarkup;
+        select.dataset.optionSignature=signature;
+      }
+    }
+    first.value=duelLeft;second.value=duelRight;
+    if($("statsDuelSameTH"))$("statsDuelSameTH").checked=duelSameTH;
+    if(!duelLeft||!duelRight){
+      host.innerHTML="<p class='stats-note'>Für einen direkten Vergleich brauchen wir mindestens zwei Spieler mit dokumentierten Angriffen im gewählten Zeitraum.</p>";
+      return;
+    }
+    const results=computePlayerDuel(wars,attacks,duelLeft,duelRight,
+      {type,last,cwlSeasons,sameTH:duelSameTH});
+    const human=(n)=>n===null?"–":String(n)+" %";
+    const fmtAvg=n=>n===null?"–":n.toLocaleString("de-AT",
+      {minimumFractionDigits:2,maximumFractionDigits:2})+" ★";
+    const markup=results.players.map(p=>{
+      const name=keyed.get(cleanTag(p.tag))?.name||p.tag;
+      const mini=(g,label)=>label+": "+(g.attacks?
+        (human(g.hitRate)+" aus "+g.attacks+" Angriffen"):"keine passenden Angriffe");
+      return "<div class='stats-duel-person'><h4>"+esc(name)+"</h4>"+
+        "<strong>"+human(p.hitRate)+" 3★</strong><p>"+p.triples+" von "+p.attacks+
+        " Angriffen · "+p.wars+" Kriege</p>"+
+        "<p>Ø Sterne: "+fmtAvg(p.averageStars)+"</p>"+
+        "<p>"+mini(p.normal,"CW")+"<br>"+mini(p.cwl,"CWL")+"</p>"+
+        (p.attacks>0&&p.attacks<5?
+          "<small>Wenig Vergleichsdaten – nicht als klare Stärkeaussage verwenden.</small>":"")+
+        (p.lastWar?"<small>Letzter berücksichtigter Krieg: "+
+          esc(new Date(p.lastWar).toLocaleDateString("de-AT"))+"</small>":"")+
+        "</div>";
+    }).join("");
+    host.innerHTML="<div class='stats-duel-grid'>"+markup+"</div>"+
+      "<p class='stats-note'>"+(duelSameTH?
+        "Nur Angriffe auf dieselbe Rathausstufe,":"Alle belegten Angriffe unabhängig vom Rathaus,")+
+      " jeweils aus denselben "+results.selectedWars+" ausgewählten Kriegen/CWL-Tagen. "+
+      "Unterschiedliche Gegnerbasen, Angriffsrollen und Stichprobengrößen können den Vergleich verzerren.</p>";
+  }
+  function renderTimeline(){
+    const chart=$("statsTrendChart"),detail=$("statsTrendTable");
+    if(!chart||!detail)return;
+    const trend=computeStatsTimeline(wars,attacks,{type,last,cwlSeasons,granularity:trendGranularity});
+    const signature=[version,type,last,cwlSeasons,trendMetric,trendGranularity].join("|");
+    if(chart.dataset.signature===signature)return;
+    chart.dataset.signature=signature;
+    const all=trend.rows,rows=all.slice(-12);
+    const label=trendMetric==="hitRate"?"3★-Quote":"Ø Sterne";
+    const colors={normal:"series-cw",cwl:"series-cwl"};
+    if(!rows.length){
+      chart.innerHTML="<p class='stats-note'>Noch keine Angriffe für einen Verlauf in dieser Auswahl.</p>";
+      detail.replaceChildren();return;
+    }
+    const W=760,H=252,L=48,R=18,T=20,B=43;
+    const plotW=W-L-R,plotH=H-T-B,maximum=trendMetric==="hitRate"?100:3;
+    const x=i=>L+(rows.length===1?plotW/2:i*plotW/(rows.length-1));
+    const y=value=>T+(maximum-value)/maximum*plotH;
+    const point=(kind,i,row)=>{
+      const v=row[kind][trendMetric],n=row[kind].attacks;
+      if(v===null)return null;
+      return {x:x(i),y:y(v),value:v,n,key:row.key,
+        title:(kind==="cwl"?"CWL":"Normaler CW")+" · "+row.key+
+          " · "+v+(trendMetric==="hitRate"?" %":" ★")+
+          " · "+n+" Angriffe"};
+    };
+    const grid=[0,.25,.5,.75,1].map(part=>{
+      const yy=y(part*maximum),v=part*maximum;
+      return "<line class='gridline' x1='"+L+"' x2='"+(W-R)+"' y1='"+yy+"' y2='"+yy+"'/>"+
+        "<text class='axislabel' text-anchor='end' x='"+(L-8)+"' y='"+(yy+4)+"'>"+
+        (trendMetric==="hitRate"?Math.round(v)+"%":v.toFixed(2).replace(".",","))+"</text>";
+    }).join("");
+    const axisStep=Math.max(1,Math.ceil(rows.length/6));
+    const axis=rows.map((row,i)=>i%axisStep===0||i===rows.length-1?
+      "<text class='axislabel' text-anchor='middle' x='"+x(i)+"' y='"+(H-18)+"'>"+
+      esc(trendGranularity==="week"?row.key.slice(5):row.key.slice(0,7))+"</text>":"").join("");
+    const series=["normal","cwl"].map(kind=>{
+      const pts=rows.map((row,i)=>point(kind,i,row)).filter(Boolean);
+      if(!pts.length)return "";
+      const runs=[];let current=[];
+      for(let i=0;i<rows.length;i++){
+        const p=point(kind,i,rows[i]);
+        if(!p){if(current.length>1)runs.push(current);current=[];}
+        else current.push(p);
+      }
+      if(current.length>1)runs.push(current);
+      const lines=runs.map(segment=>"<polyline class='statline "+colors[kind]+
+        "' points='"+segment.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ")+"'/>").join("");
+      const dots=pts.map(p=>"<circle class='statpoint "+colors[kind]+"' cx='"+
+        p.x.toFixed(1)+"' cy='"+p.y.toFixed(1)+"' r='5'><title>"+
+        esc(p.title)+"</title></circle>").join("");
+      return lines+dots;
+    }).join("");
+    chart.innerHTML="<svg role='img' aria-label='"+esc(label+
+      " nach "+(trendGranularity==="week"?"Wochen":"Monaten")+
+      "; grün normaler CW, gold CWL; einzelne Fallzahlen in der Tabelle")+
+      "' viewBox='0 0 "+W+" "+H+"' preserveAspectRatio='xMidYMid meet'>"+
+      grid+axis+series+"</svg>";
+    const wasOpen=detail.querySelector("details")?.open===true;
+    const fmt=(data)=>{
+      const val=data[trendMetric];
+      return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
+        " (n="+data.attacks+")"):"–";
+    };
+    const table=all.slice().reverse().map(row=>"<tr><td>"+esc(row.key)+
+      "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
+    detail.innerHTML="<details"+(wasOpen?" open":"")+"><summary>Alle "+all.length+
+      " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary><div class='stats-war-history-scroll'>"+
+      "<table><thead><tr><th>Zeitraum</th><th>CW</th><th>CWL</th></tr></thead><tbody>"+
+      table+"</tbody></table></div></details>"+
+      (all.length>12?"<p class='stats-note'>Im Diagramm die letzten 12 Zeitpunkte; Tabelle enthält alle.</p>":"");
+  }
   function render(){
     setStatsSection(section);
     const ctx=context(),view=$("view-stats");
@@ -118,6 +241,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       $("statsRows").innerHTML="";
       $("statsWarHistory").innerHTML="";
       if($("statsMatchupComparison"))$("statsMatchupComparison").replaceChildren();
+      if($("statsDuelResults"))$("statsDuelResults").replaceChildren();
+      if($("statsTrendChart"))$("statsTrendChart").replaceChildren();
+      if($("statsTrendTable"))$("statsTrendTable").replaceChildren();
       $("statsWarHistory").removeAttribute("data-history-signature");
       $("statsWarHistory").removeAttribute("data-history-clan");
       cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;
@@ -146,6 +272,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         +"Letzte 10 Kriege = zehn jüngste ausgewählte Kriege, auch CWL-Kriegstage.";
     }
     renderMatchups();
+    renderDuel();
+    renderTimeline();
     const displayMissed=(known,complete)=>complete?String(known):(known>0?"mind. "+known:"k. A.");
     const label=displayMissed(summary.missesKnown,summary.complete);
     // Give each war type its own denominator: 30/30 CWs can be exact even
@@ -171,22 +299,24 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(type==="cwl"){
       if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
         " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
-        " von "+summary.totalCwlSeasons+" Saisons · "+summary.attacks+" Angriffe";
-      if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({season,days})=>{
-        const date=new Date(season+"-01T12:00:00Z");
-        return date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"})+
-          ": "+days+" von 7 Kriegstagen gespeichert";
+        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe";
+      if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({from,to,days,inferred})=>{
+        const fmt=value=>new Date(value+"T12:00:00Z").toLocaleDateString("de-AT",
+          {day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
+        return fmt(from)+(from!==to?" – "+fmt(to):"")+
+          ": "+days+" erfasste Kriegstage"+(inferred?" (zeitlich zugeordnet)":"");
       }).join(" · ");
     }else{
       const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
       const normalDays=summary.wars-leagueDays;
       if(type==="all"){
         if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
-          " CWL-Kriegstage · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden die letzten "+last+
-          " normalen Clankriege und "+(cwlSeasons==="all"?"alle verfügbaren CWL-Saisons":
-          "bis zu "+cwlSeasons+" CWL-Saison"+(cwlSeasons===1?"":"s"))+
-          ". Ältere Daten bleiben erhalten.";
+          " CWL-Kriegstage aus "+summary.cwlSeasonBreakdown.length+
+          " Durchgängen · "+summary.attacks+" Angriffe";
+        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden "+normalDays+
+          " normale CWs und "+summary.cwlSeasonBreakdown.length+
+          " der "+summary.totalCwlSeasons+" erfassten CWL-Durchgänge. "+
+          "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.";
       }else{
         if(count)count.textContent=summary.wars+" von "+
           wars.filter(w=>w.war_type==="normal").length+
@@ -358,6 +488,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     scope=null;wars=[];attacks=[];missedEvents=[];cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
+    duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="month";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
@@ -516,6 +647,23 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(!button)return;
       setStatsSection(button.dataset.statsSection);
     });
+    e("statsDuelLeft")?.addEventListener("change",ev=>{
+      duelLeft=cleanTag(ev.target.value);renderDuel();
+    });
+    e("statsDuelRight")?.addEventListener("change",ev=>{
+      duelRight=cleanTag(ev.target.value);renderDuel();
+    });
+    e("statsDuelSameTH")?.addEventListener("change",ev=>{
+      duelSameTH=ev.target.checked;renderDuel();
+    });
+    e("statsTrendMetric")?.addEventListener("change",ev=>{
+      trendMetric=ev.target.value==="averageStars"?"averageStars":"hitRate";
+      renderTimeline();
+    });
+    e("statsTrendGranularity")?.addEventListener("change",ev=>{
+      trendGranularity=ev.target.value==="week"?"week":"month";
+      renderTimeline();
+    });
     e("statsType")?.addEventListener("change",ev=>{
       type=ev.target.value;
       syncPeriodChoices();
@@ -559,12 +707,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(leagueField)leagueField.hidden=type==="normal";
     const parts=[];
     const normalCount=wars.filter(w=>w.war_type==="normal").length;
-    const cwlCount=new Set(wars.filter(w=>w.war_type==="cwl").map(w=>w.started_at?.slice(0,7)).filter(Boolean)).size;
+    const cwlCount=groupCwlRuns(wars.filter(w=>
+      w.war_type==="cwl"&&(w.source!=="api"||w.finalized===true))).length;
     if(type!=="cwl")parts.push(normalCount?
       Math.min(last,normalCount)+"/"+normalCount+" CWs":"bis zu "+last+" CWs");
     if(type!=="normal")parts.push(cwlCount?
-      (cwlSeasons==="all"?cwlCount:Math.min(Number(cwlSeasons),cwlCount))+"/"+cwlCount+" CWL-Monate":
-      "alle gespeicherten CWLs");
+      (cwlSeasons==="all"?cwlCount:Math.min(Number(cwlSeasons),cwlCount))+"/"+cwlCount+" CWL-Durchgänge":
+      "alle gespeicherten CWL-Durchgänge");
     const summary=$("statsPeriodSummary");
     if(summary)summary.textContent=parts.join(" + ");
   }

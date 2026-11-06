@@ -53,7 +53,7 @@ test("form, list position and selected wars are explicitly separate from the sev
  assert.match(script,/innerhalb dieser Auswahl/);
  assert.match(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
  assert.match(script,/Listenposition /);
- assert.match(html,/Alle gespeicherten CWLs/);
+ assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
  assert.match(html,/data-stats-section="overview"/);
  for(const section of ["players","compare","history"])
   assert.match(html,new RegExp('data-stats-panel="'+section+'"'));

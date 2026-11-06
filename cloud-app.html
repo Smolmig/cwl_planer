@@ -2671,6 +2671,49 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){#view-stats .stats-section-tab{transition:none}}
 
+
+/* v1.15.8: contextual charts, player comparisons and CWL run labels. */
+#view-stats .stats-duel{padding-top:16px;margin-top:20px;border-top:1px solid var(--line)}
+#view-stats .stats-duel-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#view-stats .stats-duel-controls .field{min-width:0}
+#view-stats .stats-duel-controls label:not(.stats-duel-checkbox),
+#view-stats .stats-trend-controls label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+#view-stats .stats-duel-controls select,#view-stats .stats-trend-controls select{
+ width:100%;min-height:44px;min-width:0;border:1px solid var(--line);background:var(--card);
+ border-radius:10px;color:var(--text);padding:9px 10px;font:inherit;font-size:13px}
+#view-stats .stats-duel-checkbox{grid-column:1/-1;display:flex;gap:9px;align-items:center;
+ cursor:pointer;line-height:1.5;font-size:12px;color:var(--text);min-height:44px}
+#view-stats .stats-duel-checkbox input{flex:none;width:18px;height:18px;accent-color:var(--primary)}
+#view-stats .stats-duel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#view-stats .stats-duel-person{min-width:0;padding:8px 0}
+#view-stats .stats-duel-person+ .stats-duel-person{border-left:1px solid var(--line);padding-left:16px}
+#view-stats .stats-duel-person h4{font-size:14px;overflow-wrap:anywhere;margin:0 0 8px}
+#view-stats .stats-duel-person strong{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+#view-stats .stats-duel-person p{margin:4px 0;font-size:12px;line-height:1.5;color:var(--muted)}
+#view-stats .stats-duel-person small{font-size:11px;color:var(--muted)}
+#view-stats .stats-trend-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#view-stats .stats-trend-chart{max-width:100%;overflow:hidden}
+#view-stats .stats-trend-chart svg{display:block;width:100%;max-width:900px;height:auto;min-height:190px}
+#view-stats .stats-trend-chart .gridline{stroke:var(--line);stroke-width:1}
+#view-stats .stats-trend-chart .axislabel{fill:var(--muted);font-size:11px}
+#view-stats .stats-trend-chart .series-cw{stroke:var(--green);fill:var(--green)}
+#view-stats .stats-trend-chart .series-cwl{stroke:var(--primary);fill:var(--primary)}
+#view-stats .stats-trend-chart .statline{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+#view-stats .stats-trend-chart .statpoint{stroke:var(--card);stroke-width:2}
+#view-stats .stats-trend-table{margin:4px 0 15px}
+#view-stats .stats-trend-table details{border-top:1px solid var(--line);font-size:12px}
+#view-stats .stats-trend-table summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--text);font-weight:700}
+#view-stats .stats-trend-table table{width:100%;border-collapse:collapse}
+#view-stats .stats-trend-table :is(td,th){padding:8px 4px;text-align:left;border-top:1px solid var(--line)}
+#view-stats .stats-trend-table th{font-size:10px;color:var(--muted)}
+#view-stats .stats-war-list-title{margin-top:21px;border-top:1px solid var(--line);padding-top:16px}
+#view-stats #statsSeasonDetails{line-height:1.7}
+@media(max-width:550px){
+ #view-stats .stats-duel-grid{grid-template-columns:minmax(0,1fr);gap:4px}
+ #view-stats .stats-duel-person+.stats-duel-person{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}
+ #view-stats .stats-trend-chart svg{min-height:165px}
+ #view-stats .stats-duel-controls{gap:8px}
+}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -2947,11 +2990,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.15.7</strong><span>Verständliche Statistik &amp; Einsätze</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.15.8</strong><span>Statistik: Verlauf &amp; Spielervergleiche</span></div>
       <ul>
-       <li><b>Statistik:</b> Vier Bereiche für Überblick, Spieler, Rathausvergleiche und einzelne Kriege.</li>
-       <li><b>Klare Auswahl:</b> Alle verfügbaren CWL-Monate im Standard; ausgewertete Daten statt einer starren Vorauswahl.</li>
-       <li><b>Einsätze:</b> Verfügbarkeit sowie gespielt, geplant und gesamt verständlich beschriftet.</li>
+       <li><b>Vollständigerer Überblick:</b> CWL-Durchgänge nach tatsächlichem Zeitblock getrennt, auch zwei CWLs in einem Monat.</li>
+       <li><b>Vergleiche:</b> Zwei Spieler mit den gleichen Angriffsfiltern vergleichen, getrennt nach CW und CWL.</li>
+       <li><b>Verlauf:</b> Diagramme und Tabellen nach Wochen/Monaten für Dreierquote und Ø Sterne mit Stichproben.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -2977,9 +3020,9 @@ html[data-theme] #view-more-settings .latest-changelog{
               <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
               <option value="50" selected>Letzte 50 CWs</option>
             </select></div>
-            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Saisons</label><select id="statsCwlRange">
-              <option value="1">Letzte 1 CWL</option><option value="2">Letzte 2 CWLs</option>
-              <option value="3">Letzte 3 CWLs</option><option value="all" selected>Alle gespeicherten CWLs</option>
+            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Durchgänge</label><select id="statsCwlRange">
+              <option value="1">Letzter CWL-Durchgang</option><option value="2">Letzte 2 CWL-Durchgänge</option>
+              <option value="3">Letzte 3 CWL-Durchgänge</option><option value="all" selected>Alle gespeicherten CWL-Durchgänge</option>
             </select></div>
           </div>
         </details></div>
@@ -3043,8 +3086,28 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="section-title"><div><h3>Angriffe nach Gegner-Rathaus</h3><p class="statusline">Tatsächliche Ergebnisse – getrennt nach normalem Clankrieg und CWL.</p></div></div>
     <p class="stats-note">Niedriger / gleich / höher vergleicht das Rathaus des Gegners mit dem des Angreifers. Gleiche Rathausstufe bedeutet nicht automatisch gleich starke Basen. Bei fehlendem RH zählen Angriffe separat als „Unbekannt“.</p>
     <div id="statsMatchupComparison" class="stats-matchup-comparison" aria-live="polite"></div>
+    <div class="stats-duel">
+      <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Gleicher Auswertungszeitraum, gleiche Kriegsarten. Ohne versteckte Stärkegewichtung.</p></div></div>
+      <div class="stats-duel-controls">
+        <div class="field"><label for="statsDuelLeft">Spieler A</label><select id="statsDuelLeft" aria-label="Ersten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
+        <div class="field"><label for="statsDuelRight">Spieler B</label><select id="statsDuelRight" aria-label="Zweiten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
+        <label class="stats-duel-checkbox"><input type="checkbox" id="statsDuelSameTH" checked> Nur Angriffe auf gleiches RH vergleichen</label>
+      </div>
+      <div id="statsDuelResults" aria-live="polite"></div>
+    </div>
   </section>
-  <section class="card stats-war-history-card" data-stats-panel="history" aria-label="Kriegsverlauf" hidden><div class="section-title"><div><h3>Verlauf & einzelne Kriege</h3><p class="statusline">Abgeschlossene Kriege mit Angreifern, Zielen und Ergebnissen. Tippe auf einen Krieg für die Details.</p></div></div><div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></section>
+  <section class="card stats-war-history-card" data-stats-panel="history" aria-label="Kriegsverlauf" hidden>
+    <div class="section-title"><div><h3>Verlauf & einzelne Kriege</h3><p class="statusline">Dreierquote oder Ø Sterne im zeitlichen Verlauf und vollständige Kriegsdetails.</p></div></div>
+    <div class="stats-trend-controls">
+      <div class="field"><label for="statsTrendMetric">Kennzahl</label><select id="statsTrendMetric"><option value="hitRate">3★-Quote</option><option value="averageStars">Ø Sterne je Angriff</option></select></div>
+      <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="month">Monat</option><option value="week">Woche</option></select></div>
+    </div>
+    <p class="stats-note">Grün = normaler CW · Gold = CWL. Punkte zeigen nur Zeiträume mit tatsächlich erfassten Angriffen; fehlende Kriege werden nicht als 0 % gewertet.</p>
+    <div id="statsTrendChart" class="stats-trend-chart" aria-live="polite"></div>
+    <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Stichprobengröße"></div>
+    <div class="section-title stats-war-list-title"><h3>Einzelne Kriege</h3></div>
+    <p class="statusline">Tippe auf einen Krieg für Angreifer, Ziel und Sterne.</p>
+    <div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></section>
 </section>
 <section id="view-help" class="view more-subview" aria-labelledby="helpTitle"><div class="card help-page">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Zurück zu Mehr</button></div>
@@ -3331,9 +3394,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.15.7"></script>
+<script src="./cwl-planning-core.js?v=1.15.8"></script>
 <script>
-const APP_VERSION="v1.15.7";
+const APP_VERSION="v1.15.8";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4464,6 +4527,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.15.7"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.15.8"></script>
 </body>
 </html>
