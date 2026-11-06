@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.9";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.9";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.9";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.9";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.9";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.9";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.10";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.10";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.10";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.10";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.10";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.10";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -135,7 +135,10 @@ function renderMembersReview(){
  submit.title=!draft?"Ändere zuerst Mitglieder oder Tagesregeln.":submit.disabled?
    "Bitte Konflikte in der Planung beheben.":"Änderungsvorschlag dem Clanführer vorlegen.";
  const open=$("membersReviewOpenPlan");open.hidden=!owner;
- if(owner)open.textContent=pending?pending+" offene Vorschläge prüfen":locked?"Freigabe verwalten":"Planfreigabe ansehen";
+ const expanded=!!$("membersReviewManageHost")&&!$("membersReviewManageHost").hidden;
+ open.setAttribute("aria-expanded",String(owner&&expanded));
+ if(owner)open.textContent=expanded?"Freigabe schließen":
+   pending?pending+" offene Vorschläge prüfen":locked?"Freigabe verwalten":"Planfreigabe ansehen";
 }
 function renderPlanReview(){
  const panel=$("planReviewPanel");if(!panel)return;
@@ -1772,20 +1775,18 @@ function restorePlanReviewToPlan(){
  const panel=$("planReviewPanel"),host=$("membersReviewManageHost"),anchor=$("mobileDaySwitcher");
  if(panel&&anchor&&panel.parentElement===host)anchor.before(panel);
  if(host)host.hidden=true;
+ renderMembersReview();
 }
 function openPlanReviewInMembers(){
  const panel=$("planReviewPanel"),host=$("membersReviewManageHost"),details=$("planReviewDisclosure");
  if(!panel||!host||!details||!cloud.active||role!=="owner")return;
- host.hidden=false;host.append(panel);
- details.open=true;
- $("membersReviewClose")?.focus({preventScroll:true});
- host.scrollIntoView({block:"nearest",behavior:"smooth"});
+ // The initial button is also the dismiss control: no orphan Schließen
+ // button, duplicated heading, extra border or scroll jump.
+ if(!host.hidden){restorePlanReviewToPlan();return}
+ host.hidden=false;host.append(panel);details.open=true;
+ renderMembersReview();
 }
 bind("membersReviewOpenPlan","click",openPlanReviewInMembers);
-bind("membersReviewClose","click",()=>{
- restorePlanReviewToPlan();
- $("membersReviewOpenPlan")?.focus({preventScroll:true});
-});
 document.addEventListener("click",event=>{
  if(event.target.closest?.(".navbtn[data-view]"))restorePlanReviewToPlan();
 },true);

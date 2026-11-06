@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.9",
+  "version": "v1.16.10",
   "released": "2026-11-06",
-  "summary": "Gold-Theme: mobile Tagesleiste ohne dunklen Hintergrundkasten. Freigabe in Plan und Mitglieder ohne verschachtelte Karten und mit erreichbarer Tastaturbedienung. Live-CWL-Hitrate aus kompakten Plan- und Einsatzansichten entfernt; historische 7-Angriffe-Form und zugrunde liegende Statistiken unverändert."
+  "summary": "Plan: mobile Kriegstage ohne schwebende Sticky-Überlagerung. Kompakte Spielerform mit detaillierter Datenbasis nur als Kontext. Mitglieder: Freigabe über denselben Button ein- und ausklappen; keine doppelten Linien oder Schließen-Karte."
 }

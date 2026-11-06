@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.10] - 2026-11-06
+
+### Mobile CWL-Navigation und Kartenhierarchie korrigiert
+- **Gold/alle Mobil-Themes:** Die Kriegstage werden nicht mehr per sticky über Spielerkarten gelegt, sondern bleiben als zusammengehörige Tagesnavigation im normalen Seitenfluss. Die frei schwebende mobile Beschriftung entfällt; die semantische ARIA-Beschriftung bleibt.
+- **Plan-Spielerkarten:** Aktuelle Form auf eine leichte Nebeninfo wie „3★ 86 % · 7 AG“ verkürzt. Name und Rathaus sind wieder die Hauptinformationen; gespielt/geplant bleibt klein. Vollständige Datenbasis und CWL-Abdeckung sind als Titel/ARIA zugänglich, tiefergehende Analysen im Mitglieder-/Statistikbereich.
+- **Mitglieder-Freigabe:** Der vorhandene „Freigabe verwalten“-Button öffnet und schließt die echten Freigabe-/Vize-Vorschlagsaktionen; kein isolierter „Schließen“-Button, kein Scrollsprung, keine zweite Trennlinie oder doppelte Erklärung.
+- **Nicht geändert:** Planungsalgorithmus, CWL-Sperr-/Vorschlagsregeln, Live-Angriffe, historische Statistikberechnung, Datenbank oder lokale Offline-PWA. Neue Regressionstests überprüfen mobile Layouts, Kompaktheit und die Schließen-Aktion.
+
+
 ## [1.16.9] - 2026-11-06
 
 ### Mobile Übersicht und Freigaben aufgeräumt
