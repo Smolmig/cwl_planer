@@ -17,7 +17,7 @@ is written separately under each corresponding `clan_id`; no existing private
 - The Supabase Edge Function verifies the JWT **RS256 signature** against
   GitHub's public JWKS and additionally checks the exact issuer, audience,
   repository name and immutable ID, `refs/heads/main`, exact workflow path,
-  `sub`, allowed event name and expiry. An unverifiable request is denied
+  presence of a signed `sub` claim (custom GitHub subject templates are allowed), allowed event name and expiry. An unverifiable request is denied
   before accessing privileged server variables or database rows.
 - The Edge Function has `verify_jwt=false` only because Supabase's built-in
   user-JWT check cannot validate GitHub's OIDC JWT. It is **not anonymous**:
