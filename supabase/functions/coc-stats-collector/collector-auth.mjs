@@ -33,7 +33,7 @@ export async function verifyCollectorIdentity(jwt,{
        String(claims.repository_id)!==expected.repositoryId||
        claims.ref!==expected.ref||claims.workflow_ref!==expected.workflowRef||
        claims.sub!=="repo:"+expected.repository+":ref:"+expected.ref||
-       !["schedule","workflow_dispatch"].includes(claims.event_name)||
+       !["schedule","workflow_dispatch","push"].includes(claims.event_name)||
        !Number.isInteger(claims.exp)||claims.exp<=seconds||
        !Number.isInteger(claims.iat)||claims.iat>seconds+30||
        claims.exp-claims.iat>600||
