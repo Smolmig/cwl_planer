@@ -66,7 +66,7 @@ test("preparation UI: swaps, expandable opponent names, safe HTML, and read-only
   assert.ok(candidate&&!candidate.open,"swap group starts collapsed");
   assert.match(candidate.textContent,/Spieler C/);
   assert.doesNotMatch(review.textContent,/Aus Clash raus|In Clash rein/);
-  assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Wechseltext kopieren/);
+  assert.match(review.querySelector(".cwl-copy-live-swaps").textContent,/Aufstellungswechsel kopieren/);
   assert.equal(doc.querySelectorAll(".cwl-live-details .cwl-merged-member").length,0,
     "Clash peek contains no extra performance-heavy member cards");
   assert.match(doc.querySelector(".cwl-live-day > .statusline").textContent,/Aufstellung vorläufig/);
