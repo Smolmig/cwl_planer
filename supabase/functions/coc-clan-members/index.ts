@@ -22,19 +22,39 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
  const apiKey=Deno.env.get("COC_API_KEY");
  if(!apiKey)return fail("missing_server_configuration",503);
  const url="https://cocproxy.royaleapi.dev/v1/clans/"+encodeURIComponent(clan.clash_tag)+"/members";
- try{
-  const response=await fetch(url,{
+ let lastError="upstream_unreachable";
+ for(let attempt=0;attempt<2;attempt++){
+  let response;
+  try{
+   response=await fetch(url,{
     headers:{"Authorization":"Bearer "+apiKey,"Accept":"application/json"},
-    signal:AbortSignal.timeout(12000)
-  });
-  if(!response.ok)return fail("supercell_status_"+response.status,502);
-  const json=await response.json();
+    signal:AbortSignal.timeout(9000)
+   });
+  }catch(err){
+   lastError=err?.name==="TimeoutError"?"upstream_timeout":"upstream_unreachable";
+   if(attempt===0){await new Promise(resolve=>setTimeout(resolve,350));continue}
+   return fail(lastError,502);
+  }
+  if(!response.ok){
+   lastError="supercell_status_"+response.status;
+   // One short retry only on transient gateway, server or rate-limit failures.
+   // Do not retry permissions and never replace saved members with an empty list.
+   if(attempt===0&&(response.status===429||response.status>=500)){
+    await new Promise(resolve=>setTimeout(resolve,response.status===429?900:350));
+    continue;
+   }
+   return fail(lastError,502);
+  }
+  let json;
+  try{json=await response.json()}catch{return fail("unexpected_response",502)}
   if(!Array.isArray(json?.items))return fail("unexpected_response",502);
   return Response.json({ok:true,clanTag:clan.clash_tag,members:json.items.slice(0,50).map(m=>({
-    tag:String(m.tag||"").toUpperCase(),name:String(m.name||"").slice(0,80),
-    townHallLevel:Number.isInteger(m.townHallLevel)?m.townHallLevel:null,role:String(m.role||"member")
+   tag:String(m.tag||"").toUpperCase(),name:String(m.name||"").slice(0,80),
+   townHallLevel:Number.isInteger(m.townHallLevel)?m.townHallLevel:null,
+   role:String(m.role||"member")
   }))},{headers:CORS});
- }catch(err){return fail(err?.name==="TimeoutError"?"upstream_timeout":"upstream_unreachable",502)}
+ }
+ return fail(lastError,502);
 });
 export default {fetch:(req,...args)=>req.method==="OPTIONS"?
  new Response("ok",{headers:CORS}):handler(req,...args)};

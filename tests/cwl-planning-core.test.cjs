@@ -105,3 +105,50 @@ test("constrained day capacities detect hard conflicts across all days",async()=
  assert.equal(p.ok,false);
  assert.ok(p.conflicts.length);
 });
+
+test("three-attack players finish by day 6 where a four-attack swap preserves every constraint",async()=>{
+ const p=await solve(rotation({targetDays:3},{targetDays:4}));
+ assert.equal(p.ok,true,JSON.stringify(p.conflicts));
+ assert.equal(p.counts.A,3);
+ assert.equal(p.counts.B,4);
+ assert.equal(p.dayPlans[6].lineup.includes("A"),false,
+   "day 7 remains available for an optional fourth attack if the 8-star goal is missed");
+ assert.equal(p.dayPlans[6].lineup.includes("B"),true,
+   "a four-appearance player is available for a possible day-7 replacement");
+ assert.equal(p.dayPlans.slice(0,6).filter(d=>d.lineup.includes("A")).length,3);
+ assert.ok(p.dayPlans.every(d=>d.lineup.length===15));
+});
+
+test("day-7 reserve also applies to an untargeted fair 3:4 rotation",async()=>{
+ const p=await solve(rotation());
+ assert.equal(p.ok,true,JSON.stringify(p.conflicts));
+ const short=["A","B"].find(id=>p.counts[id]===3),long=["A","B"].find(id=>p.counts[id]===4);
+ assert.ok(short && long);
+ assert.equal(p.dayPlans[6].lineup.includes(short),false);
+ assert.equal(p.dayPlans[6].lineup.includes(long),true);
+});
+
+test("hard MUST on day 7, actual locked days and exact targets override the optional reserve",async()=>{
+ const x=rotation({targetDays:3,statuses:["auto","auto","auto","auto","auto","auto","must"]},{targetDays:4});
+ const p=await solve(x);
+ assert.equal(p.ok,true,JSON.stringify(p.conflicts));
+ assert.equal(p.dayPlans[6].lineup.includes("A"),true,"MUSS cannot be exchanged");
+ assert.equal(p.counts.A,3);assert.equal(p.counts.B,4);
+ const locked=rotation({targetDays:3},{targetDays:4});
+ locked.locks=Array.from({length:7},(_,day)=>day===6?
+  {locked:true,lineup:[...locked.members.filter(m=>m.fixed).map(m=>m.id),"A"]}:null);
+ const preserved=await solve(locked);
+ assert.equal(preserved.ok,true,JSON.stringify(preserved.conflicts));
+ assert.equal(preserved.dayPlans[6].lineup.includes("A"),true,"played war cannot be rewritten");
+ assert.equal(preserved.counts.A,3);
+});
+
+test("a late-only player keeps forced availability even if the third attack is on day 7",async()=>{
+ const aStatuses=["out","out","out","out","auto","auto","auto"];
+ const x=rotation({targetDays:3,statuses:aStatuses},{targetDays:4});
+ const p=await solve(x);
+ assert.equal(p.ok,true,JSON.stringify(p.conflicts));
+ assert.deepEqual(p.dayPlans.filter(d=>d.lineup.includes("A")).map(d=>d.day),[5,6,7]);
+ assert.equal(p.counts.A,3);
+ assert.ok(p.notices.some(x=>x.includes("Dritter Einsatz bleibt an Tag 7")));
+});

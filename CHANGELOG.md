@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.1] - 2026-11-06
+
+### CWL-Plan und Einsätze: tatsächliche Aufstellung, Medaillenziel und Reserve
+- **Einsätze:** belegter 8★-Fortschritt je Spieler direkt bei der Einsatzverteilung, inklusive gespielter/geplanter Einsätze und davon getrennt die letzte 3★-Form mit Stichprobe. Bei fehlenden oder gespeicherten API-Daten keine vermeintlich frischen Ergebnisse.
+- **CWL-Tag:** tatsächlich in Clash erfasste Aufstellung mit klaren Hinweisen „Wechsel: raus“ und „Geplant rein“, dazu RH, aktuelle CWL-Sterne und jüngste Angriffsform. Es gibt keine automatische Änderung in Clash.
+- **Tag-7-Reserve:** Wer insgesamt nur drei Einsätze erhält, soll seinen dritten nach Möglichkeit bis Tag 6 abschließen. Der Planer tauscht ausschließlich frei verschiebbare Einsatztage und bevorzugt mindestens viermal eingeplante Spieler für Tag 7. Fix, MUSS, RAUS, exakte Ziele und abgeschlossene/fixierte Kriegstage bleiben verbindlich. Nur ein zukünftiger, expliziter manueller Regelwechsel kann einen vierten Einsatz hinzufügen.
+- **API-Robustheit:** Kurzzeitige 429/5xx-Antworten des Clanmitglieder-Proxys werden genau einmal wiederholt; auf Fehler folgen weder Mitgliederverlust noch automatische Übernahme eines unvollständigen Rosters.
+- **Technisch:** Kein Datenbankschema-Update, keine Änderung an Cloudprofilen, Statistikmethodik oder Offline-PWA. Browser-Cache-Identität Cloud v1.16.1.
+
+
 ## [1.16.0] - 2026-11-06
 
 ### Statistik 3.0: eigenständige Auswertungen statt verschachtelter Zeitfilter

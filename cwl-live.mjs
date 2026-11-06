@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.0";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.0";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.1";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.1";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -12,7 +12,10 @@ export function cwlErrorMessage(reason) {
     missing_linked_clan_tag:"Für den CWL-Abruf fehlt der Clan-Tag.",
     not_a_member:"Du hast keinen Zugriff auf die CWL-Daten dieses Clans.",
     supercell_status_403:"Clash gibt die CWL-Daten derzeit nicht frei. Dein Plan bleibt gespeichert.",
-    supercell_status_429:"Clash verarbeitet gerade zu viele Anfragen. Bitte später erneut versuchen."
+    supercell_status_429:"Clash verarbeitet gerade zu viele Anfragen. Bitte später erneut versuchen.",
+    supercell_status_500:"Die Clash-API meldet einen Serverfehler. Dein Plan bleibt erhalten.",
+    supercell_status_520:"Die Verbindung zum Clash-API-Server ist gerade gestört. Dein Plan bleibt erhalten.",
+    supercell_status_525:"Die sichere Verbindung zum Clash-API-Server schlägt derzeit fehl. Dein Plan bleibt erhalten."
   };
   return messages[reason]||"CWL-Daten gerade nicht verfügbar. Dein gespeicherter Plan bleibt erhalten.";
 }
@@ -56,7 +59,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const now=new Date(),diff=now.getFullYear()*12+now.getMonth()+1-month;
     return diff>=0&&diff<=1?prior:null;
   };
-  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0}={}) {
+  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0,medalRows=[]}={}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     const wasOpponentOpen=expandedOpponentDays.has(round?.day)||!!dayCard.querySelector(".cwl-opponent-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
@@ -109,6 +112,43 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<p class='statusline'>Vorläufig · zuletzt abgerufen "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         " (Clash kann Daten verzögert liefern). Wechsel bitte direkt im Spiel durchführen.</p></div>";
+    // Clash's actual roster is primary. Planned entries are a separate recommendation,
+    // and no player is marked for removal unless this specific preparation round is fresh.
+    const removedTags=new Set(reviewFresh&&review?.status==="changes"
+      ?review.toRemove.map(m=>tagOf(m.tag)):[]);
+    const memberRow=(member,{incoming=false}={})=>{
+      const playerTag=tagOf(member?.tag);
+      const goal=medalRows.find(r=>tagOf(r.playerTag)===playerTag);
+      const recent=typeof window!=="undefined" ? window.CWLCloudStats?.getRecentPlayerStats?.(playerTag) : null;
+      const historical=recent?.attacks
+        ?"Letzte "+recent.attacks+" AG · 3★ "+recent.hitRate+" %"
+        :"Letzte Angriffe · keine Auswertung";
+      const season=goal?(goal.unknown?"mind. ":"")+goal.stars+"/8 ★":"8★-Stand –";
+      const perWar=(Array.isArray(member?.attacks)?member.attacks:[])
+        .filter(a=>Number.isInteger(a.stars)&&a.stars>=0&&a.stars<=3)
+        .map(a=>a.stars+"★").join(" + ");
+      const fight=round.state==="preparation"?"":perWar
+        ?" · Dieser Krieg: "+perWar
+        :round.state==="warEnded"?" · Kein Angriff erfasst":" · Angriff offen";
+      const outgoing=!incoming&&removedTags.has(playerTag);
+      const status=incoming?"Geplant rein":outgoing?"Wechsel: raus":reviewFresh?"Bleibt drin":"In Clash erfasst";
+      return "<div class='cwl-actual-member"+(outgoing?" outgoing":incoming?" incoming":"")+"'>"+
+        "<div class='cwl-actual-member-main'><b>"+esc(member?.name||playerTag)+"</b>"+
+        "<small>RH"+esc(member?.townHallLevel??"?")+" · "+esc(season)+esc(fight)+"</small>"+
+        "<small>"+esc(historical)+"</small></div>"+
+        "<span class='cwl-actual-member-status'>"+esc(status)+"</span></div>";
+    };
+    const actualReady=rosterReady(own);
+    const actualHtml=actualReady
+      ?"<div class='cwl-actual-lineup'><div class='cwl-actual-lineup-head'><b>"+
+        (round.state==="preparation"?"Derzeit in Clash":"Tatsächlich eingesetztes Team")+
+        "</b><span>"+(fresh?"Aktueller API-Abruf":"Gespeicherter Stand · vor Wechseln aktualisieren")+
+        "</span></div><div class='cwl-actual-member-grid'>"+
+        own.map(m=>memberRow(m)).join("")+"</div>"+
+        (reviewFresh&&review?.status==="changes"
+          ?"<div class='cwl-actual-incoming'><b>Stattdessen geplant rein</b><div class='cwl-actual-member-grid'>"+
+            review.toAdd.map(m=>memberRow(m,{incoming:true})).join("")+"</div></div>":"")+
+        "</div>":"";
     const renderAttackRow=({player,attack,target})=>{
       const didAttack=!!attack;
       const stars=didAttack?attack.stars:null;
@@ -165,7 +205,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       "<div class='cwl-live-score-caption'>★ Kriegssterne</div></div>"+
       sideHtml(round.opponent,"Gegner")+"</div>"+
       destruct+"<div class='cwl-live-ths' aria-label='Rathausverteilung der gegnerischen Aufstellung'><strong>Gegner-Aufstellung</strong> "+townHallSummary(enemy)+"</div>"+
-      reviewHtml+
+      reviewHtml+actualHtml+
       "<div class='statusline'>"+(round.startTime?"Start "+esc(stateDate(round.startTime))+" · ":"")+
       (round.state==="preparation"?(fresh?
         "Aufstellung vorläufig · Wechsel in Clash bis Kriegsbeginn möglich":
@@ -315,7 +355,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
       if(dayCard)renderDay(byDay.get(i+1),dayCard,ctx.profile,
-        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt});
+        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt,medalRows:medal?.rows||[]});
     }
   }
   async function refreshNow(manual=false) {
@@ -380,7 +420,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       if(manual)notify("⚠ "+offlineReason);
       console.warn("CWL status:",String(err?.message||err));
     }finally{
-      if(req===requestId){fetching=false;render()}
+      if(req===requestId){fetching=false;render();storage.refreshSummary?.()}
     }
   }
   function stop(){
@@ -399,7 +439,23 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true),getGroupSnapshot:()=>{
+  return {start,stop,render,refresh:()=>refreshNow(true),getMedalOverview:()=>{
+    const ctx=context(),info=effective();
+    if(!info?.season||!ctx.active||!ctx.clanId)return null;
+    const clean=sanitizeSnapshot(info);
+    if(!clean)return null;
+    if(staleRoundDays.size)clean.rounds=clean.rounds.map(round=>
+      staleRoundDays.has(round.day)?{day:round.day,available:false}:round);
+    const assessment=evaluateEightStarGoals({
+      snapshot:clean,profile:ctx.profile,dayPlans:storage.getPlannedLineups?.()||[]
+    });
+    const fresh=!!(current?.active&&activeClan===ctx.clanId&&
+      current.season===info.season&&lastSuccessfulProfile===ctx.profile&&
+      lastSuccessfulAt>0&&Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&
+      !offlineReason&&!staleRoundDays.size&&current.detailsStatus==="complete");
+    return {assessment,fresh,partial:!!(current?.detailsStatus&&
+      current.detailsStatus!=="complete")||!!staleRoundDays.size};
+  },getGroupSnapshot:()=>{
     const ctx=context();
     if(!current?.active||activeClan!==ctx.clanId||
        current.group?.season!==current.season||
