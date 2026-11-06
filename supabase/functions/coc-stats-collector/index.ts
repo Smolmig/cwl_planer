@@ -1,7 +1,7 @@
 // Secure scheduled collection for every explicitly linked Clash clan.
 // Runs without any browser sessions; writes only clan-scoped stat tables.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
-import {tag,validTag,buildWarSnapshot} from "./collector-core.mjs";
+import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -86,7 +86,24 @@ async function loadLinkedClans(settings){
   }
   return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
 }
-async function retrieveGames(gameTag,key,deadline){
+async function loadFullyCapturedLeagueKeys(settings,clanIds){
+  let common=null;
+  try{
+    for(const id of clanIds){
+      const rows=await rest(settings,
+        "cwl_stat_wars?select=war_key&clan_id=eq."+encodeURIComponent(id)+
+        "&war_type=eq.cwl&finalized=eq.true&order=started_at.desc&limit=200");
+      const keys=new Set(rows.map(row=>row.war_key));
+      common=common===null?keys:new Set([...common].filter(key=>keys.has(key)));
+    }
+  }catch{
+    // Optimisation failure only: re-read from Clash. Never assume a shared
+    // completed war or leak another tenant's private stored records.
+    return new Set();
+  }
+  return common||new Set();
+}
+async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set()){
   const snaps=[],seen=new Set(),notes=[];
   // /currentwar is ephemeral; capture live snapshots to retain an incomplete
   // record if the endpoint later disappears. Only warEnded is final/statistical.
@@ -107,6 +124,7 @@ async function retrieveGames(gameTag,key,deadline){
     const requested=new Set();
     for(const round of group.rounds.slice(0,7)){
       if(Date.now()>deadline-10000){notes.push("time_budget_exceeded");break}
+      if(hasCapturedCwlRound(round.warTags,completedLeagueKeys))continue;
       const candidates=(Array.isArray(round.warTags)?round.warTags:[])
         .map(tag).filter(validTag).filter(t=>!requested.has(t)).slice(0,4);
       if(requested.size+candidates.length>MAX_TAGS)break;
@@ -195,7 +213,8 @@ export default {
       if(Date.now()>deadline-15000){errors++;break}
       const checkedAt=new Date().toISOString();
       let scan;
-      try{scan=await retrieveGames(gameTag,settings.gameKey,deadline)}
+      const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
+      try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
       catch{scan={snaps:[],notes:[ERROR.api]}}
       for(const id of clanIds){
         try{
