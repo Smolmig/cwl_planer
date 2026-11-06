@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.5",
+  "version": "v1.16.6",
   "released": "2026-11-06",
-  "summary": "Aktive Einladungslinks für neu erstellte Gruppen- und Einmal-Einladungen im Clan & Konto erneut kopierbar: private Speicherung mit Rollenprüfung, keine neuen Links nötig. Ältere Hash-only-Einladungen bleiben unverändert gültig. Keine Änderung an CWL-Planung, Mitgliedern, Historie oder Offline-PWA."
+  "summary": "CWL Plan: vollständige rote Clash-Spielerkarte und schwebende grün umrandete Einwechselspieler-Karten ohne Verdrängung des Rasters. Einsätze: doppelte Form-Angabe entfernt, nachgeladene Statistik aktualisiert auch die Einsatzübersicht. Accessibility, reduzierte Bewegung und Aktualisierungszustand geschützt. Solver, Daten und Offline-PWA unverändert."
 }
