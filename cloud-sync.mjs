@@ -162,15 +162,18 @@ function renderPlanReview(){
  const statusNode=$("planReviewStatus");
  statusNode.textContent=locked?"Freigegeben":"Offen";
  statusNode.className="badge "+(locked?"ok":"");
- $("planReviewHint").textContent=locked?
-   "Der Clanführer hat die Planung freigegeben. Vize können Änderungswünsche zur Bestätigung einreichen.":
-   "Der Plan ist offen und für Clanführer und Vize direkt bearbeitbar.";
+ $("planReviewHint").textContent=owner?
+   (locked?"Du kannst weiterhin direkt bearbeiten. Vize senden Vorschläge, die du übernehmen oder ablehnen kannst.":
+    "Du und deine Vize könnt den Plan gemeinsam bearbeiten. Nach der Freigabe reichen Vize Änderungen nur noch als Vorschläge ein."):
+   (locked?"Du kannst Spieler und Tagesregeln ändern, aber erst durch „Vorschlag einreichen“ gelangt der Entwurf zum Clanführer.":
+    "Deine Änderungen werden direkt für alle gespeichert.");
  const toggleButton=$("planReviewToggle");
  toggleButton.hidden=!owner;
  toggleButton.textContent=locked?"Plan wieder öffnen":"Plan freigeben";
  const invalid=!locked&&storage.getPlanningState?.()?.ok===false;
  toggleButton.disabled=invalid;
- toggleButton.title=invalid?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":"";
+ toggleButton.title=invalid?"Zuerst Konflikte bei Einsatzzielen und Tagesregeln beheben.":
+   locked?"Vize können danach wieder direkt mitbearbeiten.":"Sperrt direkte Änderungen für Vize, nicht für dich.";
  const submitButton=$("planSubmitSuggestion");
  submitButton.hidden=!(editor&&locked);
  submitButton.disabled=!changedSerial||storage.getPlanningState?.()?.ok===false;
