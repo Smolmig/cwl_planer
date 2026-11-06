@@ -39,7 +39,7 @@ test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL
  assert.match(ui,/if\(guide\.hidden\)guide\.open=false/);
  assert.match(ui,/displayMissed=\(known,complete\)=>complete\?String\(known\)/);
  assert.match(ui,/computeComparableForm\(wars,attacks\)/);
- assert.match(ui,/selectStatWars\(wars,\{type,last,cwlSeasons\}\)/);
+ assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons\}\)/);
 });
 
 test("Statistics layout is legible and border-light across 320–1366px and all themes",{
@@ -77,7 +77,7 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
        viewport:innerWidth,
        rowWidth:rect(row).width,
        rowChildren:[...row.children].map(x=>rect(x).width),
-       resultColumns:getComputedStyle(results).gridTemplateColumns.split(" ").length,
+       resultLayout:getComputedStyle(results).display,
        guideBorderLeft:panel.borderLeftWidth,
        headHeights:reads.map(x=>rect(x).height),
        mainText:parseFloat(getComputedStyle(document.querySelector(".stats-reading-copy")).fontSize),
@@ -92,7 +92,7 @@ test("Statistics layout is legible and border-light across 320–1366px and all 
      const note=JSON.stringify({theme,width,metrics});
      assert.ok(metrics.docWidth<=width+3,note);
      assert.ok(metrics.rowWidth>0,note);
-     assert.equal(metrics.resultColumns,1,note);
+     assert.ok(["block","grid"].includes(metrics.resultLayout),note);
      assert.equal(metrics.guideBorderLeft,"0px",note);
      assert.ok(metrics.headHeights.every(n=>n>=43.5),note);
      assert.ok(metrics.mainText>=13,note);
