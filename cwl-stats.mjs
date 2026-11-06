@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computePlayerDuel,cleanTag} from "./cwl-stats-core.mjs?v=1.15.9";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,computeStarDistribution,groupCwlRuns,computeStatsTimeline,computePlayerDuel,cleanTag} from "./cwl-stats-core.mjs?v=1.15.9";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.15.9";
 const $=id=>document.getElementById(id);
@@ -136,6 +136,27 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "'><span class='stats-matchup-fill' style='width:"+(row.hitRate??0)+"%'></span></div></div>").join("")+
         "</div>";
     }).join("")+"</div>";
+  }
+  function renderStarDistribution(){
+    const host=$("statsStarDistribution");
+    if(!host)return;
+    const data=computeStarDistribution(wars,attacks,{type,last,cwlSeasons});
+    host.innerHTML=data.map(group=>{
+      const title=group.type==="normal"?"Normale CWs":"CWL";
+      const segments=group.counts.map((n,i)=>
+        "<span class='stats-star-piece' data-stars='"+i+"' style='width:"+
+        (group.total?(n/group.total*100).toFixed(2):0)+"%' title='"+i+
+        " Sterne: "+n+" Angriffe'></span>").join("");
+      const labels=group.counts.map((n,i)=>
+        "<span><strong>"+i+" ★ · "+n+"</strong>"+
+        (group.total?group.shares[i].toLocaleString("de-AT")+" %":"keine Daten")+
+        "</span>").join("");
+      return "<section class='stats-star-group'><h4>"+title+" · "+
+        group.total+" Angriffe</h4>"+
+        "<div class='stats-star-stack' role='img' aria-label='"+esc(title+
+          ": "+group.counts.map((n,i)=>i+" Sterne "+n).join(", "))+"'>"+
+        segments+"</div><div class='stats-star-values'>"+labels+"</div></section>";
+    }).join("");
   }
   function renderDuel(){
     const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
@@ -293,6 +314,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       $("statsRows").innerHTML="";
       $("statsWarHistory").innerHTML="";
       if($("statsMatchupComparison"))$("statsMatchupComparison").replaceChildren();
+      if($("statsStarDistribution"))$("statsStarDistribution").replaceChildren();
       if($("statsDuelResults"))$("statsDuelResults").replaceChildren();
       if($("statsTrendChart"))$("statsTrendChart").replaceChildren();
       if($("statsTrendTable"))$("statsTrendTable").replaceChildren();
@@ -326,6 +348,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "Die unabhängige Form über 14 / 30 / 90 Tage findest du im eigenen Reiter.";
     }
     renderMatchups();
+    renderStarDistribution();
     renderDuel();
     renderTimeline();
     const displayMissed=(known,complete)=>complete?String(known):(known>0?"mind. "+known:"k. A.");
