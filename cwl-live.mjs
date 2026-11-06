@@ -438,7 +438,30 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true),getMedalOverview:()=>{
+  return {start,stop,render,refresh:()=>refreshNow(true),getPlayedAttackResults:()=>{
+    // A completed war with a verified full roster is sufficient evidence for
+    // a small, factual per-day result. An unavailable war is NOT a zero-star attack.
+    const ctx=context(),snapshot=effective(),result={};
+    if(!ctx.active||!ctx.clanId||!snapshot?.rounds)return result;
+    for(const round of snapshot.rounds){
+      const own=round?.clan?.members;
+      if(!round?.available||round.state!=="warEnded"||
+         !Number.isInteger(round.teamSize)||round.teamSize<1||
+         !Array.isArray(own)||own.length!==round.teamSize||
+         new Set(own.map(m=>tagOf(m?.tag))).size!==round.teamSize)continue;
+      const rows={};
+      for(const m of own){
+        const tag=tagOf(m?.tag);
+        if(!/^#[0289PYLQGRJCUV]{3,15}$/.test(tag))continue;
+        const attack=Array.isArray(m.attacks)?m.attacks[0]:null;
+        rows[tag]=attack&&Number.isInteger(attack.stars)&&attack.stars>=0&&attack.stars<=3
+          ?{stars:attack.stars,percent:attack.destructionPercentage,missed:false}
+          :{missed:true};
+      }
+      if(Object.keys(rows).length===round.teamSize)result[round.day]=rows;
+    }
+    return result;
+  },getMedalOverview:()=>{
     const ctx=context(),info=effective();
     if(!info?.season||!ctx.active||!ctx.clanId)return null;
     const clean=sanitizeSnapshot(info);
