@@ -6,6 +6,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-11-06
+
+### Statistik neu strukturiert: verständliche Zeiträume und echte Vergleichsgrafiken
+- **Fünf verständliche Bereiche:** Überblick, Spielerstatistik, Spielerform, Vergleiche sowie Verlauf & Kriege. Nicht länger ein einziger globaler Zeitfilter für alles.
+- **Historische Kriegsauswahl je Bereich:** Die Auswahl der CWs und CWL-Durchgänge wird pro Auswertung behalten. Wenn nur 30 CWs gespeichert sind, steht statt „Letzte 50 CWs“ verständlich „Alle 30 verfügbaren CWs“. Auswahl und vorhandener Datenbestand werden ausdrücklich unterschieden.
+- **Eigenständige Spielerform:** Kurzfristig 14, mittelfristig 30 und langfristig 90 Tage ab heute, **unabhängig** von der historischen Auswahl. Nur belegte Angriffe gegen dieselbe Rathausstufe, drei Balken und Stichprobengrößen je Spieler; CW/CWL kann innerhalb der Form separat gewählt werden. Keine Stärkepunktzahl oder Solver-Verknüpfung.
+- **Spielerstatistik ohne Zeitfenster-Mischung:** Sortiert standardmäßig nach belegter Angriffszahl, nicht nach einer untergeordneten 90-Tage-Form. Die zusätzliche „letzte 10 ausgewählte Kriege“-Metrik wurde aus den Spielerzeilen entfernt; Details erklären nur die aktuell gewählten Kriege.
+- **Mehr Vergleichsvisualisierungen:** RH-Vergleiche und Spielerduelle als n-beschriftete Prozentbalken; zusätzlich 0/1/2/3-Sterne-Verteilung für normale CWs und CWL mit tatsächlichen Angriffszahlen.
+- **Verlauf & Responsive:** Wöchentliche Zeitachse als Standard (Monate bleiben wählbar), CW durchgezogene / CWL gestrichelte Linie mit verständlicher, themeunabhängiger Legende. Desktop-Spielertabelle größer; mobile Form als drei klare Zeitfenster ohne Seiten-Overflow.
+- **Datenschutz & Betrieb:** Keine Supabase-Migration, keine Änderung an RLS, App-Profilen, der bisherigen CWL-Planung oder der separaten Offline-App. Die unabhängige Hintergrundsammlung und clanübergreifende Datenfreigabe bleiben eigenständige Infrastrukturprojekte.
+- **Qualität:** Manuelle Kriegsauswahl in „Spielerstatistik“ beeinflusst nicht die unabhängige Form. Breite Browser-/Theme-Regressionen und eigenständige Star-Distribution-Tests. Details im Dokument `docs/STATISTICS_UX_V2_BLUEPRINT.md`.
+
+
 ## [1.15.9] - 2026-11-06
 
 ### Automatische Erfassung abgeschlossener CWs und CWL-Tage
