@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.8",
+  "version": "v1.16.9",
   "released": "2026-11-06",
-  "summary": "CWL: einheitliche, ausdrücklich bezeichnete 3★-Hitrate in Plan und Einsätze; letzte sieben gespeicherte Angriffe mit transparenter CWL-Beteiligung. Freigabeverwaltung direkt auf der Mitgliederseite, zurückhaltender Chevron und Gold-Tagleiste ohne harte Abbruchfläche. Statistik: lesbare Sternlegende, keine doppelten Warnungen, CW-Kriegsgröße und Import-Vollständigkeit gekennzeichnet."
+  "summary": "Gold-Theme: mobile Tagesleiste ohne dunklen Hintergrundkasten. Freigabe in Plan und Mitglieder ohne verschachtelte Karten und mit erreichbarer Tastaturbedienung. Live-CWL-Hitrate aus kompakten Plan- und Einsatzansichten entfernt; historische 7-Angriffe-Form und zugrunde liegende Statistiken unverändert."
 }
