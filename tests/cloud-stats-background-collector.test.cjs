@@ -36,7 +36,7 @@ test("normal CW archived only with real complete rosters, no fabricated misses",
  assert.equal(result.attacks[0].defender_th,17);
  assert.equal(result.attacks[0].stars,3);
  assert.equal(buildWarSnapshot({...sample(),state:"preparation"},own,{now}),null);
- assert.equal(buildWarSnapshot(sample(),"#9PYL",{now}).war,undefined);
+ assert.throws(()=>buildWarSnapshot(sample(),"#9PYL",{now}),/incomplete_war_identity/);
 });
 
 test("ongoing war is staged but cannot contaminate finalized CW/CWL statistics",async()=>{
