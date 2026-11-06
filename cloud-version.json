@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.6",
+  "version": "v1.16.7",
   "released": "2026-11-06",
-  "summary": "CWL Plan: vollständige rote Clash-Spielerkarte und schwebende grün umrandete Einwechselspieler-Karten ohne Verdrängung des Rasters. Einsätze: doppelte Form-Angabe entfernt, nachgeladene Statistik aktualisiert auch die Einsatzübersicht. Accessibility, reduzierte Bewegung und Aktualisierungszustand geschützt. Solver, Daten und Offline-PWA unverändert."
+  "summary": "Rollenabhängige Planfreigabe ohne dominante Karte: kompakte Statuszeile, auffällige offene Vize-Vorschläge, Aktionen und Kontext-Hinweise in Mitglieder. Beobachter behalten eine lesbare Mitgliederansicht mit Suche, Sortierung und Details, ohne Bearbeitungsrechte. Backend-Freigabe/Prüfung unverändert; keine Änderung an Planungslogik oder Offline-PWA."
 }
