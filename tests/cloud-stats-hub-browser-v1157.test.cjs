@@ -78,11 +78,19 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const players=show("players");
       const numbered=document.querySelector("#statsRows .stats-row-number")?.textContent;
       const playerScope=document.getElementById("statsPlayerScope").textContent;
+      const warType=document.getElementById("statsType");
+      warType.value="normal";warType.dispatchEvent(new Event("change",{bubbles:true}));
+      const filteredPlayerCount=document.getElementById("statsPlayerScope").textContent;
       const formView=show("form");
       const formHtml=document.getElementById("statsFormRows").textContent;
       const formDescription=document.getElementById("statsFormIntro").textContent;
       const formFilterHidden=document.getElementById("statsContextFilter").hidden;
+      const formEvidence=document.getElementById("statsFormRows").textContent;
       const compare=show("compare");
+      const compareWarType=document.getElementById("statsType").value;
+      show("players");
+      const restoredWarType=document.getElementById("statsType").value;
+      show("compare");
       const comparison=document.getElementById("statsMatchupComparison").textContent;
       const duelBefore=document.getElementById("statsDuelResults").textContent;
       const duelLeft=document.getElementById("statsDuelLeft"),duelRight=document.getElementById("statsDuelRight");
@@ -97,8 +105,9 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
       const timelineAfter=document.getElementById("statsTrendChart").querySelectorAll("circle.statpoint").length;
       const trendTable=document.getElementById("statsTrendTable").textContent;
       const back=show("overview");
-      return {initial,overviewText,players,numbered,playerScope,formView,formHtml,formDescription,
-        formFilterHidden,compare,comparison,duelBefore,duel,
+      return {initial,overviewText,players,numbered,playerScope,filteredPlayerCount,
+        formView,formHtml,formDescription,formFilterHidden,formEvidence,compareWarType,
+        restoredWarType,compare,comparison,duelBefore,duel,
         history,warNames,timelineBefore,timelineAfter,trendTable,back,
        tabs:tabs.length,finalWidth:document.documentElement.scrollWidth,viewport:innerWidth};
     });
@@ -113,6 +122,10 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.match(result.formHtml,/Vergleich/);
     assert.match(result.formDescription,/feste Zeitfenster|90 Tagen|90 Tage/i);
     assert.equal(result.formFilterHidden,true);
+    assert.match(result.filteredPlayerCount,/1 hier ausgewählten Kriegen/);
+    assert.match(result.formEvidence,/CW 1 · CWL 1/);
+    assert.equal(result.compareWarType,"all","comparison must not inherit player selection");
+    assert.equal(result.restoredWarType,"normal","player selection persists across sections");
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.comparison,/Gegner-RH niedriger/);
     assert.match(result.comparison,/Gleiches Rathaus/);
