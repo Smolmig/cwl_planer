@@ -2,7 +2,7 @@
 // seven-attack member badge. Not a probability, rank or recommendation.
 // We only know opponent Town Hall, NOT historic map position, base progress,
 // true first hit, army, hero equipment or the exact moment of each attack.
-import {cleanTag} from "./cwl-stats-core.mjs?v=1.16.0";
+import {cleanTag} from "./cwl-stats-core.mjs?v=1.16.1";
 
 const DAY=86400000;
 const validStar=n=>Number.isInteger(n)&&n>=0&&n<=3;
