@@ -94,12 +94,14 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
  };
  const valid=await sign(base);
  assert.equal(await verifyCollectorIdentity(valid,{jwksLoader}),true);
+ assert.equal(await verifyCollectorIdentity(await sign({...base,sub:"custom:repo-owner:workflow"}),{jwksLoader}),true,
+   "GitHub organization-specific subject templates must be accepted with signed immutable claim checks");
  assert.equal(await verifyCollectorIdentity(valid+"altered",{jwksLoader}),false);
  for(const changes of [
    {aud:"other-project"},{repository:"SomeoneElse/cwl_planer"},
    {repository_id:"12345"},{ref:"refs/heads/feature"},
    {workflow_ref:"Smolmig/cwl_planer/.github/workflows/evil.yml@refs/heads/main"},
-   {event_name:"pull_request"},{exp:timestamp-1},
+   {event_name:"pull_request"},{sub:""},{exp:timestamp-1},
    {iat:timestamp-700,exp:timestamp+300}
  ]){
    assert.equal(await verifyCollectorIdentity(await sign({...base,...changes}),{jwksLoader}),false,
