@@ -326,27 +326,39 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const metricsChanged=metricSignature!==lastMetricSignature||!cachedSummary;
     if(metricsChanged){
       cachedSummary=computeWarStats(wars,attacks,{type,last,cwlSeasons,sameHigher,showFormer,memberTags:ctx.memberTags||[],missedEvents});
-      const selection=selectStatWars(wars,{type,last,cwlSeasons});
-      const comparison=computeComparableForm(selection,attacks);
-      viewComparableProfiles=comparison.profiles;viewComparableSummary=comparison.summary;
       lastMetricSignature=metricSignature;
-      cachedPlayerStats=new Map(cachedSummary.rows.map(p=>[cleanTag(p.tag),p]));
     }
-    const summary=cachedSummary;
+    // The overview and member badges are never restricted by the free
+    // player-statistics query. No hidden filter can change their results.
+    const overviewSummary=computeWarStats(wars,attacks,{
+      type:"all",last:"all",cwlSeasons:"all",sameHigher:false,showFormer:true,
+      memberTags:ctx.memberTags||[],missedEvents
+    });
+    cachedPlayerStats=new Map(overviewSummary.rows.map(p=>[cleanTag(p.tag),p]));
+    const summary=section==="overview"?overviewSummary:cachedSummary;
     syncPeriodChoices();
-    const selected=selectStatWars(wars,{type,last,cwlSeasons});
-    if($("statsPlayerScope")){
-      const oldest=selected.length?new Date(Math.min(...selected.map(w=>Date.parse(w.started_at)))):null;
-      const newest=selected.length?new Date(Math.max(...selected.map(w=>Date.parse(w.started_at)))):null;
-      const from=oldest&&!Number.isNaN(oldest.getTime())?oldest.toLocaleDateString("de-AT"):"–";
-      const until=newest&&!Number.isNaN(newest.getTime())?newest.toLocaleDateString("de-AT"):"–";
-      $("statsPlayerScope").textContent="Spielerwerte aus "+selected.length+" ausgewählten Kriegen / CWL-Tagen ("+from+" bis "+until+"). "
-        +"Form = nur gleiches RH und die letzten 90 Tage innerhalb dieser Auswahl. "
-        +"Letzte 10 Kriege = zehn jüngste ausgewählte Kriege, auch CWL-Kriegstage.";
+    const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons});
+    const selected=scopeInfo.selected;
+    const formatDate=value=>value?new Date(value).toLocaleDateString("de-AT"):"–";
+    if($("statsPlayerScope"))$("statsPlayerScope").textContent=
+      "Diese Tabelle berücksichtigt ausschließlich "+scopeInfo.selectedWars+
+      " ausgewählte abgeschlossene Kriege / CWL-Tage ("+
+      formatDate(scopeInfo.first)+" – "+formatDate(scopeInfo.recent)+"). "+
+      "Kein zusätzliches 10- oder 90-Tage-Fenster.";
+    if($("statsScopeExplainer")){
+      const normal=type==="cwl"?"":last==="all"?
+        "Alle "+scopeInfo.allNormal+" verfügbaren normalen CWs":
+        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+
+        " normalen CWs (Auswahllimit: "+last+")";
+      const league=type==="normal"?"":cwlSeasons==="all"?
+        "alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
+        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
+      $("statsScopeExplainer").textContent=[normal,league].filter(Boolean).join(" + ")+
+        " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.";
     }
-    renderMatchups();
-    renderDuel();
-    renderTimeline();
+    if(section==="compare"){renderMatchups();renderDuel();}
+    if(section==="history"){renderTimeline();renderWarHistory();}
+    if(section==="form")renderComparableForm();
     const displayMissed=(known,complete)=>complete?String(known):(known>0?"mind. "+known:"k. A.");
     const label=displayMissed(summary.missesKnown,summary.complete);
     // Give each war type its own denominator: 30/30 CWs can be exact even
@@ -414,46 +426,26 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       guide.hidden=!(cwl.wars>0&&!cwl.complete);
       if(guide.hidden)guide.open=false;
     }
-    renderWarHistory();
     // Membership performance badges depend on loaded attack data, not search/sort/filter state.
     if(scope===ctx.clanId&&lastMembersNotifiedVersion!==version){
       lastMembersNotifiedVersion=version;
       window.CWLCloudStats?.onUpdate?.();
     }
+    if(section!=="players")return;
     const term=search.trim().toLocaleLowerCase("de");
     const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
-        const metric=p=>order==="performance"?viewComparableProfiles.get(cleanTag(p.tag))?.performanceIndex:
-          order==="missed"?p.missedKnown:order==="lastTen"?p.lastTen.averageStars:p[order];
+        const metric=p=>order==="missed"?p.missedKnown:p[order];
         const rawA=metric(a),rawB=metric(b);
         const av=rawA??-1,bv=rawB??-1;
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
-        const tie=order==="performance"?
-          (viewComparableProfiles.get(cleanTag(b.tag))?.weighted90.effectiveAttacks??0)-
-          (viewComparableProfiles.get(cleanTag(a.tag))?.weighted90.effectiveAttacks??0):0;
-        return (ascending?diff:-diff)||tie||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
+        return (ascending?diff:-diff)||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
       });
     const nextRowsMarkup=visible.length?visible.map((p,index)=>{
       // Raw hit rates are evidence, not green/red player grades.
       const missedColor=p.missedKnown>0?" warn":"";
-      const form=viewComparableProfiles.get(cleanTag(p.tag));
-      const qualityLabels={none:"Keine Vergleichsdaten",stale:"Nur ältere Angriffe",
-        limited:"Wenig Daten",trend:"Erste Tendenz",solid:"Mehr Vergleichsdaten"};
-      const matched=form?.last90?.attacks??0;
-      const quality=qualityLabels[form?.quality]||"Keine Vergleichsdaten";
-      const formText=matched?
-        (form.performanceRankable?
-          "90-Tage-Trend "+formPct(form.weighted90.hitRate)+" · "+matched+" gleich-RH-Angriffe":
-          "Vergleich: "+quality+" · "+matched+" gleich-RH-Angriffe"):
-        "Vergleich: keine gleich-RH-Angriffe (90 Tage)";
-      const lastTen=p.lastTen;
-      const lastTenMissed=lastTen.recordedParticipations===0?"– (keine Teilnahme dokumentiert)":lastTen.missed===null?
-        (lastTen.missedKnown>0?"mind. "+lastTen.missedKnown:"k. A."):
-        String(lastTen.missed);
-      const lastTenLabel=lastTen.attacks?
-        lastTen.attacks+" Angriffe · "+lastTen.hitRate+" % 3★ · Ø "+
-        lastTen.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
-        "Keine Angriffe in diesem Kriegsfenster belegt";
+      const reportedMiss=p.missedComplete?String(p.missedKnown):
+        p.missedKnown?"mind. "+p.missedKnown:"k. A.";
       const detailsOpen=openStatsPlayers.has(p.tag)?" open":"";
       const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
       const recent=oneWar?attacks.filter(a=>a.war_key===oneWar.war_key&&cleanTag(a.attacker_tag)===cleanTag(p.tag))
@@ -487,15 +479,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         (type==="all"&&summary.missedCoverage.cwl.wars?
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span>"+
-        "<small class='stats-form-score' title='Vorläufige Form aus gleich-RH-Angriffen der letzten 90 Tage'>"+esc(formText)+"</small>"+
         "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
-        "<summary>Letzte "+lastTen.wars+" ausgewählte Kriege · Details</summary>"+
-        "<div>"+esc(lastTenLabel)+" · verpasst: "+esc(lastTenMissed)+
-        "</div><small>Betrachtet werden die "+lastTen.wars+" zuletzt ausgewählten Kriege · "+lastTen.coveredWars+"/"+lastTen.wars+" vollständig erfasst. "+
-        "Ohne vollständige CWL-Tagesdaten können weitere Fehlangriffe unbekannt sein. "+
-        "Ein nicht eingeplanter Spieler hat keinen verpassten Angriff.</small></details></div>";
+        "<summary>Details dieser Auswahl · "+p.attacks+" Angriffe</summary>"+
+        "<div>"+p.threes+" von "+p.attacks+" Angriffen mit 3★ · verpasst: "+reportedMiss+
+        "</div><small>Diese Werte beziehen sich auf alle gewählten Kriege. "+
+        "Ohne vollständige CWL-Aufstellungen können weitere versäumte Angriffe unbekannt sein. "+
+        "Die unabhängige aktuelle Form findest du im eigenen Reiter „Spielerform“.</small></details></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
-    renderComparableForm();
     // Avoid destroying player rows (and their decoded RH images) for identical results.
     const rowsHost=$("statsRows");
     if(lastRowsHost!==rowsHost||lastRowsMarkup!==nextRowsMarkup){
