@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.11] - 2026-11-06
+
+### Automatische Statistikerfassung verständlich überwachen
+- **Statistik:** Der letzte erfolgreiche Server-Abgleich wird nur dann als aktuell beschrieben, wenn er höchstens drei Stunden zurückliegt. Andernfalls steht dezent „möglicherweise verspätet“, statt alte Daten als verlässlich frisch erscheinen zu lassen.
+- **Fehler:** Fehlgeschlagener letzter Sammellauf hat Vorrang vor einem früheren Erfolg; interne API-Fehlerklassen und Identitäten werden nicht in der UI offengelegt.
+- **Kriegsstatus:** Laufende Runden werden weiterhin ausdrücklich als vorläufig bezeichnet; importierte oder fehlende Angriffe nicht als Nullwerte interpretieren.
+- **Unverändert:** Planer/Solver, Rollen, Datenbank, Edge-Collector-Berechtigungen, gespeicherte Statistiken und separate Offline-PWA.
+
+
 ## [1.16.10] - 2026-11-06
 
 ### Mobile CWL-Navigation und Kartenhierarchie korrigiert
