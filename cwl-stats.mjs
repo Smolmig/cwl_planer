@@ -8,7 +8,7 @@ const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
   let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",ascending=false,section="overview";
-  let formWindow=90,formSearch="",formSort="attacks",compareType="all",compareDays="all";
+  let formWindow=90,formSearch="",formSort="hitRate",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="week";
   const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
@@ -48,24 +48,30 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       button.setAttribute("aria-pressed",String(active));
     }
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
-    if(desc)desc.textContent=formWindow+" feste Kalendertage bis heute · vollständige zugängliche Historie dieses Clans. "
-      +usable+" Spieler mit mindestens einem gleich-RH-Angriff; "
-      +"kein Einfluss durch die Auswahl unter Spielerstatistik. "
-      +"Geringe Fallzahlen und unvollständige Vergleichbarkeit werden separat erklärt.";
-    const markup=rows.length?rows.map(p=>{
+    if(desc)desc.textContent="Letzte "+formWindow+" Kalendertage · "+usable+
+      " Spieler mit dokumentierten Angriffen auf gleiches RH. "+
+      (formSort==="hitRate"?"Nach 3★-Quote sortiert, höchste zuerst. ":
+        formSort==="attacks"?"Nach Anzahl der gleich-RH-Angriffe sortiert. ":
+        "Alphabetisch sortiert. ")+
+      "Die Platznummer zeigt die Reihenfolge in dieser Liste, kein allgemeines Stärke-Ranking. "+
+      "Wenige Angriffe machen Prozentwerte weniger aussagekräftig.";
+    const markup=rows.length?rows.map((p,i)=>{
       const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
       const why=b.excludedDifferentRH+b.excludedUnknownRH;
-      const quality=b.attacks?b.quality:"Keine vergleichbaren Angriffe";
+      const quality=b.attacks?b.quality:"Keine Angriffe auf gleiches RH";
+      const few=b.attacks>0&&b.attacks<5;
       const other=why?" · "+b.excludedDifferentRH+" andere RH · "+
         b.excludedUnknownRH+" RH unbekannt":"";
       return "<div class='stats-form-row'>"+
-        "<div class='stats-form-person'><b>"+esc(p.name)+"</b>"+
-        "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+"</small></div>"+
+        "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Position "+(i+1)+"'>"+
+          (i+1)+".</span><b>"+esc(p.name)+"</b>"+
+        "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+
+          (few?" · Wenige Angriffe – Quote vorläufig":"")+"</small></div>"+
         "<div class='stats-form-results'>"+
-          "<div class='stats-form-figure'><span>Dreierquote · gleiches RH</span>"+
+          "<div class='stats-form-figure'><span>3★-Quote · Gegner mit gleichem RH</span>"+
             "<strong>"+pct+"</strong></div>"+
           "<div class='stats-bar-track' role='img' aria-label='"+esc(pct+
-            " aus "+b.attacks+" vergleichbaren Angriffen")+"'>"+
+            " aus "+b.attacks+" Angriffen gegen gleiches RH")+"'>"+
             (b.attacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
           "</div>"+
           "<small class='stats-form-breakdown'>"+b.triples+" von "+b.attacks+
@@ -112,7 +118,34 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const data=computeThMatchupComparison(chosen,attacks,{type:"all",last:"all",cwlSeasons:"all"});
     const labels={lower:"Gegner-RH niedriger",same:"Gleiches Rathaus",higher:"Gegner-RH höher",unknown:"RH unbekannt"};
     const kinds=[["normal","Normale Clankriege"],["cwl","CWL"]];
-    host.innerHTML="<div class='stats-matchup-grid'>"+kinds.map(([kind,title])=>{
+    // First-glance comparison uses the same filtered attacks as the detail view.
+    // Comparing a CW against lower RH with CWL at equal RH is an observation,
+    // not evidence of a particular player quality or a causal league effect.
+    const highlights=[
+      {kind:"normal",matchup:"lower",label:"CW · niedrigeres RH"},
+      {kind:"normal",matchup:"same",label:"CW · gleiches RH"},
+      {kind:"cwl",matchup:"same",label:"CWL · gleiches RH"}
+    ];
+    const highlightsHtml="<p class='stats-highlight-intro'>Wie oft gelingen 3 Sterne gegen niedrigere bzw. gleich hohe Rathäuser? "+
+      "CW und CWL stehen direkt nebeneinander – mit der Anzahl der jeweiligen Angriffe.</p>"+
+      "<div class='stats-highlight-cols' role='group' aria-label='Drei-Sterne-Quote nach Gegnerstärke und Kriegsart'>"+
+      highlights.map(item=>{
+        const row=data.find(r=>r.type===item.kind&&r.matchup===item.matchup);
+        const count=row?.attacks||0;
+        const quote=count?row.hitRate:null;
+        const height=quote===null?0:Math.max(2,Math.min(100,Number(quote)||0));
+        return "<div class='stats-highlight-col'><strong>"+(quote===null?"–":quote+" %")+"</strong>"+
+          "<div class='stats-highlight-plot' role='img' aria-label='"+esc(item.label+": "+
+            (quote===null?"keine Daten":quote+" Prozent aus "+count+" Angriffen"))+"'>"+
+            (quote===null?"":"<div class='stats-highlight-fill' style='height:"+height+"%'></div>")+
+          "</div><span>"+esc(item.label)+"</span><small>"+count+" Angriffe</small></div>";
+      }).join("")+"</div>"+
+      "<p class='stats-note'>Die Werte beschreiben eure dokumentierten Angriffe. "+
+      "Unterschiedliche Gegnerbasen, Anzahl der Angriffe und CWL-Bedingungen können die Quoten beeinflussen.</p>";
+    const wasBreakdownOpen=host.querySelector(".stats-matchup-breakdown")?.open===true;
+    host.innerHTML=highlightsHtml+"<details class='stats-matchup-breakdown'"+
+      (wasBreakdownOpen?" open":"")+"><summary>Weitere Rathaus-Kombinationen und Sternverteilungen</summary>"+
+      "<div class='stats-matchup-grid'>"+kinds.map(([kind,title])=>{
       const rows=data.filter(row=>row.type===kind);
       const n=rows.reduce((sum,row)=>sum+row.attacks,0);
       return "<div class='stats-matchup-group'><h4>"+title+" · "+n+" Angriffe</h4>"+
@@ -129,7 +162,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
             "Keine Angriffe dokumentiert")+"</small>"+
           (row.attacks?starStack(row.starDistribution,row.attacks):"")+
         "</div>").join("")+"</div></div>";
-    }).join("")+"</div>";
+    }).join("")+"</div></details>";
   }
   function renderDuel(){
     const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
@@ -553,7 +586,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
-    formWindow=90;formSearch="";formSort="attacks";
+    formWindow=90;formSearch="";formSort="hitRate";
     compareType="all";compareDays="all";trendType="all";trendDays="all";
     cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     // The history is now lazy-loaded per view. On clan switch it MUST
