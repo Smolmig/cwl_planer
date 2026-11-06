@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.7] - 2026-11-06
+
+### Freigabe und Vorschläge dezent, verständlich und rollenabhängig
+- **Plan:** Statt einer dominanten Freigabe-Karte eine ruhige Statuszeile mit aufklappbaren Freigabe-Aktionen. Nur beim Clanführer werden offene Vize-Vorschläge als deutlich erkennbare Anzahl hervorgehoben; die Liste wird beim periodischen Refresh nicht ohne Änderungen neu aufgebaut.
+- **Mitglieder:** Die jeweilige Rolle und Wirkung von Änderungen ist direkt sichtbar. Bei gesperrtem Plan können Vize ihre Bearbeitungen direkt **im Mitglieder-Tab als Vorschlag einreichen** (kein fälschliches „gespeichert“). Clanführer sehen auch hier den Einstieg zu Freigabe und ausstehenden Vorschlägen.
+- **Prüfung:** Vorschläge zeigen beim Clanführer den Anzeigenamen des Vize, den Zeitpunkt und die konkreten Änderungen. Auch Änderungen an Notizen und Namen werden im Vergleich berücksichtigt.
+- **Beobachter:** Die Mitgliederliste bleibt als **lesbare Kaderinformation** zugänglich; Suche, Sortierung, Teilnahme/Fix-Anzeige, Tagesregeln und Info-Details bleiben sichtbar. Editierfelder und Änderungsaktionen werden ausgeblendet, nicht als gesamte graue Liste dargestellt. Weder Vorschlagseinreichung noch Freigabe wird angezeigt.
+- **Sicherheit:** Die vorhandene serverseitige Sperre und Genehmigung bleiben unverändert. Keine Änderung am Solver, Profilformat oder an der lokalen Offline-PWA; keine neue Datenbankmigration.
+
+
 ## [1.16.6] - 2026-11-06
 
 ### CWL-Aufstellungswechsel als Overlay, Einsätze vereinfacht

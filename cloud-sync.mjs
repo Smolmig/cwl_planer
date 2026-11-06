@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.6";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.6";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.6";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.6";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.6";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.6";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.7";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.7";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.7";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.7";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.7";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.7";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -50,6 +50,7 @@ const backups=createCloudBackups({
 });
 
 let planReview=null,planSuggestions=[],rawSavedProfile=null,rosterApiFailed=false;
+let planReviewPeople=new Map();
 function manualRosterPending(){return !!storage.getProfile()?.cocManualEmergency?.pending;}
 function refreshRosterEmergencyUI(){
  const managed=cloud.active&&cloud.hasApiClan?.();
@@ -94,8 +95,8 @@ function suggestionChanges(suggestion){
  const prev=storage.getProfile(),draft=suggestion.suggested_profile;
  if(!prev||!draft)return ["Vorgeschlagene Planänderung"];
  const old=new Map((prev.members||[]).map(m=>[m.id,m]));
- const fields=["participating","fixed","priority","rotationWeight","townHall","threeStar","targetDays","statuses"];
- const labels={participating:"Dabei",fixed:"Fix",priority:"Alte Priorität",rotationWeight:"Rotation",townHall:"Rathaus",
+ const fields=["name","note","participating","fixed","priority","rotationWeight","townHall","threeStar","targetDays","statuses"];
+ const labels={name:"Name",note:"Spielernotiz",participating:"Dabei",fixed:"Fix",priority:"Alte Priorität",rotationWeight:"Rotation",townHall:"Rathaus",
    threeStar:"3★-Stärke",targetDays:"Einsatzziel",statuses:"Tagesregeln"};
  const result=[];
  for(const m of draft.members||[]){
@@ -112,36 +113,90 @@ function suggestionChanges(suggestion){
  if(JSON.stringify(prev.config)!==JSON.stringify(draft.config))result.push("CWL-Grunddaten geändert");
  return result.length?result.slice(0,25):["Keine unterscheidbaren Planänderungen"];
 }
+function renderMembersReview(){
+ const bar=$("membersReviewContext");if(!bar)return;
+ const active=cloud.active&&!!clanId;
+ bar.hidden=!active;if(!active)return;
+ const owner=role==="owner",editor=role==="editor",viewer=role==="viewer";
+ const locked=planIsLocked(),draft=editor&&locked&&!!changedSerial;
+ const pending=planSuggestions.filter(s=>s.status==="pending").length;
+ bar.classList.toggle("has-draft",draft);
+ $("membersReviewTitle").textContent=viewer?"Beobachter · Lesemodus":
+   locked?"Plan freigegeben":"Gemeinsam bearbeitbar";
+ $("membersReviewHint").textContent=viewer?
+   "Du kannst die Mitglieder, Einsätze und Tagesregeln ansehen, aber nicht verändern.":
+   owner?(locked?"Nur du bearbeitest direkt. Vize reichen Änderungen als Vorschlag ein.":
+     "Vize können mitplanen. Du kannst die Planung jederzeit freigeben und für Vize sperren."):
+   locked?(draft?"Dein Entwurf ist noch nicht eingereicht. Erst nach Freigabe durch den Clanführer werden Änderungen übernommen.":
+      "Du kannst Einstellungen ändern und als Vorschlag an den Clanführer senden."):
+     "Deine Änderungen werden direkt für den Clan gespeichert.";
+ const submit=$("membersSubmitSuggestion");submit.hidden=!(editor&&locked);
+ submit.disabled=!draft||storage.getPlanningState?.()?.ok===false;
+ submit.title=!draft?"Ändere zuerst Mitglieder oder Tagesregeln.":submit.disabled?
+   "Bitte Konflikte in der Planung beheben.":"Änderungsvorschlag dem Clanführer vorlegen.";
+ const open=$("membersReviewOpenPlan");open.hidden=!owner;
+ if(owner)open.textContent=pending?pending+" offene Vorschläge prüfen":locked?"Freigabe verwalten":"Planfreigabe ansehen";
+}
 function renderPlanReview(){
  const panel=$("planReviewPanel");if(!panel)return;
- const active=cloud.active&&!!clanId;
+ const active=cloud.active&&!!clanId&&role!=="viewer";
  panel.hidden=!active;
+ renderMembersReview();
  if(!active)return;
  const locked=planIsLocked(),owner=role==="owner",editor=role==="editor";
+ const disclosure=$("planReviewDisclosure");
+ const context=clanId+"|"+(planReview?.cycle_id||"")+"|"+role;
+ if(disclosure&&panel.dataset.reviewContext!==context){
+   disclosure.open=false;panel.dataset.reviewContext=context;
+   delete $("planReviewSuggestions").dataset.reviewSignature;
+ }
+ const pending=planSuggestions.filter(s=>s.status==="pending"&&planReview?.season===currentSeason());
+ panel.classList.toggle("has-pending",owner&&pending.length>0);
+ $("planReviewSummaryTitle").textContent=locked?"Plan freigegeben":"Gemeinsam bearbeitbar";
+ $("planReviewSummaryDetail").textContent=owner?
+   (locked?"Nur du änderst direkt · Vize senden Vorschläge":"Vize planen mit · Freigabe verwalten"):
+   (locked?changedSerial?"Entwurf offen · Noch nicht eingereicht":"Änderungen nur als Vorschlag":
+    "Änderungen werden gemeinsam gespeichert");
+ const count=$("planReviewPendingCount");
+ count.hidden=!(owner&&pending.length);
+ if(owner&&pending.length)count.textContent=pending.length+" "+(pending.length===1?"Vorschlag":"Vorschläge")+" offen";
  const statusNode=$("planReviewStatus");
- statusNode.textContent=locked?"Freigegeben":"In Bearbeitung";
- statusNode.className="badge "+(locked?"ok":"warn");
- $("planReviewHint").textContent=locked?
-   "Der Clanführer hat die Planung freigegeben. Vize können Änderungswünsche zur Bestätigung einreichen.":
-   "Der Plan ist offen und für Clanführer und Vize direkt bearbeitbar.";
+ statusNode.textContent=locked?"Freigegeben":"Offen";
+ statusNode.className="badge "+(locked?"ok":"");
+ $("planReviewHint").textContent=owner?
+   (locked?"Du kannst weiterhin direkt bearbeiten. Vize senden Vorschläge, die du übernehmen oder ablehnen kannst.":
+    "Du und deine Vize könnt den Plan gemeinsam bearbeiten. Nach der Freigabe reichen Vize Änderungen nur noch als Vorschläge ein."):
+   (locked?"Du kannst Spieler und Tagesregeln ändern, aber erst durch „Vorschlag einreichen“ gelangt der Entwurf zum Clanführer.":
+    "Deine Änderungen werden direkt für alle gespeichert.");
  const toggleButton=$("planReviewToggle");
  toggleButton.hidden=!owner;
  toggleButton.textContent=locked?"Plan wieder öffnen":"Plan freigeben";
  const invalid=!locked&&storage.getPlanningState?.()?.ok===false;
  toggleButton.disabled=invalid;
- toggleButton.title=invalid?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":"";
+ toggleButton.title=invalid?"Zuerst Konflikte bei Einsatzzielen und Tagesregeln beheben.":
+   locked?"Vize können danach wieder direkt mitbearbeiten.":"Sperrt direkte Änderungen für Vize, nicht für dich.";
  const submitButton=$("planSubmitSuggestion");
  submitButton.hidden=!(editor&&locked);
  submitButton.disabled=!changedSerial||storage.getPlanningState?.()?.ok===false;
  submitButton.title=storage.getPlanningState?.()?.ok===false?"Bitte zuerst die Konflikte bei Einsatzzielen und Tagesregeln beheben.":changedSerial?"Vorschlag zur Freigabe einreichen":"Ändere zuerst Spieler oder Tagesregeln";
- const host=$("planReviewSuggestions");host.replaceChildren();
+ const host=$("planReviewSuggestions");
  const visible=planSuggestions.filter(x=>planReview?.season===currentSeason()&&(owner?x.status==="pending":x.author_id===user?.id)).slice(0,20);
- if(!visible.length){const text=document.createElement("div");text.className="statusline";text.textContent=locked?
-   "Keine offenen Änderungsvorschläge.":"Noch keine Planfreigabe aktiv.";host.append(text);return;}
+ // Do not replace an unchanged review list every 15 seconds (focus and open context).
+ const signature=JSON.stringify(visible.map(s=>[s.id,s.status,s.base_revision,s.submitted_at,s.suggested_profile]));
+ if(host.dataset.reviewSignature===signature)return;
+ host.dataset.reviewSignature=signature;host.replaceChildren();
+ if(!visible.length){
+   if(editor&&locked){const text=document.createElement("div");text.className="statusline";
+     text.textContent="Noch keine Vorschläge eingereicht. Deine Änderungen werden erst nach dem Einreichen verschickt.";
+     host.append(text);}
+   return;
+ }
  for(const item of visible){
    const row=document.createElement("div");row.className="plan-review-suggestion";
    const heading=document.createElement("div");heading.className="plan-review-suggestion-head";
-   const title=document.createElement("strong");title.textContent=owner?"Offener Vorschlag":"Dein Vorschlag · "+({pending:"Eingereicht",accepted:"Angenommen",rejected:"Abgelehnt",stale:"Veraltet",withdrawn:"Zurückgezogen"}[item.status]||item.status);
+   const title=document.createElement("strong");title.textContent=owner?
+     "Vorschlag von "+(planReviewPeople.get(item.author_id)||"Vize"):
+     "Dein Vorschlag · "+({pending:"Eingereicht",accepted:"Angenommen",rejected:"Abgelehnt",stale:"Veraltet",withdrawn:"Zurückgezogen"}[item.status]||item.status);
    const date=document.createElement("small");date.textContent=new Date(item.submitted_at).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
    heading.append(title,date);row.append(heading);
    const list=document.createElement("ul");list.className="plan-review-diff";
@@ -160,8 +215,10 @@ function renderPlanReview(){
 }
 async function loadPlanReview(expected=clanId){
  if(!expected||!cloud.active)return;
+ const wasLocked=planIsLocked();
  const [stateResult,suggestionResult]=await Promise.all([
    sb.from("cwl_plan_review_state").select("cycle_id,season,locked").eq("clan_id",expected).maybeSingle(),
+   role==="viewer"?Promise.resolve({data:[],error:null}):
    sb.from("cwl_plan_suggestions")
      .select("id,cycle_id,author_id,base_revision,suggested_profile,status,submitted_at")
      .eq("clan_id",expected).order("submitted_at",{ascending:false}).limit(40)
@@ -172,6 +229,7 @@ async function loadPlanReview(expected=clanId){
  planReview=stateResult.data||null;
  planSuggestions=(suggestionResult.data||[]).filter(x=>x.cycle_id===planReview?.cycle_id);
  renderPlanReview();
+ if(wasLocked!==planIsLocked())cloud.afterRender();
 }
 async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
@@ -303,7 +361,10 @@ const cloud={
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select,"+
     "#view-more-settings button,#view-more-settings input,#view-more-settings select")){
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
-    if(role==="viewer" && !keep.has(el.id) && !el.closest(".mobile-day-tabs") && !el.closest(".archive-list")){
+    const memberReadOnlyControl=el.closest("#view-members")&&el.matches(
+      "#memberSearch,#memberFilter,#memberSortSelect,.member-edit-toggle,.toggle-rules,.member-config-help,.dup-warning,.close-duplicate");
+    if(role==="viewer" && !keep.has(el.id) && !memberReadOnlyControl &&
+       !el.closest(".mobile-day-tabs") && !el.closest(".archive-list")){
       el.disabled=true;el.dataset.cloudDisabled="1";
     }
   }
@@ -1004,6 +1065,9 @@ async function loadAccessList(expected=clanId){
    Promise.resolve({data:[],error:null})
  ]);
  if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;if(expected!==clanId)return;
+ planReviewPeople=new Map((members||[]).map(m=>[m.user_id,m.display_name||"Vize"]));
+ delete $("planReviewSuggestions")?.dataset.reviewSignature;
+ renderPlanReview();
  const list=$("cloudAccessList");list.replaceChildren();
  for(const m of members||[]){
   const row=document.createElement("div");row.className="cloud-access-row";
@@ -1697,6 +1761,13 @@ async function importCloud(){
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("planReviewToggle","click",togglePlanLock);
 bind("planSubmitSuggestion","click",submitPlanSuggestion);
+bind("membersSubmitSuggestion","click",submitPlanSuggestion);
+bind("membersReviewOpenPlan","click",()=>{
+ document.querySelector('.navbtn[data-view="plan"]')?.click();
+ const details=$("planReviewDisclosure");
+ if(details){details.open=true;details.querySelector("summary")?.focus({preventScroll:true});
+   details.scrollIntoView({block:"nearest",behavior:"smooth"});}
+});
 bind("planRefreshSuggestions","click",()=>loadPlanReview());
 $("planReviewSuggestions").addEventListener("click",event=>{
  const button=event.target.closest("[data-plan-action][data-suggestion-id]");
