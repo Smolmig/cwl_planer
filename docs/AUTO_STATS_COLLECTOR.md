@@ -135,6 +135,62 @@ unknown status permanently until a source-backed import becomes available.
 Do **not** backfill from the number of missing local attack rows; do not
 alter the existing production Collector v5 or stored data as part of this audit.
 
+## Historical CWL Missed reconciliation: verified dry-run only
+
+The repository includes
+[`collector-reconciliation.mjs`](../supabase/functions/coc-stats-collector/collector-reconciliation.mjs)
+with the pure helper `previewHistoricalCwlMisses` and the corresponding
+[`collector-historical-cwl-missed-preview.test.cjs`](../tests/collector-historical-cwl-missed-preview.test.cjs).
+**This helper is deliberately NOT imported by the deployed Edge Function,
+not callable by the browser and not connected to a scheduled write operation.**
+It is a safety building block only, and no historical data are changed.
+
+### Required, independent evidence
+
+Before calling this in any future reviewed server-only workflow, obtain:
+
+1. The **authorized linked app-clan record** (`id`, `clash_tag`) and one
+   matching `cwl_stat_wars` record (`clan_id=id`) already finalized from
+   `source=api` with `war_type=cwl`, but with
+   `missed_log_complete=false`.
+2. **All** saved `cwl_stat_attacks` and **all** saved `cwl_stat_missed`
+   for **that same** `(clan_id,war_key)`. Mixed tenants, duplicate attacks
+   or existing missed rows disqualify the proposal.
+3. A **fresh server-side, authenticated official Clash API** response from
+   `/clanwarleagues/wars/{warTag}`, with the independently fetched
+   `warTag` explicitly supplied. The trusted endpoint's war tag must
+   match the database key; **deriving the fetched war tag only from the
+   saved key is not independent proof**. Never accept a user's uploaded or
+   browser-provided JSON as the official source.
+
+The pure helper uses the existing verified `buildWarSnapshot` logic:
+settled `warEnded`, complete own and opponent rosters, unique player tags,
+valid individual attacks and a numeric official `clan.attacks` counter
+exactly matching the parsed own-clan attack rows. It additionally demands
+**exact agreement** between saved and official war metadata, roster membership,
+attack identities, defender tags, stars, destruction and available town halls.
+It refuses to infer even a single missed attack from absent saved attack
+rows if the official snapshot is missing or contradictory.
+
+Eligible proposals return `confirmedMissedCount` and private `missedRows`
+for internal comparison only. Rejections return a safe reason code,
+`confirmedMissedCount=null` and no rows. **The preview cannot write**:
+no database/client call, credentials, API request or logger exists in this
+module. Never log or return the private proposal to a client, even if
+eligible.
+
+### Deliberately still missing: transactionally safe writer
+
+An eventual writer needs an explicitly reviewed server-side authorization
+path, independent official API fetch, complete tenant-scoped reads, and an
+**atomic optimistic conflict guard** covering `finalized`,
+`missed_log_complete`, original attack rows and already-present missed
+rows. Persist confirmed `cwl_stat_missed` records first, then mark
+`missed_log_complete=true`; on any failure preserve UNKNOWN and retry
+idempotently. Do not auto-run this on new collector scans or change the live
+scheduler. If the original war is no longer available through the trusted
+API, the historical record remains **UNKNOWN** without guessing.
+
 ## Monitoring and recovery
 
 - Per-clan data: `public.cwl_stat_collector_status` (read-only RLS).
