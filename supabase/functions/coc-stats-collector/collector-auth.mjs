@@ -57,6 +57,11 @@ export async function verifyCollectorIdentity(jwt,{
     const publicKey=await crypto.subtle.importKey("jwk",key,
       {name:"RSASSA-PKCS1-v1_5",hash:"SHA-256"},false,["verify"]);
     const data=new TextEncoder().encode(encodedHeader+"."+encodedClaims);
-    return await crypto.subtle.verify("RSASSA-PKCS1-v1_5",publicKey,bytes(encodedSig),data);
+    const verified=await crypto.subtle.verify("RSASSA-PKCS1-v1_5",publicKey,bytes(encodedSig),data);
+    // After signature verification, log only the signed trigger type.
+    // This distinguishes autonomous schedule runs from manual/push calls,
+    // without exposing the JWT, identity claims, clan tags or player data.
+    if(verified)console.info("collector_verified_trigger="+claims.event_name);
+    return verified;
   }catch{return false}
 }
