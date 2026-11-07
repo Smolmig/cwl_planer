@@ -148,6 +148,8 @@ test("tenant link and each historical attack must belong to exactly one app clan
   expectRejected(await run(a),"stored_attack_scope_invalid");
   const b=copy(f);b.storedAttacks[0].war_key="cwl:#2PYQ";
   expectRejected(await run(b),"stored_attack_scope_invalid");
+  const malformed=copy(f);malformed.storedAttacks[0]=null;
+  expectRejected(await run(malformed),"stored_attack_scope_invalid");
 });
 
 test("saved identity, roster and start-time mismatch prevents any proposed write rows",async()=>{
