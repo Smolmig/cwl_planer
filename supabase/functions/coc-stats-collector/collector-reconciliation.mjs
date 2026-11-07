@@ -90,7 +90,8 @@ export function previewHistoricalCwlMisses({
     return reject("official_attack_identity_duplicate");
   const seen=new Set();
   for(const attack of storedAttacks){
-    if(attack.clan_id!==storedWar.clan_id||
+    if(!attack||typeof attack!=="object"||
+       attack.clan_id!==storedWar.clan_id||
        attack.war_key!==storedWar.war_key||
        !validTag(attack.attacker_tag)||!validTag(attack.defender_tag)||
        attack.attack_order!==1)
