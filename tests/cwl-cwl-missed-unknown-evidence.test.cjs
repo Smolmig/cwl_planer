@@ -91,17 +91,21 @@ test("Fully confirmed CWL remains exact for 0 and multiple misses; unknown other
  assert.equal(combined.missedCoverage.cwl.complete,false);
 });
 
-test("Normal CW and imported historical CWL evidence stay separate",async()=>{
+test("Normal CW stays independently evaluable while unverified CWL (API or import) remains unknown",async()=>{
  const {computeWarStats}=await load();
  const normal={
    ...makeWar("normal:synthetic-war",{
      war_type:"normal",source:"api",team_size:15,missed_log_complete:false
    })
  };
- const cw=computeWarStats([normal],attacks(normal.war_key,29).map((a,i)=>({
-   ...a,attacker_tag:tags[i%15],attack_order:Math.floor(i/15)+1
- })),{type:"normal",last:"all"});
+ const normalAttacks=Array.from({length:29},(_,i)=>({
+   ...attacks(normal.war_key,15)[i%15],attacker_tag:tags[i%15],
+   attack_order:Math.floor(i/15)+1
+ }));
+ const cw=computeWarStats([normal],normalAttacks,{type:"normal",last:"all"});
  assert.equal(cw.complete,true,"Normal CW keeps its established full-roster fallback");
+ assert.equal(cw.attacks,29);
+ assert.equal(cw.misses,1,"One missing of 30 normal CW attack slots");
  assert.equal(cw.missedCoverage.normal.coveredWars,1);
  const unproved=makeWar();
  const both=computeWarStats([normal,unproved],
@@ -112,4 +116,10 @@ test("Normal CW and imported historical CWL evidence stay separate",async()=>{
  assert.equal(both.missedCoverage.cwl.complete,false);
  assert.equal(both.complete,false);
  assert.equal(both.misses,null);
+
+ const imported=makeWar("cwl:#2QJL",{source:"import",missed_log_complete:false});
+ const importedStats=computeWarStats([imported],
+   attacks(imported.war_key,13),{type:"cwl",last:"all",cwlSeasons:"all"});
+ assert.equal(importedStats.misses,null);
+ assert.equal(importedStats.missedCoverage.cwl.coveredWars,0);
 });
