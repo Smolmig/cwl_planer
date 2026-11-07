@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.20",
-  "released": "2026-11-07",
-  "summary": "Statistik: Im Vergleichsfilter »Nur CW« oder »Nur CWL« zeigen die drei Hauptspalten nur passende Rathaus-Gegnerklassen. Details, Zeitraum und Kriegsarten bleiben getrennt; keine Änderung an Statistikwerten, Planung, Rollen, Datenbank oder Offline-PWA."
+  "version": "v1.16.21",
+  "released": "2026-11-08",
+  "summary": "Statistik: CWL-Ausfälle nur bei bestätigtem vollständigem Missed-Log exakt zählen; fehlende API-Angriffe bleiben unbekannt. Einheitliche 3★-Quote. Keine Änderung an Angriffs-Rohdaten, Planung, Rollen, Supabase oder Offline-PWA."
 }
