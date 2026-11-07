@@ -31,7 +31,7 @@ test("Completed changes are derived from consecutive confirmed Clash rosters, no
  assert.equal(formatClashSwapText(2,{
    status:"changes",toRemove:[{name:"Ausstieg"},{name:"Aus zwei"}],
    toAdd:[{name:"@Raphtor"},{name:"Luki"}]
- }),"CWL Tag 2\\n🔴 Raus: Ausstieg, Aus zwei\\n🟢 Rein: @Raphtor, @Luki");
+ }),"CWL Tag 2\n🔴 Raus: Ausstieg, Aus zwei\n🟢 Rein: @Raphtor, @Luki");
 
  const same=round(2,"preparation",["A","B"]);
  assert.equal(compareConsecutiveCwlLineups(yesterday,same).status,"match");
