@@ -113,7 +113,7 @@ begin
           'defender_tag',a.defender_tag,'attacker_th',a.attacker_th,
           'defender_th',a.defender_th,'stars',a.stars,
           'destruction',a.destruction
-        ) order by a.attacker_tag,a.attack_order
+        ) order by a.attacker_tag collate "C",a.attack_order
       ),'[]'::jsonb),
     count(*),count(distinct a.attacker_tag),
     count(*) filter(
