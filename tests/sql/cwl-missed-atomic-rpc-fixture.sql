@@ -75,32 +75,3 @@ insert into public.cwl_stat_attacks(
 
 commit;
 
--- The canonical test payload uses the same C-collation order as the
--- Javascript pure helper and the DRAFT SQL function.
-create or replace function public.test_verified_rpc(
-  p_apply boolean default false,
-  p_official_count integer default 2
-) returns jsonb
-language sql
-security invoker
-as $$
-  select public.cwl_commit_verified_historical_missed(
-    '11111111-1111-4111-8111-111111111111'::uuid,
-    'cwl:#2QGL','#2PYL',
-    '2026-11-07T20:00:00Z'::timestamptz,
-    '2026-11-05T19:00:00Z'::timestamptz,
-    '#QPYL',
-    '["#2PYL","#2PQL","#2PRL"]'::jsonb,
-    '[
-      {"attacker_tag":"#2PQL","attack_order":1,"defender_tag":"#QPYL",
-       "attacker_th":18,"defender_th":18,"stars":3,"destruction":100},
-      {"attacker_tag":"#2PYL","attack_order":1,"defender_tag":"#QPRL",
-       "attacker_th":18,"defender_th":18,"stars":3,"destruction":100}
-    ]'::jsonb,
-    p_official_count,
-    '[{"player_tag":"#2PRL","player_name":"Own 2","missed_count":1}]'::jsonb,
-    p_apply
-  );
-$$;
-grant execute on function public.test_verified_rpc(boolean,integer)
- to service_role;
