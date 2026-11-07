@@ -3162,7 +3162,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">PLANUNG</span><h3>CWL-Plan</h3></div><div class="actions"><span class="badge ok" id="saveBadge">automatisch gespeichert</span><button class="btn small mobile-overview-toggle" id="mobileOverviewToggle" aria-expanded="false" aria-controls="planOverview" title="Weitere Kennzahlen und Aktionen">Details ▾</button></div></div>
     <div class="kpis"><div class="kpi"><b id="kpiParticipants">0</b><span>Teilnehmer</span></div><div class="kpi"><b id="kpiFixed">0</b><span>Fixspieler</span></div><div class="kpi"><b id="kpiSlots">15</b><span>pro Krieg</span></div><div class="kpi"><b id="kpiRotation">–</b><span>Rotation</span></div></div>
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
-    <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Plan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
+    <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Gesamtplan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
   <div id="planCwlSeasonEntry" class="plan-cwl-season-shortcut" hidden>
     <div class="plan-season-shortcut-copy"><span class="plan-season-shortcut-kicker">CWL AKTUELL</span>
@@ -3406,11 +3406,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.16</strong><span>Mitglieder · verständliche 3★-Quote</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.17</strong><span>CWL · Wechseltext nachträglich kopieren</span></div>
       <ul>
-       <li><b>Begriffe:</b> In Mitgliedern und Plan heißt die Dreierquote jetzt einheitlich 3★-Quote.</li>
-       <li><b>Sortierung:</b> Bei gleicher Quote stehen mehr belegte Angriffe vorne. Die rohe Quote ist keine Stärke-Rangliste.</li>
-       <li><b>Unverändert:</b> Statistikberechnung, Einsätze, Aufstellung und Rechte.</li>
+       <li><b>Clash-Chat:</b> Auch nach bereits durchgeführten Wechseln lässt sich der Raus-/Rein-Text aus den bestätigten Tagesaufstellungen kopieren.</li>
+       <li><b>Markierung:</b> Neue Spieler erhalten im Kopiertext ein @ vor ihrem Namen.</li>
+       <li><b>Gesamtplan:</b> Eigener, übersichtlich formatierter Export für alle Kriegstage.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3836,9 +3836,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.16"></script>
+<script src="./cwl-planning-core.js?v=1.16.17"></script>
 <script>
-const APP_VERSION="v1.16.16";
+const APP_VERSION="v1.16.17";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4528,7 +4528,26 @@ function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;
  }
 }state.archivedMembers=[];state.cwlLiveIgnoredSeason=state.cwlLive?.season||state.cwlLiveIgnoredSeason||null;delete state.cwlLive;}
 async function handleCwlManage(){if(window.CWLCloud?.active&&window.CWLCloud?.isPlanLocked?.()&&!window.CWLCloud?.isOwner?.()){showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return}const played=playedCount();if(!played){if(!await confirmInline("Tagesregeln werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
-function buildFullPlanText(){const lines=[`⚔️ CWL Plan – ${state.name}`,""],apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.();lastPlan.dayPlans.forEach(dp=>{const fixedFromApi=dp.locked&&!state.locks[dp.day-1]?.locked;lines.push(`Tag ${dp.day} · ${fixedFromApi?"🔒 AUFSTELLUNG FIX":dp.locked?"🔒 GESPIELT":"GEPLANT"}`);if(dp.day>1&&apiLinked)lines.push("Wechsel in Clash: aktuellen CWL-Live-Abgleich prüfen");if(dp.day>1&&!apiLinked){const ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);lines.push(`🔴 Raus: ${outs.join(", ")||"–"}`);lines.push(`🟢 Rein: ${ins.join(", ")||"–"}`)}lines.push(`Aufstellung · ${dp.lineup.length} Spieler:`);dp.lineup.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean).forEach(m=>lines.push(`• ${displayMemberName(m,true)}`));lines.push("")});return lines.join("\n").trim()}
+function buildFullPlanText(){
+ const days=lastPlan?.dayPlans||[],slots=state.config.slots;
+ const apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.();
+ const lines=[`CWL-Gesamtplan · ${state.name}`,`${days.length} Kriegstage · ${slots} Spieler pro Krieg`,""];
+ if(apiLinked)lines.push("Hinweis: Änderungen in Clash bitte mit dem aktuellen CWL-Abgleich prüfen.","");
+ days.forEach(dp=>{
+  const fixedFromApi=dp.locked&&!state.locks[dp.day-1]?.locked;
+  const status=fixedFromApi?"Aufstellung in Clash fix":dp.locked?"Gespielt":"Geplant";
+  lines.push("────────────────────────",`Tag ${dp.day} · ${status} · ${dp.lineup.length}/${slots} Spieler`,"");
+  if(dp.day>1&&!apiLinked){
+   const ins=sortIdsByMemberOrder(dp.rein||[]).map(id=>displayMemberName(lineupPlayer(id,dp.day-1))).filter(Boolean);
+   const outs=sortIdsByMemberOrder(dp.raus||[]).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,dp.day-2)))).filter(Boolean);
+   if(ins.length||outs.length)lines.push(`Wechsel zum Vortag: Raus ${outs.join(", ")||"–"} · Rein ${ins.join(", ")||"–"}`,"");
+  }
+  dp.lineup.map(id=>lineupPlayer(id,dp.day-1)).filter(Boolean)
+   .forEach((m,i)=>lines.push(`${String(i+1).padStart(2,"0")}. ${displayMemberName(m,true)}`));
+  lines.push("");
+ });
+ return lines.join("\n").trim();
+}
 async function copyText(text,message){try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}showToast(message)}
 function copyChanges(day){const dp=lastPlan.dayPlans[day],ins=sortIdsByMemberOrder(dp.rein).map(id=>displayMemberName(lineupPlayer(id,day),true)).filter(Boolean),outs=sortIdsByMemberOrder(dp.raus).map(id=>displayMemberName(lineupPlayer(id,Math.max(0,day-1)),true)).filter(Boolean);copyText(`Tag ${dp.day} · theoretische Plan-Rotation (ohne Clash-Abgleich)\n🔴 Raus: ${outs.join(", ")||"–"}\n🟢 Rein: ${ins.join(", ")||"–"}`,"Plan-Rotation kopiert ✓")}
 function closeTownHallPicker(){townHallPickHandler=null;closeModalById("townHallPickerModal")}
@@ -5072,6 +5091,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.16"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.17"></script>
 </body>
 </html>
