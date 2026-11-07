@@ -165,23 +165,30 @@ test("Reload preserves focused open player details and visible row on mobile and
       const afterAnchor=newDetails.find(x=>x.dataset.playerTag===anchorTag).closest(".stats-player-row");
       const afterTop=afterAnchor.getBoundingClientRect().top;
       const rowCount=list.querySelectorAll(".stats-player-row").length;
-      // Clear the history safely as if the user switched to a new empty clan.
+      const focusPreserved=document.activeElement===afterChosen.querySelector("summary");
+      const afterScroll=window.scrollY;
+      const newPlayerVisible=!!newDetails.find(x=>x.dataset.playerTag==="#2P00G");
+      // Reset must remove the old clan's private players immediately.
       stats.reset();
-      const clearSummary=document.getElementById("statsSummary").textContent;
+      const rowsCleared=list.querySelectorAll(".stats-player-row").length===0;
+      const noWars=document.getElementById("statsDataCount").textContent;
       return {
-       opened:afterChosen.open,focusPreserved:document.activeElement===afterChosen.querySelector("summary"),
+       opened:afterChosen.open,focusPreserved,
        wasReplaced:original!==afterChosen.querySelector("summary"),
-       beforeTop,afterTop,beforeScroll,afterScroll:window.scrollY,
-       rowCount,clearSummary,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth
+       beforeTop,afterTop,beforeScroll,afterScroll,
+       rowCount,newPlayerVisible,rowsCleared,noWars,
+       scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth
       };
     },theme);
     const note=JSON.stringify({width,theme,result});
     assert.equal(result.opened,true,note);
-    assert.equal(result.focusPreserved,false,"Reset should clear private focus, not preserve it");
+    assert.equal(result.focusPreserved,true,note);
     assert.equal(result.wasReplaced,true,note);
     assert.ok(Math.abs(result.afterTop-result.beforeTop)<4,note);
     assert.equal(result.rowCount,43,note);
-    assert.equal(result.clearSummary,"",note);
+    assert.equal(result.newPlayerVisible,true,note);
+    assert.equal(result.rowsCleared,true,note);
+    assert.match(result.noWars,/Noch keine abgeschlossenen Kriege gespeichert/,note);
     assert.ok(result.scrollWidth<=result.viewport+3,note);
     assert.deepEqual(problems,[]);
    }finally{await page.close()}
