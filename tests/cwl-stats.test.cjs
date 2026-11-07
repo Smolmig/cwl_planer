@@ -312,7 +312,7 @@ test("Missed coverage stays exact for CW while CWL remains a lower bound",async(
  assert.equal(all.missesKnown,3);
  assert.equal(all.misses,null,"Mixed CW/CWL history must not fabricate a complete total");
  assert.deepEqual(all.missedCoverage.normal,{wars:1,coveredWars:1,missedKnown:1,complete:true});
- assert.deepEqual(all.missedCoverage.cwl,{wars:2,coveredWars:1,missedKnown:2,complete:false});
+ assert.deepEqual(all.missedCoverage.cwl,{wars:2,coveredWars:0,missedKnown:2,complete:false});
  const known=all.rows.find(p=>p.tag===a);
  assert.deepEqual(known.missedKnownByType,{normal:1,cwl:1});
  assert.equal(known.missedKnown,2);
@@ -330,7 +330,7 @@ test("Missed coverage stays exact for CW while CWL remains a lower bound",async(
  const cwl=computeWarStats(wars,attacks,{type:"cwl",missedEvents});
  assert.equal(cwl.misses,null);
  assert.equal(cwl.missedCoverage.cwl.missedKnown,2);
- assert.equal(cwl.missedCoverage.cwl.coveredWars,1);
+ assert.equal(cwl.missedCoverage.cwl.coveredWars,0);
  const filtered=computeWarStats(wars,attacks,{type:"all",sameHigher:true,missedEvents});
  assert.equal(filtered.missesKnown,3,"TH filters cannot erase missed attack evidence");
 });
@@ -342,7 +342,7 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(ui,/const coverageDescriptions=/);
  assert.match(ui,/missedCoverageHost\.textContent/);
  assert.match(ui,/order==="missed"\?p\.missedKnown/);
- assert.match(ui,/CWL-Kriegen/,"Missing league data must be explained");
- assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.20/);
+ assert.match(ui,/Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff/,"Missing league data must be explained");
+ assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.21/);
  assert.match(ui,/CWL: /);
 });
