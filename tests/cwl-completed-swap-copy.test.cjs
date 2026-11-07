@@ -22,8 +22,17 @@ test("Completed changes are derived from consecutive confirmed Clash rosters, no
  assert.equal(changes.status,"changes");
  assert.deepEqual(changes.toRemove.map(p=>p.name),["Spieler A"]);
  assert.deepEqual(changes.toAdd.map(p=>p.name),["Spieler C"]);
- assert.equal(formatClashSwapText(2,changes),"Tag 2 - Raus: Spieler A - Rein: Spieler C");
+ assert.equal(formatClashSwapText(2,changes),"CWL Tag 2\n🔴 Raus: Spieler A\n🟢 Rein: @Spieler C");
  assert.equal(JSON.stringify([yesterday,today]),before,"comparison must be read-only");
+ assert.equal(formatClashSwapText(2,{
+   status:"changes",toRemove:[{name:"Ausstieg"}],
+   toAdd:[{name:"@Raphtor"},{name:"Luki"}]
+ }),null,"unpaired changes must not produce misleading text");
+ assert.equal(formatClashSwapText(2,{
+   status:"changes",toRemove:[{name:"Ausstieg"},{name:"Aus zwei"}],
+   toAdd:[{name:"@Raphtor"},{name:"Luki"}]
+ }),"CWL Tag 2\\n🔴 Raus: Ausstieg, Aus zwei\\n🟢 Rein: @Raphtor, @Luki");
+
  const same=round(2,"preparation",["A","B"]);
  assert.equal(compareConsecutiveCwlLineups(yesterday,same).status,"match");
  assert.equal(compareConsecutiveCwlLineups(yesterday,{...today,day:3}),null);
@@ -76,7 +85,7 @@ test("Matching Clash preparation still provides yesterday's copyable swaps in th
   assert.ok(button,"copy button must survive after switches already match");
   assert.match(button.textContent,/Wechseltext kopieren/);
   button.click();
-  assert.equal(copied,"Tag 2 - Raus: Spieler A - Rein: Spieler C");
+  assert.equal(copied,"CWL Tag 2\n🔴 Raus: Spieler A\n🟢 Rein: @Spieler C");
   live.render();
   assert.ok(dom.window.document.querySelector("#day-card-1 .cwl-copy-live-swaps"));
   assert.equal(changed,0);
