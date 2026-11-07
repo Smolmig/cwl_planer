@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.16";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.16";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.16";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.16";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.16";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.16";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.17";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.17";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.17";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.17";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.17";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.17";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";

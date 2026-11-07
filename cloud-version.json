@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.16",
+  "version": "v1.16.17",
   "released": "2026-11-07",
-  "summary": "Mitglieder und Plan: durchgehend 3★-Quote statt uneinheitlicher Hitrate-Bezeichnungen. Die optionale rohe Quoten-Sortierung bevorzugt bei exakt gleichem Prozentwert die höhere Zahl belegter Angriffe. Kein Skill-Ranking, keine Änderung an Statistiken, CWL-Planung, Rollen oder bestehenden Daten."
+  "summary": "CWL: Bereits in Clash erledigte Aufstellungswechsel bleiben im aktuellen Tagesabgleich als kurzer Raus/Rein-Text für den Clanchat kopierbar. Nur bei vollständigen echten Clash-Aufstellungen; keine Änderungen an Planung, Daten oder Rollen."
 }
