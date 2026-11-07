@@ -138,12 +138,12 @@ export function prepareHistoricalCwlMissedRpc(input={}){
     defender_tag:tag(a.defender_tag),attacker_th:a.attacker_th??null,
     defender_th:a.defender_th??null,stars:a.stars,
     destruction:a.destruction
-  })).sort((a,b)=>a.attacker_tag.localeCompare(b.attacker_tag)||
-    a.attack_order-b.attack_order);
+  })).sort((a,b)=>(a.attacker_tag<b.attacker_tag?-1:
+    a.attacker_tag>b.attacker_tag?1:0)||a.attack_order-b.attack_order);
   const missed=proposal.missedRows.map(m=>({
     player_tag:tag(m.player_tag),player_name:m.player_name,
     missed_count:1
-  })).sort((a,b)=>a.player_tag.localeCompare(b.player_tag));
+  })).sort((a,b)=>a.player_tag<b.player_tag?-1:a.player_tag>b.player_tag?1:0);
   return {
     eligible:true,reason:"verified_rpc_dry_run_only",
     rpcArgs:{
