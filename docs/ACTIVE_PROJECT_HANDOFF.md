@@ -1,6 +1,6 @@
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
-**Stand:** 07.11.2026, **Cloud v1.16.20 vollständig live**, P0-Collector-Audit als eigener Branch.  
+**Stand:** 07.11.2026, **Cloud v1.16.20 vollständig live**, P0-Collector-Audit [PR #145](https://github.com/Smolmig/cwl_planer/pull/145) gemergt (nur SQL-/Test-/Dokumentationsdateien).  
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 ## 1. Sofortstart beim Chatwechsel
@@ -30,7 +30,7 @@
 
 ### Issue #104 – read-only Collector-/Missed-Audit, 07.11.2026
 
-- Aktueller Branch: [audit/collector-cwl-missed-coverage-20261107](https://github.com/Smolmig/cwl_planer/tree/audit/collector-cwl-missed-coverage-20261107); **Dokumentation/SQL/Test, keine Datenmutation und kein Cloud-Versionswechsel**. Nach grünem CI PR mergen; reale Bedingungen weiterhin gesondert prüfen.
+- **[PR #145](https://github.com/Smolmig/cwl_planer/pull/145) gemergt** am 07.11.2026 (Squash-Commit `f6ea5b6e`), **476/476 PR-Tests grün** ([GitHub Actions 42417829737](https://github.com/Smolmig/cwl_planer/actions/runs/42417829737)). SQL wurde zusätzlich *nur lesend* gegen die produktive Datenbank ausgeführt. Main-/Pages-Prüfungen für den Merge-Commit wurden angestoßen. **Keine Datenmutation, kein Cloud-Versionswechsel, kein Produktions-Edge-Deploy.**
 - Mindestens **drei selbstständige `schedule`-Läufe** sind erfolgreich: [07:28](https://github.com/Smolmig/cwl_planer/actions/runs/42351395780), [14:58](https://github.com/Smolmig/cwl_planer/actions/runs/42384101005), [19:31 UTC](https://github.com/Smolmig/cwl_planer/actions/runs/42406623454). GitHub Cron bleibt Best-Effort; keine lückenlose Garantie.
 - **Supabase Edge Collector v5** ist aktiv. 3 Clanprofile hatten bei Abfrage 19:31 UTC letzte Erfolge 19:31:41–50 UTC, 0 gespeicherte Fehler und 45 beobachtete Angriffe (über Profile aufsummiert).
 - Produktiver, **nur lesender** Datenqualitäts-Befund: 33 CWL-App-Clan-Kriegszeilen, 31 final und 2 vorläufig. Von 31 finalen sind 21 Import-Zeilen als Missed-vollständig gekennzeichnet; die **10 finalen API-Kriegszeilen ohne Missed-Nachweis** decken **7 eindeutige Clash-War-Keys** ab. Sechs der 10 (fünf eindeutige) dokumentieren 15/15 individuelle Angriffe und volle Roster; zwei (ein Krieg) 14/15; zwei (ein Krieg) 13/15. **Fehlender gespeicherter Angriff ist KEIN bewiesener verpasster Angriff.**
@@ -59,6 +59,6 @@ Alte Drafts [#45](https://github.com/Smolmig/cwl_planer/pull/45), [#109](https:/
 ## 6. Nächster Chat / nächste Arbeit
 
 1. GitHub-Main, [Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20), jüngste Actions und Issues **neu** prüfen; Appstand nach PR #144 verifiziert.
-2. Den Audit-Branch `audit/collector-cwl-missed-coverage-20261107` und ggf. zugehörigen PR samt GitHub-CI verifizieren; **kein produktiver Schema-/Datenbankeingriff**. SQL-Audit gegebenenfalls read-only wiederholen, um veränderte Historie zu erkennen.
+2. [PR #145](https://github.com/Smolmig/cwl_planer/pull/145) ist bereits gemergt, SQL-Audit und Safety-Regression liegen auf `main`. Die Main-/Pages-Workflow-Ergebnisse zum Merge-Commit `f6ea5b6e` neu prüfen; den read-only Audit bei Bedarf wiederholen. **Keinen produktiven Schema-/Datenbankeingriff** vornehmen.
 3. #104 bleibt Priorität: formal sichere Endkriegs-Missed-Reconciliation anhand offiziell bestätigter Zähler entwickeln **nur** bei verifizierbarer aktueller Quelle; keine Missed-Zahl aus fehlenden Zeilen schätzen. Danach #114/#46 weiterverfolgen.
 4. Am Ende jeder Arbeitsrunde **hier** echten PR-/CI-/Merge-/Live-Status, Dokumente, Datenqualitätsgrenzen, offene Punkte und die nächste Aufgabe aktualisieren.
