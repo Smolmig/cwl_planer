@@ -4314,6 +4314,8 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  const activeRowId=activeControl?.closest(".member")?.dataset.id;
  const activeDayRule=activeControl?.matches?.(".rulebtn[data-day]")?
   Number(activeControl.dataset.day):null;
+ const focusedRuleTop=Number.isInteger(activeDayRule)&&listVisible?
+  activeControl.getBoundingClientRect().top:null;
  const activeControlSelector=activeRowId?(
   Number.isInteger(activeDayRule)&&activeDayRule>=0&&activeDayRule<state.config.days
    ?'.rulebtn[data-day="'+activeDayRule+'"]'
@@ -4355,7 +4357,15 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  if(activeRowId&&activeControlSelector){
   const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===activeRowId)
    ?.querySelector(activeControlSelector);
-  if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});
+  if(replacement&&!replacement.disabled){
+   replacement.focus({preventScroll:true});
+   // Browser scroll anchoring may preserve a nearby row while moving the
+   // actively edited rule. Keep THAT control visually stationary as well.
+   if(Number.isFinite(focusedRuleTop)&&focusedRuleTop>=0&&focusedRuleTop<window.innerHeight){
+    const delta=replacement.getBoundingClientRect().top-focusedRuleTop;
+    if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
+   }
+  }
  }
 }
 function moveMember(id,delta){const i=state.members.findIndex(m=>m.id===id),j=i+delta;if(i<0||j<0||j>=state.members.length)return;[state.members[i],state.members[j]]=[state.members[j],state.members[i]];renderAll("Reihenfolge gespeichert · Plan aktualisiert ✓")}
