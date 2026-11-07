@@ -10,9 +10,11 @@ const uuid=value=>typeof value==="string"&&
 const identicalTags=(a,b)=>{
   if(!Array.isArray(a)||!Array.isArray(b)||a.length!==b.length)return false;
   const left=a.map(tag),right=b.map(tag);
-  return left.every(validTag)&&right.every(validTag)&&
-    new Set(left).size===left.length&&new Set(right).size===right.length&&
-    left.sort().every((v,i)=>v===right.sort()[i]);
+  if(!left.every(validTag)||!right.every(validTag)||
+     new Set(left).size!==left.length||new Set(right).size!==right.length)
+    return false;
+  const sortedRight=right.sort();
+  return left.sort().every((v,i)=>v===sortedRight[i]);
 };
 const attackKey=a=>tag(a.attacker_tag)+":"+String(a.attack_order);
 const equalAttack=(a,b)=>
