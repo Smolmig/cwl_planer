@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.17";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.17";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.18";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.18";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -267,17 +267,17 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
           "<span class='cwl-prep-out'>↓ Raus: "+esc(review.toRemove.map(m=>m.name||tagOf(m.tag)).join(", "))+"</span>"+
           "<span class='cwl-prep-in'>↑ Rein: "+esc(review.toAdd.map(m=>m.name||tagOf(m.tag)).join(", "))+"</span>"+
           "</div>":"")+
-        "<span class='statusline'>Details in „Aufstellung“ · Stand "+
+        "<div class='statusline cwl-prep-meta'>Details in „Aufstellung“ · Stand "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
-        "</span>"+
+        "</div>"+
         (review.status==="match"&&completedSwaps?.status==="changes"?
-         "<span class='statusline'>Seit Tag "+(round.day-1)+": "+
+         "<div class='statusline cwl-prep-completed'>Seit Tag "+(round.day-1)+": "+
          completedSwaps.toRemove.length+" raus · "+completedSwaps.toAdd.length+
-         " rein (bereits in Clash)</span>":"")+
+         " rein (bereits in Clash)</div>":"")+
         (review.status==="changes"||completedSwaps?.status==="changes"?
-         "<button type='button' class='btn small cwl-copy-live-swaps'>"+
+         "<div class='cwl-prep-actions'><button type='button' class='btn small cwl-copy-live-swaps'>"+
          (review.status==="changes"?"Aufstellungswechsel kopieren":"Wechseltext kopieren")+
-         "</button>":"")+
+         "</button></div>":"")+
         "</div>";
     // Preparation has a separate optional Clash peek, but the planned chips
     // above are the primary place for additions and removals. Keep this quiet:
