@@ -136,8 +136,34 @@ export function reviewPreparationLineup(profile,dayPlan,round,{planningOk=true}=
   matched:teamSize-toRemove.length,teamSize,toRemove,toAdd};
 }
 
-// One-line copy format for the Clash clan chat. Player names remain exact,
-// but UI emojis, tabs and multiline column layout are not copied.
+// Completed changes are a comparison of the ACTUAL rosters of two consecutive
+// CWL days, not a pending swap between the planner and Clash.
+// Never reconstruct them from incomplete historical rosters or another season.
+export function compareConsecutiveCwlLineups(previousRound,currentRound){
+ if(!Number.isInteger(currentRound?.day)||currentRound.day<=1||currentRound.day>7||
+    previousRound?.day!==currentRound.day-1||
+    !previousRound?.available||!currentRound.available||
+    !["inWar","warEnded"].includes(previousRound.state)||
+    currentRound.state!=="preparation")return null;
+ const size=currentRound.teamSize;
+ if(!Number.isInteger(size)||size<1||size>50||previousRound.teamSize!==size)return null;
+ const before=previousRound.clan?.members,after=currentRound.clan?.members;
+ const validRoster=roster=>Array.isArray(roster)&&roster.length===size&&
+    roster.every(m=>validTag(tagOf(m?.tag))&&String(m?.name||"").trim())&&
+    new Set(roster.map(m=>tagOf(m.tag))).size===size;
+ if(!validRoster(before)||!validRoster(after))return null;
+ const beforeTags=new Set(before.map(m=>tagOf(m.tag))),afterTags=new Set(after.map(m=>tagOf(m.tag)));
+ const toRemove=before.filter(m=>!afterTags.has(tagOf(m.tag)))
+   .map(m=>({tag:tagOf(m.tag),name:m.name,townHallLevel:m.townHallLevel}));
+ const toAdd=after.filter(m=>!beforeTags.has(tagOf(m.tag)))
+   .map(m=>({tag:tagOf(m.tag),name:m.name,townHallLevel:m.townHallLevel}));
+ if(toRemove.length!==toAdd.length)return null;
+ return {status:toRemove.length?"changes":"match",teamSize:size,
+   matched:size-toRemove.length,toRemove,toAdd};
+}
+
+// Compact paste-ready text for Clash chat. Incoming players get an @ prefix;
+// actual mention activation still depends on Clash's chat behaviour.
 export function formatClashSwapText(day,review) {
   if(!Number.isInteger(day)||day<1||day>7)return null;
   if(!review||!["match","changes"].includes(review.status))return null;

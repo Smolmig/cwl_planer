@@ -19,7 +19,8 @@ test("Clash swap copy uses one line and preserves only player names, no UI emoji
  assert.equal(formatClashSwapText(2,{status:"changes",toAdd:[],toRemove:[]}),null);
  const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\nKen  "}],toAdd:[{name:"Kai\tZen"}]});
  assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: Kai Zen");
- assert.match(live,/formatClashSwapText\(round\.day,latest\)/);
+ assert.match(live,/formatClashSwapText\(round\.day,changes\)/);
+ assert.match(live,/changes=compareConsecutiveCwlLineups\(prior,currentRound\)/);
  assert.match(live,/Aufstellungswechsel kopieren/);
  assert.doesNotMatch(live,/🔴 Aus Clash raus/);
 });

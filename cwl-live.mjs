@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.16";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.16";
 import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.16";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -218,7 +218,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       if(openedOutgoing.has(key)){showSwapPopover(chip,dayCard,review,profile);break}
     }
   }
-  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0}={}) {
+  function renderDay(round,dayCard,profile,{fresh=false,checkedAt=0,previousRound=null,previousFresh=false}={}) {
     const wasOpen=expandedDays.has(round?.day)||!!dayCard.querySelector(".cwl-live-details[open]");
     const wasOpponentOpen=expandedOpponentDays.has(round?.day)||!!dayCard.querySelector(".cwl-opponent-details[open]");
     dayCard.querySelector(".cwl-live-day")?.remove();
@@ -251,6 +251,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const review=reviewPreparationLineup(profile,dayPlan,round,{planningOk:planning?.ok!==false});
     const reviewFresh=fresh&&round.state==="preparation";
     const usableReview=reviewFresh&&["match","changes"].includes(review?.status);
+    const completedSwaps=reviewFresh&&review?.status==="match"&&previousFresh
+      ?compareConsecutiveCwlLineups(previousRound,round):null;
     annotatePlannedLineup(dayCard,review,usableReview,round,profile);
     const reviewHtml=!review?"":!reviewFresh
       ?"<div class='cwl-prep-review'><span class='statusline'>Clash-Abgleich derzeit nicht aktuell. "+
@@ -268,8 +270,14 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<span class='statusline'>Details in „Aufstellung“ · Stand "+
         esc(new Date(checkedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))+
         "</span>"+
-        (review.status==="changes"?
-         "<button type='button' class='btn small cwl-copy-live-swaps'>Aufstellungswechsel kopieren</button>":"")+
+        (review.status==="match"&&completedSwaps?.status==="changes"?
+         "<span class='statusline'>Seit Tag "+(round.day-1)+": "+
+         completedSwaps.toRemove.length+" raus · "+completedSwaps.toAdd.length+
+         " rein (bereits in Clash)</span>":"")+
+        (review.status==="changes"||completedSwaps?.status==="changes"?
+         "<button type='button' class='btn small cwl-copy-live-swaps'>"+
+         (review.status==="changes"?"Aufstellungswechsel kopieren":"Wechseltext kopieren")+
+         "</button>":"")+
         "</div>";
     // Preparation has a separate optional Clash peek, but the planned chips
     // above are the primary place for additions and removals. Keep this quiet:
@@ -356,8 +364,17 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       const dp=storage.getPlannedLineups?.().find(p=>p.day===round.day);
       const latest=reviewPreparationLineup(ctx.profile,dp,currentRound,{planningOk:storage.getPlanningState?.()?.ok!==false});
       if(!latest||latest.status==="unavailable"){notify("Abgleich derzeit nicht eindeutig. Bitte CWL-Daten aktualisieren.");return;}
-      const message=formatClashSwapText(round.day,latest);
-      if(!message){notify("Kein gültiger Wechseltext verfügbar. Bitte CWL-Daten aktualisieren.");return;}
+      let changes=latest;
+      if(latest.status==="match"){
+        const prior=current.rounds?.find(r=>r.day===round.day-1);
+        if(staleRoundDays.has(round.day-1)||!prior){
+          notify("Die vorherige Clash-Aufstellung ist nicht aktuell genug für den Wechseltext.");
+          return;
+        }
+        changes=compareConsecutiveCwlLineups(prior,currentRound);
+      }
+      const message=changes?.status==="changes"?formatClashSwapText(round.day,changes):null;
+      if(!message){notify("Die durchgeführten Wechsel sind nicht eindeutig nachvollziehbar.");return;}
       storage.copyText?.(message,"Clash-Wechseltext kopiert");
     });
     section.querySelector(".cwl-live-details")?.addEventListener("toggle",event=>{
@@ -460,7 +477,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     for (let i=0;i<ctx.profile.config.days;i++){
       const dayCard=document.getElementById("day-card-"+i);
       if(dayCard)renderDay(byDay.get(i+1),dayCard,ctx.profile,
-        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt});
+        {fresh:fresh&&!staleRoundDays.has(i+1),checkedAt:lastSuccessfulAt,
+         previousRound:byDay.get(i),previousFresh:fresh&&!staleRoundDays.has(i)});
     }
   }
   async function refreshNow(manual=false) {
