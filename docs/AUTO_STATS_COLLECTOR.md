@@ -239,16 +239,24 @@ not a cryptographic Clash proof. A future strictly server-side caller must
 fetch the legitimate `/clanwarleagues/wars/{tag}` response independently,
 run the validated pure preview and never trust client/imported parameters.
 
-**Unmet deployment gates:** Verify SQL syntax, grants, dry-run behavior,
-rollback, retries, contested writes and concurrent collector inserts in a
-**disposable PostgreSQL 17 + Supabase-role test environment**. Check real
-RLS and grants with advisors, review the global writer-lock impact,
-create a proper migration with `supabase migration new` *only after*
-tests and approval, preserve a backup, and explicitly deploy/monitor.
-The current Node regression
+**Validation prepared:** A dedicated CI job
+[`.github/workflows/collector-reconciliation-sql-ci.yml`](../.github/workflows/collector-reconciliation-sql-ci.yml)
+uses an isolated PostgreSQL 17 service, synthetic Supabase-like roles and
+fictitious app-clan records. It executes the draft SQL to verify real grants,
+dry-run semantics, stale-record rejection, forced rollback, independent tenant
+rows, duplicate apply, and a concurrent writer lock timeout. CI results must
+be checked before claiming a passed database integration test.
+The Node regression
 [`tests/collector-historical-cwl-atomic-rpc-design.test.cjs`](../tests/collector-historical-cwl-atomic-rpc-design.test.cjs)
-validates the pure input protocol and static SQL safeguards only; **it is
-not a live database/SQL-execution test**. The unknown historical 29.10.
+validates pure input protocol and static safety safeguards separately.
+
+**Unmet deployment gates even after a green CI:** Run the exact draft on a
+Supabase-equivalent disposable/staging environment using production-equivalent
+RLS, triggers and grants, review the global writer-lock impact under real
+collector load, check security advisors, and separately review the trusted
+caller and official source verification. Only then consider a proper
+`supabase migration new` and explicitly approved migration/deployment. No
+production write is authorized by the existence of this draft. The unknown historical 29.10.
 import and earlier missing official counters stay unresolved.
 
 ## Monitoring and recovery
