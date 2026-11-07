@@ -202,8 +202,19 @@ async function archiveForAppClan(settings,clanId,snapshots,checkedAt,partialErro
       await upsert(settings,"cwl_stat_attacks",attacks.slice(i,i+80),
         "clan_id,war_key,attacker_tag,attack_order");
     if(snapshot.war.finalized&&!alreadyFinal){
+      // Persist confirmed misses BEFORE marking a war finalized/complete.
+      // An interrupted write leaves a staged war for a safe retry.
+      const completeMissed= snapshot.war.missed_log_complete===true&&
+        Array.isArray(snapshot.missed);
+      if(completeMissed&&snapshot.missed.length){
+        for(let i=0;i<snapshot.missed.length;i+=80)
+          await upsert(settings,"cwl_stat_missed",
+            snapshot.missed.slice(i,i+80).map(m=>({...m,clan_id:clanId})),
+            "clan_id,war_key,player_tag");
+      }
       await upsert(settings,"cwl_stat_wars",[
-        {...snapshot.war,clan_id:clanId,finalized:true}
+        {...snapshot.war,clan_id:clanId,finalized:true,
+          missed_log_complete:completeMissed}
       ],"clan_id,war_key");
     }
     warCount++;attacksCount+=attacks.length;
