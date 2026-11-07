@@ -182,7 +182,7 @@ begin
   end if;
 
   -- Both statements run atomically with the checks above; if the update
-  -- conflicts, the insert also rolls back. Never ON CONFLICT DO NOTHING.
+  -- conflicts, the insert also rolls back. No silent conflict suppression.
   insert into public.cwl_stat_missed
     (clan_id,war_key,player_tag,player_name,missed_count)
     select p_clan_id,p_war_key,m.value->>'player_tag',
