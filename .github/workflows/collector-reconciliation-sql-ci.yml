@@ -1,0 +1,82 @@
+name: Historical CWL Missed SQL staging regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/DRAFT_cwl_historical_missed_atomic_rpc.sql'
+      - 'tests/sql/**'
+      - 'supabase/functions/coc-stats-collector/collector-reconciliation.mjs'
+      - '.github/workflows/collector-reconciliation-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/DRAFT_cwl_historical_missed_atomic_rpc.sql'
+      - 'tests/sql/**'
+      - 'supabase/functions/coc-stats-collector/collector-reconciliation.mjs'
+      - '.github/workflows/collector-reconciliation-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-atomic-reconciliation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: ci-synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client on disposable runner
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create fake tenant schema and Supabase-style roles
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-missed-atomic-rpc-fixture.sql
+      - name: Install DRAFT RPC only in disposable test Postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_historical_missed_atomic_rpc.sql
+      - name: Verify real SQL privileges, dry run, rollback, tenants, retry
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-missed-atomic-rpc-check.sql
+      - name: Verify concurrent collector write blocks stale RPC
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -c "
+            BEGIN;
+            UPDATE public.cwl_stat_attacks SET destruction=99
+              WHERE clan_id='22222222-2222-4222-8222-222222222222'
+                AND war_key='cwl:#2QGL';
+            SELECT pg_sleep(3);
+            ROLLBACK;
+          " >/tmp/cwl-sql-ci-holder.log 2>&1 &
+          holder=$!
+          sleep 1
+          set +e
+          result="$(psql -v ON_ERROR_STOP=1 -c             'SET ROLE service_role; SELECT public.test_verified_rpc(false,2);' 2>&1)"
+          status=$?
+          set -e
+          wait "$holder"
+          if [[ "$status" -eq 0 ]] || ! grep -qi 'lock timeout' <<<"$result"; then
+            echo "::error::Expected a safe 1s lock timeout while another writer holds a table lock"
+            exit 1
+          fi
+          # Lock timeout must not change any tenant's records.
+          psql -v ON_ERROR_STOP=1 -At -c             "select case when (select count(*) from public.cwl_stat_missed)=1
+                       and (select count(*) from public.cwl_stat_wars
+                            where missed_log_complete)=1
+                    then 'safe' else 'unsafe' end" | grep -qx safe
+          echo "Synthetic cross-writer conflict rejected without data changes"
