@@ -111,3 +111,53 @@ export function previewHistoricalCwlMisses({
     missedRows:source.missed.map(m=>({...m,clan_id:storedWar.clan_id}))
   };
 }
+
+
+/**
+ * Constructs the only payload shape understood by the non-deployed SQL draft.
+ * Pure, verified, and always DRY-RUN. It does not call an RPC, database or API.
+ * A later reviewed privileged caller must independently re-fetch the official
+ * source immediately before using this; do not use a browser-supplied input.
+ */
+export function prepareHistoricalCwlMissedRpc(input={}){
+  const proposal=previewHistoricalCwlMisses(input);
+  if(!proposal.eligible)
+    return {eligible:false,reason:proposal.reason,rpcArgs:null};
+  const {linkedClan,storedWar,storedAttacks,officialWar}=input;
+  const timestamp=Date.parse(storedWar.updated_at);
+  if(!Number.isFinite(timestamp)||!Number.isFinite(Date.parse(storedWar.started_at)))
+    return {eligible:false,reason:"stored_version_missing",rpcArgs:null};
+  const ownTag=tag(linkedClan.clash_tag);
+  const officialSide=tag(officialWar.clan?.tag)===ownTag?officialWar.clan:
+    tag(officialWar.opponent?.tag)===ownTag?officialWar.opponent:null;
+  if(!officialSide||!Number.isInteger(officialSide.attacks)||
+     officialSide.attacks!==storedAttacks.length)
+    return {eligible:false,reason:"official_counter_missing",rpcArgs:null};
+  const canonical=storedAttacks.map(a=>({
+    attacker_tag:tag(a.attacker_tag),attack_order:a.attack_order,
+    defender_tag:tag(a.defender_tag),attacker_th:a.attacker_th??null,
+    defender_th:a.defender_th??null,stars:a.stars,
+    destruction:a.destruction
+  })).sort((a,b)=>(a.attacker_tag<b.attacker_tag?-1:
+    a.attacker_tag>b.attacker_tag?1:0)||a.attack_order-b.attack_order);
+  const missed=proposal.missedRows.map(m=>({
+    player_tag:tag(m.player_tag),player_name:m.player_name,
+    missed_count:1
+  })).sort((a,b)=>a.player_tag<b.player_tag?-1:a.player_tag>b.player_tag?1:0);
+  return {
+    eligible:true,reason:"verified_rpc_dry_run_only",
+    rpcArgs:{
+      p_clan_id:storedWar.clan_id,
+      p_war_key:storedWar.war_key,
+      p_expected_clash_tag:ownTag,
+      p_expected_updated_at:storedWar.updated_at,
+      p_expected_started_at:storedWar.started_at,
+      p_expected_opponent_tag:tag(storedWar.opponent_tag),
+      p_expected_roster:[...storedWar.roster_tags],
+      p_expected_attacks:canonical,
+      p_official_attack_counter:officialSide.attacks,
+      p_confirmed_missed:missed,
+      p_apply:false
+    }
+  };
+}
