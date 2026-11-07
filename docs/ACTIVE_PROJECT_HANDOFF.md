@@ -1,6 +1,6 @@
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
-**Stand:** 07.11.2026, **Cloud v1.16.20 vollständig live**, P0-Collector-Audit [PR #145](https://github.com/Smolmig/cwl_planer/pull/145) gemergt (nur SQL-/Test-/Dokumentationsdateien).  
+**Stand:** 07.11.2026, **Cloud v1.16.20 live**; Collector-Audit #145 gemergt; neue reine historische Missed-Vorprüfung in separatem Entwicklungsbranch (nicht produktiv).  
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 ## 1. Sofortstart beim Chatwechsel
@@ -38,6 +38,15 @@
 - Reproduzierbares SQL [`scripts/collector-cwl-missed-coverage.sql`](../scripts/collector-cwl-missed-coverage.sql) – aggregiert, tenant-sichere Joins und unterschiedliche App-Clan-/Spiel-Kardinalitäten. Safety-Regression `tests/collector-cwl-missed-coverage-sql.test.cjs`. Ausführlich [AUTO_STATS_COLLECTOR.md](AUTO_STATS_COLLECTOR.md).
 - **Nächster P0-Gate:** Eigener geprüfter Reconciliation-Entwurf ausschließlich mit noch abrufbarem originalen abgeschlossenen Clash-API-Endstand und echtem Attack-Counter; Quellnachweis, Auth, RLS, Fehler-/Retry-Verhalten und Idempotenz separat prüfen, **kein stilles Backfill**. Wenn Quelle nicht mehr verfügbar, bleibt Unbekannt bestehen. Historische Lücke 29.10. weiterhin offen.
 
+### Nächster P0-Baustein – historische CWL-Missed-Vorprüfung (NICHT deployed)
+
+- Branch: [feature/cwl-missed-official-reconciliation-preview-20261107](https://github.com/Smolmig/cwl_planer/tree/feature/cwl-missed-official-reconciliation-preview-20261107). Das ist **ein reines serverseitiges, bisher unverkabeltes Vorschau-Modul**; keine Cloud-Versionsanhebung und keine Änderung an produktiver Supabase-Edge-Funktion.
+- `supabase/functions/coc-stats-collector/collector-reconciliation.mjs` stellt `previewHistoricalCwlMisses` bereit. Ohne gültigen `warEnded`-Snapshot vom authentifizierten offiziellen Clash-Endpunkt samt **offiziellem `clan.attacks`-Zähler** keine Bestätigung. Auch verifizierte 15/15 gespeicherte Angriffe allein reichen ausdrücklich nicht.
+- Für einen berechtigten App-Clan müssen exakt passende `clan_id`, Kriegsart, War-Key, separat geprüfter API-WarTag, Beginn, Gegner, vollständiges Roster sowie **sämtliche gespeicherten Angriffe** mit API-Angriffen (Identität, RH, Ziel, Sterne, Schaden) übereinstimmen. Andere Clanprofile, laufende/nicht finale Kriege, bestehende Missed-Zeilen, Imports, unvollständige oder abweichende Daten werden **abgelehnt**.
+- Ergebnis nur intern: `eligible`, explizite `confirmedMissedCount` **oder `null` (unbekannt)**, private Vorschlagszeilen; **kein API-/DB-Zugriff, kein Logger, kein Schreibpfad**. Tests: `tests/collector-historical-cwl-missed-preview.test.cjs` mit 15/15, 14/15, 13/15, 0/15, 30er, unbekannten Zählern, Manipulation, fehlenden Daten, tenantübergreifenden Risiken, widersprüchlichen Angriffen.
+- Dokumentation in [AUTO_STATS_COLLECTOR.md](AUTO_STATS_COLLECTOR.md) ergänzt. **Release-Gate:** Erst GitHub-PR-CI, Code-Review, Main-CI. Da das Modul nicht importiert/aufgerufen wird, gibt es kein Live-Reconciliation-Verhalten. Späterer Writer erfordert eigenständige Freigabe, autorisierten serverseitigen Fetch, transaktionalen Konfliktschutz, Write-Order, Retries und echte Quellabnahme. Historische Lücken weiterhin unbekannt lassen.
+- Der vorherige PR #145 hatte nach Merge **erfolgreiche Main-Regression [42418047000](https://github.com/Smolmig/cwl_planer/actions/runs/42418047000)** und **Pages [42418046703](https://github.com/Smolmig/cwl_planer/actions/runs/42418046703)**; offizielles Cloud-Release bleibt v1.16.20.
+
 ## 4. Priorisierte offene Themen (immer frisch verifizieren)
 
 1. **P0 – Datenintegrität:** [#104](https://github.com/Smolmig/cwl_planer/issues/104) autonomer Collector und Endkriegs-/Missed-Attack-Nachweise. Der signierte Cron wurde am 07.11. nachgewiesen, vollständige Endkriegs-/Misses-Abnahme bleibt offen. [Draft-PR #142](https://github.com/Smolmig/cwl_planer/pull/142) nicht blind deployen.
@@ -58,7 +67,8 @@ Alte Drafts [#45](https://github.com/Smolmig/cwl_planer/pull/45), [#109](https:/
 
 ## 6. Nächster Chat / nächste Arbeit
 
-1. GitHub-Main, [Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20), jüngste Actions und Issues **neu** prüfen; Appstand nach PR #144 verifiziert.
-2. [PR #145](https://github.com/Smolmig/cwl_planer/pull/145) ist bereits gemergt, SQL-Audit und Safety-Regression liegen auf `main`. Die Main-/Pages-Workflow-Ergebnisse zum Merge-Commit `f6ea5b6e` neu prüfen; den read-only Audit bei Bedarf wiederholen. **Keinen produktiven Schema-/Datenbankeingriff** vornehmen.
-3. #104 bleibt Priorität: formal sichere Endkriegs-Missed-Reconciliation anhand offiziell bestätigter Zähler entwickeln **nur** bei verifizierbarer aktueller Quelle; keine Missed-Zahl aus fehlenden Zeilen schätzen. Danach #114/#46 weiterverfolgen.
-4. Am Ende jeder Arbeitsrunde **hier** echten PR-/CI-/Merge-/Live-Status, Dokumente, Datenqualitätsgrenzen, offene Punkte und die nächste Aufgabe aktualisieren.
+1. GitHub-Main, [Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20), jüngste Actions/PRs und #104 **frisch** prüfen; Cloud v1.16.20 ist live.
+2. Den neuen Reconciliation-Preview-Branch `feature/cwl-missed-official-reconciliation-preview-20261107` und ggf. PR überprüfen: reine Evidenz-/Mandantenprüfung mit **keinen** Schreiboperationen; CI-Gates vollständig dokumentieren, erst dann mergen.
+3. **P0 #104 nächster wirklicher Daten-Schritt:** Wenn noch offizielle Endkriegs-API-Daten zugänglich sind, ein **separat freigegebenes** serverseitiges, transaktional abgesichertes Reconciliation-Werkzeug entwerfen (mit trockenem Audit zuerst). Ohne verifizierten `clan.attacks`-Zähler oder bei abweichender Speicherung **keine Nachtragung**. Keine Live-Edge-Verkabelung ohne zusätzliche Abnahme; historische Lücke 29.10. offen.
+4. Danach Statistik-UX #114 / App-UX #46. Jede Änderung nach UX-Leitlinien mit Scope-, Mobil- und Rollenregression.
+5. Am Ende jeder Runde diese **GitHub-Übergabe** mit echtem Head-SHA, PR-/CI-/Merge-/Deploy-Nachweis, verbleibenden Grenzen und nächstem Schritt aktualisieren.
