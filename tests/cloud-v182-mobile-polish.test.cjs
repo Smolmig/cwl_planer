@@ -7,18 +7,18 @@ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
 const style=app.match(/<style>([\s\S]*?)<\/style>/)?.[1];
 const loadCore=()=>import(pathToFileURL(path.join(root,"cwl-live-core.mjs")).href);
-test("Clash swap copy uses one line and preserves only player names, no UI emojis or column gaps",async()=>{
+test("Clash swap copy prefixes incoming players with @ and preserves the compact one-line layout",async()=>{
  const {formatClashSwapText}=await loadCore();
  const text=formatClashSwapText(2,{status:"changes",
    toRemove:[{name:"Suminizer"},{name:"Raphtor"}],
    toAdd:[{name:"Luki"},{name:"Tommy"}]});
- assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: Luki, Tommy");
+ assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: @Luki, @Tommy");
  assert.doesNotMatch(text,/[\n\r\t]|[🔴🟢📋]/u);
  assert.equal(formatClashSwapText(2,{status:"match"}),"Tag 2: Aufstellung passt. Keine Wechsel noetig.");
  assert.equal(formatClashSwapText(3,{status:"unavailable"}),null);
  assert.equal(formatClashSwapText(2,{status:"changes",toAdd:[],toRemove:[]}),null);
  const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\nKen  "}],toAdd:[{name:"Kai\tZen"}]});
- assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: Kai Zen");
+ assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: @Kai Zen");
  assert.match(live,/formatClashSwapText\(round\.day,changes\)/);
  assert.match(live,/changes=compareConsecutiveCwlLineups\(prior,currentRound\)/);
  assert.match(live,/Aufstellungswechsel kopieren/);
