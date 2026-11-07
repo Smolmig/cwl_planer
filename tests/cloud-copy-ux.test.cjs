@@ -13,9 +13,13 @@ test("Cloud user-facing text is consistent with the statistics and actual featur
  assert.match(html,/2 von 2 ergeben 100 %/);
  assert.match(html,/durchschnittlich erreichte Sterne pro Angriff/);
  assert.match(html,/<span>Verpasst<\/span>/);
+ const stats=read("cwl-stats.mjs");
+ assert.match(stats,/\["3★-Quote",pct\(summary\.hitRate\)\]/);
+ assert.doesNotMatch(stats,/3★-Hit-Rate/);
+ assert.match(stats,/Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff/);
  assert.doesNotMatch(html,/>Hit Rate</);
  assert.match(html,/auf bis zu sieben CWL-Kriegstage/);
- assert.match(html,/Neu in v1\.16\.20/);
+ assert.match(html,/Neu in v1\.16\.21/);
 });
 
 test("Every Cloud user decision uses the planner's app-native modal",()=>{
@@ -40,10 +44,10 @@ test("Every Cloud user decision uses the planner's app-native modal",()=>{
 test("UX release metadata and cloud app references agree without changing offline PWA",()=>{
  const html=read("cloud-app.html"),sync=read("cloud-sync.mjs");
  const version=JSON.parse(read("cloud-version.json"));
- assert.equal(version.version,"v1.16.20");
- assert.match(html,/const APP_VERSION="v1\.16\.20";/);
- assert.match(html,/cloud-sync\.mjs\?v=1\.16\.20/);
- assert.match(sync,/cloud-backups\.mjs\?v=1\.16\.20/);
+ assert.equal(version.version,"v1.16.21");
+ assert.match(html,/const APP_VERSION="v1\.16\.21";/);
+ assert.match(html,/cloud-sync\.mjs\?v=1\.16\.21/);
+ assert.match(sync,/cloud-backups\.mjs\?v=1\.16\.21/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
  assert.match(read("CHANGELOG.md"),/\[1\.3\.8\]/);
 });
