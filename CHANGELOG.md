@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.21] - 2026-11-08
+
+### Datenintegrität: CWL-Missed nur mit tatsächlich bestätigtem Endnachweis
+- **Fehler behoben:** Eine finale CWL-Aufstellung (`roster_tags` vollständig) ohne bestätigtes `missed_log_complete=true` darf aus fehlenden gespeicherten Angriffen keine angeblich „verpassten“ Angriffe ableiten. Historische 15/15-, 14/15- und 13/15-API-Kriege bleiben diesbezüglich **unbekannt**, statt fälschlich als vollständig oder mit geschätzten Ausfällen aufzutauchen.
+- **Belegte Fakten bleiben sichtbar:** Echte abgelegte Angriffe, Sterne und 3★-Quote unverändert. Explizit bestätigte vollständige CWL-Missed-Logs ergeben weiterhin exakte Werte; einzelne belegte Ausfälle bleiben bei unvollständigem CWL-Log als **Untergrenze („mind.“)** sichtbar. Die bestehende normale CW-Auswertung bleibt eigenständig.
+- **Begriffe:** Statistik-KPI heißt nun durchgehend **„3★-Quote“**. Bei unbekannter Datenlage erklärt die Spielerstatistik, warum eine CWL-Aufstellung allein keinen versäumten Angriff beweist.
+- **Sicherheit:** Keine Änderung an CWL-Solver, geplanten Einsätzen, Spielerdaten, Importformat, Rollen, RLS, Live-DB, GitHub-Collector oder Offline-PWA. Regressionen prüfen gemischte CW/CWL-Kriege und belegte versus unbekannte Ausfälle.
+
+
 ## [1.16.20] - 2026-11-07
 
 ### Statistik: Rathaus-Vergleiche folgen der Kriegsart
