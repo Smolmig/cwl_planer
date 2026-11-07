@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.19";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.20";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -131,22 +131,34 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const host=$("statsMatchupComparison"),label=$("statsCompareScope");
     if(!host)return;
     const chosen=comparisonWars();
+    const warTypeLabel=compareType==="normal"?"normale CWs":
+      compareType==="cwl"?"CWL-Kriegstage":"CW-/CWL-Kriegstage";
     if(label)label.textContent="Verglichen werden "+chosen.length+
-      " abgeschlossene CW-/CWL-Kriegstage im gewählten Vergleichszeitraum. "+
+      " abgeschlossene "+warTypeLabel+" im gewählten Vergleichszeitraum. "+
       "Die freie Spielerstatistik und Spielerform bleiben davon unabhängig.";
     const data=computeThMatchupComparison(chosen,attacks,{type:"all",last:"all",cwlSeasons:"all"});
     const labels={lower:"Gegner-RH niedriger",same:"Gleiches Rathaus",higher:"Gegner-RH höher",unknown:"RH unbekannt"};
-    const kinds=[["normal","Normale Clankriege"],["cwl","CWL"]];
+    // Only show the selected war type in the optional breakdown. A CW-only
+    // filter must not leave an empty CWL panel (or vice versa).
+    const kinds=compareType==="normal"?[["normal","Normale Clankriege"]]:
+      compareType==="cwl"?[["cwl","CWL"]]:
+      [["normal","Normale Clankriege"],["cwl","CWL"]];
     // First-glance comparison uses the same filtered attacks as the detail view.
     // Comparing a CW against lower RH with CWL at equal RH is an observation,
     // not evidence of a particular player quality or a causal league effect.
-    const highlights=[
-      {kind:"normal",matchup:"lower",label:"CW · niedrigeres RH"},
-      {kind:"normal",matchup:"same",label:"CW · gleiches RH"},
-      {kind:"cwl",matchup:"same",label:"CWL · gleiches RH"}
+    const threeFor=kind=>[
+      {kind,matchup:"lower",label:(kind==="cwl"?"CWL":"CW")+" · niedrigeres RH"},
+      {kind,matchup:"same",label:(kind==="cwl"?"CWL":"CW")+" · gleiches RH"},
+      {kind,matchup:"higher",label:(kind==="cwl"?"CWL":"CW")+" · höheres RH"}
     ];
-    const highlightsHtml="<p class='stats-highlight-intro'>Wie oft gelingen 3 Sterne gegen niedrigere bzw. gleich hohe Rathäuser? "+
-      "CW und CWL stehen direkt nebeneinander – mit der Anzahl der jeweiligen Angriffe.</p>"+
+    const highlights=compareType==="normal"?threeFor("normal"):
+      compareType==="cwl"?threeFor("cwl"):
+      [threeFor("normal")[0],threeFor("normal")[1],threeFor("cwl")[1]];
+    const intro=compareType==="all"?
+      "CW gegen niedrigeres und gleiches RH sowie CWL gegen gleiches RH – mit belegter Angriffszahl.":
+      "3★-Quoten gegen niedrigere, gleiche und höhere Rathausstufen – nur für "+
+      (compareType==="normal"?"normale Clankriege.":"CWL-Kriegstage.");
+    const highlightsHtml="<p class='stats-highlight-intro'>"+intro+"</p>"+
       "<div class='stats-highlight-cols' role='group' aria-label='Drei-Sterne-Quote nach Gegnerstärke und Kriegsart'>"+
       highlights.map(item=>{
         const row=data.find(r=>r.type===item.kind&&r.matchup===item.matchup);

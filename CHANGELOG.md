@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.20] - 2026-11-07
+
+### Statistik: Rathaus-Vergleiche folgen der Kriegsart
+- **Fokus:** Bei `Nur CW` werden niedrigere, gleiche und höhere Gegner-RH im normalen Clan-Krieg angezeigt; bei `Nur CWL` die entsprechenden CWL-Werte. Bei `CW und CWL` bleiben die bisherigen drei direkten Vergleichsspalten erhalten.
+- **Details:** Aufgeklappte Kombinationen enthalten nur die ausgewählte Kriegsart. Wechseln des Kriegsartfilters schließt das bereits geöffnete Detail nicht; Zeit- und freie Spielerstatistikfilter bleiben unabhängig.
+- **Datenqualität:** Keine Angriffe bedeutet weiterhin keine Daten (kein falsches 0 %), Quoten zeigen echte Dreier und Angriffszahlen. Keine neuen Erfolgsprognosen.
+- **Regression:** Echter Chromium-Test auf 320/390/1366 px in Gold/Hell/Dunkel mit allen Filterzuständen, Filterisolation und erhaltener Detailöffnung. Keine Änderung an CWL-Solver, Supabase, RLS, Rollen, Rohdaten oder Offline-PWA.
+- **Übergabe:** Laufender, versionierter Entwicklungsstand unter [docs/ACTIVE_PROJECT_HANDOFF.md](docs/ACTIVE_PROJECT_HANDOFF.md).
+
 ## [1.16.19] - 2026-11-07
 
 ### Mitglieder: Tagesregeln bei Cloud-Refresh stabil bedienen

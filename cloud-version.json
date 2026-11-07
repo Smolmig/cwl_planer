@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.19",
+  "version": "v1.16.20",
   "released": "2026-11-07",
-  "summary": "Mitglieder: Während des Cloud-Abgleichs bleibt der fokussierte T1–T7-Tagesregel-Button samt seiner sichtbaren Position erhalten. Geöffnete Spielerkarte und Tagesregeln bleiben offen. Keine Änderungen an Planung, Rollen, Datenbank oder Offline-PWA."
+  "summary": "Statistik: Im Vergleichsfilter »Nur CW« oder »Nur CWL« zeigen die drei Hauptspalten nur passende Rathaus-Gegnerklassen. Details, Zeitraum und Kriegsarten bleiben getrennt; keine Änderung an Statistikwerten, Planung, Rollen, Datenbank oder Offline-PWA."
 }

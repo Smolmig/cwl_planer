@@ -126,3 +126,104 @@ test("comparison UI remains data-only, preserving the independent scopes",()=>{
  assert.match(js,/Wenige Angriffe erlauben noch keinen belastbaren Vergleich/);
  assert.doesNotMatch(js,/Wer ist besser\?|Sieger:/);
 });
+
+
+test("CW/CWL comparison filter shows only relevant first-glance RH categories and keeps disclosure open",{
+ timeout:120000
+},async()=>{
+ const server=serverFor();
+ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const [width,theme] of [[320,"arena"],[390,"light"],[1366,"dark"]]){
+   const page=await browser.newPage({viewport:{width,height:900}});
+   try{
+    const errors=[];page.on("pageerror",e=>errors.push(e.message));
+    await page.goto("http://127.0.0.1:"+server.address().port+
+      "/cloud-app.html",{waitUntil:"domcontentloaded"});
+    const views=await page.evaluate(async theme=>{
+      document.documentElement.dataset.theme=theme;
+      document.body.classList.add("cloud-mode");
+      document.querySelectorAll(".view.active").forEach(el=>el.classList.remove("active"));
+      document.getElementById("view-stats").classList.add("active");
+      const {createCloudStats}=await import("./cwl-stats.mjs");
+      const wars=[
+       {war_key:"normal:one",war_type:"normal",source:"import",finalized:true,
+        started_at:"2026-11-01T12:00:00Z",team_size:15,opponent_name:"CW",roster_tags:[]},
+       {war_key:"cwl:one",war_type:"cwl",source:"import",finalized:true,
+        started_at:"2026-11-02T12:00:00Z",team_size:15,opponent_name:"CWL",roster_tags:[]}
+      ];
+      const tags=["#PPPP","#2PYL","#8PYL"];
+      const attacks=wars.flatMap((war,wi)=>[17,18,19].map((target,i)=>({
+        war_key:war.war_key,attacker_tag:tags[i],attacker_name:"Spieler "+i,
+        attacker_th:18,defender_th:target,attack_order:1,
+        stars:(wi+i)%3===0?3:2,destruction:90
+      })));
+      const sb={from(name){
+       const data=name==="cwl_stat_wars"?wars:
+        name==="cwl_stat_attacks"?attacks:[];
+       return {select(){return this},eq(){return this},order(){return this},
+        limit(){return Promise.resolve({data,error:null})},
+        range(){return Promise.resolve({data,error:null})}};
+      }};
+      const stats=createCloudStats({sb,context:()=>({
+       active:true,clanId:"read-only-demo",role:"viewer",memberTags:tags
+      }),notify:()=>{},confirmAction:async()=>true});
+      await stats.load();
+      document.querySelector('[data-stats-section="compare"]').click();
+      const host=document.getElementById("statsMatchupComparison");
+      const scope=document.getElementById("statsCompareScope");
+      const filter=document.getElementById("statsCompareType");
+      const snapshot=()=>({
+       labels:[...host.querySelectorAll(".stats-highlight-col")].map(el=>
+        el.querySelector(":scope > span").textContent.trim()),
+       groups:[...host.querySelectorAll(".stats-matchup-group h4")].map(el=>el.textContent.trim()),
+       scope:scope.textContent,
+       note:host.querySelector(".stats-highlight-intro")?.textContent,
+       expanded:host.querySelector(".stats-matchup-breakdown")?.open===true
+      });
+      const combined=snapshot();
+      host.querySelector(".stats-matchup-breakdown").open=true;
+      filter.value="normal";filter.dispatchEvent(new Event("change",{bubbles:true}));
+      const normal=snapshot();
+      // A player-statistics filter must not restrict this comparison scope.
+      const statsType=document.getElementById("statsType");
+      statsType.value="cwl";statsType.dispatchEvent(new Event("change",{bubbles:true}));
+      const isolated=snapshot();
+      filter.value="cwl";filter.dispatchEvent(new Event("change",{bubbles:true}));
+      const league=snapshot();
+      filter.value="all";filter.dispatchEvent(new Event("change",{bubbles:true}));
+      const restored=snapshot();
+      return {combined,normal,isolated,league,restored,
+       width:document.documentElement.scrollWidth,viewport:innerWidth};
+    },theme);
+    assert.deepEqual(views.combined.labels,[
+      "CW · niedrigeres RH","CW · gleiches RH","CWL · gleiches RH"]);
+    assert.deepEqual(views.normal.labels,[
+      "CW · niedrigeres RH","CW · gleiches RH","CW · höheres RH"]);
+    assert.deepEqual(views.league.labels,[
+      "CWL · niedrigeres RH","CWL · gleiches RH","CWL · höheres RH"]);
+    assert.equal(views.combined.groups.length,2);
+    assert.equal(views.normal.groups.length,1);
+    assert.match(views.normal.groups[0],/Normale Clankriege/);
+    assert.equal(views.league.groups.length,1);
+    assert.match(views.league.groups[0],/^CWL ·/);
+    assert.match(views.normal.scope,/abgeschlossene normale CWs/);
+    assert.match(views.league.scope,/abgeschlossene CWL-Kriegstage/);
+    assert.match(views.normal.note,/nur für normale Clankriege/);
+    assert.match(views.league.note,/nur für CWL-Kriegstage/);
+    assert.deepEqual(views.isolated,views.normal,
+      "Player-statistics period must not leak into comparison filter");
+    assert.deepEqual(views.restored.labels,views.combined.labels);
+    assert.ok(views.normal.expanded&&views.league.expanded&&views.restored.expanded,
+      "Opened breakdown must survive comparison filter changes");
+    assert.ok(views.width<=views.viewport+3,
+      "Horizontal overflow at "+width+" "+theme+": "+JSON.stringify(views));
+    assert.deepEqual(errors,[],"Browser errors: "+errors.join(";"));
+   }finally{await page.close()}
+  }
+ }finally{
+  await browser.close();
+  await new Promise(resolve=>server.close(resolve));
+ }
+});
