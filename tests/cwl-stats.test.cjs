@@ -46,16 +46,29 @@ test("Hit rate uses 3 stars/attacks and same-or-higher TH filter only counts eli
  s=computeWarStats(w,a,{type:"normal",last:25});
  assert.equal(s.wars,1);assert.equal(s.hitRate,100);
 });
-test("Historical missed attacks never display fake zeros and proven API lineups count misses",async()=>{
+test("CWL missed attacks require a verified complete missed log, not roster-only inference",async()=>{
  const {computeWarStats}=await load();
- const w=[{...war("cwl:ok","cwl","2026-11-01T00:00:00Z",["#2PYL","#8PY"],true),team_size:2}];
+ const w=[{...war("cwl:ok","cwl","2026-11-01T00:00:00Z",["#2PYL","#8PY"],true),
+   team_size:2,missed_log_complete:false}];
  const a=[attack("cwl:ok","#2PYL",3,18,18)];
- const stats=computeWarStats(w,a,{});
- assert.equal(stats.misses,1); // Two roster positions, one observed attack.
- const absent=stats.rows.find(r=>r.tag==="#8PY");
- assert.equal(absent.missed,1);
- assert.equal(absent.attacks,0);
- assert.equal(stats.rows.find(r=>r.tag==="#2PYL").missed,0);
+ const unknown=computeWarStats(w,a,{});
+ assert.equal(unknown.complete,false);
+ assert.equal(unknown.misses,null);
+ assert.equal(unknown.missesKnown,0);
+ assert.equal(unknown.missedCoverage.cwl.coveredWars,0);
+ assert.equal(unknown.rows.find(r=>r.tag==="#2PYL").missed,null);
+ assert.equal(unknown.rows.some(r=>r.tag==="#8PY"),false,
+   "No phantom missed-attack record for a player with no recorded attack");
+
+ const confirmed=computeWarStats([{...w[0],missed_log_complete:true}],a,{
+   missedEvents:[{war_key:"cwl:ok",player_tag:"#8PY",player_name:"Absent",missed_count:1}]
+ });
+ assert.equal(confirmed.complete,true);
+ assert.equal(confirmed.misses,1);
+ assert.equal(confirmed.missedCoverage.cwl.coveredWars,1);
+ assert.equal(confirmed.rows.find(r=>r.tag==="#8PY").missed,1);
+ assert.equal(confirmed.rows.find(r=>r.tag==="#8PY").attacks,0);
+ assert.equal(confirmed.rows.find(r=>r.tag==="#2PYL").missed,0);
 });
 test("Stats UI, migration and data version are independent from the manual planner",async()=>{
  const source=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
