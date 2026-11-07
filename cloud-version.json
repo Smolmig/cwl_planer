@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.21",
+  "version": "v1.16.22",
   "released": "2026-11-08",
-  "summary": "Statistik: CWL-Ausfälle nur bei bestätigtem vollständigem Missed-Log exakt zählen; fehlende API-Angriffe bleiben unbekannt. Einheitliche 3★-Quote. Keine Änderung an Angriffs-Rohdaten, Planung, Rollen, Supabase oder Offline-PWA."
+  "summary": "Statistik-UX: Clanüberblick bezeichnet korrekt seine vollständige CW-/CWL-Datenbasis; Spielerlisten behalten beim Nachladen den sichtbaren Spieler, Fokus und geöffnete Details. Klarere CW/CWL-Zahlen und Hinweise. Keine Änderung an Rohdaten, Planer, Supabase oder Offline-PWA."
 }

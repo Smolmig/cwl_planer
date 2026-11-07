@@ -70,6 +70,8 @@
 - Abgeschlossene CWL-Kriege, tatsächlich gestartete Tagesaufstellungen und bereits bestätigte Daten sind nicht von vorläufigen API-Antworten zu überschreiben. Quellen/Zustände sauber trennen.
 - Nicht automatisch im Hintergrund navigieren oder Scrollposition zurücksetzen. Bei laufender Interaktion **keine überraschenden Strukturänderungen**.
 - Beim Austausch langer Listen den sichtbaren Datensatz über eine **stabile ID als Scroll-Anker** erhalten (nicht pauschal dieselbe Pixelposition oder automatisch die erste Zeile anzeigen). Nur für echte Hintergrund-Updates; bewusste Filter/Sortierung darf das Ergebnis passend neu positionieren.
+- **Statistik-Tabs haben getrennte Datengrundlagen:** Clanüberblick nutzt alle gespeicherten abgeschlossenen CW/CWL-Kriege; freie Spielerstatistik benutzt die dort explizit gewählte Kriegsmenge, Form 30/90/180 Kalendertage, Vergleiche und Verlauf jeweils ihre eigenen Filter. Nie in einem unabhängigen Tab von „oben ausgewählten Kriegen“ sprechen. Bei null Kriegen einen neutralen Leerzustand statt einer leeren Ausfallaufzählung zeigen.
+- **Statistik-Spielerzeilen:** Beim tatsächlich geänderten Ergebnis eines Nachladens offenen Detailzustand, Tastaturfokus und den obersten sichtbaren Spieler über den normalisierten Player-Tag erhalten. Keine Scroll-Korrektur beim aktiven Suchen, Filtern und Sortieren; bei Clanwechsel private alte Zeilen sofort entfernen.
 - Ein Overlay wie die Einstellungen darf beim Öffnen und Schließen die Scrollposition des darunterliegenden Haupttabs nicht verändern. Mobile Bottom-Navigation und Desktop-Sidebar geometrisch unterscheiden.
 
 ## 4. Progressive Offenlegung mit Gedächtnis
