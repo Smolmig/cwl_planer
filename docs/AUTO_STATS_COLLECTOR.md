@@ -10,8 +10,10 @@ is written separately under each corresponding `clan_id`; no existing private
 
 ## Trigger and authentication
 
-- GitHub Actions `.github/workflows/collect-war-stats.yml` runs at minute 19 of each
-  second UTC hour, and supports a manual protected dispatch.
+- GitHub Actions `.github/workflows/collect-war-stats.yml` requests an hourly
+  run at **UTC minute 27** (`27 * * * *`) and supports a protected manual dispatch.
+  GitHub may delay or skip scheduled events: this is a best-effort collector,
+  not a guarantee of precisely hourly synchronization.
 - The job requests a **short-lived GitHub OIDC token** scoped to the audience
   `cwl-stats-collector:yjldnvfwposfwmzmcsow`.
 - The Supabase Edge Function verifies the JWT **RS256 signature** against
@@ -47,6 +49,25 @@ is written separately under each corresponding `clan_id`; no existing private
    the batches. Allow several scheduled intervals for all tenants in that case.
 7. The app's statistics view displays the last successful server check or
    a recoverable error, visible only when logged into that Cloud clan.
+
+## Confirmed missed attacks (CWL only)
+
+- A completed CWL round is marked `missed_log_complete=true` **only**
+  if the official API provides the full valid own/opponent rosters, the war
+  is `warEnded` with a settled end time, and the official **own-clan total
+  attack count** exactly equals the sum of validated member attacks.
+- Since CWL has **one attack per registered war player**, members without
+  recorded attacks are then reliable per-war misses (count 1). Save those
+  private, tenant-scoped `cwl_stat_missed` rows **before** setting the war
+  to `finalized=true`. If any write fails, keep the war staged and retry.
+- If the attack counter is absent or contradicts the member rows, the
+  collector may retain confirmed attack data but must leave
+  `missed_log_complete=false`: **unknown is not zero**.
+- This does not change normal CW missed logic, already finalized historical
+  records, older imports, war lineup decisions, player participation, or the
+  user's CWL planning. Old finalized CWL snapshots with an unknown Missed
+  status still need a separate **evidence-based** reconciliation path; do not
+  silently backfill from incomplete historical records.
 
 ## Important limitations
 

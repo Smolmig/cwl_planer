@@ -81,11 +81,23 @@ export function buildWarSnapshot(raw,clanTag,{warType="normal",warTag="",now=Dat
       });
     }
   }
+  // A complete, ended CWL war with a verified clan-wide attack counter
+  // is the only case in which "no attack on member" becomes a proven miss.
+  // A missing/mismatched counter leaves Missed coverage unknown, NOT zero.
+  // Normal CW has different attack limits and stays outside this rule.
+  const missedLogComplete=final&&warType==="cwl"&&
+    Number.isInteger(clan.attacks)&&clan.attacks>=0&&clan.attacks<=size&&
+    clan.attacks===rows.length;
+  const missed=missedLogComplete?roster.flatMap((member,i)=>
+    (member.attacks||[]).length===0?[{
+      war_key:key,player_tag:ownTags[i],player_name:string(member.name,80),missed_count:1
+    }]:[]):[];
   return {war:{
       war_key:key,war_type:warType,started_at:started,
       team_size:size,opponent_tag:tag(opponent.tag),opponent_name:string(opponent.name,80),
-      source:"api",roster_tags:ownTags,finalized:final,missed_log_complete:false
-    },attacks:rows,state:raw.state};
+      source:"api",roster_tags:ownTags,finalized:final,
+      missed_log_complete:missedLogComplete
+    },attacks:rows,missed,state:raw.state};
 }
 
 /** Skip a CWL round only if its own real war tag was finalized in ALL
