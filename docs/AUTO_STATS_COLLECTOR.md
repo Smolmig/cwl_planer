@@ -259,6 +259,69 @@ caller and official source verification. Only then consider a proper
 production write is authorized by the existence of this draft. The unknown historical 29.10.
 import and earlier missing official counters stay unresolved.
 
+## Secure official end-war source gate – server-only candidate (08.11.2026)
+
+The new
+[`collector-reconciliation-source.mjs`](../supabase/functions/coc-stats-collector/collector-reconciliation-source.mjs)
+is a **non-deployed and non-exposed server-only** building block for #104.
+It is deliberately **not imported** by the live
+`supabase/functions/coc-stats-collector/index.ts`, any browser/PWA
+module, or the hourly GitHub workflow. It does **not** call Supabase,
+the SQL draft or any write endpoint.
+
+In a **future privileged, separately reviewed server path**, the caller
+must first retrieve the actual linked `cwl_clans` record, the finalized,
+API-sourced and still Missed-unverified `cwl_stat_wars` record, *all*
+`cwl_stat_attacks` and *all* `cwl_stat_missed` rows from the **same**
+`(clan_id,war_key)`, then provide the secret `COC_API_KEY` held only
+server-side. This module rejects invalid or wrong-tenant input **before
+any network request**. The caller cannot substitute user-submitted war
+JSON for an official response.
+
+The source gate then makes at most **two GET requests** to the existing
+fixed `https://cocproxy.royaleapi.dev/v1` endpoint with the secret
+Bearer token, a strict 8-second timeout, redirects disabled, JSON body
+validation and bounded response size:
+
+1. Fetch the linked clan's `/clans/{clanTag}/currentwar/leaguegroup`.
+   Confirm the actual clan is listed, the league rounds and war tags
+   are well formed, and the historical WarTag appears **exactly once**
+   in the independent group. Ignore legitimate `#0` placeholder tags.
+   Without this independent lookup, the saved `war_key` is **not
+   sufficient provenance** and the operation stops.
+2. Fetch exactly that verified
+   `/clanwarleagues/wars/{warTag}`. Confirm the real linked clan appears
+   on one side. Feed the fresh response to
+   `prepareHistoricalCwlMissedRpc`, which independently validates
+   `warEnded`, complete roster and opponent, `clan.attacks`,
+   attack-level correspondence, timestamps and the saved war version.
+
+A successful result is **only a private DRY-RUN payload** with
+`p_apply:false`. All rejection paths return a fixed safe reason
+and `rpcArgs:null`, without user data, upstream error bodies, player
+names, token contents or URLs. The caller must **never return the private
+payload to a browser or log it**.
+
+**Limitations:** This is the authenticated Clash-shaped API through the
+existing RoyaleAPI proxy, not a cryptographically signed Supercell
+snapshot. The independent league-group endpoint is transient; if the
+original completed league war is no longer listed or accessible, **do
+not backfill** and leave `missed_log_complete=false`. There is no
+background historical reconciliation or active writer yet.
+
+The safety contract is covered by
+[`tests/collector-official-endwar-source.test.cjs`](../tests/collector-official-endwar-source.test.cjs):
+correct fixed endpoints, no network requests for an invalid tenant,
+group/WarTag independent cross-check, missing official counter,
+mismatched recorded attacks, 404/403/429/503 and malformed upstream
+responses, two independent app-clan profiles referring to the same
+real war, and confirmation the live Edge entrypoint does not import
+this module. **No real private Clash credentials or player data are used.**
+
+See also
+[`COLLECTOR_RECONCILIATION_STAGING_CHECKLIST.md`](COLLECTOR_RECONCILIATION_STAGING_CHECKLIST.md)
+for the separately required live-like staging and security gates.
+
 ## Monitoring and recovery
 
 - Per-clan data: `public.cwl_stat_collector_status` (read-only RLS).
