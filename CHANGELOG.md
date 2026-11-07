@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.22] - 2026-11-08
+
+### Statistik-UX: ehrlicher Überblick und stabiler Lesekontext
+- **Datengrundlage richtig beschrieben:** Der Clanüberblick nutzt **alle** gespeicherten abgeschlossenen CWs und CWL-Kriegstage. Die Auswahl unter „Spielerstatistik“ bleibt absichtlich unabhängig und darf nicht mehr als Filter des Clanüberblicks beschrieben werden.
+- **Kontext bei Datenaktualisierung:** Wenn die neu geladene Spielerstatistik tatsächlich andere Zeilen enthält, bleiben aufgeklappte Spieler-Details, der fokussierte Detail-Button und der erste sichtbare Spieler anhand des Player-Tags erhalten. Ein bewusst geänderter Such-/Sortierfilter wird **nicht** auf die alte Scrollposition zurückgezwungen.
+- **Sprachliche Konsistenz:** Sinnvolle Singularformen („1 normaler CW“, „1 CWL-Kriegstag“, „1 Krieg vollständig erfasst“); keine leere „Ausfälle:“-Zeile bei noch nicht gespeicherten Kriegen. Spieler-Details erklären, dass selbst eine vollständige CWL-Aufstellung ohne bestätigten Missed-Endnachweis keine exakten versäumten Angriffe belegt.
+- **Abnahme:** Synthetische Browser-Regression für Gold/Light/Dark und 320/390/430/1366 px, CW/CWL-Filterisolation, Viewer-Rolle, spielerbezogenen Fokus/Scroll-Anker bei neu einsortierten Angriffen und Löschung der privaten Spielerzeilen bei Reset.
+- **Sicherheitsgrenze:** Kein Zugriff auf produktive Supabase-Daten, keine Tabellen- oder Historienänderung, keine Anpassung an Cloud-Auth, Planungsalgorithmus, CWL-Aufstellungen, Offline-PWA oder Collector.
+
+
 ## [1.16.21] - 2026-11-08
 
 ### Datenintegrität: CWL-Missed nur mit tatsächlich bestätigtem Endnachweis
