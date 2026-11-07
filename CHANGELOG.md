@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.19] - 2026-11-07
+
+### Mitglieder: Tagesregeln bei Cloud-Refresh stabil bedienen
+- **Bearbeitung:** Bei einem Realtime-/Cloud-Abgleich desselben Clans werden die offene Spielerkarte, die offenen Tagesregeln und der Fokus auf dem gerade bearbeiteten T1–T7-Regelbutton wiederhergestellt.
+- **Position:** Die aktive Regel bleibt im sichtbaren Bereich an derselben Stelle, unabhängig von browserinterner Scroll-Verankerung.
+- **Tests:** Echte Chromium-Refresh-Regression auf 320/390/1366 px. Keine Änderung an CWL-Planungslogik, Stammdaten, Rollen, Supabase oder Offline-PWA.
+
+
 ## [1.16.18] - 2026-11-07
 
 ### Clash-Chat: Erwähnungen und mobiler Aufstellungsabgleich

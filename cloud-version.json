@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.18",
+  "version": "v1.16.19",
   "released": "2026-11-07",
-  "summary": "Clash-Chat: Zwischen @Erwähnungen eingefügter Spieler stehen keine Kommas mehr. Der mobile CWL-Abgleich zeigt Zeitstempel, erledigte Wechsel und Kopierbutton in getrennten Zeilen. Keine Änderung an Planung, Aufstellungen, Rechten oder Offline-PWA."
+  "summary": "Mitglieder: Während des Cloud-Abgleichs bleibt der fokussierte T1–T7-Tagesregel-Button samt seiner sichtbaren Position erhalten. Geöffnete Spielerkarte und Tagesregeln bleiben offen. Keine Änderungen an Planung, Rollen, Datenbank oder Offline-PWA."
 }
