@@ -167,13 +167,13 @@ export function compareConsecutiveCwlLineups(previousRound,currentRound){
 export function formatClashSwapText(day,review) {
   if(!Number.isInteger(day)||day<1||day>7)return null;
   if(!review||!["match","changes"].includes(review.status))return null;
-  if(review.status==="match")return "CWL Tag "+day+"\n✅ Keine Wechsel";
+  if(review.status==="match")return "Tag "+day+": Aufstellung passt. Keine Wechsel noetig.";
   if(!Array.isArray(review.toRemove)||!Array.isArray(review.toAdd)||
      !review.toRemove.length||review.toRemove.length!==review.toAdd.length)return null;
   const clean=entry=>String(entry?.name||"").replace(/[\r\n\t]+/g," ").replace(/ {2,}/g," ").trim();
   if([...review.toRemove,...review.toAdd].some(entry=>!clean(entry)))return null;
-  return "CWL Tag "+day+"\n🔴 Raus: "+review.toRemove.map(clean).join(", ")+
-    "\n🟢 Rein: "+review.toAdd.map(entry=>"@"+clean(entry).replace(/^@+/,"")).join(", ");
+  return "Tag "+day+" - Raus: "+review.toRemove.map(clean).join(", ")+
+    " - Rein: "+review.toAdd.map(clean).join(", ");
 }
 // Mutable profile is the same object used by the existing v9 planner.
 // Caller may save only when this returns changed=true.
