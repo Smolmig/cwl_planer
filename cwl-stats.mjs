@@ -441,7 +441,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const formatDate=value=>value?new Date(value).toLocaleDateString("de-AT"):"–";
     if($("statsPlayerScope"))$("statsPlayerScope").textContent=
       "Diese Tabelle berücksichtigt ausschließlich "+scopeInfo.selectedWars+
-      " ausgewählte abgeschlossene Kriege bzw. CWL-Tage ("+
+      (scopeInfo.selectedWars===1?
+        " ausgewählten abgeschlossenen Krieg bzw. CWL-Tag (":
+        " ausgewählte abgeschlossene Kriege bzw. CWL-Tage (")+
       formatDate(scopeInfo.first)+" – "+formatDate(scopeInfo.recent)+"). "+
       "Kein zusätzliches 10- oder 90-Tage-Fenster.";
     if($("statsScopeExplainer")){
