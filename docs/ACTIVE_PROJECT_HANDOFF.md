@@ -1,6 +1,6 @@
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
-**Stand:** 07.11.2026, Fortsetzung nach Cloud v1.16.19.  
+**Stand:** 07.11.2026, **Cloud v1.16.20 vollständig live**, P0-Collector-Audit als eigener Branch.  
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 ## 1. Sofortstart beim Chatwechsel
@@ -12,7 +12,7 @@
 
 ## 2. Nachgewiesener Ausgangsstand (07.11.2026)
 
-- main war auf **Cloud v1.16.19**, gemergter [PR #143](https://github.com/Smolmig/cwl_planer/pull/143); das Versionsmanifest bestätigte v1.16.19.
+- main ist auf **Cloud v1.16.20**, [PR #144](https://github.com/Smolmig/cwl_planer/pull/144) gemergt am 07.11. (Commit `5b0a0468`); **474/474 PR-CI erfolgreich**, Main-CI, GitHub Pages und [offizielles Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20) am 07.11. erfolgreich. Reale Smartphone-Praxis bleibt separat.
 - [Cloud-App live](https://smolmig.github.io/cwl_planer/cloud-app.html), zentrale Dateien cloud-app.html, cloud-sync.mjs, cwl-stats.mjs, cwl-stats-core.mjs.
 - v1.16.17: Clash-Wechseltext auch nach erledigtem Wechsel kopieren; eintretende Spieler mit @ markieren.
 - v1.16.18: Zwischen @Erwähnungen Leerzeichen statt Kommas; responsiver Kopierbutton in eigener Aktionszeile.
@@ -20,16 +20,23 @@
 - Spielerduelle, Zeitdiagramme und Statistikform wurden zuvor in v1.16.12–v1.16.16 umfangreich verbessert; **nicht doppelt bauen**.
 - Frühere [#49](https://github.com/Smolmig/cwl_planer/issues/49)-Anforderungen zu exakten Einsatzzielen, Rotation und Notizen wurden bereits in v1.6.0 umgesetzt. [NEXT_CHAT_HANDOFF.md](NEXT_CHAT_HANDOFF.md) ist historisch.
 
-## 3. Laufende Änderung Cloud v1.16.20 – NICHT automatisch live
+## 3. Zuletzt abgeschlossen & aktueller P0-Audit (kein App-Release)
 
-- **Branch:** [fix/stats-compare-war-type-focus-v11620](https://github.com/Smolmig/cwl_planer/tree/fix/stats-compare-war-type-focus-v11620).
-- Bezug: [Statistik-UX #114](https://github.com/Smolmig/cwl_planer/issues/114), [Statistik 3.0 #110](https://github.com/Smolmig/cwl_planer/issues/110).
-- **Problem:** Unter Statistik > Vergleiche zeigte die erste Dreierspalte immer CW niedriger/gleich und CWL gleich. Bei Auswahl von „Nur CW“ oder „Nur CWL“ entstanden dadurch leere, inhaltlich irrelevante Vergleichsflächen sowie eine nicht passende Detailgruppe.
-- **Lösung:** „CW und CWL“ behält die drei bisherigen Cross-League-Kategorien. „Nur CW“ zeigt normale Clankriege gegen niedrigeres, gleiches und höheres Gegner-RH. „Nur CWL“ zeigt die drei entsprechenden CWL-Kategorien. Aufgeklappte Detailgruppen enthalten nur die ausgewählte Kriegsart und behalten beim Filterwechsel ihren Öffnungszustand.
-- Kennzahlen sind ausschließlich dokumentierte Dreierquoten mit echten Angriffszahlen, keine Erfolgsprognosen. Vergleichszeitraum und die freie Spielerstatistik bleiben getrennt. Ohne Angriffe keine erfundene 0-%-Quote.
-- **Code:** cwl-stats.mjs; Cache-/App-Version in cloud-app.html, cloud-sync.mjs und cloud-version.json; CHANGELOG.md und README.txt ergänzt.
-- **Test:** zusätzlicher echter Chromium-Fall in tests/cloud-duel-comparison-clarity.test.cjs für 320/390/1366 px, Gold/Light/Dark, alle Vergleichsfilter, isolierte freie Spielerstatistik und offenen Detailzustand.
-- **Release-Gate:** PR-CI, Main-CI, Pages und offizielles Release erst nach tatsächlichem Nachweis als bestätigt markieren; echte iOS-/Android-Abnahme separat. Keine DB-/Solver-/Auth-/Offline-Änderung.
+### Cloud v1.16.20 – veröffentlicht, 07.11.2026
+
+- [PR #144](https://github.com/Smolmig/cwl_planer/pull/144) merged: Statistik > Vergleiche zeigt bei „Nur CW“ drei passende CW-Rathausgruppen, bei „Nur CWL“ die drei CWL-Gruppen; kombinierter Vergleich unverändert. Aufgeklappte Details überstehen Filterwechsel, unabhängige Spielerstatistik bleibt isoliert.
+- **474/474 Tests auf PR-Head erfolgreich**, Main-Regression [42417285128](https://github.com/Smolmig/cwl_planer/actions/runs/42417285128) erfolgreich, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42417284660) erfolgreich und [offizielles Release](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20) publiziert. Keine DB-/Solver-/Offline-PWA-Änderung.
+- Die neue Übergaberegel ist in `AGENTS.md` verankert. Diese Datei ist bei jedem Chatwechsel zu lesen und mit dem echten aktuellen Stand fortzuschreiben.
+
+### Issue #104 – read-only Collector-/Missed-Audit, 07.11.2026
+
+- Aktueller Branch: [audit/collector-cwl-missed-coverage-20261107](https://github.com/Smolmig/cwl_planer/tree/audit/collector-cwl-missed-coverage-20261107); **Dokumentation/SQL/Test, keine Datenmutation und kein Cloud-Versionswechsel**. Nach grünem CI PR mergen; reale Bedingungen weiterhin gesondert prüfen.
+- Mindestens **drei selbstständige `schedule`-Läufe** sind erfolgreich: [07:28](https://github.com/Smolmig/cwl_planer/actions/runs/42351395780), [14:58](https://github.com/Smolmig/cwl_planer/actions/runs/42384101005), [19:31 UTC](https://github.com/Smolmig/cwl_planer/actions/runs/42406623454). GitHub Cron bleibt Best-Effort; keine lückenlose Garantie.
+- **Supabase Edge Collector v5** ist aktiv. 3 Clanprofile hatten bei Abfrage 19:31 UTC letzte Erfolge 19:31:41–50 UTC, 0 gespeicherte Fehler und 45 beobachtete Angriffe (über Profile aufsummiert).
+- Produktiver, **nur lesender** Datenqualitäts-Befund: 33 CWL-App-Clan-Kriegszeilen, 31 final und 2 vorläufig. Von 31 finalen sind 21 Import-Zeilen als Missed-vollständig gekennzeichnet; die **10 finalen API-Kriegszeilen ohne Missed-Nachweis** decken **7 eindeutige Clash-War-Keys** ab. Sechs der 10 (fünf eindeutige) dokumentieren 15/15 individuelle Angriffe und volle Roster; zwei (ein Krieg) 14/15; zwei (ein Krieg) 13/15. **Fehlender gespeicherter Angriff ist KEIN bewiesener verpasster Angriff.**
+- Die Originalquelle `clan.attacks` (offizieller clanweiter Angriffs-Zähler) wurde für diese historischen finalen Zeilen nicht persistiert; deshalb weder die sechs 15/15-Zeilen automatisch als Missed-vollständig setzen noch die übrigen als Misses werten.
+- Reproduzierbares SQL [`scripts/collector-cwl-missed-coverage.sql`](../scripts/collector-cwl-missed-coverage.sql) – aggregiert, tenant-sichere Joins und unterschiedliche App-Clan-/Spiel-Kardinalitäten. Safety-Regression `tests/collector-cwl-missed-coverage-sql.test.cjs`. Ausführlich [AUTO_STATS_COLLECTOR.md](AUTO_STATS_COLLECTOR.md).
+- **Nächster P0-Gate:** Eigener geprüfter Reconciliation-Entwurf ausschließlich mit noch abrufbarem originalen abgeschlossenen Clash-API-Endstand und echtem Attack-Counter; Quellnachweis, Auth, RLS, Fehler-/Retry-Verhalten und Idempotenz separat prüfen, **kein stilles Backfill**. Wenn Quelle nicht mehr verfügbar, bleibt Unbekannt bestehen. Historische Lücke 29.10. weiterhin offen.
 
 ## 4. Priorisierte offene Themen (immer frisch verifizieren)
 
@@ -51,7 +58,7 @@ Alte Drafts [#45](https://github.com/Smolmig/cwl_planer/pull/45), [#109](https:/
 
 ## 6. Nächster Chat / nächste Arbeit
 
-1. Branch-/PR- und CI-Status für Cloud v1.16.20 prüfen; nicht als live ausgeben, solange Main + Pages nicht bestätigt.
-2. Fehlgeschlagene Tests am tatsächlichen Fail beheben und wiederholen; nur grünes Ergebnis mergen.
-3. Danach entweder weitere konkrete Punkte aus [#114](https://github.com/Smolmig/cwl_planer/issues/114) / [#46](https://github.com/Smolmig/cwl_planer/issues/46) abarbeiten oder die höhere P0-Collector-Arbeit [#104](https://github.com/Smolmig/cwl_planer/issues/104) fortsetzen.
-4. **Am Ende jeder Runde diese Datei aktualisieren**, inkl. aktueller Head-SHA, PR/Release, CI-Stand, offene Probleme und sofort nächster Schritt.
+1. GitHub-Main, [Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20), jüngste Actions und Issues **neu** prüfen; Appstand nach PR #144 verifiziert.
+2. Den Audit-Branch `audit/collector-cwl-missed-coverage-20261107` und ggf. zugehörigen PR samt GitHub-CI verifizieren; **kein produktiver Schema-/Datenbankeingriff**. SQL-Audit gegebenenfalls read-only wiederholen, um veränderte Historie zu erkennen.
+3. #104 bleibt Priorität: formal sichere Endkriegs-Missed-Reconciliation anhand offiziell bestätigter Zähler entwickeln **nur** bei verifizierbarer aktueller Quelle; keine Missed-Zahl aus fehlenden Zeilen schätzen. Danach #114/#46 weiterverfolgen.
+4. Am Ende jeder Arbeitsrunde **hier** echten PR-/CI-/Merge-/Live-Status, Dokumente, Datenqualitätsgrenzen, offene Punkte und die nächste Aufgabe aktualisieren.

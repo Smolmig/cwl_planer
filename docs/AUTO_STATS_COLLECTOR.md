@@ -84,6 +84,57 @@ is written separately under each corresponding `clan_id`; no existing private
 - Never manually invoke the collector with `service_role` in client code.
   The GitHub workflow is its only trusted production trigger.
 
+## Verified schedule and Missed-coverage audit – 07.11.2026
+
+**Read-only production check at the end of 07.11.2026 (UTC).**
+The hourly workflow is **best-effort**, but repeated autonomous triggers are
+independently confirmed on GitHub: [07:28 run 42351395780](https://github.com/Smolmig/cwl_planer/actions/runs/42351395780),
+[14:58 run 42384101005](https://github.com/Smolmig/cwl_planer/actions/runs/42384101005), and
+[19:31 run 42406623454](https://github.com/Smolmig/cwl_planer/actions/runs/42406623454)
+all show `event=schedule` and successful completion. Supabase
+`coc-stats-collector` **Edge v5** was active during the later check, and the
+three app-clan collector-status rows had latest successful timestamps around
+**19:31:41–19:31:50 UTC**, **zero stored errors** and **45 observed attacks**
+summed across app-clan profiles in the latest poll. This proves several live
+checks, **not** a guarantee that every future hourly run will fire.
+
+A read-only query on `cwl_stat_wars`, `cwl_stat_attacks` and
+`cwl_stat_missed` found **33 stored CWL app-clan war records**, including
+**31 finalized** and **2 provisional**; of the finalized records,
+**21 historical/imported records** were marked Missed-complete, while **10
+API-derived finalized app-clan records** were not. The ten unresolved records
+represent **seven distinct Clash war keys** because a real Clash war may be
+stored independently under more than one app-clan ID. This distinction is
+crucial for honest monitoring and must **not** be deduplicated across tenant
+boundaries when presenting individual clan statistics.
+
+| Stored attacks on 15-person roster | Unresolved app-clan records | Distinct Clash war keys | Meaning |
+| --- | ---: | ---: | --- |
+| 15/15, 15 distinct rostered attackers | 6 | 5 | Every roster slot has a documented attack; original official clan-wide attack counter was not persisted, so `missed_log_complete=false` remains unchanged |
+| 14/15 | 2 | 1 | One slot lacks a stored attack; could be a real missed attack or incomplete capture |
+| 13/15 | 2 | 1 | Two slots lack stored attacks; no evidence of exact missed count |
+
+The reproducible audit is
+[`scripts/collector-cwl-missed-coverage.sql`](../scripts/collector-cwl-missed-coverage.sql).
+It returns **only aggregated counts**, includes the full `(clan_id,war_key)`
+join key and counts distinct Clash keys separately. It cannot see the
+original official `clan.attacks` field because that field is **not stored**
+in historical tables, so even its 15/15 group is **not automatic proof** of
+the API counter or permission to flip `missed_log_complete`. The query
+contains no modifications, joins no external tenants' private data, and
+never emits player tags, names or account IDs. The static SQL safety contract
+is checked in `tests/collector-cwl-missed-coverage-sql.test.cjs`.
+
+**Remaining P0 decisions:** To reconcile earlier final records, require a
+separate, explicitly reviewed, idempotent workflow that retrieves the
+original final upstream war snapshot (if still accessible), verifies both
+rosters, unique attacker tags and the official clan-wide attack counter,
+and applies write-order/tenant isolation checks **before** any updates.
+If that authoritative evidence is no longer obtainable, preserve the
+unknown status permanently until a source-backed import becomes available.
+Do **not** backfill from the number of missing local attack rows; do not
+alter the existing production Collector v5 or stored data as part of this audit.
+
 ## Monitoring and recovery
 
 - Per-clan data: `public.cwl_stat_collector_status` (read-only RLS).
