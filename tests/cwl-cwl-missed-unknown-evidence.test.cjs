@@ -6,7 +6,7 @@ const path=require("node:path");
 const load=async()=>import(pathToFileURL(
   path.resolve(__dirname,"../cwl-stats-core.mjs")).href);
 const alphabet="0289PYLQGRJCUV";
-const tags=Array.from({length:15},(_,i)=>"#2P"+alphabet[i]+"L");
+const tags=Array.from({length:15},(_,i)=>"#2P"+alphabet[i%alphabet.length]+alphabet[Math.floor(i/alphabet.length)]);
 const makeWar=(key="cwl:#2QGL",overrides={})=>({
   clan_id:"synthetic-clan",war_key:key,war_type:"cwl",
   started_at:"2026-11-06T19:00:00.000Z",
