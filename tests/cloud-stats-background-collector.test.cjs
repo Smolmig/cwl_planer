@@ -93,6 +93,9 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
    return data+"."+Buffer.from(signed).toString("base64url");
  };
  const valid=await sign(base);
+ const auditedTriggers=[],priorInfo=console.info;
+ console.info=(...parts)=>auditedTriggers.push(parts.join(" "));
+ try{
  assert.equal(await verifyCollectorIdentity(valid,{jwksLoader}),true);
  assert.equal(await verifyCollectorIdentity(valid+"altered",{jwksLoader}),false);
  for(const changes of [
@@ -106,6 +109,15 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
      JSON.stringify(changes));
  }
  assert.equal(await verifyCollectorIdentity(await sign(base,{alg:"none",typ:"JWT",kid:"testing-kid"}),{jwksLoader}),false);
+ for(const event_name of ["workflow_dispatch","push"]){
+   assert.equal(await verifyCollectorIdentity(await sign({...base,event_name}),{jwksLoader}),true);
+ }
+ assert.deepEqual(auditedTriggers,[
+   "collector_verified_trigger=schedule",
+   "collector_verified_trigger=workflow_dispatch",
+   "collector_verified_trigger=push"
+ ],"Only genuinely verified, allowlisted GitHub triggers may appear in logs");
+ }finally{console.info=priorInfo}
 });
 
 test("collector is scheduled and protected; authenticated browser can only read own status",()=>{
