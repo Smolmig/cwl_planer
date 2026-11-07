@@ -85,7 +85,7 @@ test("Overview always describes all recorded wars; player-specific filters canno
     assert.doesNotMatch(result.intro,/oben ausgewählten Kriege/,info);
     assert.match(result.allCount,/1 normaler CW \+ 1 CWL-Kriegstag/,info);
     assert.match(result.allCoverage,/alle gespeicherten Kriege/,info);
-    assert.match(result.restricted,/1 ausgewählte abgeschlossene Kriege/,info);
+    assert.match(result.restricted,/1 ausgewählten abgeschlossenen Krieg/,info);
     assert.equal(result.restoredCount,result.allCount,info);
     assert.equal(result.restoredSummary,result.allSummary,info);
     assert.equal(result.importHidden,true,info);
