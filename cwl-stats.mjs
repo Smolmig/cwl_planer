@@ -467,7 +467,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       .map(([type,name])=>{
         const c=summary.missedCoverage[type];
         return name+": "+displayMissed(c.missedKnown,c.complete)+
-          " verpasst · "+c.coveredWars+"/"+c.wars+" Kriege vollständig erfasst";
+          " verpasst · "+c.coveredWars+"/"+c.wars+" "+
+          (c.wars===1?"Krieg":"Kriege")+" vollständig erfasst";
       });
     const missedCoverageHost=$("statsMissedCoverage");
     if(missedCoverageHost)missedCoverageHost.textContent=summary.wars?
@@ -496,14 +497,18 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
       const normalDays=summary.wars-leagueDays;
       if(displayType==="all"){
+        const normalText=normalDays===1?"1 normaler CW":normalDays+" normale CWs";
+        const leagueText=leagueDays===1?"1 CWL-Kriegstag":leagueDays+" CWL-Kriegstage";
+        const seasonCount=summary.cwlSeasonBreakdown.length;
         if(count)count.textContent=summary.wars?
-          normalDays+" normale CWs + "+leagueDays+
-          " CWL-Kriegstage aus "+summary.cwlSeasonBreakdown.length+
-          " Durchgängen · "+summary.attacks+" Angriffe":
+          normalText+" + "+leagueText+" aus "+seasonCount+
+          (seasonCount===1?" Durchgang":" Durchgängen")+
+          " · "+summary.attacks+" Angriffe":
           "Noch keine abgeschlossenen Kriege gespeichert";
-        if(seasonDetails)seasonDetails.textContent=summary.wars?"Ausgewertet werden "+normalDays+
-          " normale CWs und "+summary.cwlSeasonBreakdown.length+
-          " der "+summary.totalCwlSeasons+" erfassten CWL-Durchgänge. "+
+        if(seasonDetails)seasonDetails.textContent=summary.wars?
+          "Ausgewertet werden "+normalText+" und "+seasonCount+
+          (seasonCount===1?" CWL-Durchgang":" CWL-Durchgänge")+
+          " aus insgesamt "+summary.totalCwlSeasons+" gespeicherten CWL-Durchgängen. "+
           "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.":"";
       }else{
         if(count)count.textContent=summary.wars+" von "+
