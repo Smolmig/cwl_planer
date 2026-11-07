@@ -6,6 +6,13 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.17] - 2026-11-07
+
+### CWL: erledigte Wechsel auch nachträglich kopieren
+- **Clanchat:** Nach bereits durchgeführten Ein-/Auswechslungen in Clash bleibt der kurze Kopiertext an derselben Stelle des Tagesabgleichs verfügbar, auch wenn Plan und Clash schon übereinstimmen.
+- **Basis:** Tatsächliche, vollständig verfügbare Aufstellungen vom vorherigen und aktuellen Kriegstag. Keine geratenen Wechsel aus fehlenden Daten; bisheriger Text für noch offene Wechsel bleibt unverändert.
+- **Technisch:** Nur lesender Vergleich und kleinere UI-Ergänzung. Keine Änderung an Planung, Spielerrechten, Supabase oder lokaler Offline-PWA.
+
 ## [1.16.16] - 2026-11-07
 
 ### Mitglieder: klare 3★-Quote, Gleichstand fairer sortiert
