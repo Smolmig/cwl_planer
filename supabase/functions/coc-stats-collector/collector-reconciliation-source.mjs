@@ -32,7 +32,8 @@ function validInputs({linkedClan,storedWar,storedAttacks,storedMissedRows,gameKe
     return "tenant_evidence_invalid";
   if(storedWar.source!=="api"||storedWar.war_type!=="cwl"||
      storedWar.finalized!==true||storedWar.missed_log_complete!==false||
-     !CWL_KEY.test(storedWar.war_key||"")||storedMissedRows.length!==0)
+     typeof storedWar.war_key!=="string"||
+     !CWL_KEY.test(storedWar.war_key)||storedMissedRows.length!==0)
     return "historical_candidate_not_eligible";
   if(!storedAttacks.every(a=>a&&a.clan_id===linkedClan.id&&
       a.war_key===storedWar.war_key))
