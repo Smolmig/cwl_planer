@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.16",
+  "version": "v1.16.17",
   "released": "2026-11-07",
-  "summary": "Mitglieder und Plan: durchgehend 3★-Quote statt uneinheitlicher Hitrate-Bezeichnungen. Die optionale rohe Quoten-Sortierung bevorzugt bei exakt gleichem Prozentwert die höhere Zahl belegter Angriffe. Kein Skill-Ranking, keine Änderung an Statistiken, CWL-Planung, Rollen oder bestehenden Daten."
+  "summary": "CWL-Clash-Chat: Wechseltext bleibt nach bereits durchgeführten Wechseln kopierbar, geprüft an bestätigten Aufstellungen zweier Kriegstage. Neue Spieler erscheinen mit @. Der separate Gesamtexport aller Kriegstage ist übersichtlicher formatiert. Keine Änderung an Planung, Cloud-Daten, Rechten oder Offline-PWA."
 }
