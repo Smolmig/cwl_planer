@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.20";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.21";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -472,7 +472,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(missedCoverageHost)missedCoverageHost.textContent=
       "Nachgewiesene Ausfälle im gewählten Zeitraum: "+coverageDescriptions.join(" · ");
     $("statsSummary").innerHTML=[
-      ["3★-Hit-Rate",pct(summary.hitRate)],
+      ["3★-Quote",pct(summary.hitRate)],
       ["Ø Sterne / Angriff",summary.averageStars===null?"–":summary.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"],
       ["Angriffe",String(summary.attacks)],
       ["Verpasste Angriffe",label]
@@ -512,9 +512,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(note){
       note.textContent=summary.complete?"":(
         "„mind.“ bedeutet: so viele vergessene Angriffe sind sicher bekannt. "+
-        "„k. A.“ bedeutet: 0 ist nicht bewiesen. Bei manchen älteren CWL-Kriegen "+
-        "fehlen vollständige Aufstellungen oder ein lückenloser Missed-Log; "+
-        "die normalen CWs können dennoch vollständig ausgewertet sein. "+
+        "„k. A.“ bedeutet: Keine sichere Zahl, auch 0 ist nicht bestätigt. "+
+        "Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff. "+
+        "Dafür braucht es einen vollständigen offiziellen Endkriegsnachweis oder belegte Missed-Logs. "+
+        "Normale CWs können trotzdem vollständig ausgewertet sein. "
         "Sortierung nach „Verpasst“ verwendet die nachgewiesene Anzahl."
       );
       note.hidden=summary.complete;
