@@ -173,7 +173,7 @@ export function formatClashSwapText(day,review) {
   const clean=entry=>String(entry?.name||"").replace(/[\r\n\t]+/g," ").replace(/ {2,}/g," ").trim();
   if([...review.toRemove,...review.toAdd].some(entry=>!clean(entry)))return null;
   return "Tag "+day+" - Raus: "+review.toRemove.map(clean).join(", ")+
-    " - Rein: "+review.toAdd.map(clean).join(", ");
+    " - Rein: "+review.toAdd.map(entry=>"@"+clean(entry).replace(/^@+/,"")).join(", ");
 }
 // Mutable profile is the same object used by the existing v9 planner.
 // Caller may save only when this returns changed=true.
