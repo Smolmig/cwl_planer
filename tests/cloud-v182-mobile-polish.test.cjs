@@ -7,20 +7,21 @@ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
 const style=app.match(/<style>([\s\S]*?)<\/style>/)?.[1];
 const loadCore=()=>import(pathToFileURL(path.join(root,"cwl-live-core.mjs")).href);
-test("Clash swap copy uses one line and preserves only player names, no UI emojis or column gaps",async()=>{
+test("Clash swap copy is compact, paste-ready and adds @ only to incoming players",async()=>{
  const {formatClashSwapText}=await loadCore();
  const text=formatClashSwapText(2,{status:"changes",
    toRemove:[{name:"Suminizer"},{name:"Raphtor"}],
    toAdd:[{name:"Luki"},{name:"Tommy"}]});
- assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: Luki, Tommy");
- assert.doesNotMatch(text,/[\n\r\t]|[🔴🟢📋]/u);
- assert.equal(formatClashSwapText(2,{status:"match"}),"Tag 2: Aufstellung passt. Keine Wechsel noetig.");
+ assert.equal(text,"CWL Tag 2\\n🔴 Raus: Suminizer, Raphtor\\n🟢 Rein: @Luki, @Tommy");
+ assert.equal(text.split("\\n").length,3);
+ assert.doesNotMatch(text,/📋|\\r|\\t/u);
+ assert.equal(formatClashSwapText(2,{status:"match"}),"CWL Tag 2\\n✅ Keine Wechsel");
  assert.equal(formatClashSwapText(3,{status:"unavailable"}),null);
  assert.equal(formatClashSwapText(2,{status:"changes",toAdd:[],toRemove:[]}),null);
- const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\nKen  "}],toAdd:[{name:"Kai\tZen"}]});
- assert.equal(clean,"Tag 3 - Raus: LF Ken - Rein: Kai Zen");
- assert.match(live,/formatClashSwapText\(round\.day,latest\)/);
- assert.match(live,/Aufstellungswechsel kopieren/);
+ const clean=formatClashSwapText(3,{status:"changes",toRemove:[{name:"  LF\\nKen  "}],toAdd:[{name:"Kai\\tZen"}]});
+ assert.equal(clean,"CWL Tag 3\\n🔴 Raus: LF Ken\\n🟢 Rein: @Kai Zen");
+ assert.match(live,/formatClashSwapText\\(round\\.day,changes\\)/);
+ assert.match(live,/Aufstellungswechsel kopieren|Wechseltext kopieren/);
  assert.doesNotMatch(live,/🔴 Aus Clash raus/);
 });
 test("Former members keep settings for rejoin but become only deletable archived rows in the UI",()=>{
