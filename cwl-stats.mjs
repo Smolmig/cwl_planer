@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.21";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.22";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -37,7 +37,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
   let viewComparableProfiles=new Map(),viewComparableSummary=null;
   const openStatsPlayers=new Set();
-  let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastMembersNotifiedVersion=-1;
+  let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastRowsVersion=-1,lastRowsClan=null,lastMembersNotifiedVersion=-1;
   let historyAttacksByWar=new Map();
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
   function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
@@ -418,6 +418,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       $("statsWarHistory").removeAttribute("data-history-signature");
       $("statsWarHistory").removeAttribute("data-history-clan");
       cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;
+      lastRowsVersion=-1;lastRowsClan=null;
       return;
     }
     const metricSignature=[ctx.clanId,version,type,last,cwlSeasons,sameHigher,showFormer,(ctx.memberTags||[]).join(",")].join("|");
@@ -469,8 +470,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           " verpasst · "+c.coveredWars+"/"+c.wars+" Kriege vollständig erfasst";
       });
     const missedCoverageHost=$("statsMissedCoverage");
-    if(missedCoverageHost)missedCoverageHost.textContent=
-      "Nachgewiesene Ausfälle im gewählten Zeitraum: "+coverageDescriptions.join(" · ");
+    if(missedCoverageHost)missedCoverageHost.textContent=summary.wars?
+      "Verpasste Angriffe nach Kriegsart (alle gespeicherten Kriege): "+coverageDescriptions.join(" · "):
+      "Noch keine abgeschlossenen Kriege gespeichert.";
     $("statsSummary").innerHTML=[
       ["3★-Quote",pct(summary.hitRate)],
       ["Ø Sterne / Angriff",summary.averageStars===null?"–":summary.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★"],
@@ -494,13 +496,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const leagueDays=summary.cwlSeasonBreakdown.reduce((n,s)=>n+s.days,0);
       const normalDays=summary.wars-leagueDays;
       if(displayType==="all"){
-        if(count)count.textContent=normalDays+" normale CWs + "+leagueDays+
+        if(count)count.textContent=summary.wars?
+          normalDays+" normale CWs + "+leagueDays+
           " CWL-Kriegstage aus "+summary.cwlSeasonBreakdown.length+
-          " Durchgängen · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Ausgewertet werden "+normalDays+
+          " Durchgängen · "+summary.attacks+" Angriffe":
+          "Noch keine abgeschlossenen Kriege gespeichert";
+        if(seasonDetails)seasonDetails.textContent=summary.wars?"Ausgewertet werden "+normalDays+
           " normale CWs und "+summary.cwlSeasonBreakdown.length+
           " der "+summary.totalCwlSeasons+" erfassten CWL-Durchgänge. "+
-          "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.";
+          "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.":"";
       }else{
         if(count)count.textContent=summary.wars+" von "+
           wars.filter(w=>w.war_type==="normal").length+
@@ -583,16 +587,42 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<summary>Details dieser Auswahl · "+p.attacks+" Angriffe</summary>"+
         "<div>"+p.threes+" von "+p.attacks+" Angriffen mit 3★ · verpasst: "+reportedMiss+
         "</div><small>Diese Werte beziehen sich auf alle gewählten Kriege. "+
-        "Ohne vollständige CWL-Aufstellungen können weitere versäumte Angriffe unbekannt sein. "+
+        "Bei CWL ohne bestätigten vollständigen Missed-Log bleiben weitere Ausfälle unbekannt – auch bei vorhandener Tagesaufstellung. "+
         "Die unabhängige aktuelle Form findest du im eigenen Reiter „Spielerform“.</small></details></div>";
     }).join(""):"<div class='stats-empty'>Keine passenden Spieler in dieser Auswahl.</div>";
-    // Avoid destroying player rows (and their decoded RH images) for identical results.
+    // Background data refresh may insert or reorder rows above the player's
+    // current viewport. Keep the same visible player and the focused details
+    // summary; intentional search/sort changes still reposition naturally.
     const rowsHost=$("statsRows");
     if(lastRowsHost!==rowsHost||lastRowsMarkup!==nextRowsMarkup){
+      const active=rowsHost.contains(document.activeElement)?document.activeElement:null;
+      const focusedTag=active?.matches?.(".stats-player-details > summary")?
+        cleanTag(active.parentElement.dataset.playerTag):null;
+      const backgroundUpdate=lastRowsVersion>=0&&lastRowsVersion!==version&&
+        lastRowsClan===ctx.clanId&&view.classList.contains("active");
+      let anchor=null;
+      if(backgroundUpdate){
+        const topbar=document.querySelector(".topbar");
+        const top=Math.max(0,topbar?.getBoundingClientRect().bottom||0)+4;
+        const row=[...rowsHost.querySelectorAll(".stats-player-row")].find(element=>{
+          const rect=element.getBoundingClientRect();
+          return rect.bottom>top&&rect.top<window.innerHeight-24;
+        });
+        const key=row?.querySelector(".stats-player-details")?.dataset.playerTag;
+        if(key)anchor={tag:cleanTag(key),top:row.getBoundingClientRect().top};
+      }
       rowsHost.innerHTML=nextRowsMarkup;
+      const byTag=tag=>[...rowsHost.querySelectorAll(".stats-player-details")]
+        .find(element=>cleanTag(element.dataset.playerTag)===tag);
+      if(focusedTag)byTag(focusedTag)?.querySelector("summary")?.focus({preventScroll:true});
+      if(anchor){
+        const next=byTag(anchor.tag)?.closest(".stats-player-row");
+        if(next)window.scrollBy(0,next.getBoundingClientRect().top-anchor.top);
+      }
       lastRowsHost=rowsHost;
       lastRowsMarkup=nextRowsMarkup;
     }
+    lastRowsVersion=version;lastRowsClan=ctx.clanId;
   }
   // CWL histories can contain thousands of attacks. Only summaries are mounted
   // initially; expanding a war creates its attack rows on demand.
@@ -663,7 +693,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if($("statsFormSort"))$("statsFormSort").value=formSort;
     if($("statsFormSearch"))$("statsFormSearch").value="";
     compareType="all";compareDays="all";trendType="all";trendDays="all";
-    cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
+    cachedSummary=null;lastMetricSignature="";lastRowsMarkup=null;lastRowsHost=null;
+    lastRowsVersion=-1;lastRowsClan=null;historyAttacksByWar.clear();lastMembersNotifiedVersion=-1;
     // The history is now lazy-loaded per view. On clan switch it MUST
     // discard old mounted content immediately, even while the history tab
     // is hidden, to prevent stale private data from another tenant.
