@@ -12,8 +12,12 @@ test("Clash swap copy prefixes incoming players with @ and preserves the compact
  const text=formatClashSwapText(2,{status:"changes",
    toRemove:[{name:"Suminizer"},{name:"Raphtor"}],
    toAdd:[{name:"Luki"},{name:"Tommy"}]});
- assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: @Luki, @Tommy");
+ assert.equal(text,"Tag 2 - Raus: Suminizer, Raphtor - Rein: @Luki @Tommy");
  assert.doesNotMatch(text,/[\n\r\t]|[🔴🟢📋]/u);
+ assert.doesNotMatch(text,/@Luki,|@Tommy,/,"Commas must not follow names to be tagged in Clash");
+ assert.equal(formatClashSwapText(4,{status:"changes",toRemove:[{name:"UF⚡Dennis"},{name:"mishix"}],
+  toAdd:[{name:"Tommy"},{name:"@Suminizer"}]}),
+  "Tag 4 - Raus: UF⚡Dennis, mishix - Rein: @Tommy @Suminizer");
  assert.equal(formatClashSwapText(2,{status:"match"}),"Tag 2: Aufstellung passt. Keine Wechsel noetig.");
  assert.equal(formatClashSwapText(3,{status:"unavailable"}),null);
  assert.equal(formatClashSwapText(2,{status:"changes",toAdd:[],toRemove:[]}),null);

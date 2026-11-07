@@ -1916,7 +1916,15 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 /* v1.9.0: crisp live swap actions and consistent opposing-team meta alignment. */
 .cwl-prep-review .cwl-prep-heading{margin-bottom:10px}
 .cwl-prep-review .cwl-prep-result{display:block;line-height:1.45}
-.cwl-prep-review .cwl-copy-live-swaps{display:inline-flex;align-items:center;justify-content:center;max-width:100%;margin-top:14px;padding:9px 13px;min-height:40px;line-height:1.25;white-space:normal;text-align:center}
+/* Preparation review: metadata, completed swaps and the action are distinct rows. */
+.cwl-prep-review .cwl-prep-meta,.cwl-prep-review .cwl-prep-completed{display:block;min-width:0;line-height:1.45;overflow-wrap:anywhere}
+.cwl-prep-review .cwl-prep-meta{margin-top:5px}
+.cwl-prep-review .cwl-prep-completed{margin-top:8px}
+.cwl-prep-review .cwl-prep-actions{display:flex;align-items:center;justify-content:flex-start;min-width:0;margin-top:12px}
+.cwl-prep-review .cwl-prep-actions .cwl-copy-live-swaps{display:inline-flex;align-items:center;justify-content:center;max-width:100%;margin:0;padding:9px 13px;min-height:42px;line-height:1.25;white-space:normal;text-align:center}
+@media(max-width:699px){
+ .cwl-prep-review .cwl-prep-actions .cwl-copy-live-swaps{width:100%;min-height:44px}
+}
 .cwl-live-team-details>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px}
 .cwl-live-team-details>summary .cwl-live-attack-count{justify-self:end;text-align:right;white-space:nowrap;margin:0;font-size:11px}
 .cwl-live-team-details>summary .cwl-team-summary-title{min-width:0}
@@ -3406,11 +3414,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.17</strong><span>CWL · Wechseltext nachträglich kopieren</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.18</strong><span>Clash-Chat · saubere Erwähnungen</span></div>
       <ul>
-       <li><b>Clash-Chat:</b> Auch nach bereits durchgeführten Wechseln lässt sich der Raus-/Rein-Text aus den bestätigten Tagesaufstellungen kopieren.</li>
-       <li><b>Markierung:</b> Neue Spieler erhalten im Kopiertext ein @ vor ihrem Namen.</li>
-       <li><b>Gesamtplan:</b> Eigener, übersichtlich formatierter Export für alle Kriegstage.</li>
+       <li><b>Markierungen:</b> Zwischen den @Spielernamen steht kein Komma mehr.</li>
+       <li><b>Mobile:</b> Clash-Abgleich, Wechselinfo und Kopierbutton sind übersichtlich untereinander angeordnet.</li>
+       <li><b>Unverändert:</b> Planung, tatsächliche Aufstellungen, Rollen und Daten.</li>
       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3836,9 +3844,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.17"></script>
+<script src="./cwl-planning-core.js?v=1.16.18"></script>
 <script>
-const APP_VERSION="v1.16.17";
+const APP_VERSION="v1.16.18";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5091,6 +5099,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.17"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.18"></script>
 </body>
 </html>

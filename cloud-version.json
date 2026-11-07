@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.17",
+  "version": "v1.16.18",
   "released": "2026-11-07",
-  "summary": "CWL-Clash-Chat: Wechseltext bleibt nach bereits durchgeführten Wechseln kopierbar, geprüft an bestätigten Aufstellungen zweier Kriegstage. Neue Spieler erscheinen mit @. Der separate Gesamtexport aller Kriegstage ist übersichtlicher formatiert. Keine Änderung an Planung, Cloud-Daten, Rechten oder Offline-PWA."
+  "summary": "Clash-Chat: Zwischen @Erwähnungen eingefügter Spieler stehen keine Kommas mehr. Der mobile CWL-Abgleich zeigt Zeitstempel, erledigte Wechsel und Kopierbutton in getrennten Zeilen. Keine Änderung an Planung, Aufstellungen, Rechten oder Offline-PWA."
 }

@@ -31,7 +31,7 @@ test("Completed changes are derived from consecutive confirmed Clash rosters, no
  assert.equal(formatClashSwapText(2,{
    status:"changes",toRemove:[{name:"Ausstieg"},{name:"Aus zwei"}],
    toAdd:[{name:"Raphtor"},{name:"Luki"}]
- }),"Tag 2 - Raus: Ausstieg, Aus zwei - Rein: @Raphtor, @Luki");
+ }),"Tag 2 - Raus: Ausstieg, Aus zwei - Rein: @Raphtor @Luki");
 
  const same=round(2,"preparation",["A","B"]);
  assert.equal(compareConsecutiveCwlLineups(yesterday,same).status,"match");
@@ -81,6 +81,13 @@ test("Matching Clash preparation still provides yesterday's copyable swaps in th
   const box=dom.window.document.querySelector("#day-card-1 .cwl-prep-review");
   assert.match(box.textContent,/Aufstellung stimmt mit Clash überein/);
   assert.match(box.textContent,/Seit Tag 1: 1 raus · 1 rein/);
+  const meta=box.querySelector(".cwl-prep-meta");
+  const completed=box.querySelector(".cwl-prep-completed");
+  const actions=box.querySelector(".cwl-prep-actions");
+  assert.equal(meta?.tagName,"DIV","status time is a standalone row");
+  assert.equal(completed?.tagName,"DIV","completed swap info is a standalone row");
+  assert.equal(meta?.nextElementSibling,completed,"completed swaps follow timestamp");
+  assert.equal(completed?.nextElementSibling,actions,"copy action is a dedicated row");
   const button=box.querySelector(".cwl-copy-live-swaps");
   assert.ok(button,"copy button must survive after switches already match");
   assert.match(button.textContent,/Wechseltext kopieren/);

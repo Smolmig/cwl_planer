@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.18] - 2026-11-07
+
+### Clash-Chat: Erwähnungen und mobiler Aufstellungsabgleich
+- **Erwähnungen:** Bei der Rein-Liste wird zwischen Spielern kein Komma mehr gesetzt: `@Tommy @Suminizer` statt `@Tommy, @Suminizer`. Der kurze Clash-Kopiertext, die Spielerreihenfolge und die Namen bleiben erhalten. Raus-Namen dürfen weiterhin Kommas als normale Trennung haben.
+- **Mobile Darstellung:** „Details in Aufstellung · Stand“, bereits durchgeführte Wechsel und „Wechseltext kopieren“ sind getrennte Zeilen. Der Button nutzt auf schmalen Displays die volle verfügbare Breite; Desktop bleibt kompakt.
+- **Regression:** Tests für kopierbare tatsächlich erfolgte Wechsel, `@`-Namen ohne Satzzeichen, separate DOM-Zeilen und responsive Geometrie im Gold-, Dark- und Light-Theme. Keine Änderung an Solver, Saison, Supabase, Spielerrollen oder separater Offline-PWA.
+
+
 ## [1.16.17] - 2026-11-07
 
 ### CWL: Wechseltext auch nach erledigten Wechseln kopieren
