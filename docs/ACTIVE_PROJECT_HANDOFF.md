@@ -1,6 +1,6 @@
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
-**Stand:** 07.11.2026, **Cloud v1.16.20 live**; Collector-Audit #145 gemergt; neue reine historische Missed-Vorprüfung in separatem Entwicklungsbranch (nicht produktiv).  
+**Stand:** 07.11.2026, **Cloud v1.16.20 live**; Collector-Audit [#145](https://github.com/Smolmig/cwl_planer/pull/145) und nicht produktive, reine CWL-Missed-Vorprüfung [#146](https://github.com/Smolmig/cwl_planer/pull/146) gemergt. Keine historische Datenkorrektur.  
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 ## 1. Sofortstart beim Chatwechsel
@@ -30,7 +30,7 @@
 
 ### Issue #104 – read-only Collector-/Missed-Audit, 07.11.2026
 
-- **[PR #145](https://github.com/Smolmig/cwl_planer/pull/145) gemergt** am 07.11.2026 (Squash-Commit `f6ea5b6e`), **476/476 PR-Tests grün** ([GitHub Actions 42417829737](https://github.com/Smolmig/cwl_planer/actions/runs/42417829737)). SQL wurde zusätzlich *nur lesend* gegen die produktive Datenbank ausgeführt. Main-/Pages-Prüfungen für den Merge-Commit wurden angestoßen. **Keine Datenmutation, kein Cloud-Versionswechsel, kein Produktions-Edge-Deploy.**
+- **[PR #145](https://github.com/Smolmig/cwl_planer/pull/145) gemergt** am 07.11.2026 (Squash-Commit `f6ea5b6e`), **476/476 PR-Tests grün** ([GitHub Actions 42417829737](https://github.com/Smolmig/cwl_planer/actions/runs/42417829737)). SQL wurde zusätzlich *nur lesend* gegen die produktive Datenbank ausgeführt. Main-Regression [42418047000](https://github.com/Smolmig/cwl_planer/actions/runs/42418047000) und Pages [42418046703](https://github.com/Smolmig/cwl_planer/actions/runs/42418046703) nach Dokumentationsupdate ebenfalls erfolgreich. **Keine Datenmutation, kein Cloud-Versionswechsel, kein Produktions-Edge-Deploy.**
 - Mindestens **drei selbstständige `schedule`-Läufe** sind erfolgreich: [07:28](https://github.com/Smolmig/cwl_planer/actions/runs/42351395780), [14:58](https://github.com/Smolmig/cwl_planer/actions/runs/42384101005), [19:31 UTC](https://github.com/Smolmig/cwl_planer/actions/runs/42406623454). GitHub Cron bleibt Best-Effort; keine lückenlose Garantie.
 - **Supabase Edge Collector v5** ist aktiv. 3 Clanprofile hatten bei Abfrage 19:31 UTC letzte Erfolge 19:31:41–50 UTC, 0 gespeicherte Fehler und 45 beobachtete Angriffe (über Profile aufsummiert).
 - Produktiver, **nur lesender** Datenqualitäts-Befund: 33 CWL-App-Clan-Kriegszeilen, 31 final und 2 vorläufig. Von 31 finalen sind 21 Import-Zeilen als Missed-vollständig gekennzeichnet; die **10 finalen API-Kriegszeilen ohne Missed-Nachweis** decken **7 eindeutige Clash-War-Keys** ab. Sechs der 10 (fünf eindeutige) dokumentieren 15/15 individuelle Angriffe und volle Roster; zwei (ein Krieg) 14/15; zwei (ein Krieg) 13/15. **Fehlender gespeicherter Angriff ist KEIN bewiesener verpasster Angriff.**
@@ -38,9 +38,9 @@
 - Reproduzierbares SQL [`scripts/collector-cwl-missed-coverage.sql`](../scripts/collector-cwl-missed-coverage.sql) – aggregiert, tenant-sichere Joins und unterschiedliche App-Clan-/Spiel-Kardinalitäten. Safety-Regression `tests/collector-cwl-missed-coverage-sql.test.cjs`. Ausführlich [AUTO_STATS_COLLECTOR.md](AUTO_STATS_COLLECTOR.md).
 - **Nächster P0-Gate:** Eigener geprüfter Reconciliation-Entwurf ausschließlich mit noch abrufbarem originalen abgeschlossenen Clash-API-Endstand und echtem Attack-Counter; Quellnachweis, Auth, RLS, Fehler-/Retry-Verhalten und Idempotenz separat prüfen, **kein stilles Backfill**. Wenn Quelle nicht mehr verfügbar, bleibt Unbekannt bestehen. Historische Lücke 29.10. weiterhin offen.
 
-### Nächster P0-Baustein – historische CWL-Missed-Vorprüfung (NICHT deployed)
+### P0-Baustein #146 – historische CWL-Missed-Vorprüfung (gemergt, NICHT deployed)
 
-- Branch: [feature/cwl-missed-official-reconciliation-preview-20261107](https://github.com/Smolmig/cwl_planer/tree/feature/cwl-missed-official-reconciliation-preview-20261107). Das ist **ein reines serverseitiges, bisher unverkabeltes Vorschau-Modul**; keine Cloud-Versionsanhebung und keine Änderung an produktiver Supabase-Edge-Funktion.
+- **[PR #146](https://github.com/Smolmig/cwl_planer/pull/146) gemergt** am 07.11.2026 (Squash-Commit `217613f2`), **485/485 PR-Tests erfolgreich** ([Run 42421650031](https://github.com/Smolmig/cwl_planer/actions/runs/42421650031), 0 Fehler). Das ist **ein reines serverseitiges, unverkabeltes Vorschau-Modul**; keine Cloud-Versionsanhebung, keine historische DB-Mutation und keine Änderung an der aktiven Supabase-Edge-Version v5. Main-CI und Pages für den Merge-Commit separat überprüfen.
 - `supabase/functions/coc-stats-collector/collector-reconciliation.mjs` stellt `previewHistoricalCwlMisses` bereit. Ohne gültigen `warEnded`-Snapshot vom authentifizierten offiziellen Clash-Endpunkt samt **offiziellem `clan.attacks`-Zähler** keine Bestätigung. Auch verifizierte 15/15 gespeicherte Angriffe allein reichen ausdrücklich nicht.
 - Für einen berechtigten App-Clan müssen exakt passende `clan_id`, Kriegsart, War-Key, separat geprüfter API-WarTag, Beginn, Gegner, vollständiges Roster sowie **sämtliche gespeicherten Angriffe** mit API-Angriffen (Identität, RH, Ziel, Sterne, Schaden) übereinstimmen. Andere Clanprofile, laufende/nicht finale Kriege, bestehende Missed-Zeilen, Imports, unvollständige oder abweichende Daten werden **abgelehnt**.
 - Ergebnis nur intern: `eligible`, explizite `confirmedMissedCount` **oder `null` (unbekannt)**, private Vorschlagszeilen; **kein API-/DB-Zugriff, kein Logger, kein Schreibpfad**. Tests: `tests/collector-historical-cwl-missed-preview.test.cjs` mit 15/15, 14/15, 13/15, 0/15, 30er, unbekannten Zählern, Manipulation, fehlenden Daten, tenantübergreifenden Risiken, widersprüchlichen Angriffen.
@@ -68,7 +68,7 @@ Alte Drafts [#45](https://github.com/Smolmig/cwl_planer/pull/45), [#109](https:/
 ## 6. Nächster Chat / nächste Arbeit
 
 1. GitHub-Main, [Release v1.16.20](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.20), jüngste Actions/PRs und #104 **frisch** prüfen; Cloud v1.16.20 ist live.
-2. Den neuen Reconciliation-Preview-Branch `feature/cwl-missed-official-reconciliation-preview-20261107` und ggf. PR überprüfen: reine Evidenz-/Mandantenprüfung mit **keinen** Schreiboperationen; CI-Gates vollständig dokumentieren, erst dann mergen.
+2. [PR #146](https://github.com/Smolmig/cwl_planer/pull/146) ist bereits gemergt (Preview ohne Schreibzugriff). Main-CI und Pages für `217613f2` sowie die letzte Dokumentationsaktualisierung neu überprüfen; **nicht** als produktive Datenreparatur bezeichnen.
 3. **P0 #104 nächster wirklicher Daten-Schritt:** Wenn noch offizielle Endkriegs-API-Daten zugänglich sind, ein **separat freigegebenes** serverseitiges, transaktional abgesichertes Reconciliation-Werkzeug entwerfen (mit trockenem Audit zuerst). Ohne verifizierten `clan.attacks`-Zähler oder bei abweichender Speicherung **keine Nachtragung**. Keine Live-Edge-Verkabelung ohne zusätzliche Abnahme; historische Lücke 29.10. offen.
 4. Danach Statistik-UX #114 / App-UX #46. Jede Änderung nach UX-Leitlinien mit Scope-, Mobil- und Rollenregression.
 5. Am Ende jeder Runde diese **GitHub-Übergabe** mit echtem Head-SHA, PR-/CI-/Merge-/Deploy-Nachweis, verbleibenden Grenzen und nächstem Schritt aktualisieren.
