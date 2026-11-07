@@ -191,6 +191,66 @@ idempotently. Do not auto-run this on new collector scans or change the live
 scheduler. If the original war is no longer available through the trusted
 API, the historical record remains **UNKNOWN** without guessing.
 
+## Atomic historical-CWL Missed writer – non-deployed design candidate
+
+This is **NOT a production migration or active correction**. The file
+[`scripts/DRAFT_cwl_historical_missed_atomic_rpc.sql`](../scripts/DRAFT_cwl_historical_missed_atomic_rpc.sql)
+is intentionally under `scripts/`, not `supabase/migrations/`; nobody should
+paste/execute it against the live Supabase project at this stage.
+Neither `index.ts` nor GitHub Actions imports/calls it, and **zero historical
+war/missed rows are modified**.
+
+The tested pure function `prepareHistoricalCwlMissedRpc(input)` extends the
+previous `previewHistoricalCwlMisses(input)` evidence check. **It returns
+`p_apply:false` every time.** No network, database write, secrets or log call.
+If the old row lacks `updated_at`, an official snapshot is missing, or any
+tenant/roster/attack identity fails the existing check, it returns no RPC
+arguments.
+
+The SQL is a **candidate atomic, service-role-only RPC**:
+- `SECURITY INVOKER`, fixed empty `search_path`, explicit `current_user`
+  verification; `REVOKE EXECUTE` from `PUBLIC`, `anon`, `authenticated`
+  and `GRANT` to `service_role` in the same SQL transaction.
+  A browser may never receive the service-role credential.
+- It checks the linked app-clan tag, the **same** `(clan_id,war_key)`, the
+  immutable final/API/CWL state, original `updated_at` and war metadata,
+  the entire saved roster and **exact canonical contents of all attacks**.
+  Existing missed entries always cause a conflict.
+- It validates that the proposed missing tags are *exactly* the roster tags
+  without an observed attack; for CWL each proposed row counts 1, has a
+  valid tag and a bounded name. The validated official `clan.attacks`
+  counter must match the entire stored attack count. A mismatch never
+  becomes a missing attack.
+- One PostgreSQL RPC transaction locks the four implicated tables in a
+  fixed order with a short lock timeout; this conservative protection also
+  prevents concurrent collector inserts from creating phantom rows.
+  The draft intentionally blocks **all stats-table writers** briefly,
+  which must be measured in a disposable/staging database before deployment.
+- `p_apply=false` is the **default**, yielding only a verified count.
+  A separately authorized operation could set it `true` only after fresh
+  official-source verification and explicit approval. It would insert
+  confirmed Missed rows then mark the war complete within the **same**
+  transaction; a failure rolls both changes back. Repeated application
+  fails closed instead of silently overwriting history.
+
+**Security limitation:** SQL cannot establish the provenance of a JSON
+"official snapshot". Service-role-only EXECUTE is a privilege boundary,
+not a cryptographic Clash proof. A future strictly server-side caller must
+fetch the legitimate `/clanwarleagues/wars/{tag}` response independently,
+run the validated pure preview and never trust client/imported parameters.
+
+**Unmet deployment gates:** Verify SQL syntax, grants, dry-run behavior,
+rollback, retries, contested writes and concurrent collector inserts in a
+**disposable PostgreSQL 17 + Supabase-role test environment**. Check real
+RLS and grants with advisors, review the global writer-lock impact,
+create a proper migration with `supabase migration new` *only after*
+tests and approval, preserve a backup, and explicitly deploy/monitor.
+The current Node regression
+[`tests/collector-historical-cwl-atomic-rpc-design.test.cjs`](../tests/collector-historical-cwl-atomic-rpc-design.test.cjs)
+validates the pure input protocol and static SQL safeguards only; **it is
+not a live database/SQL-execution test**. The unknown historical 29.10.
+import and earlier missing official counters stay unresolved.
+
 ## Monitoring and recovery
 
 - Per-clan data: `public.cwl_stat_collector_status` (read-only RLS).
