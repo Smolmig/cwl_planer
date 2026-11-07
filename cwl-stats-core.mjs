@@ -480,7 +480,12 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
   const hasFullRoster=w=>w.finalized&&Array.isArray(w.roster_tags)&&
     w.roster_tags.length===w.team_size&&
     new Set(w.roster_tags.map(cleanTag)).size===w.team_size;
-  const covered=w=>w.missed_log_complete===true||hasFullRoster(w);
+  // CWL needs an explicitly verified final missed-attack log. A final
+  // API snapshot with a complete roster but missing official clan.attacks
+  // proof is NOT sufficient to infer misses from absent stored attack rows.
+  // Normal CW keeps the established full-roster legacy fallback.
+  const covered=w=>w.missed_log_complete===true||
+    (w.war_type==="normal"&&hasFullRoster(w));
   // Coverage describes the selected wars, not just players who made an
   // attack. An unlogged CWL war could contain an unseen missed attack.
   const missedCoverage={
@@ -505,8 +510,10 @@ export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sa
         const p=player(m.player_tag,m.player_name);
         creditMiss(w,p,m.missed_count);
       }
-    }else if(hasFullRoster(w)){
-      const max=w.war_type==="cwl"?1:2;
+    }else if(w.war_type==="normal"&&hasFullRoster(w)){
+      // Only old normal CWs use the full-roster fallback. Never silently
+      // guess CWL misses, even with 15/15 roster slots visible.
+      const max=2;
       for(const rawTag of w.roster_tags){
         const tag=cleanTag(rawTag);if(!validTag(tag))continue;
         const p=player(tag);
