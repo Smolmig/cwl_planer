@@ -63,12 +63,27 @@ async function getClashJson(path,gameKey,fetchImpl){
   const length=Number(response.headers?.get?.("content-length")||0);
   if(!/^application\/json(?:\s*;|$)/i.test(type)||length>MAX_BODY)
     throw new SourceError("official_response_invalid");
-  let body;
+  // Do not buffer an untrusted chunked body in full before checking size.
+  // The Content-Length header alone cannot bound streamed responses.
+  let reader;
   try{
-    body=await response.text();
-    if(body.length>MAX_BODY)throw new Error("too_large");
-    return JSON.parse(body);
+    reader=response.body?.getReader();
+    if(!reader)throw new Error("empty_body");
+    const chunks=[];
+    let used=0;
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      used+=value.byteLength;
+      if(used>MAX_BODY)throw new Error("body_limit");
+      chunks.push(value);
+    }
+    const bytes=new Uint8Array(used);
+    let offset=0;
+    for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength}
+    return JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(bytes));
   }catch{
+    try{await reader?.cancel()}catch{/* Fail closed. */}
     throw new SourceError("official_response_invalid");
   }
 }
