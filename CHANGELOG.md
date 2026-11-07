@@ -6,6 +6,13 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.16] - 2026-11-07
+
+### Mitglieder: klare 3★-Quote, Gleichstand fairer sortiert
+- **Einheitlicher Name:** In der Mitgliederübersicht und ihren Hilfen, kompakten Plan-Spielerkarten sowie CWL-Aktuell-Hinweisen heißt dieselbe Kennzahl durchgehend **3★-Quote**; bisherige Schreibweisen „3★-Hit-Rate“ und „3★-Hitrate“ entfernt.
+- **Sortierung präzisiert:** Die optionale Sortierung „3★-Quote (roh, bis 7 AG)“ zeigt weiterhin die tatsächlich beobachtete Quote; bei gleicher gerundeter Quote stehen Spieler mit mehr belegten Angriffen davor. 7/7 und 1/1 sind damit kein alphabetischer Gleichstand mehr. **Keine** neue Gewichtung, Skill-Prognose oder automatische Rangliste: Unterschiede wie 1/1 (100 %) und 6/7 (86 %) bleiben ausdrücklich rohe Quoten, kein Stärkevergleich.
+- **Regression:** Beispielhafte Sortierung kleiner/großer Stichproben; identische CW/CWL-Statistikberechnung, Planungslogik, Aufstellungen, Cloud-Rollen, Backend und Offline-PWA. Cloud-Cache-Version synchronisiert.
+
 ## [1.16.15] - 2026-11-06
 
 ### Spielerduelle und Vergleichsübersicht aufgeräumt

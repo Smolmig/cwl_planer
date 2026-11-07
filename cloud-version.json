@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.15",
-  "released": "2026-11-06",
-  "summary": "Vergleiche: direkte, kompakte Duellansicht mit echten 3★-Quoten, dokumentierten Angriffen und getrennten CW/CWL-Werten. Sternverteilung optional aufklappbar; kleine Stichproben klar bezeichnet. Einsätze-Hotfix v1.16.14 bleibt erhalten. Keine Änderung von Planungslogik, gespeicherten Angriffen oder Rollen."
+  "version": "v1.16.16",
+  "released": "2026-11-07",
+  "summary": "Mitglieder und Plan: durchgehend 3★-Quote statt uneinheitlicher Hitrate-Bezeichnungen. Die optionale rohe Quoten-Sortierung bevorzugt bei exakt gleichem Prozentwert die höhere Zahl belegter Angriffe. Kein Skill-Ranking, keine Änderung an Statistiken, CWL-Planung, Rollen oder bestehenden Daten."
 }
