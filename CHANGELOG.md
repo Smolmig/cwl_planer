@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.17] - 2026-11-07
+
+### CWL: Wechseltext auch nach erledigten Wechseln kopieren
+- **Clash-Abgleich:** In der Vorbereitung bleibt der Kopierbutton auch bei „Aufstellung stimmt mit Clash überein“ verfügbar, wenn der bestätigte Vortag andere Spieler enthält. Die Meldung basiert auf beiden echten Clash-Aufstellungen, nicht auf einer hypothetischen Rotation.
+- **Clanchat:** Ein `@` vor jedem neu eingeplanten Spieler im kompakten Rein-/Raus-Text. Der Clash-Chat selbst bestimmt, ob eingefügtes `@Name` als echte Erwähnung erkannt wird.
+- **Gesamtplan:** Die separate Kopierfunktion ist ausdrücklich als „Gesamtplan kopieren“ bezeichnet und gliedert sieben Kriegstage samt Spielernamen klar; nicht als Clash-Chat-Kurztext gedacht.
+- **Sicherheit:** Kein Datenbank-/Solver-/Rollen-Eingriff, keine Mutation von Live-Kriegen und keine Änderung an der Offline-PWA. Versions-/Modul-Caches für die Cloud aktualisiert.
+
+
 ## [1.16.16] - 2026-11-07
 
 ### Mitglieder: klare 3★-Quote, Gleichstand fairer sortiert
