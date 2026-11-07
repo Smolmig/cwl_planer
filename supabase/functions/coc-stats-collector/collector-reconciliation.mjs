@@ -30,14 +30,14 @@ const equalAttack=(a,b)=>
  * linkedClan comes from the authorized tenant's cwl_clans row, storedWar and
  * both stored row arrays MUST be fetched in full from that same clan_id, and
  * officialWar MUST be fetched afresh by the trusted server using its Clash
- * API credential. Never accept a user/browser/import-supplied officialWar.
+ * API credential at the independent fetchedWarTag endpoint. Never accept a user/browser/import-supplied officialWar.
  *
  * A future, separately reviewed writer would need a transaction/optimistic
  * conflict guard and must recheck that finalized=true, missed_log_complete=false
  * and the attack rows are unchanged before writing confirmed misses.
  */
 export function previewHistoricalCwlMisses({
-  linkedClan,storedWar,storedAttacks,storedMissedRows,officialWar,now=Date.now()
+  linkedClan,storedWar,storedAttacks,storedMissedRows,officialWar,fetchedWarTag,now=Date.now()
 }={}){
   if(!linkedClan||!storedWar||!Array.isArray(storedAttacks)||
      !Array.isArray(storedMissedRows))
@@ -55,11 +55,16 @@ export function previewHistoricalCwlMisses({
   if(storedMissedRows.length!==0)return reject("existing_missed_evidence");
   if(!officialWar||typeof officialWar!=="object")
     return reject("official_snapshot_unavailable");
+  // The route's fetched tag must be independently supplied by the trusted
+  // caller, not inferred from the database key or the response body.
+  if(!validTag(fetchedWarTag)||
+     tag(fetchedWarTag)!==storedWar.war_key.slice(4))
+    return reject("official_war_tag_disagrees");
 
   let source;
   try{
     source=buildWarSnapshot(officialWar,tag(linkedClan.clash_tag),{
-      warType:"cwl",warTag:storedWar.war_key.slice(4),now
+      warType:"cwl",warTag:tag(fetchedWarTag),now
     });
   }catch{return reject("official_snapshot_invalid")}
   if(!source||source.state!=="warEnded"||!source.war.finalized)
