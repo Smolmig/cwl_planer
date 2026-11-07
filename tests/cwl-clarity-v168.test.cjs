@@ -18,7 +18,7 @@ test("CWL Hitrate explicitly counts three-star attacks, not simply all attacks",
  const run=vm.runInNewContext(html.slice(start,end)+";currentCwlTripleRate",context);
  const partial=run("#PYL");
  assert.equal(partial.attacks,2);assert.equal(partial.triples,1);
- assert.match(partial.label,/3★-Hitrate: 50 % \(1\/2 Dreier\)/);
+ assert.match(partial.label,/3★-Quote: 50 % \(1\/2 Dreier\)/);
  const absent=run("#2PYL");
  assert.equal(absent.attacks,0);
  assert.match(absent.label,/noch keine belegten Angriffe/);
