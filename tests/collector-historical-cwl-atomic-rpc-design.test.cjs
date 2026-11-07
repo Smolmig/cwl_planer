@@ -125,7 +125,8 @@ test("the pure payload always defaults to dry-run, with exact canonical evidence
         "attack_order,attacker_tag,attacker_th,defender_tag,defender_th,destruction,stars"));
     assert.deepEqual(result.rpcArgs.p_expected_attacks,
       [...result.rpcArgs.p_expected_attacks].sort((a,b)=>
-        a.attacker_tag.localeCompare(b.attacker_tag)||a.attack_order-b.attack_order));
+        (a.attacker_tag<b.attacker_tag?-1:a.attacker_tag>b.attacker_tag?1:0)||
+          a.attack_order-b.attack_order));
     assert.equal(JSON.stringify(input),inputCopy,"Input unchanged by pure preparation");
     assert.notEqual(before.length,0);
   }
