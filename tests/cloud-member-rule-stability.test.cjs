@@ -116,3 +116,89 @@ test("day-rule AUTO → MUSS → RAUS → AUTO updates the plan without replacin
   await new Promise(done=>server.close(done));
  }
 });
+
+
+test("same-clan Realtime refresh keeps the focused day rule, open card, panel and position",{
+ timeout:120000
+},async()=>{
+ const server=serve();
+ await new Promise(done=>server.listen(0,"127.0.0.1",done));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,1366]){
+   const page=await browser.newPage({viewport:{width,height:850},hasTouch:width<700});
+   try{
+    const errors=[];
+    page.on("pageerror",error=>errors.push(error.message));
+    await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
+    await page.evaluate(()=>{
+     window.__ruleRefreshClan="stable-clan-01";
+     window.CWLCloud={
+      active:true,hasApiClan:()=>false,
+      getActiveClanId:()=>window.__ruleRefreshClan,
+      onLocalChange:()=>{},afterRender:()=>{},renderLive:()=>{}
+     };
+     const initial=window.CWLLegacy.getProfile();
+     const members=Array.from({length:65},(_,i)=>{
+      const m=window.CWLLegacy.newMember("Spieler "+String(i).padStart(3,"0"));
+      m.townHall=18;return m;
+     });
+     window.CWLLegacy.switchToCloud({...initial,members});
+     window.showPlannerView("members");
+    });
+    await page.waitForTimeout(450);
+    const initial=await page.evaluate(()=>{
+     const root=document.getElementById("memberList");
+     const row=root.querySelectorAll(".member")[25];
+     row.querySelector(".member-edit-toggle").click();
+     row.querySelector(".toggle-rules").click();
+     return {id:row.dataset.id};
+    });
+    await page.evaluate(id=>{
+     const row=[...document.querySelectorAll("#memberList .member")].find(r=>r.dataset.id===id);
+     row.scrollIntoView({block:"center",behavior:"instant"});
+    },initial.id);
+    await page.waitForTimeout(450);
+    const result=await page.evaluate(id=>{
+     const root=document.getElementById("memberList");
+     const row=[...root.querySelectorAll(".member")].find(r=>r.dataset.id===id);
+     const selected=row.querySelector('.rulebtn[data-day="3"]');
+     selected.click(); // AUTO -> MUSS, without rebuilding the current member list
+     selected.focus({preventScroll:true});
+     const beforeRect=selected.getBoundingClientRect();
+     const beforeY=window.scrollY;
+     const current=window.CWLLegacy.getProfile();
+     // Simulate a real same-clan profile replacement from a second Cloud client.
+     window.CWLLegacy.switchToCloud({...current,members:current.members.map(m=>({...m}))});
+     const replacement=[...root.querySelectorAll(".member")].find(r=>r.dataset.id===id);
+     const next=replacement?.querySelector('.rulebtn[data-day="3"]');
+     const afterRect=next?.getBoundingClientRect();
+     return {
+       rowReplaced:replacement!==row,
+       focused:document.activeElement===next,
+       cardOpen:replacement?.classList.contains("member-expanded"),
+       rulesOpen:replacement?.querySelector(".rule-panel")?.classList.contains("open"),
+       sameRule:next?.textContent?.includes("MUSS"),
+       value:window.CWLLegacy.getProfile().members.find(m=>m.id===id)?.statuses[3],
+       topDelta:afterRect?.top-beforeRect.top,
+       scrollDelta:window.scrollY-beforeY,
+       noOverflow:document.documentElement.scrollWidth<=window.innerWidth+2
+     };
+    },initial.id);
+    assert.equal(result.rowReplaced,true,"refresh must actually replace the row: "+width);
+    assert.equal(result.focused,true,"restore focused specific day rule: "+width);
+    assert.equal(result.cardOpen,true,"card stays open: "+width);
+    assert.equal(result.rulesOpen,true,"rules stay expanded: "+width);
+    assert.equal(result.sameRule,true);
+    assert.equal(result.value,"must");
+    assert.ok(Math.abs(result.topDelta)<=3,"same visible player position: "+width+" "+JSON.stringify(result));
+    assert.ok(Math.abs(result.scrollDelta)<=3,"no unexpected scroll jump: "+width+" "+JSON.stringify(result));
+    assert.equal(result.noOverflow,true,"no horizontal overflow: "+width);
+    assert.deepEqual(errors,[],"browser page errors: "+width);
+   }finally{await page.close()}
+  }
+ }finally{
+  await browser.close();
+  await new Promise(done=>server.close(done));
+ }
+});
