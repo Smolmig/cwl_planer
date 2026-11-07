@@ -83,7 +83,7 @@ test("Overview always describes all recorded wars; player-specific filters canno
     const info=JSON.stringify({width,theme,result});
     assert.match(result.intro,/Alle gespeicherten abgeschlossenen CWs und CWL-Tage/,info);
     assert.doesNotMatch(result.intro,/oben ausgewählten Kriege/,info);
-    assert.match(result.allCount,/1 normale CWs \+ 1 CWL-Kriegstage/,info);
+    assert.match(result.allCount,/1 normaler CW \+ 1 CWL-Kriegstag/,info);
     assert.match(result.allCoverage,/alle gespeicherten Kriege/,info);
     assert.match(result.restricted,/1 ausgewählte abgeschlossene Kriege/,info);
     assert.equal(result.restoredCount,result.allCount,info);
