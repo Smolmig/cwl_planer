@@ -4312,13 +4312,19 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  const activeControl=sameMemberContext&&root.contains(document.activeElement)
   ?document.activeElement:null;
  const activeRowId=activeControl?.closest(".member")?.dataset.id;
- const activeControlSelector=activeRowId?[
-  ".member-edit-toggle",".member-note-btn",".toggle-rules",".member-config-help",
-  ".move-up",".move-down",".dup-warning",".close-duplicate",
-  ".member-part input",".member-fixed input",".member-select",
-  ".member-th-picker",".member-strength-picker",".member-target-days",
-  ".member-rotation-weight"
- ].find(selector=>activeControl.matches(selector)):null;
+ const activeDayRule=activeControl?.matches?.(".rulebtn[data-day]")?
+  Number(activeControl.dataset.day):null;
+ const activeControlSelector=activeRowId?(
+  Number.isInteger(activeDayRule)&&activeDayRule>=0&&activeDayRule<state.config.days
+   ?'.rulebtn[data-day="'+activeDayRule+'"]'
+   :[
+    ".member-edit-toggle",".member-note-btn",".toggle-rules",".member-config-help",
+    ".move-up",".move-down",".dup-warning",".close-duplicate",
+    ".member-part input",".member-fixed input",".member-select",
+    ".member-th-picker",".member-strength-picker",".member-target-days",
+    ".member-rotation-weight"
+   ].find(selector=>activeControl.matches(selector))
+ ):null;
  root.dataset.profileContext=memberContext;
  updateBulkBar();const sortSel=document.getElementById("memberSortSelect");if(sortSel){sortSel.value=state.config.memberSort||"manual";const strengthOption=sortSel.querySelector('option[value="strength"]');if(strengthOption)strengthOption.textContent=window.CWLCloud?.active?"3★-Quote (roh, bis 7 AG)":"3★-Stärke";const recentOption=sortSel.querySelector('option[value="recent-stars"]');if(recentOption)recentOption.hidden=!window.CWLCloud?.active;}if(!state.members.length&&manualRosterRestricted()){
  root.innerHTML='<div class="empty">Noch keine Mitglieder.<div class="statusline">Importiere die Spieler mit „Mitglieder aktualisieren“. Solange Clash verbunden ist, werden Mitglieder über den Clan-Abgleich verwaltet.</div></div>';
