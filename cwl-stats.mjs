@@ -515,7 +515,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "„k. A.“ bedeutet: Keine sichere Zahl, auch 0 ist nicht bestätigt. "+
         "Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff. "+
         "Dafür braucht es einen vollständigen offiziellen Endkriegsnachweis oder belegte Missed-Logs. "+
-        "Normale CWs können trotzdem vollständig ausgewertet sein. "
+        "Normale CWs können trotzdem vollständig ausgewertet sein. "+
         "Sortierung nach „Verpasst“ verwendet die nachgewiesene Anzahl."
       );
       note.hidden=summary.complete;
