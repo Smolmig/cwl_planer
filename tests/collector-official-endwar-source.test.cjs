@@ -185,6 +185,11 @@ test("upstream failures return only safe reason codes and never leak API error b
   const huge=await read({...f.input,fetchImpl:async()=>new Response("{}",
     {headers:{"content-type":"application/json","content-length":"9999999"}})});
   assertNoProposal(huge,"official_response_invalid");
+  // Chunked/incorrect Content-Length must not bypass the 1 MiB limit.
+  const chunked=await read({...f.input,fetchImpl:async()=>new Response(
+    JSON.stringify({padding:"X".repeat(1024*1024)}),
+    {headers:{"content-type":"application/json"}})});
+  assertNoProposal(chunked,"official_response_invalid");
 });
 test("the same Clash war still yields strictly distinct payloads for two app clans",async()=>{
   const first=await fixture(2,CLAN_ID),second=await fixture(2,SECOND_ID);
