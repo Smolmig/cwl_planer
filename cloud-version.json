@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.29",
+  "version": "v1.16.30",
   "released": "2026-11-08",
-  "summary": "Einsätze: Aufklappbare Spielertage haben dynamisch richtige Anzeigen-/Schließen-Beschriftung, im offenen Zustand eine eindeutig referenzierte Detailgruppe und auf allen mobilen Breiten mindestens 44px Touchhöhe. Tastaturfokus, Filter, Beobachterrolle und CWL-Planungsdaten unverändert; keine Änderungen an Solver, Supabase, RLS/Auth oder separater Offline-PWA."
+  "summary": "Mitglieder: Such- und Statusfilter, Hilfe und Spieler-Details sind auf kleinen Geräten besser antippbar (mindestens 44px), ohne gequetschte Filterzeile. Zugehörige Spieler-Details sind dem Bearbeiten-Button zugänglich zugeordnet. Kein Eingriff in Spielerwerte, CWL-Solver, Supabase/RLS/Auth oder Offline-PWA."
 }
