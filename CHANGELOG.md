@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.32] - 2026-11-08
+
+### Statistik > Vergleiche: Rathaus-Details bei Realtime-Refresh stabil
+- **Befund (#114/#110):** Die geöffnete Auswertung „Weitere Rathaus-Kombinationen und Sternverteilungen“ blieb nach Datenabgleich zwar offen, jedoch wurde der native `<summary>` neu aufgebaut und verlor Tastaturfokus/Leseposition. Das danebenliegende Spielerduell besaß bereits eine passende Absicherung.
+- **Gezielter Fix:** `renderMatchups()` verwendet denselben Fokus-/Scroll-Helfer wie das Spielerduell, aber mit eigenem Clan-/Versionsstand und Reset bei Clanwechsel. Bildschirmposition nur bei echtem same-clan-Reload verankern, nicht bei bewusstem CW/CWL-/Zeitfilterwechsel. Keine Rechen-/Daten-/Filteränderung.
+- **Regression/Release:** Browserregression Gold/Dark/Light, Viewer, 320/390/430/699/1366 px: neue Angriffsdaten, Fokus, Open-State, Leseposition, Filter, keine Überläufe. PR-/Main-CI, Pages und offizielles Release müssen separat bestätigt werden; echte Mobilgeräteabnahme bleibt offen. Kein Eingriff in CWL-Solver, produktive Clan-Daten, Supabase DB/Auth/RLS/Edge oder Offline-PWA.
+
+
 ## [1.16.31] - 2026-11-08
 
 ### Mitglieder: Fokus und Bildschirmposition bei Live-Updates

@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.31",
+  "version": "v1.16.32",
   "released": "2026-11-08",
-  "summary": "Mitglieder: Live-Nachladen erhält den Fokus auf dem gerade bedienten Spieler, auch am Namens-Bearbeiten-Button, und verankert dessen Bildschirmposition. Geöffnete Details, Filter und Tagesregeln bleiben erhalten. Keine Änderungen an Solver, produktiver Datenbank, Auth/RLS, Edge oder Offline-PWA."
+  "summary": "Statistik > Vergleiche: Geöffnete Rathaus-Details behalten bei gleichbleibendem Clan-Refresh Tastaturfokus und Leseposition. Offen-Zustand und Filter bleiben erhalten. Keine Änderungen an Quoten, Statistik-Datenbasis, CWL-Solver, produktiver Supabase/Edge, Auth/RLS oder Offline-PWA."
 }
