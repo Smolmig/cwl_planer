@@ -312,7 +312,7 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
 export function formatTrendPeriod(key,granularity,{short=false}={}){
  if(!["day","week","month"].includes(granularity))
    throw Error("Ungültige Zeitachse.");
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(key||"")))
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||"")))
    throw Error("Ungültiges Verlaufsdatum.");
  const date=new Date(key+"T00:00:00Z");
  if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==key)
