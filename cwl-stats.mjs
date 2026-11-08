@@ -423,6 +423,24 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const ctx=context(),view=$("view-stats");
     if(!view)return;
     const enabled=!!ctx.active&&!!ctx.clanId;
+    // Capture the visible war before the timeline/table above it grows or
+    // shrinks. Waiting until renderWarHistory() loses that prior position.
+    let earlyHistoryAnchor=null;
+    const historyHost=$("statsWarHistory");
+    if(enabled&&section==="history"&&view.classList.contains("active")&&
+       historyHost?.dataset.historyClan===String(ctx.clanId)&&
+       historyHost.hasAttribute("data-history-version")&&
+       Number(historyHost.dataset.historyVersion)!==version){
+      const top=Math.max(0,document.querySelector(".topbar")
+        ?.getBoundingClientRect().bottom||0)+4;
+      const visible=[...historyHost.querySelectorAll(".war-history-item")].find(el=>{
+        const rect=el.getBoundingClientRect();
+        return rect.bottom>top&&rect.top<window.innerHeight-24;
+      });
+      if(visible)earlyHistoryAnchor={
+        warKey:visible.dataset.warKey,top:visible.getBoundingClientRect().top
+      };
+    }
     const freshness=$("statsCollectorHealth");
     if(freshness){
       const presentation=collectorHealthDisplay(collectorHealth,enabled);
@@ -486,7 +504,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.";
     }
     if(section==="compare"){renderMatchups();renderDuel();}
-    if(section==="history"){renderTimeline();renderWarHistory();}
+    if(section==="history"){renderTimeline();renderWarHistory(earlyHistoryAnchor);}
     if(section==="form")renderComparableForm();
     const displayMissed=(known,complete)=>complete?String(known):(known>0?"mind. "+known:"k. A.");
     const label=displayMissed(summary.missesKnown,summary.complete);
@@ -674,7 +692,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       "<p class='stats-note'>Keine Einzelangriffe hinterlegt.</p>";
     target.dataset.rendered="1";
   }
-  function renderWarHistory(){
+  function renderWarHistory(earlyScrollAnchor=null){
     const host=$("statsWarHistory");if(!host)return;
     const ctx=context();
     const historySignature=[ctx.clanId,version,trendType,trendDays].join("|");
@@ -690,8 +708,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         const rect=el.getBoundingClientRect();
         return rect.bottom>headerBottom&&rect.top<window.innerHeight-24;
       }):null;
-    const scrollAnchor=firstVisible?
-      {warKey:firstVisible.dataset.warKey,top:firstVisible.getBoundingClientRect().top}:null;
+    const scrollAnchor=earlyScrollAnchor||(firstVisible?
+      {warKey:firstVisible.dataset.warKey,top:firstVisible.getBoundingClientRect().top}:null);
     const openWars=new Set(sameClan?[...host.querySelectorAll(".war-history-item[open]")].map(el=>el.dataset.warKey):[]);
     const focusedWar=sameClan&&host.contains(document.activeElement)&&
       document.activeElement?.matches?.(".war-history-item>summary")?
