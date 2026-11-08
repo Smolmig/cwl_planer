@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.26";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.27";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -252,9 +252,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       n<15?"Erste Tendenz":"Mehr Vergleichsdaten";
     // Render the same underlying numbers, but with a single visible
     // comparison hierarchy. Detailed star charts belong behind one disclosure.
-    const renderOne=p=>{
+    const renderOne=(p,i)=>{
       const name=keyed.get(cleanTag(p.tag))?.name||p.tag;
-      return "<div class='stats-duel-person'><h4>"+esc(name)+"</h4>"+
+      return "<div class='stats-duel-person'><h4><span class='stats-duel-player-key'>Spieler "+
+        (i===0?"A":"B")+"</span>"+esc(name)+"</h4>"+
         "<div class='stats-form-figure'><span>3★-Quote</span><strong>"+
           human(p.hitRate)+"</strong></div>"+
         "<div class='stats-bar-track' role='img' aria-label='"+esc(
@@ -270,11 +271,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     };
     const row=(kind,label)=>{
       const [a,b]=results.players.map(p=>p[kind]);
-      const cell=g=>"<span class='stats-duel-split-value'>"+
-        (g.attacks?human(g.hitRate)+" · "+g.triples+"/"+g.attacks+" Dreier":
-          "Keine Angriffe")+"</span>";
+      const cell=(g,side)=>{
+        const value=g.attacks?human(g.hitRate)+" · "+g.triples+"/"+g.attacks+" Dreier":
+          "Keine Angriffe";
+        return "<span class='stats-duel-split-value' aria-label='"+
+          esc("Spieler "+side+": "+label+", "+value)+"'>"+value+"</span>";
+      };
       return "<div class='stats-duel-split-row'><span class='stats-duel-split-label'>"+
-        label+"</span>"+cell(a)+cell(b)+"</div>";
+        label+"</span>"+cell(a,"A")+cell(b,"B")+"</div>";
     };
     const previousOpen=host.querySelector(".stats-duel-details")?.open===true;
     const focusContext=captureRefreshDisclosure(host,
@@ -291,7 +295,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     host.innerHTML="<div class='stats-duel-grid'>"+
       results.players.map(renderOne).join("")+"</div>"+
       "<div class='stats-duel-splits' role='group' aria-label='CWL und normale Clankriege pro Spieler'>"+
-        "<p class='stats-duel-splits-intro'>3★-Quote nach Kriegsart · jeweils eigene Angriffe</p>"+
+        "<div class='stats-duel-split-head'><span>Kriegsart</span>"+
+          "<span>Spieler A</span><span>Spieler B</span></div>"+
         row("normal","Normaler CW")+row("cwl","CWL")+"</div>"+
       "<p class='stats-note stats-duel-caveat'>"+
         (duelSameTH?"Nur Angriffe gegen dasselbe Rathaus.":

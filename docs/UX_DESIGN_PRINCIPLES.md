@@ -81,6 +81,8 @@
 
 - **Spielerform Mobile-Bedienung (08.11.2026):** Zeitraumwahl (30/90/180 Tage) auch bei 320 px in lesbarer 13-px-Schrift statt mit 11 px; bei Bedarf Texte umbrechen lassen, Zusatzzeile 12 px und ausreichend große Schaltflächen. Form-/Vergleichsfilter mindestens 44 px hoch. Im Status Zeitraum, belegte gleich-RH-Spieler und Sortierbezug in Alltagssprache nennen; die Datenmengen-Grenzen und genaue Methodik gehören in den vorhandenen aufklappbaren Erklärungsteil. Die 3★-Quote bleibt mit Stichprobe verknüpft, Listenplätze sind keine verifizierte Stärke.
 
+- **Vergleiche mit zwei Spielerseiten (08.11.2026):** CW-/CWL-Zeilen dürfen Prozentwerte nicht nur über ihre Position den darüberliegenden Spielerkarten zuordnen. Kennzeichne die Spielerköpfe als A/B und verwende direkt über den Zahlen eine leicht lesbare dreispaltige Kopfzeile `Kriegsart / Spieler A / Spieler B`, die in allen Breakpoints **dieselbe Grid-Aufteilung** wie die Datenzeilen nutzt. Eine zusätzliche Karte ist nicht nötig; für Screenreader Spielerseite, Kriegsart und Wert gemeinsam benennen. Lange Spielernamen sauber umbrechen lassen, 44-px-Details und Fokus bei Reload bewahren.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
