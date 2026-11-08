@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.30",
+  "version": "v1.16.31",
   "released": "2026-11-08",
-  "summary": "Mitglieder: Such- und Statusfilter, Hilfe und Spieler-Details sind auf kleinen Geräten besser antippbar (mindestens 44px), ohne gequetschte Filterzeile. Zugehörige Spieler-Details sind dem Bearbeiten-Button zugänglich zugeordnet. Kein Eingriff in Spielerwerte, CWL-Solver, Supabase/RLS/Auth oder Offline-PWA."
+  "summary": "Mitglieder: Live-Nachladen erhält den Fokus auf dem gerade bedienten Spieler, auch am Namens-Bearbeiten-Button, und verankert dessen Bildschirmposition. Geöffnete Details, Filter und Tagesregeln bleiben erhalten. Keine Änderungen an Solver, produktiver Datenbank, Auth/RLS, Edge oder Offline-PWA."
 }
