@@ -1,3 +1,11 @@
+# Laufende Arbeit – 08.11.2026, vor PR-CI und Merge
+
+- **Cloud v1.16.30, Branch `fix/members-mobile-controls-v11630`, #46:** Bestätigter CSS-Mangel: 34px kleine Suche und Statusfilter im Landscape-Modus, ungünstige dreispaltige Filterleiste, zu kleine Hilfe. Gezielte 44px-/16px-/Grid-Korrektur und aria-controls für Spieler-Bearbeiten. Chromium-Regression im PR geplant, keine CI-/Merge-/Release-Erfolgsbehauptung. Produktive Daten/Solver/Auth/RLS/Edge/Offline-PWA unangetastet.
+- **Backup-Alarm:** GitHub Backup-Run [42465392558](https://github.com/Smolmig/cwl_planer/actions/runs/42465392558) scheiterte beim Supabase-CLI-Download an wiederholtem HTTP 504 (Secrets-Prüfung grün, Export nicht gestartet). Wiederholungsversuch angestoßen; Status vor Erfolgsbehauptung prüfen.
+- **Als Nächstes:** reale iPhone-Safari-/Android-Abnahme der Mitgliederansicht, danach #46/#114. Historische Reconciliation #104 ohne Staging und explizite Freigabe gesperrt.
+
+---
+
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
 **Stand:** 08.11.2026, **Cloud v1.16.29 offiziell veröffentlicht**: [PR #157](https://github.com/Smolmig/cwl_planer/pull/157) gemergt (Squash `c9d81d85`), **512/512 PR- und Main-Tests bestanden**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42435753309) und [Release v1.16.29](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.29) erfolgreich. Zuvor v1.16.28 / PR #156. Keine Änderungen an produktiver DB/Edge/RLS, CWL-Solver oder separater Offline-PWA.  
