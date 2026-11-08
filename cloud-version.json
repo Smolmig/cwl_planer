@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.34",
+  "version": "v1.16.35",
   "released": "2026-11-09",
-  "summary": "Statistik > Spielerform zeigt auch aktuelle Clanmitglieder ohne gespeicherte Angriffe mit neutraler unbekannter Quote statt 0 %. Aktuelle Spielernamen, gleich-RH-Datenlücken, Suchleerzustand und Zeilenbezeichnung klarer. Bei gleichem Clan bleibt die Leseposition beim Nachladen erhalten. Kein CWL-Solver-, Datenbank-, Auth/RLS/Edge- oder Offline-PWA-Eingriff."
+  "summary": "Statistik > freie Spielerstatistik: Alle CWs und begrenzte Kriegszahlen ausschließlich auf abgeschlossene Kriege bezogen. Keine 'Bis zu all'-Anzeige, keine offenen API-Kriege im Gesamtzähler. Bei 0 abgeschlossenen ausgewählten Kriegen verständlicher Leerzustand statt Datumslücken oder fingierter Prozentwerte. Quoten, Spielerform und CWL-Planung unverändert."
 }

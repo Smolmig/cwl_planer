@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.34";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.35";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -531,13 +531,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons});
     const selected=scopeInfo.selected;
     const formatDate=value=>value?new Date(value).toLocaleDateString("de-AT"):"–";
-    if($("statsPlayerScope"))$("statsPlayerScope").textContent=
+    if($("statsPlayerScope"))$("statsPlayerScope").textContent=scopeInfo.selectedWars?
       "Diese Tabelle berücksichtigt ausschließlich "+scopeInfo.selectedWars+
       (scopeInfo.selectedWars===1?
         " ausgewählten abgeschlossenen Krieg bzw. CWL-Tag (":
         " ausgewählte abgeschlossene Kriege bzw. CWL-Tage (")+
       formatDate(scopeInfo.first)+" – "+formatDate(scopeInfo.recent)+"). "+
-      "Kein zusätzliches 10- oder 90-Tage-Fenster.";
+      "Kein zusätzliches 10- oder 90-Tage-Fenster.":
+      "Für diese Auswahl sind noch keine abgeschlossenen Kriege bzw. CWL-Tage gespeichert. "+
+      "Fehlende Angriffe sind keine 0-%-Quote.";
     if($("statsScopeExplainer")){
       const normal=type==="cwl"?"":last==="all"?
         "Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
@@ -546,8 +548,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const league=type==="normal"?"":cwlSeasons==="all"?
         "alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
         scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
-      $("statsScopeExplainer").textContent=[normal,league].filter(Boolean).join(" + ")+
-        " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.";
+      $("statsScopeExplainer").textContent=scopeInfo.selectedWars?
+        [normal,league].filter(Boolean).join(" + ")+
+        " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.":
+        "Keine abgeschlossenen Kriege in dieser Auswahl. Noch keine Spielerwerte vorhanden.";
     }
     if(section==="compare"){renderMatchups();renderDuel();}
     if(section==="history"){renderTimeline();renderWarHistory(earlyHistoryAnchor);}
@@ -583,9 +587,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
      }
     const displayType=section==="overview"?"all":type;
     if(displayType==="cwl"){
-      if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
-        " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
-        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe";
+      if(count)count.textContent=summary.wars?
+        summary.wars+" von "+summary.totalCwlDays+
+        " abgeschlossenen CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
+        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe":
+        "Noch keine abgeschlossenen CWL-Kriegstage gespeichert";
       if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({from,to,days,inferred})=>{
         const fmt=value=>new Date(value+"T12:00:00Z").toLocaleDateString("de-AT",
           {day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
@@ -610,10 +616,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           " aus insgesamt "+summary.totalCwlSeasons+" gespeicherten CWL-Durchgängen. "+
           "Historische CWL-Durchgänge ohne Gruppenkennung werden nach Datumsabstand getrennt, bei Lücken nur vorläufig.":"";
       }else{
-        if(count)count.textContent=summary.wars+" von "+
-          wars.filter(w=>w.war_type==="normal").length+
-          " gespeicherten normalen CWs · "+summary.attacks+" Angriffe";
-        if(seasonDetails)seasonDetails.textContent="Bis zu "+last+" zuletzt gespielte normale Clankriege werden ausgewertet.";
+        if(count)count.textContent=scopeInfo.selectedNormal?
+          (last==="all"?
+            "Alle "+scopeInfo.selectedNormal+" abgeschlossenen normalen CWs":
+            scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen normalen CWs")+
+          " · "+summary.attacks+(summary.attacks===1?" Angriff":" Angriffe"):
+          "Noch keine abgeschlossenen normalen CWs gespeichert";
+        if(seasonDetails)seasonDetails.textContent=last==="all"?
+          "Alle verfügbaren abgeschlossenen normalen Clankriege werden ausgewertet.":
+          last===1?"Der letzte abgeschlossene normale Clankrieg wird ausgewertet.":
+          "Bis zu "+last+" zuletzt abgeschlossene normale Clankriege werden ausgewertet.";
       }
     }
     const note=$("statsMissingNote");
@@ -1081,13 +1093,17 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const parts=[];
     if(type!=="cwl"){
       parts.push(last==="all"?
-        "Alle "+scopeInfo.allNormal+" "+(scopeInfo.allNormal===1?"CW":"CWs"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" CWs (Limit "+last+")");
+        (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
+          scopeInfo.allNormal===1?"1 abgeschlossener CW":
+          "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
+        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs (Limit "+last+")");
     }
     if(type!=="normal"){
       parts.push(cwlSeasons==="all"?
-        "Alle "+scopeInfo.allCwl+" CWL-Durchgänge":
-        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen");
+        (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
+          scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
+          "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
+        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgängen");
     }
     if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" + ");
   }

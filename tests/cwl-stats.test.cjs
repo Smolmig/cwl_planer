@@ -283,7 +283,7 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  assert.match(html,/Letzter CWL-Durchgang/);
  assert.match(html,/Letzte 3 CWL-Durchgänge/);
  assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
- assert.match(ui,/gespeicherten CWL-Kriegstagen/);
+ assert.match(ui,/abgeschlossenen CWL-Kriegstagen/);
  assert.match(ui,/erfasste Kriegstage/);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
 });
@@ -343,6 +343,6 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(ui,/missedCoverageHost\.textContent/);
  assert.match(ui,/order==="missed"\?p\.missedKnown/);
  assert.match(ui,/Eine CWL-Aufstellung allein ist kein Nachweis/,"Missing league data must be explained");
- assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.34/);
+ assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.35/);
  assert.match(ui,/CWL: /);
 });

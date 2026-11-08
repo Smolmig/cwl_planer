@@ -6,12 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.35] - 2026-11-09
+
+### Spielerstatistik: abgeschlossene CW-Auswahl und Null-Daten-Zeiträume
+- **Befund (#114/#110):** „Nur CW / Alle CWs“ führte zu „Bis zu all“ und zur Gesamtzahl inklusive unfertiger API-Kriege, während die ausgewerteten Angriffe diese zurecht ausschlossen. Bei 0 ausgewählten abgeschlossenen Kriegen erschienen unverständliche Datumsstriche.
+- **Gezielter UI-Fix:** Zähler, Begrenzungstexte und ausgewählte Datenbasis einheitlich aus `describeWarSelection` (abgeschlossene Kriege) ableiten; Einzahl bei einem Angriff. Bei noch leerer Auswahl neutralen Leerzustand statt 0-%-Werten oder Datums-Platzhaltern zeigen. CW/CWL-Filter und unabhängige Form-/Vergleichsauswertung unverändert.
+- **Regression/Abnahme:** `tests/cloud-stats-finalized-scope-empty.test.cjs` mit abgeschlossenen/noch laufenden CW/CWL-Kriegen, All/Last-1/0-Filtern, Viewer, Arena/Dark/Light, 320/390/430/1366 px. PR, CI, Pages und Release nur nach erfolgreichen Nachweisen dokumentieren. Keine produktiven DB-, Auth/RLS-, Edge-, CWL-Solver-, Plan- oder Offline-PWA-Änderungen.
+
+
 ## [1.16.34] - 2026-11-09
 
 ### Spielerform: Aktuelle Clanmitglieder trotz fehlender Angriffshistorie sichtbar
 - **Befund (#114/#110):** Die Formliste entstand nur aus vorhandenen Angriffen und blendete aktive Mitglieder ohne gespeicherten Angriff vollständig aus. Historische Namen konnten aktuelle Profilnamen überlagern. Ein Same-Clan-Datenupdate konnte die Leseposition in einer langen Liste verschieben.
 - **Korrektur:** Aktuelle Clan-Tags mit Namen aus dem bereits ausgewählten Cloud-Profil als neutrale Einträge aufnehmen; bei fehlender gleich-RH-Auswertung ausdrücklich **„Keine Daten“** und **keine belegte 3★-Quote**, niemals fingierte 0 %, 0/0 oder einen verpassten Angriff. Ehemalige Spieler aus dokumentierter Historie bleiben unterscheidbar. Kleinere verständliche Form-/Suchtexte, Zeilennummer statt Scheinplatzierung; Scrollanker nur bei Hintergrund-Reload desselben Clans. Auf Clanwechsel alte Spielerform unmittelbar leeren.
-- **Test & Sicherheit:** Neuer Pure-/Chromium-Test für gültige/current/ehemalige Tags, Namen, unbekannte RH, nicht-finalisierte Angriffe, 30-/90-Tage-Fenster, mobile Viewer-UI (320/390/430/1366 px in Arena/Dark/Light), Suche, längere Scrollliste, Nachladen und Clanwechsel. [PR #162](https://github.com/Smolmig/cwl_planer/pull/162). Keine Änderung an echten Angriffswerten, CWL-Solver, Cloud-Profilformat, produktiver Supabase/RLS/Auth/Edge, Rollen oder Offline-PWA. Endgültige CI-/Release-Verifikation nach Merge ergänzen.
+- **Test & Sicherheit:** Neuer Pure-/Chromium-Test für gültige/current/ehemalige Tags, Namen, unbekannte RH, nicht-finalisierte Angriffe, 30-/90-Tage-Fenster, mobile Viewer-UI (320/390/430/1366 px in Arena/Dark/Light), Suche, längere Scrollliste, Nachladen und Clanwechsel. [PR #162](https://github.com/Smolmig/cwl_planer/pull/162) gemergt als `1fa8e8b45d`; [PR-CI](https://github.com/Smolmig/cwl_planer/actions/runs/42535196946) **521/521 Tests**, [Main-CI](https://github.com/Smolmig/cwl_planer/actions/runs/42535345901), [Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42535344887) und [offizielle v1.16.34](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.34) erfolgreich. Keine Änderung an echten Angriffswerten, CWL-Solver, Cloud-Profilformat, produktiver Supabase/RLS/Auth/Edge, Rollen oder Offline-PWA.
 
 
 ## [1.16.33] - 2026-11-08
