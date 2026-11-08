@@ -64,6 +64,22 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
   function getComparablePlayerStats(tag){return scope===context().clanId?comparableProfiles.get(cleanTag(tag))||null:null}
   window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,getComparablePlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
+  // Current roster names are presentation-only. Historic attack identities and
+  // former members remain unchanged; values and saved war records are untouched.
+  function withCurrentRosterNames(rows,ctx=context()){
+    const active=new Set((ctx.memberTags||[]).map(cleanTag));
+    const names=new Map();
+    for(const member of ctx.memberProfiles||[]){
+      const tag=cleanTag(member?.playerTag);
+      if(!active.has(tag))continue;
+      const name=String(member?.name||"").trim().slice(0,80);
+      if(name)names.set(tag,name);
+    }
+    return rows.map(p=>{
+      const name=names.get(cleanTag(p.tag));
+      return name&&name!==p.name?{...p,name}:p;
+    });
+  }
   const formPct=rate=>rate===null||!Number.isFinite(rate)?"–":rate+" %";
   const formStar=number=>number===null||!Number.isFinite(number)?"–":
     number.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★";
@@ -247,9 +263,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
     if(!host||!first||!second)return;
     const chosen=comparisonWars();
-    const available=computeWarStats(chosen,attacks,{type:"all",last:"all",
-      cwlSeasons:"all",showFormer:true}).rows
-      .filter(p=>p.tag&&p.attacks>0).sort((a,b)=>a.name.localeCompare(b.name,"de"));
+    const available=withCurrentRosterNames(computeWarStats(chosen,attacks,{
+      type:"all",last:"all",cwlSeasons:"all",showFormer:true
+    }).rows).filter(p=>p.tag&&p.attacks>0)
+      .sort((a,b)=>a.name.localeCompare(b.name,"de"));
     const keyed=new Map(available.map(p=>[cleanTag(p.tag),p]));
     if(!keyed.has(duelLeft))duelLeft=available[0]?.tag||"";
     if(!keyed.has(duelRight)||duelRight===duelLeft)
@@ -650,7 +667,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     if(section!=="players")return;
     const term=search.trim().toLocaleLowerCase("de");
-    const visible=summary.rows.filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
+    const visible=withCurrentRosterNames(summary.rows,ctx)
+      .filter(p=>!term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term))
       .sort((a,b)=>{
         const metric=p=>order==="missed"?p.missedKnown:p[order];
         const rawA=metric(a),rawB=metric(b);
