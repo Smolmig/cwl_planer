@@ -2914,8 +2914,10 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-number{font-size:15px}
 }
 @media(max-width:720px){
- #view-stats .stats-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
- #view-stats .stats-section-tab{min-height:43px;font-size:12px}
+ /* Five navigation choices: 3 + 2 balanced rows, not a stranded fifth button. */
+ #view-stats .stats-section-tabs{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+ #view-stats .stats-section-tab{grid-column:span 2;min-height:44px;font-size:12px;overflow-wrap:anywhere}
+ #view-stats .stats-section-tab:nth-child(n+4){grid-column:span 3}
  #view-stats .stats-trend-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
  #view-stats .stats-form-row{grid-template-columns:1fr;gap:8px}
 }
