@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.24",
+  "version": "v1.16.25",
   "released": "2026-11-08",
-  "summary": "Statistik-Überblick: weitere Angaben zur Datenbasis bei Bedarf aufklappen, kurze verlässliche Hinweise zu unbekannten Ausfällen und verständliche Diagrammlegende. Keine Änderungen an Statistikdaten, CWL-Planung, Supabase oder Offline-PWA."
+  "summary": "Statistik: Auf Smartphones fünf Unterbereiche in ausgewogenem 3+2-Layout statt einer alleinstehenden dritten Reihe; mindestens 44 px Touchflächen und kein horizontaler Überlauf. Desktop-Ansicht sowie Daten, Filter, Rollen, Planung und Offline-PWA unverändert."
 }
