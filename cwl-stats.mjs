@@ -618,7 +618,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           (last==="all"?
             "Alle "+scopeInfo.selectedNormal+" abgeschlossenen normalen CWs":
             scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen normalen CWs")+
-          " · "+summary.attacks+" Angriffe":
+          " · "+summary.attacks+(summary.attacks===1?" Angriff":" Angriffe"):
           "Noch keine abgeschlossenen normalen CWs gespeichert";
         if(seasonDetails)seasonDetails.textContent=last==="all"?
           "Alle verfügbaren abgeschlossenen normalen Clankriege werden ausgewertet.":
