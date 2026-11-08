@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.29] - 2026-11-08
+
+### Einsätze: Spielertage verständlich öffnen und schließen
+- **Befund (#46):** In `renderSummary()` blieb die Text-/Tooltip-Beschriftung des geöffneten Spielers „Einsatztage für … anzeigen“, obwohl die Tage bereits offen waren. Der Button hatte zwar `aria-expanded`, aber keine Zuordnung zur tatsächlich geöffneten Tageszeile. Nur auf sehr schmalen **Hochformat**-Smartphones war die Mindest-Touchhöhe 44 px; bei breiteren Mobilgeräten und Querformat griff diese Regel nicht.
+- **Gezielter UI-Fix:** Text und zugänglicher Name wechseln korrekt zwischen „Einsatztage … anzeigen/schließen“. Bei ausgeklapptem Zustand referenziert der Button per `aria-controls` den vorhandenen, eindeutig benannten Tagesbereich; bei geschlossenem Zustand gibt es keinen nicht existierenden Zielverweis. Auf allen mobilen Breiten bis einschließlich 699 px mindestens 44 px Touchhöhe. Kein zusätzlicher Karte-/Icon-Ballast und keine Änderung an den Einsatzdaten.
+- **Regression:** Neuer synthetischer Chromium-Test mit **echtem `renderSummary()`** bei 320/390/430/600/699/768/1366 px und Arena/Dark/Light, Beobachterrolle, Klick/Enter, Fokus, korrekt verknüpftem Tagesbereich, Filterbedienung und unverändertem Planobjekt. Echte iOS-Safari-/Android-Geräteabnahme bleibt separat offen.
+- **Unverändert:** Planungssolver, 8★-Medallogik, Spielerstatistik, Datenbankschema, Supabase/Auth/RLS, Rollen und separate Offline-PWA.
+
+
 ## [1.16.28] - 2026-11-08
 
 ### Verlauf & Kriege: mobil lesbare Zeiträume, Tabellen und Kriegskarten
