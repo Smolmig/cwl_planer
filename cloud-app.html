@@ -2914,8 +2914,10 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-number{font-size:15px}
 }
 @media(max-width:720px){
- #view-stats .stats-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
- #view-stats .stats-section-tab{min-height:43px;font-size:12px}
+ /* Five navigation choices: 3 + 2 balanced rows, not a stranded fifth button. */
+ #view-stats .stats-section-tabs{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+ #view-stats .stats-section-tab{grid-column:span 2;min-height:44px;font-size:12px;overflow-wrap:anywhere}
+ #view-stats .stats-section-tab:nth-child(n+4){grid-column:span 3}
  #view-stats .stats-trend-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
  #view-stats .stats-form-row{grid-template-columns:1fr;gap:8px}
 }
@@ -3420,11 +3422,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.24</strong><span>Statistik · Übersichtlichkeit</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.25</strong><span>Statistik · Mobile-Navigation</span></div>
        <ul>
-        <li><b>Clanüberblick:</b> Kennzahlen zuerst, zusätzliche Angaben zur Datenbasis bei Bedarf aufklappen.</li>
-        <li><b>Verpasste Angriffe:</b> Kürzere Hinweise ohne unbestätigte Ausfälle als Null darzustellen.</li>
-        <li><b>Verlauf:</b> CW/CWL und Datenlücken verständlich erklärt, ohne Theme-Fachbegriffe.</li>
+        <li><b>Smartphone:</b> Die fünf Statistikbereiche sind nun ausgewogen auf zwei statt drei Reihen verteilt.</li>
+        <li><b>Bedienung:</b> Alle Statistik-Tabs besitzen mindestens 44 px große Touchflächen, auch auf schmalen Displays.</li>
+        <li><b>Desktop:</b> Die fünf Statistikbereiche bleiben kompakt nebeneinander. Inhalte und Filter funktionieren unverändert.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3850,9 +3852,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.24"></script>
+<script src="./cwl-planning-core.js?v=1.16.25"></script>
 <script>
-const APP_VERSION="v1.16.24";
+const APP_VERSION="v1.16.25";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5121,6 +5123,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.24"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.25"></script>
 </body>
 </html>

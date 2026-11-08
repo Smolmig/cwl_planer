@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.25] - 2026-11-08
+
+### Statistik-Navigation auf Smartphones ohne verwaisten fünften Tab
+- Bei **fünf Statistikbereichen** erzeugte das mobile 2-Spalten-Raster drei Reihen, davon eine alleinstehende Schaltfläche. Bis 720 px nutzt der Statistik-Tab jetzt zwei ausgewogene Reihen: drei wichtige Einstiege und darunter zwei gleich breite zusätzliche Bereiche. Über 720 px bleiben alle fünf Tabs nebeneinander.
+- Mobil hat jede Statistik-Schaltfläche mindestens **44 px Touchhöhe** (statt 43 px), lange Titel können bei 320 px sauber umbrechen. Die vorhandenen Gold-/Dark-/Light-Kontraste und der aktive Zustand bleiben erhalten.
+- Neue Chromium-Browserregression für **320/375/390/430/720/820/1366 px**, drei Themes, Viewer-Rolle, Tab-/Panel-Zuordnung, Tastaturfokus, aktive Auswahl nach Reload, vollständige Trefferflächen und keinen horizontalen Überlauf. Echte iPhone-Safari-/Android-Abnahme bleibt ausstehend.
+- **Keine** Änderungen an statistischen Berechnungen, CWL-Planung, Cloud-Daten/RLS, Rollen, Auth, Edge oder Offline-PWA.
+
+
 ## [1.16.24] - 2026-11-08
 
 ### Statistik-UX: Sekundäre Hinweise nur bei Bedarf
