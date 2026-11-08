@@ -1,10 +1,20 @@
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
-**Stand:** 08.11.2026, **Cloud v1.16.33 offiziell veröffentlicht**: [PR #161](https://github.com/Smolmig/cwl_planer/pull/161) gemergt (Squash `598797b7`), **519/519 PR- und Main-Tests erfolgreich**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42530924911) und [Release v1.16.33](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.33) erfolgreich. Direktes Nutzerfeedback zur unklaren Datumsanzeige behoben. Davor v1.16.32 / PR #160. Keine Änderung an produktiver DB/Edge/Auth/RLS, CWL-Solver oder separater Offline-PWA.  
+**Stand:** 09.11.2026, **Cloud v1.16.34 in Prüfung (PR #162)**; produktiv bisher **v1.16.33**: [PR #161](https://github.com/Smolmig/cwl_planer/pull/161) gemergt (Squash `598797b7`), **519/519 PR- und Main-Tests erfolgreich**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42530924911) und [Release v1.16.33](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.33) erfolgreich. Direktes Nutzerfeedback zur unklaren Datumsanzeige behoben. Davor v1.16.32 / PR #160. Keine Änderung an produktiver DB/Edge/Auth/RLS, CWL-Solver oder separater Offline-PWA.  
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 
-## 0. Neueste abgeschlossene Arbeitsrunde – 08.11.2026
+## 0. Neueste Arbeitsrunde – 09.11.2026
+
+### Cloud v1.16.34 – Kandidat PR #162 (#114/#110, noch nicht live)
+
+- **Fachbefund:** `computePlayerFormWindows()` legte Spielerprofile ausschließlich beim Durchlaufen gespeicherter Angriffe an. Ein derzeitiges Clanmitglied mit gültigem Clash-Tag, aber **ohne einzigen gespeicherten Angriff**, kam trotz vorgesehenem „Keine Daten“-Zustand in der Spielerform nicht vor. Die historischen Spielernamen konnten von aktuellen Profilnamen abweichen. Bei Form-Rerendern fehlte der stabile Scroll-Anker, den die freie Spielerstatistik bereits besitzt.
+- **Implementierung:** `cwl-stats-core.mjs` führt nach der verifizierten Angriffsauswertung Mitglieder-Tags des aktuell gewählten Cloud-Profils als **neutrale Null-Daten-Zeilen** ein; `memberProfiles` liefert die aktuellen Namen ausschließlich für zum selben Profil gehörige Tags. Historische Spieler außerhalb der Liste bleiben ehemalige Spieler. `cwl-stats.mjs` unterscheidet 0 auswertbare RH-Angriffe von belegten 3★-Quoten, verhindert „0 von 0“-Scheinquoten, benennt Suchleerzustand und Zeilennummer, hält bei echtem gleichbleibendem Clan-Reload den sichtbaren Spieler über stabilen Tag im Bild. Bei Clanwechsel werden Form-Daten unmittelbar geleert. Keine Änderung der Statistikquote vorhandener Angriffe.
+- **Regression:** `tests/cloud-stats-form-zero-history.test.cjs` mit reiner Berechnung (fehlende Historie, aktuelle Namen, ehemaliger Spieler, RH-Ausnahmen, unfinalisierte Angriffe, Nullen bleiben `null`) und Chromium-Viewer-UI bei 320/390/430/1366 px Gold/Dark/Light, Suche/Leerzustand, längerer Liste, Same-Clan-Refresh und Clanwechsel. **Erster CI-Lauf vor Release-Metadaten erfolgreich:** [Run 42534739060](https://github.com/Smolmig/cwl_planer/actions/runs/42534739060). Versions-Assertions wurden für v1.16.34 aktualisiert; endgültiger PR-CI-/Main-CI-/Pages-Status ist **noch nachzuweisen**. Keine ungetestete Aussage über Live-Status.
+- **Risiken/Nicht-Ziele:** Ohne gültigen Clash-Spieler-Tag keine eindeutige Zuordnung; fehlende Angriffe bleiben unbekannt, niemals 0 %/verpasst. **Kein** produktiver DB-/Auth-/RLS-/Edge-/CWL-Solver-/Plan-/Offline-PWA-Eingriff; keine 3★-Prognose, keine automatische Rotation. Reales Safari-/Android-Review weiterhin gesondert.
+- **Nach dem Release:** Spielerstatistik und Mitglieder-Statistik auf identische Namen-/Datenqualitätsformulierungen prüfen; weitere kleine belegte UX-Befunde aus #114/#46, P0 #104 nur unter eigenem Sicherheitstor.
+
+## 0a. Neueste abgeschlossene Arbeitsrunde – 08.11.2026
 
 ### Cloud v1.16.33: verständliches Datum unter Statistik-Verlauf / #114/#110 – offiziell live
 

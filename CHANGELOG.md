@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.34] - 2026-11-09
+
+### Spielerform: Aktuelle Clanmitglieder trotz fehlender Angriffshistorie sichtbar
+- **Befund (#114/#110):** Die Formliste entstand nur aus vorhandenen Angriffen und blendete aktive Mitglieder ohne gespeicherten Angriff vollständig aus. Historische Namen konnten aktuelle Profilnamen überlagern. Ein Same-Clan-Datenupdate konnte die Leseposition in einer langen Liste verschieben.
+- **Korrektur:** Aktuelle Clan-Tags mit Namen aus dem bereits ausgewählten Cloud-Profil als neutrale Einträge aufnehmen; bei fehlender gleich-RH-Auswertung ausdrücklich **„Keine Daten“** und **keine belegte 3★-Quote**, niemals fingierte 0 %, 0/0 oder einen verpassten Angriff. Ehemalige Spieler aus dokumentierter Historie bleiben unterscheidbar. Kleinere verständliche Form-/Suchtexte, Zeilennummer statt Scheinplatzierung; Scrollanker nur bei Hintergrund-Reload desselben Clans. Auf Clanwechsel alte Spielerform unmittelbar leeren.
+- **Test & Sicherheit:** Neuer Pure-/Chromium-Test für gültige/current/ehemalige Tags, Namen, unbekannte RH, nicht-finalisierte Angriffe, 30-/90-Tage-Fenster, mobile Viewer-UI (320/390/430/1366 px in Arena/Dark/Light), Suche, längere Scrollliste, Nachladen und Clanwechsel. [PR #162](https://github.com/Smolmig/cwl_planer/pull/162). Keine Änderung an echten Angriffswerten, CWL-Solver, Cloud-Profilformat, produktiver Supabase/RLS/Auth/Edge, Rollen oder Offline-PWA. Endgültige CI-/Release-Verifikation nach Merge ergänzen.
+
+
 ## [1.16.33] - 2026-11-08
 
 ### Statistik > Verlauf & Kriege: österreichische Datumsbeschriftung
