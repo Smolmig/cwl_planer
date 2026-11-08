@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.23] - 2026-11-08
+
+### Statistik: Details und Leseposition bei Live-Datenaktualisierung erhalten
+- **Vergleiche:** Das geöffnete „Sternverteilung und weitere Angriffsdaten“-Detail wird nicht versehentlich geschlossen; falls die Tastatur gerade dessen Zusammenfassung fokussiert, wird der Fokus nach dem Neurendern wiederhergestellt. Die gewählten Spieler und Kriegsfilter bleiben bestehen.
+- **Verlauf & Kriege:** Die aufgeklappte Zeitverlaufstabelle erhält Fokus und relative Position bei neuen Daten. Für die einzelnen Kriege wird der **erste sichtbare Krieg anhand seines stabilen War-Keys** als Scroll-Anker verwendet; neu eingefügte Kriege darüber verschieben die Leseposition nicht. Geöffnete Kriegstage und Fokus auf deren Zusammenfassung bleiben erhalten.
+- **Nur bei echten Daten-Reloads:** Keine erzwungene Scrollkorrektur beim bewussten Ändern von Zeitraum, Kriegsart, Kennzahl oder Spielerwahl; keine Wiederherstellung alter Clan-Daten nach einem Reset. Mobile und Desktop in 320/390/430/1366 px, Gold/Light/Dark und Viewer-Rolle im Chromium-Browser mit künstlichen Angriffen geprüft.
+- **Nicht verändert:** CWL-Solver/Plan, Import/Rohdaten, Supabase-DB/Edge, Rollen/Authentifizierung, Offline-PWA. Ein echter iOS-Safari-/Android-Gerätetest bleibt separat offen.
+
+
 ## [1.16.22] - 2026-11-08
 
 ### Statistik-UX: ehrlicher Überblick und stabiler Lesekontext

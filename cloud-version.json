@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.22",
+  "version": "v1.16.23",
   "released": "2026-11-08",
-  "summary": "Statistik-UX: Clanüberblick bezeichnet korrekt seine vollständige CW-/CWL-Datenbasis; Spielerlisten behalten beim Nachladen den sichtbaren Spieler, Fokus und geöffnete Details. Klarere CW/CWL-Zahlen und Hinweise. Keine Änderung an Rohdaten, Planer, Supabase oder Offline-PWA."
+  "summary": "Statistik: beim Nachladen in Vergleiche und Verlauf & Kriege bleiben offene Details, Tastaturfokus und die sichtbare Kriegsposition erhalten. Bewusste Filterwechsel scrollen weiterhin frei. Keine Änderungen an Statistikdaten, CWL-Planung, Supabase oder Offline-PWA."
 }
