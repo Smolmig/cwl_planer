@@ -15,8 +15,8 @@ const end=html.indexOf('document.getElementById("settingsCloudManage").onclick='
 assert.ok(start>=0&&end>start,"Navigation module must be extractable");
 const navScript=html.slice(start,html.indexOf(";",end)+1);
 
-test("Cloud v1.16.23 preserves existing navigation, backend and More routing",()=>{
-  assert.equal(version.version,"v1.16.23");
+test("Cloud v1.16.24 preserves existing navigation, backend and More routing",()=>{
+  assert.equal(version.version,"v1.16.24");
   assert.match(html,/const APP_VERSION="v1\.16\.23"/);
   assert.match(html,/cloud-sync\.mjs\?v=1\.16\.23/);
   assert.match(html,/id="quickClanChoices"/);
