@@ -1020,6 +1020,12 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
 .stats-season-details{font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+/* Secondary source notes are on demand, not an extra visible card. */
+#view-stats .stats-overview-source{margin-top:6px}
+#view-stats .stats-overview-source[hidden]{display:none!important}
+#view-stats .stats-overview-source>summary{min-height:44px;box-sizing:border-box;padding:12px 0;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+#view-stats .stats-overview-source>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+#view-stats .stats-overview-source .stats-season-details{margin:0 0 8px;padding-left:14px}
 
 /* Current normal clan war: optional read-only card in Overview. */
 #currentWarCard[hidden]{display:none!important}
@@ -3414,12 +3420,12 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.23</strong><span>Statistik · Bedienkomfort</span></div>
-      <ul>
-       <li><b>Vergleiche:</b> Die geöffnete Detailansicht und der Tastaturfokus bleiben beim Aktualisieren erhalten.</li>
-       <li><b>Verlauf:</b> Offene Kriege und Verlaufstabellen behalten ihre Leseposition, auch wenn neue Kriege dazukommen.</li>
-       <li><b>Bewusste Filter:</b> Die eigene Auswahl wird nicht durch automatische Scroll-Korrekturen übersteuert.</li>
-      </ul>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.24</strong><span>Statistik · Übersichtlichkeit</span></div>
+       <ul>
+        <li><b>Clanüberblick:</b> Kennzahlen zuerst, zusätzliche Angaben zur Datenbasis bei Bedarf aufklappen.</li>
+        <li><b>Verpasste Angriffe:</b> Kürzere Hinweise ohne unbestätigte Ausfälle als Null darzustellen.</li>
+        <li><b>Verlauf:</b> CW/CWL und Datenlücken verständlich erklärt, ohne Theme-Fachbegriffe.</li>
+       </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
@@ -3443,11 +3449,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   </nav>
   <section class="card stats-overview-card" data-stats-panel="overview" aria-label="Clanüberblick">
     <div class="section-title"><h3>Clan im Überblick</h3></div>
-    <p class="stats-note">Alle gespeicherten abgeschlossenen CWs und CWL-Tage. Die Auswahl unter „Spielerstatistik“ verändert diesen Überblick nicht.</p>
+    <p class="stats-note">Alle gespeicherten abgeschlossenen CWs und CWL-Tage. Filter gelten nur in „Spielerstatistik“.</p>
     <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
-    <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
+    <details class="stats-overview-source" id="statsSeasonDisclosure" hidden><summary>Mehr zur Datenbasis</summary><p class="stats-season-details" id="statsSeasonDetails"></p></details>
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
@@ -3551,7 +3557,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <div class="field"><label for="statsTrendMetric">Kennzahl</label><select id="statsTrendMetric"><option value="hitRate">3★-Quote</option><option value="averageStars">Ø Sterne je Angriff</option></select></div>
       <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="week" selected>Woche</option><option value="day">Tag</option><option value="month">Monat</option></select></div>
     </div>
-    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Die Farbe passt sich dem Theme an. Kreise stehen für CW, Rauten für CWL. Kleine Achsenbrüche markieren Zeiträume ohne dokumentierte Angriffe – keine 0-%-Werte.</p>
+    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Kreise stehen für CW, Rauten für CWL. Kleine Achsenbrüche markieren Zeiträume ohne dokumentierte Angriffe – keine 0-%-Werte.</p>
     <p id="statsTrendScope" class="stats-note" aria-live="polite"></p>
     <div id="statsTrendChart" class="stats-trend-chart" aria-live="polite"></div>
     <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Stichprobengröße"></div>
@@ -3844,9 +3850,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.23"></script>
+<script src="./cwl-planning-core.js?v=1.16.24"></script>
 <script>
-const APP_VERSION="v1.16.23";
+const APP_VERSION="v1.16.24";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5115,6 +5121,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.23"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.24"></script>
 </body>
 </html>

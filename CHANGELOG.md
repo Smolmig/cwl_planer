@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.24] - 2026-11-08
+
+### Statistik-UX: Sekundäre Hinweise nur bei Bedarf
+- **Clanüberblick:** Kennzahlen, CW/CWL-Abdeckung und Datenumfang sofort sichtbar; die längere saisonale Einordnung hinter „Mehr zur Datenbasis“ (natives Disclosure, mindestens 44 px Touchhöhe). Der geöffnete Zustand bleibt beim Daten-Reload erhalten, ein leerer oder abgemeldeter Clan zeigt keine alten Details.
+- **Datenqualität unverändert:** Der Hinweis zu „mind.“/„k. A.“ ist kürzer, unbekannte Ausfälle bleiben unbekannt. Die Diagrammlegende erklärt CW/CWL-Formen und Datenlücken statt der Theme-Farbe.
+- **Tests/Grenzen:** Erweiterte Browserregression für 320/390/430/1366 px, Gold/Dark/Light und Viewer, inklusive Aufklappzustand nach Reload. Reale Safari-/Android-Abnahme weiterhin offen; keine Änderung an Auswertung, CWL-Solver, Supabase, Auth/RLS, Rollen oder Offline-PWA.
+
+
 ## [1.16.23] - 2026-11-08
 
 ### Statistik: Details und Leseposition bei Live-Datenaktualisierung erhalten

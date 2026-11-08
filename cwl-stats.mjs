@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.23";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.24";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -452,6 +452,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if(!enabled){
       $("statsSummary").innerHTML="";
       if($("statsMissedCoverage"))$("statsMissedCoverage").textContent="";
+       if($("statsSeasonDetails"))$("statsSeasonDetails").textContent="";
+       if($("statsSeasonDisclosure")){
+         $("statsSeasonDisclosure").open=false;$("statsSeasonDisclosure").hidden=true;
+       }
       if($("statsFormIntro"))$("statsFormIntro").textContent="";
       if($("statsFormRows"))$("statsFormRows").replaceChildren();
       lastComparableRowsMarkup=null;
@@ -530,6 +534,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     ].map(([title,value])=>"<div class='stats-kpi'><span>"+esc(title)+"</span><strong>"+esc(value)+"</strong></div>").join("");
     const count=$("statsDataCount");
     const seasonDetails=$("statsSeasonDetails");
+     const seasonDisclosure=$("statsSeasonDisclosure");
+     if(seasonDisclosure){
+       seasonDisclosure.hidden=!summary.wars;
+       if(!summary.wars)seasonDisclosure.open=false;
+     }
     const displayType=section==="overview"?"all":type;
     if(displayType==="cwl"){
       if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
@@ -568,12 +577,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const note=$("statsMissingNote");
     if(note){
       note.textContent=summary.complete?"":(
-        "„mind.“ bedeutet: so viele vergessene Angriffe sind sicher bekannt. "+
-        "„k. A.“ bedeutet: Keine sichere Zahl, auch 0 ist nicht bestätigt. "+
-        "Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff. "+
-        "Dafür braucht es einen vollständigen offiziellen Endkriegsnachweis oder belegte Missed-Logs. "+
-        "Normale CWs können trotzdem vollständig ausgewertet sein. "+
-        "Sortierung nach „Verpasst“ verwendet die nachgewiesene Anzahl."
+        "Verpasste Angriffe: „mind.“ heißt mindestens belegt; „k. A.“ heißt unbekannt, auch 0 ist nicht bestätigt. "+
+         "Eine CWL-Aufstellung allein ist kein Nachweis. Normale CWs können unabhängig davon vollständig sein. "+
+         "Die Sortierung „Verpasst“ nutzt nur belegte Ausfälle."
       );
       note.hidden=summary.complete;
     }
