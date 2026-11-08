@@ -84,13 +84,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     if(desc)desc.textContent="Letzte "+formWindow+" Kalendertage · "+usable+
-      " Spieler mit dokumentierten Angriffen auf gleiches RH. "+
+      " Spieler mit belegten Angriffen auf gleiches RH. "+
       (formSort==="evidence"?
-        "Nach Datenbasis gruppiert: ab 15, 6–14, 1–5 und 0 gleich-RH-Angriffe. Innerhalb der Gruppen zählt die 3★-Quote. ":
-        formSort==="hitRate"?"Reine 3★-Quote, ohne Berücksichtigung der Stichprobengröße. ":
+        "Sortiert nach Datenmenge, danach 3★-Quote. ":
+        formSort==="hitRate"?"Nach roher 3★-Quote sortiert – auch bei wenigen Angriffen. ":
         formSort==="attacks"?"Nach Anzahl der gleich-RH-Angriffe sortiert. ":
         "Alphabetisch sortiert. ")+
-      "Die Nummern sind Listenpositionen, kein Stärke-Ranking.";
+      "Listenplätze sind keine Stärkerangliste.";
     const markup=rows.length?rows.map((p,i)=>{
       const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
       const why=b.excludedDifferentRH+b.excludedUnknownRH;
