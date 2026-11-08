@@ -226,3 +226,110 @@ test("History time table and war cards retain keyboard context and stable visibl
   await browser.close();await new Promise(resolve=>server.close(resolve));
  }
 });
+
+
+test("Rathaus comparison details retain keyboard focus and reading position after data reload",{
+ timeout:150000
+},async()=>{
+ const server=serve();await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const [width,theme] of [[320,"arena"],[390,"dark"],[430,"light"],
+    [699,"arena"],[1366,"dark"]]){
+   const page=await browser.newPage({viewport:{width,height:880}});
+   try{
+    const jsErrors=[];page.on("pageerror",e=>jsErrors.push(e.message));
+    await page.goto("http://127.0.0.1:"+server.address().port+
+      "/cloud-app.html",{waitUntil:"domcontentloaded"});
+    const result=await page.evaluate(async theme=>{
+     document.documentElement.dataset.theme=theme;
+     document.documentElement.style.scrollBehavior="auto";
+     document.body.classList.add("cloud-mode","cloud-role-viewer");
+     document.querySelectorAll(".view.active").forEach(el=>el.classList.remove("active"));
+     document.querySelector("#view-stats").classList.add("active");
+     const {createCloudStats}=await import("./cwl-stats.mjs");
+     const wars=Array.from({length:8},(_,i)=>({
+      war_key:"matchups:focus"+i,war_type:i%2?"cwl":"normal",
+      started_at:new Date(Date.UTC(2026,9,20+i)).toISOString(),
+      finalized:true,source:"api",team_size:15,opponent_name:"Opponent "+i
+     }));
+     const attacks=wars.flatMap(w=>[
+      {war_key:w.war_key,attacker_tag:"#2PYL",attacker_name:"Alpha",
+       attacker_th:18,defender_th:18,stars:3,destruction:100,attack_order:1},
+      {war_key:w.war_key,attacker_tag:"#2PQL",attacker_name:"Beta",
+       attacker_th:18,defender_th:17,stars:2,destruction:80,attack_order:1}
+     ]);
+     const sb={from(name){
+      const data=name==="cwl_stat_wars"?wars:
+       name==="cwl_stat_attacks"?attacks:[];
+      return {select(){return this},eq(){return this},order(){return this},
+       limit(){return Promise.resolve({data,error:null})},
+       range(){return Promise.resolve({data,error:null})}};
+     }};
+     const stats=createCloudStats({sb,context:()=>({
+      active:true,clanId:"comparison-focus-test",role:"viewer",
+      memberTags:["#2PYL","#2PQL"]
+     }),notify:()=>{},confirmAction:async()=>true});
+     await stats.load();
+     document.querySelector('[data-stats-section="compare"]').click();
+     const host=document.getElementById("statsMatchupComparison");
+     const detail=host.querySelector(".stats-matchup-breakdown");
+     detail.open=true;
+     await new Promise(done=>setTimeout(done,0));
+     const oldSummary=detail.querySelector("summary");
+     oldSummary.scrollIntoView({block:"center",behavior:"instant"});
+     oldSummary.focus({preventScroll:true});
+     const oldTop=oldSummary.getBoundingClientRect().top;
+     const oldQuote=host.querySelectorAll(".stats-highlight-col strong")[1].textContent;
+     const oldFilter=document.getElementById("statsCompareType").value;
+     const oldTime=document.getElementById("statsCompareDays").value;
+     attacks.push({war_key:wars[0].war_key,attacker_tag:"#2PYL",
+      attacker_name:"Alpha",attacker_th:18,defender_th:18,
+      stars:0,destruction:30,attack_order:2});
+     await stats.load();
+     const refreshed=host.querySelector(".stats-matchup-breakdown");
+     const newSummary=refreshed.querySelector("summary");
+     const result={
+      focused:document.activeElement===newSummary,
+      replaced:oldSummary!==newSummary,open:refreshed.open,
+      oldTop,newTop:newSummary.getBoundingClientRect().top,
+      oldQuote,newQuote:host.querySelectorAll(".stats-highlight-col strong")[1].textContent,
+      beforeFilter:oldFilter,afterFilter:document.getElementById("statsCompareType").value,
+      beforeTime:oldTime,afterTime:document.getElementById("statsCompareDays").value,
+      selectedSection:document.querySelector('[data-stats-panel="compare"]').hidden===false,
+      viewerImportHidden:document.getElementById("statsImportButton").hidden,
+      scrollOverflow:document.documentElement.scrollWidth-innerWidth
+     };
+     // A deliberate filter change must keep its own focus and not restore
+     // the old summary's reading position.
+     const filter=document.getElementById("statsCompareType");
+     filter.focus({preventScroll:true});filter.value="normal";
+     filter.dispatchEvent(new Event("change",{bubbles:true}));
+     result.explicitFilterFocused=document.activeElement===filter;
+     result.explicitFilterOpen=host.querySelector(".stats-matchup-breakdown").open;
+     result.explicitFilterScope=document.getElementById("statsCompareScope").textContent;
+     return result;
+    },theme);
+    const detail=JSON.stringify({width,theme,result});
+    assert.equal(result.focused,true,"summary focus lost: "+detail);
+    assert.equal(result.replaced,true,detail);
+    assert.equal(result.open,true,detail);
+    assert.ok(Math.abs(result.newTop-result.oldTop)<=4,"reading position moved: "+detail);
+    assert.equal(result.oldQuote,"100 %",detail);
+    assert.notEqual(result.newQuote,result.oldQuote,"changed API evidence did not update: "+detail);
+    assert.equal(result.afterFilter,result.beforeFilter,detail);
+    assert.equal(result.afterTime,result.beforeTime,detail);
+    assert.equal(result.selectedSection,true,detail);
+    assert.equal(result.viewerImportHidden,true,detail);
+    assert.ok(result.scrollOverflow<=3,detail);
+    assert.equal(result.explicitFilterFocused,true,detail);
+    assert.equal(result.explicitFilterOpen,true,detail);
+    assert.match(result.explicitFilterScope,/normale CWs/,detail);
+    assert.deepEqual(jsErrors,[],"browser errors: "+detail);
+   }finally{await page.close();}
+  }
+ }finally{
+  await browser.close();
+  await new Promise(resolve=>server.close(resolve));
+ }
+});
