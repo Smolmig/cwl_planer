@@ -221,7 +221,7 @@ export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}=
  * players without documented attacks; n and date are displayed alongside %.
  */
 export function computePlayerFormWindows(wars,attacks,{
-  asOf=Date.now(),windows=[30,90,180],memberTags=[]
+  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[]
 }={}){
   const now=typeof asOf==="number"?asOf:Date.parse(asOf);
   if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
@@ -263,7 +263,18 @@ export function computePlayerFormWindows(wars,attacks,{
       if(!b.newest||time>Date.parse(b.newest))b.newest=w.started_at;
     }
   }
-  const current=new Set(memberTags.map(cleanTag));
+  // Current profile membership is an independent source of player identity.
+  // An absent attack log is unknown form, never a recorded failure or 0%.
+  const current=new Set((memberTags||[]).map(cleanTag).filter(validTag));
+  for(const tag of current)ensure(tag);
+  // The active clan profile is authoritative for CURRENT display names; old
+  // attack rows can still identify former players by their historic name.
+  for(const member of memberProfiles||[]){
+    const tag=cleanTag(member?.playerTag);
+    if(!current.has(tag))continue;
+    const name=String(member?.name||"").trim().slice(0,80);
+    if(name)profiles.get(tag).name=name;
+  }
   const rows=[...profiles.values()].map(p=>{
     for(const b of Object.values(p.windows)){
       b.hitRate=b.attacks?Math.round(100*b.triples/b.attacks):null;
