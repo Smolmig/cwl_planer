@@ -587,9 +587,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
      }
     const displayType=section==="overview"?"all":type;
     if(displayType==="cwl"){
-      if(count)count.textContent=summary.wars+" von "+summary.totalCwlDays+
-        " gespeicherten CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
-        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe";
+      if(count)count.textContent=summary.wars?
+        summary.wars+" von "+summary.totalCwlDays+
+        " abgeschlossenen CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
+        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe":
+        "Noch keine abgeschlossenen CWL-Kriegstage gespeichert";
       if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({from,to,days,inferred})=>{
         const fmt=value=>new Date(value+"T12:00:00Z").toLocaleDateString("de-AT",
           {day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"});
@@ -622,7 +624,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "Noch keine abgeschlossenen normalen CWs gespeichert";
         if(seasonDetails)seasonDetails.textContent=last==="all"?
           "Alle verfügbaren abgeschlossenen normalen Clankriege werden ausgewertet.":
-          "Bis zu "+last+" zuletzt gespielte abgeschlossene normale Clankriege werden ausgewertet.";
+          last===1?"Der letzte abgeschlossene normale Clankrieg wird ausgewertet.":
+          "Bis zu "+last+" zuletzt abgeschlossene normale Clankriege werden ausgewertet.";
       }
     }
     const note=$("statsMissingNote");
@@ -1090,12 +1093,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const parts=[];
     if(type!=="cwl"){
       parts.push(last==="all"?
-        "Alle "+scopeInfo.allNormal+" abgeschlossenen "+(scopeInfo.allNormal===1?"CW":"CWs"):
+        (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
+          scopeInfo.allNormal===1?"1 abgeschlossener CW":
+          "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
         scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs (Limit "+last+")");
     }
     if(type!=="normal"){
       parts.push(cwlSeasons==="all"?
-        "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge":
+        (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
+          scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
+          "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
         scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgängen");
     }
     if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" + ");

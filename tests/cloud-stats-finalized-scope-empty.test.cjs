@@ -114,12 +114,14 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.match(outcome.one.period,/1 von 2 abgeschlossenen CWs/,note);
     assert.match(outcome.back.count,/Alle 2 abgeschlossenen normalen CWs/,note);
     assert.match(outcome.empty.scope,/noch keine abgeschlossenen Kriege/,note);
+    assert.match(outcome.empty.period,/Noch keine abgeschlossenen CWL-Durchgänge/,note);
+    assert.match(outcome.empty.count,/Noch keine abgeschlossenen CWL-Kriegstage gespeichert/,note);
     assert.doesNotMatch(outcome.empty.scope,/– –/,note);
     assert.match(outcome.empty.explainer,/Keine abgeschlossenen Kriege/,note);
     assert.match(outcome.empty.row,/Keine passenden Spieler/,note);
     assert.equal(outcome.empty.scope,outcome.afterReload.scope,note);
     assert.match(outcome.overview.count,/2 normale CWs \+ 0 CWL-Kriegstage/,note);
-    assert.match(outcome.overview.text,/2 Angriffe/,note);
+    assert.match(outcome.overview.text,/Angriffe2/,note);
     assert.equal(outcome.importHidden,true,note);
     assert.ok(outcome.pageOverflow<=3,note);
     assert.deepEqual(problems,[],note);
