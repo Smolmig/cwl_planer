@@ -109,7 +109,9 @@ test("History table scrolls within its region; war and attack details stay reada
           await new Promise(resolve=>setTimeout(resolve,0));
           const summary=war.querySelector("summary");
           const summaryParts=[...summary.children].map(el=>el.getBoundingClientRect());
-          const attack=war.querySelector(".war-history-attack");
+          // The UI sorts attacks alphabetically: select our long-name case by identity.
+          const attack=[...war.querySelectorAll(".war-history-attack")]
+            .find(el=>el.textContent.includes("SpielerMitExtremLangem"));
           const attackParts=[...attack.children].map(el=>el.getBoundingClientRect());
           const warChecks={
             summaryHeight:summary.getBoundingClientRect().height,
