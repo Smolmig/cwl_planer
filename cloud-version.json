@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.26",
+  "version": "v1.16.27",
   "released": "2026-11-08",
-  "summary": "Spielerform: lesbare Zeitraum-Buttons auch bei 320px statt verkleinerter Schrift, mindestens 44px große Statistikform- und Vergleichsfilter, kompakter und eindeutiger Kontexttext. Keine Änderungen an Berechnung, Sortierung, Daten, CWL-Plan, Supabase, Rollen oder Offline-PWA."
+  "summary": "Statistik-Vergleiche: Spieler A/B in den beiden Duell-Spalten und CW/CWL-Auswertungen explizit kennzeichnen. Dezente, responsive Spaltenüberschriften statt unklar zugeordneter Prozente; zugängliche Werte und bestehende Details/Refresh-Zustände erhalten. Keine Änderungen an Statistikberechnung, Daten, CWL-Planung, Supabase, Rollen oder Offline-PWA."
 }
