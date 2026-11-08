@@ -14,7 +14,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - **Tests/Grenzen:** Erweiterte Browserregression für 320/390/430/1366 px, Gold/Dark/Light und Viewer, inklusive Aufklappzustand nach Reload. Reale Safari-/Android-Abnahme weiterhin offen; keine Änderung an Auswertung, CWL-Solver, Supabase, Auth/RLS, Rollen oder Offline-PWA.
 
 
-## [1.16.24] - 2026-11-08
+## [1.16.23] - 2026-11-08
 
 ### Statistik: Details und Leseposition bei Live-Datenaktualisierung erhalten
 - **Vergleiche:** Das geöffnete „Sternverteilung und weitere Angriffsdaten“-Detail wird nicht versehentlich geschlossen; falls die Tastatur gerade dessen Zusammenfassung fokussiert, wird der Fokus nach dem Neurendern wiederhergestellt. Die gewählten Spieler und Kriegsfilter bleiben bestehen.
