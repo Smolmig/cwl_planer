@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.32";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.33";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -358,7 +358,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const v=row[kind][trendMetric],n=row[kind].attacks;
       if(v===null)return null;
       return {x:x(i),y:y(v),value:v,n,key:row.key,
-        title:(kind==="cwl"?"CWL":"Normaler CW")+" · "+row.key+
+        title:(kind==="cwl"?"CWL":"Normaler CW")+" · "+formatTrendPeriod(row.key,trendGranularity)+
           " · "+v+(trendMetric==="hitRate"?" %":" ★")+
           " · "+n+" Angriffe"};
     };
@@ -375,7 +375,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       previousTick=x(i);
       return "<text class='axislabel' text-anchor='middle' x='"+x(i).toFixed(1)+
         "' y='"+(H-18)+"'>"+
-        esc(trendGranularity==="month"?row.key.slice(0,7):row.key.slice(5))+"</text>";
+        esc(formatTrendPeriod(row.key,trendGranularity,{short:true}))+"</text>";
     }).join("");
     const gaps=layout.gaps.map(g=>{
       const yy=H-B+8;
@@ -423,7 +423,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
         " ("+data.attacks+" Angriffe)"):"–";
     };
-    const table=all.slice().reverse().map(row=>"<tr><td>"+esc(row.key)+
+    const table=all.slice().reverse().map(row=>"<tr><td>"+esc(formatTrendPeriod(row.key,trendGranularity))+
       "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
     detail.innerHTML="<details"+(wasOpen?" open":"")+"><summary>Alle "+all.length+
       " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary>"+

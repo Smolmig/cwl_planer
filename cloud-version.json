@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.32",
+  "version": "v1.16.33",
   "released": "2026-11-08",
-  "summary": "Statistik > Vergleiche: Geöffnete Rathaus-Details behalten bei gleichbleibendem Clan-Refresh Tastaturfokus und Leseposition. Offen-Zustand und Filter bleiben erhalten. Keine Änderungen an Quoten, Statistik-Datenbasis, CWL-Solver, produktiver Supabase/Edge, Auth/RLS oder Offline-PWA."
+  "summary": "Statistik > Verlauf & Kriege: Unter dem Diagramm Tage als 03.11.26, Kalenderwochen als KW 45/26 und Monate als Nov 26. Tooltip und Verlaufstabelle zeigen die vollständige österreichische Datums- bzw. KW-Angabe. UTC-Zeiteinteilung, echte Kalenderabstände, Angriffe, Quoten, Filter und CWL-Solver unverändert. Keine Änderungen an produktiver Datenbank/Auth/RLS/Edge oder Offline-PWA."
 }

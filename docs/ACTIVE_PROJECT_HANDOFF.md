@@ -1,3 +1,13 @@
+# Laufender Patch – direktes Nutzerfeedback zum Statistik-Verlaufsdatum (08.11.2026)
+
+- **Cloud v1.16.33 / #114/#110**, Branch `fix/stats-timeline-date-labels-v11633` (PR/CI/Release noch ausstehend): Im Reiter **Verlauf & Kriege** wurden Zeitpunkte unter dem Diagramm direkt mit `row.key.slice(5)` bzw. `row.key.slice(0,7)` aus dem ISO-Wert erzeugt. Dadurch standen etwa `11-03` und `2026-11` statt eindeutig österreichischer Datumsangaben.
+- **Gezielter Fix:** Neue reine Funktion `formatTrendPeriod(key,granularity,{short})` in `cwl-stats-core.mjs`, verwendet in `cwl-stats.mjs` für Diagramm-Ticks, Diagrammpunkte/Tooltips und Verlaufstabelle: **Tage `03.11.26` / `03.11.2026`**, **Wochen `KW 45/26` / `KW 45/2026 (ab 02.11.2026)`**, **Monate `Nov 26` / `November 2026`**. ISO-Kalenderwochenjahr berücksichtigt Wochen wie 29.12.2025 = KW 01/2026. Keine Änderung an UTC-Buckets, Zeitabständen, Kriegen, Angriffen, Quoten oder Filterzustand.
+- **Regression:** `tests/cloud-stats-timeline-local-dates.test.cjs` enthält deterministische Formattests (Jahreswechsel, Schaltjahr, KW, Monatsnamen) und synthetischen Chromium-Test der echten Verlaufs-UI über Gold/Dark/Light, Viewer, 320/390/430/1366px für drei Intervallarten, Achse/Tooltip/Tabelle und unveränderte Punkte/Angriffszahlen. Release- und Cacheverweise auf 1.16.33. **CI/Merge/Pages/Release erst nach Nachweis als fertig bezeichnen**.
+- **Nächster Schritt:** PR/CI/Pages/offizielles Release verifizieren, diese Datei aktualisieren, danach ursprünglich geplantes gezieltes **Spielerform/Spielerstatistik-Audit** aus #114/#110 wieder aufnehmen.
+- **Grenzen:** produktive Supabase DB, Cron-/Edge-Collector, Auth/RLS, Clanprofile, CWL-Solver und getrennte Offline-PWA unverändert. Fehlende CWL-Angriffe nicht als 0/versäumt interpretieren. P0 #104 ohne separates Staging und Freigabe blockiert; reale Safari-/Android-Gerätetests bleiben offen.
+
+---
+
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
 **Stand:** 08.11.2026, **Cloud v1.16.32 offiziell veröffentlicht**: [PR #160](https://github.com/Smolmig/cwl_planer/pull/160) gemergt (Squash `2fd2e661`), **517/517 PR-/Main-Tests erfolgreich**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42529736839) und [Release v1.16.32](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.32) erfolgreich. Davor v1.16.31 / PR #159. Keine produktive DB-/Edge-/RLS-, CWL-Solver- oder Offline-PWA-Änderung.  

@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.33] - 2026-11-08
+
+### Statistik > Verlauf & Kriege: österreichische Datumsbeschriftung
+- **Nutzerbefund (#114/#110, 08.11.):** Unter dem Verlaufsdiagramm standen abgeschnittene ISO-Datumswerte, z. B. `11-03` bzw. `2026-11`, die wie ein englisches Datumsformat aussehen und nicht eindeutig als Tag/Monat/Jahr bzw. Kalenderwoche zu lesen sind. Die Statistikberechnung war davon unberührt.
+- **Gezielter Fix:** Reine Formatfunktion `formatTrendPeriod()` für die sichtbare Diagrammachse: Tage `03.11.26`, Wochen `KW 45/26` nach ISO-Kalenderwochenjahr (inkl. Jahreswechsel), Monate `Nov 26`. Punkt-Tooltips und aufklappbare Verlaufstabelle erhalten die ausgeschriebene eindeutige Variante (z. B. `KW 45/2026 (ab 02.11.2026)`). Gespeicherte UTC-Buckets, Abstände, Datenpunkte, Filter und 3★-Quoten bleiben unverändert.
+- **Regression/Release:** Neue Pure- und Chromium-Browsertests für Tages-/Wochen-/Monatsansicht, Monats- und ISO-Jahreswechsel, Gold/Dark/Light, 320/390/430/1366px, Viewer, Quoten und Tabellenzustand. PR-/Main-CI, Pages und Release vor finaler Live-Meldung prüfen. Keine produktiven DB-/Auth-/RLS-/Edge-/CWL-Planer-/Offline-PWA-Änderungen; echte Geräteabnahme ausständig.
+
+
 ## [1.16.32] - 2026-11-08
 
 ### Statistik > Vergleiche: Rathaus-Details bei Realtime-Refresh stabil
