@@ -75,6 +75,8 @@
 - **Statistik-Vergleiche und Kriegsverlauf:** Bei einem tatsächlichen Daten-Reload desselben Clans offene Sternverteilungs- und Zeitraum-Details samt Tastaturfokus auf ihrem `<summary>` erhalten. Bei langer Kriegsliste die erste sichtbare Karte anhand des stabilen `war_key` als Anker verwenden, selbst wenn neue Kriege oberhalb eingefügt werden. Nur Daten-Updates verankern; manuell geänderte Spieler, Kriegsart, Zeitraum und Trendkennzahl dürfen normal navigieren.
 - Ein Overlay wie die Einstellungen darf beim Öffnen und Schließen die Scrollposition des darunterliegenden Haupttabs nicht verändern. Mobile Bottom-Navigation und Desktop-Sidebar geometrisch unterscheiden.
 
+- **Statistik-Herkunft als progressive Information (08.11.2026):** Im Clanüberblick KPIs, Kriegsumfang und Missed-Abdeckung sofort zeigen; längere saisonale Erklärungen in ein natives Disclosure statt zusätzliche sichtbare Karte. Touchhöhe mindestens 44 px, Open-State bei Reload behalten, bei Clanwechsel/Leerzustand leeren. Selbst kompakte Hinweise zu `mind.`/`k. A.` müssen klarmachen, dass eine unbestätigte 0 unbekannt ist. Diagrammlegenden erklären Daten, nicht Themes.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
