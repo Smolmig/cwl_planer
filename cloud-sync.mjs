@@ -402,7 +402,8 @@ const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
-  memberTags:storage.getProfile()?.members?.map(m=>m.playerTag).filter(Boolean)||[]})
+  memberTags:storage.getProfile()?.members?.map(m=>m.playerTag).filter(Boolean)||[],
+  memberProfiles:storage.getProfile()?.members?.filter(m=>m.playerTag).map(m=>({playerTag:m.playerTag,name:m.name}))||[]})
 });
 let currentWarOverview=null;
 const live=createCwlLive({
