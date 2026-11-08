@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.25",
+  "version": "v1.16.26",
   "released": "2026-11-08",
-  "summary": "Statistik: Auf Smartphones fünf Unterbereiche in ausgewogenem 3+2-Layout statt einer alleinstehenden dritten Reihe; mindestens 44 px Touchflächen und kein horizontaler Überlauf. Desktop-Ansicht sowie Daten, Filter, Rollen, Planung und Offline-PWA unverändert."
+  "summary": "Spielerform: lesbare Zeitraum-Buttons auch bei 320px statt verkleinerter Schrift, mindestens 44px große Statistikform- und Vergleichsfilter, kompakter und eindeutiger Kontexttext. Keine Änderungen an Berechnung, Sortierung, Daten, CWL-Plan, Supabase, Rollen oder Offline-PWA."
 }
