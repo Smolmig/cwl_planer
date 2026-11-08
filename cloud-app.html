@@ -2863,7 +2863,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-stats :is(.stats-form-controls,.stats-context-controls) .field{min-width:0}
 #view-stats :is(.stats-form-controls,.stats-context-controls) label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
 #view-stats :is(.stats-form-controls,.stats-context-controls) select,
-#view-stats .stats-form-controls input{width:100%;min-width:0;min-height:43px;font:inherit;font-size:13px;padding:8px 9px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px}
+ #view-stats .stats-form-controls input{width:100%;min-width:0;min-height:44px;font:inherit;font-size:13px;padding:8px 9px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px}
 #view-stats .stats-query-explainer{color:var(--text);font-size:12px;line-height:1.5;margin:10px 0}
 #view-stats .stats-form-rows{margin:14px 0 18px}
 #view-stats .stats-form-row{grid-template-columns:minmax(165px,1fr) minmax(240px,2fr);gap:20px;padding:15px 0}
@@ -2920,10 +2920,12 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-section-tab:nth-child(n+4){grid-column:span 3}
  #view-stats .stats-trend-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
  #view-stats .stats-form-row{grid-template-columns:1fr;gap:8px}
+ /* Full-size labels may wrap, but must stay legible on narrow phones. */
+ #view-stats .stats-form-window button{min-height:64px;font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+ #view-stats .stats-form-window button small{font-size:12px}
 }
 @media(max-width:375px){
  #view-stats .stats-form-controls,#view-stats .stats-context-controls{grid-template-columns:minmax(0,1fr)}
- #view-stats .stats-form-window button{font-size:11px}
 }
 
 /* Non-displacing Clash swap: red actual roster card and a portal overlay
@@ -3518,7 +3520,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
       <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
     </div>
-    <p class="stats-reading-copy">Die Form zeigt die 3★-Quote gegen Gegner mit <strong>derselben Rathausstufe</strong>. Standardmäßig stehen Spieler mit mehr belegten Angriffen zuerst – innerhalb vergleichbarer Datenmengen nach Quote. Das ist keine Stärkerangliste.</p>
+    <p class="stats-reading-copy">Die 3★-Quote zählt nur Angriffe gegen <strong>dieselbe Rathausstufe</strong>. Achte auf die Anzahl der Angriffe und die Datenqualität – keine Stärkerangliste.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
       <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Datenbasis &amp; 3★-Quote</option><option value="hitRate">Nur 3★-Quote (roh)</option><option value="attacks">Anzahl gleich-RH-Angriffe</option><option value="name">Spielername (A–Z)</option></select></div>
