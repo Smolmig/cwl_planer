@@ -1,3 +1,12 @@
+# Laufender Patch – Statistik-UX (#114/#110), 08.11.2026
+
+- **Cloud v1.16.32**, Branch `fix/stats-matchup-refresh-focus-v11632`: Bei `renderMatchups()` werden offene Rathausdetails beim Datenreload neu gezeichnet und bleiben offen, aber der Tastaturfokus auf `<summary>` und die Leseposition gingen verloren. Der vorhandene Realtime-Disclosure-Helfer aus dem Spielerduell wird jetzt mit eigenem Clan-/Versionsstand auch hier verwendet, inklusive Reset beim Clanwechsel. Keine Änderungen an Quoten, Filtern, Spielerform oder Datengrundlage.
+- **Neue Regression**: `tests/cloud-stats-compare-history-reload-focus.test.cjs` mit zusätzlichem Browserfall für synthetische geänderte Angriffsdaten und geöffnete Rathausdetails. Gold/Dark/Light, Viewer, 320/390/430/699/1366 px; Fokus, sichtbare Position, unveränderte Filter und bewusstes Umschalten, kein horizontaler Überlauf. **PR/CI/Merge/Pages/Release noch ausstehend**, erst nach Live-Nachweis aktualisieren.
+- Als nächstes weitere **konkrete** Statistik-UX-/Copy-Befunde #114/#110 suchen; keine pseudoexakten Stärke-Rankings oder umfangreiche Neugestaltung ohne Nutzerfeedback. P0 #104 ohne Staging/API-Nachweis gesperrt.
+- **Sicherheitsgrenze:** Keine Änderungen an produktiver Datenbank, Auth/RLS, Edge, Clanprofilen, CWL-Solver oder separater Offline-PWA.
+
+---
+
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
 **Stand:** 08.11.2026, **Cloud v1.16.31 offiziell veröffentlicht**: [PR #159](https://github.com/Smolmig/cwl_planer/pull/159) gemergt (Squash `6b1a0bc4`), **516/516 PR- und Main-Tests bestanden**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42527704845) und [Release v1.16.31](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.31) erfolgreich. Zuvor v1.16.30 / PR #158. Keine Änderungen an produktiver DB/Edge/RLS, CWL-Solver oder separater Offline-PWA.  
