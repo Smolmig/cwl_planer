@@ -11,7 +11,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 ### Mitglieder: mobile Suche und Spielerdetails besser bedienen
 - **CSS-Befund (#46):** Kurz-Landscape-Ansichten verkleinerten Such- und Filterfelder auf 34px, auf schmalen Ansichten konkurrierten Suche, Filter und Trefferzahl in einer Zeile. Auch Hilfe-Controls waren klein.
 - **Gezielter Patch:** Mindestens 44px für Mitgliedersuche, Statusfilter und Hilfe; mobil zwei Spalten und Trefferzahl darunter, Eingaben mit 16px Text. Bearbeiten erhält `aria-controls` auf den eigenen stabilen Spielerbereich.
-- **Regression/Gate:** Chromium bei 320/390/430/699/820-Landscape/1366px in Arena/Dark/Light und Beobachterrolle; CI/Merge/Pages/Release noch nachprüfen. Keine Daten-/Solver-/Auth-/RLS-/Edge-/Offline-PWA-Änderung. Reale Mobilgeräte offen.
+- **Regression & Release:** Chromium bei 320/390/430/699/820-Landscape/1366px in Arena/Dark/Light und Beobachterrolle. Vorheriger PR-Lauf 504/514 ausschließlich wegen veralteter Test-Versionsregexe; korrigierter [PR #158](https://github.com/Smolmig/cwl_planer/pull/158) **514/514**, [Main-CI](https://github.com/Smolmig/cwl_planer/actions/runs/42493552329) **514/514**, [Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42493551733) und [offizieller Release v1.16.30](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.30) erfolgreich. Keine Daten-/Solver-/Auth-/RLS-/Edge-/Offline-PWA-Änderung. Reale Mobilgeräte offen.
 
 
 ## [1.16.29] - 2026-11-08
