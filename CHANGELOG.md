@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.31] - 2026-11-08
+
+### Mitglieder: Fokus und Bildschirmposition bei Live-Updates
+- **Befund (#46):** Realtime-Neuaufbau der Mitgliederliste stellte den Fokus des Namens-Bearbeiten-Buttons nicht wieder her. Bei einer aktiven Bedienung im Zweispaltenraster konnte ein anderer Spieler als Scroll-Anker gewählt werden.
+- **Fix:** `renderMembers()` stellt den Fokus von `.member-name-edit` und den übrigen erkannten Controls wieder her. Nur bei echten Refreshs nutzt es den fokussierten sichtbaren Spieler als vorrangigen Scroll-Anker, ansonsten die vorhandene sichtbare Zeile. Kein doppelter Scrollausgleich; absichtliches Suchen/Sortieren wird nicht verankert.
+- **Regressions-Gate:** Chromium Gold/Dark/Light, Viewer, 320/390/430/699/1366 px, neuer Spieler oberhalb einer offenen Karte, Fokus/Filter/Position. CI/Merge/Pages/Release erst nach Prüfung nachtragen. Echte iOS-/Android-Geräteabnahme offen. Keine Änderungen an CWL-Solver, Mitgliedsdaten, Supabase/Edge/Auth/RLS oder Offline-PWA.
+
+
 ## [1.16.30] - 2026-11-08
 
 ### Mitglieder: mobile Suche und Spielerdetails besser bedienen

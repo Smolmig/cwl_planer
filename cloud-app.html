@@ -3046,7 +3046,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){.plan-review-chevron{transition:none}}
 
-/* v1.16.30: member controls stay touchable even in compact landscape. */
+/* v1.16.31: member controls stay touchable even in compact landscape. */
 #view-members .member-filters input,
 #view-members .member-filters select{box-sizing:border-box;min-height:44px!important}
 #view-members .cloud-minor>summary{
@@ -3474,11 +3474,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.30</strong><span>Mitglieder · Bedienung</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.31</strong><span>Mitglieder · Live-Nachladen</span></div>
        <ul>
-        <li><b>Suche & Filter:</b> Auch auf schmalen Smartphones leicht zu bedienen und klar erkennbar.</li>
-        <li><b>Spielerdetails:</b> Hilfeschaltflächen und Bearbeiten-Bereiche sind leichter zugänglich.</li>
-        <li><b>Unverändert:</b> Planungsregeln, Spielerwerte und Rollen bleiben wie bisher.</li>
+        <li><b>Live-Aktualisierung:</b> Geöffnete Spielerdetails und der Fokus bleiben erhalten.</li>
+        <li><b>Stabile Position:</b> Der gerade bediente Spieler bleibt beim Nachladen an seiner Bildschirmposition.</li>
+        <li><b>Unverändert:</b> Filter, Spielerwerte, Planung und Berechtigungen.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3904,9 +3904,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.30"></script>
+<script src="./cwl-planning-core.js?v=1.16.31"></script>
 <script>
-const APP_VERSION="v1.16.30";
+const APP_VERSION="v1.16.31";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4374,13 +4374,16 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
  const activeRowId=activeControl?.closest(".member")?.dataset.id;
  const activeDayRule=activeControl?.matches?.(".rulebtn[data-day]")?
   Number(activeControl.dataset.day):null;
- const focusedRuleTop=Number.isInteger(activeDayRule)&&listVisible?
+ // For same-clan Realtime updates, prefer the user's active control over
+ // a different viewport row (especially in two-column member layouts).
+ const focusedControlTop=activeControl&&listVisible&&
+  (keepViewport||Number.isInteger(activeDayRule))?
   activeControl.getBoundingClientRect().top:null;
  const activeControlSelector=activeRowId?(
   Number.isInteger(activeDayRule)&&activeDayRule>=0&&activeDayRule<state.config.days
    ?'.rulebtn[data-day="'+activeDayRule+'"]'
    :[
-    ".member-edit-toggle",".member-note-btn",".toggle-rules",".member-config-help",
+    ".member-edit-toggle",".member-name-edit",".member-note-btn",".toggle-rules",".member-config-help",
     ".move-up",".move-down",".dup-warning",".close-duplicate",
     ".member-part input",".member-fixed input",".member-select",
     ".member-th-picker",".member-strength-picker",".member-target-days",
@@ -4407,24 +4410,25 @@ function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberS
 };el.querySelector(".delete-member")?.addEventListener("click",()=>deleteMember(id));el.querySelectorAll(".rulebtn:not(:disabled)").forEach(btn=>btn.onclick=()=>{const d=Number(btn.dataset.day);markRosterAbsenceEdit(m,"statuses."+d);const next=effectiveStatus(m,d)==="auto"?"must":effectiveStatus(m,d)==="must"?"out":"auto";m.statuses[d]=next;btn.classList.remove("auto","must","out");btn.classList.add(next);btn.innerHTML=`T${d+1}<br>${next==="auto"?"AUTO":next==="must"?"MUSS":"RAUS"}`;
  // A single day rule must not rebuild the open member card or move its focus/scroll position.
  renderAll("Tagesregel gespeichert · Plan aktualisiert ✓",{keepMemberList:true})});});updateBulkBar();
- if(memberViewportAnchor){
+ // Prioritize the visible focused player; otherwise preserve the original
+ // list anchor. Never apply competing scroll corrections to different rows.
+ const focusedReplacement=activeRowId&&activeControlSelector?
+  [...root.querySelectorAll(".member")].find(row=>row.dataset.id===activeRowId)
+   ?.querySelector(activeControlSelector):null;
+ const anchorFocused=!!focusedReplacement&&!focusedReplacement.disabled&&
+  Number.isFinite(focusedControlTop)&&focusedControlTop>=0&&focusedControlTop<window.innerHeight;
+ if(memberViewportAnchor&&!anchorFocused){
   const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===memberViewportAnchor.id);
   if(replacement){
    const delta=replacement.getBoundingClientRect().top-memberViewportAnchor.top;
    if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
   }
  }
- if(activeRowId&&activeControlSelector){
-  const replacement=[...root.querySelectorAll(".member")].find(row=>row.dataset.id===activeRowId)
-   ?.querySelector(activeControlSelector);
-  if(replacement&&!replacement.disabled){
-   replacement.focus({preventScroll:true});
-   // Browser scroll anchoring may preserve a nearby row while moving the
-   // actively edited rule. Keep THAT control visually stationary as well.
-   if(Number.isFinite(focusedRuleTop)&&focusedRuleTop>=0&&focusedRuleTop<window.innerHeight){
-    const delta=replacement.getBoundingClientRect().top-focusedRuleTop;
-    if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
-   }
+ if(focusedReplacement&&!focusedReplacement.disabled){
+  focusedReplacement.focus({preventScroll:true});
+  if(anchorFocused){
+   const delta=focusedReplacement.getBoundingClientRect().top-focusedControlTop;
+   if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
   }
  }
 }
@@ -5178,6 +5182,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.30"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.31"></script>
 </body>
 </html>

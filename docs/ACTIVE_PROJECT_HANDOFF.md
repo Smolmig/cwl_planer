@@ -1,3 +1,11 @@
+# Laufender Patch (08.11.2026) – vor CI/Merge
+
+- **v1.16.31 / #46**, Branch `fix/members-realtime-focus-v11631`: Realtime-Fokussicherung ergänzt `.member-name-edit`; statt konkurrierender Scrollanker hat das aktiv fokussierte sichtbare Control im selben Clan Vorrang. Filter, Tagesregeln, Viewer und bewusstes Sortieren unberührt. Synthetischer Chromium-Test und GitHub-CI müssen noch erfolgreich durchlaufen; KEIN Merge-/Release-Erfolg vor Prüfungsende behaupten.
+- Auslieferung nur nach grünen Tests, PR, Merge, Main-Regression, Pages und Release. Echte iPhone-/Android-Prüfung weiterhin offen. Keine DB-, Solver-, Auth-/RLS-, Edge- oder Offline-PWA-Änderung.
+- Nächste Priorität danach: #46 zusätzliche real reproduzierbare UI-Fehler bzw. #114 Statistik; P0 #104 bleibt ohne Staging und Freigabe gesperrt.
+
+---
+
 # CWL Planer – aktuelle Projektübergabe (lebendes Dokument)
 
 **Stand:** 08.11.2026, **Cloud v1.16.30 offiziell live**: [PR #158](https://github.com/Smolmig/cwl_planer/pull/158) gemergt (Squash `cb9dc119`), **514/514 PR- und Main-Tests bestanden**, [GitHub Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42493551733) und [offizielles Release v1.16.30](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.30) erfolgreich. Zuvor v1.16.29 / PR #157. Keine Änderungen an produktiver DB/Edge/RLS, CWL-Solver oder separater Offline-PWA.  
