@@ -1020,6 +1020,12 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
 .stats-season-details{font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+/* Secondary source notes are on demand, not an extra visible card. */
+#view-stats .stats-overview-source{margin-top:6px}
+#view-stats .stats-overview-source[hidden]{display:none!important}
+#view-stats .stats-overview-source>summary{min-height:44px;box-sizing:border-box;padding:12px 0;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+#view-stats .stats-overview-source>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+#view-stats .stats-overview-source .stats-season-details{margin:0 0 8px;padding-left:14px}
 
 /* Current normal clan war: optional read-only card in Overview. */
 #currentWarCard[hidden]{display:none!important}
@@ -3443,11 +3449,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   </nav>
   <section class="card stats-overview-card" data-stats-panel="overview" aria-label="Clanüberblick">
     <div class="section-title"><h3>Clan im Überblick</h3></div>
-    <p class="stats-note">Alle gespeicherten abgeschlossenen CWs und CWL-Tage. Die Auswahl unter „Spielerstatistik“ verändert diesen Überblick nicht.</p>
+    <p class="stats-note">Alle gespeicherten abgeschlossenen CWs und CWL-Tage. Filter gelten nur in „Spielerstatistik“.</p>
     <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
-    <div class="stats-season-details" id="statsSeasonDetails" aria-live="polite"></div>
+    <details class="stats-overview-source" id="statsSeasonDisclosure"><summary>Mehr zur Datenbasis</summary><p class="stats-season-details" id="statsSeasonDetails"></p></details>
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
@@ -3551,7 +3557,7 @@ html[data-theme] #view-more-settings .latest-changelog{
       <div class="field"><label for="statsTrendMetric">Kennzahl</label><select id="statsTrendMetric"><option value="hitRate">3★-Quote</option><option value="averageStars">Ø Sterne je Angriff</option></select></div>
       <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="week" selected>Woche</option><option value="day">Tag</option><option value="month">Monat</option></select></div>
     </div>
-    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Die Farbe passt sich dem Theme an. Kreise stehen für CW, Rauten für CWL. Kleine Achsenbrüche markieren Zeiträume ohne dokumentierte Angriffe – keine 0-%-Werte.</p>
+    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Kreise stehen für CW, Rauten für CWL. Kleine Achsenbrüche markieren Zeiträume ohne dokumentierte Angriffe – keine 0-%-Werte.</p>
     <p id="statsTrendScope" class="stats-note" aria-live="polite"></p>
     <div id="statsTrendChart" class="stats-trend-chart" aria-live="polite"></div>
     <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Stichprobengröße"></div>
