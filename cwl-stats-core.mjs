@@ -304,6 +304,44 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
  * One comparable date bucket per observed week or month, grouped by CW/CWL.
  * Missing periods are not zero-win periods; consumers must show n for each dot.
  */
+/**
+ * Human-readable Austrian dates for timeline labels; period keys remain UTC
+ * ISO dates so grouping, ordering and graph distances never change.
+ * Weekly buckets start on Monday, but the displayed KW uses ISO week-year.
+ */
+export function formatTrendPeriod(key,granularity,{short=false}={}){
+ if(!["day","week","month"].includes(granularity))
+   throw Error("Ungültige Zeitachse.");
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(key||"")))
+   throw Error("Ungültiges Verlaufsdatum.");
+ const date=new Date(key+"T00:00:00Z");
+ if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==key)
+   throw Error("Ungültiges Verlaufsdatum.");
+ const year=date.getUTCFullYear(),month=date.getUTCMonth();
+ const day=String(date.getUTCDate()).padStart(2,"0");
+ const monthNumber=String(month+1).padStart(2,"0");
+ if(granularity==="day")
+   return day+"."+monthNumber+"."+(short?String(year).slice(-2):year);
+ if(granularity==="month"){
+   const names=short?
+    ["Jän","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"]:
+    ["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+   return names[month]+" "+(short?String(year).slice(-2):year);
+ }
+ const monday=new Date(date);
+ monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
+ const thursday=new Date(monday);
+ thursday.setUTCDate(monday.getUTCDate()+3);
+ const isoYear=thursday.getUTCFullYear();
+ const firstMonday=new Date(Date.UTC(isoYear,0,4));
+ firstMonday.setUTCDate(firstMonday.getUTCDate()-(firstMonday.getUTCDay()+6)%7);
+ const week=String(1+Math.round((monday.getTime()-firstMonday.getTime())/604800000))
+  .padStart(2,"0");
+ return "KW "+week+"/"+(short?String(isoYear).slice(-2):isoYear)+
+   (short?"":" (ab "+String(monday.getUTCDate()).padStart(2,"0")+"."+
+     String(monday.getUTCMonth()+1).padStart(2,"0")+"."+monday.getUTCFullYear()+")");
+}
+
 export function computeStatsTimeline(wars,attacks,{
   type="all",last="all",cwlSeasons="all",granularity="week"
 }={}){
