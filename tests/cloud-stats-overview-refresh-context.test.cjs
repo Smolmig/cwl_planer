@@ -67,6 +67,13 @@ test("Overview always describes all recorded wars; player-specific filters canno
       const allSummary=document.getElementById("statsSummary").textContent;
       const allCount=document.getElementById("statsDataCount").textContent;
       const allCoverage=document.getElementById("statsMissedCoverage").textContent;
+       const basis=document.getElementById("statsSeasonDisclosure");
+       const basisClosed=!basis.open&&!basis.hidden;
+       const basisText=document.getElementById("statsSeasonDetails").textContent;
+       const basisTouchHeight=basis.querySelector("summary").getBoundingClientRect().height;
+       basis.open=true;
+       await stats.load();
+       const basisOpenAfterReload=basis.open;
       document.querySelector('[data-stats-section="players"]').click();
       const select=document.getElementById("statsType");
       select.value="normal";select.dispatchEvent(new Event("change",{bubbles:true}));
@@ -74,6 +81,7 @@ test("Overview always describes all recorded wars; player-specific filters canno
       document.querySelector('[data-stats-section="overview"]').click();
       return {
        intro,allSummary,allCount,allCoverage,restricted,
+        basisClosed,basisText,basisTouchHeight,basisOpenAfterReload,
        restoredSummary:document.getElementById("statsSummary").textContent,
        restoredCount:document.getElementById("statsDataCount").textContent,
        importHidden:document.getElementById("statsImportButton").hidden,
@@ -85,6 +93,10 @@ test("Overview always describes all recorded wars; player-specific filters canno
     assert.doesNotMatch(result.intro,/oben ausgewählten Kriege/,info);
     assert.match(result.allCount,/1 normaler CW \+ 1 CWL-Kriegstag/,info);
     assert.match(result.allCoverage,/alle gespeicherten Kriege/,info);
+     assert.equal(result.basisClosed,true,info);
+     assert.match(result.basisText,/Ausgewertet werden/,info);
+     assert.ok(result.basisTouchHeight>=44,info);
+     assert.equal(result.basisOpenAfterReload,true,info);
     assert.match(result.restricted,/1 ausgewählten abgeschlossenen Krieg/,info);
     assert.equal(result.restoredCount,result.allCount,info);
     assert.equal(result.restoredSummary,result.allSummary,info);
