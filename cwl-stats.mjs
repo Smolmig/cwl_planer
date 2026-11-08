@@ -408,6 +408,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const wasOpen=detail.querySelector("details")?.open===true;
     const focusContext=captureRefreshDisclosure(detail,
       "details > summary",lastTrendVersion,lastTrendClan,"history");
+    const previousTable=detail.querySelector(".stats-war-history-scroll");
+    const reloadTable=lastTrendVersion>=0&&lastTrendVersion!==version&&
+      lastTrendClan===context().clanId&&section==="history"&&
+      $("view-stats")?.classList.contains("active");
+    const tableScrollLeft=reloadTable&&previousTable?previousTable.scrollLeft:null;
+    const tableFocused=reloadTable&&document.activeElement===previousTable;
     const fmt=(data)=>{
       const val=data[trendMetric];
       return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
@@ -423,6 +429,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       table+"</tbody></table></div></details>"+
       (all.length>20?"<p class='stats-note'>Im Diagramm die letzten 20 Zeitpunkte; Tabelle enthält alle.</p>":"");
     lastTrendVersion=version;lastTrendClan=context().clanId;
+    const nextTable=detail.querySelector(".stats-war-history-scroll");
+    if(tableScrollLeft!==null&&nextTable)nextTable.scrollLeft=tableScrollLeft;
+    if(tableFocused)nextTable?.focus({preventScroll:true});
     restoreRefreshDisclosure(detail,"details > summary",focusContext);
   }
   function render(){
