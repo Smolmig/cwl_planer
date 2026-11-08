@@ -83,8 +83,37 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           }
           await stats.load();
           const last=buttons.at(-1);
-          return {rects,checks,activeAfterReload:last.getAttribute("aria-pressed")==="true",
-            headerAfterReload:document.querySelector('[data-stats-panel="history"]').hidden===false,
+          const reload={active:last.getAttribute("aria-pressed")==="true",
+            panel:document.querySelector('[data-stats-panel="history"]').hidden===false};
+          // Readability and touch sizes of the form and comparison filters.
+          buttons.find(el=>el.dataset.statsSection==="form").click();
+          const formWindows=[...document.querySelectorAll(".stats-form-window button")];
+          const formButtons=formWindows.map(el=>{
+            const rect=el.getBoundingClientRect();
+            return {height:rect.height,width:rect.width,font:parseFloat(getComputedStyle(el).fontSize),
+              detailFont:parseFloat(getComputedStyle(el.querySelector("small")).fontSize),
+              clips:el.scrollWidth>el.clientWidth+1};
+          });
+          const formControls=["statsFormSearch","statsFormSort"].map(id=>
+            document.getElementById(id).getBoundingClientRect().height);
+          const formNotes=[];
+          for(const el of formWindows){
+            el.focus({preventScroll:true});el.click();
+            formNotes.push({active:el.getAttribute("aria-pressed")==="true",
+              focused:document.activeElement===el,
+              text:document.getElementById("statsFormIntro").textContent});
+          }
+          formWindows[1].click();
+          const formReload=await stats.load().then(()=>({
+            active:formWindows[1].getAttribute("aria-pressed")==="true",
+            text:document.getElementById("statsFormIntro").textContent
+          }));
+          buttons.find(el=>el.dataset.statsSection==="compare").click();
+          const compareControls=["statsCompareType","statsCompareDays"].map(id=>
+            document.getElementById(id).getBoundingClientRect().height);
+          return {rects,checks,activeAfterReload:reload.active,
+            headerAfterReload:reload.panel,
+            formButtons,formControls,compareControls,formNotes,formReload,
             importHidden:document.getElementById("statsImportButton").hidden,
             navWidth:nav.getBoundingClientRect().width,
             horizontalOverflow:document.documentElement.scrollWidth-innerWidth};
@@ -106,6 +135,19 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
         assert.equal(result.activeAfterReload,true,msg);
         assert.equal(result.headerAfterReload,true,msg);
         assert.equal(result.importHidden,true,msg);
+        assert.equal(result.formButtons.length,3,msg);
+        assert.ok(result.formButtons.every(b=>b.height>=58&&b.width>0&&!b.clips),msg);
+        assert.ok(result.formControls.every(h=>h>=44),msg);
+        assert.ok(result.compareControls.every(h=>h>=44),msg);
+        if(width<=720){
+          assert.ok(result.formButtons.every(b=>b.height>=64&&b.font>=13&&b.detailFont>=12),msg);
+        }
+        assert.ok(result.formNotes.every((n,i)=>n.active&&n.focused&&
+          n.text.includes("Letzte "+[30,90,180][i]+" Kalendertage")&&
+          n.text.includes("Listenplätze sind keine Stärkerangliste.")&&
+          n.text.length<190),msg);
+        assert.equal(result.formReload.active,true,msg);
+        assert.ok(result.formReload.text.includes("Letzte 90 Kalendertage"),msg);
         assert.ok(result.horizontalOverflow<=3,msg);
         assert.deepEqual(problems,[],msg);
       }finally{await page.close()}
