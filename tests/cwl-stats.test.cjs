@@ -283,7 +283,7 @@ test("Statistics UI explicitly labels CWL season period and shows included month
  assert.match(html,/Letzter CWL-Durchgang/);
  assert.match(html,/Letzte 3 CWL-Durchgänge/);
  assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
- assert.match(ui,/gespeicherten CWL-Kriegstagen/);
+ assert.match(ui,/abgeschlossenen CWL-Kriegstagen/);
  assert.match(ui,/erfasste Kriegstage/);
  assert.match(ui,/type,last,cwlSeasons,sameHigher/);
 });
