@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.28",
+  "version": "v1.16.29",
   "released": "2026-11-08",
-  "summary": "Statistik-Verlauf: lesbare, auf Smartphones separat horizontal scrollbare CW/CWL-Zeitverlaufstabelle; 12px Spaltenüberschriften, Tastaturzugänglichkeit und Erhalt des horizontalen Lese-/Fokuskontexts bei Daten-Refresh. Kriegskarten und Einzelangriffe mobil in klaren Zeilen, lange Namen umbrechen. Kein Eingriff in Statistikberechnung, CWL-Planung, Supabase, Rollen oder Offline-PWA."
+  "summary": "Einsätze: Aufklappbare Spielertage haben dynamisch richtige Anzeigen-/Schließen-Beschriftung, im offenen Zustand eine eindeutig referenzierte Detailgruppe und auf allen mobilen Breiten mindestens 44px Touchhöhe. Tastaturfokus, Filter, Beobachterrolle und CWL-Planungsdaten unverändert; keine Änderungen an Solver, Supabase, RLS/Auth oder separater Offline-PWA."
 }

@@ -1207,6 +1207,11 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 .summary-player-toggle{border:0;background:transparent;text-align:left;color:inherit;font:inherit;cursor:pointer;padding:3px 4px;border-radius:6px}
 .summary-player-toggle:hover,.summary-player-toggle[aria-expanded="true"]{background:var(--bluebg)}
 .summary-player-toggle:focus-visible{outline:2px solid var(--primary)}
+/* Deployment player details are a primary touch action on all mobile widths,
+   not only under 470px in portrait orientation. */
+@media(max-width:699px){
+ #view-summary .summary-player-toggle{min-height:44px;min-width:0;justify-content:center}
+}
 .summary-player-days{display:flex;flex:1 1 100%;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 3px 2px;border-top:1px solid var(--line);margin-top:5px}
 .summary-day-chip{font-size:11px;border:1px solid var(--line);border-radius:7px;padding:5px 7px;background:var(--bluebg);color:var(--text)}
 .summary-day-chip.played{color:var(--green)}
@@ -3447,11 +3452,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.28</strong><span>Statistik · Verlauf & Kriege</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.29</strong><span>Einsätze · Spielerdetails</span></div>
        <ul>
-        <li><b>Verlaufstabelle:</b> Die Zahlen bleiben auf Smartphones lesbar; bei Bedarf lässt sich nur die Tabelle seitlich verschieben.</li>
-        <li><b>Kriegstage:</b> Gegner, Angriffssummen und Einzelangriffe sind auf kleinen Displays übersichtlich untereinander angeordnet.</li>
-        <li><b>Aktualisierung:</b> Die Leseposition der Verlaufstabelle bleibt bei neuen Daten erhalten.</li>
+        <li><b>Klare Bedienung:</b> Spieler lassen ihre Einsatztage aufklappen und schließen – der Hinweis passt jetzt zum aktuellen Zustand.</li>
+        <li><b>Smartphone:</b> Die Spielertasten bleiben auf allen mobilen Breiten gut antippbar.</li>
+        <li><b>Stabil:</b> Filter, geöffnete Details und die bestehende CWL-Planung bleiben unverändert.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3877,9 +3882,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.28"></script>
+<script src="./cwl-planning-core.js?v=1.16.29"></script>
 <script>
-const APP_VERSION="v1.16.28";
+const APP_VERSION="v1.16.29";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4482,8 +4487,11 @@ function renderSummary(){
       !daySeven?.locked&&!daySeven?.lineup?.includes(x.m.id)&&
       !x.m.fixed&&active&&effectiveStatus(x.m,6)!=="out"&&
       lastPlan.dayPlans.slice(0,6).filter(dp=>dp.lineup.includes(x.m.id)).length===3;
+    const daysExpanded=summaryOpenMemberId===x.m.id;
+    const daysLabel="Einsatztage für "+displayMemberName(x.m)+
+      (daysExpanded?" schließen":" anzeigen");
     return `<div class="summary-compact-row">
-      <button type="button" class="summary-compact-name summary-player-toggle" data-member-id="${esc(x.m.id)}" aria-expanded="${summaryOpenMemberId===x.m.id}" title="Einsatztage für ${esc(displayMemberName(x.m))} anzeigen"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
+      <button type="button" class="summary-compact-name summary-player-toggle" data-member-id="${esc(x.m.id)}" aria-expanded="${daysExpanded}" ${daysExpanded?`aria-controls="summary-days-${esc(x.m.id)}"`:""} aria-label="${esc(daysLabel)}" title="${esc(daysLabel)}"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
         <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${esc(rotationWeightLabel(x.m))}${active?` · ${available}/${state.config.days} Tage ohne RAUS`:""}</span>
       </button>
       <div class="summary-compact-numbers" aria-label="${x.played} gespielt, ${Math.max(0,x.count-x.played)} geplant, ${x.count} gesamt">
@@ -4501,7 +4509,7 @@ function renderSummary(){
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
-      ${summaryOpenMemberId===x.m.id?'<div class="summary-player-days">'+
+      ${daysExpanded?'<div id="summary-days-'+esc(x.m.id)+'" class="summary-player-days">'+
         (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>{
           const trulyPlayed=!!state.locks[dp.day-1]?.locked;
           const fixedInClash=dp.locked&&!trulyPlayed;
@@ -5148,6 +5156,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.28"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.29"></script>
 </body>
 </html>
