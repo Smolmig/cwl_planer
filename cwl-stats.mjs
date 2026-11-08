@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.31";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.32";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -39,7 +39,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   const openStatsPlayers=new Set();
   let cachedSummary=null,lastRowsMarkup=null,lastRowsHost=null,lastRowsVersion=-1,lastRowsClan=null,lastMembersNotifiedVersion=-1;
   let historyAttacksByWar=new Map();
-  let lastDuelVersion=-1,lastDuelClan=null,lastTrendVersion=-1,lastTrendClan=null;
+  let lastMatchupVersion=-1,lastMatchupClan=null,lastDuelVersion=-1,lastDuelClan=null,lastTrendVersion=-1,lastTrendClan=null;
 
   // Preserve a focused native disclosure and its reading position only
   // during data reloads in the same clan. Explicit filter changes should
@@ -196,6 +196,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       "<p class='stats-note'>Die Werte beschreiben eure dokumentierten Angriffe. "+
       "Unterschiedliche Gegnerbasen, Anzahl der Angriffe und CWL-Bedingungen können die Quoten beeinflussen.</p>";
     const wasBreakdownOpen=host.querySelector(".stats-matchup-breakdown")?.open===true;
+    const focusContext=captureRefreshDisclosure(host,
+      ".stats-matchup-breakdown > summary",lastMatchupVersion,lastMatchupClan,"compare");
     host.innerHTML=highlightsHtml+"<details class='stats-matchup-breakdown'"+
       (wasBreakdownOpen?" open":"")+"><summary>Weitere Rathaus-Kombinationen und Sternverteilungen</summary>"+
       "<div class='stats-matchup-grid'>"+kinds.map(([kind,title])=>{
@@ -216,6 +218,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           (row.attacks?starStack(row.starDistribution,row.attacks):"")+
         "</div>").join("")+"</div></div>";
     }).join("")+"</div></details>";
+    lastMatchupVersion=version;lastMatchupClan=context().clanId;
+    restoreRefreshDisclosure(host,".stats-matchup-breakdown > summary",focusContext);
   }
   function renderDuel(){
     const host=$("statsDuelResults"),first=$("statsDuelLeft"),second=$("statsDuelRight");
@@ -799,6 +803,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     historyHost?.removeAttribute("data-history-signature");
     historyHost?.removeAttribute("data-history-clan");
     historyHost?.removeAttribute("data-history-version");
+    lastMatchupVersion=-1;lastMatchupClan=null;
     lastDuelVersion=-1;lastDuelClan=null;lastTrendVersion=-1;lastTrendClan=null;
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
