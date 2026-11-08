@@ -63,6 +63,6 @@ test("UI distinguishes evidence ordering from the explicitly raw hit-rate choice
  assert.match(html,/<option value="hitRate">Nur 3★-Quote \(roh\)<\/option>/);
  assert.match(js,/formWindow=90,formSearch="",formSort="evidence"/);
  assert.match(js,/sortPlayerFormRows\(data\.players\.filter/);
- assert.match(js,/innerhalb der Gruppen zählt die 3★-Quote/i);
+ assert.match(js,/Sortiert nach Datenmenge, danach 3★-Quote/i);
  assert.match(html,/kein(?:e)? statistische Spielstärkebewertung/i);
 });
