@@ -342,7 +342,7 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(ui,/const coverageDescriptions=/);
  assert.match(ui,/missedCoverageHost\.textContent/);
  assert.match(ui,/order==="missed"\?p\.missedKnown/);
- assert.match(ui,/Eine vollständige CWL-Aufstellung allein beweist keinen versäumten Angriff/,"Missing league data must be explained");
- assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.23/);
+ assert.match(ui,/Eine CWL-Aufstellung allein ist kein Nachweis/,"Missing league data must be explained");
+ assert.match(ui,/cwl-stats-core\.mjs\?v=1\.16\.24/);
  assert.match(ui,/CWL: /);
 });
