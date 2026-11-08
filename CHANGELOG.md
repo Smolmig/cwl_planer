@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.26] - 2026-11-08
+
+### Spielerform: lesbare Steuerelemente und kurze Einordnung
+- **Befund:** Die drei Zeitraum-Tasten in der Spielerform wurden bis 375 px ausdrücklich auf **11 px** verkleinert. Die Form- und Vergleichsfilter hatten nur **43 px Mindesthöhe**. Zusätzlich wiederholte der dynamische Einordnungstext die langen Sortiergruppen und Fachmethodik, obwohl eine aufklappbare Erklärung existiert.
+- **Änderung:** Im mobilen Format (bis 720 px) bleiben die Zeitraumstasten bei **mindestens 13 px** Beschriftung und **12 px** Zusatzzeile, mit Platz für Umbruch und mindestens 64 px Höhe. Die Form- und Vergleichsfelder haben mindestens **44 px**. Die Formhinweise nennen weiterhin Zeitraum, Anzahl tatsächlich belegter gleich-RH-Spieler, Sortierbasis und ausdrücklich, dass Listenplätze keine Stärkerangliste sind; Details bleiben unter „Wie wird Spielerform berechnet?“ vollständig erhalten.
+- **Regression:** Chromium bei 320/375/390/430/720/820/1366 px, Arena/Dark/Light, Viewer, Fokus, aktive Formzeitfenster, neue formbezogene Hinweise, Felder-/Buttongrößen, Wiederladen und kein horizontaler Überlauf. Echte Safari-/Android-Abnahme bleibt ausstehend. Keine Veränderung an Statistikberechnung, Stichproben, CWL-Plan, Datenbank, Edge, Rollen oder Offline-PWA.
+
+
 ## [1.16.25] - 2026-11-08
 
 ### Statistik-Navigation auf Smartphones ohne verwaisten fünften Tab
