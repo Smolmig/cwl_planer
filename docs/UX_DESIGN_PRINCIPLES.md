@@ -77,6 +77,8 @@
 
 - **Statistik-Herkunft als progressive Information (08.11.2026):** Im Clanüberblick KPIs, Kriegsumfang und Missed-Abdeckung sofort zeigen; längere saisonale Erklärungen in ein natives Disclosure statt zusätzliche sichtbare Karte. Touchhöhe mindestens 44 px, Open-State bei Reload behalten, bei Clanwechsel/Leerzustand leeren. Selbst kompakte Hinweise zu `mind.`/`k. A.` müssen klarmachen, dass eine unbestätigte 0 unbekannt ist. Diagrammlegenden erklären Daten, nicht Themes.
 
+- **Fünf Statistik-Tabs (08.11.2026):** Bei maximal 720 px fünf eindeutige Einstiege in zwei ausgewogenen Reihen (3 + 2) statt 2 + 2 + 1; am Desktop fünf gleichmäßige Spalten. Jede aktive oder inaktive Tab-Schaltfläche mindestens 44 px hoch, Fokusmarkierung, deutliche aktive Auswahl und umbrechende lange Namen. Tab-/Panel-Zuordnung und Filter müssen bei Datennachladung erhalten bleiben; keinen unnötigen horizontalen Tab-Scroller einführen.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
