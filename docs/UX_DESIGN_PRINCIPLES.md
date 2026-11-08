@@ -79,6 +79,8 @@
 
 - **Fünf Statistik-Tabs (08.11.2026):** Bei maximal 720 px fünf eindeutige Einstiege in zwei ausgewogenen Reihen (3 + 2) statt 2 + 2 + 1; am Desktop fünf gleichmäßige Spalten. Jede aktive oder inaktive Tab-Schaltfläche mindestens 44 px hoch, Fokusmarkierung, deutliche aktive Auswahl und umbrechende lange Namen. Tab-/Panel-Zuordnung und Filter müssen bei Datennachladung erhalten bleiben; keinen unnötigen horizontalen Tab-Scroller einführen.
 
+- **Spielerform Mobile-Bedienung (08.11.2026):** Zeitraumwahl (30/90/180 Tage) auch bei 320 px in lesbarer 13-px-Schrift statt mit 11 px; bei Bedarf Texte umbrechen lassen, Zusatzzeile 12 px und ausreichend große Schaltflächen. Form-/Vergleichsfilter mindestens 44 px hoch. Im Status Zeitraum, belegte gleich-RH-Spieler und Sortierbezug in Alltagssprache nennen; die Datenmengen-Grenzen und genaue Methodik gehören in den vorhandenen aufklappbaren Erklärungsteil. Die 3★-Quote bleibt mit Stichprobe verknüpft, Listenplätze sind keine verifizierte Stärke.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
