@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.27] - 2026-11-08
+
+### Vergleiche: CW/CWL-Zahlen eindeutig Spieler A und B zuordnen
+- **Codebefund:** Im direkten Zweispieler-Vergleich fehlten über den CW/CWL-Zahlen eigene Spaltenüberschriften. Bei schmalen Smartphones oder vielen Zeilen war unklar, welcher Prozent- und Angriffsanteil zu welchem ausgewählten Spieler gehört. Die darüberliegenden Namen allein lösten die Zuordnung nicht dauerhaft.
+- **UI-Korrektur:** Beide bestehenden Spielerköpfe erhalten eine dezente „Spieler A/B“-Kennzeichnung. Eine einfache dreispaltige Überschrift („Kriegsart / Spieler A / Spieler B“) steht über den zwei **unveränderten** CW/CWL-Zahlenzeilen; die Überschrift benutzt mobil exakt dieselbe Grid-Geometrie wie die Werte. Die konkreten Angriffszeilen haben für Screenreader zusätzlich eindeutige beschreibende Labels. Die bisher redundante Einleitungszeile entfällt.
+- **Browserregression:** Synthetische Normal-CW-/CWL-Angriffe, zwei Spieler mit langen Namen, Viewports 320/375/390/430/720/1366 px, Arena/Dark/Light, Beobachter, sichtbare und zugängliche A/B-Spalten, korrekte Rasterausrichtung, kein horizontaler Seitenscroll, mindestens 44 px für beide Detail-Summaries, Offen-/Fokuszustand nach Datenaktualisierung. Keine echte Safari-/Android-Geräteabnahme behauptet.
+- **Grenzen:** Keine Änderungen an 3★-Quoten, Angriffszahlen, Spielerwahl-/Vergleichsfiltern, CWL-Plan, Solver, Supabase, Edge/RLS/Auth/Rollen, Rohdaten oder separater Offline-PWA.
+
+
 ## [1.16.26] - 2026-11-08
 
 ### Spielerform: lesbare Steuerelemente und kurze Einordnung
