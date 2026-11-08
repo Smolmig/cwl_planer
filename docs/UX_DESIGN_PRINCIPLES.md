@@ -85,6 +85,8 @@
 
 - **Statistik → Verlauf & Kriege auf Mobilgeräten (08.11.2026):** Eine 3-Spalten-Tabelle mit Zeitpunkten und Prozentwerten plus Angriffszahl darf unter 320–430 px **nicht** die ganze Seite horizontal verbreitern oder zu 10-px-Superskripten zusammengedrückt werden: separate, keyboard-fokussierbare Scrollregion mit beschriebenem Zweck; 12-px-Tabellenüberschriften, 3 lesbare Spalten und echte Angriffszahlen. Beim gleichen Clan-Daten-Reload Fokus und horizontale Scrollposition erhalten; absichtliche Trendfilterwechsel nicht verankern. Kriegskarten und Angreifer-/Gegnerangaben brauchen auf Mobilgeräten eigene Zeilen statt nebeneinander gequetschter Flexkinder; lange Ingame-Namen stets vollständig umbrechen. Große Einzelangriffsdaten weiterhin erst durch Aufklappen montieren, Desktop-Zweispalten-Darstellung beibehalten.
 
+- **Einsätze → Spielertage (08.11.2026):** Das Namensfeld ist ein echter Ein-/Ausklappbutton und muss den aktuellen Zustand sowohl über `aria-expanded` als auch im sprechenden/Tooltip-Label eindeutig („anzeigen“ / „schließen“) ausdrücken. Nur ein tatsächlich geöffneter Tagesbereich erhält eine eindeutige `aria-controls`-Referenz. Bei Smartphones einschließlich Querformat und Breiten bis 699 px mindestens 44 px Touchfläche; Fokus und Such-/Filterzustände bei UI-Refresh bewahren. Öffnen darf die Planungsberechnung oder die gespeicherten Einsätze **nicht** verändern.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
