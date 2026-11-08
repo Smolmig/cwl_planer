@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.27",
+  "version": "v1.16.28",
   "released": "2026-11-08",
-  "summary": "Statistik-Vergleiche: Spieler A/B in den beiden Duell-Spalten und CW/CWL-Auswertungen explizit kennzeichnen. Dezente, responsive Spaltenüberschriften statt unklar zugeordneter Prozente; zugängliche Werte und bestehende Details/Refresh-Zustände erhalten. Keine Änderungen an Statistikberechnung, Daten, CWL-Planung, Supabase, Rollen oder Offline-PWA."
+  "summary": "Statistik-Verlauf: lesbare, auf Smartphones separat horizontal scrollbare CW/CWL-Zeitverlaufstabelle; 12px Spaltenüberschriften, Tastaturzugänglichkeit und Erhalt des horizontalen Lese-/Fokuskontexts bei Daten-Refresh. Kriegskarten und Einzelangriffe mobil in klaren Zeilen, lange Namen umbrechen. Kein Eingriff in Statistikberechnung, CWL-Planung, Supabase, Rollen oder Offline-PWA."
 }

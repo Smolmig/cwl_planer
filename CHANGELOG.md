@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.28] - 2026-11-08
+
+### Verlauf & Kriege: mobil lesbare Zeiträume, Tabellen und Kriegskarten
+- **Codebefund (#114/#46):** Der vorhandene `stats-war-history-scroll`-Container der Zeitverlaufstabelle hatte kein eigenes Scroll-CSS; drei Spalten mit „Quote (N Angriffe)“ und 10-px-Tabellenköpfen konnten bei schmalen Displays zusammengedrückt/umgebrochen werden. Die Kriegskarten und Angreifer-/Gegnerzeilen verwendeten auch auf 320 px ein nebeneinanderliegendes Flexlayout; lange Namen drohten unlesbar zu werden.
+- **UI-Patch:** Tabellenregion darf separat horizontal scrollen, mit Tastaturfokus, Region-Beschreibung und Spalten-`scope`; die Tabelle bleibt mindestens 420 px breit, hat 12-px-Köpfe und tabellarische Ziffern. Die Seite selbst scrollt nicht seitlich. Kriegskarten bis 550 px nutzen eine ruhige einspaltige Reihenfolge: Krieg/Gegner, Angriffssumme, darunter beim Öffnen Angreifer und Ergebnis. Lange Namen brechen in allen Viewports um.
+- **Reload-Kontext:** Bei einem echten Daten-Refresh im selben Clan bleiben geöffnete Tabelle, horizontaler Scrollabstand und Fokus auf der scrollbaren Region erhalten. Bewusst geänderte Filter bleiben davon unabhängig; die bestehenden Scroll-/Fokus-Anker der Kriegsdetails bleiben bestehen.
+- **Testgrenze:** Neuer synthetischer Chromium-Regressionstest für 320/375/390/430/550/720/1366 px, Arena/Dark/Light, Viewer, lange ungetrennte Namen, Diagramm/Filter, Tabelle/Region, Touchflächen, Scrollposition, offene Kriegskarte und Fokus nach Reload. Echte iOS-Safari-/Android-Gerätetests bleiben ausstehend. Keine Änderung an Kriegsdaten, Statistikmethodik, Plan/Solver, Rollen/Auth/RLS, Supabase/Edge oder Offline-PWA.
+
+
 ## [1.16.27] - 2026-11-08
 
 ### Vergleiche: CW/CWL-Zahlen eindeutig Spieler A und B zuordnen

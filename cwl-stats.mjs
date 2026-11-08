@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.27";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.28";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -408,6 +408,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const wasOpen=detail.querySelector("details")?.open===true;
     const focusContext=captureRefreshDisclosure(detail,
       "details > summary",lastTrendVersion,lastTrendClan,"history");
+    const previousTable=detail.querySelector(".stats-war-history-scroll");
+    const reloadTable=lastTrendVersion>=0&&lastTrendVersion!==version&&
+      lastTrendClan===context().clanId&&section==="history"&&
+      $("view-stats")?.classList.contains("active");
+    const tableScrollLeft=reloadTable&&previousTable?previousTable.scrollLeft:null;
+    const tableFocused=reloadTable&&document.activeElement===previousTable;
     const fmt=(data)=>{
       const val=data[trendMetric];
       return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
@@ -416,11 +422,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const table=all.slice().reverse().map(row=>"<tr><td>"+esc(row.key)+
       "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
     detail.innerHTML="<details"+(wasOpen?" open":"")+"><summary>Alle "+all.length+
-      " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary><div class='stats-war-history-scroll'>"+
-      "<table><thead><tr><th>Zeitraum</th><th>CW</th><th>CWL</th></tr></thead><tbody>"+
+      " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary>"+
+      "<div class='stats-war-history-scroll' role='region' tabindex='0' "+
+        "aria-label='Verlaufstabelle; auf kleinen Bildschirmen seitlich scrollen'>"+
+      "<table><thead><tr><th scope='col'>Zeitraum</th><th scope='col'>CW</th><th scope='col'>CWL</th></tr></thead><tbody>"+
       table+"</tbody></table></div></details>"+
       (all.length>20?"<p class='stats-note'>Im Diagramm die letzten 20 Zeitpunkte; Tabelle enthält alle.</p>":"");
     lastTrendVersion=version;lastTrendClan=context().clanId;
+    const nextTable=detail.querySelector(".stats-war-history-scroll");
+    if(tableScrollLeft!==null&&nextTable)nextTable.scrollLeft=tableScrollLeft;
+    if(tableFocused)nextTable?.focus({preventScroll:true});
     restoreRefreshDisclosure(detail,"details > summary",focusContext);
   }
   function render(){

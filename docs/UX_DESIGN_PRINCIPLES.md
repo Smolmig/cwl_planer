@@ -83,6 +83,8 @@
 
 - **Vergleiche mit zwei Spielerseiten (08.11.2026):** CW-/CWL-Zeilen dürfen Prozentwerte nicht nur über ihre Position den darüberliegenden Spielerkarten zuordnen. Kennzeichne die Spielerköpfe als A/B und verwende direkt über den Zahlen eine leicht lesbare dreispaltige Kopfzeile `Kriegsart / Spieler A / Spieler B`, die in allen Breakpoints **dieselbe Grid-Aufteilung** wie die Datenzeilen nutzt. Eine zusätzliche Karte ist nicht nötig; für Screenreader Spielerseite, Kriegsart und Wert gemeinsam benennen. Lange Spielernamen sauber umbrechen lassen, 44-px-Details und Fokus bei Reload bewahren.
 
+- **Statistik → Verlauf & Kriege auf Mobilgeräten (08.11.2026):** Eine 3-Spalten-Tabelle mit Zeitpunkten und Prozentwerten plus Angriffszahl darf unter 320–430 px **nicht** die ganze Seite horizontal verbreitern oder zu 10-px-Superskripten zusammengedrückt werden: separate, keyboard-fokussierbare Scrollregion mit beschriebenem Zweck; 12-px-Tabellenüberschriften, 3 lesbare Spalten und echte Angriffszahlen. Beim gleichen Clan-Daten-Reload Fokus und horizontale Scrollposition erhalten; absichtliche Trendfilterwechsel nicht verankern. Kriegskarten und Angreifer-/Gegnerangaben brauchen auf Mobilgeräten eigene Zeilen statt nebeneinander gequetschter Flexkinder; lange Ingame-Namen stets vollständig umbrechen. Große Einzelangriffsdaten weiterhin erst durch Aufklappen montieren, Desktop-Zweispalten-Darstellung beibehalten.
+
 ## 4. Progressive Offenlegung mit Gedächtnis
 
 - Die zuerst sichtbare Zeile beantwortet den primären Bedarf (z. B. Runde, Gegner, Sterne, Status). Details wie einzelne Spieler und Angriffe nur bei explizitem Aufklappen.
