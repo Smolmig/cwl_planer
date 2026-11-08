@@ -110,7 +110,7 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.doesNotMatch(outcome.all.count,/3 abgeschlossenen/,note);
     assert.doesNotMatch(outcome.all.detail,/Bis zu all/,note);
     assert.match(outcome.one.scope,/1 ausgewählten abgeschlossenen Krieg/,note);
-    assert.match(outcome.one.count,/1 von 2 abgeschlossenen normalen CWs · 1 Angriffe/,note);
+    assert.match(outcome.one.count,/1 von 2 abgeschlossenen normalen CWs · 1 Angriff/,note);
     assert.match(outcome.one.period,/1 von 2 abgeschlossenen CWs/,note);
     assert.match(outcome.back.count,/Alle 2 abgeschlossenen normalen CWs/,note);
     assert.match(outcome.empty.scope,/noch keine abgeschlossenen Kriege/,note);
