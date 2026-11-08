@@ -2793,7 +2793,15 @@ html[data-theme] #view-more-settings .latest-changelog{
 #view-stats .stats-duel-person .stats-duel-sample{font-size:12px;margin:3px 0 1px;color:var(--text)}
 #view-stats .stats-duel-person .stats-duel-quality{display:block;font-size:11px;color:var(--muted);line-height:1.35}
 #view-stats .stats-duel-splits{margin:15px 0 0;border-top:1px solid var(--line)}
-#view-stats .stats-duel-splits-intro{margin:10px 0 2px;font-size:11px;color:var(--muted)}
+#view-stats .stats-duel-player-key{display:block;margin:0 0 3px;font-size:11px;font-weight:700;line-height:1.35;color:var(--muted)}
+#view-stats .stats-duel-split-head{
+ display:grid;grid-template-columns:minmax(78px,.84fr) repeat(2,minmax(0,1fr));
+ gap:9px;align-items:end;padding:9px 0 7px;border-bottom:1px solid var(--line)
+}
+#view-stats .stats-duel-split-head>span{
+ min-width:0;font-size:12px;line-height:1.35;font-weight:700;
+ color:var(--muted);overflow-wrap:anywhere
+}
 #view-stats .stats-duel-split-row{
  display:grid;grid-template-columns:minmax(78px,.84fr) repeat(2,minmax(0,1fr));
  gap:9px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)
@@ -2815,6 +2823,7 @@ html[data-theme] #view-more-settings .latest-changelog{
  #view-stats .stats-duel-grid .stats-duel-person+.stats-duel-person{
   border:0;border-left:1px solid var(--line);padding:6px 0 0 12px
  }
+ #view-stats .stats-duel-split-head,
  #view-stats .stats-duel-split-row{grid-template-columns:minmax(66px,.8fr) repeat(2,minmax(0,1fr));gap:6px}
  #view-stats .stats-duel-extra-grid{grid-template-columns:minmax(0,1fr);gap:12px}
 }
