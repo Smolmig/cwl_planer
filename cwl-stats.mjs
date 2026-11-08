@@ -416,8 +416,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const table=all.slice().reverse().map(row=>"<tr><td>"+esc(row.key)+
       "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
     detail.innerHTML="<details"+(wasOpen?" open":"")+"><summary>Alle "+all.length+
-      " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary><div class='stats-war-history-scroll'>"+
-      "<table><thead><tr><th>Zeitraum</th><th>CW</th><th>CWL</th></tr></thead><tbody>"+
+      " erfassten Zeiträume mit Angriffsanzahl anzeigen</summary>"+
+      "<div class='stats-war-history-scroll' role='region' tabindex='0' "+
+        "aria-label='Verlaufstabelle; auf kleinen Bildschirmen seitlich scrollen'>"+
+      "<table><thead><tr><th scope='col'>Zeitraum</th><th scope='col'>CW</th><th scope='col'>CWL</th></tr></thead><tbody>"+
       table+"</tbody></table></div></details>"+
       (all.length>20?"<p class='stats-note'>Im Diagramm die letzten 20 Zeitpunkte; Tabelle enthält alle.</p>":"");
     lastTrendVersion=version;lastTrendClan=context().clanId;
