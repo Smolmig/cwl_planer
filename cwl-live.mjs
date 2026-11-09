@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.44";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.44";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.45";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.45";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -71,7 +71,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
-  const expandedDays=new Set(),expandedOpponentDays=new Set();
+  const expandedDays=new Set(),expandedOpponentDays=new Set(),expandedMissReviews=new Set();
   const effective=()=>{
     const ctx=context();
     if (!ctx.active || !ctx.clanId || !ctx.hasClanTag)return null;
@@ -475,8 +475,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       .filter(r=>!staleRoundDays.has(r.day))
       .map(r=>cwlAttackReminder(r))
       .filter(Boolean)
-      .filter(a=>a.kind==="open"||(a.day<ctx.profile.config.days&&
-        !["inWar","warEnded"].includes(info.rounds[a.day]?.state)))
+      .filter(a=>a.kind==="open"||a.kind==="confirmed")
       .sort((a,b)=>Number(b.kind==="open")-Number(a.kind==="open")||b.day-a.day)[0]:null;
     // A stale source never establishes a forgotten attack.
     const staleAttention=!attention?info.rounds
@@ -484,6 +483,39 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       .find(a=>a.kind==="open"&&(!fresh||staleRoundDays.has(a.day))):null;
     const attentionKey=attention?.kind==="open"?cwlReminderAckKey(ctx,info.season,attention):null;
     const acknowledgedAt=readCwlReminderAck(attentionKey);
+    // A confirmed miss starts a review, NEVER a change to the plan.
+    const reviewKey=attention?.kind==="confirmed"&&attention.day<ctx.profile.config.days?
+      [ctx.clanId,info.season,attention.warTag,attention.day].join("|"):null;
+    const reviewRows=reviewKey?cwlMissedRotationReview(info,ctx.profile,
+      storage.getPlannedLineups?.()||[],{
+        planningOk:storage.getPlanningState?.()?.ok===true,
+        staleDays:[...staleRoundDays]
+      }).filter(x=>x.day===attention.day&&x.warTag===attention.warTag):[];
+    const reviewHtml=reviewKey?(()=>{
+      const list=reviewRows.length?reviewRows.map(x=>{
+        const checkDays=x.reviewable.map(v=>"Tag "+v.day+" ("+v.stage+")").join(", ");
+        const blocked=x.protectedDays.map(v=>"Tag "+v.day+" ("+v.reason+")").join(", ");
+        const constraints=[
+          x.isFixed?"Fixspieler":"",
+          x.targetDays?"Einsatzziel "+x.targetDays:"",
+          x.mustDays.length?"MUSS an Tag "+x.mustDays.join(", "):""
+        ].filter(Boolean).join(" · ");
+        const msg=x.unknownMember?"Nicht eindeutig im aktuellen Plan zugeordnet – keine Pausenempfehlung.":
+          checkDays?"Nur mögliche Planprüfung: "+checkDays+". Clash-Aufstellung vor Wechsel prüfen.":
+          "Kein eindeutig änderbarer künftiger Einsatz im aktuellen Plan.";
+        return "<li class='cwl-miss-review-row'><b>"+esc(x.name)+
+          " <span class='cwl-miss-review-tag'>"+esc(x.tag)+"</span></b>"+
+          "<div>"+esc(msg)+"</div>"+
+          (blocked?"<small>Geschützt: "+esc(blocked)+"</small>":"")+
+          (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+"</li>";
+      }).join(""):"<li>Prüfung aus Plan und Spieler-Tags derzeit nicht eindeutig möglich. Keine automatische Empfehlung.</li>";
+      return "<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
+        "<summary>Künftige Einsätze prüfen (nur Vorschau)</summary>"+
+        "<p>Bestätigter fehlender Angriff. Ob ein Spieler später pausiert, entscheidet die Clanführung "+
+        "nach Prüfung von Fix/MUSS, Einsatzziel, 8★-Bonus und Clash-Aufstellungen. "+
+        "Diese Ansicht ändert nichts und speichert keine Entscheidung.</p>"+
+        "<ul>"+list+"</ul></details>";
+    })():"";
     const attentionHtml=attention?(()=>{
       const names=attention.players.slice(0,8).map(p=>esc(p.name)).join(", ")+
         (attention.players.length>8?" und "+(attention.players.length-8)+" weitere":"");
@@ -506,9 +538,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<small>"+(open?(acknowledgedAt?
           "Nur eine lokale Markierung; der Angriff ist damit nicht ausgeführt. Neue offene Spieler werden erneut angezeigt.":
           "Bitte in Clash prüfen und gegebenenfalls erinnern. Ein Angriff ist bis zum Ende noch möglich."):
-          "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden.")+
+          (attention.day>=ctx.profile.config.days?
+           "Diese CWL hat keine weiteren Kriegstage; kein späterer Einsatz kann geändert werden.":
+           "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden."))+
         " Nur Hinweis, kein automatischer Wechsel. Stand aus Clash; bitte vor Entscheidungen aktualisieren."+
-        "</small>"+action+"</div>";
+        "</small>"+(open?"":reviewHtml)+action+"</div>";
     })():staleAttention?(()=>{
       const checkedAt=lastSuccessfulAt&&activeClan===ctx.clanId?
         new Date(lastSuccessfulAt).toLocaleString("de-AT",
@@ -542,6 +576,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     node.querySelector(".cwl-attention-reset")?.addEventListener("click",()=>{
       if(context().clanId!==ctx.clanId)return;
       clearCwlReminderAck(attentionKey);render();
+    });
+    node.querySelector(".cwl-miss-review")?.addEventListener("toggle",event=>{
+      if(!reviewKey)return;
+      if(event.target.open)expandedMissReviews.add(reviewKey);
+      else expandedMissReviews.delete(reviewKey);
     });
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 
@@ -621,7 +660,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
     activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;
     closeSwapPopover();openedOutgoing.clear();
-    expandedDays.clear();expandedOpponentDays.clear();staleRoundDays.clear();
+    expandedDays.clear();expandedOpponentDays.clear();expandedMissReviews.clear();staleRoundDays.clear();
     render();
   }
   function start(){

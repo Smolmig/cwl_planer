@@ -2603,6 +2603,17 @@ html[data-theme] #view-more-settings .latest-changelog{
 .cwl-attack-attention[data-kind="confirmed"] strong{color:var(--red)}
 .cwl-attack-attention[data-kind="stale"] strong{color:var(--muted)}
 .cwl-attack-attention[data-acknowledged="true"] strong{color:var(--green)}
+.cwl-miss-review{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);min-width:0}
+.cwl-miss-review summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--text)}
+.cwl-miss-review p{margin:8px 0;font-size:11px;line-height:1.55;color:var(--muted)}
+.cwl-miss-review ul{list-style:none;margin:7px 0 0;padding:0;display:grid;gap:7px}
+.cwl-miss-review-row{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--card) 86%,var(--bg));font-size:12px;line-height:1.45}
+.cwl-miss-review-row b{display:block;overflow-wrap:anywhere}
+.cwl-miss-review-row div{margin-top:4px;color:var(--text);overflow-wrap:anywhere}
+.cwl-miss-review-row small{display:block;margin-top:3px;color:var(--muted)}
+.cwl-miss-review-tag{font-weight:500;color:var(--muted)}
+@media(max-width:390px){.cwl-miss-review-row{padding:7px 8px}}
+
 .cwl-attack-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:3px}
 .cwl-attack-actions .btn{max-width:100%;white-space:normal;text-align:left;line-height:1.35;min-height:36px}
 @media(max-width:390px){.cwl-attack-actions .btn{width:100%}}
@@ -3499,11 +3510,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.44</strong><span>CWL · letzte Stunde</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.45</strong><span>CWL · Missed-Review</span></div>
        <ul>
-        <li><b>Letzte Stunde:</b> Ein Hinweis nennt offene CWL-Angriffe bei frischem Clash-Stand und bekannter Endzeit.</li>
-        <li><b>Quittierung:</b> Clanführung kann eine Erinnerung nur auf diesem Gerät als erledigt markieren. Neue offene Spieler lösen einen neuen Hinweis aus.</li>
-        <li><b>Sicherheit:</b> Bei alten oder unklaren Daten nur Prüfhilfe statt falscher Missed-Meldung. Kein automatischer Eingriff in Aufstellungen oder Planung.</li>
+        <li><b>Nach verpasstem Angriff:</b> Erklärbare Vorschau für geplante künftige CWL-Einsätze, nur bei bestätigtem Ergebnis.</li>
+        <li><b>Schutz:</b> Bereits gesperrte, laufende und beendete Clash-Tage sind ausdrücklich ausgenommen; Fix/MUSS und Einsatzziele werden kenntlich gemacht.</li>
+        <li><b>Keine Automatik:</b> Kein Auf-Pause-Setzen, kein Wechsel und keine gespeicherte Entscheidung. Die Owner-Abnahme mit Audit bleibt ein weiterer Ausbauschritt.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3678,6 +3689,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. Bei „6/7 Tage ohne RAUS“ gibt es an sechs von sieben Tagen keinen Ausschluss – das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die letzten sieben CW/CWL-Angriffe in Plan/Mitglieder sind eine andere Datenbasis. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Letzte Stunde im CWL-Krieg</b><div>Bei frischem Clash-Datenstand und belegter Kriegsendzeit erinnert der Plan an offene Angriffe innerhalb der letzten 60 Minuten. Das bedeutet <b>noch nicht angegriffen laut letztem Abruf</b>, nicht „vergessen“. Ist der Datenstand veraltet, erscheint nur ein neutraler Prüfhinweis. Berechtigte Clanführer können „Im Spiel erinnert“ auf <b>diesem Gerät</b> quittieren: Das markiert keinen Angriff, ändert keine Aufstellung und wird nicht mit anderen Geräten synchronisiert. Neue offene Spieler werden erneut angezeigt. Bei geschlossener App gibt es damit keine Push-Erinnerung; nach Kriegsende bleibt eine spätere Entscheidung über weitere Einsätze manuell.</div></div>
+    <div class="help-item"><b>Verpasster CWL-Angriff – weitere Einsätze</b><div>Nur wenn ein CWL-Krieg laut vollständiger, frischer Clash-Datenlage abgeschlossen ist und der Angriff tatsächlich nicht erfolgte, zeigt der Plan eine <b>schreibgeschützte Prüfempfehlung</b> je Spieler. Dabei unterscheidet er spätere noch prüfbare Plan-Tage von bereits gesperrten oder laufenden Clash-Kriegen und nennt Fix/MUSS-Regeln sowie feste Einsatzziele. <b>Es findet kein automatisches Auf-Pause-Setzen, kein Ersatzwechsel und keine Entscheidungsspeicherung statt.</b> Die Clanführung muss Konsequenzen einschließlich des 8★-Bonus manuell beurteilen. Eine gemeinsame Owner-Entscheidung mit Entschuldigung und Audit ist noch nicht umgesetzt.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -3930,9 +3942,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.44"></script>
+<script src="./cwl-planning-core.js?v=1.16.45"></script>
 <script>
-const APP_VERSION="v1.16.44";
+const APP_VERSION="v1.16.45";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5312,6 +5324,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.44"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.45"></script>
 </body>
 </html>

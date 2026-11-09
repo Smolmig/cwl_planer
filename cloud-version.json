@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.44",
+  "version": "v1.16.45",
   "released": "2026-11-09",
-  "summary": "CWL-Plan: innerhalb der letzten Stunde offene Angriffe bei frischem Clash-Stand anzeigen; auf diesem Gerät quittierbar, bei altem Stand neutraler Prüfhinweis. Keine Änderungen am Solver, Cloud-Daten, Rollen oder Offline-PWA."
+  "summary": "CWL nach bestätigtem verpasstem Angriff: schreibgeschützte Einzelprüfung für spätere geplante Tage mit Schutz laufender/gesperrter Clash-Aufstellungen und Fix-/MUSS-/Einsatzziel-Hinweisen. Keine automatische Pause oder Entscheidungsspeicherung."
 }

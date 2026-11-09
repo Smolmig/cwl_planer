@@ -101,7 +101,7 @@ export function recordedCwlAttackResults(snapshot){
       Number.isInteger(stars)&&stars>=0&&stars<=3&&
       typeof percent==="number"&&Number.isFinite(percent)&&percent>=0&&percent<=100){
     day[tag]={stars,percent,missed:false,warTag:round.warTag,state:round.state};
-   }else if(round.state==="warEnded"){
+   }else if(round.state==="warEnded"&&Array.isArray(member.attacks)&&member.attacks.length===0){
     day[tag]={missed:true,warTag:round.warTag,state:round.state};
    }
   }
@@ -141,6 +141,70 @@ export function cwlAttackReminder(round,now=Date.now(),windowMinutes=60){
   return {day:round.day,warTag:tagOf(round.warTag),kind:"confirmed",players:players.map(m=>({
     tag:tagOf(m.tag),name:String(m.name||tagOf(m.tag)).slice(0,80)})),
     minutesLeft:0,endTime:round.endTime};
+}
+
+// Read-only phase-2 preview: an ended, fully observed CWL missed attack can
+// justify REVIEWING future assignments, but never changing them automatically.
+// Plan locks, Clash inWar/warEnded rosters and player rules remain immutable.
+export function cwlMissedRotationReview(snapshot,profile,dayPlans=[],{
+ now=Date.now(),staleDays=[],planningOk=true
+}={}){
+ const season=String(snapshot?.season||""),clanTag=tagOf(snapshot?.clanTag);
+ if(!/^\d{4}-\d{2}$/.test(season)||!validTag(clanTag)||
+    profile?.cwlLive?.season!==season||
+    tagOf(profile?.cwlLive?.clanTag)!==clanTag||
+    profile?.cwlLiveIgnoredSeason===season||
+    !Array.isArray(snapshot?.rounds)||!Array.isArray(dayPlans)||
+    !Number.isFinite(now))return [];
+ const days=Number(profile?.config?.days);
+ if(!Number.isInteger(days)||days<1||days>7)return [];
+ const stale=new Set(Array.isArray(staleDays)?staleDays:[]);
+ const owners=new Map(),duplicates=new Set();
+ for(const member of [...(profile.members||[]),...(profile.archivedMembers||[])]){
+  const tag=tagOf(member?.playerTag);
+  if(!validTag(tag))continue;
+  if(owners.has(tag))duplicates.add(tag);
+  else owners.set(tag,member);
+ }
+ const roundByDay=new Map(snapshot.rounds.map(r=>[r.day,r]));
+ const planByDay=new Map(dayPlans.map(p=>[p.day,p]));
+ const rows=[];
+ for(const round of snapshot.rounds){
+  if(stale.has(round?.day)||round?.day>=days||
+     tagOf(round?.clan?.tag)!==clanTag)continue;
+  const note=cwlAttackReminder(round,now);
+  if(note?.kind!=="confirmed")continue;
+  for(const entry of note.players){
+   const tag=tagOf(entry.tag),member=duplicates.has(tag)?null:owners.get(tag);
+   const planned=[],reviewable=[],protectedDays=[];
+   for(let day=round.day+1;day<=days;day++){
+    const dp=planByDay.get(day);
+    if(!member?.id||!dp?.lineup?.includes(member.id))continue;
+    planned.push(day);
+    const upcoming=roundByDay.get(day);
+    const reason=stale.has(day)?"Clash-Daten für diesen Tag veraltet":
+      profile.locks?.[day-1]?.locked||dp.locked?"Plan bereits gesperrt":
+      upcoming?.state==="inWar"?"Krieg läuft – Clash-Aufstellung fix":
+      upcoming?.state==="warEnded"?"Krieg beendet – keine Änderung möglich":
+      !planningOk?"Plan nicht eindeutig berechenbar":null;
+    if(reason)protectedDays.push({day,reason});
+    else reviewable.push({day,stage:upcoming?.state==="preparation"?
+      "Vorbereitung – Wechsel in Clash prüfen":"künftiger Tag – Planung prüfen"});
+   }
+   const mustDays=planned.filter(day=>member?.statuses?.[day-1]==="must");
+   rows.push({
+    day:round.day,warTag:note.warTag,tag,
+    name:entry.name,memberId:member?.id||null,
+    plannedDays:planned,reviewable,protectedDays,
+    isFixed:member?.fixed===true,targetDays:Number.isInteger(member?.targetDays)?
+      member.targetDays:null,mustDays,unknownMember:!member,
+    // Caller must never turn these read-only suggestions into direct plan writes.
+    advisoryOnly:true
+   });
+  }
+ }
+ return rows.sort((a,b)=>b.day-a.day||a.name.localeCompare(b.name,"de")||
+  a.tag.localeCompare(b.tag));
 }
 
 // Read-only preview: the solver's recommended lineup is the source of truth.
