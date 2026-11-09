@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.47] - 2026-11-09
+
+### CWL #184 Phase 2b2a: verbindliche Owner-Tagespause mit Schutzprüfung
+- Nach einem **vom Collector bestätigten** CWL-Miss und der separaten Owner-Entscheidung „Pause prüfen“ kann der Owner **genau einen zukünftigen Kriegstag im Status Vorbereitung** für diesen Spieler im Plan auf RAUS setzen. Erforderlich: frischer Clash-Abgleich, plausibler War-Key, mindestens 30 Minuten bis Kampfbeginn und weiterhin unveränderte Cloud-Revision.
+- Die reine Vorprüfung zeigt jeden tatsächlichen Aufstellungswechsel über den bestehenden Solver. Sie verweigert die Aktion bei Fix/MUSS/exakten Einsatzzielen, vorhandenen Sperren, laufenden/beendeten Konflikten, fehlenden Tags/Rosters, nicht voll besetzten Lineups oder neuem rechnerischem **8★-Risiko**. Frühere Clash-Rosters werden nur temporär im Solver als geschützt behandelt; **keine gespielt-Markierung**.
+- Nur nach ausdrücklicher Bestätigung aktualisiert die spezialisierte Owner-RPC **eine** AUTO-Tagesregel zu RAUS und hängt eine append-only `applied_pause`-Entscheidung mit Zieltag im **selben Datenbankvorgang** an. Sie validiert Owner-Rolle, belegten Collector-Miss, vorangehende `review_pause`-Entscheidung, aktuelle Saison/War-Tag, Vorbereitung, Startzeitpuffer, unveränderbare Profilrevision und Player-Tag. Keine vom Browser gesendeten Komplettprofile.
+- Nach erfolgreichem Speichern wird der Cloud-Plan neu geladen. **Clash-Aufstellung muss im Spiel manuell geändert werden.** Kein automatischer CWL-Restausschluss; weitere Tage jeweils separat prüfen. Keine Änderung an Offline-PWA, automatischen Angriffsdaten oder Push.
+- Hilfe, Mobile-Layout, Core-/SQL- und Integrationstests ergänzt.
+- **Stand:** Veröffentlichungskandidat; Supabase-RPC, PR-/Main-CI, Pages und offizieller Release vor Freigabe gesondert zu verifizieren.
+
+
 ## [1.16.46] - 2026-11-09
 
 ### CWL #184 Phase 2b1: Owner-Entscheidungen mit Clan-Audit
