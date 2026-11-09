@@ -96,7 +96,9 @@ test("Cloud Gold first visit, saved choices, system, malformed prefs and separat
    }
    assert.equal(await page.locator("#themeSelect").inputValue(),"system");
    await page.emulateMedia({colorScheme:"dark"});
+   await page.reload({waitUntil:"domcontentloaded"});
    assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),"dark");
+   assert.equal(await page.locator("#themeSelect").inputValue(),"system");
   }finally{await page.close()}
  }finally{
   await browser.close();await new Promise(ok=>server.close(ok))
