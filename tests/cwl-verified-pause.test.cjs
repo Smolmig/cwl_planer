@@ -9,6 +9,8 @@ const root=path.resolve(__dirname,"..");
 const loadCore=()=>import(pathToFileURL(path.join(root,"cwl-verified-pause.mjs")).href);
 const loadMedal=()=>import(pathToFileURL(path.join(root,"cwl-medal-goals.mjs")).href);
 const sql=fs.readFileSync(path.join(root,"supabase/migrations/20261109192000_cwl_apply_verified_missed_pause.sql"),"utf8");
+const lockOrderSql=fs.readFileSync(path.join(root,
+ "supabase/migrations/20261109192100_cwl_apply_verified_missed_pause_lock_order.sql"),"utf8");
 const clock=ms=>new Date(ms).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,".000Z");
 const now=Date.UTC(2026,10,9,20,0);
 const member=(id,tag,fixed=false,weight="balanced")=>({
@@ -56,6 +58,12 @@ function fixture(){
 }
 test("Server transaction is role + collector proof + revision gated; only one nested status path is writable",()=>{
  assert.ok(sql.length<11000,"unexpected duplicated SQL migration");
+ for(const source of [sql,lockOrderSql]){
+  const reviewLock=source.indexOf("perform 1 from public.cwl_plan_review_state");
+  const profileLock=source.indexOf("select * into v_profile from public.cwl_cloud_profiles");
+  assert.ok(reviewLock>0&&profileLock>reviewLock,
+   "owner pause must lock review state before profile, avoiding approval deadlocks");
+ }
  assert.equal((sql.match(/\$fn\$/g)||[]).length,2,"exactly one RPC body");
  assert.match(sql,/or p_war_key is null or p_war_key !~ '\^cwl:/);
  assert.match(sql,/or p_player_tag is null or p_player_tag !~ '\^#/);
