@@ -4645,7 +4645,12 @@ function renderSummary(){
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
       </div>`:""}
       ${daysExpanded?'<div id="summary-days-'+esc(x.m.id)+'" class="summary-player-days">'+
-        (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>{
+        (Array.from(new Set([
+          ...lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>dp.day),
+          ...Object.keys(dayResults).map(Number).filter(day=>
+            Number.isInteger(day)&&day>=1&&day<=state.config.days&&
+            dayResults[day]?.[playerTag]&&!dayResults[day][playerTag].missed)
+        ])).sort((a,b)=>a-b).map(day=>lastPlan.dayPlans[day-1]||{day,locked:false}).map(dp=>{
           const trulyPlayed=!!state.locks[dp.day-1]?.locked;
           const fixedInClash=dp.locked&&!trulyPlayed;
           const result=cloudProgress?dayResults[dp.day]?.[playerTag]:null;
