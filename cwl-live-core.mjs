@@ -182,7 +182,8 @@ export function cwlMissedRotationReview(snapshot,profile,dayPlans=[],{
     if(!member?.id||!dp?.lineup?.includes(member.id))continue;
     planned.push(day);
     const upcoming=roundByDay.get(day);
-    const reason=profile.locks?.[day-1]?.locked||dp.locked?"Plan bereits gesperrt":
+    const reason=stale.has(day)?"Clash-Daten für diesen Tag veraltet":
+      profile.locks?.[day-1]?.locked||dp.locked?"Plan bereits gesperrt":
       upcoming?.state==="inWar"?"Krieg läuft – Clash-Aufstellung fix":
       upcoming?.state==="warEnded"?"Krieg beendet – keine Änderung möglich":
       !planningOk?"Plan nicht eindeutig berechenbar":null;
