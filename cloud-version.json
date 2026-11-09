@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.38",
+  "version": "v1.16.39",
   "released": "2026-11-09",
-  "summary": "Die integrierte Hilfe erklärt die Einsatzverteilung so, wie die App sie anzeigt: Gespielt, Geplant und Gesamt; verfügbare Tage ohne RAUS sind kein Einsatzziel, und geöffnete Spieler zeigen konkrete Kriegstage sowie ggf. 8★-Orientierung. Der Einstieg unterscheidet Cloud-Mitgliederabgleich und manuelle Gäste. Ausschließlich Nutzertexte, keine Änderung an CWL-Planung, Statistik, Rollen, DB, Auth/RLS oder Offline-PWA."
+  "summary": "Statistik > Spielerstatistik: Die Auswahl „Name (A–Z)“ sortiert aktive und ehemalige Clanmitglieder korrekt alphabetisch, auch bei aktuellen Namensänderungen. Quoten-, Angriffszahl-, Stern- und Missed-Sortierung bleiben absteigend, gespeicherte Ergebnisse, Spielerform, CWL-Solver, Cloud-Datenbank, Rollen/Auth/RLS und Offline-PWA unverändert."
 }

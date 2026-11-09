@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.38";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.39";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -28,7 +28,7 @@ export function collectorHealthDisplay(health,enabled,now=Date.now()){
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
-  let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",ascending=false,section="overview";
+  let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
   let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="week";
@@ -674,7 +674,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         const rawA=metric(a),rawB=metric(b);
         const av=rawA??-1,bv=rawB??-1;
         const diff=typeof av==="string"?av.localeCompare(bv,"de"):av-bv;
-        return (ascending?diff:-diff)||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
+        // Only numeric metrics run highest first; the explicit name option is A–Z.
+        return (order==="name"?diff:-diff)||b.attacks-a.attacks||a.name.localeCompare(b.name,"de");
       });
     const nextRowsMarkup=visible.length?visible.map((p,index)=>{
       // Raw hit rates are evidence, not green/red player grades.
