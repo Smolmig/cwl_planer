@@ -4392,7 +4392,7 @@ function currentCwlDisplayProgress(results=window.CWLCloud?.getObservedCwlAttack
   const threes=[...executed.values()].filter(r=>r.stars===3).length;
   const running=[...executed.values()].filter(r=>r.state==="inWar").length;
   const completed=[...scheduled].filter(isClosed).length;
-  byId.set(m.id,{executed:attacks,open,unknown,missed:missed.size,total,
+  byId.set(m.id,{identifiable:!!uniqueTag,executed:attacks,open,unknown,missed:missed.size,total,
    completed,threes,stars,running,
    hitRate:attacks?Math.round(threes/attacks*100):null,
    averageStars:attacks?stars/attacks:null});
@@ -4714,7 +4714,7 @@ function renderSummary(){
         ${cloudProgress?`<span class="summary-current-cwl" title="Nur belegte Angriffe dieser CWL, Stand des letzten Clash-Abgleichs; unvollständige Daten bleiben möglich">${x.progress?.executed?
           "CWL bisher · 3★-Quote: "+x.progress.hitRate+" % ("+x.progress.threes+"/"+x.progress.executed+" AG) · Ø "+x.progress.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
           "CWL bisher · noch keine Angriffe belegt"}${x.unknown?" · "+x.unknown+" beendete Tage ohne Angriffsbeleg":""}${x.missed?" · "+x.missed+" bestätigte Ausfälle":""}</span>`:""}
-        ${cloudProgress&&!x.m.fixed?`<span class="summary-target-note">${x.exact===null?"Einsatzziel: Automatisch (keine feste Anzahl)":"Einsatzziel: "+x.played+"/"+x.exact+" Angriffe ausgeführt"+(x.targetStatus==="reached"?" · erreicht":" · noch offen")}</span>`:""}
+        ${cloudProgress&&!x.m.fixed?`<span class="summary-target-note">${x.exact===null?"Einsatzziel: Automatisch (keine feste Anzahl)":(x.targetStatus==="unknown"?"Einsatzziel: Daten nicht eindeutig": "Einsatzziel: "+x.played+"/"+x.exact+" Angriffe ausgeführt"+(x.targetStatus==="reached"?" · erreicht":" · noch offen"))}</span>`:""}
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
