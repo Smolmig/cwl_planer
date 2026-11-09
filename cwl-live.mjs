@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.43";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.43";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.44";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.44";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -33,6 +33,30 @@ const stateDate=s=>{
   const d=new Date(m[1]+"-"+m[2]+"-"+m[3]+"T"+m[4]+":"+m[5]+":"+m[6]+"Z");
   return Number.isFinite(d.getTime())?d.toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
 };
+// A reminder receipt is local to this browser; it never changes a Clash attack.
+function cwlReminderAckKey(ctx,season,note){
+ if(!ctx?.clanId||!/^\d{4}-\d{2}$/.test(String(season||""))||
+    !note?.warTag||!Number.isInteger(note.day)||!Array.isArray(note.players))return null;
+ const tags=note.players.map(p=>tagOf(p.tag)).filter(Boolean).sort();
+ if(!tags.length)return null;
+ return "cwl_planer_reminder_v1:"+[String(ctx.clanId),season,String(note.day),
+  note.warTag,tags.join(",")].map(encodeURIComponent).join(":");
+}
+function readCwlReminderAck(key,now=Date.now()){
+ if(!key)return null;
+ try{
+  const time=Number(localStorage.getItem(key));
+  return Number.isFinite(time)&&time>0&&time<=now&&now-time<=7*86400000?time:null;
+ }catch{return null}
+}
+function writeCwlReminderAck(key,time=Date.now()){
+ if(!key)return false;
+ try{localStorage.setItem(key,String(time));return true}catch{return false}
+}
+function clearCwlReminderAck(key){
+ if(!key)return;
+ try{localStorage.removeItem(key)}catch{}
+}
 function townHallSummary(members) {
   const counts=new Map();
   for (const m of members||[]) {
@@ -454,24 +478,71 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       .filter(a=>a.kind==="open"||(a.day<ctx.profile.config.days&&
         !["inWar","warEnded"].includes(info.rounds[a.day]?.state)))
       .sort((a,b)=>Number(b.kind==="open")-Number(a.kind==="open")||b.day-a.day)[0]:null;
+    // A stale source never establishes a forgotten attack.
+    const staleAttention=!attention?info.rounds
+      .map(r=>cwlAttackReminder(r)).filter(Boolean)
+      .find(a=>a.kind==="open"&&(!fresh||staleRoundDays.has(a.day))):null;
+    const attentionKey=attention?.kind==="open"?cwlReminderAckKey(ctx,info.season,attention):null;
+    const acknowledgedAt=readCwlReminderAck(attentionKey);
     const attentionHtml=attention?(()=>{
       const names=attention.players.slice(0,8).map(p=>esc(p.name)).join(", ")+
         (attention.players.length>8?" und "+(attention.players.length-8)+" weitere":"");
-      return "<div class='cwl-attack-attention' data-kind='"+attention.kind+"'>"+
-        "<strong>"+(attention.kind==="open"?
+      const open=attention.kind==="open";
+      const when=acknowledgedAt?new Date(acknowledgedAt).toLocaleString("de-AT",
+        {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+      const action=open&&ctx.role!=="viewer"?
+        "<div class='cwl-attack-actions'><button class='btn small "+
+        (acknowledgedAt?"cwl-attention-reset":"cwl-attention-ack")+
+        "' type='button'>"+(acknowledgedAt?"Erinnerung erneut anzeigen":"Im Spiel erinnert · hier quittieren")+
+        "</button></div>":"";
+      return "<div class='cwl-attack-attention' data-kind='"+attention.kind+"'"+
+        (acknowledgedAt?" data-acknowledged='true'":"")+">"+
+        "<strong>"+(open?(acknowledgedAt?
+          "Tag "+attention.day+": Erinnerung auf diesem Gerät quittiert · "+esc(when):
           "Tag "+attention.day+": "+attention.players.length+" Angriffe noch offen · "+
-          attention.minutesLeft+" Min. bis Kriegsende":
+          attention.minutesLeft+" Min. bis Kriegsende"):
           "Tag "+attention.day+": "+attention.players.length+" Angriffe nach Kriegsende nicht erfolgt")+
-        "</strong><span>"+names+"</span><small>"+
-        (attention.kind==="open"?
-          "Bitte in Clash prüfen und gegebenenfalls erinnern. Ein Angriff ist bis zum Ende noch möglich.":
+        "</strong>"+(!acknowledgedAt||!open?"<span>"+names+"</span>":"")+
+        "<small>"+(open?(acknowledgedAt?
+          "Nur eine lokale Markierung; der Angriff ist damit nicht ausgeführt. Neue offene Spieler werden erneut angezeigt.":
+          "Bitte in Clash prüfen und gegebenenfalls erinnern. Ein Angriff ist bis zum Ende noch möglich."):
           "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden.")+
         " Nur Hinweis, kein automatischer Wechsel. Stand aus Clash; bitte vor Entscheidungen aktualisieren."+
-        "</small></div>";
+        "</small>"+action+"</div>";
+    })():staleAttention?(()=>{
+      const checkedAt=lastSuccessfulAt&&activeClan===ctx.clanId?
+        new Date(lastSuccessfulAt).toLocaleString("de-AT",
+        {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"nicht bekannt";
+      return "<div class='cwl-attack-attention' data-kind='stale'>"+
+        "<strong>Tag "+staleAttention.day+": mögliche offene Angriffe – Datenstand unklar</strong>"+
+        "<small>Letzter Live-Abgleich: "+esc(checkedAt)+
+        ". Ein Angriff könnte bereits erfolgt sein. Bitte zuerst CWL-Daten aktualisieren; keine Missed- oder Erinnerungsbestätigung aus gespeicherten Angaben.</small></div>";
     })():"";
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
       (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml;
+    node.querySelector(".cwl-attention-ack")?.addEventListener("click",()=>{
+      const active=context(),latest=effective();
+      const ready=active.active&&active.role!=="viewer"&&active.clanId===ctx.clanId&&
+        activeClan===active.clanId&&lastSuccessfulProfile===active.profile&&
+        lastSuccessfulAt>0&&Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&
+        !offlineReason&&!staleRoundDays.has(attention.day)&&!fetching&&
+        latest?.season===info.season;
+      const currentRound=latest?.rounds?.find(r=>r.day===attention.day);
+      const latestNote=ready?cwlAttackReminder(currentRound):null;
+      if(!ready||cwlReminderAckKey(active,info.season,latestNote)!==attentionKey){
+        notify("Angriffsstand geändert oder nicht aktuell. Bitte CWL-Daten aktualisieren.");
+        render();return;
+      }
+      if(!writeCwlReminderAck(attentionKey)){
+        notify("Lokale Quittierung konnte nicht gespeichert werden.");return;
+      }
+      render();
+    });
+    node.querySelector(".cwl-attention-reset")?.addEventListener("click",()=>{
+      if(context().clanId!==ctx.clanId)return;
+      clearCwlReminderAck(attentionKey);render();
+    });
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 
     for (let i=0;i<ctx.profile.config.days;i++){
