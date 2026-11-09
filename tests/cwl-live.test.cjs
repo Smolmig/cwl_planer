@@ -243,3 +243,43 @@ test("CWL alert is advisory only and never auto-pauses, changes rules or writes 
  const reminder=helpers.slice(begin,end);
  assert.doesNotMatch(reminder,/\.participating\s*=\s*false|\.statuses\s*=|\.locks\s*=|profile\.members/);
 });
+
+
+test("Running CWL attacks are documented before war end; no fake zero or missed attack",async()=>{
+ const {sanitizeSnapshot,recordedCwlAttackResults}=await load();
+ const data=snapshot();
+ const first=data.rounds[0];
+ first.state="inWar";
+ first.clan.members[0].attacks[0].destructionPercentage=99.75;
+ first.clan.members[1].attacks=[]; // Still has time to attack.
+ const running=recordedCwlAttackResults(sanitizeSnapshot(data));
+ assert.deepEqual(Object.keys(running),["1"]);
+ assert.equal(running[1]["#2PYL"].stars,3);
+ assert.equal(running[1]["#2PYL"].percent,99.75);
+ assert.equal(running[1]["#2PYL"].state,"inWar");
+ assert.equal(running[1]["#JRC"],undefined,"absence in battle is NOT a miss");
+ // A real 0-star attack is nevertheless evidence, and two players must
+ // never be conflated even against the same enemy base.
+ first.clan.members[1].attacks=[{attackerTag:"#JRC",defenderTag:"#Q2V",
+  stars:0,destructionPercentage:44.5}];
+ const withZero=recordedCwlAttackResults(sanitizeSnapshot(data));
+ assert.equal(withZero[1]["#JRC"].stars,0);
+ assert.equal(withZero[1]["#JRC"].percent,44.5);
+ assert.equal(withZero[1]["#2PYL"].stars,3);
+ first.state="warEnded";
+ first.clan.members[1].attacks=[];
+ const ended=recordedCwlAttackResults(sanitizeSnapshot(data));
+ assert.equal(ended[1]["#2PYL"].stars,3);
+ assert.deepEqual({missed:ended[1]["#JRC"].missed,state:ended[1]["#JRC"].state},
+  {missed:true,state:"warEnded"});
+ // No double-counting on another read or after day completion.
+ assert.deepEqual(recordedCwlAttackResults(sanitizeSnapshot(data)),ended);
+ // Preparation, invalid roster, mismatched clan, and old/unknown seasons
+ // must never manufacture executed attacks.
+ const preparation=structuredClone(data);preparation.rounds[0].state="preparation";
+ assert.equal(recordedCwlAttackResults(sanitizeSnapshot(preparation))[1],undefined);
+ const incomplete=structuredClone(data);incomplete.rounds[0].teamSize=3;
+ assert.equal(recordedCwlAttackResults(sanitizeSnapshot(incomplete))[1],undefined);
+ assert.deepEqual(recordedCwlAttackResults({...sanitizeSnapshot(data),clanTag:"#9PP"}),{});
+ assert.deepEqual(recordedCwlAttackResults({...sanitizeSnapshot(data),season:"bad"}),{});
+});
