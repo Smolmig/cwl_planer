@@ -4300,7 +4300,7 @@ function currentCwlTripleRate(tag){
 // Read-only display projection. Never reclassify planning locks or alter the
 // solver's playedCounts. One verified CWL attack is one executed day; a closed
 // day with no attack evidence is unknown, NOT another documented attack.
-function currentCwlDisplayProgress(results=window.CWLCloud?.getPlayedAttackResults?.()||{}){
+function currentCwlDisplayProgress(results=window.CWLCloud?.getObservedCwlAttackResults?.()||window.CWLCloud?.getPlayedAttackResults?.()||{}){
  if(!window.CWLCloud?.active||!lastPlan)return null;
  const days=Number(state.config.days)||7;
  const members=allKnownMembers();
@@ -4526,7 +4526,7 @@ function renderSummary(){
     document.activeElement?.matches?.(".summary-player-toggle")
      ?document.activeElement.dataset.memberId:null;
   summaryRoot.dataset.profileContext=summaryContext;
-  const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
+  const dayResults=window.CWLCloud?.getObservedCwlAttackResults?.()||window.CWLCloud?.getPlayedAttackResults?.()||{};
   const progress=window.CWLCloud?.active?currentCwlDisplayProgress(dayResults):null;
   const cloudProgress=!!progress;
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
@@ -4653,7 +4653,7 @@ function renderSummary(){
         ])).sort((a,b)=>a-b).map(day=>lastPlan.dayPlans[day-1]||{day,locked:false}).map(dp=>{
           const trulyPlayed=!!state.locks[dp.day-1]?.locked;
           const fixedInClash=dp.locked&&!trulyPlayed;
-          const result=cloudProgress?dayResults[dp.day]?.[playerTag]:null;
+          const result=dayResults[dp.day]?.[playerTag]||null;
           const executed=!!result&&!result.missed&&Number.isInteger(result.stars);
           const resultLabel=executed?" · Angriff erfolgt: "+result.stars+"★"+
             (Number.isFinite(result.percent)?" ("+result.percent+" %)":""):
