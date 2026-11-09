@@ -484,7 +484,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     const attentionKey=attention?.kind==="open"?cwlReminderAckKey(ctx,info.season,attention):null;
     const acknowledgedAt=readCwlReminderAck(attentionKey);
     // A confirmed miss starts a review, NEVER a change to the plan.
-    const reviewKey=attention?.kind==="confirmed"?
+    const reviewKey=attention?.kind==="confirmed"&&attention.day<ctx.profile.config.days?
       [ctx.clanId,info.season,attention.warTag,attention.day].join("|"):null;
     const reviewRows=reviewKey?cwlMissedRotationReview(info,ctx.profile,
       storage.getPlannedLineups?.()||[],{
@@ -538,7 +538,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         "<small>"+(open?(acknowledgedAt?
           "Nur eine lokale Markierung; der Angriff ist damit nicht ausgeführt. Neue offene Spieler werden erneut angezeigt.":
           "Bitte in Clash prüfen und gegebenenfalls erinnern. Ein Angriff ist bis zum Ende noch möglich."):
-          "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden.")+
+          (attention.day>=ctx.profile.config.days?
+           "Diese CWL hat keine weiteren Kriegstage; kein späterer Einsatz kann geändert werden.":
+           "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden."))+
         " Nur Hinweis, kein automatischer Wechsel. Stand aus Clash; bitte vor Entscheidungen aktualisieren."+
         "</small>"+(open?"":reviewHtml)+action+"</div>";
     })():staleAttention?(()=>{
