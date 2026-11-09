@@ -19,7 +19,10 @@ create index if not exists cwl_missed_owner_decisions_event_lookup
  on public.cwl_missed_owner_decisions(clan_id,war_key,player_tag,id desc);
 alter table public.cwl_missed_owner_decisions enable row level security;
 revoke all on public.cwl_missed_owner_decisions from public,anon,authenticated;
-grant select,insert on public.cwl_missed_owner_decisions to authenticated;
+grant select on public.cwl_missed_owner_decisions to authenticated;
+-- Column-scoped INSERT prevents a client from forging actor_id/created_at.
+grant insert (clan_id,season,war_key,day,player_tag,decision,note)
+ on public.cwl_missed_owner_decisions to authenticated;
 
 -- All invited members of exactly this app clan can inspect the audit.
 create policy cwl_missed_owner_decisions_clan_read
