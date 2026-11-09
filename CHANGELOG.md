@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.45] - 2026-11-09
+
+### CWL #184 Phase 2a: nachvollziehbare Missed-Einsatzprüfung
+- Nach einem fachlich belegten **beendeten** CWL-Krieg führt der Planer fehlende eigene Angriffe über **Player-Tag, Clan, Saison, Tag und War-Key** auf. Fehlende bzw. defekte Angriff-Logs werden nicht als verpasst bewertet.
+- In einem optional aufklappbaren Bereich lassen sich die **später geplanten Einsätze desselben Spielers** überprüfen. Offene Vorbereitung/noch nicht begonnene Tage bleiben lediglich eine Prüfidee, nicht ein automatischer Wechsel.
+- **Geschützt** bleiben bereits beendete bzw. laufende Clash-Aufstellungen, gespeicherte Plan-Locks, unklare Daten und eine nicht eindeutig berechenbare Planung. Fix-/MUSS-Tage und exakte Einsatzziele sind als Kontext sichtbar; 8★-Bonus und möglicher Ersatz müssen vor einer Entscheidung gesondert geprüft werden.
+- Die Ansicht ist strikt **read-only**: kein Spieler wird pausiert, entfernt oder umgeplant, keine neue Datenbank/Audit-Entscheidung und kein automatischer Plan-Update. Aufklappzustand beim Refresh erhalten, Hilfe und Regressionen ergänzt.
+- **Offen:** echtes Owner-Review mit „übernehmen/entschuldigen/später“ und tenantgeschütztem Shared Audit, sichere Konfliktprüfung und Live-/Safari-/Android-Abnahme.
+- **Release-Status:** Kandidat, PR-/Main-CI, Pages und offizieller Release erst nach Verifikation.
+
+
 ## [1.16.44] - 2026-11-09
 
 ### CWL #184 Phase 1: letzte Stunde, lokale Erinnerungsquittierung
