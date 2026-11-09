@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.38] - 2026-11-09
+
+### Hilfe: Einsatzverteilung und Mitgliedereinstieg passen zur aktuellen App (#46/#114)
+- **Befund:** Die integrierte Hilfe erklärte noch „G“ und „P“ als Status, obwohl die Einsatzübersicht schon seit v1.15.7 die Wörter „Gespielt“, „Geplant“ und „Gesamt“ verwendet. Die Anzeige „6/7 Tage ohne RAUS“ sowie das Aufklappen einzelner Kriegstage wurden nicht erklärt. Einstiegsschritt 1 suggerierte nur manuelles Hinzufügen, obwohl Cloud-Clans Spieler aus Clash übernehmen können.
+- **Änderung:** Hilfe beschreibt die realen Beschriftungen, unterscheidet Tage ohne Ausschluss ausdrücklich vom Einsatzsoll, weist auf konkrete Tage (gespielt, geplant, in Clash fix) und die nicht garantierte 8★-Orientierung bei vorhandenen Daten hin. Startschritt unterscheidet gemeinsamen Clan-Abgleich und manuellen Gastmodus. Keine zusätzlichen Karten, Buttons oder Änderungen an der Einsätze-Ansicht.
+- **Abdeckung:** Neuer Browsertest in `tests/cloud-more-help-subpage.test.cjs` kontrolliert die tatsächliche Hilfeseite unter „Mehr“ bei 320/390/430/1366px, Gold/Dark/Light, Viewer, sichtbaren Wörtern, veraltete Abkürzungen, Layout und Rückweg. Version-/Cache-Vertrag auf v1.16.38.
+- **Grenze:** Ausschließlich sichtbare Hilfetexte und Release-Metadaten; keine Änderung an Einsätzen, Tagesregeln, CWL-Solver, Angriffsdaten, Cloud-/Auth-/DB-/RLS-Funktionen oder Offline-PWA. Release-Nachweise werden erst nach dem CI- und Pages-Gate eingetragen.
+
+
 ## [1.16.37] - 2026-11-09
 
 ### Installationshilfe für Clanmitglieder verständlicher (#46/#114)

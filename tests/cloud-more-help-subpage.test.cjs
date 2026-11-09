@@ -77,3 +77,46 @@ test("Cloud-specific help can be shown without creating a second modal",{timeout
   assert.equal(await page.locator("#helpClose").isEnabled(),true);
  }finally{await browser.close()}
 });
+
+test("Help explains current Einsatzverteilung and availability on phone and desktop",{
+ timeout:120000
+},async()=>{
+ assert.match(html,/Gespielt \$\{x\.played\}/);
+ assert.match(html,/Geplant \$\{Math\.max\(0,x\.count-x\.played\)\}/);
+ assert.match(html,/Tage ohne RAUS/);
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const [width,theme] of [[320,"arena"],[390,"dark"],[430,"light"],[1366,"arena"]]){
+   const page=await browser.newPage({viewport:{width,height:850}});
+   try{
+    await page.setContent(staticHtml,{waitUntil:"domcontentloaded"});
+    await page.addScriptTag({content:script});
+    await page.evaluate(theme=>{
+      document.documentElement.dataset.theme=theme;
+      document.body.classList.add("cloud-mode","cloud-role-viewer");
+    },theme);
+    await page.locator('.navbtn[data-view="more"]').click();
+    await page.locator('[data-more-action="help"]').click();
+    const help=page.locator("#view-help");
+    const intro=help.locator(".help-steps > div").first();
+    const explanation=help.locator(".help-item").filter({hasText:"Einsatzverteilung"});
+    assert.equal(await explanation.isVisible(),true);
+    assert.match(await intro.innerText(),/Mitglieder prüfen/);
+    assert.match(await intro.innerText(),/gemeinsamen Clan.*Clash.*Gastmodus/s);
+    const copy=await explanation.innerText();
+    for(const value of ["Gespielt","Geplant","Gesamt","6/7 Tage ohne RAUS","kein Einsatzziel",
+      "einzelnen Kriegstage","in Clash fix","nicht garantiert"])
+      assert.ok(copy.includes(value),width+" "+theme+": "+value);
+    assert.doesNotMatch(copy,/\bG\s*=|\bP\s*=/);
+    assert.equal(await help.locator("#cloudHelpSection").isVisible(),false);
+    const geom=await page.evaluate(()=>({
+      page:document.documentElement.scrollWidth-innerWidth,
+      textFont:parseFloat(getComputedStyle(
+        document.querySelector("#view-help .help-item div")).fontSize)
+    }));
+    assert.ok(geom.page<=3,"overflow at "+width+" "+theme+": "+geom.page);
+    assert.ok(geom.textFont>=12,"small copy at "+width+" "+theme);
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});

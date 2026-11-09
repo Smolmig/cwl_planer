@@ -3052,7 +3052,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){.plan-review-chevron{transition:none}}
 
-/* v1.16.37: member controls stay touchable even in compact landscape. */
+/* v1.16.38: member controls stay touchable even in compact landscape. */
 #view-members .member-filters input,
 #view-members .member-filters select{box-sizing:border-box;min-height:44px!important}
 #view-members .cloud-minor>summary{
@@ -3481,11 +3481,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.37</strong><span>App installieren · verständlicher</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.38</strong><span>Hilfe · Einsätze verstehen</span></div>
        <ul>
-        <li><b>Richtige App:</b> Die Anleitung zeigt, wie du den gemeinsamen Planer mit Anmeldung und Statistik installierst.</li>
-        <li><b>Probleme beheben:</b> Fehlen in der installierten Ansicht wichtige Funktionen, hilft ein kurzer aufklappbarer Hinweis.</li>
-        <li><b>Deine Daten:</b> Der bisherige Clan und die gespeicherten Cloud-Daten bleiben unverändert.</li>
+        <li><b>Einsatzverteilung:</b> Die Hilfe erklärt jetzt „Gespielt“, „Geplant“ und „Gesamt“ statt veralteter Abkürzungen.</li>
+        <li><b>Verfügbare Tage:</b> „Tage ohne RAUS“ werden klar vom tatsächlichen Einsatzziel unterschieden.</li>
+        <li><b>Start:</b> Die Anleitung unterscheidet zwischen gemeinsamem Clan-Abgleich und manuellem Gastmodus.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3645,7 +3645,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
-    <div><b>1</b><span><strong>Mitglieder eintragen</strong> – Im Tab „Mitglieder“ Spieler hinzufügen und bei allen CWL-Teilnehmern „Dabei“ aktivieren.</span></div>
+    <div><b>1</b><span><strong>Mitglieder prüfen</strong> – Im gemeinsamen Clan kannst du Spieler aus Clash übernehmen, im Gastmodus fügst du sie selbst hinzu. Prüfe unter „Mitglieder“, wer für die CWL auf „Dabei“ steht.</span></div>
     <div><b>2</b><span><strong>Besonderheiten festlegen</strong> – Fixspieler markieren und bei Bedarf einzelne Tage auf „MUSS“ oder „RAUS“ setzen.</span></div>
     <div><b>3</b><span><strong>Plan prüfen</strong> – Unter „Plan“ siehst du die Aufstellung für jeden Krieg. Du kannst zwischen den Tagen wechseln oder sie alle anzeigen.</span></div>
     <div><b>4</b><span><strong>Aufstellung prüfen</strong> – Während der Vorbereitung zeigt Clash eine vorläufige Auswahl. Der Planer nennt nötige Wechsel. Nach dem Krieg können tatsächliche Einsätze aus Clash übernommen oder von der Clanführung bestätigt werden.</span></div>
@@ -3658,7 +3658,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
-    <div class="help-item"><b>Einsatzverteilung</b><div>Unter „Einsätze“ bedeutet <b>G</b> = bereits tatsächlich gespielt und <b>P</b> = für kommende Tage geplant. Die Gesamtzahl ist G + P. Über Suche und Filter findest du einzelne Spieler schnell.</div></div>
+    <div class="help-item"><b>Einsatzverteilung</b><div>Unter „Einsätze“ siehst du <b>Gespielt</b> (bestätigte Kriegstage), <b>Geplant</b> (noch vorgesehene Einsätze) und <b>Gesamt</b> (beides zusammen). „6/7 Tage ohne RAUS“ bedeutet, dass an sechs von sieben Tagen kein Ausschluss gilt – das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler, um seine einzelnen Kriegstage zu sehen: gespielt, geplant oder bereits in Clash fix. Sind aktuelle Angriffsdaten vorhanden, wird auch der Stand zum 8★-Ziel angezeigt; künftige Sterne sind nicht garantiert.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -3911,9 +3911,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.37"></script>
+<script src="./cwl-planning-core.js?v=1.16.38"></script>
 <script>
-const APP_VERSION="v1.16.37";
+const APP_VERSION="v1.16.38";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5189,6 +5189,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.37"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.38"></script>
 </body>
 </html>
