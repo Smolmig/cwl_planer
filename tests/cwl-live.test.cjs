@@ -286,6 +286,79 @@ test("CWL reminder acknowledgement stays local; stale data and viewer roles are 
  assert.match(html,/auf diesem Gerät/);
 });
 
+test("Missed CWL review protects Clash-fixed, locked and stale future days; never writes",async()=>{
+ const {sanitizeSnapshot,cwlMissedRotationReview}=await load();
+ const source=snapshot(),p=profile();
+ p.cwlLive={season:"2026-11",clanTag:"#2PQ",rounds:[]};
+ p.members.push({id:"bravo",name:"Bravo",playerTag:"#JRC",targetDays:4,
+  fixed:true,statuses:["auto","must","auto","auto","auto","auto","auto"]});
+ for(const day of [2,3,4,7]){
+  source.rounds[day-1]={...structuredClone(source.rounds[0]),
+   day,warTag:day===2?"#JQ2":day===3?"#PQL":day===4?"#PYL":"#PPQ",
+   state:day===2?"preparation":day===4?"warEnded":"inWar"};
+ }
+ const plans=Array.from({length:6},(_,i)=>({
+  day:i+2,locked:i===4,lineup:["member1","bravo"]
+ }));
+ p.locks[5]={locked:true,lineup:["member1","bravo"]};
+ const before=JSON.stringify({p,plans,source});
+ const items=cwlMissedRotationReview(sanitizeSnapshot(source),p,plans,{now:time});
+ const row=items.find(x=>x.day===1&&x.tag==="#JRC");
+ assert.ok(row,"only a verified ended attack can create a review");
+ assert.deepEqual(row.reviewable.map(x=>x.day),[2,5]);
+ assert.deepEqual(row.protectedDays.map(x=>x.day),[3,4,6,7]);
+ assert.equal(row.isFixed,true);
+ assert.equal(row.targetDays,4);
+ assert.deepEqual(row.mustDays,[2]);
+ assert.equal(row.advisoryOnly,true);
+ assert.equal(JSON.stringify({p,plans,source}),before,"preview is read-only");
+ const stale=cwlMissedRotationReview(sanitizeSnapshot(source),p,plans,{
+  now:time,staleDays:[2]
+ }).find(x=>x.day===1&&x.tag==="#JRC");
+ assert.deepEqual(stale.reviewable.map(x=>x.day),[5]);
+ assert.match(stale.protectedDays.find(x=>x.day===2).reason,/veraltet/);
+ const noPlan=cwlMissedRotationReview(sanitizeSnapshot(source),p,plans,{
+  now:time,planningOk:false
+ }).find(x=>x.day===1&&x.tag==="#JRC");
+ assert.deepEqual(noPlan.reviewable,[]);
+});
+
+test("Missed CWL preview rejects unknown logs, duplicate identities, wrong season and inWar",async()=>{
+ const {sanitizeSnapshot,recordedCwlAttackResults,cwlMissedRotationReview}=await load();
+ const source=snapshot(),p=profile();
+ p.cwlLive={season:"2026-11",clanTag:"#2PQ"};
+ p.members.push({id:"bravo",name:"Bravo",playerTag:"#JRC",statuses:Array(7).fill("auto")});
+ const plans=[{day:2,locked:false,lineup:["bravo"]}];
+ const run=(s=source,prof=p)=>cwlMissedRotationReview(sanitizeSnapshot(s),prof,plans,{now:time});
+ assert.equal(run().length,1);
+ const unknown=structuredClone(source);
+ unknown.rounds[0].clan.members[1].attacks=undefined;
+ assert.equal(run(unknown).length,0,"missing API attacks array is unknown");
+ const partial=recordedCwlAttackResults(sanitizeSnapshot(unknown));
+ assert.equal(partial[1]?.["#JRC"],undefined,"no fabricated missed event");
+ const malformed=structuredClone(source);
+ malformed.rounds[0].clan.members[1].attacks=[{
+  attackerTag:"#JRC",defenderTag:"#Q2V",stars:4,destructionPercentage:80
+ }];
+ assert.equal(run(malformed).length,0,"invalid recorded attack is unknown");
+ const battle=structuredClone(source);
+ battle.rounds[0].state="inWar";
+ assert.equal(run(battle).length,0);
+ const changedSeason=structuredClone(p);
+ changedSeason.cwlLive.season="2026-10";
+ assert.equal(run(source,changedSeason).length,0);
+ const changedClan=structuredClone(p);
+ changedClan.cwlLive.clanTag="#PPQ";
+ assert.equal(run(source,changedClan).length,0);
+ const duplicate=structuredClone(p);
+ duplicate.archivedMembers=[{id:"other",playerTag:"#JRC"}];
+ const collision=run(source,duplicate)[0];
+ assert.equal(collision.unknownMember,true);
+ assert.deepEqual(collision.reviewable,[]);
+ const noFurtherPlan=run(source,{...p,config:{...p.config,days:1}});
+ assert.deepEqual(noFurtherPlan,[],"no future days means no actionable review");
+});
+
 test("Running CWL attacks are documented before war end; no fake zero or missed attack",async()=>{
  const {sanitizeSnapshot,recordedCwlAttackResults}=await load();
  const data=snapshot();
