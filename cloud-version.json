@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.41",
+  "version": "v1.16.42",
   "released": "2026-11-09",
-  "summary": "Statistik: Einzahl bei einem abgeschlossenen CW bzw. einem Angriff in Umfang, Überblick, Verlauf und Details. Filter, Quoten, Angriffe, CWL-Solver, Supabase/Auth/RLS/Edge und Offline-PWA unverändert."
+  "summary": "Cloud: Arena/Gold ist neuer Standard für Personen ohne gespeicherte Theme-Wahl; bestehende Farbschemata bleiben erhalten. Offline-PWA, CWL/Planung, Statistik, Supabase/Auth/RLS/Edge und Archive unverändert."
 }
