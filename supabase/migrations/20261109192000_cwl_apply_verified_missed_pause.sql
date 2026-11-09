@@ -66,7 +66,11 @@ begin
    and m.player_tag=p_player_tag and m.missed_count>0
  ) then raise exception 'unverified_missed_attack';end if;
 
- -- Serialize against all regular Cloud saves and owner/editor proposals.
+ -- Match the lock order of the existing plan-review workflow:
+ -- review-state FOR SHARE, then cloud-profile FOR UPDATE.
+ -- This avoids an owner approval and a status update deadlocking.
+ perform 1 from public.cwl_plan_review_state
+  where clan_id=p_clan for share;
  select * into v_profile from public.cwl_cloud_profiles
   where clan_id=p_clan for update;
  if not found or v_profile.revision<>p_expected_revision then
