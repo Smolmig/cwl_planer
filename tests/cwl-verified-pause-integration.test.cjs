@@ -43,9 +43,11 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
   });
   const rounds=[
    round(1,"warEnded","#PLQ",["#2PYL","#JRC"],now-2*86400000),
-   round(2,"inWar","#PPQ",["#2PYL","#CPR"],now-4*3600000),
+   round(2,"inWar","#PPQ",["#2PYL","#CPR"],now-23*3600000-30*60000),
    round(3,"preparation","#PYL",["#2PYL","#JRC"],now+4*3600000)
   ];
+  // A fresh last-hour warning on day 2 must not conceal day 1's confirmed miss.
+  rounds[1].clan.members[1].attacks=[];
   const profile={id:"p",config:{days:3,slots:2},
    locks:[{locked:true,lineup:["a","b"]},{locked:false,lineup:[]},{locked:false,lineup:[]}],
    members,archivedMembers:[],cwlLive:{season,clanTag:"#2PQ",rounds}};
@@ -87,7 +89,10 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
    }});
   await live.refresh();
   const doc=dom.window.document;
-  assert.equal(doc.querySelectorAll(".cwl-miss-apply").length,1);
+  assert.equal(doc.querySelectorAll(".cwl-attack-attention[data-kind='open']").length,1,
+   "last-hour warning remains visible");
+  assert.equal(doc.querySelectorAll(".cwl-miss-apply").length,1,
+   "older confirmed miss remains actionable while a newer warning is active");
   assert.match(doc.querySelector(".cwl-miss-apply").textContent,/Tag 3/);
   doc.querySelector(".cwl-miss-apply").click();
   for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));
@@ -110,6 +115,18 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
   state.role="owner";approval=false;await live.refresh();
   assert.equal(doc.querySelectorAll(".cwl-miss-apply").length,0,
    "without an existing review_pause audit, no apply action");
+  // When the day-2 attack also becomes a verified missed attack, both days
+  // must remain browsable without a second list of cards or mutation.
+  rounds[1].state="warEnded";
+  rounds[1].endTime=when(now-120000);
+  approval=true;await live.refresh();
+  const days=[...doc.querySelectorAll(".cwl-miss-day-select")];
+  assert.deepEqual(days.map(b=>b.textContent),["Tag 2","Tag 1"]);
+  assert.match(doc.querySelector(".cwl-miss-review summary").textContent,/Tag 2/);
+  days.find(b=>b.dataset.day==="1").click();
+  assert.match(doc.querySelector(".cwl-miss-review summary").textContent,/Tag 1/);
+  assert.equal(doc.querySelector(".cwl-miss-day-select[data-day='1']").getAttribute("aria-pressed"),"true");
+  assert.equal(doc.querySelectorAll(".cwl-miss-apply").length,1);
  }finally{
   live?.stop();
   for(const [key,desc] of Object.entries(prior)){
