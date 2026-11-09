@@ -600,6 +600,19 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           "<small class='cwl-miss-decision-state'>Letzte Owner-Entscheidung: "+
           esc(decisionNames[decision.decision]||"Geprüft")+" · "+esc(decisionStamp)+
           (decision.note?" · "+esc(decision.note):"")+"</small>":"";
+        const history=decisionScope===ctx.clanId+"|"+info.season?
+          ownerDecisions.filter(e=>decisionKey(e.season,e.war_key,e.player_tag)===
+            decisionKey(info.season,"cwl:"+x.warTag,x.tag)):[];
+        const historyHtml=history.length>1?
+          "<details class='cwl-miss-audit-history'><summary>Alle "+
+          history.length+" Owner-Entscheidungen</summary><ul>"+
+          history.map(e=>{
+            const stamp=e.created_at?new Date(e.created_at).toLocaleString(
+              "de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"–";
+            return "<li>"+esc(stamp)+" · "+
+              esc(decisionNames[e.decision]||"Prüfung")+
+              (e.note?" · "+esc(e.note):"")+"</li>";
+          }).join("")+"</ul></details>":"";
         const decisionButtons=ctx.role==="owner"&&!decisionBusy&&!x.unknownMember?
           "<div class='cwl-miss-decision-actions'>"+
           "<button class='btn small cwl-miss-owner-action' data-action='excused' data-tag='"+esc(x.tag)+
@@ -616,7 +629,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           "<div>"+esc(msg)+"</div>"+
           (blocked?"<small>Geschützt: "+esc(blocked)+"</small>":"")+
           (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+
-          decisionText+decisionButtons+"</li>";
+          decisionText+historyHtml+decisionButtons+"</li>";
       }).join(""):"<li>Prüfung aus Plan und Spieler-Tags derzeit nicht eindeutig möglich. Keine automatische Empfehlung.</li>";
       return "<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
         "<summary>Künftige Einsätze prüfen (nur Vorschau)</summary>"+
