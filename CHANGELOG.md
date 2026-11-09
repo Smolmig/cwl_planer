@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.44] - 2026-11-09
+
+### CWL #184 Phase 1: letzte Stunde, lokale Erinnerungsquittierung
+- Die bestehende CWL-Warnung ist auf das 60-Minuten-Fenster, gültigen War-Key und vollständiges Spieler-Roster beschränkt. Fehlende oder unbrauchbare Angriffslisten sind *unbekannt*, nicht automatisch verpasst.
+- Clanführung kann die Erinnerung auf **diesem Gerät** mit Zeitstempel quittieren; bei einer veränderten Gruppe noch offener Spieler erscheint eine neue Erinnerung. Viewer sehen den Hinweis, ändern ihn aber nicht. Keine geteilte Audit-Quittierung; diese bleibt für Phase 2 offen.
+- Bei veralteten API-Daten erscheint nur ein neutraler Prüfhinweis ohne Behauptung verpasster Angriffe. Kein Push bei geschlossener App.
+- Mobile Aktionszeile, Hilfeseite und Regressionstests aktualisiert. Unverändert: Plan-Solver, CWL-Locks, Datenbank, Rollen und Offline-PWA. Reale Geräteabnahme offen.
+- **Status:** Release-Kandidat; Merge, CI, Pages und offizieller Release noch nicht bestätigt.
+
 ## [1.16.43] - 2026-11-09
 
 ### CWL #181: belegte Angriffe statt abgeschlossener Tage als Ausführungsfortschritt
