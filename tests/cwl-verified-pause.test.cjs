@@ -101,6 +101,12 @@ test("Verified CWL pause preflight returns only a future preparation-day AUTO-to
  assert.deepEqual(r.changed.map(x=>x.day),[3]);
  assert.deepEqual(r.changed[0].out,["b"]);
  assert.equal(r.changed[0].incoming.length,1);
+ assert.deepEqual(r.impact.countsChanged,[
+  {id:"b",name:"b",before:2,after:1},
+  {id:"c",name:"c",before:1,after:2}
+ ]);
+ assert.deepEqual(r.impact.rotationSpread,{before:1,after:1});
+ assert.equal(r.impact.rotationPlayers,2);
  assert.equal(JSON.stringify(f),before,"preview must be completely immutable");
  assert.deepEqual(r.draft.locks,f.profile.locks,"no new played-day locks");
 });
@@ -148,4 +154,21 @@ test("Pause preflight blocks newly unreachable 8★ bonus and newly invalid solv
  const y=previewVerifiedCwlPause({...other,targetDay:3,planningFn:planCwl,
   medalFn:()=>({rows:[]}),now});
  assert.equal(y.ok,false);
+});
+
+test("Pause impact fails closed on incomplete solver attendance counts",async()=>{
+ const {previewVerifiedCwlPause}=await loadCore();
+ const {evaluateEightStarGoals}=await loadMedal();
+ const f=fixture();
+ const broken=(params)=>{
+  const plan=planCwl(params);
+  if(params.members.find(x=>x.id==="b")?.statuses[2]==="out")
+   delete plan.counts.c;
+  return plan;
+ };
+ const result=previewVerifiedCwlPause({...f,targetDay:3,planningFn:broken,
+  medalFn:evaluateEightStarGoals,now});
+ assert.equal(result.ok,false);
+ assert.match(result.reason,/Einsatzverteilung/);
+ assert.equal(f.profile.members[1].statuses[2],"auto");
 });
