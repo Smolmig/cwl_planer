@@ -88,3 +88,56 @@ test("CWL progress uses only verified results; no solver or data format mutation
  assert.match(html,/refreshSummary:\(\)=>\{if\(window\.CWLCloud\?\.active&&lastPlan\)renderPlan\(\);renderSummary\(\)\}/);
  assert.match(html,/const DATA_VERSION=9/);
 });
+
+test("Actual browser Einsatzliste: automatic Jamie and Pro_Gamer 3/4 appear under Ziel offen",{
+ timeout:60000
+},async()=>{
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  try{
+   const errors=[];page.on("pageerror",e=>errors.push(e.message));
+   await page.setContent(markup,{waitUntil:"domcontentloaded"});
+   await page.addScriptTag({content:fs.readFileSync(path.join(__dirname,"..","cwl-deployment-filters.js"),"utf8")});
+   await page.addScriptTag({content:setup});
+   const actual=await page.evaluate(()=>{
+    document.body.classList.add("cloud-mode");
+    document.querySelector("#view-plan").classList.remove("active");
+    document.getElementById("view-summary").classList.add("active");
+    state.members[0].name="Jamie";state.members[1].name="Pro_Gamer";
+    state.members[0].targetDays=null;state.members[1].targetDays=null;
+    lastPlan.counts.beta=4;
+    for(let d=0;d<3;d++)lastPlan.dayPlans[d].lineup.push("beta");
+    for(let d=1;d<=3;d++)
+     window.results[d]["#JRC"]={stars:2,percent:83,state:"warEnded",warTag:"#P"+d};
+    summaryAdvanced.progress="target-open";
+    renderSummary();
+    const open=[...document.querySelectorAll(".summary-compact-row")].map(x=>x.textContent);
+    const progress=[state.members[0],state.members[1]].map(member=>{
+     const p=currentCwlDisplayProgress().get(member.id);
+     return {name:member.name,executed:p.executed,total:p.total,open:p.open};
+    });
+    window.results[4]={
+     "#2PYL":{stars:3,percent:100,state:"inWar",warTag:"#P4"},
+     "#JRC":{stars:3,percent:100,state:"inWar",warTag:"#P4"}
+    };
+    renderSummary();
+    const noLongerOpen=document.querySelectorAll(".summary-compact-row").length;
+    summaryAdvanced.progress="target-met";renderSummary();
+    const reached=[...document.querySelectorAll(".summary-compact-row")].map(x=>x.textContent);
+    return {progress,open,noLongerOpen,reached,html:document.getElementById("summaryCloudFilters").hidden};
+   });
+   assert.deepEqual(actual.progress,[
+    {name:"Jamie",executed:3,total:4,open:1},
+    {name:"Pro_Gamer",executed:3,total:4,open:1}
+   ]);
+   assert.equal(actual.open.length,2);
+   assert.ok(actual.open.some(x=>x.includes("Jamie")));
+   assert.ok(actual.open.some(x=>x.includes("Pro_Gamer")));
+   assert.equal(actual.noLongerOpen,0);
+   assert.equal(actual.reached.length,2);
+   assert.equal(actual.html,false,"cloud-filter UI visible with actual source");
+   assert.deepEqual(errors,[]);
+  }finally{await page.close()}
+ }finally{await browser.close()}
+});
