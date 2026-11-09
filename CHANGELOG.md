@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.51] - 2026-11-09
+
+### Einsätze #187: kompakte Filter nach direktem UX-Feedback
+- Der gemeinsame Cloud-Einsätze-Tab zeigt **nur drei Filter**: `Alle Spieler / Rotierende Spieler`, `Alle Ziele / Ziel offen / Ziel erreicht`, `Alle 8★ / 8★ offen / 8★ erreicht`. Die separate große Beschriftungszeile, zusätzliche Fix-/Automatisch-/Plan-erledigt-/Unklar-Auswahl und der zweite allgemeine Cloud-Statusfilter fallen aus der sichtbaren Cloud-Oberfläche weg. Suche und Zurücksetzen bleiben klein und auffindbar.
+- Die Sortierung behält offene Angriffe, bis 8 fehlende Sterne, aktuelle CWL-3★-Quote/Ø, belegte Angriffszahl und Name; **„Rest zum festen Ziel“ entfernt**, weil semantisch unklar. Player-Zeilen zeigen bei individuellem Ziel kompakt z. B. `Ziel 3/4 AG · offen`, nach dem vierten belegten Angriff `Ziel 4/4 AG · erreicht` (analog `1/5`, `5/5`).
+- Ein geplanter oder bereits in Clash fixierter CWL-Einsatz zählt weiterhin **nicht** als ausgeführter Angriff. Spieler ohne exakte Zielvorgabe („Automatisch“) oder ohne eindeutige Angriffszuordnung werden nicht irrtümlich als Ziel offen/erreicht gewertet. Für 8★ offen zählt nur ein aktuell belegbarer Stand; unbekannte/alte Angaben bleiben außerhalb beider gefilterten Gruppen.
+- Die drei kleinen Selects und der Sortier-Select werden unter 760px zweispaltig angeordnet, Desktop einzeilig; auf schmalen Geräten kein unnötiger zweiter allgemeiner Statusfilter. Kein Eingriff in Pläne, Solver, Cloud-Daten, RLS oder Offline-PWA. Hilfe und neue responsive Browser-Regression für 320/390/430px Arena/Gold, Dark, Light im gleichen Update.
+- **Release-Kandidat:** PR-CI, Main-CI, Pages, offiziellen Release vor Produktivstatus nachweisen.
+
+
 ## [1.16.50] - 2026-11-09
 
 ### Einsätze #187: Rotation, individuelle Ziele und 8★ sicher kombinieren
