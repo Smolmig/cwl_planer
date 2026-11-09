@@ -14,7 +14,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - **Geschützt** bleiben bereits beendete bzw. laufende Clash-Aufstellungen, gespeicherte Plan-Locks, unklare Daten und eine nicht eindeutig berechenbare Planung. Fix-/MUSS-Tage und exakte Einsatzziele sind als Kontext sichtbar; 8★-Bonus und möglicher Ersatz müssen vor einer Entscheidung gesondert geprüft werden.
 - Die Ansicht ist strikt **read-only**: kein Spieler wird pausiert, entfernt oder umgeplant, keine neue Datenbank/Audit-Entscheidung und kein automatischer Plan-Update. Aufklappzustand beim Refresh erhalten, Hilfe und Regressionen ergänzt.
 - **Offen:** echtes Owner-Review mit „übernehmen/entschuldigen/später“ und tenantgeschütztem Shared Audit, sichere Konfliktprüfung und Live-/Safari-/Android-Abnahme.
-- **Release-Status:** Kandidat, PR-/Main-CI, Pages und offizieller Release erst nach Verifikation.
+- **Offiziell veröffentlicht:** [PR #188](https://github.com/Smolmig/cwl_planer/pull/188) Squash `33b127e5074abb`, [PR-CI 42650169375](https://github.com/Smolmig/cwl_planer/actions/runs/42650169375) **535/535**, [Main-CI 42650516778](https://github.com/Smolmig/cwl_planer/actions/runs/42650516778), [Pages 42650516172](https://github.com/Smolmig/cwl_planer/actions/runs/42650516172), [Release-Workflow 42650808819](https://github.com/Smolmig/cwl_planer/actions/runs/42650808819), [v1.16.45](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.45) erfolgreich.
 
 
 ## [1.16.44] - 2026-11-09
