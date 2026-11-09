@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.45";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.45";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.45";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.45";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.45";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.45";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.46";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.46";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.46";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.46";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.46";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.46";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -409,6 +409,7 @@ const stats=createCloudStats({
 let currentWarOverview=null;
 const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
+ ensureCloudSaved:()=>ensureSaved(),
  onSnapshot:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
