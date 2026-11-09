@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.52] - 2026-11-09
+
+### Einsätze #187 – echter 3/4-Fix und additive Filterchips
+- **Bug anhand der Mobil-Screenshots reproduziert:** `Ziel offen` zeigte `0 von 19`, obwohl Jamie und Pro_Gamer jeweils **3 tatsächlich ausgeführte AG, eine offene geplante AG und 4 insgesamt vorgesehene** hatten. Vorher prüfte der Filter ausschließlich ein explizites `member.targetDays`, während „Automatisch“ (`null`) trotz existierender Planbelegung aus beiden Zielgruppen herausfiel.
+- **Korrektur (rein lesend):** Ein vom Nutzer ausdrücklich gesetztes Einsatzziel bleibt maßgeblich. Ohne solches Ziel wird die **aktuell im Plan vorgesehene Anzahl** `lastPlan / currentCwlDisplayProgress().total` als dynamischer Vergleich verwendet, solange eindeutige echte CWL-Angriffsbelege vorliegen. Jamie / Pro_Gamer: `Plan 3/4 AG · offen`, nach belegtem viertem Angriff `Plan 4/4 AG · erledigt`; 1/5 ist offen, 5/5 erledigt. Keine dauerhafte Umschreibung von `targetDays`, kein Spielerprofil-/Solver-Update. Spieler ohne belastbares Plansoll oder eindeutigen Tag bleiben unbekannt.
+- **Gewünschtes Shop-Filtermuster:** `＋ Filter` öffnet die Liste „Rotierende Spieler“, „Ziel offen“, „Ziel erreicht“, „8 Sterne offen“, „8 Sterne erreicht“. Jeder aktive Filter erscheint als sichtbarer Chip mit eigenem × zum Entfernen. Mehrere verschiedene Dimensionen werden per UND kombiniert und **nebeneinander ergänzt**, statt drei permanente Dropdowns zu belegen. Neue Auswahl derselben Dimension ersetzt den bisherigen Chip. Sortierung bleibt separat. Suche, kleines Reset, mobile Tastatur-/Escape-/Outside-Klick-Unterstützung.
+- **8-Sterne-Begriffe bewusst übernommen:** `8 Sterne offen` / `8 Sterne erreicht` (nicht „fehlen“). Offen wird nur für einen belegten noch-nicht-erreichten Stand angezeigt; alte/unvollständige Datensätze bleiben `unknown` und werden nicht zu 0 Sternen umgedeutet. 8★ bleibt unabhängig vom Einsatzfortschritt.
+- Zusätzliche Unit-Tests mit Jamie/Pro_Gamer, dynamischem 1/5↔5/5 und ausdrücklich fixem 5er-Ziel, plus Playwright-Test für Chips hinzufügen/ersetzen/entfernen/Reset/Tastatur und 320/390/430px in Gold/Dark/Light. Hilfeseite, Changelog, README, aktives Handoff und Release-Version synchron. **Keine** DB-/RLS-/Clash-/Solver-/Offline-PWA-Mutation.
+- **Release-Kandidat:** vollständige PR-CI, Main-CI, Pages und offiziellen GitHub Release vor Live-Status prüfen.
+
+
 ## [1.16.51] - 2026-11-09
 
 ### Einsätze #187: kompakte Filter nach direktem UX-Feedback
