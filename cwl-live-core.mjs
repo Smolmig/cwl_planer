@@ -76,7 +76,7 @@ export function canFinalize(round,expectedSlots,now=Date.now()) {
 // attacks during battle stay unknown; "missed" is only observed post-war.
 export function recordedCwlAttackResults(snapshot){
  const result={};
- if(!/^\\d{4}-\\d{2}$/.test(String(snapshot?.season||""))||
+ if(!/^\d{4}-\d{2}$/.test(String(snapshot?.season||""))||
     !validTag(tagOf(snapshot?.clanTag)))return result;
  for(const round of snapshot.rounds||[]){
   if(!round?.available||!["inWar","warEnded"].includes(round.state)||
