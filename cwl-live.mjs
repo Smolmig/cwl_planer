@@ -1,5 +1,6 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.46";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.46";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.47";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.47";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.47";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -67,7 +68,7 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudSaved}) {
+export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudSaved,applyVerifiedPause}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
@@ -90,7 +91,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     if(typeof sb.from!=="function"||!expectedClan||!/^\d{4}-\d{2}$/.test(season))return;
     const scope=expectedClan+"|"+season;
     const {data,error}=await sb.from("cwl_missed_owner_decisions")
-      .select("id,season,war_key,day,player_tag,decision,note,actor_id,created_at")
+      .select("id,season,war_key,day,target_day,player_tag,decision,note,actor_id,created_at")
       .eq("clan_id",expectedClan).eq("season",season)
       .order("id",{ascending:false}).limit(350);
     if(context().clanId!==expectedClan||!context().active)return;
@@ -159,6 +160,85 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     }catch(err){
       console.warn("CWL decision rejected:",String(err?.message||err));
       notify("Entscheidung nicht gespeichert. Bitte Collector-Nachweis, Berechtigung und Cloud-Stand prüfen.");
+    }finally{decisionBusy=false;render()}
+  }
+
+  // An owner may *apply* one conservatively reviewed preparation-day pause.
+  // This mutates neither local members nor the solver. The Cloud bridge runs
+  // a single verified transactional RPC with optimistic revision control.
+  async function makeOwnerPause(review,targetDay){
+    const start=context(),info=effective();
+    const key=decisionKey(info?.season,"cwl:"+review.warTag,review.tag);
+    const approval=decisionIndex(info?.season,start.clanId).get(key);
+    const fresh=start.active&&start.role==="owner"&&start.clanId===activeClan&&
+      lastSuccessfulProfile===start.profile&&lastSuccessfulAt>0&&
+      Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&!fetching&&!offlineReason&&
+      !staleRoundDays.has(review.day)&&!staleRoundDays.has(targetDay)&&
+      current?.season===info?.season&&navigator.onLine;
+    if(decisionBusy||!fresh||approval?.decision!=="review_pause"||
+       typeof applyVerifiedPause!=="function"){
+      notify("Pause nicht freigegeben oder Datenstand veraltet. Bitte CWL erneut prüfen.");
+      return;
+    }
+    const planPreview=()=>{
+      const ctx=context(),snap=effective();
+      if(!snap||ctx.clanId!==start.clanId||ctx.role!=="owner")return {ok:false,reason:"Clan oder Rolle geändert."};
+      const latest=cwlMissedRotationReview(snap,ctx.profile,
+        storage.getPlannedLineups?.()||[],{
+          planningOk:storage.getPlanningState?.()?.ok===true,
+          staleDays:[...staleRoundDays]
+        }).find(row=>row.tag===review.tag&&row.warTag===review.warTag&&row.day===review.day);
+      return previewVerifiedCwlPause({
+        profile:ctx.profile,snapshot:snap,review:latest,targetDay,
+        dayPlans:storage.getPlannedLineups?.()||[],staleDays:[...staleRoundDays],
+        planningFn:window.CWLPlanningCore?.planCwl,
+        medalFn:evaluateEightStarGoals
+      });
+    };
+    const preview=planPreview();
+    if(!preview.ok){notify("Pausierung nicht möglich: "+preview.reason);return}
+    const details=preview.changed.map(d=>
+      "Tag "+d.day+": "+(d.out.length?"raus "+d.out.join(", "):"–")+
+      (d.incoming.length?" · rein "+d.incoming.join(", "):"")
+    ).join("\n");
+    const answer=await storage.askAction({
+      title:"Tagespause verbindlich übernehmen",
+      message:"CWL Tag "+review.day+": bestätigter Miss von "+review.name+
+        " ("+review.tag+").\n\n"+
+        "Es wird NUR Tag "+targetDay+" im Plan auf RAUS gesetzt. Der Solver "+
+        "berechnet die anderen noch offenen Aufstellungen neu:\n"+details+
+        "\n\nFixe Clash-Aufstellungen bleiben unangetastet. "+
+        "Die Umstellung der Vorbereitung MUSST du zusätzlich direkt in Clash durchführen."+
+        (preview.medalUnknown?"\n8★-Daten teilweise unvollständig – keine Bonusgarantie.":"")+
+        "\nEs entsteht ein gemeinsamer, unveränderlicher Audit-Eintrag.",
+      inputLabel:"Begründung (optional, max. 300 Zeichen)",
+      inputValue:"",
+      buttons:[{value:"confirm",text:"Tag "+targetDay+" verbindlich auf RAUS",primary:true},
+        {value:"cancel",text:"Abbrechen"}]
+    });
+    if(answer?.value!=="confirm")return;
+    const note=String(answer.input||"").trim();
+    if(note.length>300){notify("Notiz darf höchstens 300 Zeichen enthalten.");return}
+    decisionBusy=true;
+    try{
+      const last=context();
+      if(last.role!=="owner"||!last.active||last.clanId!==start.clanId||
+         last.profile!==start.profile||activeClan!==start.clanId||
+         Date.now()-lastSuccessfulAt>FRESH_WINDOW_MS||fetching||offlineReason)
+        throw Error("Cloud-/Clash-Daten haben sich geändert.");
+      const latest=planPreview();
+      if(!latest.ok||JSON.stringify(latest.changed)!==JSON.stringify(preview.changed)||
+         JSON.stringify(latest.draft.members)!==JSON.stringify(preview.draft.members))
+        throw Error("Die Planung hat sich seit der Vorschau geändert.");
+      const result=await applyVerifiedPause({preview:latest,note});
+      if(result?.switched)return;
+      if(!result?.saved)throw Error("Übernahme nicht bestätigt.");
+      notify("✓ Tag "+targetDay+" im gemeinsamen Plan auf RAUS gesetzt. Bitte Clash-Aufstellung ebenfalls ändern.");
+      await refreshNow(true);
+    }catch(e){
+      console.warn("CWL pause not applied:",String(e?.message||e));
+      notify("Pause nicht bestätigt: "+String(e?.message||e).slice(0,160)+
+        " Bitte den gemeinsamen Plan überprüfen.");
     }finally{decisionBusy=false;render()}
   }
 
@@ -593,12 +673,14 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
         ].filter(Boolean).join(" · ");
         const decision=decisionMap.get(decisionKey(info.season,"cwl:"+x.warTag,x.tag));
         const decisionNames={excused:"Entschuldigung akzeptiert",
-          later:"Später prüfen",review_pause:"Pauseprüfung vorgemerkt"};
+          later:"Später prüfen",review_pause:"Pauseprüfung vorgemerkt",
+          applied_pause:"Tagespause im Plan übernommen"};
         const decisionStamp=decision?.created_at?new Date(decision.created_at).toLocaleString(
           "de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
         const decisionText=decision?.decision?
           "<small class='cwl-miss-decision-state'>Letzte Owner-Entscheidung: "+
           esc(decisionNames[decision.decision]||"Geprüft")+" · "+esc(decisionStamp)+
+          (decision.target_day?" · Tag "+decision.target_day:"")+
           (decision.note?" · "+esc(decision.note):"")+"</small>":"";
         const history=decisionScope===ctx.clanId+"|"+info.season?
           ownerDecisions.filter(e=>decisionKey(e.season,e.war_key,e.player_tag)===
@@ -611,6 +693,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
               "de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"–";
             return "<li>"+esc(stamp)+" · "+
               esc(decisionNames[e.decision]||"Prüfung")+
+              (e.target_day?" · Tag "+e.target_day:"")+
               (e.note?" · "+esc(e.note):"")+"</li>";
           }).join("")+"</ul></details>":"";
         const decisionButtons=ctx.role==="owner"&&!decisionBusy&&!x.unknownMember?
@@ -621,6 +704,15 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           "' type='button'>Später</button>"+
           "<button class='btn small cwl-miss-owner-action' data-action='review_pause' data-tag='"+esc(x.tag)+
           "' type='button'>Pause prüfen</button></div>":"";
+        const candidateDays=decision?.decision==="review_pause"&&ctx.role==="owner"&&
+          !decisionBusy&&typeof applyVerifiedPause==="function"?
+          x.reviewable.filter(v=>info.rounds.some(r=>r.day===v.day&&
+            r.state==="preparation"&&!staleRoundDays.has(v.day))).map(v=>v.day):[];
+        const applyButtons=candidateDays.length?
+          "<div class='cwl-miss-apply-actions'>"+
+          candidateDays.map(day=>"<button type='button' class='btn small cwl-miss-apply' "+
+            "data-day='"+day+"' data-tag='"+esc(x.tag)+"'>Tag "+day+
+            ": Pause im Plan übernehmen</button>").join("")+"</div>":"";
         const msg=x.unknownMember?"Nicht eindeutig im aktuellen Plan zugeordnet – keine Pausenempfehlung.":
           checkDays?"Nur mögliche Planprüfung: "+checkDays+". Clash-Aufstellung vor Wechsel prüfen.":
           "Kein eindeutig änderbarer künftiger Einsatz im aktuellen Plan.";
@@ -629,14 +721,15 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           "<div>"+esc(msg)+"</div>"+
           (blocked?"<small>Geschützt: "+esc(blocked)+"</small>":"")+
           (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+
-          decisionText+historyHtml+decisionButtons+"</li>";
+          decisionText+historyHtml+decisionButtons+applyButtons+"</li>";
       }).join(""):"<li>Prüfung aus Plan und Spieler-Tags derzeit nicht eindeutig möglich. Keine automatische Empfehlung.</li>";
       return "<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
         "<summary>Künftige Einsätze prüfen (nur Vorschau)</summary>"+
         "<p>Bestätigter fehlender Angriff. Ob ein Spieler später pausiert, entscheidet die Clanführung "+
         "nach Prüfung von Fix/MUSS, Einsatzziel, 8★-Bonus und Clash-Aufstellungen. "+
-        "Die Vorschau verändert keine Einsätze. Owner können hier eine Entscheidung "+
-        "im gemeinsamen Verlauf dokumentieren, aber noch keinen Wechsel automatisch ausführen.</p>"+
+        "Eine Pause für einen eindeutig prüfbaren Vorbereitungstag ist nur mit erneutem "+
+        "Clash-Abgleich, vorheriger Owner-Entscheidung und ausdrücklicher Bestätigung möglich. "+
+        "Der Wechsel in Clash selbst bleibt manuell.</p>"+
         "<ul>"+list+"</ul></details>";
     })():"";
     const attentionHtml=attention?(()=>{
@@ -712,6 +805,16 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
         if(row)makeOwnerDecision(row,button.dataset.action).catch(err=>{
           console.warn("CWL owner action:",err);
           notify("Entscheidung konnte nicht geöffnet werden.");
+        });
+      });
+    });
+    node.querySelectorAll(".cwl-miss-apply").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const row=reviewRows.find(x=>x.tag===tagOf(button.dataset.tag));
+        const day=Number(button.dataset.day);
+        if(row&&Number.isInteger(day))makeOwnerPause(row,day).catch(err=>{
+          console.warn("CWL pause:",String(err));
+          notify("Pause konnte nicht geöffnet werden.");
         });
       });
     });
