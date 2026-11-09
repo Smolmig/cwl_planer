@@ -317,6 +317,7 @@ const cloud={
  renderLive(){if(this.active)live.render()},
  getMedalOverview:()=>live.getMedalOverview(),
  getPlayedAttackResults:()=>live.getPlayedAttackResults(),
+ getObservedCwlAttackResults:()=>live.getObservedCwlAttackResults(),
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
