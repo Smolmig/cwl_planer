@@ -13,7 +13,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Sortierung nach verbleibenden **belegten** Angriffen bis zum *festen* Einsatzziel (fehlende Ziele zuletzt), noch geplanten AG, verbleibenden CWL-Sternen, aktuellem CWL-3★-Anteil / Ø Sterne / Angriffszahl und Namen. Die laufenden CWL-Werte werden mit Stichprobe angezeigt und **nicht** als Stärkeprognose bewertet.
 - Nur eindeutige tatsächlich ausgeführte CWL-Angriffe aus #181 gelten als erledigt; ein Clash-fixierter oder lediglich geplanter Tag ist **kein Angriff**. Fixspieler und `targetDays=null` („Automatisch“) erhalten kein erfundenes festes Ziel. Unklare, doppelte oder veraltete Daten erzeugen keine sichere 8★-„noch offen“-Behauptung.
 - Nur lesende UI-Auswahl; keine Änderung an Solver, Locks, Rollen, Clash, Supabase, Datenbank oder separater Offline-PWA. Hilfe und automatisierte Filter-/Sortier-/Quellen-/Mobile-Layout-Verträge im selben Patch.
-- **Release-Kandidat:** PR-CI und danach Main-CI/Pages/offiziellen Release vor Produktivstatus prüfen.
+- **Offiziell veröffentlicht:** [PR #195](https://github.com/Smolmig/cwl_planer/pull/195) Squash `b41ffa37a58e`; [PR-CI 42694806353](https://github.com/Smolmig/cwl_planer/actions/runs/42694806353) **554/554**, [Main-CI 42695121599](https://github.com/Smolmig/cwl_planer/actions/runs/42695121599), [Pages 42695120908](https://github.com/Smolmig/cwl_planer/actions/runs/42695120908), [Release-Workflow 42695365753](https://github.com/Smolmig/cwl_planer/actions/runs/42695365753) und [v1.16.50](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.50) erfolgreich. Echte Mobil-/Clash-Praxisabnahme noch offen.
 
 
 ## [1.16.49] - 2026-11-09
