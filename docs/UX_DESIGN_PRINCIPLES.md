@@ -176,3 +176,11 @@ Dies sind praktische Designprinzipien für *unsere* App, kein wörtlicher Abdruc
 - [Nielsen Norman Group – Accordions](https://www.nngroup.com/articles/accordions-on-desktop/): progressive Offenlegung bewusst und mit verständlicher Struktur einsetzen.
 
 **Dieses Dokument ist bei jeder künftigen GitHub-/Supabase-/UI-Entwicklungsrunde vor dem Umbau zu berücksichtigen.**
+
+
+## 9. Wartungspflichten, Sprachen und Designstandard (09.11.2026)
+
+- **Hilfe ist ein Release-Artefakt:** Jede Funktionsänderung – neue Funktion, umbenannter Button, geänderte Rolle, Statistikdefinition, Filter, Fehlerfall oder Navigation – gegen die sichtbare Hilfe-Seite und Tooltip-/Info-Texte prüfen. Betroffene Hilfetexte **im selben PR** aktualisieren oder ausdrücklich „unverändert und geprüft“ in der PR-Checkliste bestätigen. Mindestens Cloud und separate Offline-Funktionalität differenzieren. Vollständiger Bestands-Audit offen in [#46](https://github.com/Smolmig/cwl_planer/issues/46).
+- **Deutsch bleibt Standard:** Künftige englische App-Sprache in [#177](https://github.com/Smolmig/cwl_planer/issues/177). Nach Einführung müssen **sämtliche** neuen/geänderten UI-Texte einschließlich Hilfe, Fehlern, Tooltips, Accessibility und Datum/Zahl-Format in **DE und EN gleichzeitig** gepflegt werden; vor Einführung alle neuen Texte bereits lokalisierbar planen. Keine Nutzer-/Clannamen automatisch übersetzen.
+- **Gold ist das gewünschte Default-Theme:** für neue/noch nie ausdrücklich gewählte Theme-Präferenzen nach [#46](https://github.com/Smolmig/cwl_planer/issues/46). Bestehende Auswahl anderer Themes niemals überschreiben; Frischstart, Reload, PWA, Gast/Cloud und Offline prüfen. Dies ist **bis zur Implementierung nur eine Anforderung**, keine Behauptung über den aktuellen Default.
+- **Statistikportabilität** in [#176](https://github.com/Smolmig/cwl_planer/issues/176): Berichte auswertbar und lesbar, vollständige Rohdaten-Exports/Imports sicher und idempotent; ClashPerk-Originaldateien beim Onboarding unterstützen. Import darf bestehende historische Daten und Tenant-/Rollenrechte nicht gefährden.
