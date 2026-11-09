@@ -4361,7 +4361,7 @@ function currentCwlTripleRate(tag){
 // solver's playedCounts. One verified CWL attack is one executed day; a closed
 // day with no attack evidence is unknown, NOT another documented attack.
 function currentCwlDisplayProgress(results=window.CWLCloud?.getObservedCwlAttackResults?.()||window.CWLCloud?.getPlayedAttackResults?.()||{}){
- if(!window.CWLCloud?.active||!lastPlan)return null;
+ if(!window.CWLCloud?.active||!lastPlan||!state.cwlLive?.season)return null;
  const days=Number(state.config.days)||7;
  const members=allKnownMembers();
  const tagOwners=new Map(),duplicates=new Set();
