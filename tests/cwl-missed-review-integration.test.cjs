@@ -36,8 +36,8 @@ test("Verified postwar CWL miss shows future review without writes or illegal Cl
   ];
   const round=(day,state,warTag)=>({
    day,available:true,warTag,state,
-   startTime:tagTime(now+(day-2)*86400000),
-   endTime:tagTime(now+(day-1)*86400000),
+   startTime:tagTime(now+(day-3)*86400000),
+   endTime:tagTime(now+(day-2)*86400000),
    teamSize:2,
    clan:{tag:"#2PQ",name:"United Fighters",members:own},
    opponent:{tag:"#JQV",name:"Opponents",members:enemy}
