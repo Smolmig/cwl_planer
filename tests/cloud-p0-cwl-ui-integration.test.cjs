@@ -38,5 +38,8 @@ test("combined UI branch leaves auth storage, cloud format and original offline 
  assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
  const api=read("supabase/functions/coc-cwl-status/index.ts");
  assert.match(api,/coc-cwl-status|withSupabase/);
- assert.doesNotMatch(live,/sb\.from\(|sb\.auth\.signOut\(|storage\.saveJson\(/);
+ assert.doesNotMatch(live,/sb\.auth\.signOut\(|storage\.saveJson\(/);
+ const auditTables=[...live.matchAll(/sb\.from\("([^"]+)"\)/g)].map(match=>match[1]);
+ assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions"],
+   "CWL live may only access the dedicated owner-decision audit table");
 });
