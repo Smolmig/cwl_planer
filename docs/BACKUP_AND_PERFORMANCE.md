@@ -1,6 +1,24 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
 
+## Neue Produktentscheidung 09.11.2026 – vereinfachter Backup-/Import-Pfad (noch nicht live)
+
+**Verbindliche Anforderung aus Nutzerfeedback:** [Issue #178](https://github.com/Smolmig/cwl_planer/issues/178). Die folgenden Punkte sind das **zukünftige Zielbild** und dürfen nicht mit bereits implementierter Funktionalität verwechselt werden.
+
+| Variante | Sichtbarer Nutzerweg | Inhalt / Zweck |
+| --- | --- | --- |
+| **Cloud – interne technische Sicherung** | Automatisch, keine zusätzliche App-Backup-Variante für Nutzer | Vorhandene Cloud-Profil-Snapshots und externe verschlüsselte DB-Dumps samt geprüftem Restore-Prozess für Betrieb und Notfall erhalten. Snapshot in derselben Supabase-DB ist **kein** unabhängiges Offsite-Backup. |
+| **Cloud – eine externe App-Datensicherung** | **Backup herunterladen** | **Eine** versionierte Datei für die wichtigen berechtigten Anwendungsdaten aus der **gesamten App**, inklusive Clanprofil(e), Mitgliedern/Notizen, Regeln/Planungen, CWL-Archiv, Statistiken und Angriffs-/Kriegs-/Quellhistorie sowie relevanten Einstellungen. Datenumfang erst nach Inventar aller Tabellen/Relationen festlegen. |
+| **Cloud – wieder einspielen** | **Backup wiederherstellen** | Dieselbe Datei kontrolliert und idempotent einspielen; nach Totalausfall **erst Backend/Anmeldung/Autorisierung wiederherstellen**, dann App-Daten importieren. Keine doppelten Daten durch Überlappung oder Wiederholung, keine stillen Überschreibungen. |
+| **Separate Offline-PWA** | **Einzelprofil** oder **alle Profile** sichern/importieren | Bisheriges lokales Einzel-/Sammelprofil-Backup erhalten, inklusive Rückwärtskompatibilität und ohne Cloud-Datenvermischung. |
+
+- **Nur ein Cloud-Backup-/Restore-Weg**, keine zusätzlichen funktionalen Cloud-Teilbackups oder separater Statistik-Restore. Frühere Cloud-Plan-JSON-Downloadmöglichkeiten bei Einführung schonend zusammenführen, ohne alte exportierte Dateien oder interne technische Sicherungen unbrauchbar zu machen. Die folgenden Abschnitte dokumentieren teils historische tatsächlich vorhandene Mechanismen.
+- **Statistik-Berichtexporte** bleiben als lesbare/teilbare Auswertung, nicht als Backupdatei. **ClashPerk-Originalimporte** bleiben als spezialisierter Erst-/Fremddatenimport erhalten ([#176](https://github.com/Smolmig/cwl_planer/issues/176)); nicht als zweites generisches Backup-Menü ausgestalten.
+- **Sicherheit:** Rollen und Clanzugehörigkeit für jeden exportierten oder importierten Datensatz serverseitig prüfen (Multi-Tenant/RLS); ein Cloud-App-Backup umfasst nur autorisiert gesicherte Clans, keine fremden Beobachterdaten. Keine Passwörter, Tokens oder Service-Secrets in die exportierte Nutzerdatei. Importdateien prüfen, Sicherungspunkt/Bestätigung und atomare/rollbackfähige Wiederherstellung verlangen.
+- **Wiederherstellung testen:** kompletter Roundtrip mit Kriegen/Angriffen/Quellen/Abdeckung, Duplikatimport, Cloud-Merge-Konflikt, verlorener DB nach Infrastruktur-Restore, unberechtigtem Clan-Zugriff und Offline-Einzel-/Sammelprofilen. Kein bloßer JSON-Export eines Planprofils als „vollständig“ bezeichnen.
+
+---
+
 ## 1. Drei Ebenen, unterschiedliche Ausfälle
 
 | Ebene | Was ist enthalten? | Wo gespeichert? | Wie wird wiederhergestellt? |
