@@ -62,7 +62,7 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
   const decisions=[{id:1,season,war_key:"cwl:#PLQ",
    day:1,target_day:null,player_tag:"#JRC",decision:"review_pause",
    note:"Wiederholt versäumt",created_at:new Date(now).toISOString()}];
-  let approval=true,writeCount=0,confirmationCount=0;
+  let approval=true,writeCount=0,confirmationCount=0,confirmationText="";
   const written=[];
   const sb={functions:{invoke:async()=>({data:snapshot,error:null})},
    from(name){
@@ -78,7 +78,7 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
     getProfile:()=>profile,getPlannedLineups:planned,
     getPlanningState:()=>({ok:true}),
     rerender:()=>{writeCount++},refreshSummary:()=>{},
-    askAction:async()=>{confirmationCount++;return {value:"confirm",input:"Test"}},
+    askAction:async args=>{confirmationCount++;confirmationText=args.message;return {value:"confirm",input:"Test"}},
     newMember:()=>{throw Error("unexpected member mutation")}
    },
    notify:()=>{},ensureCloudSaved:async()=>{},
@@ -92,6 +92,10 @@ test("Owner sees and confirms a single Clash-preparation pause only after audite
   doc.querySelector(".cwl-miss-apply").click();
   for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));
   assert.equal(confirmationCount,1);
+  assert.match(confirmationText,/Einsätze gesamt im Solver/);
+  assert.match(confirmationText,/Bravo: 2 → 1/);
+  assert.match(confirmationText,/Charlie: 1 → 2/);
+  assert.match(confirmationText,/Rotationsspanne: 1 → 1/);
   assert.equal(written.length,1);
   assert.equal(written[0].preview.day,3);
   assert.equal(written[0].preview.draft.members[1].statuses[2],"out");
