@@ -14,7 +14,7 @@ const staticHtml=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
   .replace(/<link\b[^>]*>/gi,"");
 
 test("plan performance fits in a quiet side line while retaining exact sources",()=>{
- const start=html.indexOf("function memberCompactPerformance(m){");
+ const start=html.indexOf("function memberCompactPerformance(m,progress=null){");
  const end=html.indexOf("function memberPerformance(m){",start);
  assert.ok(start>=0&&end>start);
  const fn=vm.runInNewContext(html.slice(start,end)+";memberCompactPerformance",{
@@ -23,12 +23,15 @@ test("plan performance fits in a quiet side line while retaining exact sources",
   })}},
   state:{cwlLive:{season:"2026-11"}},
   lastPlan:{playedCounts:{kaizen:2},counts:{kaizen:7}},
+  currentCwlDisplayProgress:()=>new Map([["kaizen",{
+   executed:2,open:5,unknown:0,missed:0,completed:2,running:0
+  }]]),
   esc:v=>String(v).replaceAll("&","&amp;").replaceAll('"',"&quot;")
  });
  const markup=fn({id:"kaizen",playerTag:"#PYL"});
  const wrapper=new JSDOM("<div>"+markup+"</div>").window.document;
  assert.equal(wrapper.querySelector(".cwl-performance-recent").textContent,"3★ 86 % · 7 AG");
- assert.equal(wrapper.querySelector(".cwl-performance-schedule").textContent,"2 gespielt · 5 geplant");
+ assert.equal(wrapper.querySelector(".cwl-performance-schedule").textContent,"2 ausgeführt · 5 offen");
  assert.match(wrapper.querySelector(".cwl-performance-recent").title,/7 gespeicherte AG \(CW\/CWL\)/);
  assert.match(wrapper.querySelector(".cwl-performance-recent").getAttribute("aria-label"),/2 AG dieser CWL enthalten/);
  assert.doesNotMatch(wrapper.body.textContent,/Letzte 7 gespeicherte AG/);

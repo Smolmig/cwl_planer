@@ -28,7 +28,7 @@ function sanitizeMember(m) {
     attackerTag:tagOf(a?.attackerTag)||tag,
     defenderTag:tagOf(a?.defenderTag),
     stars:num(a?.stars,0,3),
-    destructionPercentage:num(a?.destructionPercentage,0,100)
+    destructionPercentage:safeDestruction(a?.destructionPercentage)
   })).filter(a=>a.attackerTag===tag && validTag(a.defenderTag) && a.stars!==null && a.destructionPercentage!==null) : [];
   return {tag,name:String(m?.name||"Unbekannt").slice(0,80),
     townHallLevel:num(m?.townHallLevel,3,30),attacks};
@@ -71,6 +71,44 @@ export function canFinalize(round,expectedSlots,now=Date.now()) {
   }
   return true;
 }
+// Factual, read-only attacks from this clan/season. A confirmed in-war
+// attack is already executed even though the day is not finalized. Missing
+// attacks during battle stay unknown; "missed" is only observed post-war.
+export function recordedCwlAttackResults(snapshot){
+ const result={};
+ if(!/^\d{4}-\d{2}$/.test(String(snapshot?.season||""))||
+    !validTag(tagOf(snapshot?.clanTag)))return result;
+ for(const round of snapshot.rounds||[]){
+  if(!round?.available||!["inWar","warEnded"].includes(round.state)||
+     !validTag(tagOf(round.warTag))||
+     !Number.isInteger(round.day)||round.day<1||round.day>7||
+     tagOf(round.clan?.tag)!==tagOf(snapshot.clanTag))continue;
+  const teamSize=round.teamSize,members=round.clan?.members;
+  if(!Number.isInteger(teamSize)||teamSize<1||teamSize>50||
+     !Array.isArray(members)||members.length!==teamSize)continue;
+  const tags=members.map(m=>tagOf(m?.tag));
+  if(tags.some(t=>!validTag(t))||new Set(tags).size!==teamSize)continue;
+  const day={};
+  for(const member of members){
+   const tag=tagOf(member.tag);
+   const attack=Array.isArray(member.attacks)?member.attacks[0]:null;
+   const stars=attack?.stars;
+   const percent=attack?.destructionPercentage;
+   if(attack&&tagOf(attack.attackerTag)===tag&&
+      Number.isInteger(stars)&&stars>=0&&stars<=3&&
+      typeof percent==="number"&&Number.isFinite(percent)&&percent>=0&&percent<=100){
+    day[tag]={stars,percent,missed:false,warTag:round.warTag,state:round.state};
+   }else if(round.state==="warEnded"){
+    day[tag]={missed:true,warTag:round.warTag,state:round.state};
+   }
+  }
+  // In battle include only known attacks; post-war additionally report
+  // truly absent ones, but never invent an in-battle zero or absence.
+  if(Object.keys(day).length)result[round.day]=day;
+ }
+ return result;
+}
+
 // Read-only supervision of CWL attack deadlines. This never modifies
 // player participation, future day rules, targets, locks or lineups. A player
 // who is still attacking 5 minutes before the end is NOT a missed attacker.
