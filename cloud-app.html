@@ -3494,11 +3494,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.42</strong><span>Gold als Standard</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.43</strong><span>CWL · Angriffe & Einsätze</span></div>
        <ul>
-        <li><b>Neue Nutzer:</b> Der gemeinsame CWL-Planer startet mit dem Arena-Theme in Anthrazit & Gold.</li>
-        <li><b>Bestehende Auswahl:</b> Bereits gespeicherte Farbschemata bleiben erhalten. Wechsel unter „Mehr → Design & Aktualisierung“.</li>
-        <li><b>Unverändert:</b> Offline-Planer, CWL-Daten, Statistik und Planung werden nicht umgestellt.</li>
+        <li><b>Ausgeführt statt nur abgeschlossen:</b> Bereits bestätigte Angriffe aus laufenden CWL-Kriegen zählen in Plan-Tiles und Einsatzverteilung sofort, ohne den Kriegstag zu sperren.</li>
+        <li><b>CWL bisher:</b> In der Einsatzverteilung stehen 3★-Quote, Ø Sterne und die belegte Angriffsanzahl; aufgeklappte Tage zeigen vorhandene Angriffsergebnisse.</li>
+        <li><b>Datenqualität:</b> Fehlende Angriffe bleiben offen oder ungeklärt statt als 0★ zu gelten. Bestehende Planung, Historie und Rollen bleiben unverändert.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3671,7 +3671,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
-    <div class="help-item"><b>Einsatzverteilung</b><div>Unter „Einsätze“ siehst du <b>Gespielt</b> (bestätigte Kriegstage), <b>Geplant</b> (noch vorgesehene Einsätze) und <b>Gesamt</b> (beides zusammen). „6/7 Tage ohne RAUS“ bedeutet, dass an sechs von sieben Tagen kein Ausschluss gilt – das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler, um seine einzelnen Kriegstage zu sehen: gespielt, geplant oder bereits in Clash fix. Sind aktuelle Angriffsdaten vorhanden, wird auch der Stand zum 8★-Ziel angezeigt; künftige Sterne sind nicht garantiert.</div></div>
+    <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. Bei „6/7 Tage ohne RAUS“ gibt es an sechs von sieben Tagen keinen Ausschluss – das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage und mögliche 0–3★-Ergebnisse; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die letzten sieben CW/CWL-Angriffe in Plan/Mitglieder sind eine andere Datenbasis. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -3924,9 +3924,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.42"></script>
+<script src="./cwl-planning-core.js?v=1.16.43"></script>
 <script>
-const APP_VERSION="v1.16.42";
+const APP_VERSION="v1.16.43";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4518,6 +4518,7 @@ function removeMembers(ids){if([...ids].some(id=>apiManagedRosterMember(state.me
 async function deleteMember(id){if(reviewLockedForVize()){showToast("Plan freigegeben – Spieler nicht löschen, stattdessen Teilnahme ändern");return}const m=memberById(id);if(!m)return;if(apiManagedRosterMember(m)){showToast("Aktive Clanmitglieder werden über Clash verwaltet");return}const used=usedInLockedDay(id),msg=used?`„${m.name}“ wurde bereits an einem gespielten Tag eingesetzt. Aus der aktuellen CWL entfernen? Vergangene gespielte Line-ups und Einsätze bleiben erhalten.`:`${m.name||"Mitglied"} wirklich löschen?`;if(!await confirmInline(msg,{title:used?"Spieler aus aktueller CWL entfernen":"Mitglied löschen",confirmText:used?"Aus CWL entfernen":"Löschen",danger:true}))return;const r=removeMembers(new Set([id]));if(r.blocked)return;renderAll(r.archived?"Spieler aus aktueller CWL entfernt · Historie bleibt erhalten ✓":"Mitglied gelöscht ✓")}
 function renderSummary(){
   const summaryRoot=document.getElementById("summaryList");
+  const previousSummaryContext=summaryRoot.dataset.profileContext;
   const summaryContext=(window.CWLCloud?.active?(window.CWLCloud?.getActiveClanId?.()||"cloud"):"local")+
     "|"+String(state.id||state.name||"");
   const focusedSummaryId=summaryRoot.dataset.profileContext===summaryContext&&
@@ -4526,7 +4527,7 @@ function renderSummary(){
      ?document.activeElement.dataset.memberId:null;
   summaryRoot.dataset.profileContext=summaryContext;
   const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
-  const progress=currentCwlDisplayProgress(dayResults);
+  const progress=window.CWLCloud?.active?currentCwlDisplayProgress(dayResults):null;
   const cloudProgress=!!progress;
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
     ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
@@ -4585,7 +4586,7 @@ function renderSummary(){
     "Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. Gesamt zählt beide zusammen.";
   document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
   const progressSignature=cloudProgress?JSON.stringify([...progress]):"offline";
-  const sameSummaryContext=summaryRoot.dataset.profileContext===summaryContext;
+  const sameSummaryContext=previousSummaryContext===summaryContext;
   const backgroundProgressUpdate=sameSummaryContext&&
     summaryRoot.dataset.progressSignature!==undefined&&
     summaryRoot.dataset.progressSignature!==progressSignature&&
@@ -5296,10 +5297,10 @@ window.CWLLegacy={
  normalize:(p)=>normalizeProfile(p),
  rerender:()=>renderAll(),
  createPlanPlayerChip:member=>{const template=document.createElement("template");template.innerHTML=planLineupPlayerChip(member);return template.content.firstElementChild},
- refreshSummary:()=>renderSummary(),
+ refreshSummary:()=>{if(window.CWLCloud?.active&&lastPlan)renderPlan();renderSummary()},
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.42"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.43"></script>
 </body>
 </html>
