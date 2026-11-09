@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.49",
+  "version": "v1.16.50",
   "released": "2026-11-09",
-  "summary": "CWL #184: Ältere bestätigte verpasste CWL-Angriffe bleiben über eine kompakte Tagesauswahl auch bei neuen offenen Erinnerungen prüfbar; keine neue Plan-, Cloud- oder Clash-Automatik."
+  "summary": "Einsatzverteilung #187: Kombinierbare Filter für Rotation, nachgewiesen ausgeführte Ziele und 8★-Stand mit stabiler Sortierung, Such- und Reset-Funktion – rein lesend, ohne Planänderung."
 }
