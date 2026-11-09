@@ -116,6 +116,26 @@ export function previewVerifiedCwlPause({profile,snapshot,review,targetDay,
     medalIssues.push(result.name+" würde nachgewiesene 8★ verlieren.");
   }
   if(medalIssues.length)return error("8★-Konflikt: "+medalIssues.slice(0,3).join(" "));
+  // Changes to one AUTO day can redistribute OTHER future assignments.
+  // Report verified solver totals and a neutral rotation spread (not a fairness score).
+  const participants=profile.members.filter(m=>
+   m?.id&&m.participating&&m.cocSyncState!=="former");
+  const totals=participants.map(m=>({
+   id:m.id,name:String(m.name||tag(m.playerTag)||m.id),
+   fixed:!!m.fixed,before:before.counts?.[m.id],after:after.counts?.[m.id]
+  }));
+  if(totals.some(r=>!Number.isInteger(r.before)||r.before<0||
+      !Number.isInteger(r.after)||r.after<0))
+   return error("Einsatzverteilung ist nicht vollständig berechenbar.");
+  const rotations=totals.filter(r=>!r.fixed);
+  const span=key=>rotations.length>1?
+   Math.max(...rotations.map(r=>r[key]))-Math.min(...rotations.map(r=>r[key])):null;
+  const impact={
+   countsChanged:totals.filter(r=>r.before!==r.after).map(
+    ({id,name,before,after})=>({id,name,before,after})),
+   rotationSpread:{before:span("before"),after:span("after")},
+   rotationPlayers:rotations.length
+  };
   const changed=after.dayPlans.filter(p=>{
    const a=before.dayPlans[p.day-1];
    return !sameLineup(a.lineup,p.lineup);
@@ -129,7 +149,7 @@ export function previewVerifiedCwlPause({profile,snapshot,review,targetDay,
   if(!changed.some(x=>x.day===targetDay))return error("Keine wirksame Änderung.");
   return {ok:true,day:targetDay,memberId:member.id,tag:tag(review.tag),
    warTag:tag(review.warTag),missDay:review.day,season:snapshot.season,
-   changed,medalUnknown:afterMedal.rows.some(m=>m.unknown),
+   changed,impact,medalUnknown:afterMedal.rows.some(m=>m.unknown),
    note:"Änderung betrifft ausschließlich eine AUTO-Tagesregel im Plan; der Clash-Wechsel muss manuell erfolgen.",
    draft};
  }catch(e){return error("Vorschau kann nicht sicher berechnet werden: "+String(e?.message||e).slice(0,120));}
