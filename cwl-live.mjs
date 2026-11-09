@@ -563,12 +563,27 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
   document.addEventListener("visibilitychange",()=>{
     if(!document.hidden&&context().active)refreshNow();
   });
-  return {start,stop,render,refresh:()=>refreshNow(true),getPlayedAttackResults:()=>{
-    // Read-only: confirmed in-war attacks count even before a day is closed.
+  const observedAttackResults=()=>{
+    // Read-only. Both in-war evidence and ended results belong to this clan.
     const ctx=context(),snapshot=effective();
     return ctx.active&&ctx.clanId&&snapshot?.rounds?
       recordedCwlAttackResults(snapshot):{};
-  },getMedalOverview:()=>{
+  };
+  return {start,stop,render,refresh:()=>refreshNow(true),getPlayedAttackResults:()=>{
+    // Backward-compatible completed-war contract for legacy statistics/viewers.
+    // Live operational progress calls getObservedCwlAttackResults instead.
+    const completed={};
+    for(const [day,entries] of Object.entries(observedAttackResults())){
+      const ended={};
+      for(const [tag,result] of Object.entries(entries)){
+        if(result.state!=="warEnded")continue;
+        ended[tag]=result.missed?{missed:true}:
+          {stars:result.stars,percent:result.percent,missed:false};
+      }
+      if(Object.keys(ended).length)completed[day]=ended;
+    }
+    return completed;
+  },getObservedCwlAttackResults:observedAttackResults,getMedalOverview:()=>{
     const ctx=context(),info=effective();
     if(!info?.season||!ctx.active||!ctx.clanId)return null;
     // effective() already returned a validated snapshot; re-sanitizing
