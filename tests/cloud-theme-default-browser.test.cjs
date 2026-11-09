@@ -26,6 +26,9 @@ test("Cloud Gold first visit, saved choices, system, malformed prefs and separat
 },async()=>{
  assert.match(html,/<html lang="de" data-theme="arena">/);
  assert.match(html,/<meta name="theme-color" content="#151a20">/);
+ const beforeCss=html.slice(0,html.indexOf("<style>"));
+ assert.match(beforeCss,/localStorage\.getItem\("cwl_planer_ui_v1"\)/);
+ assert.match(beforeCss,/document\.documentElement\.dataset\.theme=theme/);
  assert.match(offline,/<html lang="de" data-theme="dark">/);
  assert.match(offline,/Dunkel \(Standard\)/);
  const server=serve();
