@@ -16,19 +16,24 @@
   const m=row.m||{};
   const executed=cloud?(!m.playerTag||row.progress?.identifiable===false?null:integer(row.progress?.executed)):integer(row.played);
   const fixed=!!m.fixed,rotating=!!m.participating&&!fixed&&m.cocSyncState!=="former";
-  const exact=!fixed&&Number.isInteger(m.targetDays)&&m.targetDays>=1&&m.targetDays<=7
+  const explicitTarget=!fixed&&Number.isInteger(m.targetDays)&&m.targetDays>=1&&m.targetDays<=7
    ?m.targetDays:null;
+  // Explicit user targets win. "Automatisch" has no *fixed* target, but it
+  // still has a real current plan. For an Einsatz-status filter, compare
+  // completed attacks to that plan instead of excluding all automatic users.
+  // The plan projection is dynamic and never persisted as an exact target.
+  const planned=integer(row.count);
+  const exact=explicitTarget??(planned!==null&&planned>0?planned:null);
+  const targetSource=explicitTarget!==null?"fixed":exact!==null?"planned":"none";
   const open=integer(row.open);
-  // "Automatisch" never becomes an invented hard goal. Fixed means available
-  // planned days, not a user-selected exact target.
-  const targetStatus=exact===null?"automatic":executed===null?"unknown":
+  const targetStatus=executed===null?"unknown":exact===null?"unknown":
    executed>=exact?"reached":"open";
   const status=medal?.status==="reached"?"reached":
    !cloud||!medal||!medalFresh||medal.unknown||medal.status==="uncertain"?"unknown":
    medal.status==="not-reachable"?"unreachable":"open";
   const starsRemaining=Number.isFinite(medal?.remainingStars)?Math.max(0,medal.remainingStars):
    Number.isFinite(medal?.stars)?Math.max(0,8-medal.stars):null;
-  return {...row,rotating,fixed,exact,targetStatus,
+  return {...row,rotating,fixed,exact,explicitTarget,targetSource,targetStatus,
    medalStatus:status,starsRemaining,verifiedAttacks:executed,
    openVerifiedPlan:open,hitRate:cloud?row.progress?.hitRate:null,
    averageStars:cloud?row.progress?.averageStars:null};
