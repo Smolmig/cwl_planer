@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.43",
+  "version": "v1.16.44",
   "released": "2026-11-09",
-  "summary": "CWL-Einsätze: echte Angriffe werden schon im laufenden Krieg in Plan-Tiles, Einsatzverteilung und Fortschrittsbalken gezählt; aktuelle CWL-3★-Quote/Ø Sterne mit Stichprobe, Ergebnisse pro Tag. Keine Änderung an Solver, Locks, Rollen, Datenbank oder Offline-PWA."
+  "summary": "CWL-Plan: innerhalb der letzten Stunde offene Angriffe bei frischem Clash-Stand anzeigen; auf diesem Gerät quittierbar, bei altem Stand neutraler Prüfhinweis. Keine Änderungen am Solver, Cloud-Daten, Rollen oder Offline-PWA."
 }

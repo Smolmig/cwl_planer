@@ -24,12 +24,15 @@ export function safeBadgeUrl(value) {
 function sanitizeMember(m) {
   const tag=tagOf(m?.tag);
   if (!validTag(tag)) return null;
-  const attacks=Array.isArray(m?.attacks) ? m.attacks.slice(0,4).map(a=>({
+  const raw=Array.isArray(m?.attacks)?m.attacks:null;
+  const parsed=raw?raw.slice(0,4).map(a=>({
     attackerTag:tagOf(a?.attackerTag)||tag,
     defenderTag:tagOf(a?.defenderTag),
     stars:num(a?.stars,0,3),
     destructionPercentage:safeDestruction(a?.destructionPercentage)
-  })).filter(a=>a.attackerTag===tag && validTag(a.defenderTag) && a.stars!==null && a.destructionPercentage!==null) : [];
+  })).filter(a=>a.attackerTag===tag && validTag(a.defenderTag) && a.stars!==null && a.destructionPercentage!==null):null;
+  // Missing or malformed attack records are unknown, never inferred as a miss.
+  const attacks=raw&&parsed.length===Math.min(raw.length,4)?parsed:null;
   return {tag,name:String(m?.name||"Unbekannt").slice(0,80),
     townHallLevel:num(m?.townHallLevel,3,30),attacks};
 }
@@ -114,6 +117,7 @@ export function recordedCwlAttackResults(snapshot){
 // who is still attacking 5 minutes before the end is NOT a missed attacker.
 export function cwlAttackReminder(round,now=Date.now(),windowMinutes=60){
   if(!round?.available||!["inWar","warEnded"].includes(round.state)||
+     !validTag(tagOf(round.warTag))||!Number.isInteger(round.day)||round.day<1||round.day>7||
      !Number.isFinite(now)||!Number.isFinite(windowMinutes)||windowMinutes<=0)return null;
   const limit=round.teamSize,roster=round.clan?.members;
   if(!Number.isInteger(limit)||limit<1||limit>50||!Array.isArray(roster)||
@@ -129,12 +133,12 @@ export function cwlAttackReminder(round,now=Date.now(),windowMinutes=60){
     const start=clashTime(round.startTime),remaining=end-now;
     if(!Number.isFinite(start)||start>now||remaining<=0||
        remaining>windowMinutes*60000)return null;
-    return {day:round.day,kind:"open",players:players.map(m=>({tag:tagOf(m.tag),
+    return {day:round.day,warTag:tagOf(round.warTag),kind:"open",players:players.map(m=>({tag:tagOf(m.tag),
       name:String(m.name||tagOf(m.tag)).slice(0,80)})),
       minutesLeft:Math.ceil(remaining/60000),endTime:round.endTime};
   }
   if(!canFinalize(round,limit,now))return null;
-  return {day:round.day,kind:"confirmed",players:players.map(m=>({
+  return {day:round.day,warTag:tagOf(round.warTag),kind:"confirmed",players:players.map(m=>({
     tag:tagOf(m.tag),name:String(m.name||tagOf(m.tag)).slice(0,80)})),
     minutesLeft:0,endTime:round.endTime};
 }

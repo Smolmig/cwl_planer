@@ -245,6 +245,47 @@ test("CWL alert is advisory only and never auto-pauses, changes rules or writes 
 });
 
 
+test("CWL 60-minute reminder needs a real war key and verified attack-log coverage",async()=>{
+ const {cwlAttackReminder,sanitizeSnapshot}=await load();
+ const data=snapshot(),round=data.rounds[0];
+ round.state="inWar";
+ round.startTime="20261104T110000.000Z";
+ round.endTime="20261105T110000.000Z";
+ const end=Date.parse("2026-11-05T11:00:00Z");
+ for(const [minutes,expected] of [[65,false],[60,true],[45,true],[10,true],[0,false],[-5,false]]){
+  const note=cwlAttackReminder(sanitizeSnapshot(data).rounds[0],end-minutes*60000);
+  assert.equal(!!note,expected,"minute "+minutes);
+  if(note){assert.equal(note.warTag,round.warTag);assert.equal(note.players.length,1)}
+ }
+ round.warTag="#BAD";
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],end-45*60000),null);
+ round.warTag="#2PYL";
+ round.clan.members[1].attacks=undefined;
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],end-45*60000),null,
+   "missing list is unknown, not an unspent chance");
+ round.clan.members[1].attacks=[{attackerTag:"#JRC",defenderTag:"#PPQ",stars:4,destructionPercentage:80}];
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],end-45*60000),null,
+   "invalid attack is not a fake missed attack");
+ round.clan.members[1].attacks=[];
+ round.clan.members.push({...round.clan.members[1]});
+ assert.equal(cwlAttackReminder(sanitizeSnapshot(data).rounds[0],end-45*60000),null,
+   "duplicate tag or incomplete roster blocks notification");
+});
+
+test("CWL reminder acknowledgement stays local; stale data and viewer roles are protected",()=>{
+ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ assert.match(live,/cwlReminderAckKey/);
+ assert.match(live,/cwl-attention-ack/);
+ assert.match(live,/cwl-attention-reset/);
+ assert.match(live,/writeCwlReminderAck/);
+ assert.match(live,/lastSuccessfulProfile===active\.profile/);
+ assert.match(live,/staleAttention/);
+ assert.match(live,/Datenstand unklar/);
+ assert.match(live,/active\.role!=="viewer"/);
+ assert.match(html,/auf diesem Gerät/);
+});
+
 test("Running CWL attacks are documented before war end; no fake zero or missed attack",async()=>{
  const {sanitizeSnapshot,recordedCwlAttackResults}=await load();
  const data=snapshot();
