@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.45";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.45";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.46";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.46";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -67,11 +67,101 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
+export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudSaved}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set(),expandedMissReviews=new Set();
+  let ownerDecisions=[],decisionScope="",decisionBusy=false,decisionError="";
+  const decisionKey=(season,warKey,playerTag)=>
+    [season,String(warKey||""),tagOf(playerTag)].join("|");
+  // Only this clan's server-authorized audit rows are shown; cache never
+  // authorizes writes and is reset across clan/profile/session changes.
+  function decisionIndex(season,clan){
+    const result=new Map();
+    if(decisionScope!==clan+"|"+season)return result;
+    for(const row of ownerDecisions){
+      const key=decisionKey(row.season,row.war_key,row.player_tag);
+      if(!result.has(key))result.set(key,row);
+    }
+    return result;
+  }
+  async function loadOwnerDecisions(expectedClan,season){
+    if(typeof sb.from!=="function"||!expectedClan||!/^\d{4}-\d{2}$/.test(season))return;
+    const scope=expectedClan+"|"+season;
+    const {data,error}=await sb.from("cwl_missed_owner_decisions")
+      .select("id,season,war_key,day,player_tag,decision,note,actor_id,created_at")
+      .eq("clan_id",expectedClan).eq("season",season)
+      .order("id",{ascending:false}).limit(350);
+    if(context().clanId!==expectedClan||!context().active)return;
+    if(error){decisionError="Entscheidungsverlauf derzeit nicht verfügbar";throw error}
+    ownerDecisions=Array.isArray(data)?data:[];
+    decisionScope=scope;decisionError="";
+    render();
+  }
+  async function makeOwnerDecision(review,decision){
+    const ctx=context(),source=effective();
+    if(decisionBusy||ctx.role!=="owner"||!ctx.active||!ctx.clanId||!navigator.onLine||
+       !source||source.season!==ctx.profile?.cwlLive?.season||
+       !["excused","later","review_pause"].includes(decision))return;
+    const fresh=activeClan===ctx.clanId&&lastSuccessfulProfile===ctx.profile&&
+      current?.season===source.season&&lastSuccessfulAt>0&&
+      Date.now()-lastSuccessfulAt<=FRESH_WINDOW_MS&&!offlineReason&&!fetching&&
+      !staleRoundDays.has(review.day);
+    if(!fresh){notify("Bitte zuerst die CWL-Daten aktualisieren.");return}
+    const currentReview=cwlMissedRotationReview(source,ctx.profile,
+      storage.getPlannedLineups?.()||[],{
+        planningOk:storage.getPlanningState?.()?.ok===true,
+        staleDays:[...staleRoundDays]
+      }).find(row=>row.day===review.day&&row.warTag===review.warTag&&
+        row.tag===review.tag);
+    if(!currentReview){notify("Missed-Nachweis geändert. Bitte CWL-Daten neu laden.");return}
+    const labels={excused:"Entschuldigung akzeptieren",later:"Später prüfen",
+      review_pause:"Pause prüfen"};
+    const details=decision==="review_pause"?
+      "Nur die Empfehlung dokumentieren. Kein Spieler wird pausiert, keine Tagesregel verändert und kein Clash-Wechsel ausgeführt.":
+      decision==="excused"?"Die Entschuldigung wird dokumentiert. Der belegte Missed-Angriff bleibt in der Statistik erhalten.":
+      "Die Prüfung wird für später vorgemerkt. Bisherige Aufstellungen bleiben bestehen.";
+    const response=await storage.askAction({
+      title:labels[decision],message:"Tag "+review.day+" · "+review.name+" ("+review.tag+")\n"+
+        details+"\n\nEntscheidung für alle berechtigten Clanmitglieder im Verlauf sichtbar.",
+      inputLabel:"Begründung / Notiz (optional, max. 300 Zeichen)",
+      inputValue:"",
+      buttons:[{value:"confirm",text:"Verbindlich dokumentieren",primary:true},
+        {value:"cancel",text:"Abbrechen"}]
+    });
+    if(response?.value!=="confirm")return;
+    const note=String(response.input||"").trim();
+    if(note.length>300){notify("Notiz darf höchstens 300 Zeichen enthalten.");return}
+    decisionBusy=true;
+    const ownerClan=ctx.clanId,ownerProfile=ctx.profile,season=source.season;
+    try{
+      await ensureCloudSaved?.();
+      const latest=context(),now=Date.now();
+      if(latest.role!=="owner"||!latest.active||latest.clanId!==ownerClan||
+         latest.profile!==ownerProfile||current?.season!==season||
+         lastSuccessfulProfile!==ownerProfile||
+         now-lastSuccessfulAt>FRESH_WINDOW_MS||!navigator.onLine||
+         staleRoundDays.has(review.day))
+        throw Error("Clan, Rolle oder Datenstand verändert. Bitte erneut prüfen.");
+      const round=effective()?.rounds?.find(x=>x.day===review.day);
+      const confirmed=cwlAttackReminder(round,now);
+      if(confirmed?.kind!=="confirmed"||confirmed.warTag!==review.warTag||
+         !confirmed.players.some(p=>p.tag===review.tag))
+        throw Error("Missed-Ereignis nicht mehr eindeutig bestätigt.");
+      const {error}=await sb.from("cwl_missed_owner_decisions").insert({
+        clan_id:ownerClan,season,war_key:"cwl:"+review.warTag,
+        day:review.day,player_tag:review.tag,decision,note
+      });
+      if(error)throw error;
+      await loadOwnerDecisions(ownerClan,season);
+      notify("✓ Owner-Entscheidung für den Clan dokumentiert. Keine Planänderung.");
+    }catch(err){
+      console.warn("CWL decision rejected:",String(err?.message||err));
+      notify("Entscheidung nicht gespeichert. Bitte Collector-Nachweis, Berechtigung und Cloud-Stand prüfen.");
+    }finally{decisionBusy=false;render()}
+  }
+
   const effective=()=>{
     const ctx=context();
     if (!ctx.active || !ctx.clanId || !ctx.hasClanTag)return null;
@@ -491,6 +581,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
         planningOk:storage.getPlanningState?.()?.ok===true,
         staleDays:[...staleRoundDays]
       }).filter(x=>x.day===attention.day&&x.warTag===attention.warTag):[];
+    const decisionMap=decisionIndex(info.season,ctx.clanId);
     const reviewHtml=reviewKey?(()=>{
       const list=reviewRows.length?reviewRows.map(x=>{
         const checkDays=x.reviewable.map(v=>"Tag "+v.day+" ("+v.stage+")").join(", ");
@@ -500,6 +591,23 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
           x.targetDays?"Einsatzziel "+x.targetDays:"",
           x.mustDays.length?"MUSS an Tag "+x.mustDays.join(", "):""
         ].filter(Boolean).join(" · ");
+        const decision=decisionMap.get(decisionKey(info.season,"cwl:"+x.warTag,x.tag));
+        const decisionNames={excused:"Entschuldigung akzeptiert",
+          later:"Später prüfen",review_pause:"Pauseprüfung vorgemerkt"};
+        const decisionStamp=decision?.created_at?new Date(decision.created_at).toLocaleString(
+          "de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+        const decisionText=decision?.decision?
+          "<small class='cwl-miss-decision-state'>Letzte Owner-Entscheidung: "+
+          esc(decisionNames[decision.decision]||"Geprüft")+" · "+esc(decisionStamp)+
+          (decision.note?" · "+esc(decision.note):"")+"</small>":"";
+        const decisionButtons=ctx.role==="owner"&&!decisionBusy&&!x.unknownMember?
+          "<div class='cwl-miss-decision-actions'>"+
+          "<button class='btn small cwl-miss-owner-action' data-action='excused' data-tag='"+esc(x.tag)+
+          "' type='button'>Entschuldigen</button>"+
+          "<button class='btn small cwl-miss-owner-action' data-action='later' data-tag='"+esc(x.tag)+
+          "' type='button'>Später</button>"+
+          "<button class='btn small cwl-miss-owner-action' data-action='review_pause' data-tag='"+esc(x.tag)+
+          "' type='button'>Pause prüfen</button></div>":"";
         const msg=x.unknownMember?"Nicht eindeutig im aktuellen Plan zugeordnet – keine Pausenempfehlung.":
           checkDays?"Nur mögliche Planprüfung: "+checkDays+". Clash-Aufstellung vor Wechsel prüfen.":
           "Kein eindeutig änderbarer künftiger Einsatz im aktuellen Plan.";
@@ -507,13 +615,15 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
           " <span class='cwl-miss-review-tag'>"+esc(x.tag)+"</span></b>"+
           "<div>"+esc(msg)+"</div>"+
           (blocked?"<small>Geschützt: "+esc(blocked)+"</small>":"")+
-          (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+"</li>";
+          (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+
+          decisionText+decisionButtons+"</li>";
       }).join(""):"<li>Prüfung aus Plan und Spieler-Tags derzeit nicht eindeutig möglich. Keine automatische Empfehlung.</li>";
       return "<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
         "<summary>Künftige Einsätze prüfen (nur Vorschau)</summary>"+
         "<p>Bestätigter fehlender Angriff. Ob ein Spieler später pausiert, entscheidet die Clanführung "+
         "nach Prüfung von Fix/MUSS, Einsatzziel, 8★-Bonus und Clash-Aufstellungen. "+
-        "Diese Ansicht ändert nichts und speichert keine Entscheidung.</p>"+
+        "Die Vorschau verändert keine Einsätze. Owner können hier eine Entscheidung "+
+        "im gemeinsamen Verlauf dokumentieren, aber noch keinen Wechsel automatisch ausführen.</p>"+
         "<ul>"+list+"</ul></details>";
     })():"";
     const attentionHtml=attention?(()=>{
@@ -582,6 +692,16 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
       if(event.target.open)expandedMissReviews.add(reviewKey);
       else expandedMissReviews.delete(reviewKey);
     });
+    node.querySelectorAll(".cwl-miss-owner-action").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const tag=tagOf(button.dataset.tag);
+        const row=reviewRows.find(x=>x.tag===tag);
+        if(row)makeOwnerDecision(row,button.dataset.action).catch(err=>{
+          console.warn("CWL owner action:",err);
+          notify("Entscheidung konnte nicht geöffnet werden.");
+        });
+      });
+    });
     const byDay=new Map(info.rounds.map(r=>[r.day,r]));
 
     for (let i=0;i<ctx.profile.config.days;i++){
@@ -645,6 +765,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
             notify("✓ CWL-Tag "+result.lockedDays.join(", ")+" automatisch mit tatsächlicher Aufstellung abgeschlossen");
         }
       }
+      if(data.active&&data.season&&typeof sb.from==="function")
+        await loadOwnerDecisions(id,data.season).catch(e=>console.warn(
+          "CWL owner decisions unavailable:",String(e?.message||e)));
       if(manual && data.pending)notify("Die CWL-Auslosung ist noch nicht vollständig verfügbar. Dein Plan bleibt erhalten.");
       else if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
     }catch(err){
@@ -661,6 +784,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;
     closeSwapPopover();openedOutgoing.clear();
     expandedDays.clear();expandedOpponentDays.clear();expandedMissReviews.clear();staleRoundDays.clear();
+    ownerDecisions=[];decisionScope="";decisionBusy=false;decisionError="";
     render();
   }
   function start(){
