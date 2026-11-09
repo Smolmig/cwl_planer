@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.42",
+  "version": "v1.16.43",
   "released": "2026-11-09",
-  "summary": "Cloud: Arena/Gold ist neuer Standard für Personen ohne gespeicherte Theme-Wahl; bestehende Farbschemata bleiben erhalten. Offline-PWA, CWL/Planung, Statistik, Supabase/Auth/RLS/Edge und Archive unverändert."
+  "summary": "CWL-Einsätze: echte Angriffe werden schon im laufenden Krieg in Plan-Tiles, Einsatzverteilung und Fortschrittsbalken gezählt; aktuelle CWL-3★-Quote/Ø Sterne mit Stichprobe, Ergebnisse pro Tag. Keine Änderung an Solver, Locks, Rollen, Datenbank oder Offline-PWA."
 }
