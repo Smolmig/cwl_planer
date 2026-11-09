@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.46";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.46";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.46";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.46";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.46";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.46";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.47";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.47";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.47";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.47";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.47";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.47";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -410,6 +410,7 @@ let currentWarOverview=null;
 const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
  ensureCloudSaved:()=>ensureSaved(),
+ applyVerifiedPause:args=>applyVerifiedPause(args),
  onSnapshot:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
@@ -1035,6 +1036,33 @@ async function writeCloud(){
   if(!blocked&&changedSerial&&changedSerial!==lastSerial)debounce=setTimeout(()=>writeCloud(),250);
  }
 }
+async function applyVerifiedPause({preview,note}){
+ if(!cloud.active||role!=="owner"||!clanId||!user||!navigator.onLine||
+    blocked||hydrating||saving||typeof preview?.day!=="number")
+   throw Error("Die Cloud-Planung kann gerade nicht sicher geändert werden.");
+ await ensureSaved();
+ if(!Number.isSafeInteger(Number(revision))||revision==null)
+   throw Error("Cloud-Revision fehlt. Bitte erneut laden.");
+ const ownerClan=clanId,ownerEpoch=accountEpoch,expectedRevision=revision;
+ const {data,error:err}=await sb.rpc("cwl_apply_verified_missed_pause",{
+  p_clan:ownerClan,p_season:preview.season,
+  p_war_key:"cwl:"+preview.warTag,
+  p_miss_day:preview.missDay,p_player_tag:preview.tag,
+  p_target_day:preview.day,p_expected_revision:expectedRevision,
+  p_note:String(note||"").slice(0,300)
+ });
+ if(err)throw err;
+ if(ownerClan!==clanId||ownerEpoch!==accountEpoch||role!=="owner")
+   return {saved:true,switched:true};
+ // RPC changed only one server-side AUTO rule and atomically wrote the
+ // decision; never copy a proposed full profile from the browser.
+ const loaded=await loadCloudProfile(true);
+ if(!loaded)throw Error("Pause gespeichert, aber Cloud-Profil noch nicht neu geladen. Bitte manuell aktualisieren.");
+ await loadPlanReview();
+ cloud.afterRender();
+ return {saved:true,revision:data};
+}
+
 async function ensureSaved(){
  clearTimeout(debounce);
  if(role==="editor"&&planIsLocked()&&changedSerial)throw Error("Plan freigegeben: Änderungen bitte als Vorschlag einreichen.");

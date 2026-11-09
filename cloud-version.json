@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.46",
+  "version": "v1.16.47",
   "released": "2026-11-09",
-  "summary": "CWL-Missed nach bestätigtem Collector-Nachweis: Owner kann Entschuldigung, spätere Prüfung oder Pauseprüfung mit optionaler Notiz im gemeinsamen unveränderlichen Verlauf dokumentieren. Keine automatische Planänderung."
+  "summary": "CWL #184: Owner kann nach bestätigtem Miss und dokumentiertem Pause-Review genau einen weiterhin änderbaren Vorbereitungstag nach Solver-/8★-/Clash-Schutzprüfung atomar auf RAUS setzen; Ersatzvorschau vor Bestätigung, Clan-Audit, Clash-Wechsel weiter manuell."
 }

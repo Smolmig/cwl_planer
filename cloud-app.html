@@ -2619,6 +2619,11 @@ html[data-theme] #view-more-settings .latest-changelog{
 .cwl-miss-audit-history summary{cursor:pointer;font-weight:700;color:var(--muted);font-size:11px}
 .cwl-miss-audit-history ul{list-style:none;margin:5px 0 0;padding:0;gap:4px}
 .cwl-miss-audit-history li{padding:3px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.cwl-miss-apply-actions{margin-top:9px;display:flex;flex-wrap:wrap;gap:7px}
+.cwl-miss-apply-actions .btn{min-height:38px;font-size:11px;font-weight:800;white-space:normal;
+ border-color:var(--primary);color:var(--primary)}
+@media(max-width:420px){.cwl-miss-apply-actions .btn{width:100%}}
+
 @media(max-width:380px){.cwl-miss-decision-actions .btn{flex:1 1 100%}}
 
 @media(max-width:390px){.cwl-miss-review-row{padding:7px 8px}}
@@ -3519,11 +3524,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.46</strong><span>CWL · Owner-Entscheidungen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.47</strong><span>CWL · sichere Tagespause</span></div>
        <ul>
-        <li><b>Nach bestätigtem Miss:</b> Clanführer können „Entschuldigen“, „Später“ oder „Pause prüfen“ mit optionaler Notiz festhalten.</li>
-        <li><b>Gemeinsamer Verlauf:</b> Entscheidungen mit Zeitstempel sind für berechtigte Clanmitglieder sichtbar; ältere Einträge bleiben erhalten.</li>
-        <li><b>Sicherheitsgrenzen:</b> Nur vollständige, nachgewiesene Collector-Misses; kein automatischer Ausschluss oder Wechsel.</li>
+        <li><b>Owner-Übernahme:</b> Nach „Pause prüfen“ kann für genau einen späteren Vorbereitungstag eine Pause mit Ersatzvorschau bestätigt werden.</li>
+        <li><b>Schutzregeln:</b> Solver-Konflikte, Fix/MUSS, Einsatzziele, bestehende Clash-Aufstellungen und neue 8★-Risiken stoppen die Übernahme.</li>
+        <li><b>Atomar dokumentiert:</b> Nur eine AUTO-Regel wird zu RAUS, samt unveränderlichem Audit. Die Änderung in Clash erfolgt weiterhin manuell.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3700,6 +3705,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="help-item"><b>Letzte Stunde im CWL-Krieg</b><div>Bei frischem Clash-Datenstand und belegter Kriegsendzeit erinnert der Plan an offene Angriffe innerhalb der letzten 60 Minuten. Das bedeutet <b>noch nicht angegriffen laut letztem Abruf</b>, nicht „vergessen“. Ist der Datenstand veraltet, erscheint nur ein neutraler Prüfhinweis. Berechtigte Clanführer können „Im Spiel erinnert“ auf <b>diesem Gerät</b> quittieren: Das markiert keinen Angriff, ändert keine Aufstellung und wird nicht mit anderen Geräten synchronisiert. Neue offene Spieler werden erneut angezeigt. Bei geschlossener App gibt es damit keine Push-Erinnerung; nach Kriegsende bleibt eine spätere Entscheidung über weitere Einsätze manuell.</div></div>
     <div class="help-item"><b>Verpasster CWL-Angriff – weitere Einsätze</b><div>Nur wenn ein CWL-Krieg laut vollständiger, frischer Clash-Datenlage abgeschlossen ist und der Angriff tatsächlich nicht erfolgte, zeigt der Plan eine <b>schreibgeschützte Prüfempfehlung</b> je Spieler. Dabei unterscheidet er spätere noch prüfbare Plan-Tage von bereits gesperrten oder laufenden Clash-Kriegen und nennt Fix/MUSS-Regeln sowie feste Einsatzziele. <b>Es findet kein automatisches Auf-Pause-Setzen, kein Ersatzwechsel und keine Entscheidungsspeicherung statt.</b> Die Clanführung muss Konsequenzen einschließlich des 8★-Bonus manuell beurteilen. Eine gemeinsame Owner-Entscheidung mit Entschuldigung und Audit ist noch nicht umgesetzt.</div></div>
     <div class="help-item"><b>Owner-Entscheidungen bei CWL-Misses</b><div>Ist ein verpasster Angriff sowohl im abgeschlossenen Clash-Krieg als auch im vollständigen Statistik-Collector nachgewiesen, kann der <b>Clanführer</b> den Fall mit einer optionalen Notiz als <b>Entschuldigt</b>, <b>Später prüfen</b> oder <b>Pause prüfen</b> dokumentieren. Die Entscheidungen sind für berechtigte Mitglieder des gemeinsamen Clans sichtbar, chronologisch nachvollziehbar und nachträglich nicht löschbar. Die neueste Entscheidung wird direkt am Spieler angezeigt; ein neuer Beschluss ergänzt den Verlauf statt den alten zu überschreiben. Diese Funktion <b>pausiert den Spieler nicht automatisch</b> und verändert weder Fix-/MUSS-Regeln noch bereits fixierte Aufstellungen. Wenn der Collector noch keinen vollständigen Miss bestätigt hat, ist keine verbindliche Dokumentation möglich. Für eine echte Umbesetzung muss der Owner den Plan separat prüfen und bearbeiten.</div></div>
+    <div class="help-item"><b>Eine bestätigte CWL-Tagespause übernehmen</b><div>Nach einem <b>belegten</b> verpassten CWL-Angriff kann der Clanführer zunächst „Pause prüfen“ dokumentieren. Für einen späteren Kriegstag, der sich nach einem frischen Clash-Abgleich noch <b>in der Vorbereitung</b> befindet (mindestens 30 Minuten bis Kampfbeginn), erscheint gegebenenfalls die Schaltfläche „Pause im Plan übernehmen“. Vor der verbindlichen Bestätigung prüft der Planer die exakten Einsatzziele, Fix-/MUSS-Regeln, vollständig besetzte Aufstellungen, unveränderbare Clash-Tage und den rechnerischen 8★-Bonus. Nur wenn keine neuen Konflikte entstehen, wird für <b>diesen einen Tag</b> die bisherige AUTO-Regel auf RAUS gesetzt, zusammen mit einem gemeinsamen Audit-Eintrag. Die Änderung ist kein Clash-Wechsel: <b>Die Aufstellung im Spiel muss weiterhin manuell angepasst werden.</b> Weitere Tage sind nicht automatisch pausiert und müssen jeweils separat nachgeprüft werden. Bei Datenlücken oder Konflikten wird die Übernahme blockiert; der normale manuelle Plan bleibt unverändert.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -3952,9 +3958,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.46"></script>
+<script src="./cwl-planning-core.js?v=1.16.47"></script>
 <script>
-const APP_VERSION="v1.16.46";
+const APP_VERSION="v1.16.47";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5334,6 +5340,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.46"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.47"></script>
 </body>
 </html>
