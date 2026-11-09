@@ -13,7 +13,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Für teilnehmende **Rotationsspieler** wird die Spanne aus höchster und niedrigster geplanter Einsatzzahl vorher/nachher dargestellt. Nur Orientierung, **keine** automatische Fairness-/Leistungsbewertung oder Garantie; feste Einsatzziele und Verfügbarkeit können Unterschiede erklären. Nicht vollständige Solver-Zähler blockieren die Übernahme statt falsche Zahlen zu zeigen.
 - Mobile/Owner-Bestätigung zeigt die Auswirkungen direkt vor der Freigabe; Hilfe wurde samt bisher veraltetem Missed-Review-Text korrigiert. Core-/Browserintegration und Version-/Cachevertrag regressionsgetestet.
 - Unverändert: keine automatische Mehrtagepause, keine neuen Datenbankrechte oder Migrationen, keine stillen Solver-/Lock-/Clash-Mutationen, kein Push, Offline-PWA unangetastet.
-- **Entwicklungsstand:** Feature-Branch `feat/cwl-pause-fairness-impact-v11648`; PR-/Main-CI, Pages, offizieller Release und reale Clash-/iOS-/Android-Abnahme müssen erst nach Codeprüfung bestätigt werden.
+- **Entwicklungsstand:** [PR #191](https://github.com/Smolmig/cwl_planer/pull/191) im Feature-Branch `feat/cwl-pause-fairness-impact-v11648`; PR-/Main-CI, Pages, offizieller Release und reale Clash-/iOS-/Android-Abnahme müssen erst nach Codeprüfung bestätigt werden.
 
 ## [1.16.47] - 2026-11-09
 
