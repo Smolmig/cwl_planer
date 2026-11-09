@@ -41,18 +41,42 @@ test("Ziel offen / erreicht distinguishes executed attacks from merely planned (
   assert.deepEqual(ids(filterDeploymentRows([pending,reached],{progress:"target-met"})),["reached-"+target]);
  }
 });
-test("Automatisch, Fix und nicht eindeutig zugeordnete Angriffe werden nicht als Ziel offen eingeordnet",()=>{
- const auto=make("automatic",{m:{targetDays:null},played:4,open:0});
- const fix=make("fix",{m:{fixed:true,targetDays:7},played:7,open:0});
+test("Jamie and Pro_Gamer: 3 executed plus one planned qualifies as Ziel offen",()=>{
+ for(const name of ["Jamie","Pro_Gamer"]){
+  const row=make(name,{m:{targetDays:null},played:3,open:1,count:4});
+  assert.equal(row.targetStatus,"open");
+  assert.equal(row.targetSource,"planned");
+  assert.equal(row.exact,4);
+  assert.deepEqual(ids(filterDeploymentRows([row],{progress:"target-open"})),[name]);
+  const reached=make(name,{m:{targetDays:null},played:4,open:0,count:4});
+  assert.equal(reached.targetStatus,"reached");
+  assert.deepEqual(ids(filterDeploymentRows([reached],{progress:"target-met"})),[name]);
+ }
+});
+test("Actual 1/5 planned stays open; 5/5 executed is reached without explicit target",()=>{
+ const open=make("pending",{m:{targetDays:null},played:1,count:5,open:4});
+ const met=make("done",{m:{targetDays:null},played:5,count:5,open:0});
+ assert.equal(open.targetStatus,"open");
+ assert.equal(met.targetStatus,"reached");
+ assert.deepEqual(ids(filterDeploymentRows([open,met],{progress:"target-open"})),["pending"]);
+ assert.deepEqual(ids(filterDeploymentRows([open,met],{progress:"target-met"})),["done"]);
+});
+test("Explicit user goal remains authoritative even if plan has fewer appearances",()=>{
+ const goal5=make("goal5",{m:{targetDays:5},count:4,played:4,open:0});
+ assert.equal(goal5.targetStatus,"open");
+ assert.equal(goal5.targetSource,"fixed");
+ assert.equal(goal5.exact,5);
+ const completed=make("completed",{m:{targetDays:5},count:4,played:5,open:0});
+ assert.equal(completed.targetStatus,"reached");
+});
+test("No planned target and uncertain/player tag remain unclassified instead of fake zero",()=>{
+ const noPlan=make("noPlan",{m:{targetDays:null},count:0,played:0,open:0});
  const duplicate=make("duplicate",{played:3,identifiable:false});
  const withoutTag=make("withoutTag",{m:{playerTag:""},played:0});
- for(const row of [auto,fix,duplicate,withoutTag]){
-  assert.notEqual(row.targetStatus,"open");
-  assert.notEqual(row.targetStatus,"reached");
- }
+ assert.equal(noPlan.targetStatus,"unknown");
  assert.equal(duplicate.targetStatus,"unknown");
  assert.equal(withoutTag.targetStatus,"unknown");
- assert.deepEqual(ids(filterDeploymentRows([auto,fix,duplicate,withoutTag],{progress:"target-open"})),[]);
+ assert.deepEqual(ids(filterDeploymentRows([noPlan,duplicate,withoutTag],{progress:"target-open"})),[]);
 });
 test("8★ reached after 3 AG does not mean 4/4 AG; six stars after 4 AG do not mean medal reached",()=>{
  const early=make("early",{played:3,open:1,medal:{status:"reached",stars:8,remainingStars:0,unknown:false}});
@@ -119,12 +143,17 @@ test("Cloud UI provides exactly three dropdown filters, compact sorting, reset a
  assert.deepEqual(options(group),["Alle Spieler","Rotierende Spieler"]);
  assert.deepEqual(options(goal),["Alle Ziele","Ziel offen","Ziel erreicht"]);
  assert.deepEqual(options(medal),["Alle 8★","8★ offen","8★ erreicht"]);
- assert.equal(doc.querySelectorAll("#summaryCloudFilters select").length,4,"3 filters plus sort");
- assert.equal(doc.querySelectorAll("#summaryCloudFilters label").length,0,"no tall labels");
+ assert.ok(doc.getElementById("summaryFilterPicker"));
+ assert.ok(doc.getElementById("summaryActiveFilters"));
+ assert.ok(doc.getElementById("summarySort"));
+ assert.equal(doc.querySelectorAll("#summaryFilterMenu button[data-filter-key]").length,5);
+ assert.deepEqual([...doc.querySelectorAll("#summaryFilterMenu button[data-filter-key]")].map(x=>x.textContent.trim()),
+  ["Rotierende Spieler","Ziel offen","Ziel erreicht","8 Sterne offen","8 Sterne erreicht"]);
+ assert.equal(doc.querySelectorAll("#summaryCloudFilters select").length,4,"3 hidden compatibility selects plus sort");
  assert.ok(doc.getElementById("summaryResetFilters"));
- assert.match(html,/Ziel "\+x\.played\+"\/"\+x\.exact\+" AG/);
- assert.match(html,/cwl-deployment-filters\.js\?v=1\.16\.51/);
+ assert.match(html,/targetSource==="planned"/);
+ assert.match(html,/cwl-deployment-filters\.js\?v=1\.16\.52/);
  assert.match(html,/Filter in Einsätze/);
- assert.match(html,/cloud-filter-mode/);
+ assert.match(html,/summary-filter-chip/);
  assert.match(fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8"),/const APP_VERSION="v1\.0\.2"/);
 });
