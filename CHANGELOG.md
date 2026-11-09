@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.46] - 2026-11-09
+
+### CWL #184 Phase 2b1: Owner-Entscheidungen mit Clan-Audit
+- **Nur Owner** können nach einem vom Statistik-Collector vollständig nachgewiesenen CWL-Miss pro Player-Tag „Entschuldigung akzeptiert“, „Später prüfen“ oder „Pause prüfen“ mit optionaler Begründung (max. 300 Zeichen) dokumentieren.
+- Die bestätigten, **unveränderlichen Ereignisse** haben serverseitige Akteurs-ID und Zeitstempel und können von allen berechtigten Mitgliedern **ihres** App-Clans gelesen werden. Ein neuer Beschluss ergänzt den bestehenden Verlauf, statt frühere Entscheidungen zu löschen.
+- Datenbank schützt Inserts per RLS: aktuelle Owner-Rolle, exakter Clan, CWL-Saison/-Tag/War-Key, abgeschlossener durch API erfasster Krieg mit vollständiger Missed-Abdeckung und belegtes fehlendes Angriffsergebnis. Fehlt einer dieser Nachweise, wird die Entscheidung abgewiesen.
+- App blendet Owner-Aktionen am bestätigten Fall ein, zeigt die jüngste Entscheidung sowie frühere Einträge aufklappbar an und prüft vor dem Schreiben Rolle/Cloud-Stand. Vize und Viewer haben ausschließlich Leserechte.
+- **Keine automatische Pause / Übernahme in den Solver**, keine Änderung an der CWL-Aufstellung, keine Missed-Korrektur und kein Push; echte manuelle Umbesetzung mit gesondertem Rollen-/8★-/Einsatzziel-Check bleibt ein späterer Schritt.
+- Hilfeseite/Gold-/Mobile-Komponenten und Regression angepasst. **Kandidat**: Erst nach CI, geprüfter Migration und Live-Deployment freigeben.
+
+
 ## [1.16.45] - 2026-11-09
 
 ### CWL #184 Phase 2a: nachvollziehbare Missed-Einsatzprüfung
