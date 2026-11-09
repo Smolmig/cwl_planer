@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.39";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.40";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -25,6 +25,19 @@ export function collectorHealthDisplay(health,enabled,now=Date.now()){
       text:"Automatische Erfassung möglicherweise verspätet. Letzter erfolgreicher Server-Abgleich: "+lastText+". Neue Angriffe könnten noch fehlen."};
   return {state:"ok",
     text:"Automatische Erfassung: letzter erfolgreicher Server-Abgleich "+lastText+". Laufende Kriege bleiben bis zum Abschluss vorläufig."};
+}
+export function statsLoadNotice(wars=[]){
+  const items=Array.isArray(wars)?wars:[];
+  const finished=items.filter(w=>w?.finalized===true).length;
+  const unconfirmed=items.length-finished;
+  if(!items.length)return "Noch keine Kriege gespeichert.";
+  const finishedText=finished?
+    finished+" abgeschlossene"+(finished===1?"r Krieg":" Kriege")+" gespeichert":
+    "Noch keine abgeschlossenen Kriege";
+  const pendingText=unconfirmed?
+    " · "+unconfirmed+(unconfirmed===1?
+      " weiterer Krieg noch nicht bestätigt":" weitere Kriege noch nicht bestätigt"):"";
+  return "Historie geladen · "+finishedText+pendingText+".";
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
@@ -898,8 +911,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       cachedRecentStats=computeRecentAttackStats(wars,attacks,7);
       const comparable=computeComparableForm(wars,attacks);
       comparableProfiles=comparable.profiles;comparableSummary=comparable.summary;
-      notice(wars.length?"Statistik aktuell · "+wars.length+" Kriege gespeichert":
-        "Noch keine Angriffsdaten. Importiere die vorbereitete Historie.");
+      notice(statsLoadNotice(wars));
     }catch(e){
       if(epoch===version)notice("Fehler beim Laden der Statistik: "+String(e.message||e));
     }finally{if(epoch===version){loading=false;render()}}
@@ -939,7 +951,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       await load();
       notice("✓ Historie importiert: "+parsed.wars.length+" Kriege, "+parsed.attacks.length+
         " Angriffe, "+missedCount+" verpasste Angriffe ("+parsed.missed.length+" Einträge).");
-      notify("✓ Historische CW-Statistik importiert");
+      notify("✓ Kriegsstatistik importiert");
     }finally{importing=false;$("statsImportButton").disabled=false}
   }
   async function captureCwl(payload){

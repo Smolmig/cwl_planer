@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.40] - 2026-11-09
+
+### Statistik-Ladestatus unterscheidet abgeschlossene und unbestätigte Kriege (#114/#46)
+- **Befund:** Nach einem erfolgreichen DB-Lesezugriff stand „Statistik aktuell“, obwohl die automatische Datenerfassung verspätet sein kann. Der Zähler enthielt auch noch nicht bestätigte Kriege. Der leere Zustand empfahl auch Beobachtern einen nicht erlaubten Import. Die Erfolgsmeldung gemischter CW-/CWL-Importe sagte nur „CW-Statistik“.
+- **Fix:** Bestehende Statuszeile meldet „Historie geladen“, zählt nur wirklich bestätigte abgeschlossene Kriege und nennt weitere nicht bestätigte Einträge separat. Keine Schein-Aktualität. Leere Ansichten sind neutral. Der separate Collector-Zeitstempel bleibt zuständig für tatsächliche Aktualität. Nach Import lautet der Toast „Kriegsstatistik importiert“.
+- **Tests:** Neue pure Falltests für Einzahl/Mehrzahl, null, nur unbestätigt und gemischte Daten; bestehender Chromium-Viewer-Browsertest (320/390/430/1366px, Gold/Dark/Light) prüft die Statuszeile aus zwei abgeschlossenen und zwei vorläufigen Kriegen. CI/Release nach Veröffentlichung ergänzen.
+- **Grenze:** Keine Datenbank-, Collector-, Auth-/RLS-/Edge-, CWL-Plan-/Solver-, Angriffsdaten-, Quoten- oder Offline-PWA-Änderung; echte iOS-/Samsung-Abnahme ausstehend.
+
 ## [1.16.39] - 2026-11-09
 
 ### Spielerstatistik: Namen tatsächlich alphabetisch sortieren (#114)

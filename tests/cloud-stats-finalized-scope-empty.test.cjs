@@ -69,6 +69,7 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
       memberProfiles:[{playerTag:"#PPPP",name:"Form"}]}),notify:()=>{},
       confirmAction:async()=>true});
      await stats.load();
+     const loadedNotice=document.getElementById("statsFeedback").textContent;
      document.querySelector('[data-stats-section="players"]').click();
      const type=document.getElementById("statsType");
      const range=document.getElementById("statsRange");
@@ -96,11 +97,14 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
       count:document.getElementById("statsDataCount").textContent,
       text:document.getElementById("statsSummary").textContent
      };
-     return {all,one,back,empty,afterReload,overview,
+     return {all,one,back,empty,afterReload,overview,loadedNotice,
       importHidden:document.getElementById("statsImportButton").hidden,
       pageOverflow:document.documentElement.scrollWidth-innerWidth};
     },theme);
     const note=JSON.stringify({width,theme,outcome});
+    assert.match(outcome.loadedNotice,/2 abgeschlossene Kriege gespeichert/,note);
+    assert.match(outcome.loadedNotice,/2 weitere Kriege noch nicht bestätigt/,note);
+    assert.doesNotMatch(outcome.loadedNotice,/Statistik aktuell/,note);
     assert.match(outcome.all.scope,/2 ausgewählte abgeschlossene Kriege/,note);
     assert.match(outcome.all.explainer,/Alle 2 verfügbaren normalen CWs/,note);
     assert.match(outcome.all.period,/Alle 2 abgeschlossenen CWs/,note);
