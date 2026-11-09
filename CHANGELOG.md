@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.48] - 2026-11-09
+
+### CWL #184 Phase 2b2b: vollständige Einsatzfolgen vor bestätigter Tagespause
+- Die bestehende **einzeltägige, Owner-bestätigte AUTO→RAUS-Pause** erhält eine genauere, rein lesende Solver-Vorschau: zusätzlich zu geänderten Tagesaufstellungen zeigt sie **wer insgesamt weniger oder mehr geplante/fixierte Einsätze erhält** (vorher → nachher).
+- Für teilnehmende **Rotationsspieler** wird die Spanne aus höchster und niedrigster geplanter Einsatzzahl vorher/nachher dargestellt. Nur Orientierung, **keine** automatische Fairness-/Leistungsbewertung oder Garantie; feste Einsatzziele und Verfügbarkeit können Unterschiede erklären. Nicht vollständige Solver-Zähler blockieren die Übernahme statt falsche Zahlen zu zeigen.
+- Mobile/Owner-Bestätigung zeigt die Auswirkungen direkt vor der Freigabe; Hilfe wurde samt bisher veraltetem Missed-Review-Text korrigiert. Core-/Browserintegration und Version-/Cachevertrag regressionsgetestet.
+- Unverändert: keine automatische Mehrtagepause, keine neuen Datenbankrechte oder Migrationen, keine stillen Solver-/Lock-/Clash-Mutationen, kein Push, Offline-PWA unangetastet.
+- **Entwicklungsstand:** [PR #191](https://github.com/Smolmig/cwl_planer/pull/191) im Feature-Branch `feat/cwl-pause-fairness-impact-v11648`; PR-/Main-CI, Pages, offizieller Release und reale Clash-/iOS-/Android-Abnahme müssen erst nach Codeprüfung bestätigt werden.
+
 ## [1.16.47] - 2026-11-09
 
 ### CWL #184 Phase 2b2a: verbindliche Owner-Tagespause mit Schutzprüfung
