@@ -81,7 +81,7 @@ test("Verified postwar CWL miss shows future review without writes or illegal Cl
   assert.match(review.textContent,/Tag 3/);
   assert.match(review.textContent,/MUSS an Tag 3/);
   assert.match(review.textContent,/Geschützt: Tag 2.*Krieg läuft/s);
-  assert.match(review.textContent,/Diese Ansicht ändert nichts/);
+  assert.match(review.textContent,/Die Vorschau verändert keine Einsätze/);
   assert.equal(review.querySelector("button"),null,"the review must not offer plan-write actions");
   assert.equal(writeCount,0);
   assert.equal(JSON.stringify({profile,plans}),original);

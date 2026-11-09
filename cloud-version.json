@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.45",
+  "version": "v1.16.46",
   "released": "2026-11-09",
-  "summary": "CWL nach bestätigtem verpasstem Angriff: schreibgeschützte Einzelprüfung für spätere geplante Tage mit Schutz laufender/gesperrter Clash-Aufstellungen und Fix-/MUSS-/Einsatzziel-Hinweisen. Keine automatische Pause oder Entscheidungsspeicherung."
+  "summary": "CWL-Missed nach bestätigtem Collector-Nachweis: Owner kann Entschuldigung, spätere Prüfung oder Pauseprüfung mit optionaler Notiz im gemeinsamen unveränderlichen Verlauf dokumentieren. Keine automatische Planänderung."
 }

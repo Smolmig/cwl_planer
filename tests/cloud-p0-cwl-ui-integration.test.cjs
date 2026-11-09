@@ -31,12 +31,15 @@ test("P0 guest/account fixes remain present with two-sided CWL opponent detail U
 });
 test("combined UI branch leaves auth storage, cloud format and original offline client unchanged",()=>{
  const version=JSON.parse(read("cloud-version.json"));
- assert.equal(version.version,"v1.16.45");
+ assert.equal(version.version,"v1.16.46");
  assert.match(html,/const DATA_VERSION=9;/);
  assert.match(html,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
  assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
  const api=read("supabase/functions/coc-cwl-status/index.ts");
  assert.match(api,/coc-cwl-status|withSupabase/);
- assert.doesNotMatch(live,/sb\.from\(|sb\.auth\.signOut\(|storage\.saveJson\(/);
+ assert.doesNotMatch(live,/sb\.auth\.signOut\(|storage\.saveJson\(/);
+ const auditTables=[...live.matchAll(/sb\.from\("([^"]+)"\)/g)].map(match=>match[1]);
+ assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions"],
+   "CWL live may only access the dedicated owner-decision audit table");
 });
