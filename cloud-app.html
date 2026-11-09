@@ -3384,7 +3384,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
   </select>
   <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
-</div><div class="summary-legend">Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. <strong>Gesamt</strong> zählt beide zusammen.</div>
+</div><div class="summary-legend" id="summaryLegend">Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. <strong>Gesamt</strong> zählt beide zusammen.</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
 
 
@@ -4304,17 +4304,17 @@ function currentCwlDisplayProgress(results=window.CWLCloud?.getPlayedAttackResul
  if(!window.CWLCloud?.active||!lastPlan)return null;
  const days=Number(state.config.days)||7;
  const members=allKnownMembers();
- const tagOwners=new Map();
+ const tagOwners=new Map(),duplicates=new Set();
  for(const m of members){
   const tag=normalizePlayerTag(m.playerTag);
   if(!tag)continue;
-  if(tagOwners.has(tag))tagOwners.set(tag,null); // Ambiguous tags: no attribution.
+  if(tagOwners.has(tag))duplicates.add(tag);
   else tagOwners.set(tag,m.id);
  }
  const byId=new Map();
  for(const m of members){
   const tag=normalizePlayerTag(m.playerTag);
-  const uniqueTag=tag&&tagOwners.get(tag)===m.id;
+  const uniqueTag=tag&&!duplicates.has(tag)&&tagOwners.get(tag)===m.id;
   const scheduled=new Set(lastPlan.dayPlans.filter(dp=>dp.lineup.includes(m.id)).map(dp=>dp.day));
   const executed=new Map(),missed=new Set();
   if(uniqueTag)for(let day=1;day<=days;day++){
@@ -4525,18 +4525,25 @@ function renderSummary(){
     document.activeElement?.matches?.(".summary-player-toggle")
      ?document.activeElement.dataset.memberId:null;
   summaryRoot.dataset.profileContext=summaryContext;
+  const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
+  const progress=currentCwlDisplayProgress(dayResults);
+  const cloudProgress=!!progress;
   const lockedIds=new Set(state.locks.slice(0,state.config.days).filter(l=>l.locked).flatMap(l=>l.lineup)),
     ids=new Set(state.members.filter(m=>m.participating&&m.name.trim()).map(m=>m.id));
   lockedIds.forEach(id=>ids.add(id));
-  const rows=[...ids].map(id=>({
-    m:memberById(id),count:lastPlan.counts[id]||0,played:lastPlan.playedCounts[id]||0
-  })).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de"));
+  if(cloudProgress)for(const [id,p] of progress)if(p.executed)ids.add(id);
+  const rows=[...ids].map(id=>{
+    const p=progress?.get(id);
+    return {m:memberById(id),count:p?p.total:lastPlan.counts[id]||0,
+      played:p?p.executed:lastPlan.playedCounts[id]||0,
+      open:p?p.open:Math.max(0,(lastPlan.counts[id]||0)-(lastPlan.playedCounts[id]||0)),
+      unknown:p?.unknown||0,missed:p?.missed||0,progress:p};
+  }).filter(x=>x.m&&x.m.name.trim()).sort((a,b)=>a.count-b.count||a.m.name.localeCompare(b.m.name,"de"));
   const rot=rows.filter(x=>state.members.includes(x.m)&&x.m.participating&&!x.m.fixed),
     avg=rot.length?rot.reduce((sum,x)=>sum+x.count,0)/rot.length:0;
   const goalState=window.CWLCloud?.getMedalOverview?.();
   const medal=goalState?.assessment;
   const goalByTag=new Map((medal?.rows||[]).map(row=>[normalizePlayerTag(row.playerTag),row]));
-  const dayResults=window.CWLCloud?.getPlayedAttackResults?.()||{};
   const goalBanner=document.getElementById("summaryMedalOverview");
   if(goalBanner){
     goalBanner.hidden=!window.CWLCloud?.active;
@@ -4565,11 +4572,34 @@ function renderSummary(){
     if(query&&!displayMemberName(x.m).toLocaleLowerCase("de").includes(query)&&!(x.m.playerTag||"").toLocaleLowerCase("de").includes(query))return false;
     if(summaryFilter==="zero")return x.count===0;
     if(summaryFilter==="played")return x.played>0;
-    if(summaryFilter==="future")return x.count>x.played;
+    if(summaryFilter==="future")return x.open>0;
     if(summaryFilter==="fixed")return x.m.fixed;
     return true;
   });
+  const filter=document.getElementById("summaryFilter");
+  filter.querySelector('[value="played"]').textContent=cloudProgress?"Bereits angegriffen":"Bereits gespielt";
+  filter.querySelector('[value="future"]').textContent=cloudProgress?"Noch offen/geplant":"Noch geplant";
+  const legend=document.getElementById("summaryLegend");
+  if(legend)legend.textContent=cloudProgress?
+    "Grün = belegte ausgeführte CWL-Angriffe · Gold = noch offene/geplante Einsätze · Grau = keine Belege. Ein Kriegsabschluss ist kein Angriffsbeleg.":
+    "Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. Gesamt zählt beide zusammen.";
   document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
+  const progressSignature=cloudProgress?JSON.stringify([...progress]):"offline";
+  const sameSummaryContext=summaryRoot.dataset.profileContext===summaryContext;
+  const backgroundProgressUpdate=sameSummaryContext&&
+    summaryRoot.dataset.progressSignature!==undefined&&
+    summaryRoot.dataset.progressSignature!==progressSignature&&
+    document.getElementById("view-summary").classList.contains("active");
+  let summaryAnchor=null;
+  if(backgroundProgressUpdate){
+    const top=Math.max(0,document.querySelector(".topbar")?.getBoundingClientRect().bottom||0)+4;
+    const row=[...summaryRoot.querySelectorAll(".summary-compact-row")].find(el=>{
+      const rect=el.getBoundingClientRect();
+      return rect.bottom>top&&rect.top<window.innerHeight-24;
+    });
+    if(row)summaryAnchor={id:row.dataset.memberId,top:row.getBoundingClientRect().top};
+  }
+  summaryRoot.dataset.progressSignature=progressSignature;
   summaryRoot.innerHTML=visible.map(x=>{
     const active=state.members.includes(x.m)&&x.m.participating,d=x.m.fixed?0:x.count-avg,
       deviation=!active?"PAUSE":x.m.fixed?"FIX":`${d>=0?"+":""}${d.toFixed(1)}`,
@@ -4591,21 +4621,24 @@ function renderSummary(){
     const daysExpanded=summaryOpenMemberId===x.m.id;
     const daysLabel="Einsatztage für "+displayMemberName(x.m)+
       (daysExpanded?" schließen":" anzeigen");
-    return `<div class="summary-compact-row">
+    return `<div class="summary-compact-row" data-member-id="${esc(x.m.id)}">
       <button type="button" class="summary-compact-name summary-player-toggle" data-member-id="${esc(x.m.id)}" aria-expanded="${daysExpanded}" ${daysExpanded?`aria-controls="summary-days-${esc(x.m.id)}"`:""} aria-label="${esc(daysLabel)}" title="${esc(daysLabel)}"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
         <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${esc(rotationWeightLabel(x.m))}${active?` · ${available}/${state.config.days} Tage ohne RAUS`:""}</span>
       </button>
-      <div class="summary-compact-numbers" aria-label="${x.played} gespielt, ${Math.max(0,x.count-x.played)} geplant, ${x.count} gesamt">
-        <span class="summary-stat played" title="Tatsächlich gespielt">Gespielt ${x.played}</span>
-        <span class="summary-stat planned" title="Noch geplant">Geplant ${Math.max(0,x.count-x.played)}</span>
-        <b class="summary-stat total" title="Gesamt: gespielt und geplant">${x.count} gesamt</b>
+      <div class="summary-compact-numbers" aria-label="${cloudProgress?x.played+" Angriffe ausgeführt, "+x.open+" offen":x.played+" gespielt, "+x.open+" geplant"}, ${x.count} gesamt">
+        <span class="summary-stat played" title="${cloudProgress?"CWL-Angriffe tatsächlich ausgeführt":"Tatsächlich gespielt"}">${cloudProgress?"Ausgeführt":"Gespielt"} ${x.played}</span>
+        <span class="summary-stat planned" title="${cloudProgress?"Noch ohne belegten Angriff, nicht abgeschlossene Tage":"Noch geplant"}">${cloudProgress?"Offen":"Geplant"} ${x.open}</span>
+        <b class="summary-stat total" title="Gesamt: dokumentierte Einsätze und aktuelle Planung">${x.count} gesamt</b>
       </div>
       <span class="summary-compact-deviation" title="Abweichung vom Rotationsdurchschnitt">${deviation}</span>
-      <div class="summary-progress" role="img" aria-label="${x.count} von ${state.config.days} Kriegstagen eingeplant">
-        <div class="summary-progress-track"><span class="summary-progress-played" style="width:${Math.min(100,x.played/state.config.days*100)}%"></span><span class="summary-progress-future" style="width:${Math.min(100,Math.max(0,x.count-x.played)/state.config.days*100)}%"></span></div>
+      <div class="summary-progress" role="img" aria-label="${cloudProgress?x.played+" Angriffe ausgeführt, "+x.open+" offen, "+x.unknown+" ungeklärt":x.count+" von "+state.config.days+" Kriegstagen eingeplant"}">
+        <div class="summary-progress-track"><span class="summary-progress-played" style="width:${Math.min(100,x.played/state.config.days*100)}%"></span><span class="summary-progress-future" style="width:${Math.min(100,x.open/state.config.days*100)}%"></span></div>
         <small>${x.count}/${state.config.days}</small>
       </div>
-      ${goal||reserveAvailable?`<div class="summary-compact-insights" aria-label="CWL-Angriffe, 8-Sterne-Ziel und Reserve">
+      ${goal||reserveAvailable||cloudProgress?`<div class="summary-compact-insights" aria-label="Aktuelle CWL-Angriffe, 8-Sterne-Ziel und Reserve">
+        ${cloudProgress?`<span class="summary-current-cwl" title="Nur belegte Angriffe dieser CWL, Stand des letzten Clash-Abgleichs; unvollständige Daten bleiben möglich">${x.progress?.executed?
+          "CWL bisher · 3★-Quote: "+x.progress.hitRate+" % ("+x.progress.threes+"/"+x.progress.executed+" AG) · Ø "+x.progress.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
+          "CWL bisher · noch keine Angriffe belegt"}${x.unknown?" · "+x.unknown+" beendete Tage ohne Angriffsbeleg":""}${x.missed?" · "+x.missed+" bestätigte Ausfälle":""}</span>`:""}
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
@@ -4614,14 +4647,19 @@ function renderSummary(){
         (lastPlan.dayPlans.filter(dp=>dp.lineup.includes(x.m.id)).map(dp=>{
           const trulyPlayed=!!state.locks[dp.day-1]?.locked;
           const fixedInClash=dp.locked&&!trulyPlayed;
-          const result=trulyPlayed?dayResults[dp.day]?.[playerTag]:null;
-          const resultLabel=result?(result.missed?" · kein Angriff":
-            " · "+result.stars+"★"+(Number.isFinite(result.percent)?" · "+result.percent+" %":"")):"";
-          const status=trulyPlayed?" · gespielt":fixedInClash?" · in Clash fix":" · geplant";
+          const result=cloudProgress?dayResults[dp.day]?.[playerTag]:null;
+          const executed=!!result&&!result.missed&&Number.isInteger(result.stars);
+          const resultLabel=executed?" · Angriff erfolgt: "+result.stars+"★"+
+            (Number.isFinite(result.percent)?" ("+result.percent+" %)":""):
+            result?.missed?" · kein Angriff nach Clash-Kriegsende":"";
+          const status=trulyPlayed?" · gespielt":
+            result?.state==="warEnded"?" · laut Clash beendet":
+            fixedInClash?" · in Clash fix":
+            executed?" · Angriff erfasst":" · geplant";
           return '<span class="summary-day-chip'+(trulyPlayed?' played':'')+
-            '" title="'+(result?"Ergebnis laut Clash":"Planungsstand")+
+            '" title="'+(result?"Beobachtung aus der aktuellen CWL in Clash":"Planungsstand, Ergebnis unbekannt")+
             '">Tag '+dp.day+status+
-            (result?'<small class="summary-day-result">'+resultLabel+'</small>':"")+'</span>';
+            (resultLabel?'<small class="summary-day-result">'+esc(resultLabel)+'</small>':"")+'</span>';
         }).join("")||
           '<span class="statusline">Keine Einsätze geplant</span>')+'</div>':""}
     </div>`;
@@ -4630,6 +4668,11 @@ function renderSummary(){
     const replacement=[...summaryRoot.querySelectorAll(".summary-player-toggle")]
       .find(button=>button.dataset.memberId===focusedSummaryId);
     replacement?.focus({preventScroll:true});
+  }
+  if(summaryAnchor?.id){
+    const next=[...summaryRoot.querySelectorAll(".summary-compact-row")]
+      .find(row=>row.dataset.memberId===summaryAnchor.id);
+    if(next)window.scrollBy(0,next.getBoundingClientRect().top-summaryAnchor.top);
   }
   const badge=document.getElementById("fairBadge"),rotStats=rotationStats();
   if(rotStats){
