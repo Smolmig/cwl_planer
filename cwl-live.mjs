@@ -1,6 +1,6 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.47";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.47";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.47";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.48";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.48";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.48";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -201,12 +201,22 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       "Tag "+d.day+": "+(d.out.length?"raus "+d.out.join(", "):"–")+
       (d.incoming.length?" · rein "+d.incoming.join(", "):"")
     ).join("\n");
+    const changedTotals=preview.impact.countsChanged;
+    const totalSummary=changedTotals.length?
+      changedTotals.slice(0,6).map(r=>r.name+": "+r.before+" → "+r.after).join(", ")+
+      (changedTotals.length>6?" und "+(changedTotals.length-6)+" weitere":""):
+      "Gesamte Einsatzzahlen bleiben gleich (nur Tagesverteilung ändert sich).";
+    const spread=preview.impact.rotationSpread;
+    const spreadSummary=spread.before===null?"":(
+      "\\nRotationsspanne: "+spread.before+" → "+spread.after+
+      " Einsätze (nur teilnehmende Nicht-Fixspieler; keine Fairnessgarantie).");
     const answer=await storage.askAction({
       title:"Tagespause verbindlich übernehmen",
       message:"CWL Tag "+review.day+": bestätigter Miss von "+review.name+
         " ("+review.tag+").\n\n"+
         "Es wird NUR Tag "+targetDay+" im Plan auf RAUS gesetzt. Der Solver "+
         "berechnet die anderen noch offenen Aufstellungen neu:\n"+details+
+        "\n\nEinsätze gesamt im Solver (vorher → nachher): "+totalSummary+spreadSummary+
         "\n\nFixe Clash-Aufstellungen bleiben unangetastet. "+
         "Die Umstellung der Vorbereitung MUSST du zusätzlich direkt in Clash durchführen."+
         (preview.medalUnknown?"\n8★-Daten teilweise unvollständig – keine Bonusgarantie.":"")+
