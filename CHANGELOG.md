@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.43] - 2026-11-09
+
+### CWL #181: belegte Angriffe statt abgeschlossener Tage als Ausführungsfortschritt
+- **Root Cause:** `getPlayedAttackResults` enthielt bisher ausschließlich `warEnded`-Resultate; Plan-Tiles und Einsatzbalken zeigten zudem nur `state.locks[].locked` als „gespielt“. Ein laufender vierter Angriff erschien daher nach drei abgeschlossenen Tagen noch als „3 gespielt · 1 geplant“.
+- **Anzeige:** Reine, nach aktuellem Clan, Saison, Tag und stabilem Player-Tag abgeleitete Projektion: grün **Ausgeführt** = nachweislicher Angriff; Gold **Offen** = noch nicht ausgeführter, nicht abgeschlossener geplanter Einsatz. Bereits abgeschlossene Tage ohne belegtes Ergebnis sind **ungeklärt**, nicht fiktiv ausgeführt. In Plan-Tiles, Einsätze-Zahlen/Balken/Filtern und aufgeklappten Spieler-Tagen dieselbe Basis; Kriegsabschluss weiter getrennt.
+- **CWL-Leistung:** Ausschließlich im Tab Einsätze kompakt **3★-Quote (Dreier/belegte AG)** und **Ø tatsächlich erkämpfte Sterne/AG** mit Fallzahl; fehlende Daten ohne 0-%-Scheindaten. Kumuliertes 8★-Ziel bleibt davon fachlich getrennt. Ergebniseinträge während `inWar` werden sichtbar, auch gültige 0★ und Prozentwerte mit Nachkommastellen; ungenutzte Angriffe gelten erst nach `warEnded` als verpasst.
+- **Aktualisierung:** Neue Clash-Ergebnisse aktualisieren Plan-Tiles und Einsatzverteilung ohne Solver- oder Lock-Mutation. Offene Details, Fokus und sichtbarer Spieler bleiben bei laufenden Cloud-Updates erhalten.
+- **Regression:** Neuer Browser-Test mit mishix (3 abgeschlossene Tage + vierter Angriff bereits erfolgt) und zweitem Spieler, 320/390/430/1366px Arena/Dark/Light, plus Unit-Regression für `inWar`/0★/späte Abwesenheit und Clan/Saison-Schutz. Changelog, Hilfeseite und Projektübergabe im selben Update aktualisiert.
+- **Grenze:** Keine Änderungen an Planungsmodi, Solver, gespeicherten Tages-Locks, Cloud-DB/RLS/Auth/Edge, historischer Statistik oder Offline-PWA. Echte Geräteabnahme und realer Einzeldatensatz mishix weiterhin separat; CI/Release-Nachweise erst nach Verifikation.
+
 ## [1.16.42] - 2026-11-09
 
 ### Cloud: Arena/Gold als Farbschema für neue Nutzer

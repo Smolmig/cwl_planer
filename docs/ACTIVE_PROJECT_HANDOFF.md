@@ -18,6 +18,15 @@
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 
+## Neue Arbeitsrunde – 09.11.2026 (Cloud v1.16.43 Release-Kandidat, #181)
+
+- **Codebefund:** `cwl-live.mjs/getPlayedAttackResults()` filterte explizit `state!=="warEnded"` aus; `lastPlan.playedCounts` zählt nur abgeschlossene Kriege. Dadurch zeigte mishix trotz bereits erfolgtem viertem Angriff „3 gespielt · 1 geplant“ in Plan-Tiles/Einsätze; Tag 6 konnte keine Resultate aus `inWar` anzeigen. Der konkrete reale Datensatz wurde noch nicht unabhängig verifiziert; synthetische Tests reproduzieren den Sachverhalt.
+- **Fix im PR:** Read-only `recordedCwlAttackResults` aus der validierten aktuellen CWL-Snapshot-Quelle, inklusive echter laufender 0–3★-Angriffe; `missed` erst nach `warEnded`. Eine gemeinsame `currentCwlDisplayProgress`-Anzeigeprojektion verbindet Tag und Player-Tag dedupliziert mit Plan-/Einsatzansichten, unterscheidet **ausgeführt / offen / abgeschlossener Tag ohne Angriffsbeleg**. Planer-Locks, `lastPlan.playedCounts` und Solver unverändert. Neue Clash-Daten aktualisieren auch Plan-Tiles, nicht nur Einsätze.
+- **Tab Einsätze:** Keine Vermischung mit 7-AG-Historie: 3★-Quote und Ø Sterne aus aktuell belegten CWL-Angriffen mit Fallzahl, ohne 0-%-Schätzungen bei Datenlücken. 8★-Bonusziel bleibt kumulativ. Tagesdetails zeigen Ergebnis auch während `inWar` und erhalten offene Bereiche/Fokus; visueller Anker bei echtem Fortschritts-Update.
+- **Qualität:** Browserregression für 3 beendete + 1 laufenden ausgeführten Angriff, vierten Tag, zwei Spieler, spätere Kriegsschließung ohne Doppelzählung, unbekannte Resultate, Wechsel des Clans; zusätzlich Core-Tests 0★, Dezimal-Zerstörung, `missed` erst nach Kriegsende, unvollständige Roster. Mobile 320/390/430 und Desktop 1366, Gold/Dark/Light. Hilfe und Changelog im selben Patch angepasst.
+- **Freigabe offen:** PR-/Main-CI, Pages und offizieller Release erst nach Prüfung eintragen. Echte iOS-/Samsung-Geräteprüfung und konkrete Datenzuordnung mishix aus produktiver Cloud bleiben gesondert; keine unbestätigte Aussage zum Live-API-Stand.
+- **Danach:** #181 im Issue nach echter Prüfung abschließen; weitere priorisierte To-dos #180 Verlosung, #177 Mehrsprachigkeit, #178 Backup unter eigenen Regeln. Kein DB-/RLS-/Edge-/Plan-/Solver-/Offline-PWA-Eingriff.
+
 ## Abgeschlossen – 09.11.2026 (Cloud v1.16.42 live)
 
 - **Offener Nutzerwunsch:** Gold/Arena soll bei neuen Nutzern Standard sein; tatsächliche Cloud-Startseite und normale/fehlerhafte UI-Einstellungs-Fallbacks verwendeten aber weiter Dunkel. Die Auswahl beschriftete Dunkel fälschlich als Standard.
