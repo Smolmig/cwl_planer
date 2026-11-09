@@ -13,7 +13,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Clanführung kann die Erinnerung auf **diesem Gerät** mit Zeitstempel quittieren; bei einer veränderten Gruppe noch offener Spieler erscheint eine neue Erinnerung. Viewer sehen den Hinweis, ändern ihn aber nicht. Keine geteilte Audit-Quittierung; diese bleibt für Phase 2 offen.
 - Bei veralteten API-Daten erscheint nur ein neutraler Prüfhinweis ohne Behauptung verpasster Angriffe. Kein Push bei geschlossener App.
 - Mobile Aktionszeile, Hilfeseite und Regressionstests aktualisiert. Unverändert: Plan-Solver, CWL-Locks, Datenbank, Rollen und Offline-PWA. Reale Geräteabnahme offen.
-- **Status:** Release-Kandidat; Merge, CI, Pages und offizieller Release noch nicht bestätigt.
+- **Release-Nachweise:** [PR #186](https://github.com/Smolmig/cwl_planer/pull/186) gemergt als `a846da0d3dc0`; [PR-CI 42610179739](https://github.com/Smolmig/cwl_planer/actions/runs/42610179739) **532/532**, [Main-CI 42610521496](https://github.com/Smolmig/cwl_planer/actions/runs/42610521496), [Pages 42610521083](https://github.com/Smolmig/cwl_planer/actions/runs/42610521083), [Release-Workflow 42610688919](https://github.com/Smolmig/cwl_planer/actions/runs/42610688919), [offizieller Release v1.16.44](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.44) erfolgreich.
 
 ## [1.16.43] - 2026-11-09
 
