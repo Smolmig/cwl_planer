@@ -203,8 +203,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     ).join("\n");
     const changedTotals=preview.impact.countsChanged;
     const totalSummary=changedTotals.length?
-      changedTotals.slice(0,6).map(r=>r.name+": "+r.before+" → "+r.after).join(", ")+
-      (changedTotals.length>6?" und "+(changedTotals.length-6)+" weitere":""):
+      changedTotals.map(r=>r.name+": "+r.before+" → "+r.after).join("\n"):
       "Gesamte Einsatzzahlen bleiben gleich (nur Tagesverteilung ändert sich).";
     const spread=preview.impact.rotationSpread;
     const spreadSummary=spread.before===null?"":(
