@@ -505,13 +505,31 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 .summary-tools.cloud-filter-mode .summary-visible-count{font-size:11px;grid-column:auto}
 .summary-reset-filters{display:inline-grid;place-items:center;min-width:32px;min-height:34px;padding:5px 8px}
 .summary-reset-filters[hidden]{display:none!important}
-.summary-cloud-tools:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:5px 0 8px}
-.summary-cloud-tools select{box-sizing:border-box;width:100%;min-width:0;min-height:37px;padding:6px 7px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px;font-size:12px}
-@media(max-width:760px){.summary-cloud-tools:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))}}
+.summary-cloud-tools:not([hidden]){display:block;margin:5px 0 9px;min-width:0}
+.summary-chip-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.summary-filter-picker{position:relative;flex:0 0 auto;min-width:0}
+.summary-filter-picker>summary{cursor:pointer;list-style:none;user-select:none;display:flex;align-items:center;gap:5px;justify-content:center;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);font-weight:750;font-size:12px;min-height:36px;padding:5px 11px;white-space:nowrap}
+.summary-filter-picker>summary::-webkit-details-marker{display:none}
+.summary-filter-picker>summary:focus-visible,.summary-filter-chip:focus-visible,.summary-filter-menu button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.summary-filter-picker[open]>summary{border-color:var(--primary)}
+.summary-filter-menu{position:absolute;top:calc(100% + 5px);left:0;z-index:50;box-sizing:border-box;width:min(245px,calc(100vw - 68px));padding:8px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 26px rgba(0,0,0,.27)}
+.summary-filter-menu-label{display:block;padding:6px 8px 3px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.summary-filter-menu button{display:flex;width:100%;min-height:38px;padding:7px 9px;border:0;border-radius:7px;text-align:left;background:transparent;color:var(--text);font-size:12px;align-items:center;justify-content:space-between}
+.summary-filter-menu button[aria-pressed="true"]{background:var(--bluebg);font-weight:800}
+.summary-filter-menu button[aria-pressed="true"]::after{content:"✓";color:var(--primary)}
+.summary-active-filters{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;flex:1 1 auto}
+.summary-active-filters:empty{display:none}
+.summary-filter-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;min-height:34px;padding:5px 9px;border:1px solid var(--primary);border-radius:8px;background:var(--bluebg);color:var(--text);font-weight:700;font-size:12px;white-space:nowrap}
+.summary-filter-chip .chip-remove{color:var(--muted);font-size:17px;line-height:1;font-weight:500}
+.summary-filter-chip:hover{border-color:var(--text)}
+.summary-compact-sort{box-sizing:border-box;min-width:0;flex:0 1 171px;max-width:100%;height:36px;margin-left:auto;padding:5px 9px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:9px;font-size:12px}
+.summary-native-filters[hidden]{display:none!important}
 @media(max-width:470px){
  #view-summary .summary-tools.cloud-filter-mode{grid-template-columns:minmax(0,1fr) auto auto;gap:5px;margin:6px 0}
  #view-summary .summary-tools.cloud-filter-mode .summary-visible-count{grid-column:auto;justify-self:end;text-align:right;font-size:10px}
- .summary-cloud-tools select{min-height:40px;font-size:16px}
+ .summary-filter-picker>summary,.summary-filter-chip{min-height:38px}
+ .summary-filter-menu button{min-height:42px}
+ .summary-compact-sort{min-height:38px;flex-basis:146px}
 }
 #view-summary .summary-tools.cloud-filter-mode #summaryFilter{display:none!important}
 .summary-target-note{font-weight:650;color:var(--muted)}
@@ -3432,17 +3450,35 @@ html[data-theme] #view-more-settings .latest-changelog{
   <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
   <button type="button" class="btn small summary-reset-filters" id="summaryResetFilters" aria-label="Filter und Suche zurücksetzen" title="Filter zurücksetzen" hidden>↺</button>
 </div>
-<div class="summary-cloud-tools" id="summaryCloudFilters" hidden aria-label="CWL-Einsatzfilter und Sortierung">
- <select id="summaryGroup" aria-label="Spielergruppe filtern" title="Spielergruppe"><option value="all">Alle Spieler</option><option value="rotation">Rotierende Spieler</option></select>
- <select id="summaryProgress" aria-label="Einsatzziel filtern" title="Nur tatsächlich ausgeführte Angriffe zählen"><option value="all">Alle Ziele</option><option value="target-open">Ziel offen</option><option value="target-met">Ziel erreicht</option></select>
- <select id="summaryMedal" aria-label="8-Sterne-Ziel filtern" title="Unklare Daten gelten nicht als offen"><option value="all">Alle 8★</option><option value="open">8★ offen</option><option value="reached">8★ erreicht</option></select>
- <select id="summarySort" aria-label="Spieler sortieren" title="Sortierung">
-  <option value="default">Sortieren: Einsätze ↑</option>
-  <option value="open-desc">Offene AG ↓</option><option value="open-asc">Offene AG ↑</option>
-  <option value="stars-asc">Sterne bis 8 ↑</option><option value="stars-desc">Sterne bis 8 ↓</option>
-  <option value="hit-desc">3★-Quote ↓</option><option value="avg-desc">Ø Sterne ↓</option>
-  <option value="attacks-desc">Ausgeführte AG ↓</option><option value="name">Name A–Z</option>
- </select>
+<div class="summary-cloud-tools" id="summaryCloudFilters" hidden aria-label="Aktive CWL-Einsatzfilter">
+ <div class="summary-chip-toolbar">
+  <details class="summary-filter-picker" id="summaryFilterPicker">
+   <summary aria-label="Einsatzfilter hinzufügen">＋ Filter</summary>
+   <div class="summary-filter-menu" id="summaryFilterMenu" role="group" aria-label="Filter auswählen">
+    <span class="summary-filter-menu-label">Spieler</span>
+    <button type="button" data-filter-key="group" data-filter-value="rotation" aria-pressed="false">Rotierende Spieler</button>
+    <span class="summary-filter-menu-label">Einsätze</span>
+    <button type="button" data-filter-key="progress" data-filter-value="target-open" aria-pressed="false">Ziel offen</button>
+    <button type="button" data-filter-key="progress" data-filter-value="target-met" aria-pressed="false">Ziel erreicht</button>
+    <span class="summary-filter-menu-label">8-Sterne-Ziel</span>
+    <button type="button" data-filter-key="medal" data-filter-value="open" aria-pressed="false">8 Sterne offen</button>
+    <button type="button" data-filter-key="medal" data-filter-value="reached" aria-pressed="false">8 Sterne erreicht</button>
+   </div>
+  </details>
+  <div id="summaryActiveFilters" class="summary-active-filters" role="group" aria-label="Ausgewählte Filter"></div>
+  <select id="summarySort" class="summary-compact-sort" aria-label="Spieler sortieren" title="Sortierung">
+   <option value="default">Sortieren: Einsätze ↑</option>
+   <option value="open-desc">Offene AG ↓</option><option value="open-asc">Offene AG ↑</option>
+   <option value="stars-asc">Sterne bis 8 ↑</option><option value="stars-desc">Sterne bis 8 ↓</option>
+   <option value="hit-desc">3★-Quote ↓</option><option value="avg-desc">Ø Sterne ↓</option>
+   <option value="attacks-desc">Ausgeführte AG ↓</option><option value="name">Name A–Z</option>
+  </select>
+ </div>
+ <div class="summary-native-filters" hidden aria-hidden="true">
+  <select id="summaryGroup" tabindex="-1" aria-label="Spielergruppe (kompatibel)"><option value="all">Alle Spieler</option><option value="rotation">Rotierende Spieler</option></select>
+  <select id="summaryProgress" tabindex="-1" aria-label="Einsatzziel (kompatibel)"><option value="all">Alle Ziele</option><option value="target-open">Ziel offen</option><option value="target-met">Ziel erreicht</option></select>
+  <select id="summaryMedal" tabindex="-1" aria-label="Sterne (kompatibel)"><option value="all">Alle 8★</option><option value="open">8 Sterne offen</option><option value="reached">8 Sterne erreicht</option></select>
+ </div>
 </div>
 <div class="summary-legend" id="summaryLegend">Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. <strong>Gesamt</strong> zählt beide zusammen.</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
@@ -3554,11 +3590,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.51</strong><span>Einsätze · Filter vereinfacht</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.52</strong><span>Einsätze · Filterchips und Zielkorrektur</span></div>
        <ul>
-        <li><b>Aufgeräumt:</b> Nur drei kompakte Filter: Alle/Rotation, Ziel offen/erreicht und 8★ offen/erreicht.</li>
-        <li><b>Klarer Fortschritt:</b> „Ziel 3/4 AG“ meint drei wirklich ausgeführte Angriffe; ein geplanter Angriff zählt noch nicht.</li>
-        <li><b>Sortieren:</b> Die bisherigen sinnvollen Sortierungen bleiben – nur „Rest zum festen Ziel“ entfällt.</li>
+        <li><b>＋ Filter:</b> Gewählte Filter erscheinen einzeln als Chips und lassen sich per × wieder entfernen.</li>
+        <li><b>„Ziel offen“ korrigiert:</b> Auch automatisch rotierende Spieler mit noch offenen geplanten Angriffen erscheinen nun.</li>
+        <li><b>Eindeutig:</b> Die Auswahl heißt „8 Sterne offen“ und „8 Sterne erreicht“; Datenlücken bleiben getrennt.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3732,7 +3768,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. Bei „6/7 Tage ohne RAUS“ gibt es an sechs von sieben Tagen keinen Ausschluss – das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die letzten sieben CW/CWL-Angriffe in Plan/Mitglieder sind eine andere Datenbasis. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
-    <div class="help-item"><b>Filter in Einsätze</b><div>Im gemeinsamen Cloud-Clan gibt es drei kompakte Filter: <b>Alle Spieler / Rotierende Spieler</b>, <b>Alle Ziele / Ziel offen / Ziel erreicht</b> und <b>Alle 8★ / 8★ offen / 8★ erreicht</b>. Du kannst sie mit der Suche kombinieren. Ein individuelles Einsatzziel ist erst bei <b>tatsächlich belegten CWL-Angriffen</b> erreicht: 3/4 bleibt offen, 4/4 und 5/5 sind erreicht. „Automatisch“ hat keine feste Zielzahl und wird nicht als offen oder erreicht einsortiert; bei nicht eindeutig zuordenbaren Angriffen ist das Ziel nicht sicher bewertbar. Bei 8★ zählen nur belegte Sterne der aktuellen CWL: fehlende oder veraltete Angaben werden nicht einfach als „8★ offen“ behandelt. Daneben kannst du nach Angriffen, Sternen, aktueller CWL-Quote/Ø oder Namen sortieren. Ein Tipp auf ↺ setzt Suche, Auswahl und Sortierung zurück. Filter ändern weder Plan noch Regeln. Im lokalen Gastmodus bleiben die bisherigen einfachen Filter verfügbar.</div></div>
+    <div class="help-item"><b>Filter in Einsätze</b><div>Über <b>＋ Filter</b> fügst du eine Auswahl hinzu. Sie erscheint als <b>Chip</b>; tippe auf <b>×</b>, um nur diesen Filter zu entfernen. Mehrere Chips verschiedener Bereiche wirken gemeinsam, z. B. <b>Rotierende Spieler + Ziel offen + 8 Sterne offen</b>. Wählst du innerhalb derselben Gruppe einen anderen Wert, ersetzt dieser den bisherigen. Ohne Chips siehst du alle Spieler. <b>Ziel offen</b> umfasst sowohl das ausdrücklich festgelegte Angriffsziel als auch die aktuell laut Plan vorgesehenen Einsätze bei automatisch verteilten Spielern: Jamie mit <b>3 ausgeführten, 4 vorgesehenen</b> Angriffen bleibt offen; 4/4 ist erledigt. Auch 1/5 bleibt offen und 5/5 ist erledigt. Ein geplanter oder in Clash fixierter Angriff zählt erst, wenn er tatsächlich belegt wurde. Bei automatisch verteilten Spielern steht deshalb in der Liste <b>Plan 3/4 AG</b>, bei ausdrücklich festgelegtem Ziel <b>Ziel 3/4 AG</b>; das Plan-Soll kann bei Neuplanung wechseln. <b>8 Sterne offen</b> bedeutet bei verlässlichen aktuellen CWL-Daten noch nicht acht Sterne erzielt; <b>8 Sterne erreicht</b> bedeutet acht oder mehr belegte Sterne. Fehlen Daten oder sind sie veraltet, werden Spieler nicht fälschlich in eine der beiden Gruppen gezählt. Daneben bleiben Suche und eine getrennte Sortierung. ↺ setzt alle Filter und die Suche zurück. Kein Filter ändert den tatsächlichen CWL-Plan oder Clash. Im Gastmodus gibt es weiterhin die bisherigen einfachen Filter.</div></div>
     <div class="help-item"><b>Letzte Stunde im CWL-Krieg</b><div>Bei frischem Clash-Datenstand und belegter Kriegsendzeit erinnert der Plan an offene Angriffe innerhalb der letzten 60 Minuten. Das bedeutet <b>noch nicht angegriffen laut letztem Abruf</b>, nicht „vergessen“. Ist der Datenstand veraltet, erscheint nur ein neutraler Prüfhinweis. Berechtigte Clanführer können „Im Spiel erinnert“ auf <b>diesem Gerät</b> quittieren: Das markiert keinen Angriff, ändert keine Aufstellung und wird nicht mit anderen Geräten synchronisiert. Neue offene Spieler werden erneut angezeigt. Bei geschlossener App gibt es damit keine Push-Erinnerung; nach Kriegsende bleibt eine spätere Entscheidung über weitere Einsätze manuell.</div></div>
     <div class="help-item"><b>Verpasster CWL-Angriff – weitere Einsätze</b><div>Nur wenn ein CWL-Krieg laut vollständiger, frischer Clash-Datenlage abgeschlossen ist und der Angriff tatsächlich nicht erfolgte, zeigt der Plan eine <b>schreibgeschützte Prüfempfehlung</b> je Spieler. Dabei unterscheidet er spätere noch prüfbare Plan-Tage von bereits gesperrten oder laufenden Clash-Kriegen und nennt Fix/MUSS-Regeln sowie feste Einsatzziele. Die <b>Prüfempfehlung allein</b> verändert weder Spieler noch Aufstellungen. Der Clanführer kann bei zusätzlich bestätigtem Collector-Nachweis eine Entscheidung mit gemeinsamer Historie dokumentieren und einen noch änderbaren Vorbereitungstag anschließend <b>einzeln</b> zur Übernahme prüfen. Ältere belegte Vorfälle bleiben auch während neuer Erinnerungen über die Tagesauswahl erreichbar. Es gibt keinen automatischen Ersatzwechsel in Clash.</div></div>
     <div class="help-item"><b>Owner-Entscheidungen bei CWL-Misses</b><div>Ist ein verpasster Angriff sowohl im abgeschlossenen Clash-Krieg als auch im vollständigen Statistik-Collector nachgewiesen, kann der <b>Clanführer</b> den Fall mit einer optionalen Notiz als <b>Entschuldigt</b>, <b>Später prüfen</b> oder <b>Pause prüfen</b> dokumentieren. Die Entscheidungen sind für berechtigte Mitglieder des gemeinsamen Clans sichtbar, chronologisch nachvollziehbar und nachträglich nicht löschbar. Die neueste Entscheidung wird direkt am Spieler angezeigt; ein neuer Beschluss ergänzt den Verlauf statt den alten zu überschreiben. Diese Funktion <b>pausiert den Spieler nicht automatisch</b> und verändert weder Fix-/MUSS-Regeln noch bereits fixierte Aufstellungen. Wenn der Collector noch keinen vollständigen Miss bestätigt hat, ist keine verbindliche Dokumentation möglich. Für eine echte Umbesetzung muss der Owner den Plan separat prüfen und bearbeiten.</div></div>
@@ -3989,10 +4025,10 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-deployment-filters.js?v=1.16.51"></script>
-<script src="./cwl-planning-core.js?v=1.16.51"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.52"></script>
+<script src="./cwl-planning-core.js?v=1.16.52"></script>
 <script>
-const APP_VERSION="v1.16.51";
+const APP_VERSION="v1.16.52";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4007,8 +4043,36 @@ let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
 let mobileSelectedDay=null,mobileLineupsExpanded=!matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches;
 let memberSearch="",memberFilter="all",memberSearchRenderTimer=null,summarySearch="",summaryFilter="all",summaryOpenMemberId=null,openMemberDetails=new Set(),townHallPickHandler=null;
 const summaryAdvanced={group:"all",progress:"all",medal:"all",sort:"default"};
+const summaryFilterOrder=[];
+const summaryFilterLabels={
+ group:{rotation:"Rotierende Spieler"},
+ progress:{"target-open":"Ziel offen","target-met":"Ziel erreicht"},
+ medal:{open:"8 Sterne offen",reached:"8 Sterne erreicht"}
+};
+function renderSummaryFilterChips(){
+ const wrap=document.getElementById("summaryActiveFilters");
+ if(!wrap)return;
+ wrap.replaceChildren();
+ for(const key of summaryFilterOrder){
+  const value=summaryAdvanced[key],label=summaryFilterLabels[key]?.[value];
+  if(!label)continue;
+  const chip=document.createElement("button");
+  chip.type="button";chip.className="summary-filter-chip";
+  chip.dataset.filterKey=key;
+  chip.setAttribute("aria-label","Filter "+label+" entfernen");
+  const name=document.createElement("span");name.textContent=label;
+  const cross=document.createElement("span");cross.className="chip-remove";cross.setAttribute("aria-hidden","true");cross.textContent="×";
+  chip.append(name,cross);wrap.append(chip);
+ }
+ for(const btn of document.querySelectorAll("#summaryFilterMenu button[data-filter-key]")){
+  btn.setAttribute("aria-pressed",String(summaryAdvanced[btn.dataset.filterKey]===btn.dataset.filterValue));
+ }
+}
 function resetSummaryAdvanced(){
  summaryAdvanced.group="all";summaryAdvanced.progress="all";summaryAdvanced.medal="all";summaryAdvanced.sort="default";
+ summaryFilterOrder.length=0;
+ const picker=document.getElementById("summaryFilterPicker");if(picker)picker.open=false;
+ renderSummaryFilterChips();
  for(const [key,id] of [["group","summaryGroup"],["progress","summaryProgress"],["medal","summaryMedal"],["sort","summarySort"]]){
   const element=document.getElementById(id);if(element)element.value=summaryAdvanced[key];
  }
@@ -4676,6 +4740,7 @@ function renderSummary(){
       medalFresh:goalState?.fresh===true
     });
   });
+  if(typeof renderSummaryFilterChips==="function")renderSummaryFilterChips();
   const visible=selectors.filterDeploymentRows(classified,{
     query:summarySearch,legacy:useCompactCloudFilters?"all":summaryFilter,
     group:cloudProgress?summaryAdvanced.group:"all",
@@ -4753,7 +4818,7 @@ function renderSummary(){
         ${cloudProgress?`<span class="summary-current-cwl" title="Nur belegte Angriffe dieser CWL, Stand des letzten Clash-Abgleichs; unvollständige Daten bleiben möglich">${x.progress?.executed?
           "CWL bisher · 3★-Quote: "+x.progress.hitRate+" % ("+x.progress.threes+"/"+x.progress.executed+" AG) · Ø "+x.progress.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
           "CWL bisher · noch keine Angriffe belegt"}${x.unknown?" · "+x.unknown+" beendete Tage ohne Angriffsbeleg":""}${x.missed?" · "+x.missed+" bestätigte Ausfälle":""}</span>`:""}
-        ${cloudProgress&&x.exact!==null?`<span class="summary-target-note">${x.targetStatus==="unknown"?"Ziel · Daten unklar":"Ziel "+x.played+"/"+x.exact+" AG · "+(x.targetStatus==="reached"?"erreicht":"offen")}</span>`:""}
+        ${cloudProgress&&x.exact!==null?`<span class="summary-target-note">${x.targetStatus==="unknown"?"Einsatzstand · Daten unklar":(x.targetSource==="planned"?"Plan ":"Ziel ")+x.played+"/"+x.exact+" AG · "+(x.targetStatus==="reached"?"erledigt":"offen")}</span>`:""}
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
@@ -5303,10 +5368,53 @@ document.getElementById("membersImportBtn").onclick=()=>document.getElementById(
   button.textContent=open?"×":"•••";button.setAttribute("aria-label",open?"Weitere Aktionen schließen":"Weitere Aktionen anzeigen");
 };
 document.getElementById("summarySearch").oninput=e=>{summarySearch=e.target.value;renderSummary()};
+document.getElementById("summaryFilterMenu").addEventListener("click",event=>{
+ const btn=event.target.closest("button[data-filter-key]");if(!btn)return;
+ const key=btn.dataset.filterKey,value=btn.dataset.filterValue;
+ if(!(key in summaryFilterLabels)||!summaryFilterLabels[key][value])return;
+ // Same dimension replaces its chip; other dimensions accumulate in order.
+ if(summaryAdvanced[key]===value){
+  summaryAdvanced[key]="all";
+  const ix=summaryFilterOrder.indexOf(key);if(ix>=0)summaryFilterOrder.splice(ix,1);
+ }else{
+  summaryAdvanced[key]=value;
+  if(!summaryFilterOrder.includes(key))summaryFilterOrder.push(key);
+ }
+ const id={group:"summaryGroup",progress:"summaryProgress",medal:"summaryMedal"}[key];
+ document.getElementById(id).value=summaryAdvanced[key];
+ document.getElementById("summaryFilterPicker").open=false;
+ renderSummary();document.querySelector("#summaryFilterPicker>summary")?.focus({preventScroll:true});
+});
+document.getElementById("summaryActiveFilters").addEventListener("click",event=>{
+ const chip=event.target.closest("button[data-filter-key]");if(!chip)return;
+ const key=chip.dataset.filterKey;if(!(key in summaryFilterLabels))return;
+ summaryAdvanced[key]="all";
+ const ix=summaryFilterOrder.indexOf(key);if(ix>=0)summaryFilterOrder.splice(ix,1);
+ document.getElementById({group:"summaryGroup",progress:"summaryProgress",medal:"summaryMedal"}[key]).value="all";
+ renderSummary();document.querySelector("#summaryFilterPicker>summary")?.focus({preventScroll:true});
+});
+document.addEventListener("pointerdown",event=>{
+ const picker=document.getElementById("summaryFilterPicker");
+ if(picker?.open&&!picker.contains(event.target))picker.open=false;
+});
+document.addEventListener("keydown",event=>{
+ const picker=document.getElementById("summaryFilterPicker");
+ if(event.key==="Escape"&&picker?.open){
+  event.preventDefault();picker.open=false;picker.querySelector("summary")?.focus({preventScroll:true});
+ }
+});
 document.getElementById("summaryFilter").onchange=e=>{summaryFilter=e.target.value;renderSummary()};
 for(const [key,id] of [["group","summaryGroup"],["progress","summaryProgress"],
  ["medal","summaryMedal"],["sort","summarySort"]]){
- document.getElementById(id).onchange=e=>{summaryAdvanced[key]=e.target.value;renderSummary()};
+ document.getElementById(id).onchange=e=>{
+  summaryAdvanced[key]=e.target.value;
+  if(key!=="sort"){
+   const index=summaryFilterOrder.indexOf(key);
+   if(e.target.value==="all"&&index>=0)summaryFilterOrder.splice(index,1);
+   else if(e.target.value!=="all"&&index<0)summaryFilterOrder.push(key);
+  }
+  renderSummary();
+ };
 }
 document.getElementById("summaryResetFilters").onclick=()=>{
  summarySearch="";summaryFilter="all";resetSummaryAdvanced();
@@ -5429,6 +5537,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.51"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.52"></script>
 </body>
 </html>
