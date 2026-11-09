@@ -28,7 +28,7 @@ function sanitizeMember(m) {
     attackerTag:tagOf(a?.attackerTag)||tag,
     defenderTag:tagOf(a?.defenderTag),
     stars:num(a?.stars,0,3),
-    destructionPercentage:num(a?.destructionPercentage,0,100)
+    destructionPercentage:safeDestruction(a?.destructionPercentage)
   })).filter(a=>a.attackerTag===tag && validTag(a.defenderTag) && a.stars!==null && a.destructionPercentage!==null) : [];
   return {tag,name:String(m?.name||"Unbekannt").slice(0,80),
     townHallLevel:num(m?.townHallLevel,3,30),attacks};
