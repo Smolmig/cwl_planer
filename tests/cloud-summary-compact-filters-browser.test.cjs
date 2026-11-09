@@ -30,7 +30,10 @@ async function prepare(page,theme){
  // rendering is stubbed; the pure filter selector has separate data tests.
  await page.addScriptTag({content:
   'let summarySearch="",summaryFilter="all";'+filtersState+
-  'function renderSummary(){renderSummaryFilterChips()}'+filtersEvents+
+  'function renderSummary(){renderSummaryFilterChips();'+
+  'document.getElementById("summaryResetFilters").hidden='+ 
+  '!(summarySearch.trim()||summaryAdvanced.group!=="all"||summaryAdvanced.progress!=="all"||'+
+  'summaryAdvanced.medal!=="all"||summaryAdvanced.sort!=="default");}'+filtersEvents+
   'renderSummary();'
  });
 }
