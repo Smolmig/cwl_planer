@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.47",
+  "version": "v1.16.48",
   "released": "2026-11-09",
-  "summary": "CWL #184: Owner kann nach bestätigtem Miss und dokumentiertem Pause-Review genau einen weiterhin änderbaren Vorbereitungstag nach Solver-/8★-/Clash-Schutzprüfung atomar auf RAUS setzen; Ersatzvorschau vor Bestätigung, Clan-Audit, Clash-Wechsel weiter manuell."
+  "summary": "CWL #184: Vor dem ausdrücklich bestätigten, weiterhin nur eintägigen Owner-Pause-Schritt zeigt die Vorschau jetzt pro Spieler veränderte Gesamteinsätze und die neutral berechnete Rotationsspanne; Schutz-, Clash- und Audit-Regeln bleiben unverändert."
 }
