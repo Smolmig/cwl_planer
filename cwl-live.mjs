@@ -1,5 +1,5 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder } from "./cwl-live-core.mjs?v=1.16.42";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.42";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.43";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.43";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -54,7 +54,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     if (current && activeClan===ctx.clanId && current.active && ctx.profile?.cwlLiveIgnoredSeason!==current.season)return sanitizeSnapshot(current);
     if (confirmedNoCwl)return null;
     const prior=ctx.profile?.cwlLive;
-    if (!prior?.season)return null;
+    if (!prior?.season||ctx.profile?.cwlLiveIgnoredSeason===prior.season)return null;
     const month=Number(prior.season.slice(0,4))*12+Number(prior.season.slice(5,7));
     const now=new Date(),diff=now.getFullYear()*12+now.getMonth()+1-month;
     return diff>=0&&diff<=1?prior:null;
@@ -564,28 +564,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot}) {
     if(!document.hidden&&context().active)refreshNow();
   });
   return {start,stop,render,refresh:()=>refreshNow(true),getPlayedAttackResults:()=>{
-    // A completed war with a verified full roster is sufficient evidence for
-    // a small, factual per-day result. An unavailable war is NOT a zero-star attack.
-    const ctx=context(),snapshot=effective(),result={};
-    if(!ctx.active||!ctx.clanId||!snapshot?.rounds)return result;
-    for(const round of snapshot.rounds){
-      const own=round?.clan?.members;
-      if(!round?.available||round.state!=="warEnded"||
-         !Number.isInteger(round.teamSize)||round.teamSize<1||
-         !Array.isArray(own)||own.length!==round.teamSize||
-         new Set(own.map(m=>tagOf(m?.tag))).size!==round.teamSize)continue;
-      const rows={};
-      for(const m of own){
-        const tag=tagOf(m?.tag);
-        if(!/^#[0289PYLQGRJCUV]{3,15}$/.test(tag))continue;
-        const attack=Array.isArray(m.attacks)?m.attacks[0]:null;
-        rows[tag]=attack&&Number.isInteger(attack.stars)&&attack.stars>=0&&attack.stars<=3
-          ?{stars:attack.stars,percent:attack.destructionPercentage,missed:false}
-          :{missed:true};
-      }
-      if(Object.keys(rows).length===round.teamSize)result[round.day]=rows;
-    }
-    return result;
+    // Read-only: confirmed in-war attacks count even before a day is closed.
+    const ctx=context(),snapshot=effective();
+    return ctx.active&&ctx.clanId&&snapshot?.rounds?
+      recordedCwlAttackResults(snapshot):{};
   },getMedalOverview:()=>{
     const ctx=context(),info=effective();
     if(!info?.season||!ctx.active||!ctx.clanId)return null;
