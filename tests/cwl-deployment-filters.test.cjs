@@ -142,7 +142,7 @@ test("Cloud UI provides exactly three dropdown filters, compact sorting, reset a
  const options=el=>[...el.options].map(x=>x.textContent);
  assert.deepEqual(options(group),["Alle Spieler","Rotierende Spieler"]);
  assert.deepEqual(options(goal),["Alle Ziele","Ziel offen","Ziel erreicht"]);
- assert.deepEqual(options(medal),["Alle 8★","8★ offen","8★ erreicht"]);
+ assert.deepEqual(options(medal),["Alle 8★","8 Sterne offen","8 Sterne erreicht"]);
  assert.ok(doc.getElementById("summaryFilterPicker"));
  assert.ok(doc.getElementById("summaryActiveFilters"));
  assert.ok(doc.getElementById("summarySort"));
