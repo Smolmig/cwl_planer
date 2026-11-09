@@ -4,6 +4,13 @@
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 
+## Neue Arbeitsrunde – 09.11.2026 (v1.16.41 Release-Kandidat, CI/Release ausstehend)
+
+- **Befund #114/#46:** Einzahl-/Mehrzahlfehler bei genau einem bestätigten CW/Angriff („Alle 1 ... CWs“, „1 Angriffe“, „1 ausgewählte Kriege“) in Statistik-Überblick, Verlauf und Details.
+- **Fix:** Nur sichtbare Texte korrigiert; kein Berechnungs- oder Datenmodell-Eingriff. Bestehender Viewer-Test um ein finalisiertes CW-Einzelereignis und denselben CWL-Fall in 320/390/430/1366px Arena/Dark/Light erweitert.
+- **Abnahme:** PR-CI, Main-CI, Pages, offizieller Release erst nach Prüfung eintragen. Echte iOS-/Samsung-Abnahme offen. Kein DB-/Auth-/RLS-/Edge-/Collector-/Solver-/Offline-PWA-Eingriff.
+- **Nächster Punkt:** weiterer klar belegter #114/#46-UX-Befund; #104/#103 separat absichern.
+
 ## Abgeschlossen – 09.11.2026 (Cloud v1.16.40 live)
 
 - **Befund #114/#46:** Der Statistik-Ladestatus behauptete „aktuell“ nach einem bloßen erfolgreichen Datenbank-Lesen und zählte auch unbestätigte Kriege. Beobachter wurden bei null Daten zum nicht erlaubten Import aufgefordert. Der CW/CWL-Import-Toast nannte nur CW.

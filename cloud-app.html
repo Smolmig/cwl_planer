@@ -3481,11 +3481,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.40</strong><span>Statistik · Datenstand</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.41</strong><span>Statistik · Texte</span></div>
        <ul>
-        <li><b>Ladestatus:</b> Abgeschlossene Kriege und noch nicht bestätigte Kriege werden getrennt angezeigt.</li>
-        <li><b>Keine Schein-Aktualität:</b> „Historie geladen“ bedeutet nicht, dass der automatische Abgleich alle neuen Kriege erfasst hat.</li>
-        <li><b>Unverändert:</b> Angriffe, Quoten, CWL-Aufstellungen und die Planung werden nicht verändert.</li>
+        <li><b>Einzelne Kriege:</b> Bei einem CW steht „1 abgeschlossener normaler CW“ statt „Alle 1 ... CWs“.</li>
+        <li><b>Einzelne Angriffe:</b> Überblick, Verlauf und Details zeigen die passende Einzahl.</li>
+        <li><b>Unverändert:</b> Quoten, Zeiträume, Sortierungen und CWL-Aufstellungen bleiben identisch.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3911,9 +3911,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.40"></script>
+<script src="./cwl-planning-core.js?v=1.16.41"></script>
 <script>
-const APP_VERSION="v1.16.40";
+const APP_VERSION="v1.16.41";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5189,6 +5189,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.40"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.41"></script>
 </body>
 </html>

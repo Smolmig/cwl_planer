@@ -97,7 +97,32 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
       count:document.getElementById("statsDataCount").textContent,
       text:document.getElementById("statsSummary").textContent
      };
+     // One finalized CW/attack, then the same as a finalized CWL day.
+     const singleWar={...wars[1]},singleAttack={...attacks[1]};
+     wars.splice(0,wars.length,singleWar);
+     attacks.splice(0,attacks.length,singleAttack);
+     await stats.load();
+     document.querySelector('[data-stats-section="players"]').click();
+     type.value="normal";type.dispatchEvent(new Event("change",{bubbles:true}));
+     range.value="all";range.dispatchEvent(new Event("change",{bubbles:true}));
+     const singleNormal=query();
+     document.querySelector('[data-stats-section="history"]').click();
+     const singleHistory={
+      scope:document.getElementById("statsTrendScope").textContent,
+      tooltip:[...document.querySelectorAll("#statsTrendChart svg title")].map(e=>e.textContent),
+      table:document.getElementById("statsTrendTable").textContent,
+      wars:document.getElementById("statsWarHistory").textContent
+     };
+     document.querySelector('[data-stats-section="overview"]').click();
+     const singleOverview=document.getElementById("statsDataCount").textContent;
+     singleWar.war_type="cwl";singleWar.war_key="cwl:#SINGLE";
+     singleAttack.war_key=singleWar.war_key;
+     await stats.load();
+     document.querySelector('[data-stats-section="players"]').click();
+     type.value="cwl";type.dispatchEvent(new Event("change",{bubbles:true}));
+     const singleCwl=query();
      return {all,one,back,empty,afterReload,overview,loadedNotice,
+      singleNormal,singleHistory,singleOverview,singleCwl,
       importHidden:document.getElementById("statsImportButton").hidden,
       pageOverflow:document.documentElement.scrollWidth-innerWidth};
     },theme);
@@ -126,6 +151,17 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.equal(outcome.empty.scope,outcome.afterReload.scope,note);
     assert.match(outcome.overview.count,/2 normale CWs \+ 0 CWL-Kriegstage/,note);
     assert.match(outcome.overview.text,/Angriffe2/,note);
+    assert.match(outcome.singleNormal.count,/1 abgeschlossener normaler CW · 1 Angriff/,note);
+    assert.doesNotMatch(outcome.singleNormal.count,/Alle 1|1 Angriffe/,note);
+    assert.match(outcome.singleNormal.row,/Details dieser Auswahl · 1 Angriff/,note);
+    assert.match(outcome.singleNormal.row,/1 von 1 Angriff mit 3★/,note);
+    assert.match(outcome.singleHistory.scope,/1 ausgewählter Krieg · 1 dokumentierter Angriff/,note);
+    assert.ok(outcome.singleHistory.tooltip.some(t=>t.includes("1 Angriff")),note);
+    assert.match(outcome.singleHistory.table,/1 Angriff/,note);
+    assert.match(outcome.singleHistory.wars,/1 erfasster Angriff/,note);
+    assert.match(outcome.singleOverview,/1 normaler CW.*1 Angriff/,note);
+    assert.match(outcome.singleCwl.count,/1 Angriff/,note);
+    assert.doesNotMatch(outcome.singleCwl.count,/1 Angriffe/,note);
     assert.equal(outcome.importHidden,true,note);
     assert.ok(outcome.pageOverflow<=3,note);
     assert.deepEqual(problems,[],note);

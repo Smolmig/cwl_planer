@@ -1,9 +1,10 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.40";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.41";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=x=>x===null?"–":x+"%";
+const attackCount=n=>n+(n===1?" Angriff":" Angriffe");
 const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(i*n,(i+1)*n));
 /* Server freshness is distinct from historical completeness. GitHub's
    scheduled collector may be delayed; an old success must not look current. */
@@ -390,8 +391,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
             missingLabel+" ohne dokumentierte Angriffe – keine 0-%-Werte.":
           "Zwischen den dargestellten Punkten gibt es keine ganzen unbeobachteten "+missingLabel+".";
     if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
-      " ausgewählte Kriege · "+trend.recordedAttacks+
-      " dokumentierte Angriffe. Die Zeitachse zeigt echte Kalenderabstände. "+
+      (ownWars.length===1?" ausgewählter Krieg · ":" ausgewählte Kriege · ")+
+      trend.recordedAttacks+(trend.recordedAttacks===1?
+        " dokumentierter Angriff. ":" dokumentierte Angriffe. ")+
+      "Die Zeitachse zeigt echte Kalenderabstände. "+
       coverage+(rows.length>1?
         " Verbunden werden nur direkt aufeinanderfolgende Zeiträume derselben Kriegsart.":"");
     const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
@@ -412,7 +415,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       return {x:x(i),y:y(v),value:v,n,key:row.key,
         title:(kind==="cwl"?"CWL":"Normaler CW")+" · "+formatTrendPeriod(row.key,trendGranularity)+
           " · "+v+(trendMetric==="hitRate"?" %":" ★")+
-          " · "+n+" Angriffe"};
+          " · "+attackCount(n)};
     };
     const grid=[0,.25,.5,.75,1].map(part=>{
       const yy=y(part*maximum),v=part*maximum;
@@ -473,7 +476,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const fmt=(data)=>{
       const val=data[trendMetric];
       return data.attacks?(val+(trendMetric==="hitRate"?" %":" ★")+
-        " ("+data.attacks+" Angriffe)"):"–";
+        " ("+attackCount(data.attacks)+")"):"–";
     };
     const table=all.slice().reverse().map(row=>"<tr><td>"+esc(formatTrendPeriod(row.key,trendGranularity))+
       "</td><td>"+fmt(row.normal)+"</td><td>"+fmt(row.cwl)+"</td></tr>").join("");
@@ -620,7 +623,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(count)count.textContent=summary.wars?
         summary.wars+" von "+summary.totalCwlDays+
         " abgeschlossenen CWL-Kriegstagen · "+summary.cwlSeasonBreakdown.length+
-        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+summary.attacks+" Angriffe":
+        " von "+summary.totalCwlSeasons+" CWL-Durchgängen · "+attackCount(summary.attacks):
         "Noch keine abgeschlossenen CWL-Kriegstage gespeichert";
       if(seasonDetails)seasonDetails.textContent=summary.cwlSeasonBreakdown.map(({from,to,days,inferred})=>{
         const fmt=value=>new Date(value+"T12:00:00Z").toLocaleDateString("de-AT",
@@ -638,7 +641,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         if(count)count.textContent=summary.wars?
           normalText+" + "+leagueText+" aus "+seasonCount+
           (seasonCount===1?" Durchgang":" Durchgängen")+
-          " · "+summary.attacks+" Angriffe":
+          " · "+attackCount(summary.attacks):
           "Noch keine abgeschlossenen Kriege gespeichert";
         if(seasonDetails)seasonDetails.textContent=summary.wars?
           "Ausgewertet werden "+normalText+" und "+seasonCount+
@@ -648,9 +651,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       }else{
         if(count)count.textContent=scopeInfo.selectedNormal?
           (last==="all"?
-            "Alle "+scopeInfo.selectedNormal+" abgeschlossenen normalen CWs":
+            (scopeInfo.selectedNormal===1?"1 abgeschlossener normaler CW":
+              "Alle "+scopeInfo.selectedNormal+" abgeschlossenen normalen CWs"):
             scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen normalen CWs")+
-          " · "+summary.attacks+(summary.attacks===1?" Angriff":" Angriffe"):
+          " · "+attackCount(summary.attacks):
           "Noch keine abgeschlossenen normalen CWs gespeichert";
         if(seasonDetails)seasonDetails.textContent=last==="all"?
           "Alle verfügbaren abgeschlossenen normalen Clankriege werden ausgewertet.":
@@ -729,8 +733,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<small>CWL "+displayMissed(p.missedKnownByType.cwl,summary.missedCoverage.cwl.complete)+"</small>":"")+
         "</span>"+
         "<details class='stats-player-details' data-player-tag='"+esc(p.tag)+"'"+detailsOpen+">"+
-        "<summary>Details dieser Auswahl · "+p.attacks+" Angriffe</summary>"+
-        "<div>"+p.threes+" von "+p.attacks+" Angriffen mit 3★ · verpasst: "+reportedMiss+
+        "<summary>Details dieser Auswahl · "+attackCount(p.attacks)+"</summary>"+
+        "<div>"+p.threes+" von "+attackCount(p.attacks)+" mit 3★ · verpasst: "+reportedMiss+
         "</div><small>Diese Werte beziehen sich auf alle gewählten Kriege. "+
         "Bei CWL ohne bestätigten vollständigen Missed-Log bleiben weitere Ausfälle unbekannt – auch bei vorhandener Tagesaufstellung. "+
         "Die unabhängige aktuelle Form findest du im eigenen Reiter „Spielerform“.</small></details></div>";
@@ -832,7 +836,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         (openWars.has(w.war_key)?" open":"")+"><summary><span><strong>"+
         esc(kind+" · "+when+" · "+size)+"</strong><small>gegen "+
         esc(w.opponent_name||"unbekannt")+uncertainty+"</small></span><span>"+
-        entries.length+" erfasste Angriffe · "+stars+" ★</span></summary>"+
+        entries.length+(entries.length===1?" erfasster Angriff":" erfasste Angriffe")+" · "+stars+" ★</span></summary>"+
         "<div class='war-history-detail'></div></details>";
     }).join("");
     for(const disclosure of host.querySelectorAll(".war-history-item[open]"))renderHistoryAttacks(disclosure);
