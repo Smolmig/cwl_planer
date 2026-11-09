@@ -21,6 +21,7 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  for(const mod of ["cloud-backups","cwl-live","cwl-stats","cwl-current-war"])
   assert.ok(sync.includes('"./'+mod+'.mjs?v=1.16.48"'),mod+" must be cache-busted");
  assert.match(live,/cwl-live-core\.mjs\?v=1\.16\.47/);
+ assert.match(live,/cwl-verified-pause\.mjs\?v=1\.16\.48/);
  assert.doesNotMatch(html,/v1\.5\.2(?=["<])/,"old live version not visible");
 });
 test("offline planner format, file cache and existing profiles are not migrated",()=>{
