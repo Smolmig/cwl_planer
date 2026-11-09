@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.40",
+  "version": "v1.16.41",
   "released": "2026-11-09",
-  "summary": "Statistik: Ladestatus trennt bestätigte abgeschlossene und weitere unbestätigte Kriege, ohne Vollständigkeit oder frischen Server-Abgleich zu behaupten. CW/CWL-Importmeldung neutral benannt. Keine Änderung an Quoten, Datenbank, CWL-Solver, Rollen/Auth/RLS oder Offline-PWA."
+  "summary": "Statistik: Einzahl bei einem abgeschlossenen CW bzw. einem Angriff in Umfang, Überblick, Verlauf und Details. Filter, Quoten, Angriffe, CWL-Solver, Supabase/Auth/RLS/Edge und Offline-PWA unverändert."
 }

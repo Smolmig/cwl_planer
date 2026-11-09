@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.41] - 2026-11-09
+
+### Statistik: Einzahl bei einem Krieg/Angriff (#114/#46)
+- **Befund:** „Alle 1 abgeschlossenen normalen CWs“, „1 ausgewählte Kriege“, „1 Angriffe“ im Überblick, CWL-Umfang, Trend-Tooltip/-Tabelle sowie Spieler-/Kriegdetails.
+- **Fix:** Korrekte Einzahl nur in bestehenden Texten; alle Werte, Quoten, Filter und CWL-Aufstellungen unverändert.
+- **Tests:** Synthetischer Chromium-Viewer-Fall mit genau einem beendeten CW/Angriff und CWL-Tag/Angriff; 320/390/430/1366px Arena/Dark/Light. Cache-/Release-Verträge aktualisiert. CI/Release noch nicht bestätigt.
+- **Grenze:** Kein produktiver DB-/Auth-/RLS-/Edge-/Collector-/CWL-Solver-/Offline-PWA-Eingriff.
+
 ## [1.16.40] - 2026-11-09
 
 ### Statistik-Ladestatus unterscheidet abgeschlossene und unbestätigte Kriege (#114/#46)
