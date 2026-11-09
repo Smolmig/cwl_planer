@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.37] - 2026-11-09
+
+### Installationshilfe für Clanmitglieder verständlicher (#46/#114)
+- **Befund:** Unter „Mehr → App installieren“ verwies die Hilfe mit „cloud-app.html“ und „Offline-PWA“ auf technische Begriffe, statt den Unterschied zwischen dem gemeinsamen Cloud-Planer und einer versehentlich gespeicherten älteren lokalen Ansicht an den tatsächlichen Funktionen zu erklären. Genau dieser Fehlerfall hatte zuvor bei Android dazu geführt, dass die installierte App keine Clan-Anmeldung zeigte.
+- **Korrektur:** Deutlicher Hinweis auf die vollständige gemeinsame App mit „Clan & Konto“ und „Statistik“; alle Geräteschritte sprechen vom gemeinsamen CWL-Planer. Ein dezenter, standardmäßig geschlossener Abschnitt „Installierte App ohne Anmeldung oder Statistik?“ beschreibt die Wiederherstellung über das erneute Hinzufügen der richtigen Startbildschirm-Verknüpfung. Keine Pop-ups oder zusätzliche Karte; Bedienbarkeit per Tastatur und auf schmalen Geräten.
+- **Absicherung:** Browserregression zur Installationshilfe prüft iPhone/Android sowie den neuen Troubleshooting-Abschnitt als Viewer auf 320/390/430/1366 px in Gold/Dark/Light, Touchfläche, Hilfetext und kein horizontales Überlaufen. Release-/Versionstests mit synchronisierten Cache-Parametern. Keine Änderung an Manifest/Service Worker, Cloud-/Offline-Installationstechnik, Cloud-Daten, Auth/RLS, Statistikberechnung oder CWL-Solver.
+- **Status:** PR-/Main-CI, Pages und offizieller Release werden nach Merge separat bestätigt. Reale iPhone-/Android-Praxisabnahme weiterhin ausstehend.
+
 ## [1.16.36] - 2026-11-09
 
 ### Aktuelle Spielernamen in Statistik, Spielerform und Duellen einheitlich
