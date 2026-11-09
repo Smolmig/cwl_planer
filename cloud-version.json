@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.51",
+  "version": "v1.16.52",
   "released": "2026-11-09",
-  "summary": "Einsatzverteilung #187: Drei kompakte Filter für Alle/Rotation, Ziel offen/erreicht und 8★ offen/erreicht. Übersichtliche Sortierung ohne festes-Ziel-Restmodus; keine Planänderung."
+  "summary": "Einsatzfilter #187: Ziel offen berücksichtigt auch automatische Plan-Einsätze (z. B. Jamie 3/4), Filter werden als ergänzbare Chips mit × angezeigt; 8 Sterne offen/erreicht eindeutig beschriftet."
 }
