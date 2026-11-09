@@ -84,6 +84,12 @@ test("active clan names agree across raw stats, player form and duels without al
      stats.render();
      const afterRename=byTag("#PPPP")?.querySelector(".stats-name b")?.textContent;
      const afterRenameQuote=byTag("#PPPP")?.querySelector(".stats-rate")?.textContent;
+     const selectSort=document.getElementById("statsSort");
+     selectSort.value="name";selectSort.dispatchEvent(new Event("change",{bubbles:true}));
+     const nameSortLabel=selectSort.selectedOptions[0]?.textContent;
+     const byName=[...host.querySelectorAll(".stats-name b")].map(el=>el.textContent);
+     selectSort.value="hitRate";selectSort.dispatchEvent(new Event("change",{bubbles:true}));
+     const byHitRate=[...host.querySelectorAll(".stats-name b")].map(el=>el.textContent);
      tab("compare");
      const names=[...document.querySelectorAll("#statsDuelLeft option")].map(el=>el.textContent);
      const duelCards=[...document.querySelectorAll(".stats-duel-person h4")]
@@ -97,7 +103,7 @@ test("active clan names agree across raw stats, player form and duels without al
      const oldWarName=attacks[1].attacker_name;
      stats.reset();
      return {initialActive,initialFormer,initialQuote,searched,oldSearch,
-      afterRename,afterRenameQuote,names,duelCards,formActive,formFormer,
+      afterRename,afterRenameQuote,nameSortLabel,byName,byHitRate,names,duelCards,formActive,formFormer,
       historicalName,oldWarName,emptyAfterReset:
       document.querySelectorAll("#statsFormRows .stats-form-row").length===0,
       noHorizontalOverflow:document.documentElement.scrollWidth<=innerWidth+3};
@@ -110,6 +116,9 @@ test("active clan names agree across raw stats, player form and duels without al
     assert.match(out.oldSearch,/Keine passenden Spieler/,note);
     assert.equal(out.afterRename,"Neuerer Clanname",note);
     assert.equal(out.afterRenameQuote,out.initialQuote,note);
+    assert.equal(out.nameSortLabel,"Name (A–Z)",note);
+    assert.deepEqual(out.byName,["Ehemaliger Name","Neuerer Clanname"],note);
+    assert.deepEqual(out.byHitRate,["Neuerer Clanname","Ehemaliger Name"],note);
     assert.ok(out.names.includes("Neuerer Clanname"),note);
     assert.ok(out.names.includes("Ehemaliger Name"),note);
     assert.ok(out.duelCards.some(x=>x.includes("Neuerer Clanname")),note);

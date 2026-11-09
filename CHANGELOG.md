@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.39] - 2026-11-09
+
+### Spielerstatistik: Namen tatsächlich alphabetisch sortieren (#114)
+- **Befund:** Im Statistik-Reiter „Spielerstatistik“ zeigte das Dropdown „Name“, doch `ascending=false` wurde beim Wechsel auf „Name“ nie geändert. Weil der allgemeine Zahlen-Komparator auch Zeichenketten mit umgekehrtem Vorzeichen verglich, kamen Spielernamen tatsächlich in Z–A statt A–Z; die separate Spielerform bietet dagegen ausdrücklich „Spielername (A–Z)“ an.
+- **Fix:** Eindeutige Dropdown-Beschriftung „Name (A–Z)“ und nur für `order==="name"` natürliche deutsche alphabetische Reihenfolge. Die Kennzahlen 3★-Quote, Angriffe, Ø Sterne und belegte Ausfälle bleiben absteigend; der unveränderliche `ascending`-Restzustand entfällt. Die bereits seit v1.16.36 aktiven aktuellen Clannamen werden weiterhin ausschließlich für Anzeige und Sortierung projiziert.
+- **Absicherung:** Erweiterung von `tests/cloud-stats-current-roster-names.test.cjs` um explizite Z–A-Falle (aktuell umbenannter Spieler gegenüber ehemaligem Spieler), Auswahl „Name (A–Z)“, Gegenprüfung der weiterhin absteigenden Quoten und Viewer-Browserfälle bei 320/390/430/1366 px in Gold/Dark/Light. Veränderte Versionsreferenzen/Cache-Tests auf v1.16.39 synchronisiert.
+- **Sicherheitsgrenze:** Keine Veränderung der gespeicherten historischen Spielernamen, Statistiken, Kriegsfilter, CWL-Planung, produktiven Supabase-Daten, Auth/RLS/Edge oder Offline-PWA. PR-/Main-Tests, Pages und offizieller Release werden nach Durchführung nachgetragen; reale Safari-/Android-Abnahme bleibt ausstehend.
+
+
 ## [1.16.38] - 2026-11-09
 
 ### Hilfe: Einsatzverteilung und Mitgliedereinstieg passen zur aktuellen App (#46/#114)
