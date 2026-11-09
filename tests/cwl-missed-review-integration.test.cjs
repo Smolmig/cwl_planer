@@ -49,7 +49,7 @@ test("Verified postwar CWL miss shows future review without writes or illegal Cl
     ...Array.from({length:5},(_,i)=>({day:i+3,available:false}))
    ]};
   const profile={config:{days:7,slots:2},
-   cwlLive:{season,clanTag:"#2PQ"},
+   cwlLive:{season,clanTag:"#2PQ",rounds:[]},
    locks:Array.from({length:7},()=>({locked:false,lineup:[]})),
    members:[
     {id:"a",name:"Alpha",playerTag:"#2PYL",statuses:Array(7).fill("auto")},
