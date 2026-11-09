@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.36",
+  "version": "v1.16.37",
   "released": "2026-11-09",
-  "summary": "Statistik > Spielerstatistik und Spielerduelle verwenden für aktive Clanmitglieder ausschließlich die aktuellen Namen des berechtigten Clanprofils (wie die Spielerform); Suche, alphabetische Sortierung und Duellauswahl bleiben dadurch konsistent. Ehemalige Spieler behalten ihre historischen Anzeigenamen. Gespeicherte Angriffsidentitäten, Quoten, Rollen, Planungslogik, DB und Offline-PWA unverändert."
+  "summary": "CWL Cloud > Mehr > App installieren: klare Anleitung für die vollständige gemeinsame App mit Clan-Anmeldung und Statistik statt technischer Dateinamen. Ein dezenter aufklappbarer Hilfehinweis erklärt, wie sich eine veraltete Startbildschirm-Verknüpfung ohne Anmeldung ersetzen lässt. Cloud-Daten, Rollen, Statistik, Planung, Auth, RLS, DB und lokale Offline-PWA unverändert."
 }

@@ -2262,6 +2262,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .install-guide p{line-height:1.6;color:var(--muted)}
 .install-guide ol{padding-left:22px;line-height:1.75;margin:14px 0 22px}
 .install-guide li{padding:4px 0}
+.install-guide-check{font-size:13px;margin:14px 0 9px}
+.install-guide-check strong{color:var(--text)}
+.install-troubleshoot{border-top:1px solid var(--line);margin-top:12px;padding-top:7px}
+.install-troubleshoot>summary{cursor:pointer;display:flex;align-items:center;min-height:44px;font-size:13px;font-weight:750;color:var(--text);line-height:1.45;outline-offset:3px}
+.install-troubleshoot>summary:focus-visible{outline:2px solid var(--primary)}
+.install-troubleshoot>p{font-size:13px;margin:0 0 8px;max-width:680px}
 @media(max-width:520px){#view-install .more-detail-header{gap:12px}.install-guide{padding-top:16px}}
 /* v1.15.3: keep long member/statistics lists cheap on slower desktops.
    Paint only rows near the viewport; reserve initial height to prevent scroll jumps. */
@@ -3046,7 +3052,7 @@ html[data-theme] #view-more-settings .latest-changelog{
 }
 @media(prefers-reduced-motion:reduce){.plan-review-chevron{transition:none}}
 
-/* v1.16.36: member controls stay touchable even in compact landscape. */
+/* v1.16.37: member controls stay touchable even in compact landscape. */
 #view-members .member-filters input,
 #view-members .member-filters select{box-sizing:border-box;min-height:44px!important}
 #view-members .cloud-minor>summary{
@@ -3404,7 +3410,8 @@ html[data-theme] #view-more-settings .latest-changelog{
   <h3 id="installGuideTitle">App zum Startbildschirm hinzufügen</h3>
   <p id="installGuideText">Öffne die Installationsfunktion deines Browsers.</p>
   <ol id="installGuideSteps"></ol>
-  <p class="statusline">Verwende die Cloud-Seite „cloud-app.html“, nicht die separate lokale Offline-PWA. Bereits installierte falsche Verknüpfungen müssen einmal entfernt und neu hinzugefügt werden.</p>
+  <p class="install-guide-check"><strong>Wichtig:</strong> Speichere den gemeinsamen Planer mit „Clan & Konto“ und „Statistik“ als App auf deinem Gerät.</p>
+  <details class="install-troubleshoot"><summary>Installierte App ohne Anmeldung oder Statistik?</summary><p>Dann ist vermutlich eine ältere oder die lokale Planer-Ansicht gespeichert. Öffne diesen gemeinsamen Planer im Browser, entferne die bisherige Startbildschirm-Verknüpfung und füge diese Seite erneut hinzu. Deine gespeicherten Cloud-Daten bleiben erhalten.</p></details>
  </div>
 </section>
 <section id="view-more-settings" class="view more-subview" aria-labelledby="moreSettingsTitle">
@@ -3474,11 +3481,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option><option value="arena">🏅 Arena · Anthrazit & Gold</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.36</strong><span>Statistik · Spielernamen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.37</strong><span>App installieren · verständlicher</span></div>
        <ul>
-        <li><b>Aktuelle Namen:</b> In Spielerstatistik und Duellen wird der Name aus dem aktuellen Clanprofil angezeigt.</li>
-        <li><b>Historie bleibt:</b> Frühere Spieler behalten ihren dokumentierten Namen; aufgezeichnete Angriffe und Quoten ändern sich nicht.</li>
-        <li><b>Einheitlich:</b> Auch die separate Spielerform verwendet denselben aktuellen Clan-Namen.</li>
+        <li><b>Richtige App:</b> Die Anleitung zeigt, wie du den gemeinsamen Planer mit Anmeldung und Statistik installierst.</li>
+        <li><b>Probleme beheben:</b> Fehlen in der installierten Ansicht wichtige Funktionen, hilft ein kurzer aufklappbarer Hinweis.</li>
+        <li><b>Deine Daten:</b> Der bisherige Clan und die gespeicherten Cloud-Daten bleiben unverändert.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3904,9 +3911,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.36"></script>
+<script src="./cwl-planning-core.js?v=1.16.37"></script>
 <script>
-const APP_VERSION="v1.16.36";
+const APP_VERSION="v1.16.37";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4972,14 +4979,14 @@ function renderInstallGuide(){
  const description=document.getElementById("installGuideText");
  const list=document.getElementById("installGuideSteps");
  const steps=alreadyInstalled?[]:platform==="ios"
-  ?["Die Cloud-Seite in Safari öffnen.",
+  ?["Diesen gemeinsamen CWL-Planer in Safari öffnen.",
     "Auf Teilen tippen und „Zum Home-Bildschirm hinzufügen“ wählen.",
     "„Als Web-App öffnen“ aktivieren und auf „Hinzufügen“ tippen."]
   :platform==="android"
-  ?["Die Cloud-Seite in Chrome, Samsung Internet oder Firefox auf Android öffnen.",
+  ?["Diesen gemeinsamen CWL-Planer in Chrome, Samsung Internet oder Firefox auf Android öffnen.",
     "Wenn der Browser „Installieren“ anbietet, kannst du die Meldung nutzen. Sonst im Browsermenü „Installieren“ oder „Zum Startbildschirm hinzufügen“ wählen.",
     "„CWL Cloud“ vom Startbildschirm starten und dich unter „Clan & Konto“ anmelden."]
-  :["Die Cloud-Seite im Desktop-Browser öffnen.",
+  :["Diesen gemeinsamen CWL-Planer im Desktop-Browser öffnen.",
     "Im Browsermenü „App installieren“ auswählen (falls angeboten) oder eine Verknüpfung erstellen.",
     "Die Cloud-App starten und dich unter „Clan & Konto“ anmelden."];
  for(const button of document.querySelectorAll("#installPlatforms [data-install-platform]")){
@@ -5182,6 +5189,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.36"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.37"></script>
 </body>
 </html>
