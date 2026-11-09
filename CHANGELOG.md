@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.42] - 2026-11-09
+
+### Cloud: Arena/Gold als Farbschema für neue Nutzer
+- **Wunsch:** Neue Nutzer ohne gespeicherte Farbschema-Auswahl sollen statt Dunkel standardmäßig das Arena-Theme in Anthrazit/Gold sehen. Vorher gespeicherte Auswahl bleibt unangetastet.
+- **Fix:** Initiales HTML-Theme und Browser-Themenfarbe Gold, Arena in der bestehenden Design-Auswahl als Standard markiert, die normalen und Fehler-Fallbacks für lokale UI-Einstellungen auf Arena gesetzt. Bereits gespeicherte Dark-/Light-/System-/Cyber- und Arena-Präferenzen werden weiterhin respektiert; keine Datenmigration.
+- **Regression:** Neuer Browser-Test unter 320/390/430/1366 px für einen frischen Cloud-Aufruf, gespeicherte Dunkel-Präferenz, Themewechsel mit Reload, fehlerhafte Einstellungen, explizites Systemfarbschema und unveränderte Offline-PWA. Vollständige CI und Release erst nach Nachweis behaupten.
+- **Hilfeprüfung:** Die Hilfe beschreibt CWL-Funktionen unverändert korrekt; das neue Standard-Farbschema ist direkt in Design & Aktualisierung sichtbar, keine weitere Help-Karte nötig.
+- **Nicht-Ziele:** CWL-/Planungslogik, Statistiken, Supabase-Daten/Auth/RLS/Edge, Collector und separate Offline-PWA bleiben unverändert.
+
 ## [1.16.41] - 2026-11-09
 
 ### Statistik: Einzahl bei einem Krieg/Angriff (#114/#46)

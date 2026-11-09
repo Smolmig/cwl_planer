@@ -10,6 +10,13 @@
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 
+## Neue Arbeitsrunde – 09.11.2026 (Cloud v1.16.42 im PR, noch nicht veröffentlicht)
+
+- **Offener Nutzerwunsch:** Gold/Arena soll bei neuen Nutzern Standard sein; tatsächliche Cloud-Startseite und normale/fehlerhafte UI-Einstellungs-Fallbacks verwendeten aber weiter Dunkel. Die Auswahl beschriftete Dunkel fälschlich als Standard.
+- **Fix:** Cloud-HTML startet im Arena-Theme mit passender Browser-Farbe; Design-Auswahl führt Arena/Gold als Standard; nur fehlende oder defekte Einstellungen fallen auf Arena zurück. Explizit gespeicherte Farbschemata (Dunkel, Hell, System, Cyber, Arena) bleiben erhalten. Kein Migrationsschritt; Offline-PWA bleibt unverändert auf Dunkel.
+- **Tests:** Neuer Playwright-Test für neue Nutzer, alte Speicherung inklusive anderer Einstellungen, Wechsel und Reload, fehlerhaftes JSON/ungültige Farbe, OS-Systemfarbe, 320/390/430/1366px und unveränderte Offline-Defaults. Hilfe auf Aktualität geprüft, kein irreführender Gold-/Dark-Standard im Hilfe-Reiter; die neue Standardeinstellung ist in der bestehenden Design-Seite direkt sichtbar.
+- **Nachweise offen:** PR-CI, Main-CI, Pages und offizielles Release erst nach bestätigtem Lauf dokumentieren. Echte iPhone-/Android-Praxisabnahme bleibt separat. Keine Änderung an Solver, Live-CWL, Supabase/RLS/Auth/Edge, Stats, Archiv oder Offline-PWA.
+- **Danach:** nächste konkrete UX-Verbesserung; eigenständige große Vorhaben Mehrsprachigkeit #177 und Cloud-Gesamtbackup #178 nicht ohne Design-/Sicherheitsprüfung vermischen.
 ## Abgeschlossen – 09.11.2026 (Cloud v1.16.41 live)
 
 - **Befund #114/#46:** Einzahl-/Mehrzahlfehler bei genau einem bestätigten CW/Angriff („Alle 1 ... CWs“, „1 Angriffe“, „1 ausgewählte Kriege“) in Statistik-Überblick, Verlauf und Details.
