@@ -75,9 +75,12 @@ test("Mobile summary change is styling only; existing role and filter controls r
  const html=fs.readFileSync(path.join(__dirname,"..","cloud-app.html"),"utf8");
  for(const id of ["summarySearch","summaryFilter","summaryVisibleCount","summaryList"])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(html,/if\(summaryFilter==="played"\)/);
- assert.match(html,/if\(summaryFilter==="future"\)/);
- assert.match(html,/if\(summaryFilter==="fixed"\)/);
+ const selectors=fs.readFileSync(path.join(__dirname,"..","cwl-deployment-filters.js"),"utf8");
+ assert.match(selectors,/legacy==="played"/);
+ assert.match(selectors,/legacy==="future"/);
+ assert.match(selectors,/legacy==="fixed"/);
+ for(const id of ["summaryGroup","summaryProgress","summaryMedal","summarySort"])
+  assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/summaryOpenMemberId===x\.m\.id/);
  assert.match(html,/const DATA_VERSION=9/);
 });
