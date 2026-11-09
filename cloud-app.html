@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#151a20">
 <title>CWL Planer</title>
+<script>
+// Resolve a saved visual preference before styles are painted. A first-time
+// visitor keeps Arena/Gold; existing selections never flash the new default.
+try{
+ const pref=JSON.parse(localStorage.getItem("cwl_planer_ui_v1")||"{}")?.theme;
+ const choice=["dark","light","system","cyber","cyberlight","arena"].includes(pref)?pref:"arena";
+ const theme=choice==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):choice;
+ document.documentElement.dataset.theme=theme;
+ document.querySelector('meta[name="theme-color"]').content=
+  theme==="cyber"?"#03050b":theme==="cyberlight"?"#eaf8fb":
+  theme==="arena"?"#151a20":theme==="dark"?"#0f172a":"#f4f7fb";
+}catch(e){/* New users and inaccessible storage retain Arena/Gold. */}
+</script>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#132238;--muted:#66758a;--line:#dce3ec;--primary:#2563eb;--green:#15803d;--greenbg:#dcfce7;--red:#b91c1c;--redbg:#fee2e2;--amber:#a16207;--amberbg:#fef3c7;--bluebg:#dbeafe;--shadow:0 8px 24px rgba(15,23,42,.08)}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);padding-bottom:92px}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:920px;margin:0 auto}
