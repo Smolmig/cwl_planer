@@ -23,11 +23,17 @@ test("finished and complete CWL war yields exact per-day star results without fa
   const got=live.getPlayedAttackResults();
   assert.deepEqual(got[1]["#2PYQ"],{stars:3,percent:100,missed:false});
   assert.deepEqual(got[1]["#2PYV"],{missed:true});
+  const observed=live.getObservedCwlAttackResults();
+  assert.equal(observed[1]["#2PYQ"].state,"warEnded");
+  assert.equal(observed[1]["#2PYQ"].warTag,"#2PYL");
   round.clan.members.pop();
   assert.deepEqual(live.getPlayedAttackResults(),{},"incomplete roster cannot imply missed attacks");
   round.clan.members.push({tag:"#2PYV",name:"B",attacks:[]});
   round.state="inWar";
   assert.deepEqual(live.getPlayedAttackResults(),{},"current war cannot be marked as played");
+  const running=live.getObservedCwlAttackResults();
+  assert.equal(running[1]["#2PYQ"].stars,3,"a real live attack is already executed");
+  assert.equal(running[1]["#2PYV"],undefined,"an unused in-war attack is unknown, not missed");
  }finally{
   if(old===undefined)delete global.document;else global.document=old;
   dom.window.close();

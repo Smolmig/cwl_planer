@@ -81,8 +81,8 @@ test("Cloud-specific help can be shown without creating a second modal",{timeout
 test("Help explains current Einsatzverteilung and availability on phone and desktop",{
  timeout:120000
 },async()=>{
- assert.match(html,/Gespielt \$\{x\.played\}/);
- assert.match(html,/Geplant \$\{Math\.max\(0,x\.count-x\.played\)\}/);
+ assert.match(html,/cloudProgress\?"Ausgeführt":"Gespielt"/);
+ assert.match(html,/cloudProgress\?"Offen":"Geplant"/);
  assert.match(html,/Tage ohne RAUS/);
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  try{
@@ -104,8 +104,8 @@ test("Help explains current Einsatzverteilung and availability on phone and desk
     assert.match(await intro.innerText(),/Mitglieder prüfen/);
     assert.match(await intro.innerText(),/gemeinsamen Clan.*Clash.*Gastmodus/s);
     const copy=await explanation.innerText();
-    for(const value of ["Gespielt","Geplant","Gesamt","6/7 Tage ohne RAUS","kein Einsatzziel",
-      "einzelnen Kriegstage","in Clash fix","nicht garantiert"])
+    for(const value of ["Ausgeführt","Offen","Gespielt","Geplant","Gesamt","6/7 Tage ohne RAUS","kein Einsatzziel",
+      "einzelne Kriegstage","in Clash fix","keine Garantie","Ø Sterne","8★-Ziel"])
       assert.ok(copy.includes(value),width+" "+theme+": "+value);
     assert.doesNotMatch(copy,/\bG\s*=|\bP\s*=/);
     assert.equal(await help.locator("#cloudHelpSection").isVisible(),false);

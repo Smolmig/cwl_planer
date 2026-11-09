@@ -66,9 +66,11 @@ test("form, list position and selected wars are explicitly separate from the sev
 test("deployment overview labels availability and counted assignments, not unknown manual three-star strength",()=>{
  const render=html.slice(html.indexOf("function renderSummary(){"),html.indexOf("function renderArchives",html.indexOf("function renderSummary(){")));
  assert.match(render,/Tage ohne RAUS/);
- assert.match(render,/Gespielt \$\{x\.played\}/);
- assert.match(render,/Geplant \$\{Math\.max/);
+ assert.match(render,/cloudProgress\?"Ausgeführt":"Gespielt"/);
+ assert.match(render,/cloudProgress\?"Offen":"Geplant"/);
  assert.match(render,/\$\{x\.count\} gesamt/);
+ assert.match(render,/const progress=window\.CWLCloud\?\.active/);
+ assert.match(render,/CWL bisher/);
  assert.doesNotMatch(render,/STRENGTH_SHORT/);
  assert.match(html,/Grün = bereits gespielt/);
  assert.match(html,/Gold = noch geplant/);

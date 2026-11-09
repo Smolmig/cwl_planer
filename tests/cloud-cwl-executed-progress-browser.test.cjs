@@ -84,7 +84,7 @@ test("Verified in-war attack updates plan tile, Einsatz counts/bars and current 
 });
 test("CWL progress uses only verified results; no solver or data format mutation",()=>{
  assert.match(html,/function currentCwlDisplayProgress/);
- assert.match(html,/const result=cloudProgress\?dayResults\[dp\.day\]/);
+ assert.match(html,/const result=dayResults\[dp\.day\]\?\.\[playerTag\]\|\|null/);
  assert.match(html,/refreshSummary:\(\)=>\{if\(window\.CWLCloud\?\.active&&lastPlan\)renderPlan\(\);renderSummary\(\)\}/);
  assert.match(html,/const DATA_VERSION=9/);
 });
