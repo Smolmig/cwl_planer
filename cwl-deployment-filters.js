@@ -18,24 +18,18 @@
   const fixed=!!m.fixed,rotating=!!m.participating&&!fixed&&m.cocSyncState!=="former";
   const exact=!fixed&&Number.isInteger(m.targetDays)&&m.targetDays>=1&&m.targetDays<=7
    ?m.targetDays:null;
-  const planCount=integer(row.count);
   const open=integer(row.open);
-  const unknown=integer(row.unknown);
-  const missed=integer(row.missed);
   // "Automatisch" never becomes an invented hard goal. Fixed means available
   // planned days, not a user-selected exact target.
   const targetStatus=exact===null?"automatic":executed===null?"unknown":
    executed>=exact?"reached":"open";
-  const allPlannedDone=executed!==null&&planCount!==null&&planCount>0&&
-   executed>=planCount&&open===0&&unknown===0&&missed===0;
   const status=medal?.status==="reached"?"reached":
    !cloud||!medal||!medalFresh||medal.unknown||medal.status==="uncertain"?"unknown":
    medal.status==="not-reachable"?"unreachable":"open";
   const starsRemaining=Number.isFinite(medal?.remainingStars)?Math.max(0,medal.remainingStars):
    Number.isFinite(medal?.stars)?Math.max(0,8-medal.stars):null;
-  return {...row,rotating,fixed,exact,targetStatus,allPlannedDone,
+  return {...row,rotating,fixed,exact,targetStatus,
    medalStatus:status,starsRemaining,verifiedAttacks:executed,
-   restTarget:exact===null||executed===null?null:Math.max(0,exact-executed),
    openVerifiedPlan:open,hitRate:cloud?row.progress?.hitRate:null,
    averageStars:cloud?row.progress?.averageStars:null};
  }
@@ -49,18 +43,13 @@
    if(legacy==="future"&&!(row.open>0))return false;
    if(legacy==="fixed"&&!row.fixed)return false; // backwards compatible
    if(group==="rotation"&&!row.rotating)return false;
-   if(group==="fixed"&&!(row.m?.participating&&row.fixed))return false;
    if(progress==="target-met"&&row.targetStatus!=="reached")return false;
    if(progress==="target-open"&&row.targetStatus!=="open")return false;
-   if(progress==="planned-done"&&!row.allPlannedDone)return false;
-   if(progress==="automatic"&&row.targetStatus!=="automatic")return false;
    if(medal==="reached"&&row.medalStatus!=="reached")return false;
    if(medal==="open"&&row.medalStatus!=="open"&&row.medalStatus!=="unreachable")return false;
-   if(medal==="unknown"&&row.medalStatus!=="unknown")return false;
    return true;
   });
   const sorts={
-   "rest-asc":r=>r.restTarget,"rest-desc":r=>r.restTarget,
    "open-asc":r=>r.openVerifiedPlan,"open-desc":r=>r.openVerifiedPlan,
    "stars-asc":r=>r.starsRemaining,"stars-desc":r=>r.starsRemaining,
    "hit-desc":r=>r.hitRate,"avg-desc":r=>r.averageStars,
