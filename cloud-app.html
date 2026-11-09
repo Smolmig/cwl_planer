@@ -501,6 +501,14 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 .summary-tools{display:grid;grid-template-columns:minmax(0,2fr) minmax(130px,1fr) auto;gap:7px;align-items:center;margin:8px 0}
 .summary-tools input,.summary-tools select{min-width:0;min-height:39px;padding:7px 9px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:9px;font-size:13px}
 .summary-visible-count{color:var(--muted);font-weight:750;font-size:11px;white-space:nowrap}
+.summary-cloud-tools:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;align-items:end;margin:7px 0 9px}
+.summary-filter-field{display:flex;flex-direction:column;min-width:0;gap:4px;font-size:11px;color:var(--muted);font-weight:650}
+.summary-filter-field select{box-sizing:border-box;width:100%;min-width:0;min-height:40px;padding:7px 8px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px;font-size:13px}
+.summary-reset-filters{grid-column:1/-1;justify-self:start;min-height:36px}
+@media(max-width:860px){.summary-cloud-tools:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){.summary-cloud-tools:not([hidden]){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:470px){.summary-filter-field select{font-size:16px;min-height:44px}}
+.summary-target-note{font-weight:650;color:var(--muted)}
 .summary-legend{font-size:11px;color:var(--muted);margin:5px 0 10px}
 .summary-compact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px;align-items:start}
 .summary-compact-grid>.empty{grid-column:1/-1}
@@ -3413,9 +3421,16 @@ html[data-theme] #view-more-settings .latest-changelog{
   <div class="card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryMedalOverview" class="summary-medal-overview" role="status" aria-live="polite" hidden></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
-    <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option><option value="fixed">Fixspieler</option>
+    <option value="all">Alle Spieler</option><option value="zero">Noch kein Einsatz geplant</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option>
   </select>
   <span class="summary-visible-count" id="summaryVisibleCount" aria-live="polite"></span>
+</div>
+<div class="summary-cloud-tools" id="summaryCloudFilters" hidden aria-label="Weitere CWL-Einsatzfilter">
+ <label class="summary-filter-field" for="summaryGroup"><span>Spielergruppe</span><select id="summaryGroup"><option value="all">Alle Gruppen</option><option value="rotation">Nur Rotation</option><option value="fixed">Nur Fixspieler</option></select></label>
+ <label class="summary-filter-field" for="summaryProgress"><span>Einsatzziel</span><select id="summaryProgress"><option value="all">Alle Fortschritte</option><option value="target-met">Festes Ziel erreicht</option><option value="target-open">Festes Ziel noch offen</option><option value="planned-done">Vorgesehene AG ausgeführt</option><option value="automatic">Automatisch / kein festes Ziel</option></select></label>
+ <label class="summary-filter-field" for="summaryMedal"><span>8★-Ziel</span><select id="summaryMedal"><option value="all">Alle Sternziele</option><option value="reached">8★ sicher erreicht</option><option value="open">8★ noch offen</option><option value="unknown">Daten unklar</option></select></label>
+ <label class="summary-filter-field" for="summarySort"><span>Sortieren</span><select id="summarySort"><option value="default">Einsätze (aufsteigend)</option><option value="rest-asc">Rest zum festen Ziel ↑</option><option value="rest-desc">Rest zum festen Ziel ↓</option><option value="open-desc">Offene geplante AG ↓</option><option value="open-asc">Offene geplante AG ↑</option><option value="stars-asc">Sterne bis 8 ↑</option><option value="stars-desc">Sterne bis 8 ↓</option><option value="hit-desc">Aktuelle 3★-Quote ↓</option><option value="avg-desc">Ø CWL-Sterne ↓</option><option value="attacks-desc">Belegte Angriffe ↓</option><option value="name">Name A–Z</option></select></label>
+ <button class="btn small summary-reset-filters" id="summaryResetFilters" type="button">Filter zurücksetzen</button>
 </div><div class="summary-legend" id="summaryLegend">Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. <strong>Gesamt</strong> zählt beide zusammen.</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
 
@@ -3526,7 +3541,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.49</strong><span>CWL · verpasste Angriffe im Blick</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.50</strong><span>CWL · verpasste Angriffe im Blick</span></div>
        <ul>
         <li><b>Bestätigte CWL-Misses:</b> Auch ältere bestätigte Fälle bleiben sichtbar, wenn ein neuer Krieg eine Erinnerung auslöst.</li>
         <li><b>Kriegstagsauswahl:</b> Bei mehreren bestätigten Vorfällen kannst du kompakt zwischen den Tagen wechseln.</li>
@@ -3960,9 +3975,10 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-planning-core.js?v=1.16.49"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.50"></script>
+<script src="./cwl-planning-core.js?v=1.16.50"></script>
 <script>
-const APP_VERSION="v1.16.49";
+const APP_VERSION="v1.16.50";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -3976,6 +3992,13 @@ let toastTimer=null,modalDay=null,modalSelection=new Set(),openRulePanels=new Se
 let startupStorageIssue=null,suspendWrites=false,lastPlan=null;
 let mobileSelectedDay=null,mobileLineupsExpanded=!matchMedia("(max-width:699px), (orientation:landscape) and (max-height:540px) and (max-width:1100px)").matches;
 let memberSearch="",memberFilter="all",memberSearchRenderTimer=null,summarySearch="",summaryFilter="all",summaryOpenMemberId=null,openMemberDetails=new Set(),townHallPickHandler=null;
+const summaryAdvanced={group:"all",progress:"all",medal:"all",sort:"default"};
+function resetSummaryAdvanced(){
+ summaryAdvanced.group="all";summaryAdvanced.progress="all";summaryAdvanced.medal="all";summaryAdvanced.sort="default";
+ for(const [key,id] of [["group","summaryGroup"],["progress","summaryProgress"],["medal","summaryMedal"],["sort","summarySort"]]){
+  const element=document.getElementById(id);if(element)element.value=summaryAdvanced[key];
+ }
+}
 let lastRenderedCloudClanId=null;
 
 function uid(prefix="m"){return prefix+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
@@ -4032,7 +4055,7 @@ function lineupPlayer(id,day){const m=memberById(id),past=state.locks[day]?.lock
 function allKnownMembers(){return [...state.members,...state.archivedMembers]}
 function profileNameExists(name,excludeId=null){const key=canonicalProfileName(name);return app.profiles.some(p=>p.id!==excludeId&&canonicalProfileName(p.name)===key)}
 function uniqueProfileName(base){let name=String(base||"Importiertes Profil").trim()||"Importiertes Profil",n=2;while(profileNameExists(name))name=`${base} (${n++})`;return name}
-function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()}
+function setActiveProfile(id){const p=app.profiles.find(x=>x.id===id);if(!p)return;app.activeProfileId=id;state=p;lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";resetSummaryAdvanced();document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()}
 function saveApp(){
  if(window.CWLCloud?.active){window.CWLCloud.onLocalChange();return}
  const b=document.getElementById("saveBadge");
@@ -4556,7 +4579,8 @@ function renderSummary(){
   const summaryRoot=document.getElementById("summaryList");
   const previousSummaryContext=summaryRoot.dataset.profileContext;
   const summaryContext=(window.CWLCloud?.active?(window.CWLCloud?.getActiveClanId?.()||"cloud"):"local")+
-    "|"+String(state.id||state.name||"");
+    "|"+String(state.id||state.name||"")+"|"+String(state.cwlLive?.season||"");
+  if(previousSummaryContext&&previousSummaryContext!==summaryContext)resetSummaryAdvanced();
   const focusedSummaryId=summaryRoot.dataset.profileContext===summaryContext&&
     summaryRoot.contains(document.activeElement)&&
     document.activeElement?.matches?.(".summary-player-toggle")
@@ -4604,14 +4628,28 @@ function renderSummary(){
       hint.append(summary,body);goalBanner.append(hint);
     }
   }
-  const query=summarySearch.trim().toLocaleLowerCase("de");
-  const visible=rows.filter(x=>{
-    if(query&&!displayMemberName(x.m).toLocaleLowerCase("de").includes(query)&&!(x.m.playerTag||"").toLocaleLowerCase("de").includes(query))return false;
-    if(summaryFilter==="zero")return x.count===0;
-    if(summaryFilter==="played")return x.played>0;
-    if(summaryFilter==="future")return x.open>0;
-    if(summaryFilter==="fixed")return x.m.fixed;
-    return true;
+  const cloudFilters=document.getElementById("summaryCloudFilters");
+  if(cloudFilters)cloudFilters.hidden=!cloudProgress;
+  const tagCounts=new Map();
+  for(const member of allKnownMembers()){
+    const tag=normalizePlayerTag(member.playerTag);
+    if(tag)tagCounts.set(tag,(tagCounts.get(tag)||0)+1);
+  }
+  const selectors=window.CWLDeploymentFilters;
+  const classified=rows.map(x=>{
+    const tag=normalizePlayerTag(x.m.playerTag);
+    return selectors.decorateDeploymentRow(x,{
+      cloud:cloudProgress,
+      medal:tagCounts.get(tag)===1&&medal?.season===state.cwlLive?.season?goalByTag.get(tag):null,
+      medalFresh:goalState?.fresh===true
+    });
+  });
+  const visible=selectors.filterDeploymentRows(classified,{
+    query:summarySearch,legacy:summaryFilter,
+    group:cloudProgress?summaryAdvanced.group:"all",
+    progress:cloudProgress?summaryAdvanced.progress:"all",
+    medal:cloudProgress?summaryAdvanced.medal:"all",
+    sort:cloudProgress?summaryAdvanced.sort:"default"
   });
   const filter=document.getElementById("summaryFilter");
   filter.querySelector('[value="played"]').textContent=cloudProgress?"Bereits angegriffen":"Bereits gespielt";
@@ -4620,7 +4658,7 @@ function renderSummary(){
   if(legend)legend.textContent=cloudProgress?
     "Grün = belegte ausgeführte CWL-Angriffe · Gold = noch offene/geplante Einsätze · Grau = keine Belege. Ein Kriegsabschluss ist kein Angriffsbeleg.":
     "Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. Gesamt zählt beide zusammen.";
-  document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length}`;
+  document.getElementById("summaryVisibleCount").textContent=`${visible.length} von ${rows.length} Spielern`;
   const progressSignature=cloudProgress?JSON.stringify([...progress]):"offline";
   const sameSummaryContext=previousSummaryContext===summaryContext;
   const backgroundProgressUpdate=sameSummaryContext&&
@@ -4660,7 +4698,7 @@ function renderSummary(){
       (daysExpanded?" schließen":" anzeigen");
     return `<div class="summary-compact-row" data-member-id="${esc(x.m.id)}">
       <button type="button" class="summary-compact-name summary-player-toggle" data-member-id="${esc(x.m.id)}" aria-expanded="${daysExpanded}" ${daysExpanded?`aria-controls="summary-days-${esc(x.m.id)}"`:""} aria-label="${esc(daysLabel)}" title="${esc(daysLabel)}"><b title="${esc(displayMemberName(x.m))}">${esc(displayMemberName(x.m))}</b>
-        <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${esc(rotationWeightLabel(x.m))}${active?` · ${available}/${state.config.days} Tage ohne RAUS`:""}</span>
+        <span class="summary-compact-meta">${x.m.townHall?`RH${x.m.townHall} · `:""}${x.m.fixed?"Fix":esc(rotationWeightLabel(x.m))}${active?` · ${available}/${state.config.days} Tage ohne RAUS`:""}</span>
       </button>
       <div class="summary-compact-numbers" aria-label="${cloudProgress?x.played+" Angriffe ausgeführt, "+x.open+" offen":x.played+" gespielt, "+x.open+" geplant"}, ${x.count} gesamt">
         <span class="summary-stat played" title="${cloudProgress?"CWL-Angriffe tatsächlich ausgeführt":"Tatsächlich gespielt"}">${cloudProgress?"Ausgeführt":"Gespielt"} ${x.played}</span>
@@ -4676,6 +4714,7 @@ function renderSummary(){
         ${cloudProgress?`<span class="summary-current-cwl" title="Nur belegte Angriffe dieser CWL, Stand des letzten Clash-Abgleichs; unvollständige Daten bleiben möglich">${x.progress?.executed?
           "CWL bisher · 3★-Quote: "+x.progress.hitRate+" % ("+x.progress.threes+"/"+x.progress.executed+" AG) · Ø "+x.progress.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":
           "CWL bisher · noch keine Angriffe belegt"}${x.unknown?" · "+x.unknown+" beendete Tage ohne Angriffsbeleg":""}${x.missed?" · "+x.missed+" bestätigte Ausfälle":""}</span>`:""}
+        ${cloudProgress&&!x.m.fixed?`<span class="summary-target-note">${x.exact===null?"Einsatzziel: Automatisch (keine feste Anzahl)":"Einsatzziel: "+x.played+"/"+x.exact+" Angriffe ausgeführt"+(x.targetStatus==="reached"?" · erreicht":" · noch offen")}</span>`:""}
         ${goal?`<span class="summary-goal ${goalClass}">CWL: ${goal.unknown?"mind. ":""}${goal.stars}/8 ★ · ${esc(goalLabel)}</span>
         <span>${goal.attackCount} Angriffe erfasst · ${goal.futureAttacks} offen/geplant</span>`:""}
         ${reserveAvailable&&goal?.status!=="reached"?`<span class="summary-reserve" title="Ein vierter Einsatz erfordert bei einem festen Ziel eine Anpassung und einen manuellen Tausch">Tag 7 als mögliche 8★-Reserve frei</span>`:""}
@@ -4705,7 +4744,7 @@ function renderSummary(){
         }).join("")||
           '<span class="statusline">Keine Einsätze geplant</span>')+'</div>':""}
     </div>`;
-  }).join("")||'<div class="empty">Keine Spieler für diesen Filter.</div>';
+  }).join("")||'<div class="empty">Keine Spieler für diese Auswahl. Suche oder Filter anpassen.</div>';
   if(focusedSummaryId){
     const replacement=[...summaryRoot.querySelectorAll(".summary-player-toggle")]
       .find(button=>button.dataset.memberId===focusedSummaryId);
@@ -5226,6 +5265,15 @@ document.getElementById("membersImportBtn").onclick=()=>document.getElementById(
 };
 document.getElementById("summarySearch").oninput=e=>{summarySearch=e.target.value;renderSummary()};
 document.getElementById("summaryFilter").onchange=e=>{summaryFilter=e.target.value;renderSummary()};
+for(const [key,id] of [["group","summaryGroup"],["progress","summaryProgress"],
+ ["medal","summaryMedal"],["sort","summarySort"]]){
+ document.getElementById(id).onchange=e=>{summaryAdvanced[key]=e.target.value;renderSummary()};
+}
+document.getElementById("summaryResetFilters").onclick=()=>{
+ summarySearch="";summaryFilter="all";resetSummaryAdvanced();
+ document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";
+ renderSummary();
+};
 document.getElementById("memberSearch").oninput=e=>{
  memberSearch=e.target.value;
  clearTimeout(memberSearchRenderTimer);
@@ -5325,14 +5373,14 @@ window.CWLLegacy={
   if(!sameClan){
    mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();
    selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;
-   memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";
+   memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";resetSummaryAdvanced();
    document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";
    document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";
   }
   renderMembers.preserveNextViewport=sameClan;
   renderAll();
  },
- restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()},
+ restoreGuest:()=>{app=loadApp();state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];lastRenderedCloudClanId=null;mobileSelectedDay=null;openRulePanels.clear();openDuplicatePanels.clear();selectionMode=false;selectedMembers.clear();openMemberDetails.clear();summaryOpenMemberId=null;memberSearch="";memberFilter="all";summarySearch="";summaryFilter="all";resetSummaryAdvanced();document.getElementById("memberSearch").value="";document.getElementById("memberFilter").value="all";document.getElementById("summarySearch").value="";document.getElementById("summaryFilter").value="all";renderAll()},
  blank:(name)=>freshProfile(name),
  newMember:(name)=>freshMember(name),
  normalize:(p)=>normalizeProfile(p),
@@ -5342,6 +5390,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.49"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.50"></script>
 </body>
 </html>
