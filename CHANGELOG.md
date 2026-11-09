@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.50] - 2026-11-09
+
+### Einsätze #187: Rotation, individuelle Ziele und 8★ sicher kombinieren
+- In der **Einsatzverteilung** lassen sich die bestehende Suche/Statusauswahl jetzt unabhängig mit **Nur Rotation/Fix**, **festes Ziel erreicht/noch offen/vorgesehene AG ausgeführt/Automatisch** und **8★ erreicht/offen/unklar** per UND kombinieren. Alle Einstellungen lassen sich gemeinsam zurücksetzen; Trefferanzeige n von N und verständlicher Leerzustand.
+- Sortierung nach verbleibenden **belegten** Angriffen bis zum *festen* Einsatzziel (fehlende Ziele zuletzt), noch geplanten AG, verbleibenden CWL-Sternen, aktuellem CWL-3★-Anteil / Ø Sterne / Angriffszahl und Namen. Die laufenden CWL-Werte werden mit Stichprobe angezeigt und **nicht** als Stärkeprognose bewertet.
+- Nur eindeutige tatsächlich ausgeführte CWL-Angriffe aus #181 gelten als erledigt; ein Clash-fixierter oder lediglich geplanter Tag ist **kein Angriff**. Fixspieler und `targetDays=null` („Automatisch“) erhalten kein erfundenes festes Ziel. Unklare, doppelte oder veraltete Daten erzeugen keine sichere 8★-„noch offen“-Behauptung.
+- Nur lesende UI-Auswahl; keine Änderung an Solver, Locks, Rollen, Clash, Supabase, Datenbank oder separater Offline-PWA. Hilfe und automatisierte Filter-/Sortier-/Quellen-/Mobile-Layout-Verträge im selben Patch.
+- **Release-Kandidat:** PR-CI und danach Main-CI/Pages/offiziellen Release vor Produktivstatus prüfen.
+
+
 ## [1.16.49] - 2026-11-09
 
 ### CWL #184: bestätigte ältere Missed-Vorfälle bleiben erreichbar
