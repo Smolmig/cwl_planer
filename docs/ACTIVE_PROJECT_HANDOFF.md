@@ -4,6 +4,13 @@
 **Verbindlich:** Diese Datei ist der **aktuelle Einstiegspunkt für jeden neuen Chat**. Historische Übergaben dokumentieren ältere Zustände und dürfen nicht als gegenwärtig gelten. Nach jeder Arbeitsrunde diesen Stand mit PR, Tests, Release und nächstem Schritt aktualisieren.
 
 
+## Neue Arbeitsrunde – 09.11.2026 (Cloud v1.16.40 in PR, noch nicht veröffentlicht)
+
+- **Befund #114/#46:** Der Statistik-Ladestatus behauptete „aktuell“ nach einem bloßen erfolgreichen Datenbank-Lesen und zählte auch unbestätigte Kriege. Beobachter wurden bei null Daten zum nicht erlaubten Import aufgefordert. Der CW/CWL-Import-Toast nannte nur CW.
+- **Änderung:** Bestehende Statuszeile trennt finalisierte Kriege von weiteren unbestätigten Einträgen, neutraler Leerzustand; kein weiteres Panel, keine Berechnungs-/Datenänderung. Neue pure Funktion statsLoadNotice, neuer Unit-Test und erweiterter Chromium-Viewer-Browsertest bei 320/390/430/1366px und Gold/Dark/Light.
+- **Freigabe:** PR, PR-CI, Main-CI, Pages und offizieller Release sind nach Prüfung nachzutragen. Echte iPhone-/Android-Abnahme offen; kein DB-/RLS-/Collector-/Solver-/Offline-PWA-Eingriff.
+- **Danach:** Nächsten belegten Copy-/UX-Befund aus #114/#46 isoliert prüfen; Geräteabnahme und #104/#103 bleiben eigenständig.
+
 ## 0. Neueste Arbeitsrunde – 09.11.2026
 
 ### Cloud v1.16.39 – freie Spielerstatistik: Namen A–Z statt Z–A (#114), offiziell veröffentlicht

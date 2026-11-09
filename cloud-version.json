@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.39",
+  "version": "v1.16.40",
   "released": "2026-11-09",
-  "summary": "Statistik > Spielerstatistik: Die Auswahl „Name (A–Z)“ sortiert aktive und ehemalige Clanmitglieder korrekt alphabetisch, auch bei aktuellen Namensänderungen. Quoten-, Angriffszahl-, Stern- und Missed-Sortierung bleiben absteigend, gespeicherte Ergebnisse, Spielerform, CWL-Solver, Cloud-Datenbank, Rollen/Auth/RLS und Offline-PWA unverändert."
+  "summary": "Statistik: Ladestatus trennt bestätigte abgeschlossene und weitere unbestätigte Kriege, ohne Vollständigkeit oder frischen Server-Abgleich zu behaupten. CW/CWL-Importmeldung neutral benannt. Keine Änderung an Quoten, Datenbank, CWL-Solver, Rollen/Auth/RLS oder Offline-PWA."
 }
