@@ -4630,13 +4630,30 @@ function renderSummary(){
     }
   }
   const cloudFilters=document.getElementById("summaryCloudFilters");
-  if(cloudFilters)cloudFilters.hidden=!cloudProgress;
+  if(cloudFilters)cloudFilters.hidden=!cloudProgress||!window.CWLDeploymentFilters;
   const tagCounts=new Map();
-  for(const member of allKnownMembers()){
+  for(const member of [...(state.members||[]),...(state.archivedMembers||[])]){
     const tag=normalizePlayerTag(member.playerTag);
     if(tag)tagCounts.set(tag,(tagCounts.get(tag)||0)+1);
   }
-  const selectors=window.CWLDeploymentFilters;
+  // Test/partial-load hosts may omit the optional selector asset. In that
+  // case preserve the original basic list and controls rather than breaking
+  // every page. Only show advanced controls after the real module is loaded.
+  const selectors=window.CWLDeploymentFilters||{
+    decorateDeploymentRow:x=>({...x,fixed:!!x.m.fixed,exact:null,targetStatus:"automatic"}),
+    filterDeploymentRows:(items,{query="",legacy="all"}={})=>{
+      const q=String(query||"").trim().toLocaleLowerCase("de");
+      return items.filter(x=>{
+        if(q&&!displayMemberName(x.m).toLocaleLowerCase("de").includes(q)&&
+          !(x.m.playerTag||"").toLocaleLowerCase("de").includes(q))return false;
+        if(legacy==="zero")return x.count===0;
+        if(legacy==="played")return x.played>0;
+        if(legacy==="future")return x.open>0;
+        if(legacy==="fixed")return !!x.m.fixed;
+        return true;
+      });
+    }
+  };
   const classified=rows.map(x=>{
     const tag=normalizePlayerTag(x.m.playerTag);
     return selectors.decorateDeploymentRow(x,{
