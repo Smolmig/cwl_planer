@@ -208,7 +208,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       "Gesamte Einsatzzahlen bleiben gleich (nur Tagesverteilung ändert sich).";
     const spread=preview.impact.rotationSpread;
     const spreadSummary=spread.before===null?"":(
-      "\\nRotationsspanne: "+spread.before+" → "+spread.after+
+      "\nRotationsspanne: "+spread.before+" → "+spread.after+
       " Einsätze (nur teilnehmende Nicht-Fixspieler; keine Fairnessgarantie).");
     const answer=await storage.askAction({
       title:"Tagespause verbindlich übernehmen",
