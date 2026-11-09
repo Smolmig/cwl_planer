@@ -12,7 +12,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Vollständig bestätigte Missed-Ereignisse mehrerer CWL-Tage können jetzt über eine **kompakte Tagesauswahl** individuell geprüft werden. Ein jüngerer Fall oder eine letzte-Stunde-Erinnerung blendet ältere Vorfälle nicht mehr aus.
 - Die letzte-Stunde-Warnung bleibt priorisiert; frühere Fälle sind davon getrennt über die bestehende Planprüfung, Owner-Entscheidungen und Audit-Historie erreichbar. Der gewählte Tag und sein geöffneter Bereich bleiben beim Refresh erhalten.
 - Keine automatische Pause, keine neue SQL-/RLS-Migration, keine Solver-/Clash-Mutation. Bestehende Owner-/Collector-/Clash-/Einsatzziel-/8★-Sicherheitsprüfungen gelten unverändert. Browserregression erweitert und Hilfe aktualisiert.
-- **Release-Kandidat:** PR, CI, Pages und offiziellen Release vor Live-Status prüfen.
+- **Offiziell veröffentlicht:** [PR #193](https://github.com/Smolmig/cwl_planer/pull/193) Squash `4d0635c7a18f`; [PR-CI 42682089435](https://github.com/Smolmig/cwl_planer/actions/runs/42682089435) vollständig grün; [Main-CI 42682546092](https://github.com/Smolmig/cwl_planer/actions/runs/42682546092), [Pages 42682544922](https://github.com/Smolmig/cwl_planer/actions/runs/42682544922), [Release-Workflow 42682849540](https://github.com/Smolmig/cwl_planer/actions/runs/42682849540) und [offizieller Release v1.16.49](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.49) erfolgreich. Echte Clash-/iOS-/Android-Abnahme und produktiver Collector-Miss-Test weiterhin offen.
 
 
 ## [1.16.48] - 2026-11-09
