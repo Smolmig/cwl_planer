@@ -101,6 +101,9 @@ begin
     v_future->>'state' is distinct from 'preparation' or
     v_future->'clan'->>'tag' is distinct from v_clan_tag or
     v_future->>'teamSize' is distinct from v_profile.profile_json->'config'->>'slots' or
+    jsonb_typeof(v_future->'clan'->'members') is distinct from 'array' or
+    jsonb_array_length(v_future->'clan'->'members') <>
+       (v_profile.profile_json->'config'->>'slots')::integer or
     v_future->>'startTime' is null or v_future->>'startTime' !~ '^[0-9]{8}T[0-9]{6}' or
     left(v_future->>'startTime',15) <=
        to_char((now() at time zone 'UTC')+interval '30 minutes',
@@ -125,6 +128,14 @@ begin
   from jsonb_array_elements(v_members) with ordinality as m(value,ordinality)
   where m.value->>'playerTag'=p_player_tag;
  if v_count<>1 then raise exception 'ambiguous_player_tag';end if;
+ if exists (
+   select 1 from jsonb_array_elements(
+    case when jsonb_typeof(v_profile.profile_json->'archivedMembers')='array'
+      then v_profile.profile_json->'archivedMembers'
+      else '[]'::jsonb end
+   ) as former(value)
+   where former.value->>'playerTag'=p_player_tag
+ ) then raise exception 'ambiguous_archived_player_tag';end if;
  v_player=v_members->v_index;
  if v_player->>'fixed' is distinct from 'false' or
     v_player->>'participating' is distinct from 'true' or
