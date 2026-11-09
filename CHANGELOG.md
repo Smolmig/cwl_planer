@@ -6,12 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.36] - 2026-11-09
+
+### Aktuelle Spielernamen in Statistik, Spielerform und Duellen einheitlich
+- **Befund (#114/#110):** Die Formliste nutzt bereits den aktuellen Namen des Cloud-Clankaders. Freie Spielerstatistik und Duell-Auswahl zeigten denselben Spieler noch mit dem historischen Namen des gespeicherten Angriffs, wodurch Suchergebnis und Sortierung bei Clan-Namenswechseln irreführend werden.
+- **Fix:** Aktuelle berechtigte Kadernamen ausschließlich zur Anzeige, Suche und alphabetischen Sortierung der freien Spielerstatistik sowie bei Duell-Dropdowns und Duellkarten verwenden. Ehemalige Clankameraden behalten ihre dokumentierten Namen. Historische `attacker_name`-Werte, Identitäten, Quoten und Datenbank bleiben unverändert.
+- **Regression/Sicherheit:** Chromium-Test für aktiven und ehemaligen Spieler, Umbenennung im selben Clan, Statistik/Spielerform/Duell, Suche und Viewer auf 320/390/430/1366 px Gold/Dark/Light; Rollen, Solver, Cloud-DB/Edge/Auth/RLS und Offline-PWA unverändert. PR/CI/Release erst nach jeweiligem tatsächlichem Erfolg nachtragen.
+
+
 ## [1.16.35] - 2026-11-09
 
 ### Spielerstatistik: abgeschlossene CW-Auswahl und Null-Daten-Zeiträume
 - **Befund (#114/#110):** „Nur CW / Alle CWs“ führte zu „Bis zu all“ und zur Gesamtzahl inklusive unfertiger API-Kriege, während die ausgewerteten Angriffe diese zurecht ausschlossen. Bei 0 ausgewählten abgeschlossenen Kriegen erschienen unverständliche Datumsstriche.
 - **Gezielter UI-Fix:** Zähler, Begrenzungstexte und ausgewählte Datenbasis einheitlich aus `describeWarSelection` (abgeschlossene Kriege) ableiten; Einzahl bei einem Angriff. Bei noch leerer Auswahl neutralen Leerzustand statt 0-%-Werten oder Datums-Platzhaltern zeigen. CW/CWL-Filter und unabhängige Form-/Vergleichsauswertung unverändert.
-- **Regression/Abnahme:** `tests/cloud-stats-finalized-scope-empty.test.cjs` mit abgeschlossenen/noch laufenden CW/CWL-Kriegen, All/Last-1/0-Filtern, Viewer, Arena/Dark/Light, 320/390/430/1366 px. PR, CI, Pages und Release nur nach erfolgreichen Nachweisen dokumentieren. Keine produktiven DB-, Auth/RLS-, Edge-, CWL-Solver-, Plan- oder Offline-PWA-Änderungen.
+- **Regression/Abnahme:** `tests/cloud-stats-finalized-scope-empty.test.cjs` mit abgeschlossenen/noch laufenden CW/CWL-Kriegen, All/Last-1/0-Filtern, Viewer, Arena/Dark/Light, 320/390/430/1366 px. [PR #163](https://github.com/Smolmig/cwl_planer/pull/163) gemergt als `16e3da72a4`, [PR-CI](https://github.com/Smolmig/cwl_planer/actions/runs/42536408138) **522/522 grün**, [Main-CI](https://github.com/Smolmig/cwl_planer/actions/runs/42536612819), [Pages](https://github.com/Smolmig/cwl_planer/actions/runs/42536612370) und [offizielle v1.16.35](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.35) erfolgreich. Keine produktiven DB-, Auth/RLS-, Edge-, CWL-Solver-, Plan- oder Offline-PWA-Änderungen.
 
 
 ## [1.16.34] - 2026-11-09

@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.35",
+  "version": "v1.16.36",
   "released": "2026-11-09",
-  "summary": "Statistik > freie Spielerstatistik: Alle CWs und begrenzte Kriegszahlen ausschließlich auf abgeschlossene Kriege bezogen. Keine 'Bis zu all'-Anzeige, keine offenen API-Kriege im Gesamtzähler. Bei 0 abgeschlossenen ausgewählten Kriegen verständlicher Leerzustand statt Datumslücken oder fingierter Prozentwerte. Quoten, Spielerform und CWL-Planung unverändert."
+  "summary": "Statistik > Spielerstatistik und Spielerduelle verwenden für aktive Clanmitglieder ausschließlich die aktuellen Namen des berechtigten Clanprofils (wie die Spielerform); Suche, alphabetische Sortierung und Duellauswahl bleiben dadurch konsistent. Ehemalige Spieler behalten ihre historischen Anzeigenamen. Gespeicherte Angriffsidentitäten, Quoten, Rollen, Planungslogik, DB und Offline-PWA unverändert."
 }
