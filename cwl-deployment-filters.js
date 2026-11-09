@@ -14,7 +14,7 @@
  };
  function decorateDeploymentRow(row,{cloud=false,medal=null,medalFresh=false}={}){
   const m=row.m||{};
-  const executed=cloud?integer(row.progress?.executed):integer(row.played);
+  const executed=cloud?(!m.playerTag||row.progress?.identifiable===false?null:integer(row.progress?.executed)):integer(row.played);
   const fixed=!!m.fixed,rotating=!!m.participating&&!fixed&&m.cocSyncState!=="former";
   const exact=!fixed&&Number.isInteger(m.targetDays)&&m.targetDays>=1&&m.targetDays<=7
    ?m.targetDays:null;
