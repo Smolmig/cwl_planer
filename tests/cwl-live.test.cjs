@@ -236,7 +236,10 @@ test("CWL alert is advisory only and never auto-pauses, changes rules or writes 
  assert.match(live,/cwlAttackReminder/);
  assert.match(live,/Nur Hinweis, kein automatischer Wechsel/);
  assert.match(live,/attention\.kind==="open"/);
- assert.ok(live.includes("const attention=fresh?"));
+ assert.match(live,/const verifiedNotices=fresh\?info\.rounds/);
+ assert.match(live,/const attention=\[\.\.\.verifiedNotices\]\.sort/);
+ assert.match(live,/const reviewKey=selectedConfirmed\?/,
+  "prior confirmed incidents remain reviewable independently of active warnings");
  const begin=helpers.indexOf("export function cwlAttackReminder(");
  const end=helpers.indexOf("// Read-only phase-2 preview:",begin);
  assert.ok(begin>=0&&end>begin,"Only the newly added reminder must be free of profile writes");

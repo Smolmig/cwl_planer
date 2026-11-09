@@ -1,6 +1,6 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.48";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.48";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.48";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.49";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.49";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.49";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -74,6 +74,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set(),expandedMissReviews=new Set();
   let ownerDecisions=[],decisionScope="",decisionBusy=false,decisionError="";
+  let selectedMissReviewKey="";
   const decisionKey=(season,warKey,playerTag)=>
     [season,String(warKey||""),tagOf(playerTag)].join("|");
   // Only this clan's server-authorized audit rows are shown; cache never
@@ -650,12 +651,19 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     const ended=info.rounds.filter(r=>r.state==="warEnded").length;
     // Alert only from a fresh API snapshot, not an older cached league.
     // No auto-pause, no schedule mutation, no pretended push notifications.
-    const attention=fresh?info.rounds
+    const verifiedNotices=fresh?info.rounds
       .filter(r=>!staleRoundDays.has(r.day))
       .map(r=>cwlAttackReminder(r))
-      .filter(Boolean)
-      .filter(a=>a.kind==="open"||a.kind==="confirmed")
-      .sort((a,b)=>Number(b.kind==="open")-Number(a.kind==="open")||b.day-a.day)[0]:null;
+      .filter(a=>a&&(a.kind==="open"||a.kind==="confirmed")):[];
+    // A newer miss or a live last-hour warning must NOT hide older confirmed
+    // incidents. Keep one compact day-selected review, rather than card stacks.
+    const attention=[...verifiedNotices].sort((a,b)=>
+      Number(b.kind==="open")-Number(a.kind==="open")||b.day-a.day)[0]||null;
+    const confirmedMisses=verifiedNotices
+      .filter(a=>a.kind==="confirmed"&&a.day<ctx.profile.config.days)
+      .sort((a,b)=>b.day-a.day);
+    const selectedConfirmed=confirmedMisses.find(a=>
+      selectedMissReviewKey===info.season+"|"+a.day)||confirmedMisses[0]||null;
     // A stale source never establishes a forgotten attack.
     const staleAttention=!attention?info.rounds
       .map(r=>cwlAttackReminder(r)).filter(Boolean)
@@ -663,13 +671,13 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     const attentionKey=attention?.kind==="open"?cwlReminderAckKey(ctx,info.season,attention):null;
     const acknowledgedAt=readCwlReminderAck(attentionKey);
     // A confirmed miss starts a review, NEVER a change to the plan.
-    const reviewKey=attention?.kind==="confirmed"&&attention.day<ctx.profile.config.days?
-      [ctx.clanId,info.season,attention.warTag,attention.day].join("|"):null;
+    const reviewKey=selectedConfirmed?
+      [ctx.clanId,info.season,selectedConfirmed.warTag,selectedConfirmed.day].join("|"):null;
     const reviewRows=reviewKey?cwlMissedRotationReview(info,ctx.profile,
       storage.getPlannedLineups?.()||[],{
         planningOk:storage.getPlanningState?.()?.ok===true,
         staleDays:[...staleRoundDays]
-      }).filter(x=>x.day===attention.day&&x.warTag===attention.warTag):[];
+      }).filter(x=>x.day===selectedConfirmed.day&&x.warTag===selectedConfirmed.warTag):[];
     const decisionMap=decisionIndex(info.season,ctx.clanId);
     const reviewHtml=reviewKey?(()=>{
       const list=reviewRows.length?reviewRows.map(x=>{
@@ -732,8 +740,13 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           (constraints?"<small>Regeln beachten: "+esc(constraints)+"</small>":"")+
           decisionText+historyHtml+decisionButtons+applyButtons+"</li>";
       }).join(""):"<li>Prüfung aus Plan und Spieler-Tags derzeit nicht eindeutig möglich. Keine automatische Empfehlung.</li>";
-      return "<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
-        "<summary>Künftige Einsätze prüfen (nur Vorschau)</summary>"+
+      const dayPicker=confirmedMisses.length>1?
+        "<div class='cwl-miss-decision-actions cwl-miss-day-choices' role='group' aria-label='Bestätigten CWL-Tag auswählen'>"+
+        confirmedMisses.map(item=>"<button type='button' class='btn small cwl-miss-day-select' "+
+          "data-day='"+item.day+"' aria-pressed='"+(item.day===selectedConfirmed.day?"true":"false")+"'>Tag "+item.day+"</button>").join("")+
+        "</div>":"";
+      return dayPicker+"<details class='cwl-miss-review'"+(expandedMissReviews.has(reviewKey)?" open":"")+">"+
+        "<summary>Tag "+selectedConfirmed.day+": künftige Einsätze prüfen (nur Vorschau)</summary>"+
         "<p>Bestätigter fehlender Angriff. Ob ein Spieler später pausiert, entscheidet die Clanführung "+
         "nach Prüfung von Fix/MUSS, Einsatzziel, 8★-Bonus und Clash-Aufstellungen. "+
         "Eine Pause für einen eindeutig prüfbaren Vorbereitungstag ist nur mit erneutem "+
@@ -767,7 +780,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
            "Diese CWL hat keine weiteren Kriegstage; kein späterer Einsatz kann geändert werden.":
            "Vor der nächsten Kriegsaufstellung bewusst entscheiden, ob diese Spieler wieder eingeplant werden."))+
         " Nur Hinweis, kein automatischer Wechsel. Stand aus Clash; bitte vor Entscheidungen aktualisieren."+
-        "</small>"+(open?"":reviewHtml)+action+"</div>";
+        "</small>"+action+"</div>";
     })():staleAttention?(()=>{
       const checkedAt=lastSuccessfulAt&&activeClan===ctx.clanId?
         new Date(lastSuccessfulAt).toLocaleString("de-AT",
@@ -779,7 +792,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     })():"";
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
       ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
-      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml;
+      (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml+reviewHtml;
     node.querySelector(".cwl-attention-ack")?.addEventListener("click",()=>{
       const active=context(),latest=effective();
       const ready=active.active&&active.role!=="viewer"&&active.clanId===ctx.clanId&&
@@ -801,6 +814,17 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     node.querySelector(".cwl-attention-reset")?.addEventListener("click",()=>{
       if(context().clanId!==ctx.clanId)return;
       clearCwlReminderAck(attentionKey);render();
+    });
+    node.querySelectorAll(".cwl-miss-day-select").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const day=Number(button.dataset.day);
+        const notice=confirmedMisses.find(a=>a.day===day);
+        if(!notice)return;
+        selectedMissReviewKey=info.season+"|"+day;
+        expandedMissReviews.add([ctx.clanId,info.season,notice.warTag,day].join("|"));
+        render();
+        node.querySelector(".cwl-miss-day-select[data-day='"+day+"']")?.focus({preventScroll:true});
+      });
     });
     node.querySelector(".cwl-miss-review")?.addEventListener("toggle",event=>{
       if(!reviewKey)return;
@@ -910,6 +934,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     closeSwapPopover();openedOutgoing.clear();
     expandedDays.clear();expandedOpponentDays.clear();expandedMissReviews.clear();staleRoundDays.clear();
     ownerDecisions=[];decisionScope="";decisionBusy=false;decisionError="";
+    selectedMissReviewKey="";
     render();
   }
   function start(){

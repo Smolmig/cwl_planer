@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.49] - 2026-11-09
+
+### CWL #184: bestätigte ältere Missed-Vorfälle bleiben erreichbar
+- Vollständig bestätigte Missed-Ereignisse mehrerer CWL-Tage können jetzt über eine **kompakte Tagesauswahl** individuell geprüft werden. Ein jüngerer Fall oder eine letzte-Stunde-Erinnerung blendet ältere Vorfälle nicht mehr aus.
+- Die letzte-Stunde-Warnung bleibt priorisiert; frühere Fälle sind davon getrennt über die bestehende Planprüfung, Owner-Entscheidungen und Audit-Historie erreichbar. Der gewählte Tag und sein geöffneter Bereich bleiben beim Refresh erhalten.
+- Keine automatische Pause, keine neue SQL-/RLS-Migration, keine Solver-/Clash-Mutation. Bestehende Owner-/Collector-/Clash-/Einsatzziel-/8★-Sicherheitsprüfungen gelten unverändert. Browserregression erweitert und Hilfe aktualisiert.
+- **Release-Kandidat:** PR, CI, Pages und offiziellen Release vor Live-Status prüfen.
+
+
 ## [1.16.48] - 2026-11-09
 
 ### CWL #184 Phase 2b2b: vollständige Einsatzfolgen vor bestätigter Tagespause
