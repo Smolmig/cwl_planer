@@ -91,3 +91,46 @@ test("Mobile install help stays in More, never takes over plan, hides hint after
   await new Promise(ok=>server.close(ok));
  }
 });
+ 
+test("Installationshilfe erklärt die vollständige App und einen zugänglichen Fehlerfall ohne Technikjargon",{
+ timeout:120000
+},async()=>{
+ const server=serve();await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const [width,theme] of [[320,"arena"],[390,"dark"],[430,"light"],[1366,"arena"]]){
+   const page=await browser.newPage({viewport:{width,height:850}});
+   try{
+    const errors=[];page.on("pageerror",e=>errors.push(e.message));
+    await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",
+     {waitUntil:"domcontentloaded"});
+    await page.evaluate(theme=>{
+     document.documentElement.dataset.theme=theme;
+     document.body.classList.add("cloud-mode","cloud-role-viewer");
+     window.showPlannerView("more");
+    },theme);
+    await page.locator('.more-tile[data-more-action="install"]').click();
+    const guide=page.locator("#view-install");
+    assert.equal(await guide.isVisible(),true);
+    assert.match(await guide.locator(".install-guide-check").innerText(),
+     /gemeinsamen Planer.*Clan & Konto.*Statistik/s);
+    assert.doesNotMatch(await guide.innerText(),/cloud-app\\.html|Offline-PWA/);
+    const help=guide.locator(".install-troubleshoot");
+    assert.equal(await help.getAttribute("open"),null);
+    assert.match(await help.locator("summary").innerText(),/ohne Anmeldung oder Statistik/);
+    assert.ok(await help.locator("summary").evaluate(e=>e.getBoundingClientRect().height)>=44);
+    await help.locator("summary").click();
+    assert.equal(await help.getAttribute("open"),"");
+    assert.match(await help.locator("p").innerText(),/bisherige Startbildschirm-Verknüpfung/);
+    assert.match(await help.locator("p").innerText(),/Cloud-Daten bleiben erhalten/);
+    await guide.locator('[data-install-platform="ios"]').click();
+    assert.match(await guide.locator("#installGuideSteps").innerText(),/gemeinsamen CWL-Planer/);
+    assert.equal(await help.getAttribute("open"),"",
+     "switching platform must not collapse an open troubleshooting section");
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=3,"no horizontal overflow: "+width+" "+theme+" "+overflow);
+    assert.deepEqual(errors,[],"browser errors: "+width+" "+theme);
+   }finally{await page.close()}
+  }
+ }finally{await browser.close();await new Promise(ok=>server.close(ok))}
+});
