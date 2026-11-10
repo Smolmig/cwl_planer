@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.52",
-  "released": "2026-11-09",
-  "summary": "Einsatzfilter #187: Ziel offen berücksichtigt auch automatische Plan-Einsätze (z. B. Jamie 3/4), Filter werden als ergänzbare Chips mit × angezeigt; 8 Sterne offen/erreicht eindeutig beschriftet."
+  "version": "v1.16.53",
+  "released": "2026-11-10",
+  "summary": "#183 Phase 1: Clanverwaltung zeigt aktuelle Clash-Ränge (Mitglied/Ältester) als rein lesende Prüfübersicht, ohne erfundene Mitgliedschaftsdauer oder automatische Empfehlungen."
 }
