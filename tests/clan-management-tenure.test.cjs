@@ -27,7 +27,7 @@ test("Tenure migration is tenant scoped, service-only write, owner-only read",()
  assert.match(sql,/for select to authenticated using \(private\.cwl_is_owner\(clan_id\)\)/);
  assert.match(sql,/security invoker/);
  assert.match(sql,/current_user <> 'service_role'/);
- assert.match(sql,/grant execute on function public\.cwl_observe_clan_roster\(uuid,text,text\[\]\) to service_role/);
+ assert.match(sql,/grant execute on function public\\.cwl_observe_clan_roster\\(uuid,text,text\\[\\]\\)\\s+to service_role/);
  assert.match(sql,/not t\.is_present and t\.player_tag=any\(p_tags\)/);
  assert.match(sql,/v_now-t\.last_observed_at <= interval '3 hours'/);
  assert.doesNotMatch(sql,/grant (?:update|insert|delete|all) on public\.cwl_clan_member_tenure to authenticated/i);
