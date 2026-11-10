@@ -12,7 +12,7 @@ const end=html.indexOf('document.querySelector(".more-menu").addEventListener("c
 assert.ok(start>0&&end>start);
 const previewScript=html.slice(start,end);
 const data=[
- {tag:"#2PYL",name:"One",role:"member"},{tag:"#2PYQ",name:"Two",role:"admin"},
+ {tag:"#2PYL",name:"One",role:"member",donations:37},{tag:"#2PYQ",name:"Two",role:"admin",donations:0},
  {tag:"#2PYR",name:"Vize",role:"coLeader"},{tag:"#2PYJ",name:"Leader",role:"leader"}
 ];
 async function setup(page,theme="arena"){
@@ -23,7 +23,8 @@ async function setup(page,theme="arena"){
   "let context='first',owner=true,delay=false,resolvePending=null;"+
   "window.CWLCloud={active:true,isOwner:()=>owner,hasApiClan:()=>true,getActiveClanId:()=>context,"+
   "fetchManagementRoster:()=>delay?new Promise(resolve=>{resolvePending=resolve}):"+
-  "Promise.resolve({clanId:context,members:mockRoster,checkedAt:Date.parse('2026-11-10T06:00:00Z')})};"+
+  "Promise.resolve({clanId:context,members:mockRoster,checkedAt:Date.parse('2026-11-10T06:00:00Z'),"+
+  "tenure:[{player_tag:'#2PYL',confirmed_seconds:7200,last_observed_at:'2026-11-10T05:00:00Z',observed_visits:2,is_present:true,rank_before_leave:'elder',rank_before_leave_at:'2026-11-08T05:00:00Z',last_donation_increase_at:'2026-11-10T05:00:00Z',last_donation_increase_by:4}]})};"+
   "function showPlannerView(target){document.querySelectorAll('.view').forEach("+
   "x=>x.classList.toggle('active',x.id==='view-'+target));}"
  });
@@ -44,10 +45,11 @@ test("More/Clanverwaltung shows current Clash ranks without recommending actions
    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash-Stand"));
    const rows=await page.locator(".clan-management-person").allTextContents();
    assert.equal(rows.length,2);
-   assert.ok(rows.some(s=>s.includes("One")&&s.includes("Mitglied")));
+   assert.ok(rows.some(s=>s.includes("One")&&s.includes("Mitglied")&&s.includes("Spenden laut Clash")&&s.includes("Ältester")&&s.includes("Rang nach Rückkehr")));
    assert.ok(rows.some(s=>s.includes("Two")&&s.includes("Ältester")));
    assert.ok(rows.every(s=>!s.includes("Vize")&&!s.includes("Leader")));
    assert.match(await page.locator("#clanManagementSummary").textContent(),/2 Vize\/Clanführer ausgenommen/);
+   assert.match(await page.locator("#clanManagementSummary").textContent(),/1 frühere Ränge prüfen/);
    assert.equal(await page.locator("#clanManagementList button").count(),0);
    await page.locator("#clanManagementBack").click();
    assert.equal(await page.locator("#view-more").getAttribute("class"),"view active");

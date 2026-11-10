@@ -3605,11 +3605,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.54</strong><span>Clanverwaltung · Mitgliedschaftszeit</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.55</strong><span>Clanverwaltung · Spenden & Ranghistorie</span></div>
        <ul>
-        <li><b>Neue Beobachtung:</b> Die automatische Erfassung dokumentiert die bestätigte Mitgliedschaftszeit pro Clan ab jetzt.</li>
-        <li><b>Rückkehr ohne Reset:</b> Bei Austritt pausiert die Zeit; bei Rückkehr wird weitergezählt.</li>
-        <li><b>Nachweis statt Schätzung:</b> API-Lücken zählen nicht mit. Noch keine automatischen Rang- oder Kick-Empfehlungen.</li>
+        <li><b>Spenden:</b> Aktuelle Spenden und nachweisbare Zuwächse aus vollständigen API-Beobachtungen sichtbar.</li>
+        <li><b>Rang merken:</b> Frühere Älteste nach beobachtetem Austritt/Rückkehr zur manuellen Wiederherstellung prüfen.</li>
+        <li><b>Kein Offline-Urteil:</b> Keine Änderung beweist keine Abwesenheit. Noch keine automatischen Sanktionen.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3758,7 +3758,7 @@ html[data-theme] #view-more-settings .latest-changelog{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
-    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht die belegte Zeit neben dem Rang. Ohne verlässliche CW-/CWL-Leistung und belegte Missed-Angriffe gibt es keine Beförderung, Degradierung oder Kick-Empfehlung. Der Abruf ändert weder Clash-Ränge noch CWL-Pläne.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Ohne verlässliche CW-/CWL-Leistung und bestätigte Missed-Angriffe gibt es keine automatischen Leistungs-, Degradierungs- oder Kick-Empfehlungen. Der Abruf ändert weder Clash-Ränge noch CWL-Pläne.</p></div>
     <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
@@ -3799,16 +3799,16 @@ html[data-theme] #view-more-settings .latest-changelog{
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
   <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge & Nachweise</h2>
-   <p>Aktueller Clash-Rang und seit Beobachtungsbeginn belegte Clanzeit. Noch keine automatischen Empfehlungen.</p>
+   <p>Clash-Ränge, bestätigte Clanzeit, Spendenaktivität und frühere Ränge. Hinweise zur manuellen Prüfung.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
  <div class="clan-management-actions">
-  <button type="button" class="btn small" id="clanManagementRefresh">↻ Clash-Ränge prüfen</button>
+  <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanstand prüfen</button>
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine aktuelle Clanliste geladen.</span>
  </div>
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
- <p class="clan-management-disclaimer">Die automatische Beobachtung startet erst ab Aktivierung; ältere Clanzeit ist unbekannt. Nur zwei vollständige Mitgliederlisten mit höchstens 3 Stunden Abstand zählen die dazwischenliegende Zeit als belegt. Bei Austritt pausiert die Summe, bei Rückkehr läuft sie weiter. Fehlende API-Daten zählen nicht. Kein letzter Login, keine Beförderung und keine Änderung am CWL-Plan.</p>
+ <p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse gelten nur als beobachtetes Aktivitätssignal, nicht als letzter Login. Der Rang vor einem erkannten Austritt kann bei Rückkehr zur manuellen Wiederherstellungsprüfung angezeigt werden; unbemerkte Kurzwechsel bleiben unbekannt. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p>
  <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
 </section>
 <section id="view-account" class="view more-subview" aria-labelledby="cloudAccountTitle">
@@ -4056,11 +4056,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.54"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.54"></script>
-<script src="./cwl-planning-core.js?v=1.16.54"></script>
+<script src="./clan-management-core.js?v=1.16.55"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.55"></script>
+<script src="./cwl-planning-core.js?v=1.16.55"></script>
 <script>
-const APP_VERSION="v1.16.54";
+const APP_VERSION="v1.16.55";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5308,7 +5308,7 @@ window.CWLClanManagementView={
   const request=++clanManagementRequest,clan=cloud.getActiveClanId();
   const status=document.getElementById("clanManagementStatus");
   const refresh=document.getElementById("clanManagementRefresh");
-  refresh.disabled=true;status.textContent="Aktuelle Clash-Ränge werden geprüft …";
+  refresh.disabled=true;status.textContent="Aktueller Clash-Clanstand wird geprüft …";
   try{
    const result=await cloud.fetchManagementRoster();
    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
@@ -5319,15 +5319,18 @@ window.CWLClanManagementView={
    summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
      preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
      " Vize/Clanführer ausgenommen"+
-     (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"");
+     (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
+     (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"");
    summary.hidden=false;
    const list=document.getElementById("clanManagementList");
    list.replaceChildren();
    for(const person of preview.rows){
     const row=document.createElement("div");row.className="clan-management-person";row.setAttribute("role","listitem");
     const left=document.createElement("span");left.textContent=person.name;
-    const note=document.createElement("small");note.textContent=person.tenureNote+" · "+
-     (person.rank==="unknown"?"Clash-Rang nicht bestätigt":"Leistungsprüfung noch offen");
+    const note=document.createElement("small");note.textContent=[person.tenureNote,
+     person.donationNote,person.returnRankNote,
+     person.rank==="unknown"?"Clash-Rang nicht bestätigt":"Leistungsprüfung noch offen"
+    ].filter(Boolean).join(" · ");
     left.appendChild(note);
     const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
     row.append(left,rank);list.appendChild(row);
@@ -5641,6 +5644,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.54"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.55"></script>
 </body>
 </html>

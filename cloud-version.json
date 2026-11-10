@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.54",
+  "version": "v1.16.55",
   "released": "2026-11-10",
-  "summary": "#183 Clanverwaltung Phase 2a: automatisch bestätigte Mitgliedschaftszeit; bei Austritt pausieren und bei Rückkehr kumuliert fortsetzen, ohne Rangempfehlungen."
+  "summary": "#183 Clanverwaltung: beobachtete Spendenzuwächse und frühere Ältesten-Ränge als manuelle Rückkehr-Hinweise, ohne Offline-Urteile."
 }

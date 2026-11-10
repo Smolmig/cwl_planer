@@ -6,6 +6,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.55] - 2026-11-10
+
+### Clanverwaltung #183 – Spenden-Nachweis und Rang vor Rückkehr
+- Der signierte Collector erfasst in **einer atomaren, rein servicegeschützten Clan-Roster-Beobachtung** neben belegter Mitgliedschaft den zuletzt in Clash beobachteten Rang. Bei sicher erfasstem Austritt bleibt der frühere Rang samt Beobachtungszeit erhalten; erst eine belegte Rückkehr als Mitglied nach früherem Ältestenrang ergibt einen **manuellen** Hinweis zur Wiederherstellungsprüfung. Keine automatischen Clash-Änderungen; unbemerkte Kurzwechsel und unbekannte Vergangenheit bleiben unbekannt.
+- Spenden der **aktuellen Saison** erscheinen in der Owner-Ansicht. Nur ein **positiver Spendengegenstands-Zähleranstieg zwischen zwei vollständigen, höchstens drei Stunden entfernten Snapshots bei nachgewiesener Anwesenheit** erzeugt ein Aktivitätssignal. Erstwerte, negative Zähler/Saisonresets, Abwesenheiten und lange Cron-Lücken sind kein Nachweis. **Kein Last-Login- oder Offline-Wert** und keine daraus abgeleitete Strafe.
+- Bestehende Tenant-/Owner-RLS und Service-only-RPC geschützt. Hilfe/Changelog/Regression aktualisiert, keine Plan-, Solver-, War-Statistik- oder Offline-PWA-Mutation. Individuelle Beförderungs-/Degradierungsregeln, andere API-Aktivitätssignale und Benachrichtigungszentrale bleiben separat offen.
+
+
 ## [1.16.54] - 2026-11-10
 
 ### #183 – Mitgliedschaft nur nach beobachteten Clanlisten
