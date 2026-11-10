@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.55",
+  "version": "v1.16.56",
   "released": "2026-11-10",
-  "summary": "#183 Clanverwaltung: beobachtete Spendenzuwächse und frühere Ältesten-Ränge als manuelle Rückkehr-Hinweise, ohne Offline-Urteile."
+  "summary": "#183 Clanverwaltung: pro Clan einstellbarer Leistungspfad 14 Tage/10 API-Angriffe/80 % 3★, Owner-only mit belegter Clanzeit und manueller Prüfempfehlung."
 }
