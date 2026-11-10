@@ -999,6 +999,20 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       staleRoundDays=nextStaleDays;
       if(data.active&&data.group?.season===data.season&&
          data.group.clanTag===data.clanTag)lastKnownGroup=data.group;
+      if(!data.active&&!data.pending&&previous?.season&&
+         previous.clanTag===ctx.clanTag&&
+         !lastKnownGroup&&typeof sb.from==="function"){
+        // Existing cloud group archive is tenant-RLS protected; do not
+        // silently lose standings on a new device after leaguegroup closes.
+        const {data:savedGroup,error:groupError}=await sb.from("cwl_group_archives")
+          .select("group_json").eq("clan_id",id).eq("season",previous.season)
+          .maybeSingle();
+        if(!stillCurrent())return;
+        const archive=savedGroup?.group_json;
+        if(!groupError&&archive?.season===previous.season&&
+           archive.clanTag===ctx.clanTag&&Array.isArray(archive.rounds)&&
+           Array.isArray(archive.clans))lastKnownGroup=archive;
+      }
       current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
