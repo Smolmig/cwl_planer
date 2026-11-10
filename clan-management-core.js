@@ -348,9 +348,61 @@
    eligibleForRecommendation:promotionReviewChecks,
    observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Nur abgeschlossene API-Kriege dieses Clans und belegte Clanzeit zählen; fehlende Daten sind keine negativen Spielerwerte. Alle Rangentscheidungen bleiben manuell."};
  }
+ // Attested server data, not an inference from missing attacks.
+ // Unknown/provisional wars are never converted to zero misses.
+ function summarizeVerifiedMissedEvidence(rows,now=Date.now()){
+  if(!Array.isArray(rows)||rows.length>4000)return {
+   ok:false,reason:"missed_evidence_unavailable"
+  };
+  const counts={
+   cwl:{verified:0,unknown:0,provisional:0,misses:0},
+   normal:{verified:0,unknown:0,provisional:0,misses:0}
+  };
+  const wars=new Map(),seen=new Set(),missed=[];
+  for(const item of rows){
+   if(!item||typeof item!=="object"||
+      typeof item.war_key!=="string"||!item.war_key||item.war_key.length>300||
+      !Object.hasOwn(counts,item.war_type)||
+      !["verified","unknown","provisional"].includes(item.coverage)||
+      (item.war_type==="normal"&&item.coverage==="verified"))return {
+    ok:false,reason:"untrusted_coverage"
+   };
+   const date=Date.parse(item.started_at||"");
+   if(!Number.isFinite(date)||date>now+60_000)return {
+    ok:false,reason:"invalid_war_date"
+   };
+   const id=item.war_type+"|"+item.war_key;
+   const previous=wars.get(id);
+   if(previous&&
+    (previous.coverage!==item.coverage||previous.started_at!==item.started_at))
+    return {ok:false,reason:"conflicting_war_coverage"};
+   if(!previous){
+    wars.set(id,{coverage:item.coverage,started_at:item.started_at});
+    counts[item.war_type][item.coverage]++;
+   }
+   const player=item.player_tag;
+   if(player===null){
+    if(item.missed_count!==null||seen.has(id+"|empty"))
+     return {ok:false,reason:"invalid_missed_record"};
+    seen.add(id+"|empty");
+   }else{
+    if(item.coverage!=="verified"||!validTag(player)||
+     item.missed_count!==1||seen.has(id+"|"+tag(player)))
+     return {ok:false,reason:"untrusted_missed_record"};
+    seen.add(id+"|"+tag(player));
+    counts[item.war_type].misses++;
+    missed.push({tag:tag(player),war_type:item.war_type,
+     started_at:item.started_at,war_key:item.war_key,missed_count:1});
+   }
+  }
+  missed.sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
+   a.tag.localeCompare(b.tag));
+  return {ok:true,counts,missed,warCount:wars.size,
+   limitedTo:"Abgeschlossene, vollständig bestätigte API-CWL; normale CW/Importe niemals als verifiziert einstufen."};
+ }
  const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel,
   DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty,
-  reviewFingerprint,applyReviewDecisions};
+  reviewFingerprint,applyReviewDecisions,summarizeVerifiedMissedEvidence};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  if(root)root.CWLClanManagement=api;
 })(typeof window!=="undefined"?window:null);
