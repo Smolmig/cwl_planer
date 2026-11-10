@@ -76,6 +76,9 @@ test("Seven observed absent days keep cumulative qualification; eleven require h
  assert.match(check.note,/Gesamt-Clanzeit bleibt erhalten/);
  const never=core.normalizeRules({loyalty_enabled:true,absence_reset_days:null});
  assert.equal(core.evaluateLoyalty(person,returned,eleven,never,now).eligible,true);
+ // Pre-migration absence history is incomplete, but a consciously disabled
+ // reset uses only already confirmed cumulative *present* time.
+ assert.equal(core.evaluateLoyalty(person,returned,summary,never,now).eligible,true);
 });
 test("Owner evidence RPC scoped to app-clan and Clash clan, never exposes other tenants or writes",()=>{
  assert.match(SQL,/ADD COLUMN loyalty_enabled boolean NOT NULL DEFAULT false/);
