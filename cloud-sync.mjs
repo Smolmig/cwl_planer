@@ -312,6 +312,26 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ // Read-only management preview. Unlike getRoster()/applyRoster(), this must
+ // NEVER mutate the current member profile, call ensureSaved or save a snapshot.
+ async fetchManagementRoster(){
+  const expectedClan=clanId,expectedEpoch=accountEpoch;
+  if(!this.active||!expectedClan||role!=="owner"||
+     !clans.find(c=>c.id===expectedClan)?.clash_tag)
+    throw Error("Nur der Clanführer des verknüpften Clans kann diese Prüfung öffnen.");
+  if(!navigator.onLine)throw Error("Für den aktuellen Clash-Rang ist eine Onlineverbindung nötig.");
+  const {data,error:fetchError}=await sb.functions.invoke("coc-clan-members",{
+   body:{clanId:expectedClan}
+  });
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  if(fetchError)throw Error("Clash-Ränge konnten nicht geladen werden. Bitte erneut versuchen.");
+  const expectedTag=clans.find(c=>c.id===expectedClan)?.clash_tag;
+  if(!data?.ok||!Array.isArray(data.members)||
+     normalizeTag(data.clanTag)!==normalizeTag(expectedTag))
+   throw Error("Die Clash-Mitgliederantwort ist unvollständig oder gehört zu einem anderen Clan.");
+  return {clanId:expectedClan,members:data.members,checkedAt:Date.now()};
+ },
  isEmergencyEditing:()=>manualRosterPending(),
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
@@ -342,6 +362,10 @@ const cloud={
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
+  const managementAllowed=this.active&&role==="owner"&&!!activeClan?.clash_tag;
+  const managementEntry=document.querySelector('[data-more-action="management"]');
+  if(managementEntry)managementEntry.hidden=!managementAllowed;
+  window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
