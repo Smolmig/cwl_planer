@@ -5377,10 +5377,11 @@ window.CWLClanManagementView={
    const result=await cloud.fetchManagementRoster();
    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
       !cloud.active||!cloud.isOwner()||clan!==clanManagementContext)return;
+   const loadedRules=result.rules||null;
    const preview=window.CWLClanManagement?.buildPreview(
-    result.members,result.tenure,result.evidence,result.rules);
+    result.members,result.tenure,result.evidence,loadedRules);
    if(!clanRulesDirty){
-    displayClanRules(result.rules);
+    displayClanRules(loadedRules||window.CWLClanManagement.DEFAULT_RULES);
     clanRulesRevision=result.ruleRevision;
     clanRulesLoaded=true;
     document.getElementById("clanRulesSave").disabled=true;
