@@ -1,6 +1,6 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.53";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.53";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.53";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.54";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.54";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.54";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
