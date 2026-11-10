@@ -285,7 +285,7 @@ export default {
           if(observedTags){
             try{
               await rest(settings,"rpc/cwl_observe_clan_roster",{
-                method:"POST",rows:{p_clan:id,p_tags:observedTags}
+                method:"POST",rows:{p_clan:id,p_clash_tag:gameTag,p_tags:observedTags}
               });
               tenureObservedProfiles++;
             }catch{tenureWriteErrors++}
