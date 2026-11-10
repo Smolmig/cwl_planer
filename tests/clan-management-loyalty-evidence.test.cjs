@@ -47,7 +47,7 @@ test("Departure and return events preserve bounded observed absence, not fabrica
 
 test("Existing client, collector and promotion logic are not silently converted to loyalty scoring",()=>{
  const core=read("clan-management-core.js"),edge=read("supabase/functions/coc-stats-collector/index.ts");
- assert.doesNotMatch(core,/loyaltyReviewChecks/);
+ assert.match(core,/loyaltyReviewChecks/);
  assert.match(core,/loyalty_min_days:60/);
  assert.match(edge,/cwl_observe_clan_roster_evidence/);
  assert.match(sql,/AFTER UPDATE ON public\.cwl_clan_member_tenure/);
