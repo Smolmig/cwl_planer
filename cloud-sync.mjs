@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.55";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.55";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.55";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.55";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.55";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.55";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.56";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.56";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.56";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.56";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.56";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.56";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -337,10 +337,52 @@ const cloud={
   ).eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag));
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  // Tenant-local management criteria are separate from the CWL planner
+  // profile. Missing settings means defaults, NOT a guessed prior decision.
+  const {data:storedRules,error:ruleError}=await sb.from("cwl_clan_management_rules")
+   .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,revision")
+   .eq("clan_id",expectedClan).maybeSingle();
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  if(ruleError)throw Error("Clanregeln konnten nicht geladen werden. Bitte erneut versuchen.");
+  const rules=window.CWLClanManagement.normalizeRules(storedRules||{});
+  // Owner-checked, SECURITY INVOKER RPC; only actual finalized local
+  // API-source attacks, never imports or another app-clan's private data.
+  const {data:evidence,error:evidenceError}=await sb.rpc("cwl_promotion_attack_evidence",{
+   p_clan:expectedClan,p_lookback_days:rules.performance_lookback_days
+  });
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
   return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
-   tenure:tenureError?null:(tenure||[])};
+   tenure:tenureError?null:(tenure||[]),
+   rules,ruleRevision:storedRules?.revision??null,
+   evidence:evidenceError?null:(evidence||[])};
  },
  isEmergencyEditing:()=>manualRosterPending(),
+ async saveManagementRules(input,expectedRevision){
+  const expectedClan=clanId,expectedEpoch=accountEpoch;
+  if(!this.active||!expectedClan||role!=="owner"||
+    !clans.find(c=>c.id===expectedClan)?.clash_tag||!navigator.onLine)
+   throw Error("Nur der angemeldete Clanführer kann Clanregeln online speichern.");
+  const validated=window.CWLClanManagement.normalizeRules(input);
+  const revision=expectedRevision===null?null:Number(expectedRevision);
+  if(revision!==null&&(!Number.isSafeInteger(revision)||revision<1))
+   throw Error("Regelstand ungültig. Bitte neu laden.");
+  // INSERT only for a never-configured clan; UPDATE is a revision-checked
+  // compare-and-swap. RLS enforces owner-only on the target clan_id.
+  const base=sb.from("cwl_clan_management_rules");
+  const query=revision===null
+   ?base.insert({clan_id:expectedClan,...validated})
+   :base.update({...validated,revision:revision+1,updated_at:new Date().toISOString()})
+     .eq("clan_id",expectedClan).eq("revision",revision);
+  const {data:stored,error:saveError}=await query
+    .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,revision")
+    .maybeSingle();
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan hat während des Speicherns gewechselt. Bitte neu öffnen.");
+  if(saveError||!stored)throw Error("Clanregeln nicht übernommen – möglicherweise wurde der Stand parallel geändert. Bitte neu laden.");
+  return {rules:window.CWLClanManagement.normalizeRules(stored),revision:stored.revision};
+ },
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
  getMedalOverview:()=>live.getMedalOverview(),

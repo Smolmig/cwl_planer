@@ -128,6 +128,14 @@ not merely a successful invocation of `cron.schedule`. The read-only
 - Never manually invoke the collector with `service_role` in client code.
   The GitHub workflow is its only trusted production trigger.
 
+## Erster autonomer Supabase-Cron-Nachweis (10.11.2026)
+
+- `cron.job_run_details`: Job `cwl-clan-collector-independent` um **16:35:00 UTC** autonom mit `status=succeeded`.
+- Supabase Function-Protokoll: `collector_verified_trigger=internal_cron` um **16:35:02 UTC**; `net._http_response`: **HTTP 200**, `ok=true`, **3/3** verifizierte Clanrosters. Nicht mit gezielt gesendetem SQL-Test von 16:14 UTC verwechseln.
+- DB-Stand 16:45 UTC: 97 Clanzeilen in 3 App-Clans, 94 mit positiv bestätigter Clanzeit, Summe 1.057.047 Mitgliedssekunden. Kein Backfill über nicht beobachtete Lücken, keine Aussage über exakten Login.
+- Original-GitHub-OIDC bleibt unabhängig erfolgreich ([Push-Canary 42853891479](https://github.com/Smolmig/cwl_planer/actions/runs/42853891479) unter Edge v9, 3/3 komplette Rosters). `pg_net` wird inzwischen außerhalb von `public` registriert; Security Advisor neuer Extension-Fund behoben.
+- Nächster Gate: mehrere autonome Läufe über Stunden/Tage, HTTP- und Roster-Abdeckung, mögliche Zeitlücken sowie echte iOS-/Android-Abnahme. Die reine `cron.schedule`-Aktivierung alleine wäre keine Abnahme.
+
 ## Clan-time and donation health check – 10.11.2026
 
 The read-only, aggregate-only query

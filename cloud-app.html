@@ -2264,6 +2264,22 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 /* #183 phase 1: quiet, read-only clan-rank overview – no extra cards per player. */
 #view-clan-management{max-width:1040px;margin:0 auto}
 .clan-management-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
+.clan-management-criteria{margin:5px 0 18px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.clan-management-criteria>summary{font-size:14px;font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px}
+.clan-management-criteria .subtle{font-weight:500;color:var(--muted)}
+.clan-management-criteria form{max-width:720px;padding:3px 0 0 4px}
+.clan-management-criteria p{font-size:12px;line-height:1.6;color:var(--muted);margin:5px 0 12px}
+.clan-rule-toggle{font-size:13px;font-weight:700;display:flex;gap:9px;align-items:center;margin:4px 0 15px}
+.clan-rule-toggle input{width:18px;height:18px;accent-color:var(--primary)}
+.clan-rule-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+.clan-rule-fields label{font-size:12px;font-weight:650;color:var(--muted);display:grid;gap:6px;min-width:0}
+.clan-rule-fields input{width:100%;max-width:210px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--text)}
+.clan-rule-future{margin:13px 0 2px;padding:12px 0;border-top:1px solid var(--line)}
+.clan-rule-future>summary{font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;min-height:36px}
+.clan-rule-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:13px}
+#clanRulesStatus{color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:430px){.clan-rule-fields{grid-template-columns:1fr}.clan-rule-fields input{max-width:none}.clan-rule-actions{align-items:stretch;flex-direction:column}}
+
 .clan-management-actions button{min-height:44px}
 .clan-management-actions .statusline{font-size:12px}
 .clan-management-summary{font-size:13px;font-weight:750;color:var(--text);line-height:1.6;margin:4px 0 12px}
@@ -3605,8 +3621,9 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.55</strong><span>Clanverwaltung · Spenden & Ranghistorie</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.56</strong><span>Clanverwaltung · Beförderungskriterien</span></div>
        <ul>
+        <li><b>Kriterien:</b> Clantage, mindestens 10 Angriffe und 3★-Quote je Clan einstellen; nur manuelle Prüfhinweise aus belegten API-Daten.</li>
         <li><b>Spenden:</b> Aktuelle Spenden und nachweisbare Zuwächse aus vollständigen API-Beobachtungen sichtbar.</li>
         <li><b>Rang merken:</b> Frühere Älteste nach beobachtetem Austritt/Rückkehr zur manuellen Wiederherstellung prüfen.</li>
         <li><b>Kein Offline-Urteil:</b> Keine Änderung beweist keine Abwesenheit. Noch keine automatischen Sanktionen.</li>
@@ -3758,7 +3775,7 @@ html[data-theme] #view-more-settings .latest-changelog{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
-    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Ohne verlässliche CW-/CWL-Leistung und bestätigte Missed-Angriffe gibt es keine automatischen Leistungs-, Degradierungs- oder Kick-Empfehlungen. Der Abruf ändert weder Clash-Ränge noch CWL-Pläne.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad (60 Tage) und ein optionaler 10-Tage-Abwesenheitsreset sind vorerst nur gespeicherte Kriterien und noch keine automatische Prüfung. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
@@ -3807,6 +3824,31 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanstand prüfen</button>
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine aktuelle Clanliste geladen.</span>
  </div>
+ <details id="clanManagementCriteria" class="clan-management-criteria">
+  <summary>Kriterien für Beförderungen <span class="subtle">· pro Clan</span></summary>
+  <form id="clanManagementRulesForm">
+   <p>Leistungspfad für Mitglieder: Belegte Clanzeit und abgeschlossene API-Kriege dieses Clans. Keine automatische Rangänderung.</p>
+   <label class="clan-rule-toggle"><input id="clanRuleEnabled" type="checkbox" checked> Leistungspfad aktiv</label>
+   <div class="clan-rule-fields">
+    <label>Mindestens Clanzeit (Tage)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDays" value="14" required></label>
+    <label>Mindestens Angriffe<input type="number" inputmode="numeric" min="1" max="100" step="1" id="clanRuleAttacks" value="10" required></label>
+    <label>3★-Quote mindestens (%)<input type="number" inputmode="numeric" min="0" max="100" step="1" id="clanRulePercent" value="80" required></label>
+    <label>Angriffe der letzten Tage<input type="number" inputmode="numeric" min="7" max="730" step="1" id="clanRuleLookback" value="14" required></label>
+   </div>
+   <details class="clan-rule-future">
+    <summary>Treue &amp; Rückkehr (für spätere Bewertung)</summary>
+    <p>Diese Einstellungen werden je Clan gespeichert, aber erst bei ausreichender Aktivitäts- und Aufenthaltshistorie für Empfehlungen verwendet.</p>
+    <div class="clan-rule-fields">
+     <label>Treuepfad ab (Tage)<input type="number" inputmode="numeric" min="1" max="730" step="1" id="clanRuleLoyalty" value="60" required></label>
+     <label>Abwesenheits-Reset (Tage, leer = nie)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleReset" value="10"></label>
+    </div>
+   </details>
+   <div class="clan-rule-actions">
+    <button class="btn small primary" id="clanRulesSave" type="submit" disabled>Kriterien speichern</button>
+    <span id="clanRulesStatus" role="status" aria-live="polite">Clanregeln werden geladen …</span>
+   </div>
+  </form>
+ </details>
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
  <p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse gelten nur als beobachtetes Aktivitätssignal, nicht als letzter Login. Der Rang vor einem erkannten Austritt kann bei Rückkehr zur manuellen Wiederherstellungsprüfung angezeigt werden; unbemerkte Kurzwechsel bleiben unbekannt. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p>
  <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
@@ -4056,11 +4098,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.55"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.55"></script>
-<script src="./cwl-planning-core.js?v=1.16.55"></script>
+<script src="./clan-management-core.js?v=1.16.56"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.56"></script>
+<script src="./cwl-planning-core.js?v=1.16.56"></script>
 <script>
-const APP_VERSION="v1.16.55";
+const APP_VERSION="v1.16.56";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5280,12 +5322,35 @@ sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contain
 /* #183: do not reuse the roster import path – it writes planning members.
    This panel deliberately makes a fresh owner-only, read-only API request. */
 let clanManagementContext=null,clanManagementRequest=0;
+let clanRulesLoaded=false,clanRulesRevision=null,clanRulesDirty=false;
+const clanRuleFields={
+ performance_min_days:"clanRuleDays",performance_min_attacks:"clanRuleAttacks",
+ performance_three_star_percent:"clanRulePercent",performance_lookback_days:"clanRuleLookback",
+ loyalty_min_days:"clanRuleLoyalty",absence_reset_days:"clanRuleReset"
+};
+function displayClanRules(rules){
+ for(const [key,id] of Object.entries(clanRuleFields))
+  document.getElementById(id).value=rules[key]===null?"":String(rules[key]);
+ document.getElementById("clanRuleEnabled").checked=rules.performance_enabled;
+}
+function readClanRules(){
+ const input={performance_enabled:document.getElementById("clanRuleEnabled").checked};
+ for(const [key,id] of Object.entries(clanRuleFields)){
+  const value=document.getElementById(id).value.trim();
+  input[key]=key==="absence_reset_days"&&value===""?null:value===""?NaN:Number(value);
+ }
+ return window.CWLClanManagement.normalizeRules(input);
+}
 function clearClanManagement(){
  clanManagementRequest++;
  document.getElementById("clanManagementList").replaceChildren();
  document.getElementById("clanManagementSummary").hidden=true;
  document.getElementById("clanManagementStatus").textContent="Noch keine aktuelle Clanliste geladen.";
  document.getElementById("clanManagementRefresh").disabled=false;
+ clanRulesLoaded=false;clanRulesRevision=null;clanRulesDirty=false;
+ displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
+ document.getElementById("clanRulesSave").disabled=true;
+ document.getElementById("clanRulesStatus").textContent="Clanregeln werden geladen …";
 }
 window.CWLClanManagementView={
  accessChanged(next){
@@ -5313,14 +5378,26 @@ window.CWLClanManagementView={
    const result=await cloud.fetchManagementRoster();
    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
       !cloud.active||!cloud.isOwner()||clan!==clanManagementContext)return;
-   const preview=window.CWLClanManagement?.buildPreview(result.members,result.tenure);
+   const loadedRules=result.rules||null;
+   const preview=window.CWLClanManagement?.buildPreview(
+    result.members,result.tenure,result.evidence,loadedRules);
+   if(!clanRulesDirty){
+    displayClanRules(loadedRules||window.CWLClanManagement.DEFAULT_RULES);
+    clanRulesRevision=result.ruleRevision;
+    clanRulesLoaded=true;
+    document.getElementById("clanRulesSave").disabled=true;
+    document.getElementById("clanRulesStatus").textContent=
+     result.ruleRevision===null?"Standardkriterien · noch nicht individuell gespeichert":
+      "Kriterien für diesen Clan gespeichert";
+   }
    if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
    const summary=document.getElementById("clanManagementSummary");
    summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
      preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
      " Vize/Clanführer ausgenommen"+
      (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
-     (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"");
+     (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"")+
+     (preview.promotionReviewChecks?" · "+preview.promotionReviewChecks+" Beförderungen prüfen":"");
    summary.hidden=false;
    const list=document.getElementById("clanManagementList");
    list.replaceChildren();
@@ -5329,7 +5406,8 @@ window.CWLClanManagementView={
     const left=document.createElement("span");left.textContent=person.name;
     const note=document.createElement("small");note.textContent=[person.tenureNote,
      person.donationNote,person.returnRankNote,
-     person.rank==="unknown"?"Clash-Rang nicht bestätigt":"Leistungsprüfung noch offen"
+     person.rank==="unknown"?"Clash-Rang nicht bestätigt":
+      (person.promotionNote?person.status+" · "+person.promotionNote:"Leistungsprüfung noch offen")
     ].filter(Boolean).join(" · ");
     left.appendChild(note);
     const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
@@ -5345,8 +5423,39 @@ window.CWLClanManagementView={
   }finally{
    if(request===clanManagementRequest)refresh.disabled=false;
   }
+ },
+ async saveRules(){
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!clanRulesLoaded)return;
+  const id=cloud.getActiveClanId(),request=clanManagementRequest;
+  const save=document.getElementById("clanRulesSave"),label=document.getElementById("clanRulesStatus");
+  let rules;
+  try{rules=readClanRules()}catch(err){
+   label.textContent="Ungültiger Grenzwert – bitte zulässige Werte eintragen.";return;
+  }
+  save.disabled=true;label.textContent="Kriterien werden gespeichert …";
+  try{
+   const result=await cloud.saveManagementRules(rules,clanRulesRevision);
+   if(request!==clanManagementRequest||id!==cloud.getActiveClanId())return;
+   clanRulesRevision=result.revision;clanRulesDirty=false;displayClanRules(result.rules);
+   label.textContent="Gespeichert · Bewertung wird aktualisiert.";
+   this.refresh();
+  }catch(err){
+   if(request!==clanManagementRequest)return;
+   label.textContent=err?.message||"Regeln konnten nicht gespeichert werden.";
+   save.disabled=false;
+  }
  }
 };
+document.getElementById("clanManagementCriteria").addEventListener("input",()=>{
+ if(!clanRulesLoaded)return;
+ clanRulesDirty=true;
+ document.getElementById("clanRulesSave").disabled=false;
+ document.getElementById("clanRulesStatus").textContent="Ungespeicherte Änderungen · Bewertung verwendet noch die gespeicherten Kriterien.";
+});
+document.getElementById("clanManagementRulesForm").addEventListener("submit",event=>{
+ event.preventDefault();window.CWLClanManagementView.saveRules();
+});
 document.getElementById("clanManagementBack").onclick=()=>showPlannerView("more");
 document.getElementById("clanManagementRefresh").onclick=()=>window.CWLClanManagementView.refresh();
 
@@ -5644,6 +5753,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.55"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.56"></script>
 </body>
 </html>
