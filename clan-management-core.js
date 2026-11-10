@@ -248,12 +248,14 @@
     const check=evaluatePromotion(player,entry,evidenceByTag.get(player.tag),verifiedRules);
     if(check){
      player.promotionNote=check.note;
+     player.promotionStatus=check.status;
      if(!player.returnRankNote){
       player.status=check.status;
       if(check.eligible)promotionReviewChecks++;
      }
     }
-   }else if(verifiedRules&&player.rank==="member"){
+   }else if(verifiedRules?.performance_enabled&&player.rank==="member"){
+    player.promotionStatus="Nachweise offen";
     player.promotionNote="Angriffsdaten nicht abrufbar – keine Leistungsbewertung.";
    }
    if(verifiedRules?.loyalty_enabled&&player.rank==="member"&&!player.returnRankNote){
