@@ -4209,7 +4209,8 @@ function normalizeArchive(a){
   return{id:a.id||uid("a"),label:String(a.label||"Archivierte CWL"),createdAt:Number(a.createdAt)||Date.now(),
     slots:Math.max(1,Math.min(50,Number(a.slots)||15)),days:Math.max(1,Math.min(7,Number(a.days)||7)),
     playedCount:Math.max(0,Math.min(7,Number(a.playedCount)||lineups.length)),complete:!!a.complete,
-    players,lineups,counts,cwlLive:a.cwlLive&&typeof a.cwlLive==="object"?a.cwlLive:null};
+    players,lineups,counts,cwlLive:a.cwlLive&&typeof a.cwlLive==="object"?a.cwlLive:null,
+    sourceSeason:/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(a.sourceSeason||""))?a.sourceSeason:null};
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
@@ -5025,10 +5026,15 @@ function archiveCurrentCwl(){
   }).filter(Boolean);
   const counts=Object.fromEntries(players.map(p=>[p.id,0]));
   for(const l of lineups)for(const id of l.lineup)counts[id]=(counts[id]||0)+1;
-  const played=lineups.length,date=new Date(),base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric"}),
-    same=state.archives.filter(a=>a.label.startsWith(base)).length,label=same?`${base} · ${same+1}`:base;
+  const played=lineups.length,season=/^(20\d\d)-(0[1-9]|1[0-2])$/.exec(String(state.cwlLive?.season||"")),
+    date=season?new Date(Date.UTC(Number(season[1]),Number(season[2])-1,1)):new Date(),
+    base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"}),
+    same=state.archives.filter(a=>a.label.startsWith(base)).length,
+    label=same?`${base} · ${same+1}`:base;
   return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,
-    playedCount:played,complete:played===state.config.days,players,lineups,counts,cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
+    playedCount:played,complete:played===state.config.days,players,lineups,counts,
+    sourceSeason:season?.[0]||null,
+    cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
 }
 function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge"),viewer=!!window.CWLCloud?.active&&!!window.CWLCloud?.isViewer?.();badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button>${viewer?"":`<button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button>`}</div></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
  root.querySelectorAll(".delete-archive").forEach(b=>b.onclick=async()=>{
@@ -5871,6 +5877,43 @@ if(typeof ResizeObserver!=="undefined"){
 renderAll();
 window.CWLLegacy={
  getProfile:()=>state,
+ // Non-destructive, idempotent Cloud archive. Only seven previously persisted
+ // API-war locks from this same season; no guessed completed days.
+ archiveConfirmedCwl:(season)=>{
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     state.config.days!==7||state.cwlLive?.season!==season||
+     state.cwlLiveIgnoredSeason===season)return false;
+  const locked=state.locks.slice(0,7);
+  if(locked.length!==7||!locked.every((lock,i)=>lock?.locked===true&&
+     lock.source==="coc-api"&&lock.season===season&&
+     lock.warTag===state.cwlLive?.rounds?.[i]?.warTag&&
+     state.cwlLive?.rounds?.[i]?.state==="warEnded"))return false;
+  if(state.archives.some(archive=>archive.sourceSeason===season))return true;
+  const archived=archiveCurrentCwl();
+  if(!archived.complete||archived.lineups.length!==7)return false;
+  state.archives.push(archived);
+  renderArchives();saveApp();
+  return true;
+ },
+ // Automatic *new-season* transition is only permitted after archival has
+ // been durably queued and the current owner stays on the same Cloud clan.
+ autoAdvanceCwl:async(oldSeason,newSeason)=>{
+  const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
+  if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     !navigator.onLine||state.cwlLive?.season!==oldSeason||
+     state.config.days!==7||oldSeason===newSeason||
+     !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
+     !state.archives.some(a=>a.sourceSeason===oldSeason&&a.complete))return false;
+  const locks=state.locks.slice(0,7);
+  if(locks.length!==7||!locks.every((l,i)=>l?.locked&&l.source==="coc-api"&&
+      l.season===oldSeason&&l.warTag===state.cwlLive?.rounds?.[i]?.warTag))return false;
+  await cloud.openNewCycle();
+  if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
+  resetPlanningData();
+  renderAll("✓ Abgeschlossene CWL archiviert · neue Saisonplanung vorbereitet");
+  return true;
+ },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
@@ -5902,7 +5945,7 @@ window.CWLLegacy={
  normalize:(p)=>normalizeProfile(p),
  rerender:()=>renderAll(),
  createPlanPlayerChip:member=>{const template=document.createElement("template");template.innerHTML=planLineupPlayerChip(member);return template.content.firstElementChild},
- refreshSummary:()=>{if(window.CWLCloud?.active&&lastPlan)renderPlan();renderSummary()},
+ refreshSummary:()=>{if(window.CWLCloud?.active&&lastPlan){renderKpis();renderPlan()}renderSummary()},
  saveJson:()=>exportActiveProfile()
 };
 </script>
