@@ -1651,6 +1651,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(5,minmax(0,1fr));}
  color:var(--primary);font-size:22px;border-radius:12px;
  background:var(--bluebg);border:1px solid var(--line)
 }
+.more-tile[hidden]{display:none!important}
 .more-tile:hover{border-color:var(--primary)}
 .more-tile:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 @media(max-width:650px){.more-menu{grid-template-columns:1fr}.more-tile{min-height:86px;padding:13px 14px}}
@@ -5325,7 +5326,8 @@ window.CWLClanManagementView={
    for(const person of preview.rows){
     const row=document.createElement("div");row.className="clan-management-person";row.setAttribute("role","listitem");
     const left=document.createElement("span");left.textContent=person.name;
-    const note=document.createElement("small");note.textContent=person.status+" · "+person.explanation;
+    const note=document.createElement("small");note.textContent=person.status+
+     (person.rank==="unknown"?" · Clash-Rang nicht bestätigt":" · Eintrittszeit und CW/CWL-Nachweise unbekannt");
     left.appendChild(note);
     const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
     row.append(left,rank);list.appendChild(row);
