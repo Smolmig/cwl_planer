@@ -2,6 +2,7 @@ name: Collect finished Clash war statistics
 on:
   schedule:
     # Two staggered opportunities per hour; GitHub schedule remains best-effort.
+    # Supabase internal Cron at :05/:35 is independent; retain strict OIDC as backup.
     # Gaps >3h cannot safely credit clan tenure/donation intervals.
     # Editing this cron also re-registers the GitHub schedule actor.
     - cron: '17,47 * * * *'
