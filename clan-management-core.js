@@ -162,7 +162,7 @@
   if(!summary)
    return unavailable("Nachweise offen","Spenden-/Rückkehrdaten derzeit nicht bestätigt; keine Treueempfehlung.");
   const nonnegative=value=>{
-   if(typeof value==="string"&&/^\\d+$/.test(value))value=Number(value);
+   if(typeof value==="string"&&/^\d+$/.test(value))value=Number(value);
    return Number.isSafeInteger(value)&&value>=0?value:null;
   };
   const total=nonnegative(summary.observed_positive_donations),
