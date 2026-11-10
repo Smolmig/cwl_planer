@@ -51,7 +51,8 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   return Response.json({ok:true,clanTag:clan.clash_tag,members:json.items.slice(0,50).map(m=>({
    tag:String(m.tag||"").toUpperCase(),name:String(m.name||"").slice(0,80),
    townHallLevel:Number.isInteger(m.townHallLevel)?m.townHallLevel:null,
-   role:String(m.role||"member")
+   role:String(m.role||"member"),
+   donations:Number.isSafeInteger(m.donations)&&m.donations>=0&&m.donations<=9999999?m.donations:null
   }))},{headers:CORS});
  }
  return fail(lastError,502);

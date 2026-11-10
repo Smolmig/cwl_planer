@@ -2,7 +2,7 @@
 // Runs without any browser sessions; writes only clan-scoped stat tables.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
-import {rosterTags} from "./collector-roster.mjs";
+import {rosterEvidence} from "./collector-roster.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -262,15 +262,15 @@ export default {
       const checkedAt=new Date().toISOString();
       // A full roster is independent of wars. A missed / partial API response
       // never becomes an absence observation or retroactive membership credit.
-      let observedTags=null;
+      let observedDetails=null;
       if(Date.now()<deadline-15000){
         try{
-          observedTags=rosterTags(await game(
+          observedDetails=rosterEvidence(await game(
             "/clans/"+encodeURIComponent(gameTag)+"/members?limit=50",
             settings.gameKey));
         }catch{/* No inferred departures on partial, failed or paginated data. */}
       }
-      if(!observedTags)tenureSkippedProfiles+=clanIds.length;
+      if(!observedDetails)tenureSkippedProfiles+=clanIds.length;
       let scan;
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
@@ -282,10 +282,10 @@ export default {
           observedWars+=result.warCount;observedAttacks+=result.attacksCount;
           completed+=result.finalCount;processed++;
           if(scan.notes.length)errors++;
-          if(observedTags){
+          if(observedDetails){
             try{
-              await rest(settings,"rpc/cwl_observe_clan_roster",{
-                method:"POST",rows:{p_clan:id,p_clash_tag:gameTag,p_tags:observedTags}
+              await rest(settings,"rpc/cwl_observe_clan_roster_evidence",{
+                method:"POST",rows:{p_clan:id,p_clash_tag:gameTag,p_members:observedDetails}
               });
               tenureObservedProfiles++;
             }catch{tenureWriteErrors++}
