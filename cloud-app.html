@@ -2289,6 +2289,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .clan-management-person>span:first-child{display:block;min-width:0;overflow-wrap:anywhere;font-weight:750}
 .clan-management-person small{font-size:11px;font-weight:500;color:var(--muted);display:block;margin-top:3px;line-height:1.5}
 .clan-management-rank{flex:0 0 auto;color:var(--muted);font-size:12px}
+.clan-management-review-actions{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;margin-top:7px;font-size:11px;font-weight:550;color:var(--muted);line-height:1.5}
+.clan-management-review-actions button{min-height:32px;padding:5px 9px;font-size:11px;white-space:normal}
+.clan-management-review-actions .review-label{font-weight:750;color:var(--text)}
+.clan-management-review-actions .review-state{font-weight:700}
+.clan-management-review-actions .review-error{color:var(--danger,#bf3947)}
+@media(max-width:430px){.clan-management-review-actions{gap:6px 7px}.clan-management-review-actions button{min-height:36px}}
 @media(max-width:430px){.clan-management-person{gap:6px;padding:11px 0}.clan-management-rank{font-size:11px}}
 /* v1.14 – real More subpages with reused settings controls, not a scrolled modal. */
 #view-more-settings{max-width:1080px;margin-inline:auto}
@@ -5328,6 +5334,49 @@ sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contain
    This panel deliberately makes a fresh owner-only, read-only API request. */
 let clanManagementContext=null,clanManagementRequest=0;
 let clanRulesLoaded=false,clanRulesRevision=null,clanRulesDirty=false;
+let clanManagementLastPreview=null,clanManagementReviewsReadable=false;
+function renderClanManagementReviewSummary(){
+ const preview=clanManagementLastPreview;
+ if(!preview)return;
+ const cases=preview.rows.flatMap(x=>x.reviewCases||[]);
+ const open=cases.filter(x=>x.state==="open").length;
+ const confirmed=cases.filter(x=>x.state==="acknowledged").length;
+ const excepted=cases.filter(x=>x.state==="exception").length;
+ const summary=document.getElementById("clanManagementSummary");
+ summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
+  preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
+  " Vize/Clanführer ausgenommen"+
+  (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
+  (clanManagementReviewsReadable?
+   (open?" · "+open+" offene Prüfhinweise":" · keine offenen Prüfhinweise")+
+   (confirmed?" · "+confirmed+" quittiert":"")+
+   (excepted?" · "+excepted+" Ausnahmen":""):
+   " · Prüfentscheidungen derzeit nicht abrufbar");
+ summary.hidden=false;
+}
+function renderClanManagementReviewAction(group,person,item){
+ group.replaceChildren();
+ const label=document.createElement("span");
+ label.className="review-label";label.textContent=item.label+":";
+ group.appendChild(label);
+ const state=document.createElement("span");
+ state.className="review-state";
+ state.textContent=item.state==="acknowledged"?"Quittiert":
+  item.state==="exception"?"Ausnahme aktiv":"Offen";
+ group.appendChild(state);
+ const actions=item.state==="open"
+  ?[["Quittieren","acknowledged"],["Ausnahme","exception"]]:
+   [[item.state==="exception"?"Ausnahme aufheben":"Erneut öffnen","open"]];
+ for(const [title,disposition] of actions){
+  const button=document.createElement("button");
+  button.type="button";button.className="btn small";
+  button.textContent=title;
+  button.setAttribute("aria-label",item.label+" für "+person.name+": "+title);
+  button.onclick=()=>window.CWLClanManagementView.saveReview(person,item,disposition,group);
+  group.appendChild(button);
+ }
+}
+
 const clanRuleFields={
  performance_min_days:"clanRuleDays",performance_min_attacks:"clanRuleAttacks",
  performance_three_star_percent:"clanRulePercent",performance_lookback_days:"clanRuleLookback",
@@ -5359,6 +5408,7 @@ function clearClanManagement(){
  document.getElementById("clanManagementStatus").textContent="Noch keine aktuelle Clanliste geladen.";
  document.getElementById("clanManagementRefresh").disabled=false;
  clanRulesLoaded=false;clanRulesRevision=null;clanRulesDirty=false;
+ clanManagementLastPreview=null;clanManagementReviewsReadable=false;
  displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
  document.getElementById("clanRulesSave").disabled=true;
  document.getElementById("clanRulesStatus").textContent="Clanregeln werden geladen …";
@@ -5390,8 +5440,10 @@ window.CWLClanManagementView={
    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
       !cloud.active||!cloud.isOwner()||clan!==clanManagementContext)return;
    const loadedRules=result.rules||null;
-   const preview=window.CWLClanManagement?.buildPreview(
+   const basePreview=window.CWLClanManagement?.buildPreview(
     result.members,result.tenure,result.evidence,loadedRules,result.loyalty);
+   const preview=window.CWLClanManagement?.applyReviewDecisions(
+    basePreview,result.reviewDecisions);
    if(!clanRulesDirty){
     displayClanRules(loadedRules||window.CWLClanManagement.DEFAULT_RULES);
     clanRulesRevision=result.ruleRevision;
@@ -5402,15 +5454,9 @@ window.CWLClanManagementView={
       "Kriterien für diesen Clan gespeichert";
    }
    if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
-   const summary=document.getElementById("clanManagementSummary");
-   summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
-     preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
-     " Vize/Clanführer ausgenommen"+
-     (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
-     (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"")+
-     (preview.promotionReviewChecks?" · "+preview.promotionReviewChecks+" Beförderungen prüfen":"")+
-     (preview.loyaltyReviewChecks?" · davon "+preview.loyaltyReviewChecks+" über Treue":"");
-   summary.hidden=false;
+   clanManagementLastPreview=preview;
+   clanManagementReviewsReadable=Array.isArray(result.reviewDecisions);
+   renderClanManagementReviewSummary();
    const list=document.getElementById("clanManagementList");
    list.replaceChildren();
    for(const person of preview.rows){
@@ -5424,12 +5470,21 @@ window.CWLClanManagementView={
      person.loyaltyNote
     ].filter(Boolean).join(" · ");
     left.appendChild(note);
+    if(clanManagementReviewsReadable)for(const item of person.reviewCases||[]){
+     const group=document.createElement("span");
+     group.className="clan-management-review-actions";
+     group.setAttribute("role","group");
+     group.setAttribute("aria-label",item.label+" für "+person.name);
+     renderClanManagementReviewAction(group,person,item);
+     left.appendChild(group);
+    }
     const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
     row.append(left,rank);list.appendChild(row);
    }
    status.textContent="Clash-Stand: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
     (result.tenure===null?" · Clanzeit derzeit nicht abrufbar.":" · Clanzeit nur aus bestätigten Beobachtungen.")+
-    (loadedRules?.loyalty_enabled&&result.loyalty===null?" · Treuenachweise derzeit nicht abrufbar.":"");
+    (loadedRules?.loyalty_enabled&&result.loyalty===null?" · Treuenachweise derzeit nicht abrufbar.":"")+
+    (!clanManagementReviewsReadable?" · Quittierungen derzeit nicht abrufbar.":"");
   }catch(err){
    if(request!==clanManagementRequest)return;
    document.getElementById("clanManagementSummary").hidden=true;
@@ -5437,6 +5492,31 @@ window.CWLClanManagementView={
    status.textContent=err?.message||"Clanliste nicht erreichbar – bitte später erneut prüfen.";
   }finally{
    if(request===clanManagementRequest)refresh.disabled=false;
+  }
+ },
+ async saveReview(person,item,disposition,group){
+  const cloud=window.CWLCloud,request=clanManagementRequest;
+  const activeClan=cloud?.getActiveClanId?.();
+  if(!clanManagementReviewsReadable||!cloud?.active||!cloud?.isOwner?.()||
+    !activeClan||activeClan!==clanManagementContext||!group?.isConnected)return;
+  const buttons=[...group.querySelectorAll("button")];
+  buttons.forEach(b=>b.disabled=true);
+  try{
+   const stored=await cloud.saveManagementReview(
+    person.tag,item.kind,disposition,item.fingerprint,item.revision);
+   if(request!==clanManagementRequest||activeClan!==cloud.getActiveClanId()||
+     !cloud.active||!cloud.isOwner()||!group.isConnected)return;
+   item.revision=stored.revision;
+   item.state=disposition;
+   renderClanManagementReviewAction(group,person,item);
+   renderClanManagementReviewSummary();
+   group.querySelector("button")?.focus({preventScroll:true});
+  }catch(err){
+   if(request!==clanManagementRequest||!group.isConnected)return;
+   buttons.forEach(b=>b.disabled=false);
+   const error=document.createElement("span");error.className="review-error";
+   error.textContent=err?.message||"Änderung fehlgeschlagen. Bitte erneut prüfen.";
+   group.appendChild(error);
   }
  },
  async saveRules(){
