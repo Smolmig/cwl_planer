@@ -29,6 +29,8 @@ is written separately under each corresponding `clan_id`; no existing private
   workflow event. Additional scheduled runs follow automatically.
 
 ## Independent Supabase scheduler (rollout for #104)
+> **LIVE-GATE 10.11.2026, 16:14 UTC:** Die vorbereitende Vault/RPC-Migration und der `pg_cron`/`pg_net`-Job sind nach grünem GitHub-CI jetzt produktiv installiert. Der neue `coc-stats-collector` ist Edge v9 ACTIVE. Echtes Edge-Negativbeispiel mit falscher Signatur: HTTP **401**. Gezielter SQL-signierter `net.http_post`-Test: HTTP **200**, protokolliertes `collector_verified_trigger=internal_cron`, exakt **3/3 vollständig verifizierte Roster**, kein gespeicherter Fehler. Danach **96 Mitgliederzeilen**, 92 mit bestätigtem Mitgliedschaftszuwachs; keine rückwirkend erfundenen Offline-/Spenden- oder Missed-Werte. Der reguläre Cronjob ist `5,35 * * * *` aktiv, aber **ein autonomer `pg_cron`-Lauf steht zur weiteren Abnahme noch aus**. Die alte GitHub-OIDC-Identität bleibt aktiv; ein neuer signierter GitHub-Canary unter Edge v9 wird separat geprüft.
+
 
 GitHub's requested `:17/:47` runs are best-effort and remained absent for
 over two hours after the 10.11.2026 collector baseline despite a successful
