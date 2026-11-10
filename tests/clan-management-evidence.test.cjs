@@ -67,5 +67,5 @@ test("Rank and donation evidence RPC is tenant-scoped service only, uses old int
  const sync=read("cloud-sync.mjs");
  assert.match(sync,/rank_before_leave_at,last_donations,last_donations_at,last_donation_increase_at/);
  const h=read("cloud-app.html");
- assert.match(h,/Spendenzuwachs/);assert.match(h,/Keine automatische Beförderung/);
+ assert.match(h,/Spendenzuwächse/);assert.match(h,/Keine automatische Beförderung/);
 });
