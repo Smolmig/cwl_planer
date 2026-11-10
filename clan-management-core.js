@@ -57,7 +57,83 @@
    new Date(seen).toLocaleDateString("de-AT")+
    ") – Rang nach Rückkehr im Spiel prüfen";
  }
- function buildPreview(members,tenureRows=null){
+ const DEFAULT_RULES=Object.freeze({
+  performance_enabled:true,
+  performance_min_days:14,
+  performance_min_attacks:10,
+  performance_three_star_percent:80,
+  performance_lookback_days:90,
+  loyalty_min_days:60,
+  absence_reset_days:10
+ });
+ const LIMITS=Object.freeze({
+  performance_min_days:[1,365],
+  performance_min_attacks:[1,100],
+  performance_three_star_percent:[0,100],
+  performance_lookback_days:[7,730],
+  loyalty_min_days:[1,730],
+  absence_reset_days:[1,365]
+ });
+ function normalizeRules(input={}){
+  if(input===null||typeof input!=="object"||Array.isArray(input))
+   throw Error("Ungültige Clanregeln.");
+  const rules={...DEFAULT_RULES};
+  for(const key of Object.keys(LIMITS)){
+   const value=Object.hasOwn(input,key)?input[key]:DEFAULT_RULES[key];
+   if(key==="absence_reset_days"&&value===null){rules[key]=null;continue}
+   const [min,max]=LIMITS[key];
+   if(typeof value!=="number"||!Number.isInteger(value)||value<min||value>max)
+    throw Error("Ungültiger Grenzwert: "+key);
+   rules[key]=value;
+  }
+  if(Object.hasOwn(input,"performance_enabled")){
+   if(typeof input.performance_enabled!=="boolean")throw Error("Ungültige Leistungsregel.");
+   rules.performance_enabled=input.performance_enabled;
+  }
+  return rules;
+ }
+ function evaluatePromotion(person,entry,evidence,rules,now=Date.now()){
+  // Only a CURRENT member of THIS clan, with recent complete roster time.
+  // Rank histories from other clans cannot grant or remove this rank.
+  if(person.rank!=="member"||person.returnRankNote||!rules.performance_enabled)return null;
+  if(!entry||entry.is_present!==true)return {
+   status:"Nachweise offen",note:"Clanmitgliedschaft nicht aktuell bestätigt."
+  };
+  const seconds=Number(entry.confirmed_seconds),seen=Date.parse(entry.last_observed_at||"");
+  if(!Number.isSafeInteger(seconds)||seconds<0||!Number.isFinite(seen)||
+     seen>now+60000||now-seen>24*3600000)return {
+    status:"Daten prüfen",note:"Clanzeit-Beobachtung fehlt oder ist älter als 24 Stunden."
+   };
+  if(evidence===null)return {
+   status:"Nachweise offen",note:"Angriffsdaten derzeit nicht abrufbar; keine Leistungsbewertung."
+  };
+  if(evidence!==undefined&&(
+    !Number.isSafeInteger(evidence.attack_count)||evidence.attack_count<0||
+    !Number.isSafeInteger(evidence.three_star_count)||evidence.three_star_count<0||
+    evidence.three_star_count>evidence.attack_count
+   ))return {status:"Daten prüfen",note:"Ungültige Angriffszähler; keine Empfehlung."};
+  const attackCount=evidence?.attack_count||0,threeStars=evidence?.three_star_count||0;
+  const timeOK=seconds>=rules.performance_min_days*86400;
+  const countOK=attackCount>=rules.performance_min_attacks;
+  const quoteOK=countOK&&threeStars*100>=rules.performance_three_star_percent*attackCount;
+  const duration=Math.floor(seconds/86400);
+  const sample=attackCount>0?threeStars+"/"+attackCount+" 3★":
+    "keine API-Angriffe belegt";
+  const note="Belegte Clanzeit "+duration+"/"+rules.performance_min_days+" Tage · "+
+   "API-AG "+attackCount+"/"+rules.performance_min_attacks+
+   " · "+sample+" · Zeitraum "+rules.performance_lookback_days+" Tage";
+  if(timeOK&&countOK&&quoteOK)return {
+   status:"Beförderung prüfen",note:note+
+    " · Kriterien rechnerisch erfüllt; Rang nur manuell im Spiel ändern.",
+   eligible:true
+  };
+  return {
+   status:"Nachweise offen",note:note+
+   (attackCount===0?" · fehlende Belege sind keine 0★-Angriffe.":
+    countOK&&!quoteOK?" · 3★-Schwelle noch nicht erreicht.":" · noch nicht alle Kriterien erfüllt.")
+  };
+ }
+ function buildPreview(members,tenureRows=null,evidenceRows=null,configuredRules=null){
   if(!Array.isArray(members)||members.length<1||members.length>50)
    return {ok:false,reason:"roster_incomplete",rows:[],total:0};
   const seen=new Set(),rows=[],counts={member:0,elder:0,coLeader:0,leader:0,unknown:0};
@@ -84,7 +160,11 @@
   const byTag=new Map((Array.isArray(tenureRows)?tenureRows:[])
     .filter(x=>x&&validTag(x.player_tag))
     .map(x=>[tag(x.player_tag),x]));
-  let restoreRankChecks=0;
+  const evidenceByTag=new Map((Array.isArray(evidenceRows)?evidenceRows:[])
+    .filter(x=>x&&validTag(x.player_tag))
+    .map(x=>[tag(x.player_tag),x]));
+  const verifiedRules=configuredRules?normalizeRules(configuredRules):null;
+  let restoreRankChecks=0,promotionReviewChecks=0;
   for(const player of rows){
    const entry=byTag.get(player.tag);
    const live=members.find(m=>tag(m.tag)===player.tag);
@@ -92,16 +172,29 @@
    player.donationNote=donorLabel(live,entry);
    player.returnRankNote=returnRankLabel(live,entry);
    if(player.returnRankNote){restoreRankChecks++;player.status="Früheren Rang prüfen";}
+   if(verifiedRules&&Array.isArray(evidenceRows)){
+    const check=evaluatePromotion(player,entry,evidenceByTag.get(player.tag),verifiedRules);
+    if(check){
+     player.promotionNote=check.note;
+     if(!player.returnRankNote){
+      player.status=check.status;
+      if(check.eligible)promotionReviewChecks++;
+     }
+    }
+   }else if(verifiedRules&&player.rank==="member"){
+    player.promotionNote="Angriffsdaten nicht abrufbar – keine Beförderungsbewertung.";
+   }
   }
   rows.sort((a,b)=>Boolean(b.returnRankNote)-Boolean(a.returnRankNote)||
    (a.rank===b.rank?
     a.name.localeCompare(b.name,"de",{sensitivity:"base"}):
     (a.rank==="member"?-1:b.rank==="member"?1:a.rank==="elder"?-1:1)));
   return {ok:true,reason:null,total:members.length,counts,rows,restoreRankChecks,
-   eligibleForRecommendation:0,
-   observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Ohne belegte 14 kumulierte Mitgliedschaftstage und aussagekräftige CW/CWL-Daten gibt es keine Beförderungs- oder Kick-Empfehlung."};
+   promotionReviewChecks,eligibleForRecommendation:promotionReviewChecks,
+   observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Nur abgeschlossene API-Kriege dieses Clans und belegte Clanzeit zählen; fehlende Daten sind keine negativen Spielerwerte. Alle Rangentscheidungen bleiben manuell."};
  }
- const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel};
+ const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel,
+  DEFAULT_RULES,normalizeRules,evaluatePromotion};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  if(root)root.CWLClanManagement=api;
 })(typeof window!=="undefined"?window:null);
