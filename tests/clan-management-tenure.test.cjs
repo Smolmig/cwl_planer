@@ -40,7 +40,10 @@ test("Scheduled collector alone writes snapshots; UI only reads confirmed hours"
  assert.match(sync,/from\("cwl_clan_member_tenure"\)\.select/);
  const start=sync.indexOf("async fetchManagementRoster(){"),end=sync.indexOf("isEmergencyEditing:",start);
  const part=sync.slice(start,end);
- assert.doesNotMatch(part,/\.insert\(|\.update\(|\.delete\(|\.upsert\(|\.rpc\(/);
+ assert.doesNotMatch(part,/\.insert\(|\.update\(|\.delete\(|\.upsert\(/);
+ assert.match(part,/sb\.rpc\("cwl_promotion_attack_evidence"/);
+ // The additional RPC only aggregates owner-scoped finalized attack facts.
+ assert.doesNotMatch(part,/sb\.rpc\("cwl_(?:set|apply|save|observe|delete)_/);
 });
 
 test("Evidence labels never backdate unobserved time and identify leave-return sessions",()=>{
