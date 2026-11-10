@@ -42,3 +42,29 @@ test("Scheduled collector alone writes snapshots; UI only reads confirmed hours"
  const part=sync.slice(start,end);
  assert.doesNotMatch(part,/\.insert\(|\.update\(|\.delete\(|\.upsert\(|\.rpc\(/);
 });
+
+test("Evidence labels never backdate unobserved time and identify leave-return sessions",()=>{
+ const core=require("../clan-management-core.js");
+ const now=Date.parse("2026-11-10T10:00:00Z");
+ const rows=[
+  {player_tag:"#2PYL",confirmed_seconds:25*3600,observed_visits:2,is_present:true,
+   last_observed_at:"2026-11-10T09:00:00Z"},
+  {player_tag:"#2PYQ",confirmed_seconds:3*3600,observed_visits:1,is_present:false,
+   last_observed_at:"2026-11-08T09:00:00Z"}
+ ];
+ assert.equal(core.tenureLabel(null,now),"Mitgliedschaftszeit noch nicht beobachtet");
+ assert.match(core.tenureLabel(rows[0],now),/1 Tg\. 1 Std\. · 2 beobachtete Aufenthalte/);
+ assert.match(core.tenureLabel(rows[1],now),/ausgetreten/);
+ assert.match(core.tenureLabel(rows[1],now),/Stand älter als 24 Std/);
+ assert.match(core.tenureLabel({...rows[0],confirmed_seconds:-5},now),/unklar/);
+ const people=[
+  {tag:"#2PYL",name:"Return",role:"member"},
+  {tag:"#2PYQ",name:"Former",role:"admin"},
+  {tag:"#2PYR",name:"Vize",role:"coLeader"}
+ ];
+ const preview=core.buildPreview(people,rows);
+ assert.equal(preview.rows.length,2);
+ assert.match(preview.rows.find(x=>x.name==="Return").tenureNote,/2 beobachtete Aufenthalte/);
+ assert.ok(preview.rows.every(x=>x.rank!=="coLeader"));
+ assert.equal(preview.eligibleForRecommendation,0);
+});
