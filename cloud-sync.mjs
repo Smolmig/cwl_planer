@@ -372,11 +372,22 @@ const cloud={
    .eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag));
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  // Owner-only read projection. Only fully reconciled API CWL can expose
+  // an evidenced missed attack; uncertain CW/CWL rounds remain 'unknown'.
+  // Failure here must NEVER be interpreted as 0 missed attacks.
+  const {data:missedEvidence,error:missedError}=await sb.rpc(
+   "cwl_clan_verified_missed_evidence",{
+    p_clan:expectedClan,p_source_clash_tag:normalizeTag(expectedTag),
+    p_lookback_days:180
+   });
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
   return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
    evidence:evidenceError?null:(evidence||[]),loyalty,
-   reviewDecisions:reviewError?null:(reviewDecisions||[])};
+   reviewDecisions:reviewError?null:(reviewDecisions||[]),
+   missedEvidence:missedError?null:(missedEvidence||[])};
  },
  isEmergencyEditing:()=>manualRosterPending(),
  async saveManagementReview(playerTag,kind,disposition,fingerprint,expectedRevision){
