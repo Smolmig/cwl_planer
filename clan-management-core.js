@@ -30,6 +30,33 @@
   const state=entry.is_present===false?" · letzter Snapshot: ausgetreten":"";
   return "Belegte Clanzeit: "+duration+returns+state+stale;
  }
+ // All labels are evidence, never estimated login times.
+ function donorLabel(player,entry,now=Date.now()){
+  const notes=[];
+  const live=player?.donations;
+  if(typeof live==="number"&&Number.isSafeInteger(live)&&live>=0&&live<=9999999)
+   notes.push("Spenden laut Clash (laufende Saison): "+live);
+  const when=Date.parse(entry?.last_donation_increase_at||"");
+  const count=Number(entry?.last_donation_increase_by);
+  if(Number.isFinite(when)&&when<=now+60000&&Number.isInteger(count)&&count>0&&count<=9999999){
+   const date=new Date(when).toLocaleString("de-AT",{
+    day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"
+   });
+   notes.push("Spendenzuwachs beobachtet: "+date+" (+"+count+")");
+  }
+  return notes.join(" · ");
+ }
+ function returnRankLabel(player,entry){
+  // Only an actual observed absence and return. A clan switch hidden
+  // between snapshots cannot be detected and must never be invented.
+  if(!entry||entry.is_present!==true||Number(entry.observed_visits)<2||
+     entry.rank_before_leave!=="elder"||rank(player?.role)!=="member")return "";
+  const seen=Date.parse(entry.rank_before_leave_at||"");
+  if(!Number.isFinite(seen))return "";
+  return "Vor beobachtetem Austritt Ältester ("+
+   new Date(seen).toLocaleDateString("de-AT")+
+   ") – Rang nach Rückkehr im Spiel prüfen";
+ }
  function buildPreview(members,tenureRows=null){
   if(!Array.isArray(members)||members.length<1||members.length>50)
    return {ok:false,reason:"roster_incomplete",rows:[],total:0};
@@ -57,15 +84,24 @@
   const byTag=new Map((Array.isArray(tenureRows)?tenureRows:[])
     .filter(x=>x&&validTag(x.player_tag))
     .map(x=>[tag(x.player_tag),x]));
-  for(const player of rows)player.tenureNote=tenureLabel(byTag.get(player.tag));
-  rows.sort((a,b)=>a.rank===b.rank?
+  let restoreRankChecks=0;
+  for(const player of rows){
+   const entry=byTag.get(player.tag);
+   const live=members.find(m=>tag(m.tag)===player.tag);
+   player.tenureNote=tenureLabel(entry);
+   player.donationNote=donorLabel(live,entry);
+   player.returnRankNote=returnRankLabel(live,entry);
+   if(player.returnRankNote){restoreRankChecks++;player.status="Früheren Rang prüfen";}
+  }
+  rows.sort((a,b)=>Boolean(b.returnRankNote)-Boolean(a.returnRankNote)||
+   (a.rank===b.rank?
     a.name.localeCompare(b.name,"de",{sensitivity:"base"}):
-    (a.rank==="member"?-1:b.rank==="member"?1:a.rank==="elder"?-1:1));
-  return {ok:true,reason:null,total:members.length,counts,rows,
+    (a.rank==="member"?-1:b.rank==="member"?1:a.rank==="elder"?-1:1)));
+  return {ok:true,reason:null,total:members.length,counts,rows,restoreRankChecks,
    eligibleForRecommendation:0,
    observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Ohne belegte 14 kumulierte Mitgliedschaftstage und aussagekräftige CW/CWL-Daten gibt es keine Beförderungs- oder Kick-Empfehlung."};
  }
- const api={normalizeRank:rank,validTag,buildPreview,tenureLabel};
+ const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  if(root)root.CWLClanManagement=api;
 })(typeof window!=="undefined"?window:null);

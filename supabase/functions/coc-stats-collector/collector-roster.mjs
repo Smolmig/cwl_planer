@@ -15,3 +15,16 @@ export function rosterTags(raw){
  if(new Set(tags).size!==tags.length)throw Error("roster_duplicates");
  return tags;
 }
+
+// Full roster detail, deliberately derived only after tag/name/completeness validation.
+// A missing optional donation counter is UNKNOWN, not zero or a recorded donation.
+export function rosterEvidence(raw){
+ const tags=rosterTags(raw);
+ return raw.items.map((member,i)=>({
+  tag:tags[i],
+  role:["member","admin","elder","coLeader","leader"].includes(member.role)?
+    member.role:null,
+  donations:Number.isSafeInteger(member.donations)&&
+    member.donations>=0&&member.donations<=9999999?member.donations:null
+ }));
+}
