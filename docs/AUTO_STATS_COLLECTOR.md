@@ -10,10 +10,10 @@ is written separately under each corresponding `clan_id`; no existing private
 
 ## Trigger and authentication
 
-- GitHub Actions `.github/workflows/collect-war-stats.yml` requests an hourly
-  run at **UTC minute 27** (`27 * * * *`) and supports a protected manual dispatch.
-  GitHub may delay or skip scheduled events: this is a best-effort collector,
-  not a guarantee of precisely hourly synchronization.
+- GitHub Actions `.github/workflows/collect-war-stats.yml` requests two
+  starts per hour at **UTC minutes 17 and 47** (`17,47 * * * *`) and supports
+  a protected manual dispatch. GitHub may delay or skip scheduled events:
+  these are two best-effort opportunities, **not** a guaranteed 30-minute cadence.
 - The job requests a **short-lived GitHub OIDC token** scoped to the audience
   `cwl-stats-collector:yjldnvfwposfwmzmcsow`.
 - The Supabase Edge Function verifies the JWT **RS256 signature** against
@@ -83,6 +83,34 @@ is written separately under each corresponding `clan_id`; no existing private
   nor matching Clash tags grants cross-tenant read permissions.
 - Never manually invoke the collector with `service_role` in client code.
   The GitHub workflow is its only trusted production trigger.
+
+## Clan-time and donation health check – 10.11.2026
+
+The read-only, aggregate-only query
+[`scripts/collector-tenure-health.sql`](../scripts/collector-tenure-health.sql)
+reports the count of app-clan member rows, second observations, confirmed
+membership seconds, observed donation increases and current per-profile
+collector health. The query returns no clan/player IDs, names or tags and
+cannot change production data. Its companion regression test rejects
+accidental writes and identifying output.
+
+**Observed at 14:44 UTC:** 94 member rows in 3 app clans, all currently
+present; baseline 13:23:43–48 UTC; **0 second observations**, **0 members with
+confirmed positive clan time**, **0 observed donation increases**.
+All 3 collector status profiles reported success without stored errors.
+That is a sound baseline, **not** confirmed long-term collection.
+The latest available GitHub Actions list contained only the signed
+`push` collector run at 13:23 UTC after PR #207, and no newer
+`event=schedule` run. GitHub's pre-change 04:42 schedule run is **not**
+post-change proof. A missing run is not evidence of a failed Edge/API call.
+
+**Next acceptance gate:** inspect the GitHub Actions event field for a
+*new* `schedule` run, correlate its verified Edge trigger and HTTP response,
+and rerun the SQL to confirm a second complete roster observation. If the
+two start chances continue to be skipped for multiple hours, evaluate a
+separately authenticated independent scheduler before assuming hourly
+tracking is reliable. Never grant unobserved gaps as clan-time credit,
+infer offline status, or backfill donation deltas.
 
 ## Read-only follow-up – 10.11.2026
 
