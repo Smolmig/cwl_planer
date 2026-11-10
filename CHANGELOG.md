@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.53] - 2026-11-10
+
+### Clanverwaltung #183 – erste sichere Rangübersicht
+- Unter **Mehr → Clanverwaltung** gibt es für den **Cloud-Clanbesitzer** einen eigenen, kompakten, **rein lesenden** Einstieg: Aktuelle Clash-Mitgliederliste und API-Rang abfragen; `admin`/ `elder` als Ältester zuordnen, `member` als Mitglied. App-Rollen Owner/Editor/Viewer werden niemals mit Ingame-Rängen vermischt. **Vize/Clanführer** werden vollständig aus der individuellen Rangprüfliste ausgeschlossen.
+- Der neue Abruf erfolgt ausdrücklich über den vorhandenen autorisierten `coc-clan-members`-Endpunkt mit Clan-/Session-/Owner-Gültigkeitsprüfung. Er benutzt **nicht** den schreibenden Mitgliederabgleich und speichert keine temporären Roster-, Profil-, Rang- oder Mitgliedschaftsdaten. Beim Clanwechsel oder Rollenverlust werden alte Ergebnisse entfernt; unvollständige/duplizierte Tags verhindern die gesamte Auswertung.
+- **Datenlage ehrlich:** Clash bietet weder historische Join-/Return-Zeiten noch letzten Login. Die erste Stufe zeigt daher **keine** unbelegten 14-Tage-Empfehlungen, 3-Tage-Inaktivitätsurteile, Leistungsabwertungen, Beförderungs-/Kick-Vorschläge oder Aktionsbuttons. 14 kumulierte Tage samt Austrittspausen, belegte CW-/CWL-Stichproben, Missed-Ausnahmen, Owner-Regeln und auditierte Entscheidungen sind **weitere getrennte Phasen** von #183.
+- Browser-/Pure-Test für Clash-Rollen inkl. `admin`-Alias, API-Unsicherheit, Owner-Gate, Clanwechsel während eines laufenden Abrufs, Vize/Leader-Ausschluss, keine Writes sowie responsives Gold/Dark/Light. Hilfeseite im selben PR aktualisiert; Cloud-Version und Cache-Referenzen synchron. Keine DB-/RLS-/Edge-/Solver-/Offline-PWA-Mutation.
+- **Release-Kandidat:** PR-/Main-CI, GitHub Pages und offiziellen Release vor Live-Status prüfen. Echte iOS-/Android-/Clash-API-Abnahme bleibt offen.
+
+
 ## [1.16.52] - 2026-11-09
 
 ### Einsätze #187 – echter 3/4-Fix und additive Filterchips

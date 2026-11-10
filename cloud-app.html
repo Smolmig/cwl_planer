@@ -1651,6 +1651,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(5,minmax(0,1fr));}
  color:var(--primary);font-size:22px;border-radius:12px;
  background:var(--bluebg);border:1px solid var(--line)
 }
+.more-tile[hidden]{display:none!important}
 .more-tile:hover{border-color:var(--primary)}
 .more-tile:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 @media(max-width:650px){.more-menu{grid-template-columns:1fr}.more-tile{min-height:86px;padding:13px 14px}}
@@ -2260,6 +2261,19 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 }
 
 
+/* #183 phase 1: quiet, read-only clan-rank overview – no extra cards per player. */
+#view-clan-management{max-width:1040px;margin:0 auto}
+.clan-management-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
+.clan-management-actions button{min-height:44px}
+.clan-management-actions .statusline{font-size:12px}
+.clan-management-summary{font-size:13px;font-weight:750;color:var(--text);line-height:1.6;margin:4px 0 12px}
+.clan-management-disclaimer{font-size:12px;color:var(--muted);line-height:1.65;border-top:1px solid var(--line);padding:13px 0;margin:0}
+.clan-management-list{display:grid;min-width:0}
+.clan-management-person{display:flex;gap:12px;align-items:center;justify-content:space-between;min-width:0;padding:12px 1px;border-bottom:1px solid var(--line)}
+.clan-management-person>span:first-child{display:block;min-width:0;overflow-wrap:anywhere;font-weight:750}
+.clan-management-person small{font-size:11px;font-weight:500;color:var(--muted);display:block;margin-top:3px;line-height:1.5}
+.clan-management-rank{flex:0 0 auto;color:var(--muted);font-size:12px}
+@media(max-width:430px){.clan-management-person{gap:6px;padding:11px 0}.clan-management-rank{font-size:11px}}
 /* v1.14 – real More subpages with reused settings controls, not a scrolled modal. */
 #view-more-settings{max-width:1080px;margin-inline:auto}
 .more-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:3px 0 18px}
@@ -3490,6 +3504,7 @@ html[data-theme] #view-more-settings .latest-changelog{
  <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Clan & Einstellungen</h2><p>Alle seltener benötigten Funktionen an einem Ort. Deine aktuelle Planung bleibt im Hauptmenü.</p></div>
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Vize, Einladungen und Freigaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge prüfen · Empfehlungen in Vorbereitung</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Vergangene Ligen und gespeicherte Aufstellungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
@@ -3590,11 +3605,11 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.52</strong><span>Einsätze · Filterchips und Zielkorrektur</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.53</strong><span>Clanverwaltung · Clash-Ränge prüfen</span></div>
        <ul>
-        <li><b>＋ Filter:</b> Gewählte Filter erscheinen einzeln als Chips und lassen sich per × wieder entfernen.</li>
-        <li><b>„Ziel offen“ korrigiert:</b> Auch automatisch rotierende Spieler mit noch offenen geplanten Angriffen erscheinen nun.</li>
-        <li><b>Eindeutig:</b> Die Auswahl heißt „8 Sterne offen“ und „8 Sterne erreicht“; Datenlücken bleiben getrennt.</li>
+        <li><b>Neue Unterseite:</b> Unter Mehr → Clanverwaltung können Clanbesitzer die aktuellen Clash-Ränge ansehen.</li>
+        <li><b>Sicher getrennt:</b> Mitglieder und Älteste sind Prüffälle; Vize und Clanführer bleiben ausgenommen.</li>
+        <li><b>Keine voreiligen Empfehlungen:</b> Eintrittshistorie und letzter Login fehlen in der API. Es wird nichts automatisch geändert.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3743,6 +3758,7 @@ html[data-theme] #view-more-settings .latest-changelog{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Deshalb gibt es ohne belegte kumulierte Mitgliedschaftstage, verlässliche CW-/CWL-Leistung und vollständig nachgewiesene versäumte Angriffe noch keine automatischen Empfehlungen. Der Abruf ändert weder Ingame-Ränge noch CWL-Aufstellungen oder gespeicherte Planerdaten.</p></div>
     <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
@@ -3780,6 +3796,21 @@ html[data-theme] #view-more-settings .latest-changelog{
   <h4 class="help-section-heading">Speicherung und Backup</h4>
   <div class="helpbox"><b>Gemeinsamer Cloud-Clan:</b> Änderungen werden online gespeichert und zwischen berechtigten Geräten abgeglichen. Bei einem Speicherkonflikt musst du den Cloud-Stand neu laden. <b>Ohne Anmeldung:</b> Dein Plan bleibt nur in diesem Browser bzw. in der installierten App. Über <b>Mehr → Backup & Import</b> kannst du eine eigene JSON-Sicherung erstellen. Beim Wiederherstellen können vorhandene Profile ersetzt werden.</div>
 </div></section>
+<section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
+ <div class="more-detail-header">
+  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge & Nachweise</h2>
+   <p>Aktuellen Ingame-Rang prüfen. Empfehlungen erst, wenn Mitgliedschaft und Leistung verlässlich belegt sind.</p>
+  </div>
+  <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
+ </div>
+ <div class="clan-management-actions">
+  <button type="button" class="btn small" id="clanManagementRefresh">↻ Clash-Ränge prüfen</button>
+  <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine aktuelle Clanliste geladen.</span>
+ </div>
+ <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
+ <p class="clan-management-disclaimer">Clash zeigt den aktuellen Rang, aber weder ein historisches Eintrittsdatum noch den letzten Login. 14 kumulierte Mitgliedschaftstage oder Inaktivität sind ohne eigene Beobachtung nicht nachgewiesen. Diese Ansicht ändert keine Clash-Ränge und keine Planerdaten.</p>
+ <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
+</section>
 <section id="view-account" class="view more-subview" aria-labelledby="cloudAccountTitle">
  <div class="card account-page">
   <div class="section-title account-page-head">
@@ -4025,10 +4056,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./cwl-deployment-filters.js?v=1.16.52"></script>
-<script src="./cwl-planning-core.js?v=1.16.52"></script>
+<script src="./clan-management-core.js?v=1.16.53"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.53"></script>
+<script src="./cwl-planning-core.js?v=1.16.53"></script>
 <script>
-const APP_VERSION="v1.16.52";
+const APP_VERSION="v1.16.53";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5153,7 +5185,7 @@ function showPlannerView(view){
  if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive","more-settings","install"].includes(visible)?"more":visible;
+   ["help","account","archive","more-settings","install","clan-management"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -5244,12 +5276,84 @@ try{setSidebarCollapsed(localStorage.getItem("cwl_desktop_sidebar_collapsed")===
 catch{setSidebarCollapsed(false)}
 sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 
+
+/* #183: do not reuse the roster import path – it writes planning members.
+   This panel deliberately makes a fresh owner-only, read-only API request. */
+let clanManagementContext=null,clanManagementRequest=0;
+function clearClanManagement(){
+ clanManagementRequest++;
+ document.getElementById("clanManagementList").replaceChildren();
+ document.getElementById("clanManagementSummary").hidden=true;
+ document.getElementById("clanManagementStatus").textContent="Noch keine aktuelle Clanliste geladen.";
+ document.getElementById("clanManagementRefresh").disabled=false;
+}
+window.CWLClanManagementView={
+ accessChanged(next){
+  if(next===clanManagementContext)return;
+  clanManagementContext=next;clearClanManagement();
+  if(!next&&document.getElementById("view-clan-management").classList.contains("active"))
+   showPlannerView("more");
+ },
+ open(){
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.())return;
+  const id=cloud.getActiveClanId();
+  if(id!==clanManagementContext){clanManagementContext=id;clearClanManagement()}
+  showPlannerView("clan-management");
+  this.refresh();
+ },
+ async refresh(){
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.())return;
+  const request=++clanManagementRequest,clan=cloud.getActiveClanId();
+  const status=document.getElementById("clanManagementStatus");
+  const refresh=document.getElementById("clanManagementRefresh");
+  refresh.disabled=true;status.textContent="Aktuelle Clash-Ränge werden geprüft …";
+  try{
+   const result=await cloud.fetchManagementRoster();
+   if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
+      !cloud.active||!cloud.isOwner()||clan!==clanManagementContext)return;
+   const preview=window.CWLClanManagement?.buildPreview(result.members);
+   if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
+   const summary=document.getElementById("clanManagementSummary");
+   summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
+     preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
+     " Vize/Clanführer ausgenommen"+
+     (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"");
+   summary.hidden=false;
+   const list=document.getElementById("clanManagementList");
+   list.replaceChildren();
+   for(const person of preview.rows){
+    const row=document.createElement("div");row.className="clan-management-person";row.setAttribute("role","listitem");
+    const left=document.createElement("span");left.textContent=person.name;
+    const note=document.createElement("small");note.textContent=person.status+
+     (person.rank==="unknown"?" · Clash-Rang nicht bestätigt":" · Eintrittszeit und CW/CWL-Nachweise unbekannt");
+    left.appendChild(note);
+    const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
+    row.append(left,rank);list.appendChild(row);
+   }
+   status.textContent="Clash-Stand: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
+    " · Noch keine belegte Mitgliedschaftshistorie.";
+  }catch(err){
+   if(request!==clanManagementRequest)return;
+   document.getElementById("clanManagementSummary").hidden=true;
+   document.getElementById("clanManagementList").replaceChildren();
+   status.textContent=err?.message||"Clanliste nicht erreichbar – bitte später erneut prüfen.";
+  }finally{
+   if(request===clanManagementRequest)refresh.disabled=false;
+  }
+ }
+};
+document.getElementById("clanManagementBack").onclick=()=>showPlannerView("more");
+document.getElementById("clanManagementRefresh").onclick=()=>window.CWLClanManagementView.refresh();
+
 document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="help"){showPlannerView("help");return}
   if(action==="install"){renderInstallGuide();showPlannerView("install");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
+  if(action==="management"){window.CWLClanManagementView?.open?.();return}
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(moreSettingsMeta[action]){openMoreSettings(action);return}
@@ -5537,6 +5641,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.52"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.53"></script>
 </body>
 </html>
