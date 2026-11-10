@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.56";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.56";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.56";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.56";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.56";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.56";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.57";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.57";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.57";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.57";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.57";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.57";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -340,7 +340,7 @@ const cloud={
   // Tenant-local management criteria are separate from the CWL planner
   // profile. Missing settings means defaults, NOT a guessed prior decision.
   const {data:storedRules,error:ruleError}=await sb.from("cwl_clan_management_rules")
-   .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,revision")
+   .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,loyalty_enabled,loyalty_min_donations,loyalty_min_active_days,loyalty_lookback_days,revision")
    .eq("clan_id",expectedClan).maybeSingle();
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
@@ -353,10 +353,22 @@ const cloud={
   });
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  // Only an owner-scoped SECURITY INVOKER projection, never raw other clans.
+  // Failed evidence retrieval blocks loyalty suggestions, not rank viewing.
+  let loyalty=null;
+  if(rules.loyalty_enabled){
+   const {data:summary,error:loyaltyError}=await sb.rpc("cwl_clan_loyalty_evidence",{
+    p_clan:expectedClan,p_source_clash_tag:normalizeTag(expectedTag),
+    p_lookback_days:rules.loyalty_lookback_days
+   });
+   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+   if(!loyaltyError&&Array.isArray(summary))loyalty=summary;
+  }
   return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
-   evidence:evidenceError?null:(evidence||[])};
+   evidence:evidenceError?null:(evidence||[]),loyalty};
  },
  isEmergencyEditing:()=>manualRosterPending(),
  async saveManagementRules(input,expectedRevision){
@@ -376,7 +388,7 @@ const cloud={
    :base.update({...validated,revision:revision+1,updated_at:new Date().toISOString()})
      .eq("clan_id",expectedClan).eq("revision",revision);
   const {data:stored,error:saveError}=await query
-    .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,revision")
+    .select("performance_enabled,performance_min_days,performance_min_attacks,performance_three_star_percent,performance_lookback_days,loyalty_min_days,absence_reset_days,loyalty_enabled,loyalty_min_donations,loyalty_min_active_days,loyalty_lookback_days,revision")
     .maybeSingle();
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan hat während des Speicherns gewechselt. Bitte neu öffnen.");

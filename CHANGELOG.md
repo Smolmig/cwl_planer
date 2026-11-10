@@ -12,6 +12,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.57] - 2026-11-10
+
+### Clanverwaltung #183 – freiwillige Treueprüfung auf echten Beobachtungen
+- Der Owner kann pro verknüpftem Cloud-Clan einen **standardmäßig ausgeschalteten Treuepfad** aktivieren. Einstellbar sind bestätigte Mitgliedschaftstage (60), positive beobachtete Spendenzuwächse (50), unterschiedliche Spendentage (3) und Zeitraum (30 Tage), unabhängig von CW-/CWL-Angriffspflicht. Zusätzlich muss ein frischer belegter Spendenzuwachs in den letzten 14 Tagen vorliegen.
+- Reine **„Treue: Beförderung prüfen“**-Empfehlung bei vollständigen, frischen Nachweisen. Keine Empfehlung bei fehlendem Rückkehr-Protokoll, 24 Stunden altem Clan-Snapshot oder widersprüchlichen Spendenereignissen. Mögliche Abwesenheit über der einstellbaren 10-Tage-Grenze wird **nur zur manuellen Qualifikationsprüfung** markiert – historische bestätigte Clanzeit niemals zurückgesetzt.
+- Eigentümer-RLS-geschütztes SECURITY-INVOKER-Datenaggregat verknüpft nur die eigenen Clash-/App-Clan-Beobachtungen; keine Rohdaten anderer Benutzer, keine 0-Angriffe aus API-Lücken, keine Online-/Offline-Vermutung. Kein Ingame-Rang-/Kick-/CWL-Plan-Write.
+- Die Hilfe erklärt Nachweisqualität, fehlende Historie, getrennte CW-Verstöße und das optionale Treue-Regelwerk. Regressionen inkl. 7-/11-Tage-Rückkehrfällen, Rollen, CAS, Mobile und Gold-/Dark-/Light-Themes; Bestandsdaten/Offline-PWA unverändert. Neue Regeln bleiben Teil des noch ausstehenden vollständigen App-Backups #178.
+
 ## [1.16.56] - 2026-11-10
 
 ### Clanverwaltung #183 – erste einstellbare Beförderungskriterien pro Cloud-Clan

@@ -22,7 +22,9 @@ test("Editable defaults are realistic and validated against tenant rules",()=>{
  assert.deepEqual(core.normalizeRules({}),{
   performance_enabled:true,performance_min_days:14,performance_min_attacks:10,
   performance_three_star_percent:80,performance_lookback_days:14,
-  loyalty_min_days:60,absence_reset_days:10
+  loyalty_min_days:60,absence_reset_days:10,
+  loyalty_enabled:false,loyalty_min_donations:50,
+  loyalty_min_active_days:3,loyalty_lookback_days:30
  });
  const custom=core.normalizeRules({performance_min_days:21,performance_min_attacks:6,
   performance_three_star_percent:70,performance_lookback_days:180,absence_reset_days:null});

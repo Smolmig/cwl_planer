@@ -17,7 +17,7 @@ const fakeCloud=[
  'window.CWLCloud={active:true,isOwner:()=>owner,hasApiClan:()=>true,getActiveClanId:()=>clanId,',
  'fetchManagementRoster:()=>Promise.resolve({clanId,members:[{tag:"#2PYL",name:"Member",role:"member",donations:5}],',
  'checkedAt:Date.now(),tenure:[tenure],rules:savedRules||window.CWLClanManagement.DEFAULT_RULES,',
- 'ruleRevision:revision,evidence:[{player_tag:"#2PYL",attack_count:10,three_star_count:8,relevant_wars:9}]}),',
+ 'ruleRevision:revision,evidence:[{player_tag:"#2PYL",attack_count:10,three_star_count:8,relevant_wars:9}],loyalty:null}),',
  'saveManagementRules:async(input,expectedRevision)=>{',
  'if(expectedRevision!==revision)throw Error("CAS conflict");',
  'saveCalls++;revision=(revision||0)+1;savedRules=input;return {rules:input,revision};}};',
@@ -47,6 +47,18 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("15 Tage"));
     assert.equal(await page.locator("#clanManagementCriteria").evaluate(x=>x.open),true);
     assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
+    await page.locator(".clan-rule-future > summary").click();
+    await page.locator("#clanRuleLoyaltyEnabled").check();
+    await page.locator("#clanRuleDonations").fill("80");
+    await page.locator("#clanRuleDonationDays").fill("4");
+    await page.locator("#clanRuleDonationWindow").fill("35");
+    await page.locator("#clanRulesSave").click();
+    await page.waitForFunction(()=>saveCalls===2);
+    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Treuenachweise"));
+    assert.equal(await page.locator("#clanRuleLoyaltyEnabled").isChecked(),true);
+    assert.equal(await page.locator("#clanRuleDonations").inputValue(),"80");
+    assert.match(await page.locator("#clanManagementList").innerText(),/Spenden-\/Rückkehrdaten derzeit nicht bestätigt/);
+    assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Treue: Beförderung prüfen/);
     const layout=await page.evaluate(()=>({
       w:document.documentElement.scrollWidth,viewport:innerWidth
     }));
