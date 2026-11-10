@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+### P0 #104 – Collector-Scheduler und vollständige Clanlisten (Infrastruktur, kein Cloud-App-Release)
+- GitHub-`schedule` erhält zwei off-peak Startchancen je Stunde (`:17`/`:47` UTC, best effort) statt einer. Die bestehenden kurzlebigen GitHub-OIDC-Identitäts-/Signaturprüfungen, die exakte Workflow-Identität und der Scheduler-Mutex bleiben unverändert. Ein Workflow-Datei-Push löst einen signierten Funktionstest aus.
+- Fehler beim vollständigen Clanlisten-Abruf werden nicht mehr als Vollerfolg maskiert: getrennte aggregierte, sicher klassifizierte Fehlergründe statt Clan- oder Spielerdaten; 503 und fehlschlagender GitHub-Job bei unvollständiger Clanzeit-/Spenden-Beobachtung. Erfasste Kriegsdaten bleiben erhalten; fehlende Historie/Angriffe werden nicht rückwirkend erfunden.
+- Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
+
+
 ## [1.16.55] - 2026-11-10
 
 ### Clanverwaltung #183 – Spenden-Nachweis und Rang vor Rückkehr

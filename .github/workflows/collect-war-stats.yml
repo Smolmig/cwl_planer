@@ -1,10 +1,10 @@
 name: Collect finished Clash war statistics
 on:
   schedule:
-    # Hourly off-peak UTC heartbeat. Scheduled runs can be delayed/dropped;
-    # the next hour gives a second chance before ephemeral war data expires.
-    # Changing the cron re-registers the schedule actor.
-    - cron: '27 * * * *'
+    # Two staggered opportunities per hour; GitHub schedule remains best-effort.
+    # Gaps >3h cannot safely credit clan tenure/donation intervals.
+    # Editing this cron also re-registers the GitHub schedule actor.
+    - cron: '17,47 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -81,5 +81,16 @@ jobs:
           COLLECTOR_URL: https://yjldnvfwposfwmzmcsow.supabase.co/functions/v1/coc-stats-collector
         run: |
           set -euo pipefail
-          curl --fail-with-body --silent --show-error --max-time 170 --retry 1 --retry-delay 10 --request POST --header "Authorization: Bearer ${COLLECTOR_JWT}" --header "Content-Type: application/json" --data '{}' "$COLLECTOR_URL"
-          echo "Protected collection completed"
+          # HTTP 200 alone is insufficient: partial roster responses used to pass
+          # while silently leaving member-time and donation history empty.
+          result_file="$(mktemp)"
+          trap 'rm -f "$result_file"' EXIT
+          http="$(curl --silent --show-error --max-time 170 --retry 1 --retry-delay 10 --output "$result_file" --write-out '%{http_code}' --request POST --header "Authorization: Bearer ${COLLECTOR_JWT}" --header "Content-Type: application/json" --data '{}' "$COLLECTOR_URL")"
+          if [[ "$http" != "200" ]] || ! jq -e '.ok == true and (.tenantProfiles | type == "number" and . > 0) and .failedProfiles == 0 and .tenureWriteErrors == 0 and .tenureSkippedProfiles == 0 and .tenureObservedProfiles == .tenantProfiles' "$result_file" >/dev/null; then
+            echo "::error::Collector coverage incomplete or HTTP $http; no historical time/donations inferred"
+            # Response contains ONLY aggregate counts and allowlisted failure classes.
+            jq -c '{ok,tenantProfiles,failedProfiles,tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,rosterFailureClasses}' "$result_file" || true
+            exit 1
+          fi
+          jq -c '{tenantProfiles,tenureObservedProfiles,rosterFailureClasses}' "$result_file"
+          echo "Protected collection completed with full roster coverage"

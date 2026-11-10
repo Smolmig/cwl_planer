@@ -45,6 +45,14 @@ function apiDiagnostic(err,stage){
     raw===ERROR.invalid?"invalid_json":"invalid_war_data";
   return (raw===ERROR.invalid?ERROR.invalid:ERROR.api)+":"+stage+":"+kind;
 }
+function rosterDiagnostic(err){
+  // Never persist/log raw upstream errors, clan tags or player data.
+  const msg=String(err?.message||"");
+  if(["roster_incomplete","roster_unverified","roster_duplicates"].includes(msg))
+    return msg;
+  if(msg.startsWith(ERROR.api+":"))return apiDiagnostic(err,"roster");
+  return "roster_unavailable";
+}
 function adminSettings(){
   const url=String(Deno.env.get("SUPABASE_URL")||"").replace(/\/+$/,"");
   const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
@@ -257,20 +265,24 @@ export default {
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
+    const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
       const checkedAt=new Date().toISOString();
       // A full roster is independent of wars. A missed / partial API response
       // never becomes an absence observation or retroactive membership credit.
-      let observedDetails=null;
+      let observedDetails=null,rosterError="time_budget_exceeded";
       if(Date.now()<deadline-15000){
         try{
           observedDetails=rosterEvidence(await game(
             "/clans/"+encodeURIComponent(gameTag)+"/members?limit=50",
             settings.gameKey));
-        }catch{/* No inferred departures on partial, failed or paginated data. */}
+        }catch(e){rosterError=rosterDiagnostic(e)}
       }
-      if(!observedDetails)tenureSkippedProfiles+=clanIds.length;
+      if(!observedDetails){
+        tenureSkippedProfiles+=clanIds.length;
+        rosterFailureClasses[rosterError]=(rosterFailureClasses[rosterError]||0)+clanIds.length;
+      }
       let scan;
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
@@ -300,10 +312,12 @@ export default {
     }
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
-      ok:errors===0&&tenureWriteErrors===0,tenantProfiles:processed,failedProfiles:errors,
+      ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0,
+      tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
+      rosterFailureClasses,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
-    },errors||tenureWriteErrors?503:200);
+    },errors||tenureWriteErrors||tenureSkippedProfiles?503:200);
   }
 };
