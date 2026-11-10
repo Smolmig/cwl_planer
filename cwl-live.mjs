@@ -304,7 +304,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       const open=details?.open===true;
       const focused=details?.contains(document.activeElement)===true;
       host.innerHTML=(transition?
-        '<p class="plan-postseason-description"><strong>Neue CWL '+season+
+        '<p class="plan-postseason-description"><strong>Neue CWL '+model.newSeason+
         ' noch nicht gestartet:</strong> Die neue Liga wurde erkannt, aber der vorherige Plan '+
         'ist nicht vollständig archiviert. Bitte die letzten Ergebnisse prüfen und '+
         'anschließend „CWL archivieren / neue Saison vorbereiten“ wählen. '+
