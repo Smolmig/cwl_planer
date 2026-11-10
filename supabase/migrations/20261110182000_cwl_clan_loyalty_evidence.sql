@@ -118,6 +118,8 @@ END;
 $loyalty$;
 REVOKE ALL ON FUNCTION public.cwl_capture_clan_loyalty_evidence()
  FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.cwl_capture_clan_loyalty_evidence()
+ TO service_role;
 CREATE TRIGGER cwl_clan_loyalty_evidence_after_update
  AFTER UPDATE ON public.cwl_clan_member_tenure
  FOR EACH ROW
