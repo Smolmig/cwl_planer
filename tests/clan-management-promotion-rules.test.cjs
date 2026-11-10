@@ -21,7 +21,7 @@ const evidence=[{player_tag:"#2PYL",attack_count:10,three_star_count:8,relevant_
 test("Editable defaults are realistic and validated against tenant rules",()=>{
  assert.deepEqual(core.normalizeRules({}),{
   performance_enabled:true,performance_min_days:14,performance_min_attacks:10,
-  performance_three_star_percent:80,performance_lookback_days:90,
+  performance_three_star_percent:80,performance_lookback_days:14,
   loyalty_min_days:60,absence_reset_days:10
  });
  const custom=core.normalizeRules({performance_min_days:21,performance_min_attacks:6,
