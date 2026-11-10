@@ -330,7 +330,15 @@ const cloud={
   if(!data?.ok||!Array.isArray(data.members)||
      normalizeTag(data.clanTag)!==normalizeTag(expectedTag))
    throw Error("Die Clash-Mitgliederantwort ist unvollständig oder gehört zu einem anderen Clan.");
-  return {clanId:expectedClan,members:data.members,checkedAt:Date.now()};
+  // Owner-only, RLS-enforced read: no roster import, no profile saves,
+  // no automatic rank recommendation or editing endpoint.
+  const {data:tenure,error:tenureError}=await sb.from("cwl_clan_member_tenure").select(
+   "player_tag,first_observed_at,last_present_at,last_observed_at,is_present,confirmed_seconds,observed_visits"
+  ).eq("clan_id",expectedClan);
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+  return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
+   tenure:tenureError?null:(tenure||[])};
  },
  isEmergencyEditing:()=>manualRosterPending(),
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
