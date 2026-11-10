@@ -31,7 +31,7 @@ test("P0 guest/account fixes remain present with two-sided CWL opponent detail U
 });
 test("combined UI branch leaves auth storage, cloud format and original offline client unchanged",()=>{
  const version=JSON.parse(read("cloud-version.json"));
- assert.equal(version.version,"v1.16.58");
+ assert.equal(version.version,"v1.16.59");
  assert.match(html,/const DATA_VERSION=9;/);
  assert.match(html,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
