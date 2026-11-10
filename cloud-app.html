@@ -4391,7 +4391,44 @@ function calculatePlan(){
 }
 function renderProfileUI(){const sel=document.getElementById("profileSelect");sel.innerHTML=app.profiles.map(p=>`<option value="${p.id}" ${p.id===state.id?"selected":""}>${esc(p.name)}</option>`).join("")+`<option disabled>────────────</option><option value="__new__">＋ Neues Profil erstellen…</option>`;document.getElementById("activeProfileName").textContent=state.name;document.getElementById("profileCountBadge").textContent=`${app.profiles.length} Profil${app.profiles.length===1?"":"e"}`}
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
-function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=lastPlan.dayPlans.some(p=>p.locked)?`CWL läuft: Team bereits gestarteter Kriege steht fest. Ergebnis noch offen.`:`Plan bereit · ${days} Kriegstage · noch keiner als gespielt gespeichert`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
+function renderKpis(){
+ const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,
+  fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,
+  rot=rotationStats();
+ document.getElementById("kpiParticipants").textContent=participants;
+ document.getElementById("kpiFixed").textContent=fixed;
+ document.getElementById("kpiSlots").textContent=state.config.slots;
+ document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";
+ const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,
+  status=document.getElementById("cwlStatus"),
+  lifecycle=window.CWLCloud?.active?window.CWLCloud.getCwlLifecycle?.():null;
+ const postseason=lifecycle?.mode==="postseason";
+ const between=lifecycle?.mode==="idle"&&
+  document.getElementById("view-plan")?.classList.contains("plan-between-cwl-mode");
+ if(postseason){
+  status.textContent=lifecycle.verifiedSeven?
+   "✓ CWL beendet · 7/7 Clash-Kriege bestätigt · Saisonrückblick unten":
+   "CWL beendet · Abschluss offen · "+played+"/"+days+
+    " gespielt (letzte Ergebnisse noch nicht vollständig bestätigt)";
+ }else if(between){
+  status.textContent="Keine aktive CWL · normale Clankriege im Plan";
+ }else if(played===0){
+  status.textContent=lastPlan.dayPlans.some(p=>p.locked)?
+   "CWL läuft: Team gestarteter Kriege steht fest. Ergebnis noch offen.":
+   "Plan bereit · "+days+" Kriegstage · noch keiner als gespielt gespeichert";
+ }else if(played===days){
+  status.textContent="✓ CWL abgeschlossen · "+played+"/"+days+" gespielt";
+ }else{
+  status.textContent="CWL läuft · "+played+"/"+days+" gespielt"+
+   (prefix<days?" · Nächster Krieg: Tag "+(prefix+1):"");
+ }
+ const manage=document.getElementById("manageCwlBtn");
+ manage.textContent=postseason?"CWL archivieren / neue Saison vorbereiten":
+  played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";
+ const next=document.getElementById("nextDayBtn");
+ next.classList.toggle("hidden",postseason||between||!(played>0&&prefix<days));
+ next.textContent=prefix<days?"↓ Zu Tag "+(prefix+1):"";
+}
 function renderPlanDayWarnings(dp){
  // The global solver may repeat every day's shortage on every day plan.
  // Show a day-specific notice only on its own card, and global conflicts once.
