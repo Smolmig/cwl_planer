@@ -100,7 +100,8 @@ async function currentNormalWar(clanTag,key) {
 async function loadStatus(clanTag,key) {
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
   if(!group || group.state==="notInWar")return {
-    ok:true,active:false,clanTag,rounds:[],currentWar:await currentNormalWar(clanTag,key)
+    ok:true,active:false,groupState:"notInWar",clanTag,rounds:[],
+    currentWar:await currentNormalWar(clanTag,key)
   };
   // Supercell currently returns a full date (e.g. 2026-11-02) for the
   // CWL season. The frontend and saved snapshots use the YYYY-MM month.
@@ -204,6 +205,8 @@ async function loadStatus(clanTag,key) {
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
   return {ok:true,active:true,season,clanTag,rounds,group:groupSummary,
+    groupState, // league lifecycle is distinct from each war's warEnded state
+    currentWar:groupState==="ended"?await currentNormalWar(clanTag,key):null,
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
 // Archive only sanitized group data after the same authenticated clan membership
