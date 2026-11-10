@@ -202,6 +202,58 @@
    (recent?" · noch nicht alle Kriterien bestätigt.":
     " · kein frischer belegter Spendenzuwachs; ungemessene Aktivität bleibt unbekannt."));
  }
+
+ // The fingerprint represents material evidence + the rule threshold that
+ // caused this *specific* review. The routine 30-minute roster timestamp is
+ // intentionally excluded: a poll with identical evidence must not reopen it.
+ function reviewFingerprint(kind,rules,entry,attacks,loyalty){
+  const visits=Number(entry?.observed_visits)||0;
+  if(kind==="return_rank")
+   return JSON.stringify([kind,visits,entry?.rank_before_leave||"",
+    entry?.rank_before_leave_at||""]);
+  if(kind==="performance")
+   return JSON.stringify([kind,visits,
+    rules.performance_min_days,rules.performance_min_attacks,
+    rules.performance_three_star_percent,rules.performance_lookback_days,
+    attacks?.attack_count??null,attacks?.three_star_count??null,
+    attacks?.relevant_wars??null]);
+  if(kind==="loyalty")
+   return JSON.stringify([kind,visits,
+    rules.loyalty_min_days,rules.loyalty_min_donations,
+    rules.loyalty_min_active_days,rules.loyalty_lookback_days,
+    rules.absence_reset_days,
+    loyalty?.observed_positive_donations??null,
+    loyalty?.observed_donation_events??null,
+    loyalty?.observed_donation_days??null,
+    loyalty?.last_positive_donation_at??null,
+    loyalty?.observed_absence_windows??null,
+    loyalty?.longest_observed_absence_seconds??null]);
+  throw Error("Unbekannte Prüfart.");
+ }
+ // Acknowledgments expire ONLY for materially changed evidence; deliberate
+ // exceptions remain active until the owner explicitly reopens them.
+ function applyReviewDecisions(preview,decisions){
+  if(!preview?.ok||!Array.isArray(preview.rows))return preview;
+  const known=new Map((Array.isArray(decisions)?decisions:[]).filter(d=>
+   d&&validTag(d.player_tag)&&
+   ["return_rank","performance","loyalty"].includes(d.review_kind)&&
+   ["open","acknowledged","exception"].includes(d.disposition)
+  ).map(d=>[tag(d.player_tag)+"|"+d.review_kind,d]));
+  let reviewOpen=0,reviewAcknowledged=0,reviewExceptions=0;
+  for(const person of preview.rows){
+   for(const item of person.reviewCases||[]){
+    const saved=known.get(person.tag+"|"+item.kind);
+    item.revision=saved?.revision??null;
+    item.state=saved?.disposition==="exception"?"exception":
+     saved?.disposition==="acknowledged"&&
+     saved.evidence_fingerprint===item.fingerprint?"acknowledged":"open";
+    if(item.state==="open")reviewOpen++;
+    if(item.state==="acknowledged")reviewAcknowledged++;
+    if(item.state==="exception")reviewExceptions++;
+   }
+  }
+  return {...preview,reviewOpen,reviewAcknowledged,reviewExceptions};
+ }
  function buildPreview(members,tenureRows=null,evidenceRows=null,configuredRules=null,loyaltyRows=null){
   if(!Array.isArray(members)||members.length<1||members.length>50)
    return {ok:false,reason:"roster_incomplete",rows:[],total:0};
@@ -240,10 +292,15 @@
   for(const player of rows){
    const entry=byTag.get(player.tag);
    const live=members.find(m=>tag(m.tag)===player.tag);
+   player.reviewCases=[];
    player.tenureNote=tenureLabel(entry);
    player.donationNote=donorLabel(live,entry);
    player.returnRankNote=returnRankLabel(live,entry);
-   if(player.returnRankNote){restoreRankChecks++;player.status="Früheren Rang prüfen";}
+   if(player.returnRankNote){
+    restoreRankChecks++;player.status="Früheren Rang prüfen";
+    player.reviewCases.push({kind:"return_rank",label:"Früherer Ältestenrang",
+     fingerprint:reviewFingerprint("return_rank",verifiedRules,entry)});
+   }
    if(verifiedRules&&Array.isArray(evidenceRows)){
     const check=evaluatePromotion(player,entry,evidenceByTag.get(player.tag),verifiedRules);
     if(check){
@@ -251,7 +308,12 @@
      player.promotionStatus=check.status;
      if(!player.returnRankNote){
       player.status=check.status;
-      if(check.eligible)promotionReviewChecks++;
+      if(check.eligible){
+       promotionReviewChecks++;
+       player.reviewCases.push({kind:"performance",label:"Leistungsprüfung",
+        fingerprint:reviewFingerprint("performance",verifiedRules,entry,
+         evidenceByTag.get(player.tag))});
+      }
      }
     }
    }else if(verifiedRules?.performance_enabled&&player.rank==="member"){
@@ -266,6 +328,9 @@
      player.loyaltyNote=check.status+" · "+check.note;
      if(check.eligible){
       loyaltyReviewChecks++;
+      player.reviewCases.push({kind:"loyalty",label:"Treueprüfung",
+       fingerprint:reviewFingerprint("loyalty",verifiedRules,entry,null,
+        loyaltyByTag.get(player.tag))});
       if(player.status!=="Beförderung prüfen"){
        player.status=check.status;
        promotionReviewChecks++;
@@ -284,7 +349,8 @@
    observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Nur abgeschlossene API-Kriege dieses Clans und belegte Clanzeit zählen; fehlende Daten sind keine negativen Spielerwerte. Alle Rangentscheidungen bleiben manuell."};
  }
  const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel,
-  DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty};
+  DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty,
+  reviewFingerprint,applyReviewDecisions};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  if(root)root.CWLClanManagement=api;
 })(typeof window!=="undefined"?window:null);
