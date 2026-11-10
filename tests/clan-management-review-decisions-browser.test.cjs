@@ -50,7 +50,7 @@ test("Owner acknowledges, reopens and exempts a specific evidence review without
      await page.evaluate(t=>{document.documentElement.dataset.theme=t;},theme);
      await page.evaluate(()=>window.CWLClanManagementView.open());
      await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 offene Prüfhinweise"));
-     assert.match(await page.locator("#clanManagementList").innerText(),/Leistungsprüfung:\\s*Offen/);
+     assert.match(await page.locator("#clanManagementList").innerText(),/Leistungsprüfung:\s*Offen/);
      const calls=await page.evaluate(()=>fetchCalls);
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Quittieren"}).click();
      await page.waitForFunction(()=>saveCalls>=1);
