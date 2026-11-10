@@ -365,12 +365,54 @@ const cloud={
     throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
    if(!loyaltyError&&Array.isArray(summary))loyalty=summary;
   }
+  // Clan-private, current Clash-tag-scoped owner decisions, not a shared
+  // player attribute. An unavailable read disables all review write controls.
+  const {data:reviewDecisions,error:reviewError}=await sb.from("cwl_clan_review_decisions")
+   .select("player_tag,review_kind,disposition,evidence_fingerprint,revision,updated_at")
+   .eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag));
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
   return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
-   evidence:evidenceError?null:(evidence||[]),loyalty};
+   evidence:evidenceError?null:(evidence||[]),loyalty,
+   reviewDecisions:reviewError?null:(reviewDecisions||[])};
  },
  isEmergencyEditing:()=>manualRosterPending(),
+ async saveManagementReview(playerTag,kind,disposition,fingerprint,expectedRevision){
+  const expectedClan=clanId,expectedEpoch=accountEpoch;
+  const linked=clans.find(c=>c.id===expectedClan);
+  if(!this.active||!expectedClan||role!=="owner"||!linked?.clash_tag||!navigator.onLine)
+   throw Error("Nur der Clanführer kann Prüfhinweise für seinen Clan bearbeiten.");
+  const normalizedPlayer=normalizeTag(playerTag);
+  if(!window.CWLClanManagement?.validTag(normalizedPlayer)||
+    !["return_rank","performance","loyalty"].includes(kind)||
+    !["open","acknowledged","exception"].includes(disposition)||
+    typeof fingerprint!=="string"||fingerprint.length<2||fingerprint.length>768)
+   throw Error("Ungültiger Prüfhinweis.");
+  const revision=expectedRevision===null?null:Number(expectedRevision);
+  if(revision!==null&&(!Number.isSafeInteger(revision)||revision<1))
+   throw Error("Prüfstand ungültig. Bitte neu laden.");
+  const clashTag=normalizeTag(linked.clash_tag);
+  const base=sb.from("cwl_clan_review_decisions");
+  const query=revision===null
+   ?base.insert({clan_id:expectedClan,source_clash_tag:clashTag,
+      player_tag:normalizedPlayer,review_kind:kind,disposition,
+      evidence_fingerprint:fingerprint})
+   :base.update({disposition,evidence_fingerprint:fingerprint,
+      revision:revision+1,updated_at:new Date().toISOString()})
+     .eq("clan_id",expectedClan).eq("source_clash_tag",clashTag)
+     .eq("player_tag",normalizedPlayer).eq("review_kind",kind)
+     .eq("revision",revision);
+  const {data,error}=await query
+   .select("player_tag,review_kind,disposition,evidence_fingerprint,revision,updated_at")
+   .maybeSingle();
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner"||
+    normalizeTag(clans.find(c=>c.id===expectedClan)?.clash_tag)!==clashTag)
+   throw Error("Clan oder Sitzung während der Prüfung gewechselt. Bitte neu laden.");
+  if(error||!data)throw Error("Prüfung nicht übernommen – vielleicht wurde parallel geändert. Bitte Clanstand neu laden.");
+  return data;
+ },
  async saveManagementRules(input,expectedRevision){
   const expectedClan=clanId,expectedEpoch=accountEpoch;
   if(!this.active||!expectedClan||role!=="owner"||
