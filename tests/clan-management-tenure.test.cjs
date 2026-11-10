@@ -22,12 +22,12 @@ test("Never treat partial, invalid or repeated API roster as a membership observ
 });
 test("Tenure migration is tenant scoped, service-only write, owner-only read",()=>{
  const sql=file("supabase/migrations/20261110114500_cwl_clan_member_tenure.sql");
- assert.match(sql,/primary key \(clan_id,player_tag\)/);
+ assert.match(sql,/primary key \(clan_id,source_clash_tag,player_tag\)/);
  assert.match(sql,/enable row level security/);
  assert.match(sql,/for select to authenticated using \(private\.cwl_is_owner\(clan_id\)\)/);
  assert.match(sql,/security invoker/);
  assert.match(sql,/current_user <> 'service_role'/);
- assert.match(sql,/grant execute on function public\.cwl_observe_clan_roster\(uuid,text\[\]\) to service_role/);
+ assert.match(sql,/grant execute on function public\.cwl_observe_clan_roster\(uuid,text,text\[\]\) to service_role/);
  assert.match(sql,/not t\.is_present and t\.player_tag=any\(p_tags\)/);
  assert.match(sql,/v_now-t\.last_observed_at <= interval '3 hours'/);
  assert.doesNotMatch(sql,/grant (?:update|insert|delete|all) on public\.cwl_clan_member_tenure to authenticated/i);
