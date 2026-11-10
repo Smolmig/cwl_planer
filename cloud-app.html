@@ -5419,7 +5419,8 @@ window.CWLClanManagementView={
     const note=document.createElement("small");note.textContent=[person.tenureNote,
      person.donationNote,person.returnRankNote,
      person.rank==="unknown"?"Clash-Rang nicht bestätigt":
-      (person.promotionNote?person.status+" · "+person.promotionNote:"Leistungsprüfung noch offen"),
+      (person.promotionNote?(person.promotionStatus||"Leistung prüfen")+" · "+person.promotionNote:
+       loadedRules?.performance_enabled?"Leistungsprüfung noch offen":""),
      person.loyaltyNote
     ].filter(Boolean).join(" · ");
     left.appendChild(note);
