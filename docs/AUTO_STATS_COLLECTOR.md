@@ -28,6 +28,48 @@ is written separately under each corresponding `clan_id`; no existing private
 - On first promotion to main, the scheduler runs once from the signed `push`
   workflow event. Additional scheduled runs follow automatically.
 
+## Independent Supabase scheduler (rollout for #104)
+
+GitHub's requested `:17/:47` runs are best-effort and remained absent for
+over two hours after the 10.11.2026 collector baseline despite a successful
+signed push invocation. **A second independent schedule is therefore needed.**
+
+The independent scheduler consists of two deliberately ordered migrations:
+
+1. `20261110160000_cwl_collector_cron_hmac.sql`: generates a random 256-bit
+   signing key **inside Vault**, exposes only a Boolean
+   `cwl_verify_collector_cron_request` RPC to `service_role` (SECURITY
+   INVOKER; end-user roles explicitly revoked). The original GitHub OIDC
+   signature/identity checks remain unchanged. The Edge function accepts
+   only a separate, strictly shaped HMAC signature made from a UTC timestamp
+   and a fixed context. A request older than 90 s or more than 15 s ahead,
+   malformed, or mixing OIDC and Cron headers is rejected before collection.
+2. `20261110160500_cwl_collector_cron_activate.sql`: enables Supabase
+   `pg_cron` + `pg_net` and registers `5,35 * * * *` **UTC**. The SQL job
+   reads Vault on the server and signs the request; no long-lived credential
+   appears in the code, cron definition, app bundle or GitHub workflow.
+   The HTTP request is sent over HTTPS and existing collector validation,
+   tenant boundaries, deduplication and historical-unknown rules apply.
+
+**Safe promotion order:** green complete regression/authorization checks;
+deploy first migration; verify service-only RPC and nonpublic Vault secret;
+deploy complete Edge function with `verify_jwt=false` (custom identity checks
+remain mandatory); verify invalid Cron requests return HTTP 401 and existing
+signed GitHub-OIDC canary still works; **only then** activate the second
+migration. Confirm a new `collector_verified_trigger=internal_cron` audit,
+HTTP 200, `tenantProfiles=tenureObservedProfiles`, and a second *valid* real
+roster snapshot in the database. GitHub `event=schedule` stays enabled as a
+second independent option and must not be confused with internal Cron.
+
+**Emergency rollback:** `SELECT cron.unschedule('cwl-clan-collector-independent');`
+stops internal Cron without touching the GitHub OIDC workflow, the Vault
+secret, player records, archived wars or Cloud profiles. Preserve database
+migrations and audit history for investigation; never revoke the existing
+GitHub identity or mark missing observations as credited membership time.
+`pg_net` is asynchronous; monitor job/run status and Edge response logs,
+not merely a successful invocation of `cron.schedule`. The read-only
+`scripts/collector-tenure-health.sql` remains the source of evidence.
+
 ## Data and reliability
 
 1. Poll the current normal war and active/ended CWL league group; resolve only

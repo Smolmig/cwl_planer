@@ -1,6 +1,7 @@
 // Secure scheduled collection for every explicitly linked Clash clan.
 // Runs without any browser sessions; writes only clan-scoped stat tables.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
+import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./collector-cron-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
 
@@ -248,14 +249,26 @@ async function markFailure(settings,clanId,checkedAt,code){
 export default {
   fetch:async request=>{
     if(request.method!=="POST")return response({ok:false,error:"method_not_allowed"},405);
-    // The GitHub token is verified against its real issuer's JWKS, *not*
-    // merely base64-decoded. Workflow, repo ID, branch, event and audience
-    // must ALL match. Never log or forward this short-lived credential.
-    const match=/^Bearer ([-_a-zA-Z0-9.]+)$/.exec(request.headers.get("authorization")||"");
-    if(!match||!await verifyCollectorIdentity(match[1]))
-      return response({ok:false,error:"unauthorized"},401);
+    // Two independent fail-closed identities. A request carrying Cron headers
+    // can NEVER downgrade to GitHub OIDC, or combine credentials.
     let settings;
-    try{settings=adminSettings()}catch{return response({ok:false,error:ERROR.config},503)}
+    if(hasCronHeaders(request)){
+      // Reject malformed, stale, future, or mixed-header calls before
+      // consulting privileged environment variables or database RPC.
+      if(!validCronHeaderShape(request))
+        return response({ok:false,error:"unauthorized"},401);
+      try{settings=adminSettings()}catch{return response({ok:false,error:ERROR.config},503)}
+      if(!await verifyIndependentCron(request,settings))
+        return response({ok:false,error:"unauthorized"},401);
+      console.info("collector_verified_trigger=internal_cron");
+    }else{
+      // GitHub's short-lived JWT is verified against its real issuer's JWKS
+      // and exact immutable workflow/repository identity (unchanged).
+      const match=/^Bearer ([-_a-zA-Z0-9.]+)$/.exec(request.headers.get("authorization")||"");
+      if(!match||!await verifyCollectorIdentity(match[1]))
+        return response({ok:false,error:"unauthorized"},401);
+      try{settings=adminSettings()}catch{return response({ok:false,error:ERROR.config},503)}
+    }
     const started=Date.now(),deadline=started+PER_RUN_BUDGET_MS;
     let groups;
     try{groups=await loadLinkedClans(settings)}
