@@ -92,7 +92,7 @@ BEGIN
  ELSIF NOT OLD.is_present AND NOT NEW.is_present
        AND NEW.last_observed_at > OLD.last_observed_at THEN
    v_elapsed := pg_catalog.floor(
-      pg_catalog.extract(epoch FROM NEW.last_observed_at-OLD.last_observed_at)
+      extract(epoch FROM NEW.last_observed_at-OLD.last_observed_at)
    )::bigint;
    UPDATE public.cwl_clan_absence_observations a SET
      last_absent_observed_at=NEW.last_observed_at,
