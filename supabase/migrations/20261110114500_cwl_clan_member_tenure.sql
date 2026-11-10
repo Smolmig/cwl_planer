@@ -30,7 +30,7 @@ create or replace function public.cwl_observe_clan_roster(p_clan uuid,p_clash_ta
 returns integer language plpgsql security invoker set search_path=''
 as $$
 declare
- v_now timestamptz := clock_timestamp();
+ v_now timestamptz;
  v_total integer := coalesce(array_length(p_tags,1),0);
 begin
  if current_user <> 'service_role' then
@@ -48,6 +48,7 @@ begin
 
  -- Same tenant cannot double count two overlapping authorized schedule runs.
  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_clan::text,0));
+ v_now := clock_timestamp();
 
  -- Count ONLY intervals confirmed by two consecutive full snapshots that
  -- both contain the player, with no more than 3 h between observations.
