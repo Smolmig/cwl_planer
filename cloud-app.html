@@ -5351,6 +5351,8 @@ function renderClanManagementReviewSummary(){
    (open?" · "+open+" offene Prüfhinweise":" · keine offenen Prüfhinweise")+
    (confirmed?" · "+confirmed+" quittiert":"")+
    (excepted?" · "+excepted+" Ausnahmen":""):
+   (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"")+
+   (preview.promotionReviewChecks?" · "+preview.promotionReviewChecks+" Beförderungen prüfen":"")+
    " · Prüfentscheidungen derzeit nicht abrufbar");
  summary.hidden=false;
 }
