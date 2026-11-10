@@ -43,7 +43,7 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.locator("#clanRuleDays").fill("15");
     assert.equal(await page.locator("#clanRulesSave").isEnabled(),true);
     await page.locator("#clanRulesSave").click();
-    await page.waitForFunction(()=>window.saveCalls===1);
+    await page.waitForFunction(()=>saveCalls===1);
     await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("15 Tage"));
     assert.equal(await page.locator("#clanManagementCriteria").evaluate(x=>x.open),true);
     assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
