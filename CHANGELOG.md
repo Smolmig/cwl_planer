@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.58] - 2026-11-10
+
+### Clanverwaltung #183 – manuelle Prüfhinweise quittieren und Ausnahmen
+- Unter **Mehr → Clanverwaltung** können berechtigte Cloud-Clan-Owner **tatsächlich qualifizierte** Vorschläge für Leistung, Treue oder früheren Ältestenrang einzeln **quittieren**, als bewusste **Ausnahme** markieren oder **erneut öffnen**. Keine Bearbeitung von Datenlücken, kein Nachfragen bei nicht bestätigten Sachverhalten.
+- Quittierung gilt für den zugrundeliegenden Grenzwert-/API-Nachweisstand; ein normaler 30-Minuten-Collector-Lauf öffnet ihn nicht erneut. Neue Angriffs-/Spendenbelege, Regeländerung oder neuer bestätigter Aufenthalt öffnen einen neuen relevanten Prüfhinweis. **Ausnahmen bleiben**, bis der Owner sie aufhebt.
+- Ergebnisse sind **nur im jeweiligen App-/Clash-Clan sichtbar** (separate Player-/Fall-Schlüssel), per Owner-RLS und Clanverknüpfung gesperrt, beim Speichern revisionsgeprüft. Keine fremden Notizen, kein globaler Player-Status (#212).
+- Die kompakte Aktionszeile speichert direkt ohne erneuten Clash-API-Abruf, verändert weder Clan-/Planprofile noch Spielränge, Archive oder Solver. Hilfe, Versionshinweise und mobile/Desktop-Regression ergänzt.
+- **Offen:** append-only Decision-Audit, Kommentar-/Entschuldigungsworkflow für erst belastbar belegte Missed-Angriffe, vollständiges App-Backup #178 inklusive Entscheidungen, reale Owner-/iOS-/Android- und CWL-UAT #213. Keine automatischen Sanktionen.
+
 ## [1.16.57] - 2026-11-10
 
 ### Clanverwaltung #183 – freiwillige Treueprüfung auf echten Beobachtungen
