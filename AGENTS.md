@@ -15,3 +15,10 @@ Insbesondere:
 - Vor Merge verlässliche Regressionstests, PR und anschließende Live-Checks.
 
 Die komplette Begründung, Prüfcheckliste und Referenzen stehen unter `docs/UX_DESIGN_PRINCIPLES.md`. Bei Widerspruch mit einer konkreten Benutzeranforderung diese bewusst umsetzen und die Abweichung im PR erklären.
+
+
+## Plattformweite Daten & Abschlussabnahme (10.11.2026)
+
+Bei Änderungen an Datenmodell, Collector, Statistiken, PlayerTag-Zuordnung, Clanmitgliedschaft, Aktivitätsbewertung, Backup, Auth/RLS oder Multi-Clan **auch** [docs/CROSS_CLAN_PLAYER_DATA_ARCHITECTURE.md](docs/CROSS_CLAN_PLAYER_DATA_ARCHITECTURE.md) sowie Issues [#212](https://github.com/Smolmig/cwl_planer/issues/212), [#103](https://github.com/Smolmig/cwl_planer/issues/103), [#183](https://github.com/Smolmig/cwl_planer/issues/183) lesen. **Global identifizierbare Spieler/Angriffe und tenantprivate Clanverwaltung sind verschiedene Ebenen.** Niemals fremde Rohstatistik-/Profil-Tabellen per RLS öffnen, nie fremde Owner-Entscheidungen/Notizen teilen; nur berechtigt/vertraglich geprüftes minimales Beobachtungsprojekt vorsehen. Clash-War-Daten ohne vollständigen belegten Angriff/Missed-Log nicht als 0 werten. Wiederkehrer-Rang muss per Clan aktuell aus API kommen; historische Beförderungen bleiben Hinweise. Keine produktive Freigabe/Migration ohne Sicherheits-/Datenqualitätscheck, Staging, Tests und Rollback.
+
+[#213](https://github.com/Smolmig/cwl_planer/issues/213) ist die spätere **vollständige manuelle UAT-Abnahme**. Bei der Abarbeitung des Feature-Backlogs kontinuierlich abnahmefähige Szenarien, Testdaten, bekannte offene iOS-/Android-/Live-CWL-Prüfungen und Reproduktionsschritte dokumentieren. Nach wesentlichen Features die Endcheckliste mit **jetzt ohne CWL testbaren** und **erst bei einer echten künftigen CWL möglichen** Schritten konsolidieren; erfolgreiche CI niemals als Beweis realer CWL-Funktion ausgeben.
