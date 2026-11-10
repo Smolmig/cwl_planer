@@ -4406,7 +4406,10 @@ function renderKpis(){
  const postseason=lifecycle?.mode==="postseason";
  const between=lifecycle?.mode==="idle"&&
   document.getElementById("view-plan")?.classList.contains("plan-between-cwl-mode");
- if(postseason){
+ if(lifecycle?.mode==="transition"){
+  status.textContent="Neue CWL "+lifecycle.newSeason+
+   " erkannt · vorherigen Plan zuerst sicher abschließen und archivieren";
+ }else if(postseason){
   status.textContent=lifecycle.verifiedSeven?
    "✓ CWL beendet · 7/7 Clash-Kriege bestätigt · Saisonrückblick unten":
    "CWL beendet · Abschluss offen · "+played+"/"+days+
@@ -4424,10 +4427,11 @@ function renderKpis(){
    (prefix<days?" · Nächster Krieg: Tag "+(prefix+1):"");
  }
  const manage=document.getElementById("manageCwlBtn");
- manage.textContent=postseason?"CWL archivieren / neue Saison vorbereiten":
+ manage.textContent=postseason||lifecycle?.mode==="transition"?
+  "CWL archivieren / neue Saison vorbereiten":
   played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";
  const next=document.getElementById("nextDayBtn");
- next.classList.toggle("hidden",postseason||between||!(played>0&&prefix<days));
+ next.classList.toggle("hidden",postseason||between||lifecycle?.mode==="transition"||!(played>0&&prefix<days));
  next.textContent=prefix<days?"↓ Zu Tag "+(prefix+1):"";
 }
 function renderPlanDayWarnings(dp){
