@@ -25,6 +25,18 @@ export function assessCwlLifecycle({
  const expectedTag=String(clanTag||"").toUpperCase();
  const valid=entry=>entry?.clanTag===expectedTag&&
   profile?.cwlLiveIgnoredSeason!==entry.season;
+ // A new league must never be rendered against unarchived locks from
+ // another season. Hold a visible transition until a safe archive/reset.
+ if(valid(observed)&&valid(last)&&observed.season!==last.season&&
+    (profile?.locks||[]).some(lock=>lock?.locked)){
+  return {mode:"transition",snapshot:last,oldSeason:last.season,
+   newSeason:observed.season,daysEnded:last.rounds.filter(r=>
+     r.available&&r.state==="warEnded").length,
+   daysMissing:last.rounds.filter(r=>!r.available).length,
+   verifiedSeven:false,canAutoArchive:false,
+   savedDays:profile.locks.filter(l=>l?.locked).length,
+   reason:"previous_season_requires_archive"};
+ }
  const snapshot=valid(observed)?observed:valid(last)?last:null;
  if(!snapshot)return {mode:"idle",snapshot:null,daysEnded:0,daysMissing:7,
   verifiedSeven:false,canAutoArchive:false,reason:"no_verified_season"};
