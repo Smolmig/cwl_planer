@@ -2,6 +2,7 @@
 // Runs without any browser sessions; writes only clan-scoped stat tables.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
+import {rosterTags} from "./collector-roster.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -255,9 +256,21 @@ export default {
     const part=Math.floor(started/7200000)%count;
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
+    let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
       const checkedAt=new Date().toISOString();
+      // A full roster is independent of wars. A missed / partial API response
+      // never becomes an absence observation or retroactive membership credit.
+      let observedTags=null;
+      if(Date.now()<deadline-15000){
+        try{
+          observedTags=rosterTags(await game(
+            "/clans/"+encodeURIComponent(gameTag)+"/members?limit=50",
+            settings.gameKey));
+        }catch{/* No inferred departures on partial, failed or paginated data. */}
+      }
+      if(!observedTags)tenureSkippedProfiles+=clanIds.length;
       let scan;
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
@@ -269,6 +282,14 @@ export default {
           observedWars+=result.warCount;observedAttacks+=result.attacksCount;
           completed+=result.finalCount;processed++;
           if(scan.notes.length)errors++;
+          if(observedTags){
+            try{
+              await rest(settings,"rpc/cwl_observe_clan_roster",{
+                method:"POST",rows:{p_clan:id,p_clash_tag:gameTag,p_tags:observedTags}
+              });
+              tenureObservedProfiles++;
+            }catch{tenureWriteErrors++}
+          }
         }catch(e){
           errors++;
           await markFailure(settings,id,checkedAt,
@@ -279,9 +300,10 @@ export default {
     }
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
-      ok:errors===0,tenantProfiles:processed,failedProfiles:errors,
+      ok:errors===0&&tenureWriteErrors===0,tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
+      tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
-    },errors?503:200);
+    },errors||tenureWriteErrors?503:200);
   }
 };

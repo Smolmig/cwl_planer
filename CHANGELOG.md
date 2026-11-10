@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.16.54] - 2026-11-10
+
+### #183 – Mitgliedschaft nur nach beobachteten Clanlisten
+- Der signiert gestartete Hintergrund-Collector prüft zusätzlich je verknüpftem Clan die **vollständige Clash-Mitgliederliste** (bis 50 Mitglieder) und sichert tenantgetrennt den aktuellen Anwesenheitsstatus, die erste Beobachtung, die letzte Beobachtung, Wiederbeitritte und **bestätigte Mitgliedschaftssekunden**. Bei Austritt bleibt die bisherige bestätigte Zeit erhalten, bei Rückkehr läuft sie weiter. Spieler werden mit stabilem Player-Tag zugeordnet. Das ist ein eigenes Datensystem und verändert niemals CWL-Pläne oder die Ingame-Ränge.
+- Zeit wird konservativ **nur zwischen zwei vollständigen Snapshots, in denen der Spieler anwesend ist, mit maximal 3 Stunden Abstand** addiert. Ein fehlgeschlagener, unvollständiger oder paginierter Abruf schreibt nichts; keine rückwirkende Berechnung aus Kriegen, keine vermutete Eintrittszeit. Mehrstunden-Ausfälle des GitHub-Crons verursachen also bewusst Unterzählung statt erfundene Sicherheit.
+- Der Owner kann unter Mehr → Clanverwaltung die bis dahin bestätigte Zeit und Beobachtungswarnungen neben dem aktuellen Ingame-Rang lesen. Eigene RLS-Tabelle, Owner-SELECT und ausschließlich Service-Rollen-RPC für atomare komplette Clanlisten. Andere Clanmitglieder können diese Daten nicht lesen und Browser können keine Zeit erfinden. Noch keine 14-Tage-Freigabe, Rang-/Kick-Empfehlungen, Offline-Urteile oder Leistungsbewertung; das folgt erst mit separater Konfiguration und Beweisprüfung.
+- Hilfeseite aktualisiert, Collector-Validierung und Sicherheits-/Domainregression ergänzt. Keine Änderungen an Solver, Rollenverwaltung, CWL-Daten, Cloud-Profil, Offline-PWA oder Live-Clash.
+
+
+
 ## [1.16.53] - 2026-11-10
 
 ### Clanverwaltung #183 – erste sichere Rangübersicht
