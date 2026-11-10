@@ -8,6 +8,8 @@ const read=p=>fs.readFileSync(path.join(root,p),"utf8");
 const now=Date.parse("2026-11-10T22:00:00Z");
 const end=day=>new Date(now-(8-day)*86400000).toISOString()
  .replaceAll("-","").replaceAll(":","");
+const validWarDigits="0289PYL";
+const warTag=i=>"#P9Q"+validWarDigits[i];
 const team=(tag,name)=>[
  {tag,name,townHallLevel:18,attacks:[]},
  {tag:"#G9QL",name:"Second",townHallLevel:18,attacks:[]}
@@ -16,7 +18,7 @@ function snapshot(season="2026-11",lastState="warEnded"){
  const teamA=team("#2PYL","United"),teamB=team("#8PYL","Other");
  return {ok:true,active:true,season,clanTag:"#2PYL",
   rounds:Array.from({length:7},(_,i)=>({
-   day:i+1,available:true,warTag:"#P9QL"+i,
+   day:i+1,available:true,warTag:warTag(i),
    state:i===6?lastState:"warEnded",
    teamSize:2,startTime:end(i+1),endTime:end(i+1),
    clan:{tag:"#2PYL",name:"United",stars:30,members:teamA,
@@ -27,7 +29,7 @@ function snapshot(season="2026-11",lastState="warEnded"){
 }
 const locks=(s,played=7)=>Array.from({length:7},(_,i)=>
  ({locked:i<played,source:i<played?"coc-api":undefined,
-   warTag:"#P9QL"+i,season:s}));
+   warTag:warTag(i),season:s}));
 const profile=(s="2026-11",played=7,state="warEnded")=>({
  config:{days:7,slots:2},locks:locks(s,played),
  cwlLive:{season:s,clanTag:"#2PYL",rounds:snapshot(s,state).rounds}
