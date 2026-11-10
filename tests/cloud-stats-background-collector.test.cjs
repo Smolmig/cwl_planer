@@ -126,7 +126,7 @@ test("collector is scheduled and protected; authenticated browser can only read 
  const config=fs.readFileSync(path.join(root,"supabase/config.toml"),"utf8");
  const migration=fs.readFileSync(path.join(root,
    "supabase/migrations/20261106075500_cwl_stats_background_collector_status.sql"),"utf8");
- assert.match(yaml,/cron: '27 \* \* \* \*'/);
+ assert.match(yaml,/cron: '17,47 \* \* \* \*'/);
  assert.match(yaml,/id-token: write/);
  assert.match(yaml,/COLLECT_AUDIENCE: cwl-stats-collector:/);
  assert.doesNotMatch(yaml,/SUPABASE_SERVICE_ROLE_KEY|COC_API_KEY/);
