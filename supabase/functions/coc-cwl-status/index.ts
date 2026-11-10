@@ -209,6 +209,73 @@ async function loadStatus(clanTag,key) {
     currentWar:groupState==="ended"?await currentNormalWar(clanTag,key):null,
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
+// After the official CWL leaguegroup drops to notInWar, safely revisit the
+// last *previously observed* day-seven official war tag for this app clan.
+// This can repair 6/7 only if Supercell STILL exposes a final real war.
+// No backfilling from import, guessed day, a different app clan or old months.
+async function recoverFinalRound(clanId,clanTag,key,ctx) {
+  try{
+    const {data:record,error}=await ctx.supabase.from("cwl_own_lineup_archives")
+      .select("season,day,war_tag,team_size,state")
+      .eq("clan_id",clanId).eq("day",7)
+      .order("season",{ascending:false}).limit(1);
+    if(error||!Array.isArray(record)||!record.length)return null;
+    const prior=record[0],warTag=tag(prior.war_tag);
+    const date=/^(20[0-9]{2})-(0[1-9]|1[0-2])$/.exec(String(prior.season||""));
+    if(!date||!valid(warTag)||prior.day!==7||
+      !["inWar","warEnded"].includes(prior.state)||
+      !Number.isInteger(prior.team_size)||
+      prior.team_size<5||prior.team_size>50)return null;
+    const utc=new Date(),distance=
+      (utc.getUTCFullYear()-Number(date[1]))*12+
+      utc.getUTCMonth()+1-Number(date[2]);
+    if(distance<0||distance>1)return null;
+    const war=await getWar(warTag,key);
+    if(war?.state!=="warEnded"||war.teamSize!==prior.team_size)return null;
+    const own=tag(war.clan?.tag)===clanTag?war.clan:
+      tag(war.opponent?.tag)===clanTag?war.opponent:null;
+    const enemy=own===war.clan?war.opponent:war.clan;
+    if(!own||!enemy||!valid(tag(enemy.tag)))return null;
+    const rosterOkay=side=>{
+      const players=side?.members;
+      if(!Array.isArray(players)||players.length!==prior.team_size)return false;
+      const tags=players.map(m=>tag(m?.tag));
+      return tags.every(valid)&&new Set(tags).size===prior.team_size;
+    };
+    if(!rosterOkay(own)||!rosterOkay(enemy))return null;
+    const match=/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(?:\.\d+)?Z$/
+      .exec(String(war.endTime||""));
+    if(!match)return null;
+    const ended=Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]),
+      Number(match[4]),Number(match[5]),Number(match[6]));
+    if(!Number.isFinite(ended)||ended>Date.now()-60000||
+       ended<Date.now()-45*86400000)return null;
+    const round={day:7,available:true,warTag,state:"warEnded",
+      startTime:String(war.startTime||""),endTime:String(war.endTime||""),
+      teamSize:prior.team_size,clan:safeSide(own),opponent:safeSide(enemy)};
+    // The group archive is an existing RLS-checked same-tenant read.
+    let group=null;
+    const {data:savedGroup,error:groupError}=await ctx.supabase
+      .from("cwl_group_archives").select("group_json")
+      .eq("clan_id",clanId).eq("season",prior.season).maybeSingle();
+    if(!groupError&&savedGroup?.group_json?.season===prior.season&&
+       tag(savedGroup.group_json.clanTag)===clanTag&&
+       Array.isArray(savedGroup.group_json.rounds)&&
+       Array.isArray(savedGroup.group_json.clans))
+      group=savedGroup.group_json;
+    return {ok:true,active:true,recoveredFinalRound:true,
+      groupState:"ended",season:prior.season,clanTag,
+      detailsStatus:"partial",group,
+      rounds:Array.from({length:7},(_,i)=>
+       i===6?round:{day:i+1,available:false})};
+  }catch(e){
+    console.warn("coc-cwl-status: final-round recovery unavailable",{
+      code:String(e?.message||"unavailable").slice(0,80)
+    });
+    return null;
+  }
+}
+
 // Archive only sanitized group data after the same authenticated clan membership
 // check as the live status. Supabase service credentials never reach the browser.
 async function saveGroupArchive(clanId,group) {
@@ -288,7 +355,13 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(prior&&prior.tag===clanTag&&Date.now()-prior.time<120000)
     return Response.json(prior.body,{headers:CORS});
   try{
-    const response=await loadStatus(clanTag,key);
+    const observed=await loadStatus(clanTag,key);
+    // No inference from notInWar: the official final war endpoint must give
+    // full-ended war details to recover a previously known day-seven tag.
+    const recovered=!observed.active&&!observed.pending?
+      await recoverFinalRound(clanId,clanTag,key,ctx):null;
+    const response=recovered?
+      {...recovered,currentWar:observed.currentWar||null}:observed;
     // Archiving is best-effort and never blocks CWL planning on storage errors.
     if(response.active){
       await Promise.allSettled([
