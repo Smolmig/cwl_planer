@@ -183,7 +183,7 @@
    "beobachteter Spendenzuwachs "+total+"/"+rules.loyalty_min_donations+
    " in "+rules.loyalty_lookback_days+" Tagen · "+
    "Spendentage "+days+"/"+rules.loyalty_min_active_days;
-  if(visits>1&&absences!==visits-1)
+  if(rules.absence_reset_days!==null&&visits>1&&absences!==visits-1)
    return unavailable("Daten prüfen",label+
     " · Frühere Rückkehr nicht lückenlos protokolliert; Qualifikation manuell prüfen.");
   if(rules.absence_reset_days!==null&&
