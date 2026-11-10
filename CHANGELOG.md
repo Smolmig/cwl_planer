@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.56] - 2026-11-10
+
+### Clanverwaltung #183 – erste einstellbare Beförderungskriterien pro Cloud-Clan
+- Unter **Mehr → Clanverwaltung** erhält nur der berechtigte App-Clan-Besitzer eine kompakte, standardmäßig eingeklappte Kriterienansicht. Für den Leistungspfad sind **14 nachweislich anwesende Clantage**, **mindestens 10 bewertbare Angriffe**, **80 % Dreierquote** und ein **14-Tage-Angriffsfenster** die anpassbaren Startwerte. Einstellungen werden pro App-Clan mit Besitzer-RLS, Wertebereichen und revisionsgeprüftem Speichern abgelegt – kein Plan- oder Profilwrite.
+- Nur **abgeschlossene API-Archiv-Kriege aus genau diesem App-Clan** liefern den aktuellen Angriffsnachweis. Vorläufige/Import-/fremde Clan-Daten bleiben draußen; Doppelabfragen zählen durch Angriffs-PK nicht mehrfach. Fehlende Nachweise sind **keine 0★-Angriffe**; 1/1 100 % ist keine Stichprobe. Erfolgsfälle ergeben ausschließlich **„Beförderung prüfen“**, nie einen automatischen Clash-Rangwechsel.
+- Aktuelle Ingame-Rolle „Mitglied“ und frische, konservativ bestätigte Clanzeit sind nötig. Elder/CoLeader/Leader bleiben ausgeschlossen; Rückkehr als ehemaliger Elder wird separat angezeigt. Fehlende/alte Quellen blockieren Empfehlungen. Der Archiv-Quellwert „api“ ist allein kein kryptografischer Nachweis unveränderter Rohdaten, deshalb ist jede Entscheidung manuell zu prüfen.
+- **60-Tage-Treuepfad** und **10-Tage-Abwesenheits-Reset (oder nie)** sind bereits als künftige Clanregeln speicherbar, werden aber mangels verlässlicher Langzeit-/Aktivitäts-/Aufenthalts-Evidenz **noch nicht angewendet**. Kein Online-Tracker, keine automatische Strafe, keine neu freigegebene Cross-Tenant-Statistik. Sicheres globales Sharing ist #212; vollständiges Backup einschließlich dieser neuen Clanregeln ist Teil von #178.
+- Hilfe geprüft und im selben Update aktualisiert; Regression für Owner-RLS, Grenzwerte, API-Quellen, 8/10, 1/1, Rollen-/Clanwechsel, mobile Breiten und Theme-Konsistenz.
+
 ## [1.16.55] - 2026-11-10
 
 ### Clanverwaltung #183 – Spenden-Nachweis und Rang vor Rückkehr
