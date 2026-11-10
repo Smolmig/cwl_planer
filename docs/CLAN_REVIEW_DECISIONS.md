@@ -1,6 +1,6 @@
 # Clanverwaltung #183 – Phase 2e1: Prüfhinweise quittieren und Ausnahmen setzen
 
-**Releasekandidat v1.16.58, 10.11.2026.** Die Funktion ist eine **rein manuelle, pro Cloud-App-Clan private Bearbeitung von Empfehlungen**, keine Ingame-Aktion und kein Sanktionen-System.
+**Offiziell live: Cloud v1.16.58 am 10.11.2026.** [PR #220](https://github.com/Smolmig/cwl_planer/pull/220), PR-CI 609/609, Main-CI 609/609, Pages & GitHub Release erfolgreich. Neue Tabelle produktiv mit geprüften Owner-RLS-Rechten, 0 initialen Entscheidungen; 99 Mitgliedschaftszeilen vorhanden. Reale Owner-/iOS-/Android-Praxisabnahme weiterhin offen. Die Funktion ist eine **rein manuelle, pro Cloud-App-Clan private Bearbeitung von Empfehlungen**, keine Ingame-Aktion und kein Sanktionen-System.
 
 ## Was der Owner entscheiden kann
 
