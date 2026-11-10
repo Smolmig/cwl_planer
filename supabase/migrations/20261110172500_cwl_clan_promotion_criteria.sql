@@ -10,7 +10,7 @@ CREATE TABLE public.cwl_clan_management_rules (
     CHECK (performance_min_attacks BETWEEN 1 AND 100),
   performance_three_star_percent integer NOT NULL DEFAULT 80
     CHECK (performance_three_star_percent BETWEEN 0 AND 100),
-  performance_lookback_days integer NOT NULL DEFAULT 90
+  performance_lookback_days integer NOT NULL DEFAULT 14
     CHECK (performance_lookback_days BETWEEN 7 AND 730),
   loyalty_min_days integer NOT NULL DEFAULT 60
     CHECK (loyalty_min_days BETWEEN 1 AND 730),
