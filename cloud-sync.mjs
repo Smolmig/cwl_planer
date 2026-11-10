@@ -546,7 +546,8 @@ const live=createCwlLive({
     window.CWLGroupArchive?.invalidate?.();
   return stats.captureCwl(data);
  },
- context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
+ context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
+   hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
 });
 window.CWLGroupArchive=createCwlGroupArchiveView({
