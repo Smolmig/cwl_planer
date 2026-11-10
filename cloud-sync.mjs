@@ -439,6 +439,7 @@ const cloud={
  },
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
+ getCwlLifecycle:()=>live.getLifecycle(),
  getMedalOverview:()=>live.getMedalOverview(),
  getPlayedAttackResults:()=>live.getPlayedAttackResults(),
  getObservedCwlAttackResults:()=>live.getObservedCwlAttackResults(),
