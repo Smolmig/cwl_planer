@@ -999,7 +999,8 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       // network errors. Even 6/7 is archived AS INCOMPLETE, never fabricated
       // as a completed final war. Cloud owner advances the shared plan once.
       let previous=ctx.profile?.cwlLive;
-      if(data.active&&data.season&&data.clanTag===ctx.clanTag&&
+      if(data.active&&["preparation","inWar"].includes(data.groupState)&&
+         data.season&&data.clanTag===ctx.clanTag&&
          previous?.season&&previous.season!==data.season&&
          ctx.role==="owner"&&ctx.canApply&&typeof ensureCloudSaved==="function"){
         if(storage.archivePreviousCwlForRollover?.(
