@@ -1,7 +1,7 @@
 // Current normal Clan War on the Cloud Plan page.
 // No guesses about the game's "heroic" award: Top-Angriff is a transparent
 // local comparison of the actual stars and damage that Supercell exposes.
-import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.61";
+import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.62";
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({
  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
@@ -24,6 +24,14 @@ const states={preparation:"Vorbereitung",inWar:"Kampftag läuft",warEnded:"Krieg
 const validAttack=a=>a&&Number.isInteger(a.stars)&&a.stars>=0&&a.stars<=3&&
  typeof a.destructionPercentage==="number"&&Number.isFinite(a.destructionPercentage)&&
  a.destructionPercentage>=0&&a.destructionPercentage<=100;
+// Keep both attacks grouped under their player. Clash's global order determines
+// which was first; if order is absent, preserve the server's given order.
+const orderedMemberAttacks=attacks=>{
+ if(!Array.isArray(attacks))return [];
+ const rows=[...attacks];
+ return rows.every(a=>Number.isInteger(a?.order)&&a.order>0)?
+  rows.sort((a,b)=>a.order-b.order):rows;
+};
 const durationText=seconds=>Number.isInteger(seconds)&&seconds>=0&&seconds<=600?
  Math.floor(seconds/60)+":"+String(seconds%60).padStart(2,"0")+" Min.":null;
 export function summarizeCurrentWar(war) {
@@ -124,7 +132,7 @@ export function createCurrentWarOverview({context,refresh}){
   const metrics='<div class="cw-now-kpis">'+
    kpi("Unsere Angriffe",war.state==="preparation"?"–":countText(own),
      war.state==="preparation"?"Vorbereitung":"")+
-   kpi("Angriffe Gegner",war.state==="preparation"?"–":countText(enemy))+
+   kpi("Gegnerische Angriffe",war.state==="preparation"?"–":countText(enemy))+
    kpi("Unsere Zerstörung",war.state==="preparation"?"–":
      percentage(summary.clan.destructionPercentage))+
    kpi("Zerstörung Gegner",war.state==="preparation"?"–":
@@ -136,12 +144,12 @@ export function createCurrentWarOverview({context,refresh}){
    (durationText(a.duration)?' · '+durationText(a.duration):'');
   const highlight=war.state!=="preparation"?
    '<div class="cw-now-highlights">'+
-    kpi("3★ bei uns",String(own.threeStars),
+    kpi("3-Sterne-Angriffe",String(own.threeStars),
       own.attacks.length?"aus "+own.attacks.length+" dokumentierten Angriffen":"")+
     kpi("Ø Zerstörung pro Angriff",
       own.avgDestruction===null?"–":percentage(own.avgDestruction))+
     '<div class="cw-now-top"><small>Top-Angriff</small><strong>'+
-      (own.top?attackLine(own.top):"Noch kein Angriff verfügbar")+'</strong></div>'+
+      (own.top?attackLine(own.top):"Noch kein Angriff erfasst")+'</strong></div>'+
     '</div>':"";
   const playerDetails=(side,targetSide,label,key)=>{
    const targets=new Map(targetSide.members.map(m=>[m.tag,m]));
@@ -149,14 +157,15 @@ export function createCurrentWarOverview({context,refresh}){
     (Number.isInteger(a.mapPosition)?a.mapPosition:999)-
     (Number.isInteger(b.mapPosition)?b.mapPosition:999));
    const entries=members.map(m=>{
-    const attacks=Array.isArray(m.attacks)?m.attacks:[];
-    const results=attacks.map(a=>{
+    const attacks=orderedMemberAttacks(m.attacks);
+    const results=attacks.map((a,index)=>{
      const target=targets.get(a.defenderTag);
      const values=validAttack(a)?
       '<span class="cw-now-stars">'+
       "★".repeat(a.stars)+"☆".repeat(3-a.stars)+'</span> · '+
       percentage(a.destructionPercentage):"Ergebnis noch offen";
-     return '<div class="cw-now-attack">'+values+' gegen '+
+     return '<div class="cw-now-attack"><span class="cw-now-attack-label">'+
+      (index+1)+'. Angriff</span> · '+values+' gegen '+
       esc(target?.name||a.defenderTag||"Ziel unbekannt")+'</div>';
     }).join("");
     return '<div class="cw-now-player"><span class="cw-now-player-name">'+
@@ -185,7 +194,9 @@ export function createCurrentWarOverview({context,refresh}){
    'entscheidet die Gesamtzerstörung. Die Ø Zerstörung bezieht sich auf '+
    'unsere dokumentierten Einzelangriffe, nicht auf den Kriegsstand. '+
    '„Top-Angriff“ ist unsere Rangfolge nach Sternen und Schaden, '+
-   'keine offizielle Auszeichnung aus Clash. Während des Kampfes ändern sich die Werte.</p>'+
+   'keine offizielle Auszeichnung aus Clash. Die einzelnen Angriffe je Spieler '+
+   'erscheinen, sobald Clash sie meldet. Ein noch fehlender Eintrag beweist '+
+   'keinen verpassten Angriff. Während des Kampfes ändern sich die Werte.</p>'+
    '</details>';
   content.innerHTML=headline+metrics+highlight+events+
    playerDetails(own,enemy,"Unser Team","own")+
