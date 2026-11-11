@@ -26,6 +26,7 @@ function makeUi(role,locked,pending=[],draft=null){
    planReview:{season:"2026-11",cycle_id:"one",locked},planSuggestions:pending,
    planReviewPeople:new Map([["vize","Test-Vize"]]),user:{id:"owner"},
    changedSerial:draft,planIsLocked:()=>locked,currentSeason:()=> "2026-11",
+   isConfirmedReviewPause:()=>false,
    storage:{getPlanningState:()=>({ok:true})},
    suggestionChanges:()=>["Testspieler · Einsatzziel: 3 → 4"],
    JSON,Date,
