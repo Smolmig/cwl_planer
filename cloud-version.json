@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.71",
+  "version": "v1.16.72",
   "released": "2026-11-11",
-  "summary": "Nach bestätigtem CWL-Ende wird die alte Planfreigabe ausgeblendet; eine neue CWL bleibt freigebbar."
+  "summary": "Freigaben und Vorschläge gelten nur für die exakt gewählte CWL-Saison und den aktuellen Planzyklus."
 }
