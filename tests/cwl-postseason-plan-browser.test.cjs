@@ -55,11 +55,13 @@ test("Normal CW belongs on Plan, not Einsätze, with both rosters and real attac
     await page.locator("#currentWarCard").waitFor({state:"visible"});
     assert.match(await page.locator("#currentWarContent").innerText(),
      /United Fighters[\s\S]*5[\s\S]*4[\s\S]*Other Clan/);
-    assert.match(await page.locator("#currentWarContent").innerText(),/76,3 % Zerstörung/);
-    assert.match(await page.locator("#currentWarContent").innerText(),/58,1 % Zerstörung/);
+    assert.match(await page.locator("#currentWarContent").innerText(),/76,3 %/);
+    assert.match(await page.locator("#currentWarContent").innerText(),/58,1 %/);
     assert.match(await page.locator("#currentWarContent").innerText(),/1\/4 Angriffe/);
-    const own=page.locator(".cw-now-details").first();
-    const enemy=page.locator(".cw-now-details").last();
+    assert.equal(await page.evaluate(()=>document.getElementById("view-plan").firstElementChild?.id),"currentWarCard",
+      "Live battle card should move to top of Plan");
+    const own=page.locator('.cw-now-details[data-team="own"]');
+    const enemy=page.locator('.cw-now-details[data-team="enemy"]');
     await own.locator("summary").click();
     await enemy.locator("summary").click();
     assert.match(await own.innerText(),/Luki/);
