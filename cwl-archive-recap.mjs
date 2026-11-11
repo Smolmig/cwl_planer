@@ -1,9 +1,9 @@
 // Read-only historical CWL recap inside a saved plan archive.
 // Uses the same three renderers as the Plan page, but only saved season data.
 // Historical group standings remain provisional until every match is verified.
-import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.17.0";
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.17.0";
-import {viewGroup,viewRounds,viewPlayers} from "./cwl-season-view.mjs?v=1.17.0";
+import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.18.0";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.18.0";
+import {viewGroup,viewRounds,viewPlayers} from "./cwl-season-view.mjs?v=1.18.0";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const tabs=[["rounds","Kriegstage"],["group","Tabelle"],["players","Spieler"]];
