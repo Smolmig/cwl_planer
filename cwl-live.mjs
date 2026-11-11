@@ -267,6 +267,42 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       clanTag:ctx.clanTag,now:Date.now()
     });
   };
+  function selectPostseasonTab(host,next,focus=false){
+    const tabs=["group","rounds","players"];
+    if(!tabs.includes(next))return;
+    host.dataset.selectedTab=next;
+    for(const tab of tabs){
+      const chosen=tab===next;
+      const button=host.querySelector('[data-postseason-tab="'+tab+'"]');
+      const panel=host.querySelector('[data-postseason-panel="'+tab+'"]');
+      if(button){
+        button.classList.toggle("active",chosen);
+        button.setAttribute("aria-selected",String(chosen));
+        button.tabIndex=chosen?0:-1;
+        if(chosen&&focus)button.focus({preventScroll:true});
+      }
+      if(panel)panel.hidden=!chosen;
+    }
+  }
+  function attachPostseasonTabs(host){
+    const tabs=host.querySelector(".plan-postseason-tabs");
+    if(!tabs)return;
+    tabs.addEventListener("click",e=>{
+      const selected=e.target.closest("button[data-postseason-tab]");
+      if(selected)selectPostseasonTab(host,selected.dataset.postseasonTab);
+    });
+    tabs.addEventListener("keydown",e=>{
+      if(!["ArrowLeft","ArrowRight","Home","End"].includes(e.key))return;
+      const button=e.target.closest("button[data-postseason-tab]");
+      if(!button)return;
+      const all=["group","rounds","players"];
+      const i=all.indexOf(button.dataset.postseasonTab);
+      const next=e.key==="Home"?all[0]:e.key==="End"?all[2]:
+        all[(i+(e.key==="ArrowRight"?1:2))%3];
+      selectPostseasonTab(host,next,true);e.preventDefault();
+    });
+    selectPostseasonTab(host,host.dataset.selectedTab||"group");
+  }
   function renderPostseason(){
     const view=document.getElementById("view-plan"),
       host=document.getElementById("planCwlPostseason");
@@ -300,8 +336,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       group:group||null
     });
     if(host.dataset.renderKey!==key){
-      const details=host.querySelector(".plan-postseason-players");
-      const open=details?.open===true;
+      const details=host.querySelector(".plan-postseason-disclosure");
+      const warIsLive=document.getElementById("currentWarCard")?.dataset.warState==="inWar";
+      const open=details?details.open:!warIsLive;
       const focused=details?.contains(document.activeElement)===true;
       host.innerHTML=(transition?
         '<p class="plan-postseason-description"><strong>Neue CWL erkannt:</strong> '+
@@ -312,8 +349,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
          ...model,mode:"postseason",season,
          savedDays:model.savedDays??0
         });
-      host.querySelector(".plan-postseason-players")?.toggleAttribute("open",open);
-      if(focused)host.querySelector(".plan-postseason-players summary")?.focus({preventScroll:true});
+      const disclosure=host.querySelector(".plan-postseason-disclosure");
+      if(disclosure)disclosure.open=open;
+      attachPostseasonTabs(host);
+      if(focused)disclosure?.querySelector("summary")?.focus({preventScroll:true});
       host.dataset.renderKey=key;
     }
     return true;
