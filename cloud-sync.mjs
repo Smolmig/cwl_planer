@@ -447,6 +447,9 @@ const cloud={
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
  openNewCycle:()=>openNewPlanCycle(),
+ // Used by authorized automatic CWL rollover to persist the cleared plan
+ // immediately, rather than rely on a delayed browser debounce.
+ flushPendingChanges:()=>ensureSaved(),
  onLocalChange(){
   if(!this.active||hydrating||role==="viewer")return;
   if(!navigator.onLine){msg("Cloud ist offline. Bearbeiten ist nicht möglich; bitte neu laden, wenn die Verbindung zurück ist.",true);blocked=true;return}
