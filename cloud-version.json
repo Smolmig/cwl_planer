@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.70",
+  "version": "v1.16.71",
   "released": "2026-11-11",
-  "summary": "Einsätze zeigt nach einer bestätigten CWL-Pause keine alte aktive Planung mehr, sondern den Weg ins Archiv."
+  "summary": "Planfreigabe ist nach bestätigtem CWL-Ende pausiert und ab der nächsten Vorbereitung wieder verfügbar."
 }
