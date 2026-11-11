@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.70";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.70";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.70";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.70";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.70";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.70";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.71";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.71";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.71";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.71";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.71";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.71";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -80,6 +80,9 @@ async function enableRosterEmergency(){
 
 const currentSeason=()=>new Date().toISOString().slice(0,7);
 const planIsLocked=()=>!!planReview?.locked&&planReview.season===currentSeason();
+// Use the same clan-scoped, verified Clash lifecycle as Plan and Einsätze.
+const isPlanReviewPaused=()=>!!(cloud.active&&clanId&&cloud.hasApiClan?.()&&
+  live.isPlanReviewUnavailable());
 // Never publish an impossible plan as approved, including a pending editor proposal.
 function assertPlanningReady(profile){
  if(!window.CWLPlanningCore?.planCwl)throw Error("Die Einsatzplanung ist nicht verfügbar. Bitte Seite neu laden.");
@@ -118,34 +121,37 @@ function renderMembersReview(){
  const active=cloud.active&&!!clanId;
  bar.hidden=!active;if(!active)return;
  const owner=role==="owner",editor=role==="editor",viewer=role==="viewer";
+ const paused=isPlanReviewPaused();
  const locked=planIsLocked(),draft=editor&&locked&&!!changedSerial;
  const pending=planSuggestions.filter(s=>s.status==="pending").length;
- bar.classList.toggle("has-draft",draft);
- $("membersReviewTitle").textContent=viewer?"Beobachter · Lesemodus":
+ bar.classList.toggle("has-draft",!paused&&draft);
+ $("membersReviewTitle").textContent=paused?"Derzeit keine CWL-Planung":viewer?"Beobachter · Lesemodus":
    locked?"Plan freigegeben":"Gemeinsam bearbeitbar";
- $("membersReviewHint").textContent=viewer?
+ $("membersReviewHint").textContent=paused?
+   "Die letzte CWL ist beendet. Mit der nächsten CWL-Vorbereitung ist die Planfreigabe wieder verfügbar.":viewer?
    "Du kannst die Mitglieder, Einsätze und Tagesregeln ansehen, aber nicht verändern.":
    owner?(locked?"Nur du bearbeitest direkt. Vize reichen Änderungen als Vorschlag ein.":
      "Vize können mitplanen. Du kannst die Planung jederzeit freigeben und für Vize sperren."):
    locked?(draft?"Dein Entwurf ist noch nicht eingereicht. Erst nach Freigabe durch den Clanführer werden Änderungen übernommen.":
       "Du kannst Einstellungen ändern und als Vorschlag an den Clanführer senden."):
      "Deine Änderungen werden direkt für den Clan gespeichert.";
- const submit=$("membersSubmitSuggestion");submit.hidden=!(editor&&locked);
+ const submit=$("membersSubmitSuggestion");submit.hidden=paused||!(editor&&locked);
  submit.disabled=!draft||storage.getPlanningState?.()?.ok===false;
  submit.title=!draft?"Ändere zuerst Mitglieder oder Tagesregeln.":submit.disabled?
    "Bitte Konflikte in der Planung beheben.":"Änderungsvorschlag dem Clanführer vorlegen.";
- const open=$("membersReviewOpenPlan");open.hidden=!owner;
+ const open=$("membersReviewOpenPlan");open.hidden=paused||!owner;
  const expanded=!!$("membersReviewManageHost")&&!$("membersReviewManageHost").hidden;
- open.setAttribute("aria-expanded",String(owner&&expanded));
+ open.setAttribute("aria-expanded",String(owner&&!paused&&expanded));
  if(owner)open.textContent=expanded?"Freigabe schließen":
    pending?pending+" offene Vorschläge prüfen":locked?"Freigabe verwalten":"Planfreigabe ansehen";
 }
 function renderPlanReview(){
  const panel=$("planReviewPanel");if(!panel)return;
  const active=cloud.active&&!!clanId&&role!=="viewer";
- panel.hidden=!active;
+ const paused=active&&isPlanReviewPaused();
+ panel.hidden=!active||paused;
  renderMembersReview();
- if(!active){if($("membersReviewManageHost")?.contains(panel))restorePlanReviewToPlan();return;}
+ if(!active||paused){if($("membersReviewManageHost")?.contains(panel))restorePlanReviewToPlan();return;}
  const locked=planIsLocked(),owner=role==="owner",editor=role==="editor";
  const inMembers=!!$("membersReviewManageHost")?.contains(panel);
  const disclosure=$("planReviewDisclosure");
@@ -240,21 +246,27 @@ async function loadPlanReview(expected=clanId){
 }
 async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
+ if(isPlanReviewPaused())throw Error("Die CWL ist beendet. Die nächste Planung kann wieder freigegeben werden.");
+ const expectedClan=clanId,expectedEpoch=accountEpoch,expectedCycle=planReview?.cycle_id;
+ const stillCurrent=()=>clanId===expectedClan&&accountEpoch===expectedEpoch&&
+   planReview?.cycle_id===expectedCycle&&!isPlanReviewPaused()&&role==="owner";
  const lock=!planIsLocked();
  if(lock)assertPlanningReady(storage.getProfile());
  await ensureSaved();
+ if(!stillCurrent())throw Error("Die CWL-Planung hat sich geändert. Bitte erneut prüfen.");
  const ok=await storage.confirmAction(lock?
     "Die aktuelle Planung für diese CWL freigeben? Vize können danach nur noch Vorschläge einreichen.":
     "Die Planung wieder zur gemeinsamen Bearbeitung öffnen? Ausstehende Vorschläge werden abgeschlossen.",
     {title:lock?"CWL-Plan freigeben":"Plan wieder öffnen",confirmText:lock?"Plan freigeben":"Bearbeitung öffnen"});
  if(!ok)return;
- const {error:err}=await sb.rpc("cwl_set_plan_lock",{p_clan:clanId,p_locked:lock,p_new_cycle:false});
+ if(!stillCurrent())throw Error("Die CWL-Planung hat sich geändert. Bitte erneut prüfen.");
+ const {error:err}=await sb.rpc("cwl_set_plan_lock",{p_clan:expectedClan,p_locked:lock,p_new_cycle:false});
  if(err)throw err;
  await loadPlanReview();
  storage.toast(lock?"✓ CWL-Plan freigegeben":"✓ Plan wieder zur Bearbeitung geöffnet");
 }
 async function submitPlanSuggestion(){
- if(!clanId||role!=="editor"||!planIsLocked()||!changedSerial)throw Error("Kein offener Änderungsvorschlag.");
+ if(!clanId||role!=="editor"||!planIsLocked()||!changedSerial||isPlanReviewPaused())throw Error("Kein offener Änderungsvorschlag.");
  const proposal=JSON.parse(changedSerial);
  // Legacy profiles are normalized in memory; preserve the server's exact
  // protected snapshots so an unrelated edit cannot invalidate a suggestion.
@@ -267,6 +279,7 @@ async function submitPlanSuggestion(){
  const changes=suggestionChanges({suggested_profile:proposal});
  if(!await storage.confirmAction(changes.slice(0,8).join("; ")+"\n\nDiesen Vorschlag dem Clanführer zur Prüfung vorlegen?",
    {title:"Änderung vorschlagen",confirmText:"Vorschlag einreichen"}))return;
+ if(isPlanReviewPaused())throw Error("Die CWL-Planung ist inzwischen beendet.");
  const {error:err}=await sb.rpc("cwl_submit_plan_suggestion",{p_clan:clanId,
     p_base_revision:revision,p_profile:proposal});
  if(err)throw err;
@@ -276,6 +289,7 @@ async function submitPlanSuggestion(){
 }
 async function decidePlanSuggestion(id,action){
  if(!clanId||!["owner","editor"].includes(role))throw Error("Keine Berechtigung.");
+ if(isPlanReviewPaused())throw Error("Für diese CWL können keine Vorschläge mehr geändert werden.");
  if(action==="withdraw"){
    const {error}=await sb.rpc("cwl_withdraw_plan_suggestion",{p_suggestion:id});
    if(error)throw error;
@@ -292,6 +306,7 @@ async function decidePlanSuggestion(id,action){
      "Diesen Änderungsvorschlag ablehnen?",
      {title:action==="accept"?"Vorschlag übernehmen":"Vorschlag ablehnen",
        confirmText:action==="accept"?"Übernehmen":"Ablehnen"}))return;
+   if(isPlanReviewPaused())throw Error("Die CWL-Planung ist inzwischen beendet.");
    const {error}=await sb.rpc("cwl_resolve_plan_suggestion",{p_suggestion:id,p_accept:action==="accept"});
    if(error)throw error;
    if(action==="accept")await loadCloudProfile(true);
@@ -552,6 +567,7 @@ const live=createCwlLive({
  onStatus:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
+  renderPlanReview();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
  },
@@ -1951,7 +1967,7 @@ function restorePlanReviewToPlan(){
 }
 function openPlanReviewInMembers(){
  const panel=$("planReviewPanel"),host=$("membersReviewManageHost"),details=$("planReviewDisclosure");
- if(!panel||!host||!details||!cloud.active||role!=="owner")return;
+ if(!panel||!host||!details||!cloud.active||role!=="owner"||isPlanReviewPaused())return;
  // The initial button is also the dismiss control: no orphan Schließen
  // button, duplicated heading, extra border or scroll jump.
  if(!host.hidden){restorePlanReviewToPlan();return}
