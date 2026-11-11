@@ -303,9 +303,20 @@ async function openNewPlanCycle(){
  if(!cloud.active)return;
  if(role!=="owner"&&planIsLocked())throw Error("Nur der Clanführer kann einen freigegebenen CWL-Plan zurücksetzen.");
  if(role!=="owner")return;
+ const expectedClan=clanId,expectedEpoch=accountEpoch;
+ if(!expectedClan||!navigator.onLine)throw Error("Die Cloud-Verbindung ist gerade nicht verfügbar.");
  await ensureSaved();
- const {error:err}=await sb.rpc("cwl_set_plan_lock",{p_clan:clanId,p_locked:false,p_new_cycle:true});
+ // Never send a new-cycle mutation to another active clan after an awaited
+ // save: owner privileges and exact app-clan identity must still match.
+ if(!cloud.active||role!=="owner"||
+    clanId!==expectedClan||accountEpoch!==expectedEpoch)
+  throw Error("Der Clan wurde gewechselt. Die neue CWL wurde hier nicht gestartet.");
+ const {error:err}=await sb.rpc("cwl_set_plan_lock",{
+  p_clan:expectedClan,p_locked:false,p_new_cycle:true
+ });
  if(err)throw err;
+ if(!cloud.active||role!=="owner"||
+    clanId!==expectedClan||accountEpoch!==expectedEpoch)return;
  await loadPlanReview();
 }
 
