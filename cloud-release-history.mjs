@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "patch",
     "date": "2026-11-11",
     "title": "Freigaben bei Saisonwechsel sicherer",
-    "description": "Freigaben und Änderungsvorschläge beziehen sich nun auf den genauen gemeinsamen Planzyklus. Veraltete Browser-Tabs können nach einem neuen CWL-Start nicht versehentlich den neuen Plan verändern. Ein belegter beendeter letzter CWL-Krieg blockiert alte Freigaben."
+    "description": "Alte Browser-Tabs können nach einem CWL-Neustart keine Freigaben oder Vorschläge in den neuen Plan übernehmen. Ein von Clash belegter letzter Kriegstag sperrt außerdem die Freigabe der alten Saison."
   },
   {
     "version": "v1.16.71",
