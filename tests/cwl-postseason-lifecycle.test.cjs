@@ -105,9 +105,12 @@ test("Plan shows actual CWL results inline with same season report; incomplete r
  const html=renderInlineCwlPostseason(p,lifecycle.snapshot,null,lifecycle);
  assert.match(html,/CWL-RÜCKBLICK/);
  assert.match(html,/6\/7 Tage als gespielt bestätigt/);
- assert.match(html,/Gruppenstand/);
- assert.match(html,/Ergebnisse der Kriegstage/);
- assert.match(html,/Spielerleistungen dieser CWL ansehen/);
+ assert.match(html,/data-postseason-tab="rounds"/);
+ assert.match(html,/data-postseason-tab="group"/);
+ assert.match(html,/data-postseason-tab="players"/);
+ assert.match(html,/Kriegstage/);
+ assert.match(html,/Tabelle/);
+ assert.match(html,/Spieler/);
  assert.match(html,/Runde 7/);
  assert.doesNotMatch(html,/Saison ansehen/);
  assert.equal(renderInlineCwlPostseason(p,lifecycle.snapshot,null,{mode:"planning"}),"");
