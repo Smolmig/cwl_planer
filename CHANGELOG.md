@@ -12,6 +12,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.61] - 2026-11-11
+
+### Plan-Startseite: Live-CW zuerst, letzte CWL kompakt, neue CWL automatisch
+- **Nach der CWL:** Die bisherigen Resultate stehen in einer einzigen ruhigen, aufklappbaren Gruppe mit **Kriegstage / Tabelle / Spieler**. Lange Entwickler-Erklärungen wurden vereinfacht; ausführliche Wertungs- und Datenhinweise sind über kleine aufklappbare Erklärungen bzw. Hilfe zugänglich. Gewählter Reiter und geöffnete Ansicht bleiben beim Live-Refresh erhalten.
+- **Vorbereitung eines normalen CW:** Letzte CWL bleibt aufgeklappt, darunter folgt die aktuelle gegnerische Aufstellung. **Bei Beginn des Kampftags:** Live-CW mit Sternen, Zerstörungs-Prozenten, Angriffszahlen und beiden Clans nach ganz oben; CWL-Rückblick klappt genau einmal ein, kann aber manuell geöffnet und offen gehalten werden.
+- **Mehr Live-CW-Daten:** 3★-Angriffe, durchschnittliche dokumentierte Angriffszerstörung (ausdrücklich nicht die Kriegs-Gesamtzerstörung), **Top-Angriff** nach echten Einzelangriffen (keine offizielle heroische Clash-Auszeichnung), letzte Angriffe nach offiziell gemeldeter Reihenfolge, Dauer, Kartenpositionen, beide Aufstellungen und Ziele. Kein Replaysupport und keine erfundenen API-Felder. Sieger bleibt bis Kriegsende offen; bei gleichen Sternen ist der echte Kriegszerstörungswert maßgeblich.
+- **Cloud + verknüpfter Clash-Clan:** Den manuellen „Neue CWL starten“-Button vollständig entfernen. Sobald die API eine neue Saison meldet, archiviert ein berechtigter Cloud-Owner zuerst die vorherige Saison **auch bei 6/7** mit echtem Teilstand; nach erfolgreicher Cloud-Speicherung und sicherem neuem Planzyklus erscheint automatisch der neue CWL-Plan. Es werden keine unbekannten Kriegstage nachgetragen; bei Speicher-/Berechtigungsproblemen bleibt die alte Planung geschützt. Offline-/Gastvariante bleibt manuell. Für schon eingeloggte Nicht-Owner ist weiterhin der erfolgreiche Owner-Zyklus notwendig, bevor gemeinsame Planlocks umgestellt werden.
+- Alle sichtbaren Bezeichnungen und die Hilfe für diese Plan-Ansicht nach UX-Prinzipien überarbeitet. Weiterer appweiter sprachlicher Audit der übrigen Tabs bleibt als eigener Backlog nötig; internationale Sprachpflege #177 unverändert.
+- Regression für 6/7-/7/7-Automatik, Owner/Cloudfehler, Tab-/Disclosure-Persistenz, reale Normal-War-Fakten, 320/390/430/1280 px und Gold-/Dunkel-/Hell-Theme. Keine Migration, kein Solver- oder Sanktions-Write.
+
 ## [1.16.60] - 2026-11-11
 
 ### CWL-Abschluss-Hotfix: Bereits archivierte Saisons nur einmal sichern
