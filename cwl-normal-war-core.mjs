@@ -51,7 +51,7 @@ export function summarizeNormalWar(war,now=Date.now()){
   const n=numberOrNull(side?.attacks);
   return n!==null&&n>=attacks.length&&n<=capacity?n:attacks.length;
  };
- const ourUsed=officialCount(own,ours),enemyUsed=officialCount(enemy,theirs);
+ const ownUsed=officialCount(own,ours),enemyUsed=officialCount(enemy,theirs);
  const top=[...ours].sort(sortByPerformance)[0]||null;
  const strongest=top?{...top,
   comparison:"Sterne · Zerstörung (keine offizielle Heldentat-Wertung)"}:null;
@@ -68,7 +68,7 @@ export function summarizeNormalWar(war,now=Date.now()){
  const remaining=validDate!==null&&validDate>now?validDate-now:null;
  const groups=[
   {key:"ours",name:String(own.name||"Unser Clan"),members:ourMembers,
-   attacks:ours,used:ourUsed,stars:numberOrNull(own.stars),
+   attacks:ours,used:ownUsed,stars:numberOrNull(own.stars),
    destruction:validPercent(own.destructionPercentage)?own.destructionPercentage:null},
   {key:"theirs",name:String(enemy.name||"Gegner"),members:enemyMembers,
    attacks:theirs,used:enemyUsed,stars:numberOrNull(enemy.stars),
@@ -77,7 +77,7 @@ export function summarizeNormalWar(war,now=Date.now()){
  return {state:war.state,capacity,per,teamSize:war.teamSize,
   isBattle,isPreparation,isFinished:war.state==="warEnded",
   groups,
-  ownUsed,enemyUsed,ownOpen:Math.max(0,capacity-ourUsed),
+  ownUsed,enemyUsed,ownOpen:Math.max(0,capacity-ownUsed),
   enemyOpen:Math.max(0,capacity-enemyUsed),
   ownThreeStars:ours.filter(a=>a.stars===3).length,
   enemyThreeStars:theirs.filter(a=>a.stars===3).length,
