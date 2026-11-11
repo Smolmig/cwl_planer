@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.62",
+  "version": "v1.16.63",
   "released": "2026-11-11",
-  "summary": "Normaler CW zwischen zwei CWLs: erster und zweiter Angriff pro Spieler in belegter Reihenfolge, verständlichere Beschriftungen und aktualisierte Hilfe."
+  "summary": "CWL/Cloud Start ruhiger: bestehende Anmeldung und erster Clash-Status vor dem Anzeigen, unveränderte normale CW-Angriffe ohne Neuzeichnen; Hilfe aktualisiert."
 }
