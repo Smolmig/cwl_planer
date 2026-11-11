@@ -47,7 +47,7 @@ export function summarizeNormalWar(war,now=Date.now()){
    ourLookup.get(a.defenderTag).townHallLevel:null
  }));
  const isBattle=war.state==="inWar",isPreparation=war.state==="preparation";
- const officialCount=side,attacks=>{
+ const officialCount=(side,attacks)=>{
   const n=numberOrNull(side?.attacks);
   return n!==null&&n>=attacks.length&&n<=capacity?n:attacks.length;
  };
