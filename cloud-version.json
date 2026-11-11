@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.69",
+  "version": "v1.16.70",
   "released": "2026-11-11",
-  "summary": "Mehr, CWL-Archiv und Clan & Konto: verständlichere Funktionen, Sicherungen und App-Rollen."
+  "summary": "Einsätze zeigt nach einer bestätigten CWL-Pause keine alte aktive Planung mehr, sondern den Weg ins Archiv."
 }
