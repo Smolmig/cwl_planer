@@ -42,7 +42,9 @@ Der v1.16.59-Owner-Autoabschluss archiviert bestätigte 7/7 bereits. Der alte ma
 - **Neue API-CWL = neuer Plan**, ohne manuellen Cloud-Neustart-Button. Auf einer autorisierten Cloud-Owner-Sitzung wird die vorige Saison **idempotent** archiviert, auch wenn z. B. nur 6/7 echte Tage abgeschlossen sind. Dieses Archiv wird als **unvollständig** gekennzeichnet, ohne Tag 7 zu erfinden. Erst nach erfolgreicher Sicherung und Cloud-Planzyklus-Freigabe darf die neue Saison starten; bei Fehlern bleibt der alte Plan erhalten. Alle anderen Cloud-Rollen sehen den aktualisierten Plan nach Owner-Commit; es existiert weiterhin **kein serverseitiger garantierter Hintergrund-Owner-Zyklus bei komplett geschlossener App**.
 - **Hilfe/Textpflege:** Sichtbare Beschriftungen auf der Startseite kurz und handlungsorientiert; Wertung, Datenlücken und die fehlende offizielle Heroic-Kennzahl in die Hilfe/kleine Erklärungen. Der ganzheitliche sprachliche Audit aller übrigen Seiten ist weiterhin eine gesonderte Aufgabe.
 
-## CW-Einzelangriffe klarer – v1.16.62 (Folgepatch)
+## CW-Einzelangriffe klarer – v1.16.62 (offiziell live, PR #231)
+
+**Release-Nachweise:** [PR #231](https://github.com/Smolmig/cwl_planer/pull/231), PR-CI **631/631** (Run 42988581810), Main-CI erfolgreich (42988896889), Pages erfolgreich (42988895329), offizieller Release erfolgreich (42989165213), [v1.16.62](https://github.com/Smolmig/cwl_planer/releases/tag/v1.16.62). Echte Besitzer-/Clash-Live-Abnahme #213 steht weiterhin aus.
 
 Normaler CW: beide zulässigen Einzelangriffe je Spieler werden **unter genau einer Spielerzeile** gezeigt, mit „1. Angriff“ und „2. Angriff“, jeweiligem Ziel, Sternen und Zerstörung. Die bekannte Fortschrittszahl 0/2, 1/2 oder 2/2 bleibt erhalten; der zweite Treffer erscheint erst bei tatsächlicher API-Meldung. Nur bei zwei gültig gelieferten globalen `order`-Zahlen sortieren wir nach Angriffsreihenfolge. Fehlende Reihenfolge wird **nicht geschätzt**. Auch beim beendeten Krieg ist 1/2 für sich allein kein belegter verpasster Angriff. Helferklärung und kompakte Beschriftungen sind im Produkt enthalten; keine Änderung an Edge/DB/Wertung, neuer CWL, Archiv oder Planung.
 
