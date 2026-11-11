@@ -24,7 +24,8 @@ test("More Help is an actual accessible view, not an overlay or a demo link",()=
  assert.doesNotMatch(html,/href="\.\/cwl-demo\.html"/);
  assert.match(html,/Rotation & Einsatzziel/);
  assert.match(html,/Gemeinsamer Cloud-Clan:/);
- assert.match(html,/Wechselhinweise vergleichen Clash mit der Empfehlung/);
+ assert.match(html,/Clash zeigt die aktuelle Aufstellung/);
+ assert.match(html,/Vorbereitung|Kriegstag/);
 });
 test("More -> Help -> Back, header help and settings keep the correct navigation selected across viewport and themes",{timeout:120000},async()=>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
