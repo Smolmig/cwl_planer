@@ -16,6 +16,7 @@ test("server uses exact league group membership and count to determine the last 
  assert.match(migration,/\$\.rounds\[6\]\.matches\[\*\]/);
  assert.match(migration,/@\.state == "warEnded"/);
  assert.match(migration,/@\.available == true/);
+ assert.match(migration,/g\.group_json->>'season'=g\.season/);
  assert.match(migration,/upper\(g\.clan_tag\)=upper\(c\.clash_tag\)/);
 });
 test("five-war fix cannot modify tenant data, planning cycles or roles",()=>{
