@@ -19,7 +19,7 @@ export const releaseHistory = [
     "version": "v1.16.64",
     "date": "2026-11-11",
     "title": "Statistiken klarer erklärt",
-    "description": "Spielerform und Statistikübersblick verwenden kürzere, verständlichere Begriffe. Hinweise zur Aussagekraft weniger Angriffe bleiben erhalten."
+    "description": "Spielerform und Statistiküberblick verwenden kürzere, verständlichere Begriffe. Hinweise zur Aussagekraft weniger Angriffe bleiben erhalten."
   },
   {
     "version": "v1.16.63",
