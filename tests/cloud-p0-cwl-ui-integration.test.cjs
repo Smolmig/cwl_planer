@@ -40,6 +40,7 @@ test("combined UI branch leaves auth storage, cloud format and original offline 
  assert.match(api,/coc-cwl-status|withSupabase/);
  assert.doesNotMatch(live,/sb\.auth\.signOut\(|storage\.saveJson\(/);
  const auditTables=[...live.matchAll(/sb\.from\("([^"]+)"\)/g)].map(match=>match[1]);
- assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions"],
-   "CWL live may only access the dedicated owner-decision audit table");
+ assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions","cwl_group_archives"],
+   "CWL live may only read the owner-decision audit and same-clan RLS season archive");
+ assert.match(live,/\.eq\("clan_id",id\)\.eq\("season",previous\.season\)/);
 });
