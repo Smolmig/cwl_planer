@@ -15,7 +15,7 @@ const dateLabel=season=>{const [year,month]=String(season).split("-").map(Number
  return Number.isFinite(date.valueOf())?date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"}):season};
 const stateLabel=round=>round.state==="warEnded"?"Abgeschlossen":round.state==="inWar"?"Läuft":round.state==="preparation"?"Vorbereitung":"Noch offen";
 const score=round=>round.state==="preparation"?"– : –":stars(round.own?.stars??round.clan?.stars)+" : "+stars(round.opponent?.stars);
-function viewGroup(s,g){
+export function viewGroup(s,g){
  if(g){
    const intro='<div class="season-info"><strong>'+(g.complete?"Gruppenergebnis":"Gruppenstand · vorläufig")+'</strong>'+
      '<p>'+g.ended+' von '+g.expected+' Kriegen beendet'+
@@ -37,7 +37,7 @@ function viewGroup(s,g){
    '<p class="season-empty">Noch keine Gegner von Clash freigegeben.</p>';
  return intro+list;
 }
-function viewRounds(s,g){
+export function viewRounds(s,g){
  if(g?.expected){
    return '<div class="season-info"><p>'+g.known+' von '+g.expected+
      ' Begegnungen verfügbar.</p></div>'+ 
@@ -68,7 +68,7 @@ function viewRounds(s,g){
      '<div class="season-round-meta">'+total+'<span>'+attacks+'</span></div></div>';
  }).join("")+'</div>';
 }
-function viewPlayers(s){
+export function viewPlayers(s){
  if(!s.players.length)return '<p class="season-empty">Spielerleistungen erscheinen, sobald ein CWL-Krieg begonnen hat und seine Aufstellung verfügbar ist. Vorbereitungsteams werden noch nicht als Einsatz gezählt.</p>';
  return '<div class="season-info"><p>So haben unsere Spieler in dieser CWL abgeschnitten.</p><details class="season-explain"><summary>Welche Angriffe zählen?</summary><p>Nur bekannte CWL-Angriffe dieser Saison. Laufende Kriege zeigen Zwischenstände; weitere Filter findest du unter „Statistik“.</p></details></div>'+
  '<div class="season-player-scroll"><table class="season-player-table"><thead><tr><th>Spieler</th><th>Kriege</th><th>Angriffe</th><th>Sterne</th><th>Ø</th></tr></thead><tbody>'+
