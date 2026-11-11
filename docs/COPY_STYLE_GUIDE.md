@@ -44,6 +44,14 @@
 
 Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusmeldungen und Erklärungen im Quelltext; sie ist **keine** abgeschlossene Nutzer-UAT. In jedem Teilpaket die bestehende **Hilfe-Seite aktualisieren**, keine Berechnung/Cloud-Daten/Clash-Aufstellung ändern und die reale Geräteabnahme #213 offen lassen.
 
+## Einsätze nach beendeter CWL (v1.16.70, erste Etappe #187)
+
+- **Keine scheinbar laufende Liga:** Bei verifiziertem Postseason-/Übergangsstatus oder bestätigter CWL-Pause zeigt der Einsätze-Tab die ruhige Meldung „Aktuell keine CWL-Einsätze“ und „CWL-Archiv ansehen“. Die Filter, alten Spielerbalken und 8★-Ziele sind dann nicht interaktiv sichtbar.
+- **Nicht nach Datum schätzen:** Die Oberfläche richtet sich nach derselben CWL-Lifecycle-Darstellung wie der Plan. Monat, fehlende Online-Verbindung und ein temporär unvollständiger Clash-Abruf alleine belegen weder Ende noch neue Saison.
+- **Neue Planung:** Sobald die bestehende Saisonlogik wieder einen tatsächlich neuen Plan anzeigt – bereits vor dem ersten Kriegstag – werden die aktuellen Einsätze regulär sichtbar. Der Archivlink ist auch für Beobachter lesbar.
+- **Alte Ergebnisse:** Bestehende Gruppenergebnisse und Plan-Archive sind weiter verfügbar; keine historischen Sterne/Ziele aus aktuellen Spielerstatistiken nachberechnen. Die vollständige historische Einsatzmatrix und gemeinsamer Freigabe-Lifecycle sind weiterhin offene Folgearbeiten #187/#37/#227.
+- **Berechnungs- und Datensicherheit:** Nur Anzeige-/Navigationsebene geändert. Keine neuen Datenfelder, kein Solver-/Statistik-/RLS-/Backend-Eingriff; Offline-PWA separat.
+
 ## Einsätze & Mitglieder (v1.16.67)
 
 - **Klarer Soll-Ist-Vergleich:** „Im Plan: 3/4 Einsätze“ ist eine aus dem aktuellen Plan abgeleitete Anzahl, „Ziel: 3/4 Einsätze“ eine ausdrücklich festgelegte Vorgabe. Beide bleiben offen, solange nur drei Angriffe belegt sind. Geplante Einsätze zählen nicht automatisch als ausgeführt.

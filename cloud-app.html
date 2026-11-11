@@ -1100,6 +1100,16 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #manageCwlBtn[hidden]{display:none!important}
 /* Keep the current war as the single headline during battle day.
    Outside battle day the last CWL stays expanded above the next preparation. */
+/* The live season is the only source for active deployment rows. The validated
+   lifecycle already switches the Plan between playing, post-season and idle.
+   No historic rows are deleted or reinterpreted here. */
+#view-summary .summary-offseason{display:none}
+#view-plan.plan-postseason-mode ~ #view-summary .summary-live-card,
+#view-plan.plan-between-cwl-mode ~ #view-summary .summary-live-card{display:none!important}
+#view-plan.plan-postseason-mode ~ #view-summary .summary-offseason,
+#view-plan.plan-between-cwl-mode ~ #view-summary .summary-offseason{display:block}
+#view-summary .summary-offseason{max-width:820px;margin:0 auto}
+#view-summary .summary-offseason p{max-width:680px;margin:8px 0 18px;line-height:1.6}
 #view-plan.plan-postseason-mode .plan-overview,
 #view-plan.plan-between-cwl-mode .plan-overview{display:none!important}
 .plan-last-cwl{margin:10px 0 22px;min-width:0}
@@ -3641,7 +3651,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   </div>
 </section>
 <section id="view-summary" class="view">
-  <div class="card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryMedalOverview" class="summary-medal-overview" role="status" aria-live="polite" hidden></div><div class="summary-tools">
+  <div class="card summary-live-card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryMedalOverview" class="summary-medal-overview" role="status" aria-live="polite" hidden></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
     <option value="all">Alle Spieler</option><option value="zero">Ohne geplanten Einsatz</option><option value="played">Bereits gespielt</option><option value="future">Noch geplant</option>
@@ -3681,8 +3691,11 @@ html.cloud-startup-pending .cloud-startup-splash{
 </div>
 <div class="summary-legend" id="summaryLegend">Grün = bereits gespielt · Gold = noch geplant · Grau = kein Einsatz. <strong>Gesamt</strong> zählt beide zusammen.</div>
 <div id="summaryList" class="summary-compact-grid"></div></div>
-
-
+  <div class="card summary-offseason" id="summaryOffseason" role="status">
+    <div class="section-title"><div><h3>Aktuell keine CWL-Einsätze</h3>
+      <p class="statusline">Die bisherige CWL ist vorbei oder es wird noch keine neue Liga geplant. Frühere Einsätze findest du im CWL-Archiv. Sobald die nächste CWL zur Planung bereitsteht, erscheint hier wieder die aktuelle Einsatzverteilung – auch vor dem ersten Kriegstag.</p></div></div>
+    <button type="button" class="btn primary" id="summaryOpenArchive">CWL-Archiv ansehen</button>
+  </div>
 </section>
 
 <section id="view-more" class="view" aria-labelledby="moreTitle">
@@ -3807,11 +3820,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.69</strong><span>Mehr und Archiv verständlicher</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.70</strong><span>Nach der CWL die richtige Ansicht</span></div>
       <ul>
-       <li><b>Mehr:</b> Klarere Menüpunkte, einfache Hinweise zu Sicherungen und Einstellungen.</li>
-       <li><b>CWL-Archiv:</b> Gruppenergebnisse und gespeicherte CWL-Pläne leichter unterscheiden.</li>
-       <li><b>Clan & Konto:</b> Rechte für Beobachter, Vizes und Besitzer deutlicher erklärt.</li>
+       <li><b>Einsätze:</b> Nach einer bestätigten beendeten CWL wird keine alte Einsatzverteilung als aktuelle Planung angezeigt.</li>
+       <li><b>CWL-Archiv:</b> Ein direkter Link führt zu den früheren Gruppenergebnissen und Plänen.</li>
+       <li><b>Neue Liga:</b> Einsätze erscheinen wieder ab der neuen CWL-Vorbereitung. Gespeicherte Daten bleiben unverändert.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -3990,6 +4003,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> findest du zwei getrennte Quellen: <b>Gruppenergebnisse aus Clash</b> (Tabellen und Runden) und <b>archivierte CWL-Pläne</b> (frühere Aufstellungen und Einsätze). Fehlt ein Gruppenstand, heißt das nicht, dass der Plan verloren ist. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
+    <div class="help-item"><b>Einsätze zwischen den CWLs</b><div>Nach einer durch Clash bestätigten beendeten CWL oder in einer bestätigten CWL-Pause zeigt „Einsätze“ keine alten Balken, Filter oder 8-Sterne-Ziele mehr als aktuell. Stattdessen führt „CWL-Archiv ansehen“ zu den gespeicherten Gruppenergebnissen und Planarchiven. Dort werden nur die tatsächlich früher gespeicherten Angaben gezeigt; fehlende Sterne oder Einsätze werden nicht nachträglich berechnet. Sobald Clash eine neue CWL meldet, erscheinen die neuen Einsätze bereits in der Vorbereitung vor Tag 1. Bei unklaren oder verzögerten Clash-Daten bleibt der bekannte Stand geschützt.</div></div>
     <div class="help-item"><b>Filter in Einsätze</b><div>Mit <b>＋ Filter</b> wählst du beispielsweise <b>Rotierende Spieler</b>, <b>Ziel offen</b> oder <b>8 Sterne offen</b>. Jeder Filter erscheint als Chip und lässt sich mit <b>×</b> einzeln entfernen. Verschiedene Filter kannst du kombinieren; eine andere Auswahl innerhalb derselben Gruppe ersetzt die vorige. <b>Ziel offen</b> zeigt Spieler, denen laut Plan oder persönlichem Einsatzziel noch bestätigte Angriffe fehlen – beispielsweise <b>3/4</b> oder <b>1/5</b>. <b>Ziel erreicht</b> bedeutet, dass die entsprechende Zahl bestätigt ist. <b>Im Plan: 3/4 Einsätze</b> meint die aktuell vorgesehenen Einsätze, <b>Ziel: 3/4 Einsätze</b> ein ausdrücklich festgelegtes Einsatzziel. Nur echte Angriffe zählen als ausgeführt. <b>8 Sterne offen</b> und <b>8 Sterne erreicht</b> beziehen sich auf die bestätigten Sterne dieser CWL. Bei unvollständigen Clash-Daten bleibt der Status ungeklärt, statt fehlende Angriffe zu erfinden. Mit der Suche kannst du einen Spieler direkt finden.</div></div>
     <div class="help-item"><b>Letzte Stunde im CWL-Krieg</b><div>Bei frischem Clash-Datenstand und belegter Kriegsendzeit erinnert der Plan an offene Angriffe innerhalb der letzten 60 Minuten. Das bedeutet <b>noch nicht angegriffen laut letztem Abruf</b>, nicht „vergessen“. Ist der Datenstand veraltet, erscheint nur ein neutraler Prüfhinweis. Berechtigte Clanführer können „Im Spiel erinnert“ auf <b>diesem Gerät</b> quittieren: Das markiert keinen Angriff, ändert keine Aufstellung und wird nicht mit anderen Geräten synchronisiert. Neue offene Spieler werden erneut angezeigt. Bei geschlossener App gibt es damit keine Push-Erinnerung; nach Kriegsende bleibt eine spätere Entscheidung über weitere Einsätze manuell.</div></div>
     <div class="help-item"><b>Verpasster CWL-Angriff – weitere Einsätze</b><div>Nur wenn ein CWL-Krieg laut vollständiger, frischer Clash-Datenlage abgeschlossen ist und der Angriff tatsächlich nicht erfolgte, zeigt der Plan eine <b>schreibgeschützte Prüfempfehlung</b> je Spieler. Dabei unterscheidet er spätere noch prüfbare Plan-Tage von bereits gesperrten oder laufenden Clash-Kriegen und nennt Fix/MUSS-Regeln sowie feste Einsatzziele. Die <b>Prüfempfehlung allein</b> verändert weder Spieler noch Aufstellungen. Der Clanführer kann bei zusätzlich bestätigtem Collector-Nachweis eine Entscheidung mit gemeinsamer Historie dokumentieren und einen noch änderbaren Vorbereitungstag anschließend <b>einzeln</b> zur Übernahme prüfen. Ältere belegte Vorfälle bleiben auch während neuer Erinnerungen über die Tagesauswahl erreichbar. Es gibt keinen automatischen Ersatzwechsel in Clash.</div></div>
@@ -4294,11 +4308,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.69"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.69"></script>
-<script src="./cwl-planning-core.js?v=1.16.69"></script>
+<script src="./clan-management-core.js?v=1.16.70"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.70"></script>
+<script src="./cwl-planning-core.js?v=1.16.70"></script>
 <script>
-const APP_VERSION="v1.16.69";
+const APP_VERSION="v1.16.70";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5920,7 +5934,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.69");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.70");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6026,6 +6040,9 @@ document.addEventListener("keydown",event=>{
  }
 });
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");
+document.getElementById("summaryOpenArchive").onclick=()=>{
+  showPlannerView("archive");window.CWLGroupArchive?.open?.();
+};
 document.getElementById("planCwlSeasonOpen").onclick=()=>{
  showPlannerView("cwl-season");
  window.CWLSeasonView?.render?.();
@@ -6288,6 +6305,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.69"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.70"></script>
 </body>
 </html>

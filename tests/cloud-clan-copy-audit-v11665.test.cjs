@@ -39,9 +39,9 @@ test("#226 review labels are clear, but permanent storage decisions and permissi
 });
 
 test("#226 copy release applies only to Cloud and preserves local PWA version",()=>{
- assert.match(html,/Neu in v1\.16\.69/);
- assert.match(html,/const APP_VERSION="v1\.16\.69"/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.16.69");
+ assert.match(html,/Neu in v1\.16\.70/);
+ assert.match(html,/const APP_VERSION="v1\.16\.70"/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.16.70");
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
- assert.match(read("CHANGELOG.md"),/\[1\.16\.69\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.16\.70\]/);
 });
