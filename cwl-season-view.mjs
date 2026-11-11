@@ -77,31 +77,61 @@ function viewPlayers(s){
 }
 // Inline, read-only postseason recap in the original Plan view. Reuses the
 // existing CWL-season source of truth; no player/lock/archival mutation.
+// One calm, responsive overview for the Plan landing page. Detailed tables
+// share the existing season computations and remain one tap away, not stacked.
 export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle){
  if(lifecycle?.mode!=="postseason"||!snapshot?.season)return "";
  const model=summarizeCwlSeason({...profile,cwlLive:snapshot});
  if(!model)return "";
- const groupRaw=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
- const ranking=groupRaw?summarizeCwlGroup(groupRaw):null;
- const complete=lifecycle.verifiedSeven===true;
- const status=complete?
-  "Alle sieben Kriege aus vollständigen Clash-Ergebnissen bestätigt":
-  lifecycle.savedDays===7?
-   "Gespeicherte Kriegstage vollständig; einzelne Clash-Ergebnisse noch nicht bestätigt":
-   (lifecycle.savedDays??0)+"/7 Tage als gespielt bestätigt · fehlende Ergebnisse werden nicht ergänzt";
- const detail=complete?
-   "Die CWL ist beendet. Deine Resultate bleiben hier sichtbar, bis eine neue Saison sicher erkannt und archiviert ist.":
-   "Die CWL ist laut Clash nicht mehr aktiv. Der Abschluss ist noch offen: Ohne final bestätigte Daten für jeden Krieg wird nichts als gespielt markiert. Du kannst die bisher bekannten Ergebnisse trotzdem ansehen.";
- return '<section class="plan-postseason-results" aria-label="CWL-Saisonrückblick">'+
-  '<div class="section-title"><div><span class="view-lead-kicker">CWL-RÜCKBLICK</span>'+
+ const raw=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
+ const ranking=raw?summarizeCwlGroup(raw):null;
+ const confirmed=lifecycle.verifiedSeven===true;
+ const completed=Number.isInteger(lifecycle.savedDays)?
+   Math.max(0,Math.min(7,lifecycle.savedDays)):0;
+ const status=confirmed?
+   "Alle 7 Kriegstage abgeschlossen":
+   completed+" von 7 Kriegstagen abgeschlossen";
+ const notice=confirmed?"Die Ergebnisse dieser CWL bleiben hier zum Nachlesen.":
+   "Für mindestens einen Kriegstag fehlt noch das bestätigte Endergebnis. Bereits gespeicherte Resultate bleiben erhalten.";
+ const tabs=[["group","Tabelle"],["rounds","Kriegstage"],["players","Spieler"]];
+ return '<section class="plan-postseason-results" aria-label="Rückblick auf die letzte CWL">'+
+  '<div class="section-title"><div><span class="view-lead-kicker">LETZTE CWL</span>'+
   '<h3>'+esc(dateLabel(model.season))+'</h3>'+
   '<p class="statusline">'+esc(status)+'</p></div></div>'+
-  '<p class="plan-postseason-description">'+esc(detail)+'</p>'+
-  '<div class="plan-postseason-group"><h4>Gruppenstand</h4>'+viewGroup(model,ranking)+'</div>'+
-  '<div class="plan-postseason-rounds"><h4>Ergebnisse der Kriegstage</h4>'+viewRounds(model,ranking)+'</div>'+
-  '<details class="plan-postseason-players"><summary>Spielerleistungen dieser CWL ansehen</summary>'+
-  viewPlayers(model)+'</details></section>';
+  (confirmed?'':'<p class="plan-postseason-description">'+esc(notice)+'</p>')+
+  '<div class="plan-postseason-tabs" role="tablist" aria-label="Ergebnisse der letzten CWL">'+
+  tabs.map(([key,label],i)=>'<button type="button" role="tab"'+
+    ' class="plan-postseason-tab'+(i===0?' active':'')+'"'+
+    ' id="planPostseasonTab'+key+'" data-postseason-tab="'+key+'"'+
+    ' aria-controls="planPostseasonPanel'+key+'" aria-selected="'+String(i===0)+'"'+
+    ' tabindex="'+(i===0?'0':'-1')+'">'+esc(label)+'</button>').join("")+'</div>'+
+  '<div id="planPostseasonPanelgroup" data-postseason-panel="group" role="tabpanel"'+
+  ' aria-labelledby="planPostseasonTabgroup" tabindex="0" class="plan-postseason-panel">'+
+  viewGroup(model,ranking)+'</div>'+
+  '<div id="planPostseasonPanelrounds" data-postseason-panel="rounds" role="tabpanel"'+
+  ' aria-labelledby="planPostseasonTabrounds" tabindex="0" class="plan-postseason-panel" hidden>'+
+  viewRounds(model,ranking)+'</div>'+
+  '<div id="planPostseasonPanelplayers" data-postseason-panel="players" role="tabpanel"'+
+  ' aria-labelledby="planPostseasonTabplayers" tabindex="0" class="plan-postseason-panel" hidden>'+
+  viewPlayers(model)+'</div>'+
+  '</section>';
 }
+// Host is stable; selected tab survives a fresh API result and panel rerender.
+export function selectInlineCwlPostseasonTab(host,selected){
+ const key=["group","rounds","players"].includes(selected)?selected:"group";
+ if(!host)return key;
+ host.dataset.selectedPostseasonTab=key;
+ for(const tab of host.querySelectorAll("[data-postseason-tab]")){
+  const active=tab.dataset.postseasonTab===key;
+  tab.classList.toggle("active",active);
+  tab.setAttribute("aria-selected",String(active));
+  tab.tabIndex=active?0:-1;
+ }
+ for(const panel of host.querySelectorAll("[data-postseason-panel]"))
+  panel.hidden=panel.dataset.postseasonPanel!==key;
+ return key;
+}
+
 export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected,refresh}){
  let tab="rounds";
  const host=$("cwlSeasonContent"),caption=$("cwlSeasonCaption"),switcher=$("cwlSeasonTabs");
