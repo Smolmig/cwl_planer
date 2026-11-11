@@ -12,6 +12,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.71] - 2026-11-11
+
+### Planfreigabe nach der CWL vorübergehend ausblenden (#37, #227)
+- Wenn die bestehende Clash-Erkennung die CWL als beendet oder die CWL-Pause als bestätigt kennzeichnet, zeigt „Mitglieder“ statt des alten Freigabe-Buttons einen dezenten Hinweis. Dasselbe Signal wird bereits für den Einsätze-Tab verwendet.
+- Bereits geöffnete Freigabe-Details werden geschlossen; vor Freigabe, Einreichen und Entscheidung über Vorschläge prüft der Cloud-Client den bestätigten Zustand noch einmal. Bei der nächsten neuen, planbaren CWL-Vorbereitung stehen die Aktionen wieder bereit.
+- Hilfe, aktuelle Update-Notiz, öffentlicher Verlauf, Browser-Cache und Rollen-/Saison-Tests angepasst. Keine Änderung an Planberechnung, gespielten Einsätzen, archivierten Daten, Cloud-Profilen, RLS oder Supabase-RPCs.
+- **Offen:** serverseitige Zyklus-/Saisonprüfung gegen direkt gesendete oder verspätete RPCs und autonome Eröffnung der nächsten Saison (#227), historische Einsatzansicht (#187) und echte Geräte-/Rollenabnahme (#213).
+
 ## [1.16.70] - 2026-11-11
 
 ### Einsätze zwischen den CWLs: alte Saison nicht als aktuell darstellen (#187)
