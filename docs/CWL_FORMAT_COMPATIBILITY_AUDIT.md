@@ -27,7 +27,7 @@
 | **Cloud-Kriegsgröße** | Eindeutige API-`teamSize` aus belegten Kriegs-/Gruppendaten verwenden, bevor Tage abgeschlossen werden; für verknüpfte Clans manuelle Größenkontrollen deaktivieren | Bei bereits gespielten/gesperrten Tagen **keine** rückwirkende Änderung von `config`; Bedarf an zusätzlichem Mismatch-Hinweis |
 | **Postseason / Tabelle** | Gruppen mit sechs Clans nur fünf Runden und 15 Paarungen; fünf belegte API-Endstände können echte 5/5-Vollständigkeit ergeben | Unbekannter letzter Krieg ist weiter *unbekannt*, niemals 0★ oder künstlich abgeschlossen |
 | **Archiv / lokaler Owner-Cycle** | Gesicherte fünf originalen API-Aufstellungen als vollständig archivieren; Sonderformat und Anzahl im Archiv speichern | Kein neuer ownerloser serverseitiger Plan-Zyklus ohne #227-Sicherheitsdesign |
-| **Serverfreigabe** | Seit v1.16.72 exakte `cycle_id`/Saison und Service-Gruppenarchiv verifiziert | **Noch offen:** `private.cwl_review_last_round_ended` prüft siebente Runde. Für 5er-Gruppe muss exakt Runde 5 aus **verifiziertem Gruppenstand** gelten; gesonderte Migration mit Rollback und Auth-Tests |
+| **Serverfreigabe** | Seit v1.16.72 exakte `cycle_id`/Saison und Service-Gruppenarchiv verifiziert | Separate Migration `20261111192000_cwl_review_final_actual_round_five_or_seven.sql` **in Prüfung**: legt wirkliche letzte Runde (5/7) aus einer vollständigen validierten 6-/8-Clan-Gruppe fest. Ohne archivierten Finalbeleg bleibt der Abschluss offen. Bis erfolgreicher CI, DB-Migration und Live-SQL-Verifikation nicht als produktiv abgesichert bezeichnen |
 | **Historische Daten** | Read-only 5v5, 5/5, 6/7, 7/7 nach Quellenqualität | Keine nachträgliche Umdeutung von `played`, alten Attacken, Gesamtroster oder Sternen |
 
 ## 3. Freigabe- und UAT-Matrix
@@ -42,3 +42,7 @@
 8. Veralteter Browser, neue Saison, RLS/checked-RPC und archivierte fünf/ sieben Kriegstage; niemals fremden App-Clan oder altes Saisonarchiv überschreiben.
 
 **Abnahmegrenze:** Automatisierte Tests mit synthetischen offiziellen Gruppenantworten ersetzen keine echte 30er- oder verkürzte Supercell-Saison. Ob Supercell zukünftige andere Formate zulässt, bestimmt ausschließlich deren aktuelle API und Dokumentation.
+
+## 4. Nachprüfung des serverseitigen Final-Guards (#254)
+
+Die gezielte SQL-Migration `supabase/migrations/20261111192000_cwl_review_final_actual_round_five_or_seven.sql` ersetzt ausschließlich `private.cwl_review_last_round_ended` und ergänzt den nicht für Browser freigegebenen, deterministischen Helfer `private.cwl_review_group_final_ended`. Sie übernimmt **keinen** Wert von Browser/Konfiguration und ändert keine Bestandsdaten. Nach CI und kontrollierter Anwendung prüft `tests/sql/cwl-review-final-5-7-fixtures.sql` ausschließlich synthetische JSON-Gruppen; die Query muss **0 Zeilen** liefern. Zusätzlich: Rechte der privaten Funktionen für `anon` und `authenticated` verneinen, vier bereits vorhandene `*_checked`-RPCs auf unveränderte Authentifizierung prüfen, mit vorhandenen 8-Clan-Archiven die Erhaltung der bisherigen 7er-Erkennung nachweisen, Datenzeilenzahlen vor/nach Anwendung vergleichen. Kein einzelner fehlender API-Krieg gilt als 0 oder abgeschlossen. Bis echte 5er-CWL in Clash beobachtet wurde, nur synthetische Integrationsabdeckung; reales Gerät/Owner/Vize/Viewer #213 bleibt erforderlich.
