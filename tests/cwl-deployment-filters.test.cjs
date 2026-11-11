@@ -152,7 +152,7 @@ test("Cloud UI provides exactly three dropdown filters, compact sorting, reset a
  assert.equal(doc.querySelectorAll("#summaryCloudFilters select").length,4,"3 hidden compatibility selects plus sort");
  assert.ok(doc.getElementById("summaryResetFilters"));
  assert.match(html,/targetSource==="planned"/);
- assert.match(html,/cwl-deployment-filters\.js\?v=1\.16\.61/);
+ assert.match(html,/cwl-deployment-filters\.js\?v=1\.16\.62/);
  assert.match(html,/Filter in Einsätze/);
  assert.match(html,/summary-filter-chip/);
  assert.match(fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8"),/const APP_VERSION="v1\.0\.2"/);

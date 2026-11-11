@@ -57,7 +57,7 @@ test("Current CW appears only in Plan and never writes to CWL plan or stats earl
   assert.equal(host.hidden,false);
   assert.match(host.textContent,/35\s*:\s*27/);
   assert.match(host.textContent,/Unsere Angriffe1 Angriffe erfasst/);
-  assert.match(host.textContent,/Angriffe Gegner0 Angriffe erfasst/);
+  assert.match(host.textContent,/Gegnerische Angriffe0 Angriffe erfasst/);
   assert.match(host.textContent,/Gegner/);
   assert.equal(host.querySelector("script"),null,"Player names are HTML escaped");
   dom.window.document.getElementById("currentWarRefresh").click();
@@ -68,6 +68,56 @@ test("Current CW appears only in Plan and never writes to CWL plan or stats earl
   assert.equal(host.hidden,true,"Cloud logout hides live war details");
  }finally{
   global.document=old;
+  dom.window.close();
+ }
+});
+test("Normal CW combines two attacks per player, in first/second order as Clash reports them",async()=>{
+ const dom=new JSDOM('<section id="currentWarCard" hidden><div id="currentWarContent"></div>'+
+  '<button id="currentWarRefresh"></button></section>',{url:"https://example.test"});
+ const original=global.document;
+ global.document=dom.window.document;
+ try{
+  const {createCurrentWarOverview}=await load("cwl-current-war.mjs");
+  const overview=createCurrentWarOverview({
+   context:()=>({active:true,clanId:"test",hasClanTag:true}),refresh:()=>{}
+  });
+  const first={defenderTag:"#B",stars:2,destructionPercentage:81,order:3};
+  const second={defenderTag:"#C",stars:3,destructionPercentage:100,order:11};
+  const war={
+   state:"inWar",teamSize:2,attacksPerMember:2,startTime:"20261111T100000.000Z",
+   clan:{tag:"#A",name:"United Fighters",members:[
+    {tag:"#P",name:"Spieler",townHallLevel:18,attacks:[first]},
+    {tag:"#Q",name:"Noch offen",townHallLevel:17,attacks:[]}
+   ]},
+   opponent:{tag:"#X",name:"Gegner",members:[
+    {tag:"#B",name:"Basis B",townHallLevel:18,attacks:[]},
+    {tag:"#C",name:"Basis C",townHallLevel:17,attacks:[]}
+   ]}
+  };
+  const card=dom.window.document.getElementById("currentWarContent");
+  overview.update({currentWar:war});
+  let player=card.querySelector('.cw-now-details[data-team="own"] .cw-now-player');
+  assert.match(player.textContent,/1\/2 Angriffe/);
+  assert.equal(player.querySelectorAll(".cw-now-attack").length,1);
+  assert.match(player.textContent,/1\. Angriff.*Basis B/);
+  assert.doesNotMatch(player.textContent,/2\. Angriff/);
+  // API arrays need not arrive in chronological order; keep the earlier hit first.
+  war.clan.members[0].attacks=[second,first];
+  overview.update({currentWar:war});
+  player=card.querySelector('.cw-now-details[data-team="own"] .cw-now-player');
+  const attacks=[...player.querySelectorAll(".cw-now-attack")].map(x=>x.textContent);
+  assert.match(player.textContent,/2\/2 Angriffe/);
+  assert.equal(attacks.length,2);
+  assert.match(attacks[0],/^1\. Angriff.*Basis B/);
+  assert.match(attacks[1],/^2\. Angriff.*Basis C/);
+  assert.doesNotMatch(card.textContent,/verpasster Angriff/i);
+  // Unknown order must not force a guessed chronology.
+  war.clan.members[0].attacks=[{...second,order:null},first];
+  overview.update({currentWar:war});
+  player=card.querySelector('.cw-now-details[data-team="own"] .cw-now-player');
+  assert.match(player.querySelector(".cw-now-attack").textContent,/^1\. Angriff.*Basis C/);
+ }finally{
+  global.document=original;
   dom.window.close();
  }
 });

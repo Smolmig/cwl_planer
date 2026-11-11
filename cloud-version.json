@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.61",
+  "version": "v1.16.62",
   "released": "2026-11-11",
-  "summary": "Plan: normaler CW am Kampftag prominent mit Statistiken, letzter CWL-Rückblick in drei Reitern, nächste API-CWL ohne manuellen Neustart."
+  "summary": "Normaler CW zwischen zwei CWLs: erster und zweiter Angriff pro Spieler in belegter Reihenfolge, verständlichere Beschriftungen und aktualisierte Hilfe."
 }

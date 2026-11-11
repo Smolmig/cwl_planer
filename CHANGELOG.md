@@ -12,6 +12,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.62] - 2026-11-11
+
+### Normaler Clankrieg: erster und zweiter Angriff auf einen Blick
+- In der aufklappbaren eigenen und gegnerischen Aufstellung erscheinen die **einzelnen Angriffe zusammen unter dem jeweiligen Spieler** als **„1. Angriff“ / „2. Angriff“** mit Sternen, Zerstörung und Ziel. Der Zähler zeigt weiter 0/2, 1/2 oder 2/2.
+- Wenn Clash eine gültige Angriffsreihenfolge meldet, sortieren wir die beiden Angriffe danach; ohne vollständige Reihenfolgen-Information bleibt die übermittelte Reihenfolge unverändert. Keine erfundene Zeitfolge.
+- Kleine Textvereinfachungen im CW-Dashboard, gut lesbare mobile Angriffszeilen ohne weitere Karten, aktualisierter Plan-Hilfetext; fehlende API-Angriffe sind **keine** nachgewiesenen Fehlangriffe. Kein Eingriff in CWL-Plan, Statistik, API-Proxy, Supabase oder Offline-PWA.
+- Regression für 1/2 → 2/2, Reihenfolge und fehlende Reihenfolgendaten. Erster kleiner Umsetzungsschritt des appweiten Textaudits #226; übrige Tabs bleiben offen.
+
 ## [1.16.61] - 2026-11-11
 
 ### Plan-Startseite: Live-CW zuerst, letzte CWL kompakt, neue CWL automatisch
