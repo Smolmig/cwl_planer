@@ -62,6 +62,7 @@ as $$
    join public.cwl_clans c on c.id=g.clan_id
    where g.clan_id=p_clan
      and g.season=p_season
+     and g.group_json->>'season'=g.season
      and upper(g.clan_tag)=upper(c.clash_tag)
      and private.cwl_review_group_final_ended(g.group_json,g.clan_tag)
  );
