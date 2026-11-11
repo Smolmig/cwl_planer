@@ -589,9 +589,8 @@ const live=createCwlLive({
   window.CWLSeasonView?.render?.();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
-  // Refresh the approval strip after the verified live phase is applied.
-  queueMicrotask(()=>{if(cloud.active)renderPlanReview()});
  },
+ onPhaseApplied:()=>{if(cloud.active)renderPlanReview()},
  onSnapshot:data=>stats.captureCwl(data),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
