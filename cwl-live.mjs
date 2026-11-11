@@ -304,11 +304,10 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       const open=details?.open===true;
       const focused=details?.contains(document.activeElement)===true;
       host.innerHTML=(transition?
-        '<p class="plan-postseason-description"><strong>Neue CWL '+model.newSeason+
-        ' noch nicht gestartet:</strong> Die neue Liga wurde erkannt, aber der vorherige Plan '+
-        'ist nicht vollständig archiviert. Bitte die letzten Ergebnisse prüfen und '+
-        'anschließend „CWL archivieren / neue Saison vorbereiten“ wählen. '+
-        'Keine automatische Überschreibung.</p>':'')+
+        '<p class="plan-postseason-description"><strong>Neue CWL erkannt:</strong> '+
+        'Der vorherige Stand wird sicher übernommen. Der Planer erscheint '+
+        'automatisch, sobald die Cloud den Saisonwechsel gespeichert hat. '+
+        'Ein offenes Ergebnis bleibt im Archiv als offen gekennzeichnet.</p>':'')+
         renderInlineCwlPostseason(ctx.profile,model.snapshot,group,{
          ...model,mode:"postseason",season,
          savedDays:model.savedDays??0
@@ -957,21 +956,20 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
         throw new Error(msg);
       }
       if(!stillCurrent())return;
-      // Only a complete, same-clan seven-day API record can be automatically
-      // archived and advanced to a NEW month. Never clobber 6/7 or manual locks.
+      // The official new-season feed is authoritative, unlike no-CWL or
+      // network errors. Even 6/7 is archived AS INCOMPLETE, never fabricated
+      // as a completed final war. Cloud owner advances the shared plan once.
       let previous=ctx.profile?.cwlLive;
-      if(data.active&&previous?.season&&previous.season!==data.season&&
+      if(data.active&&data.season&&data.clanTag===ctx.clanTag&&
+         previous?.season&&previous.season!==data.season&&
          ctx.role==="owner"&&ctx.canApply&&typeof ensureCloudSaved==="function"){
-        const old=assessCwlLifecycle({
-         profile:ctx.profile,clanTag:ctx.clanTag,
-         confirmedNoCwl:true,now:Date.now()
-        });
-        if(old.canAutoArchive&&storage.archiveConfirmedCwl?.(previous.season)){
+        if(storage.archivePreviousCwlForRollover?.(
+          previous.season,data.season,ctx.clanTag)){
           await ensureCloudSaved();
           if(!stillCurrent())return;
-          if(await storage.autoAdvanceCwl?.(previous.season,data.season)){
-            notify("✓ Vorige CWL sicher archiviert · neue CWL "+data.season+
-             " automatisch zum Planen vorbereitet.");
+          if(await storage.autoAdvanceCwl?.(
+            previous.season,data.season,ctx.clanTag)){
+            notify("✓ Neue CWL erkannt · alter Stand im Archiv · Planer bereit");
             previous=ctx.profile?.cwlLive;
           }
         }
