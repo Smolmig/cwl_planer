@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.70] - 2026-11-11
+
+### Einsätze zwischen den CWLs: alte Saison nicht als aktuell darstellen (#187)
+- **Nur bestätigte Saisonphasen:** Wenn die bestehende Clash-/CWL-Lifecycle-Anzeige bereits `postseason`, `transition` oder eine bestätigte CWL-Pause meldet, ist im Tab `Einsätze` nicht mehr die alte Verteilung mit Fortschrittsbalken, 8★-Stand und Filtern sichtbar, sondern „Aktuell keine CWL-Einsätze“ und ein direkter Link zum CWL-Archiv. Die Saison-Erkennung selbst bleibt unverändert.
+- **Neue CWL vor Tag 1:** Wenn die bestätigte nächste Planung beginnt, blendet die vorhandene Lifecycle-Klasse die laufende Einsatzübersicht wieder ein. Während der CWL gelten alle bisherigen Filter und Berechnungen.
+- **Keine Daten- oder Planänderungen:** Alte Lock-/Planungs-/Kriegsdaten bleiben unverändert gespeichert; bestehende Planarchive und Gruppenergebnisse bleiben einzeln lesbar. Für unklare oder veraltete Clash-API-Daten wird kein Ende erfunden. Gast-/Offline-PWA bleibt unverändert.
+- **Hilfe und Update-Verlauf** ergänzt; mobile Browser-, Viewer-, Clanwechsel-, Live-/Offseason- und Navigations-Regressionen hinzugefügt.
+- **Offen:** Vollständige read-only historische Einsatzmatrix mit belegten Sternen/Zielen, serverseitige Cycle-Grenzen und Planfreigabe nach CWL-Ende gemäß #187/#37/#227; echte Owner/Vize/Viewer-Abnahme #213.
+
 ## [1.16.69] - 2026-11-11
 
 ### Mehr, CWL-Archiv und Clan & Konto verständlicher (#226)
