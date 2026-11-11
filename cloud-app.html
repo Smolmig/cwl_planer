@@ -3686,16 +3686,16 @@ html.cloud-startup-pending .cloud-startup-splash{
 </section>
 
 <section id="view-more" class="view" aria-labelledby="moreTitle">
- <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Clan & Einstellungen</h2><p>Alle seltener benötigten Funktionen an einem Ort. Deine aktuelle Planung bleibt im Hauptmenü.</p></div>
+ <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Hier findest du deine Clans, vergangene CWLs und weitere Einstellungen.</p></div>
  <div class="more-menu">
-  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Vize, Einladungen und Freigaben</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge prüfen · Empfehlungen in Vorbereitung</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Vergangene Ligen und gespeicherte Aufstellungen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="updates"><span class="more-tile-symbol" aria-hidden="true">◷</span><span><strong>Update-Verlauf</strong><small>Alle Neuerungen seit dem ersten Planer</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>JSON-Dateien sichern und wiederherstellen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
  </div>
@@ -3770,17 +3770,17 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="card archive-page">
   <div class="section-title more-subview-heading">
    <div><span class="more-eyebrow">RÜCKBLICK</span><h2 id="cwlArchiveTitle">CWL-Archiv</h2>
-   <p class="statusline">Gruppentabellen, Runden und gespeicherte Aufstellungen aus vergangenen CWLs – getrennt und dauerhaft gesichert.</p></div>
+   <p class="statusline">Vergangene CWLs ansehen: Gruppenergebnisse aus Clash und gesicherte Aufstellungen aus deinem Plan.</p></div>
    <button type="button" class="btn small" id="cwlArchiveBack">Zurück zu Mehr</button>
   </div>
   <div class="card" id="cwlGroupArchiveSection">
-   <div class="section-title"><div><h3>Gespeicherte Gruppensaisons</h3>
-      <p class="statusline">Tabellen und Runden aus Clash, auch nach Saisonende.</p></div>
+   <div class="section-title"><div><h3>Gruppenergebnisse aus Clash</h3>
+      <p class="statusline">Gespeicherte Tabellen und Runden. Einzelne Angriffe gehören nicht zu diesem Gruppenarchiv.</p></div>
      <button class="btn small" id="cwlGroupArchiveRefresh" type="button">Aktualisieren</button>
    </div>
    <div id="cwlGroupArchiveContent" aria-live="polite"><p class="season-empty">Gruppensaisons werden im verbundenen Cloud-Clan geladen.</p></div>
   </div>
-  <div class="card" id="archiveSection"><div class="section-title"><h3>Gespeicherte Aufstellungen</h3><span class="badge ok" id="archiveCountBadge">0 Archive</span></div><div id="archiveList"></div></div>
+  <div class="card" id="archiveSection"><div class="section-title"><h3>Archivierte CWL-Pläne</h3><span class="badge ok" id="archiveCountBadge">0 Pläne</span></div><div id="archiveList"></div></div>
  </div>
 </section>
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
@@ -3807,11 +3807,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.68</strong><span>Statistik leichter verstehen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.69</strong><span>Mehr und Archiv verständlicher</span></div>
       <ul>
-       <li><b>Vergleiche:</b> Klarer Datenumfang und hilfreiche Hinweise, wenn noch Angriffe fehlen.</li>
-       <li><b>Verlauf:</b> Kalenderwochen, Angriffszahlen und einzelne Kriegsergebnisse verständlicher erklärt.</li>
-       <li><b>Keine Datenänderung:</b> Alle bisherigen Statistikberechnungen und CWL-Pläne bleiben gleich.</li>
+       <li><b>Mehr:</b> Klarere Menüpunkte, einfache Hinweise zu Sicherungen und Einstellungen.</li>
+       <li><b>CWL-Archiv:</b> Gruppenergebnisse und gespeicherte CWL-Pläne leichter unterscheiden.</li>
+       <li><b>Clan & Konto:</b> Rechte für Beobachter, Vizes und Besitzer deutlicher erklärt.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -3987,6 +3987,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerform“ wählst du 30, 90 oder 180 Tage. „Angriffsmenge &amp; 3★-Quote“ berücksichtigt zuerst, wie viele Angriffe gegen gleiches Rathaus tatsächlich vorliegen, und vergleicht dann die Quote innerhalb von Gruppen. „3★-Quote (auch bei wenigen Angriffen)“ sortiert ausschließlich nach Quote. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
+    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> findest du zwei getrennte Quellen: <b>Gruppenergebnisse aus Clash</b> (Tabellen und Runden) und <b>archivierte CWL-Pläne</b> (frühere Aufstellungen und Einsätze). Fehlt ein Gruppenstand, heißt das nicht, dass der Plan verloren ist. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Filter in Einsätze</b><div>Mit <b>＋ Filter</b> wählst du beispielsweise <b>Rotierende Spieler</b>, <b>Ziel offen</b> oder <b>8 Sterne offen</b>. Jeder Filter erscheint als Chip und lässt sich mit <b>×</b> einzeln entfernen. Verschiedene Filter kannst du kombinieren; eine andere Auswahl innerhalb derselben Gruppe ersetzt die vorige. <b>Ziel offen</b> zeigt Spieler, denen laut Plan oder persönlichem Einsatzziel noch bestätigte Angriffe fehlen – beispielsweise <b>3/4</b> oder <b>1/5</b>. <b>Ziel erreicht</b> bedeutet, dass die entsprechende Zahl bestätigt ist. <b>Im Plan: 3/4 Einsätze</b> meint die aktuell vorgesehenen Einsätze, <b>Ziel: 3/4 Einsätze</b> ein ausdrücklich festgelegtes Einsatzziel. Nur echte Angriffe zählen als ausgeführt. <b>8 Sterne offen</b> und <b>8 Sterne erreicht</b> beziehen sich auf die bestätigten Sterne dieser CWL. Bei unvollständigen Clash-Daten bleibt der Status ungeklärt, statt fehlende Angriffe zu erfinden. Mit der Suche kannst du einen Spieler direkt finden.</div></div>
@@ -4050,23 +4051,24 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="card account-page">
   <div class="section-title account-page-head">
    <div><span class="more-eyebrow">VERWALTUNG</span><h2 id="cloudAccountTitle">Clan & Konto</h2>
-    <p class="statusline">Gemeinsame Clans, Berechtigungen und Sicherungen an einem Ort.</p></div>
+    <p class="statusline">Deine verbundenen Clans, wer den Planer nutzen darf und gespeicherte Planstände.</p></div>
    <button type="button" class="btn small" id="cloudAccountBack">Zurück zu Mehr</button>
   </div>
   <div id="cloudAccountMessage" class="cloud-msg" role="alert" hidden></div>
  <section id="cloudAccount" hidden>
   <div id="cloudIdentity" class="statusline"></div>
-  <div class="actions"><button class="btn" id="cloudLogout">Abmelden → lokaler Planer</button><button class="btn" id="cloudReload" title="Lädt den aktuellen gemeinsamen Plan und die neuen Änderungen anderer Personen.">↻ Plan neu laden</button></div>
-  <p class="small">„Plan neu laden“ übernimmt den neuesten Stand anderer Mitplaner. Spieler aus Clash of Clans werden über den Mitgliederabgleich geprüft.</p>
+  <div class="actions"><button class="btn" id="cloudLogout">Vom Cloud-Konto abmelden</button><button class="btn" id="cloudReload" title="Prüft die neuesten gespeicherten Clanänderungen. Offene eigene Bearbeitungen bleiben geschützt.">↻ Gemeinsamen Stand prüfen</button></div>
+  <p class="small">„Gemeinsamen Stand prüfen“ lädt neue gespeicherte Planänderungen, sofern keine eigene Bearbeitung offen ist. Clash-Spieler werden separat im Mitgliederbereich abgeglichen.</p>
   <div class="cloud-section">
     <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline" aria-live="polite"></div>
+    <p class="small" id="cloudRoleExplanation">Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge.</p>
     <div id="cloudSyncFeedback" class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
     <div id="cloudActiveMembers" class="cloud-active-members" aria-live="polite"></div>
     <details class="cloud-minor" id="cloudAccessDetails" open>
       <summary>Planer-Zugänge <span id="cloudAccessCount"></span></summary>
-      <p class="small">Diese Personen haben Zugriff auf den gemeinsamen CWL-Planer. Ihre Rollen gelten nur in der App, nicht in Clash of Clans.</p>
+      <p class="small">Diese Personen können euren CWL-Planer öffnen. Die hier vergebenen Rechte gelten nur für diese App, nicht für die Ränge in Clash of Clans.</p>
       <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Zugriffe werden geladen …</div>
       <details id="cloudPendingDetails" class="cloud-minor" hidden><summary>Aktive Einladungslinks <span id="cloudPendingCount"></span></summary>
       <div id="cloudPendingList" class="cloud-access-list" aria-live="polite"></div>
@@ -4079,7 +4081,7 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p class="small">Zugänge und Berechtigungen werden beim Öffnen automatisch aktualisiert.</p>
     </details>
 
-    <label for="cloudAlias">Dein Anzeigename (für Änderungsverlauf)</label>
+    <label for="cloudAlias">Dein Anzeigename im Planer</label>
     <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
   </div>
   <div class="cloud-section">
@@ -4088,7 +4090,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
     <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
     <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
-    <label for="cloudJoinCode">Einladungscode oder Gruppenlink</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
+    <label for="cloudJoinCode">Einladungscode eingeben</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <label for="cloudJoinName">Dein Ingame-Name (für den Beitritt erforderlich)</label>
     <input id="cloudJoinName" maxlength="60" autocomplete="nickname" placeholder="Dein Name in Clash of Clans">
     <p class="small" id="cloudJoinHint">Dieser Name wird den Clanführern bei deinen Berechtigungen angezeigt.</p>
@@ -4113,20 +4115,20 @@ html.cloud-startup-pending .cloud-startup-splash{
     <button class="btn primary" id="cloudMakeInvite">Einladungslink erstellen</button>
     <div id="cloudInviteOutput" class="cloud-msg" hidden></div>
     
-    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Neue Einladungslinks kannst du später unter „Aktive Einladungslinks“ erneut kopieren. Ältere Links bleiben gültig, können aber nicht nachträglich angezeigt werden.</p>
+    <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Neue Einladungslinks findest du später unter „Aktive Einladungslinks“. Ältere Links bleiben gültig, lassen sich aber nicht erneut anzeigen.</p>
   </div>
   <div class="cloud-section">
     <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
   <div class="cloud-section">
-    <h3>Bestehendes Profil übernehmen</h3>
-    <p>Optional kannst du ein lokales CWL-Backup in diesen Clan übernehmen. Deine bisherigen lokalen Daten bleiben erhalten.</p>
+    <h3>Lokalen Plan übernehmen</h3>
+    <p>Bei Bedarf kannst du einen zuvor exportierten lokalen CWL-Plan in diesen Cloud-Clan übernehmen. Das ist etwas anderes als einen bestehenden Cloud-Sicherungsstand wiederherzustellen. Deine lokalen Daten bleiben auf diesem Gerät erhalten.</p>
     <input type="file" id="cloudImportFile" accept="application/json,.json">
     <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
     <details id="cloudBackupPanel" class="cloud-minor" hidden>
-      <summary>Sicherungspunkte und Wiederherstellung</summary>
-      <p class="small">Bis zu fünf ältere Versionen eures gemeinsamen CWL-Plans. Du kannst einen Stand wiederherstellen, falls jemand versehentlich etwas verändert. Angriffsstatistik, Benutzerkonten und Rollen sind nicht Teil dieser Sicherungen.</p>
+      <summary>Gemeinsame Plan-Sicherungen</summary>
+      <p class="small">Bis zu fünf Sicherungsstände des gemeinsamen CWL-Plans. Nur der Besitzer kann einen alten Planstand wiederherstellen. Kriegsstatistiken, Benutzerkonten und Zugriffsrechte sind nicht enthalten.</p>
       <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
       <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
       <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
@@ -4292,11 +4294,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.68"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.68"></script>
-<script src="./cwl-planning-core.js?v=1.16.68"></script>
+<script src="./clan-management-core.js?v=1.16.69"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.69"></script>
+<script src="./cwl-planning-core.js?v=1.16.69"></script>
 <script>
-const APP_VERSION="v1.16.68";
+const APP_VERSION="v1.16.69";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5208,11 +5210,11 @@ function archiveCurrentCwl(){
     sourceSeason:season?.[0]||null,
     cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
 }
-function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge"),viewer=!!window.CWLCloud?.active&&!!window.CWLCloud?.isViewer?.();badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button>${viewer?"":`<button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button>`}</div></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
+function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge"),viewer=!!window.CWLCloud?.active&&!!window.CWLCloud?.isViewer?.();badge.textContent=`${state.archives.length} ${state.archives.length===1?"Plan":"Pläne"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button>${viewer?"":`<button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button>`}</div></div>`).join(""):'<div class="empty compact-empty">Noch keine CWL-Pläne archiviert. Gespeicherte Gruppenergebnisse findest du im Abschnitt darüber.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
  root.querySelectorAll(".delete-archive").forEach(b=>b.onclick=async()=>{
   if(window.CWLCloud?.active && window.CWLCloud?.isViewer?.())return;
   const archive=state.archives.find(a=>a.id===b.dataset.id);if(!archive)return;
-  const approved=await confirmInline('„'+archive.label+'“ wird aus dem CWL-Archiv entfernt. Die aktuelle Planung und Mitglieder bleiben erhalten. Diese Aktion lässt sich nur über ein vorheriges Backup rückgängig machen.',{
+  const approved=await confirmInline('„'+archive.label+'“ wird aus dem CWL-Archiv entfernt. Die aktuelle Planung und Mitglieder bleiben erhalten. Diese Aktion kann nicht direkt rückgängig gemacht werden. Sichere bei Bedarf vorher ein JSON-Backup.',{
    title:"Archiv wirklich löschen?",confirmText:"Archiv löschen",danger:true
   });
   if(!approved)return;
@@ -5224,7 +5226,7 @@ function openArchiveModal(id){
   const map=new Map(a.players.map(p=>[p.id,p]));
   document.getElementById("archiveTitle").textContent=a.label;
   const counts=a.players.map(p=>({p,n:a.counts?.[p.id]||0})).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name,"de"));
-  document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Tag ${l.day} · GESPIELT</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsatz-Verteilung</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
+  document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Kriegstag ${l.day} · als gespielt gespeichert</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsätze dieser CWL</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
   openModal("archiveModal");
 }
 function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
@@ -5475,7 +5477,7 @@ const moreSettingsMeta={
    description:"Lokale Clanprofile verwalten. Cloud-Clans findest du unter Clan & Konto.",
    ids:["localProfileCard"]},
  backup:{title:"Backup & Import",
-   description:"Profile sichern oder ein vorhandenes Backup wiederherstellen.",
+   description:"Lokale Plan-Dateien exportieren oder eine JSON-Sicherung einlesen.",
    ids:["settingsBackupSection"]}
 };
 const moreSettingsHost=document.getElementById("moreSettingsContent");
@@ -5506,8 +5508,9 @@ function openMoreSettings(action){
  document.getElementById("moreSettingsDescription").textContent=meta.description;
  const isCloud=!!window.CWLCloud?.active;
  const note=document.getElementById("moreSettingsNotice");
- note.hidden=!(isCloud&&action==="backup");
- note.textContent=isCloud?"Gemeinsame Cloud-Sicherungen und Wiederherstellungspunkte findest du in Clan & Konto. Hier kannst du eine zusätzliche Datei exportieren.":"";
+ const isViewer=isCloud&&!!window.CWLCloud?.isViewer?.();
+ note.hidden=!((isCloud&&action==="backup")||(isViewer&&action==="rules"));
+ note.textContent=isViewer&&action==="rules"?"Als Beobachter kannst du die CWL-Regeln ansehen, aber nicht bearbeiten.":isCloud?"Gemeinsame Plan-Sicherungen findest du unter „Clan & Konto“. Hier kannst du zusätzlich eine JSON-Datei auf deinem Gerät sichern.":"";
  document.getElementById("moreSettingsCloudBackup").hidden=!(isCloud&&action==="backup");
  showPlannerView("more-settings");
 }
@@ -5917,7 +5920,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.68");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.69");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6285,6 +6288,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.68"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.69"></script>
 </body>
 </html>
