@@ -79,6 +79,7 @@ export function createCurrentWarOverview({context,refresh}){
  const content=document.getElementById("currentWarContent");
  const button=document.getElementById("currentWarRefresh");
  if(!host||!content)return {update(){},reset(){}};
+ let lastMarkup=null;
  function positionForWar(battle){
   const view=host.closest("#view-plan");
   if(!view)return;
@@ -91,7 +92,7 @@ export function createCurrentWarOverview({context,refresh}){
   view.classList.toggle("plan-current-war-live",battle);
  }
  function reset(){
-  host.hidden=true;content.replaceChildren();host.dataset.warKey="";
+  host.hidden=true;content.replaceChildren();host.dataset.warKey="";lastMarkup=null;
   positionForWar(false);
  }
  function update(payload){
@@ -198,9 +199,14 @@ export function createCurrentWarOverview({context,refresh}){
    'erscheinen, sobald Clash sie meldet. Ein noch fehlender Eintrag beweist '+
    'keinen verpassten Angriff. Während des Kampfes ändern sich die Werte.</p>'+
    '</details>';
-  content.innerHTML=headline+metrics+highlight+events+
+  const markup=headline+metrics+highlight+events+
    playerDetails(own,enemy,"Unser Team","own")+
    playerDetails(enemy,own,"Gegner","enemy")+info;
+  // Five-minute polling / foreground checks often return the same war.
+  // Keep the existing DOM (open teams, focus and scroll) when nothing changed.
+  if(sameWar&&lastMarkup===markup){host.hidden=false;return}
+  content.innerHTML=markup;
+  lastMarkup=markup;
   content.querySelectorAll(".cw-now-details").forEach(node=>{
    if(open.has(node.dataset.team))node.open=true;
   });
