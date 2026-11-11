@@ -108,6 +108,30 @@ function groupRounds(data,ownRows,profile){
         '<p class="statusline">Unsere Aufstellung ist für diese Runde noch nicht archiviert.</p>':"")+
     '</details>').join("")+'</div>';
 }
+// Group standings and the saved planner are separate sources. In particular,
+// one confirmed own final war must never imply 28 finished group encounters.
+function archiveStatus(data,ownRows){
+  const inWar=data.rounds.reduce((n,r)=>n+r.matches.filter(m=>m.available&&m.state==="inWar").length,0);
+  const outstanding=Math.max(0,data.expected-data.ended);
+  const ownGroupBehind=data.rounds.some(r=>r.matches.some(m=>
+    m.available&&m.state!=="warEnded"&&
+    (m.clan.tag===data.clanTag||m.opponent.tag===data.clanTag)&&
+    ownRows.some(saved=>saved.season===data.season&&saved.day===r.day&&
+      saved.war_tag===m.warTag&&saved.state==="warEnded")));
+  if(data.complete)return {label:"Abgeschlossen",note:"Alle Gruppenspiele sind mit Endstand gespeichert."};
+  if(ownGroupBehind)return {label:"Gruppenstand veraltet",
+    note:"Euer eigener letzter Krieg ist bereits als beendet gespeichert. Die Gruppenübersicht zeigt für ihn noch einen älteren Stand. "+
+      "Die übrigen Gruppenspiele werden erst nach bestätigtem Endstand als abgeschlossen gezählt."};
+  if(data.missing>0)return {label:"Ergebnisse fehlen",
+    note:"Für "+data.missing+" Begegnung"+(data.missing===1?"":"en")+" fehlen gespeicherte Clash-Ergebnisse. "+
+      "Die Tabelle ist deshalb noch vorläufig."};
+  if(inWar>0)return {label:outstanding+" Ergebnisse offen",
+    note:"Im zuletzt gespeicherten Clash-Gruppenstand sind noch "+inWar+
+      " Begegnung"+(inWar===1?"":"en")+" als laufend eingetragen. "+
+      "Der eigene Plan kann trotzdem bereits abgeschlossen sein."};
+  return {label:"Stand vorläufig",
+    note:"Der gespeicherte Gruppenstand reicht noch nicht für eine endgültige Tabelle."};
+}
 export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=()=>null}){
   let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false;
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
@@ -155,11 +179,12 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
       if(!d||d.clanTag!==row.group_json?.clanTag||row.season!==d.season)return "";
       const checked=new Date(row.updated_at);
       const date=Number.isNaN(checked.getTime())?"Stand unbekannt":checked.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
+      const status=archiveStatus(d,ownRows);
       return '<details class="season-archive-item" data-archive-key="season:'+esc(d.season)+'"><summary><span><strong>'+esc(month(d.season))+'</strong>'+
-        '<small>'+d.clans.length+' Clans · '+d.ended+' / '+d.expected+' Kriege abgeschlossen</small></span>'+
-        '<span class="season-archive-chip">'+(d.complete?"Abgeschlossen":"Noch nicht vollständig")+'</span></summary>'+
-        '<div class="season-archive-body"><p class="statusline">Zuletzt von Clash gespeichert: '+esc(date)+
-        '. Die Rangfolge ist bei offenen oder fehlenden Kriegen vorläufig. Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
+        '<small>'+d.clans.length+' Clans · '+d.ended+' / '+d.expected+' Gruppenspiele beendet</small></span>'+
+        '<span class="season-archive-chip">'+esc(status.label)+'</span></summary>'+
+        '<div class="season-archive-body"><p class="statusline">Gespeicherter Gruppenstand vom '+esc(date)+
+        '. '+esc(status.note)+' Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
         groupTable(d)+
         '<h4>Runden</h4>'+groupRounds(d,ownRows,getProfile?.())+'</div></details>';
     }).join("")+'</div>');
@@ -186,7 +211,7 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
         .eq("clan_id",id).order("season",{ascending:false}).limit(140)}
       catch{rosterQuery={data:[],error:true}}
       if(token!==requestSerial||id!==current())return;
-      if(refresh)refresh.title="";
+      if(refresh)refresh.title="Bereits gespeicherte Gruppenergebnisse neu laden (kein neuer Clash-Abruf).";
       loadedId=id;rows=Array.isArray(data)?data:[];
       ownRows=!rosterQuery.error&&Array.isArray(rosterQuery.data)?rosterQuery.data:[];busy=false;render();
     }catch(error){
