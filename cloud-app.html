@@ -6060,6 +6060,9 @@ window.CWLLegacy={
   if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
   resetPlanningData();
   renderAll("Neue CWL erkannt · dein Plan ist bereit");
+  // Persist the fresh plan now: the app may be closed before the regular
+  // debounce. A failed Cloud save must be visible, not a silent success.
+  await cloud.flushPendingChanges?.();
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
