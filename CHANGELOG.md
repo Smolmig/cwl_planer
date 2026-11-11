@@ -6,6 +6,13 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+### Server-Korrektur #254 – CWL-Abschluss mit fünf oder sieben Kriegen (ohne neuen Cloud-App-Release)
+- Bei einer belegten **Sechs-Clan-Liga mit genau fünf Runden** erkennt der serverseitige Freigabe-Guard nun den beendeten **fünften** eigenen Krieg als Abschluss. Bei **acht Clans mit sieben Runden** bleibt ausschließlich der beendete siebente eigene Krieg maßgeblich.
+- Die Bewertung verlangt stimmigen servicegeschützten Gruppenstand, korrekten verknüpften Clan, sechs/acht **einzigartige gültige Clan-Tags**, exakt fünf/sieben Runden und einen wirklich als `warEnded` belegten eigenen Finalkrieg; fehlende/unvollständige API-Daten erzeugen keine Sperre.
+- **Nur zwei private SQL-Funktionen ersetzt:** keine Spieler-/Clan-/Plan-/Statistik-/Archivdaten verändert, keine öffentlichen RPC-/RLS-Rechte erweitert, keine Änderung an Web-App, Offline oder Hilfe (unverändert auf Aktualität geprüft). Read-only SQL-Fixtures und Node-Contracttest prüfen 5/5, 7/7, unvollständige 6/7, falschen Clan, Runden-/Clan-Widersprüche.
+- Vertrauenswürdiger Abschluss **ohne archivierten Finalbeleg** sowie ownerloser, vollständig transaktionaler neuer CWL-Plan bleiben #227; reale Clan-/Rollen-UAT #213 weiterhin offen.
+
+
 ### P0 #104 – Collector-Scheduler und vollständige Clanlisten (Infrastruktur, kein Cloud-App-Release)
 - GitHub-`schedule` erhält zwei off-peak Startchancen je Stunde (`:17`/`:47` UTC, best effort) statt einer. Die bestehenden kurzlebigen GitHub-OIDC-Identitäts-/Signaturprüfungen, die exakte Workflow-Identität und der Scheduler-Mutex bleiben unverändert. Ein Workflow-Datei-Push löst einen signierten Funktionstest aus.
 - Fehler beim vollständigen Clanlisten-Abruf werden nicht mehr als Vollerfolg maskiert: getrennte aggregierte, sicher klassifizierte Fehlergründe statt Clan- oder Spielerdaten; 503 und fehlschlagender GitHub-Job bei unvollständiger Clanzeit-/Spenden-Beobachtung. Erfasste Kriegsdaten bleiben erhalten; fehlende Historie/Angriffe werden nicht rückwirkend erfunden.
