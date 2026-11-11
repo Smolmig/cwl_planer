@@ -101,6 +101,12 @@ test("Normal CW combines two attacks per player, in first/second order as Clash 
   assert.equal(player.querySelectorAll(".cw-now-attack").length,1);
   assert.match(player.textContent,/1\. Angriff.*Basis B/);
   assert.doesNotMatch(player.textContent,/2\. Angriff/);
+  // Identical 5-minute / foreground API polls must preserve opened DOM nodes.
+  const ownTeam=card.querySelector('.cw-now-details[data-team="own"]');
+  ownTeam.open=true;
+  overview.update({currentWar:war});
+  assert.strictEqual(card.querySelector('.cw-now-details[data-team="own"]'),ownTeam);
+  assert.equal(ownTeam.open,true);
   // API arrays need not arrive in chronological order; keep the earlier hit first.
   war.clan.members[0].attacks=[second,first];
   overview.update({currentWar:war});

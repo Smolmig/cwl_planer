@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.62";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.62";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.62";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.62";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.62";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.62";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.63";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.63";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.63";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.63";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.63";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.63";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -543,10 +543,12 @@ const stats=createCloudStats({
   memberProfiles:storage.getProfile()?.members?.filter(m=>m.playerTag).map(m=>({playerTag:m.playerTag,name:m.name}))||[]})
 });
 let currentWarOverview=null;
+const finishStartup=()=>window.CWLStartup?.finish?.();
 const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
  ensureCloudSaved:()=>ensureSaved(),
  applyVerifiedPause:args=>applyVerifiedPause(args),
+ onInitialSettled:expectedClan=>{if(cloud.active&&clanId===expectedClan)finishStartup()},
  onStatus:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
@@ -893,7 +895,7 @@ async function chooseClan(epoch=accountEpoch){
  window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
- toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");return}
+ toggle("cloudClanActions",false);toggle("cloudBackupPanel",false);cloud.afterRender();if(!pendingInviteCode())open();msg("Noch kein Clan verknüpft. Erstelle deinen eigenen Bereich oder gib einen Einladungscode ein.");finishStartup();return}
  const {data,error:err}=await sb.from("cwl_clan_memberships").select("role,display_name")
   .eq("clan_id",clanId).eq("user_id",user.id).single();
  if(err)throw err;
@@ -941,6 +943,8 @@ async function chooseClan(epoch=accountEpoch){
  cloud.afterRender();
  await startPresence();
  live.start();
+ // No official Clash war request will settle for unlinked or offline clans.
+ if(!clans.find(c=>c.id===clanId)?.clash_tag||!navigator.onLine)finishStartup();
  stats.load().catch(console.warn);
  syncAutoRosterSetting();
  setTimeout(()=>maybeAutoRoster().catch(console.warn),1500);
@@ -2190,7 +2194,11 @@ sb.auth.onAuthStateChange((event,session)=>{
   queueMicrotask(()=>useSession(session).catch(error));
 });
 const {data:{session},error:sessionErr}=await sb.auth.getSession();
-if(sessionErr)error(sessionErr);
-else if(recoveryMode)beginRecovery();
-else if(session)try{await useSession(session)}catch(e){error(e)}
-else{showSignedIn();cloud.afterRender();if(!recoveryMode&&isInviteCode(resumedInvite))await showInviteDialog(resumedInvite)}
+if(sessionErr){error(sessionErr);finishStartup()}
+else if(recoveryMode){beginRecovery();finishStartup()}
+else if(session)try{await useSession(session)}catch(e){error(e);finishStartup()}
+else{
+ showSignedIn();cloud.afterRender();
+ try{if(!recoveryMode&&isInviteCode(resumedInvite))await showInviteDialog(resumedInvite)}
+ finally{finishStartup()}
+}

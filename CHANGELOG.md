@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.63] - 2026-11-11
+
+### Cloudstart: erst den richtigen Clan zeigen, Routine-Refresh nicht flackern lassen
+- **Nur bei gespeicherter Cloud-Anmeldung** wird die anfängliche lokale Gastansicht verdeckt. Ein dezenter Ladebildschirm bleibt bis zum geladenen Clanprofil und dem ersten Clash-/CWL-Status (Erfolg oder Fehler) sichtbar. Keine Änderung an der Offline-/Gastnutzung; ohne eingeloggte Session ist die lokale Ansicht sofort erreichbar.
+- Falls die Anmeldung oder API hängt, gibt der Startschutz nach **12 Sekunden** die vorhandene App frei; keine ewige Warteansicht. Keine verlängerten Cloud-Auth-Sitzungen, neue Datenbanken oder versteckte Profil-Speicherung.
+- **Normaler CW:** Wenn die API beim Polling dieselben Daten zurückliefert, bleibt die bestehende Team-/Angriffs-DOM erhalten. Manuell geöffnete Listen, Fokus und Scrollposition springen nicht durch unnötiges Neuerzeugen; bei **echten** neuen Angriffen wird die Ansicht weiter aktualisiert.
+- Einstiegshilfe, Sync-Hilfe, Versionsreferenzen und synthetische Regressionstests aktualisiert. Keine Änderungen an Server-Collector, Spielerdaten, Statistiken, Solver, CWL-Zyklus/RLS oder separater Offline-PWA.
+- Weiter offen für späteres Fine-Tuning: echtes iOS-/Android-Startup-Timing, mehrstufige Teil-Refreshes außerhalb des Live-CW, gezielte Performance-Messungen und optionale inkrementelle DOM-Aktualisierung. Kein riskanter Komplettumbau.
+
 ## [1.16.62] - 2026-11-11
 
 ### Normaler Clankrieg: erster und zweiter Angriff auf einen Blick

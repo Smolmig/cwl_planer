@@ -1,8 +1,8 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.62";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.62";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.62";
-import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.16.62";
-import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.16.62";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.63";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.63";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.63";
+import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.16.63";
+import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.16.63";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -70,7 +70,7 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,ensureCloudSaved,applyVerifiedPause}) {
+export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onInitialSettled,ensureCloudSaved,applyVerifiedPause}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   let lastKnownGroup=null; // Last validated group from THIS linked clan only.
@@ -1098,7 +1098,12 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,ens
       if(manual)notify("⚠ "+offlineReason);
       console.warn("CWL status:",String(err?.message||err));
     }finally{
-      if(req===requestId){fetching=false;render();storage.refreshSummary?.()}
+      if(req===requestId){
+        fetching=false;render();storage.refreshSummary?.();
+        // First observed success OR failure: reveal the current saved Cloud
+        // state rather than leaving the cold-start shield up indefinitely.
+        try{onInitialSettled?.(id)}catch(e){console.warn("Cloud start view:",e)}
+      }
     }
   }
   function stop(){
