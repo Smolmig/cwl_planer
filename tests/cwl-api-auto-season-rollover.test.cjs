@@ -97,4 +97,6 @@ test("In linked Cloud no manual new-CWL button; offline guest still uses manual 
  assert.match(live,/onStatus\?\.\(data\)/);
  assert.match(cloud,/onStatus:data=>\{/);
  assert.match(cloud,/onSnapshot:data=>stats\.captureCwl\(data\)/);
+ assert.match(html,/await cloud\.flushPendingChanges\?\.\(\)/);
+ assert.match(cloud,/flushPendingChanges:\(\)=>ensureSaved\(\)/);
 });
