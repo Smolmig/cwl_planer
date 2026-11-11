@@ -83,7 +83,7 @@ test("Help explains current Einsatzverteilung and availability on phone and desk
 },async()=>{
  assert.match(html,/cloudProgress\?"Ausgeführt":"Gespielt"/);
  assert.match(html,/cloudProgress\?"Offen":"Geplant"/);
- assert.match(html,/Tage ohne RAUS/);
+ assert.match(html,/Tagen verfügbar/);
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  try{
   for(const [width,theme] of [[320,"arena"],[390,"dark"],[430,"light"],[1366,"arena"]]){
@@ -104,7 +104,7 @@ test("Help explains current Einsatzverteilung and availability on phone and desk
     assert.match(await intro.innerText(),/Mitglieder prüfen/);
     assert.match(await intro.innerText(),/gemeinsamen Clan.*Clash.*Gastmodus/s);
     const copy=await explanation.innerText();
-    for(const value of ["Ausgeführt","Offen","Gespielt","Geplant","Gesamt","6/7 Tage ohne RAUS","kein Einsatzziel",
+    for(const value of ["Ausgeführt","Offen","Gespielt","Geplant","Gesamt","6 von 7 Tagen verfügbar","kein Einsatzziel",
       "einzelne Kriegstage","in Clash fix","keine Garantie","Ø Sterne","8★-Ziel"])
       assert.ok(copy.includes(value),width+" "+theme+": "+value);
     assert.doesNotMatch(copy,/\bG\s*=|\bP\s*=/);
