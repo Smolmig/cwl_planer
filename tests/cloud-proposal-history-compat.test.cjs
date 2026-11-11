@@ -21,11 +21,12 @@ test("Editor proposal reuses original server-side played histories despite norma
  const context={
    clanId:"clan-id",role:"editor",changedSerial:JSON.stringify(normalized),
    assertReviewSeasonAvailable:()=>{},
+   accountEpoch:0,reviewCycleToken:()=>({p_expected_cycle:"test-cycle",p_expected_season:"2026-11"}),reviewRpcError:err=>err,
    rawSavedProfile:raw,revision:4,planIsLocked:()=>true,
    suggestionChanges:()=>["Einsatzziel geändert"],
    assertPlanningReady:profile=>{assert.equal(profile.members[0].targetDays,3);assert.deepEqual(JSON.parse(JSON.stringify(profile.locks)),raw.locks);},
    storage:{confirmAction:async()=>true,toast:()=>{}},
-   sb:{rpc:async(name,payload)=>{assert.equal(name,"cwl_submit_plan_suggestion");submitted=payload.p_profile;return {error:null}}},
+   sb:{rpc:async(name,payload)=>{assert.equal(name,"cwl_submit_plan_suggestion_checked");submitted=payload.p_profile;return {error:null}}},
    loadCloudProfile:async()=>{reloaded++},loadPlanReview:async()=>{refreshed++},
    clearTimeout:()=>{},debounce:null
  };
