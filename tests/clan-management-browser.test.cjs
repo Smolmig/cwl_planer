@@ -42,13 +42,13 @@ test("More/Clanverwaltung shows current Clash ranks without recommending actions
    await setup(page);
    await page.evaluate(()=>window.CWLClanManagementView.accessChanged("first"));
    await page.evaluate(()=>window.CWLClanManagementView.open());
-   await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash-Stand"));
+   await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
    const rows=await page.locator(".clan-management-person").allTextContents();
    assert.equal(rows.length,2);
    assert.ok(rows.some(s=>s.includes("One")&&s.includes("Mitglied")&&s.includes("Spenden laut Clash")&&s.includes("Ältester")&&s.includes("Rang nach Rückkehr")));
    assert.ok(rows.some(s=>s.includes("Two")&&s.includes("Ältester")));
    assert.ok(rows.every(s=>!s.includes("Vize")&&!s.includes("Leader")));
-   assert.match(await page.locator("#clanManagementSummary").textContent(),/2 Vize\/Clanführer ausgenommen/);
+   assert.match(await page.locator("#clanManagementSummary").textContent(),/2 Vize\/Clanführer nicht bewertet/);
    assert.match(await page.locator("#clanManagementSummary").textContent(),/1 frühere Ränge prüfen/);
    assert.equal(await page.locator("#clanManagementList button").count(),0);
    await page.locator("#clanManagementBack").click();
