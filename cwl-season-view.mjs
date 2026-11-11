@@ -1,9 +1,9 @@
 // CWL season overview: a read-only companion to the operational day planner.
 // Group standings and all pairings come from the verified group feed.
 // No missing scores are ever interpreted as a valid zero.
-import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.17.0";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.17.0";
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.17.0";
+import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.18.0";
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.18.0";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.18.0";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
 const stars=x=>x===null||x===undefined?"–":String(x);
