@@ -43,7 +43,7 @@ test("Member note label, viewer read-only styling, individual average stars and 
  assert.match(app,/cloud-role-viewer #memberList \.member\{/);
  assert.match(app,/Weitere Kennzahlen und Aktionen/);
  assert.match(app,/Diese Ansicht vergleicht die geplanten Teams/);
- assert.match(app,/CWL läuft: Team bereits gestarteter Kriege steht fest/);
+ assert.match(app,/CWL läuft: Team gestarteter Kriege steht fest/);
  assert.match(stats,/p\.averageStars\.toLocaleString\("de-AT"/);
  assert.match(stats,/stats-rate-avg/);
 });
