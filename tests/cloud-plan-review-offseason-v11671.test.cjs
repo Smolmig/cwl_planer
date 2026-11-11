@@ -80,7 +80,8 @@ test("approval RPC entry points and latest Help are guarded without mutating arc
  assert.match(sync,/async function togglePlanLock\(\)[\s\S]*?assertReviewSeasonAvailable\(\)/);
  assert.match(sync,/async function submitPlanSuggestion\(\)[\s\S]*?assertReviewSeasonAvailable\(\)/);
  assert.match(sync,/async function decidePlanSuggestion\(id,action\)[\s\S]*?assertReviewSeasonAvailable\(\)/);
- assert.match(sync,/queueMicrotask\(\(\)=>\{if\(cloud\.active\)renderPlanReview\(\)\}\)/);
+ assert.match(sync,/onPhaseApplied:\(\)=>\{if\(cloud\.active\)renderPlanReview\(\)\}/);
+ assert.match(read("cwl-live.mjs"),/host\.hidden=!postseason&&!between;[\s\S]*?onPhaseApplied\?\.\(\)/);
  assert.match(html,/Planfreigabe zwischen den CWLs/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
 });
