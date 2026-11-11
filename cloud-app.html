@@ -5852,7 +5852,7 @@ function updateHistoryElement(tag,className,textValue){
 function renderReleaseHistory(){
  if(!releaseHistoryData)return;
  const query=document.getElementById("updatesSearch").value.trim().toLocaleLowerCase("de");
- const matches=entry=>[entry.title,entry.description||"",entry.version,entry.date].some(v=>v.toLocaleLowerCase("de").includes(query));
+ const matches=entry=>[entry.title,entry.description||"",entry.version,entry.date].some(v=>String(v||"").toLocaleLowerCase("de").includes(query));
  const found=releaseHistoryData.releaseHistory.filter(matches);
  const early=releaseHistoryData.earlyMilestones.filter(matches);
  const host=document.getElementById("updatesHistory");
