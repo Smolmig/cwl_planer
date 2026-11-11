@@ -81,10 +81,16 @@ export function deriveCwlFormat(payload,snapshot=sanitizeSnapshot(payload)){
  const coherent=expected&&(!rounds||rounds.length===0||rounds.length===expected);
  const warCount=coherent&&(!provided||provided===expected)?expected:
    !group&&provided?provided:null;
+ // A contradictory or malformed official group must not override a local plan.
+ if(group&&(!expected||!coherent||(provided&&provided!==expected)))
+  return {warCount:null,slots:null};
  const sizes=[];
  for(const r of snapshot.rounds){
-  if(r?.available&&Number.isInteger(r.teamSize)&&r.teamSize>=1&&r.teamSize<=50)
-   sizes.push(r.teamSize);
+  if(!r?.available||!Number.isInteger(r.teamSize)||r.teamSize<1||r.teamSize>50)continue;
+  const complete=side=>Array.isArray(side?.members)&&side.members.length===r.teamSize&&
+   side.members.every(m=>validTag(tagOf(m?.tag)))&&
+   new Set(side.members.map(m=>tagOf(m?.tag))).size===r.teamSize;
+  if(complete(r.clan)&&complete(r.opponent))sizes.push(r.teamSize);
  }
  if(group&&Array.isArray(group.rounds))for(const round of group.rounds)
   for(const match of Array.isArray(round?.matches)?round.matches:[])
