@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.72",
+  "version": "v1.17.0",
   "released": "2026-11-11",
-  "summary": "Freigaben und Vorschläge gelten nur für die exakt gewählte CWL-Saison und den aktuellen Planzyklus."
+  "summary": "CWL-Kriegsgröße und verkürzte Fünf-Kriege-Ligen werden bei verbundenen Clans aus Clash übernommen."
 }
