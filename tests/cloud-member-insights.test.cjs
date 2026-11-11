@@ -32,7 +32,7 @@ test("Cloud member star average and triple rate use the same recent sample",asyn
  assert.match(html,/recent\.averageStars/);
 });
 test("Cloud roster quote sort resolves equal hit rates by observed attacks, not by name",()=>{
- assert.match(html,/3★-Quote \(roh, bis 7 AG\)/);
+ assert.match(html,/3★-Quote · letzte 7 Angriffe/);
  assert.doesNotMatch(html,/3★-Hit-Rate|3★-Hitrate/);
  const start=html.indexOf("function getDisplayMembers(){");
  const end=html.indexOf("function availabilityLabel(",start);
