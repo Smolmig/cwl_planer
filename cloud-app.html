@@ -5072,7 +5072,54 @@ function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;
   }
  }
 }state.archivedMembers=[];state.cwlLiveIgnoredSeason=state.cwlLive?.season||state.cwlLiveIgnoredSeason||null;delete state.cwlLive;}
-async function handleCwlManage(){if(window.CWLCloud?.active&&window.CWLCloud?.isPlanLocked?.()&&!window.CWLCloud?.isOwner?.()){showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return}const played=playedCount();if(!played){if(!await confirmInline("Tagesregeln werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
+async function handleCwlManage(){
+ const cloud=window.CWLCloud,startedClan=cloud?.active?cloud.getActiveClanId?.():null;
+ if(cloud?.active&&cloud.isPlanLocked?.()&&!cloud.isOwner?.()){
+  showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return;
+ }
+ const played=playedCount(),profileAtStart=state;
+ if(!played){
+  if(!await confirmInline("Tagesregeln werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{
+   title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true
+  }))return;
+  try{await cloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}
+  if(state!==profileAtStart||(startedClan&&
+    (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+  resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");
+  return;
+ }
+ const incomplete=played<state.config.days;
+ const sourceSeason=/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(state.cwlLive?.season||""))?
+  state.cwlLive.season:null;
+ const alreadyArchived=!!sourceSeason&&!!cloud?.active&&
+  state.archives.some(a=>a.sourceSeason===sourceSeason);
+ const prompt=alreadyArchived?
+  "Die bereits archivierte CWL wird nicht erneut ins Archiv kopiert. "+ 
+  "Gespielte Tage und Verfügbarkeitsregeln der aktuellen Planung werden zurückgesetzt.":
+  "Der aktuelle Stand ("+played+"/"+state.config.days+" gespielt"+
+  (incomplete?", unvollständig":"")+") wird vorher archiviert. "+
+  "Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.";
+ if(!await confirmInline(prompt,{
+  title:"Neue CWL starten?",confirmText:alreadyArchived?"Neue Planung starten":"Archivieren & neu starten"
+ }))return;
+ if(state!==profileAtStart||(startedClan&&
+   (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+ // A complete 7/7 API season may have already been archived at postseason.
+ // Never insert a duplicate for the same Cloud clan/season.
+ const archive=alreadyArchived?null:archiveCurrentCwl();
+ if(archive)state.archives.push(archive);
+ try{await cloud?.openNewCycle?.()}
+ catch(e){
+  // A failed Cloud plan-cycle RPC must not leave a phantom extra archive.
+  if(archive)profileAtStart.archives=profileAtStart.archives.filter(a=>a!==archive);
+  showToast(String(e.message||e));return;
+ }
+ if(state!==profileAtStart||(startedClan&&
+   (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+ resetPlanningData();
+ renderAll(alreadyArchived?"Neue CWL-Planung vorbereitet ✓":
+  "Vorherige CWL archiviert · neue CWL gestartet ✓");
+}
 function buildFullPlanText(){
  const days=lastPlan?.dayPlans||[],slots=state.config.slots;
  const apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.();
