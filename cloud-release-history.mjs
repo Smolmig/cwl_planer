@@ -4,6 +4,12 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.16.69",
+    "date": "2026-11-11",
+    "title": "Archiv, Einstellungen und Clanrechte verständlicher",
+    "description": "Gruppenergebnisse und ältere CWL-Pläne sind leichter zu unterscheiden. Clanrollen, gemeinsame Sicherungsstände und lokale Backups werden klarer erklärt."
+  },
+  {
     "version": "v1.16.68",
     "date": "2026-11-11",
     "title": "Vergleiche und Kriegsverlauf klarer erklärt",
