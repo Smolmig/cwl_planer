@@ -65,7 +65,7 @@ test("form, list position and selected wars are explicitly separate from the sev
 
 test("deployment overview labels availability and counted assignments, not unknown manual three-star strength",()=>{
  const render=html.slice(html.indexOf("function renderSummary(){"),html.indexOf("function renderArchives",html.indexOf("function renderSummary(){")));
- assert.match(render,/Tage ohne RAUS/);
+ assert.match(render,/Tagen verfügbar/);
  assert.match(render,/cloudProgress\?"Ausgeführt":"Gespielt"/);
  assert.match(render,/cloudProgress\?"Offen":"Geplant"/);
  assert.match(render,/\$\{x\.count\} gesamt/);
