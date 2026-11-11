@@ -3807,7 +3807,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.67</strong><span>Mitglieder und Einsätze klarer erklärt</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.68</strong><span>Mitglieder und Einsätze klarer erklärt</span></div>
       <ul>
        <li><b>Mitglieder:</b> Klarer Einstieg, verständlichere Hinweise und erkennbare Tagesregeln.</li>
        <li><b>Einsätze:</b> Eindeutige Beschriftungen für offene Einsätze, Einsatzziele und die 8-Sterne-Sortierung.</li>
@@ -3918,17 +3918,17 @@ html.cloud-startup-pending .cloud-startup-splash{
     </details>
   </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
-    <div class="section-title"><div><h3>Vergleiche</h3><p class="statusline">Eigene Auswahl für alle Vergleiche – unabhängig von der Spielerstatistik.</p></div></div>
+    <div class="section-title"><div><h3>Vergleiche</h3><p class="statusline">Wähle die Kriege für diesen Vergleich. Andere Statistikbereiche bleiben davon unberührt.</p></div></div>
     <div class="stats-context-controls">
       <div class="field"><label for="statsCompareType">Kriegsart</label><select id="statsCompareType"><option value="all">CW und CWL</option><option value="normal">Nur CW</option><option value="cwl">Nur CWL</option></select></div>
       <div class="field"><label for="statsCompareDays">Zeitraum</label><select id="statsCompareDays"><option value="all">Alle erfassten Kriege</option><option value="30">Letzte 30 Tage</option><option value="90">Letzte 90 Tage</option><option value="180">Letzte 180 Tage</option></select></div>
     </div>
     <p class="stats-note" id="statsCompareScope"></p>
-    <div class="section-title"><div><h3>Angriffe nach Gegner-Rathaus</h3><p class="statusline">Tatsächliche Ergebnisse – getrennt nach normalem Clankrieg und CWL.</p></div></div>
+    <div class="section-title"><div><h3>Angriffe nach Gegner-Rathaus</h3><p class="statusline">Erfasste Angriffe nach Gegner-Rathaus und Kriegsart.</p></div></div>
     <p class="stats-note">Niedriger / gleich / höher vergleicht das Rathaus des Gegners mit dem des Angreifers. Gleiche Rathausstufe bedeutet nicht automatisch gleich starke Basen. Bei fehlendem RH zählen Angriffe separat als „Unbekannt“.</p>
     <div id="statsMatchupComparison" class="stats-matchup-comparison" aria-live="polite"></div>
     <div class="stats-duel">
-      <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Gleiche Kriege, aber nicht unbedingt gleich viele Angriffe oder gleich starke Gegner.</p></div></div>
+      <div class="section-title"><div><h3>Zwei Spieler direkt vergleichen</h3><p class="statusline">Beide Spieler werden in denselben ausgewählten Kriegen verglichen. Anzahl und Schwierigkeit der Angriffe können sich unterscheiden.</p></div></div>
       <div class="stats-duel-controls">
         <div class="field"><label for="statsDuelLeft">Spieler A</label><select id="statsDuelLeft" aria-label="Ersten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
         <div class="field"><label for="statsDuelRight">Spieler B</label><select id="statsDuelRight" aria-label="Zweiten Spieler auswählen"><option value="">Spieler wählen</option></select></div>
@@ -3938,19 +3938,19 @@ html.cloud-startup-pending .cloud-startup-splash{
     </div>
   </section>
   <section class="card stats-war-history-card" data-stats-panel="history" aria-label="Kriegsverlauf" hidden>
-    <div class="section-title"><div><h3>Verlauf & einzelne Kriege</h3><p class="statusline">Dreierquote oder Ø Sterne im zeitlichen Verlauf und vollständige Kriegsdetails.</p></div></div>
+    <div class="section-title"><div><h3>Verlauf & einzelne Kriege</h3><p class="statusline">So haben sich 3★-Quote und durchschnittliche Sterne entwickelt. Darunter findest du die einzelnen Kriege.</p></div></div>
     <div class="stats-trend-controls">
       <div class="field"><label for="statsTrendType">Kriegsart</label><select id="statsTrendType"><option value="all">CW und CWL</option><option value="normal">Nur CW</option><option value="cwl">Nur CWL</option></select></div>
-      <div class="field"><label for="statsTrendDays">Zeitraum</label><select id="statsTrendDays"><option value="all">Gesamter Datenbestand</option><option value="30">30 Tage</option><option value="90">90 Tage</option><option value="180">180 Tage</option><option value="365">365 Tage</option></select></div>
+      <div class="field"><label for="statsTrendDays">Zeitraum</label><select id="statsTrendDays"><option value="all">Alle erfassten Kriege</option><option value="30">Letzte 30 Tage</option><option value="90">Letzte 90 Tage</option><option value="180">Letzte 180 Tage</option><option value="365">Letzte 365 Tage</option></select></div>
       <div class="field"><label for="statsTrendMetric">Kennzahl</label><select id="statsTrendMetric"><option value="hitRate">3★-Quote</option><option value="averageStars">Ø Sterne je Angriff</option></select></div>
-      <div class="field"><label for="statsTrendGranularity">Zeitachse</label><select id="statsTrendGranularity"><option value="week" selected>Woche</option><option value="day">Tag</option><option value="month">Monat</option></select></div>
+      <div class="field"><label for="statsTrendGranularity">Anzeigen nach</label><select id="statsTrendGranularity"><option value="week" selected>Kalenderwoche (KW)</option><option value="day">Tag</option><option value="month">Monat</option></select></div>
     </div>
-    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Kreise stehen für CW, Rauten für CWL. Kleine Achsenbrüche markieren Zeiträume ohne dokumentierte Angriffe – keine 0-%-Werte.</p>
+    <p class="stats-note"><span class="stats-chart-legend"><span><i class="legend-normal" aria-hidden="true"></i> Normaler CW</span><span><i class="legend-cwl" aria-hidden="true"></i> CWL</span></span> Kreise: CW · Rauten: CWL. <b>KW 12/26</b> bedeutet Kalenderwoche 12 im Jahr 2026. Lücken ohne erfasste Angriffe sind keine 0-%-Werte.</p>
     <p id="statsTrendScope" class="stats-note" aria-live="polite"></p>
     <div id="statsTrendChart" class="stats-trend-chart" aria-live="polite"></div>
-    <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Stichprobengröße"></div>
+    <div id="statsTrendTable" class="stats-trend-table" aria-label="Verlaufswerte mit Anzahl erfasster Angriffe"></div>
     <div class="section-title stats-war-list-title"><h3>Einzelne Kriege</h3></div>
-    <p class="statusline">Tippe auf einen Krieg für Angreifer, Ziel und Sterne.</p>
+    <p class="statusline">Öffne einen Krieg, um die erfassten Angriffe und Sterne anzusehen. Die Sternsumme hier ist nicht das offizielle Kriegsergebnis.</p>
     <div id="statsWarHistory"><p class="stats-note">Kriege werden geladen …</p></div></section>
 </section>
 <section id="view-help" class="view more-subview" aria-labelledby="helpTitle"><div class="card help-page">
@@ -3987,6 +3987,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerform“ wählst du 30, 90 oder 180 Tage. „Angriffsmenge &amp; 3★-Quote“ berücksichtigt zuerst, wie viele Angriffe gegen gleiches Rathaus tatsächlich vorliegen, und vergleicht dann die Quote innerhalb von Gruppen. „3★-Quote (auch bei wenigen Angriffen)“ sortiert ausschließlich nach Quote. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
+    <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Filter in Einsätze</b><div>Mit <b>＋ Filter</b> wählst du beispielsweise <b>Rotierende Spieler</b>, <b>Ziel offen</b> oder <b>8 Sterne offen</b>. Jeder Filter erscheint als Chip und lässt sich mit <b>×</b> einzeln entfernen. Verschiedene Filter kannst du kombinieren; eine andere Auswahl innerhalb derselben Gruppe ersetzt die vorige. <b>Ziel offen</b> zeigt Spieler, denen laut Plan oder persönlichem Einsatzziel noch bestätigte Angriffe fehlen – beispielsweise <b>3/4</b> oder <b>1/5</b>. <b>Ziel erreicht</b> bedeutet, dass die entsprechende Zahl bestätigt ist. <b>Im Plan: 3/4 Einsätze</b> meint die aktuell vorgesehenen Einsätze, <b>Ziel: 3/4 Einsätze</b> ein ausdrücklich festgelegtes Einsatzziel. Nur echte Angriffe zählen als ausgeführt. <b>8 Sterne offen</b> und <b>8 Sterne erreicht</b> beziehen sich auf die bestätigten Sterne dieser CWL. Bei unvollständigen Clash-Daten bleibt der Status ungeklärt, statt fehlende Angriffe zu erfinden. Mit der Suche kannst du einen Spieler direkt finden.</div></div>
     <div class="help-item"><b>Letzte Stunde im CWL-Krieg</b><div>Bei frischem Clash-Datenstand und belegter Kriegsendzeit erinnert der Plan an offene Angriffe innerhalb der letzten 60 Minuten. Das bedeutet <b>noch nicht angegriffen laut letztem Abruf</b>, nicht „vergessen“. Ist der Datenstand veraltet, erscheint nur ein neutraler Prüfhinweis. Berechtigte Clanführer können „Im Spiel erinnert“ auf <b>diesem Gerät</b> quittieren: Das markiert keinen Angriff, ändert keine Aufstellung und wird nicht mit anderen Geräten synchronisiert. Neue offene Spieler werden erneut angezeigt. Bei geschlossener App gibt es damit keine Push-Erinnerung; nach Kriegsende bleibt eine spätere Entscheidung über weitere Einsätze manuell.</div></div>
@@ -4291,11 +4292,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.67"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.67"></script>
-<script src="./cwl-planning-core.js?v=1.16.67"></script>
+<script src="./clan-management-core.js?v=1.16.68"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.68"></script>
+<script src="./cwl-planning-core.js?v=1.16.68"></script>
 <script>
-const APP_VERSION="v1.16.67";
+const APP_VERSION="v1.16.68";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5916,7 +5917,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.67");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.68");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6284,6 +6285,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.67"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.68"></script>
 </body>
 </html>
