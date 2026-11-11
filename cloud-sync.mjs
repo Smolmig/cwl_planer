@@ -467,6 +467,10 @@ const cloud={
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
+  // Cloud + a real Clash tag starts each CWL from the API, never a manual
+  // new-season control. The offline plan keeps its existing button.
+  const startButton=$("manageCwlBtn");
+  if(startButton)startButton.hidden=this.active&&!!activeClan?.clash_tag;
   const managementAllowed=this.active&&role==="owner"&&!!activeClan?.clash_tag;
   const managementEntry=document.querySelector('[data-more-action="management"]');
   if(managementEntry)managementEntry.hidden=!managementAllowed;
