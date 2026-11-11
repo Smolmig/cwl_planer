@@ -4,6 +4,13 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.16.72",
+    "releaseType": "patch",
+    "date": "2026-11-11",
+    "title": "Freigaben bei Saisonwechsel sicherer",
+    "description": "Freigaben und Änderungsvorschläge beziehen sich nun auf den genauen gemeinsamen Planzyklus. Veraltete Browser-Tabs können nach einem neuen CWL-Start nicht versehentlich den neuen Plan verändern. Ein belegter beendeter letzter CWL-Krieg blockiert alte Freigaben."
+  },
+  {
     "version": "v1.16.71",
     "releaseType": "patch",
     "date": "2026-11-11",
