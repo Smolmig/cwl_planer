@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.61] - 2026-11-11
+
+### Der aktuelle Clan War im Mittelpunkt; letzter CWL-Rückblick kompakt
+- Nach einer CWL zeigt **Plan** einen ausklappbaren Rückblick mit den drei Reitern **Tabelle · Kriege · Spieler**. Die vorhandenen validierten Saison-Daten werden weiterhin verwendet; offene letzte Kriege bleiben ausdrücklich unvollständig. Ein aktuell laufender **normaler Clan War rückt ganz nach oben**, der CWL-Rückblick wird darunter beim Start des Kampftags automatisch eingeklappt. Während des Vorbereitungstags bleibt der Rückblick im Vordergrund und die neue CW-Aufstellung steht darunter.
+- Normaler CW: Sternenstand, Zerstörung, eingesetzte/verfügbare Angriffe, Vorbereitungs-/Kriegsende, aktuelle Angriffs-Highlights sowie **Überblick · Angriffe · Aufstellungen** mit beiden Teams und individuellen Zielen. Zusätzliche offizielle API-Felder (Map-Position, Angriffsreihenfolge/-dauer, bestOpponentAttack) werden ausschließlich clanbezogen aus dem bereits authentifizierten Edge-Proxy geliefert. „Stärkste Angriffe“ ist eine nachvollziehbare eigene Sterne-/Zerstörungs-Sortierung, **keine behauptete offizielle Heldentat-Wertung**. Fehlende Angriffsdaten sind keine Strafbeweise.
+- **Kein manueller „Neue CWL starten“-Button im API-verknüpften Cloud-Clan**. Beim Eintritt einer laut Clash neuen Liga in Vorbereitung/Kriegsphase sichert der Owner den vorherigen CWL-Stand **auch bei 6/7 als unvollständig** in einem deduplizierten Archiv, persistiert ihn und schaltet den neuen Cloud-Zyklus erst anschließend frei. Eine fehlgeschlagene Cloud-Transaktion löscht die alten Einsätze nicht. Ohne Browser-Owner-Abgleich läuft kein autonomer Server-Archivjob; Zuschauer sehen bis dahin einen kurzen Wechselstatus.
+- Offline-/unverknüpfte Planer behalten die manuelle Schaltfläche. Freigegebene CWL-Planungsansicht, Sperrungen, 8-Sterne-Regeln und normale CW-Statistikspeicherung bleiben unverändert.
+- Hilfe, Beschriftungen, drei Themes und mobile Breiten 320/390/430 px gemeinsam gepflegt. Weiterer appweiter Copy-/UX-Audit als eigener offener Punkt; keine komplette Übersetzung behauptet.
+
 ## [1.16.60] - 2026-11-11
 
 ### CWL-Abschluss-Hotfix: Bereits archivierte Saisons nur einmal sichern
