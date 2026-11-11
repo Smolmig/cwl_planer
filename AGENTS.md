@@ -6,6 +6,8 @@ Bevor du eine UI/UX-Änderung oder ein Feature in diesem Repository entwirfst, *
 
 **Merksatz:** „Zeige das Wichtige zuerst, gruppiere mit Abstand statt mit Kästen, und ändere niemals ungefragt das, womit jemand gerade arbeitet.“
 
+**Pflicht zum öffentlichen Update-Verlauf seit v1.16.66:** Bei jeder Cloud-Version den **neuesten** Nutzer-Eintrag in `cloud-release-history.mjs` ergänzen (echtes Releasedatum, verständlicher kurzer Titel, ggf. kurzer Erläuterungssatz), zusätzlich `CHANGELOG.md`, `cloud-version.json`, die „Neu in …“-Box unter Design & Aktualisierung und die Hilfe pflegen. Im Menü **Mehr → Update-Verlauf** müssen die früheren Stände vollständig erhalten bleiben; vor v1.0.0 keine historischen Tagesdaten erfinden. Der Contract-Test `tests/cloud-public-update-history.test.cjs` verhindert neue Cloud-Versionen ohne vordersten Verlaufseintrag. Kein Roh-Changelog oder Entwicklerjargon in der öffentlichen Ansicht. Das History-Modul erst bei Ansicht öffnen laden, um den Cloud-App-Start nicht zu verschlechtern.
+
 Insbesondere:
 - Vermeide Kartenstapel / mehrfache Rahmen um Listenzeilen.
 - Bewahre Expansionen, Filter, Scrollposition, Fokus und Eingaben bei automatischem Refresh.
