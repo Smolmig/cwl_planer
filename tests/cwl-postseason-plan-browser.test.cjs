@@ -60,10 +60,15 @@ test("Normal CW belongs on Plan, not Einsätze, with both rosters and real attac
     assert.match(await page.locator("#currentWarContent").innerText(),/1\/4 Angriffe/);
     const own=page.locator(".cw-now-details").first();
     const enemy=page.locator(".cw-now-details").last();
-    await own.locator("summary").click();
-    await enemy.locator("summary").click();
+    assert.match(await page.getByRole("tabpanel").first().innerText(),/Beste Angriffe/);
+    await page.getByRole("tab",{name:"Unser Team"}).click();
     assert.match(await own.innerText(),/Luki/);
+    await page.getByRole("tab",{name:"Gegner",exact:true}).click();
     assert.match(await enemy.innerText(),/Enemy 1/);
+    await page.getByRole("tab",{name:"Angriffe"}).click();
+    assert.match(await page.getByRole("tabpanel").first().innerText(),/Erfasste Angriffe/);
+    await page.getByRole("tab",{name:"Angriffe"}).press("ArrowRight");
+    assert.equal(await page.getByRole("tab",{name:"Unser Team"}).getAttribute("aria-selected"),"true");
     for(const theme of ["gold","dark","light"]){
      await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
      const dimensions=await page.evaluate(()=>({
