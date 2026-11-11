@@ -288,7 +288,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     const postseason=ctx.active&&(model.mode==="postseason"||transition);
     const between=ctx.active&&model.mode==="idle"&&confirmedNoCwl;
     const warState=current?.currentWar?.state||null;
-    const battleDay=warState==="inWar";
+    const warForeground=warState==="inWar"||warState==="warEnded";
     view.classList.toggle("plan-postseason-mode",!!postseason);
     view.classList.toggle("plan-between-cwl-mode",!!between);
     const planHeading=view.querySelector("#planOverview h3");
@@ -323,8 +323,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       const oldDisclosure=host.querySelector(".plan-last-cwl"),
         oldTab=host.querySelector('[data-postseason-tab][aria-selected="true"]'),
         tab=oldTab?.dataset.postseasonTab||"rounds",
-        open=oldDisclosure?.open??!battleDay,
-        newOpen=battleDay&&!wasBattle?false:open;
+        open=oldDisclosure?.open??!warForeground,
+        newOpen=warForeground&&!wasBattle?false:
+         !warForeground&&wasBattle?true:open;
       const focusedTab=oldTab?.contains(document.activeElement)===true;
       const focusedSummary=oldDisclosure?.querySelector("summary")===
        document.activeElement;
@@ -339,7 +340,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       host.innerHTML='<details class="plan-last-cwl"'+(newOpen?' open':'')+'>'+
         '<summary><span class="plan-last-cwl-title">'+esc(title)+'</span>'+
         '<span class="plan-last-cwl-hint">'+
-        (battleDay?"Ergebnisse ansehen":"Ergebnisse der letzten Liga")+'</span></summary>'+
+        (warForeground?"Ergebnisse ansehen":"Ergebnisse der letzten Liga")+'</span></summary>'+
         '<div class="plan-last-cwl-body">'+transitionHint+
         renderInlineCwlPostseason(ctx.profile,model.snapshot,group,{
          ...model,mode:"postseason",season,savedDays:model.savedDays??0
@@ -360,7 +361,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
         ?.focus({preventScroll:true});
       host.dataset.renderKey=key;
     }
-    host.dataset.warWasActive=battleDay?"1":"0";
+    host.dataset.warWasActive=warForeground?"1":"0";
     return true;
   }
 
