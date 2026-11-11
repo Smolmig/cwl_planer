@@ -47,6 +47,29 @@ const safeSide=(s,fromGroup)=>({
   badgeUrl:safeBadge(s?.badgeUrls)||safeBadge(fromGroup?.badgeUrls),
   members:(Array.isArray(s?.members)?s.members:[]).slice(0,50).map(safeMember)
 });
+// Current normal CW exposes additional *official* war-map and attack data.
+// Keep it read-only, tenant-scoped and explicitly separate from CWL snapshots.
+const safeNormalAttack=a=>({
+  attackerTag:tag(a?.attackerTag),defenderTag:tag(a?.defenderTag),
+  stars:Number.isInteger(a?.stars)&&a.stars>=0&&a.stars<=3?a.stars:null,
+  destructionPercentage:safeDestruction(a?.destructionPercentage),
+  order:Number.isInteger(a?.order)&&a.order>0&&a.order<=200?a.order:null,
+  duration:Number.isInteger(a?.duration)&&a.duration>=0&&a.duration<=180?a.duration:null
+});
+const safeNormalSide=s=>({
+  ...safeSide(s),
+  attacks:Number.isInteger(s?.attacks)&&s.attacks>=0&&s.attacks<=100?s.attacks:null,
+  members:(Array.isArray(s?.members)?s.members:[]).slice(0,50).map(m=>({
+    ...safeMember(m),
+    mapPosition:Number.isInteger(m?.mapPosition)&&m.mapPosition>=1&&m.mapPosition<=50?
+      m.mapPosition:null,
+    opponentAttacks:Number.isInteger(m?.opponentAttacks)&&m.opponentAttacks>=0&&
+      m.opponentAttacks<=2?m.opponentAttacks:null,
+    bestOpponentAttack:m?.bestOpponentAttack?
+      safeNormalAttack(m.bestOpponentAttack):null,
+    attacks:(Array.isArray(m?.attacks)?m.attacks:[]).slice(0,2).map(safeNormalAttack)
+  }))
+});
 async function getGame(path,key) {
   // Retry transient gateway/rate-limit errors once, without retrying authorization errors.
   for(let attempt=0;attempt<2;attempt++){
@@ -94,7 +117,8 @@ async function currentNormalWar(clanTag,key) {
       attacksPerMember:Number.isInteger(war.attacksPerMember)?war.attacksPerMember:2,
       preparationStartTime:String(war.preparationStartTime||""),
       startTime:String(war.startTime||""),endTime:String(war.endTime||""),
-      clan:safeSide(our),opponent:safeSide(enemy)};
+      clan:safeNormalSide(our),opponent:safeNormalSide(enemy),
+      battleModifier:war.battleModifier==="hardMode"?"hardMode":null};
   }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
 }
 async function loadStatus(clanTag,key) {
