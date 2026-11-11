@@ -60,7 +60,38 @@ export function sanitizeSnapshot(payload) {
         stars:num(r.opponent?.stars,0,150),destructionPercentage:safeDestruction(r.opponent?.destructionPercentage),
         badgeUrl:safeBadgeUrl(r.opponent?.badgeUrl)}};
   });
-  return {season,clanTag,rounds};
+  const warCount=num(payload.warCount,5,7);
+  return {season,clanTag,rounds,...([5,7].includes(warCount)?{warCount}: {})};
+}
+// CWL rules (2026): six-clan groups have five wars; eight-clan groups seven.
+// For linked clans the official sanitized live response, not the settings
+// dropdown, is the authority. Do not infer from absent war details.
+export function deriveCwlFormat(payload,snapshot=sanitizeSnapshot(payload)){
+ if(!snapshot||!payload?.active)return {warCount:null,slots:null};
+ const group=payload.group?.season===snapshot.season&&
+   tagOf(payload.group.clanTag)===snapshot.clanTag?payload.group:null;
+ const tags=Array.isArray(group?.clans)?
+   group.clans.map(c=>tagOf(c?.tag)).filter(validTag):[];
+ const groupSize=tags.length===new Set(tags).size?tags.length:0;
+ const expected=groupSize===6?5:groupSize===8?7:null;
+ const provided=[5,7].includes(snapshot.warCount)?snapshot.warCount:null;
+ // If the fetched group contains contradictory round counts, do not change
+ // either setting. A partial group before the draw may have zero rounds.
+ const rounds=Array.isArray(group?.rounds)?group.rounds:null;
+ const coherent=expected&&(!rounds||rounds.length===0||rounds.length===expected);
+ const warCount=coherent&&(!provided||provided===expected)?expected:
+   !group&&provided?provided:null;
+ const sizes=[];
+ for(const r of snapshot.rounds){
+  if(r?.available&&Number.isInteger(r.teamSize)&&r.teamSize>=1&&r.teamSize<=50)
+   sizes.push(r.teamSize);
+ }
+ if(group&&Array.isArray(group.rounds))for(const round of group.rounds)
+  for(const match of Array.isArray(round?.matches)?round.matches:[])
+   if(match?.available&&Number.isInteger(match.teamSize)&&
+      match.teamSize>=1&&match.teamSize<=50)sizes.push(match.teamSize);
+ const distinct=[...new Set(sizes)];
+ return {warCount,slots:distinct.length===1?distinct[0]:null};
 }
 export function canFinalize(round,expectedSlots,now=Date.now()) {
   if (!round?.available || round.state!=="warEnded" || !validTag(tagOf(round.warTag))) return false;
@@ -294,8 +325,21 @@ export function reconcileCwl(profile,payload,createMember,now=Date.now()) {
   if (!previous?.season && played)
     return {changed:false,lockedDays:[],reason:"unlinked_manual_history"};
   let changed=false;
-  const nextLive={season:snapshot.season,clanTag:snapshot.clanTag,rounds:snapshot.rounds};
-  if (JSON.stringify({season:previous?.season,clanTag:previous?.clanTag,rounds:previous?.rounds}) !== JSON.stringify(nextLive)) {
+  const format=deriveCwlFormat(payload,snapshot);
+  const warCount=format.warCount||(
+    previous?.season===snapshot.season&&[5,7].includes(previous.warCount)?previous.warCount:null);
+  if(profile.config&&!played){
+    if(warCount&&profile.config.days!==warCount){
+      profile.config.days=warCount;changed=true;
+    }
+    if(format.slots&&profile.config.slots!==format.slots){
+      profile.config.slots=format.slots;changed=true;
+    }
+  }
+  const nextLive={season:snapshot.season,clanTag:snapshot.clanTag,
+    rounds:snapshot.rounds,...(warCount?{warCount}: {})};
+  if (JSON.stringify({season:previous?.season,clanTag:previous?.clanTag,rounds:previous?.rounds,
+    ...(previous?.warCount?{warCount:previous.warCount}: {})}) !== JSON.stringify(nextLive)) {
     profile.cwlLive=nextLive;
     changed=true;
   }
