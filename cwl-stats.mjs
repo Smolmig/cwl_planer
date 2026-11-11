@@ -116,14 +116,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
     if(desc)desc.textContent="Letzte "+formWindow+" Tage · "+usable+
-      " Spieler mit Angriffen auf gleiches RH · "+
+      " Spieler mit passenden Angriffen · "+
       unassessed+" ohne auswertbare Angriffe. "+
       (formSort==="evidence"?
-        "Zuerst nach Angriffsmenge (in Gruppen), dann nach 3★-Quote sortiert. ":
-        formSort==="hitRate"?"Nach 3★-Quote sortiert – auch bei nur einem Angriff. ":
-        formSort==="attacks"?"Nach Anzahl der Angriffe auf gleiches RH sortiert. ":
+        "Nach Angriffsmenge, dann 3★-Quote sortiert. ":
+        formSort==="hitRate"?"Nach 3★-Quote sortiert (auch bei wenigen Angriffen). ":
+        formSort==="attacks"?"Nach Angriffszahl sortiert. ":
         "Alphabetisch sortiert. ")+
-      "Die Reihenfolge ist keine Rangliste der Spielerstärke.";
+      "Keine Rangliste der Spielerstärke.";
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
       lastFormRowsVersion>=0&&lastFormRowsVersion!==version&&lastFormRowsClan===ctx.clanId;
     const topMargin=Math.max(0,document.querySelector(".topbar")
