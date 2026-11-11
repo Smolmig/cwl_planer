@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.67] - 2026-11-11
+
+### Einsätze und Mitglieder: Klartext bei der Planung (#226)
+- **Mitglieder:** Einfacherer Einstiegstext, eindeutige Hinweise zum Clash-Abgleich bei leerer Liste, verständlichere Sortierung der letzten sieben Angriffe und kürzere Statushinweise. Die Tagesregeln zeigen jetzt ausdrücklich „Tagesregeln anzeigen“ bzw. „Tagesregeln schließen“ mit Richtungspfeil.
+- **Einsätze:** Sortierung nach „Offene Einsätze“, „Abstand zu 8★“ und „Ausgeführte Angriffe“ statt ungeklärter AG-Kürzel. „3/4“ ist als „Im Plan: 3/4 Einsätze“ bzw. „Ziel: 3/4 Einsätze“ klar zugeordnet. Freie Tage heißen „Tage verfügbar“ statt „Tage ohne RAUS“; Tooltip und Legende erklären die belegten Angriffe in Alltagssprache.
+- **Hilfe:** Einsatzfilter inklusive kombinierbarer Chips, bestätigten Zielen und unvollständigen CWL-Daten ohne privaten Beispielnamen erläutert; Datenbasis aktuelle CWL versus letzte sieben CW-/CWL-Angriffe sauber unterschieden.
+- Version v1.16.67, App-Hinweis unter Design & Aktualisierung, öffentlicher Update-Verlauf, Cache-Parameter und Regressionstests synchronisiert.
+- **Keine Änderung** an Filter-/Planungsalgorithmus, Einsatz-/Sterneberechnung, Cloud-Daten, Berechtigungen, API, Datenbank oder Offline-PWA. Echte Geräte-/Owner-/Viewer-Prüfung #213 bleibt ausstehend.
+
 ## [1.16.66] - 2026-11-11
 
 ### Öffentlicher Update-Verlauf für alle Nutzer
