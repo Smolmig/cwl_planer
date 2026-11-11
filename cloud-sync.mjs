@@ -544,13 +544,13 @@ const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
  ensureCloudSaved:()=>ensureSaved(),
  applyVerifiedPause:args=>applyVerifiedPause(args),
- onSnapshot:data=>{
+ onStatus:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
-  return stats.captureCwl(data);
  },
+ onSnapshot:data=>stats.captureCwl(data),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
