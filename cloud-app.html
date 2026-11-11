@@ -1133,6 +1133,45 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 .cw-now-player>span:last-child{text-align:right;max-width:60%}
 .cw-now-player small{color:var(--muted)}
 .cw-now-stars{color:#e7ad32}
+/* Normal clan war: quick status first; rosters and explanations on demand. */
+.cw-now-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:0;margin:13px 0 6px;border-top:1px solid var(--line);
+ border-bottom:1px solid var(--line)}
+.cw-now-kpi{display:flex;flex-direction:column;gap:4px;padding:12px 10px;min-width:0}
+.cw-now-kpi+ .cw-now-kpi{border-left:1px solid var(--line)}
+.cw-now-kpi small,.cw-now-top small{font-size:11px;color:var(--muted);
+ font-weight:550;line-height:1.4}
+.cw-now-kpi strong{font-size:clamp(13px,2vw,17px);
+ overflow-wrap:anywhere;font-weight:800;line-height:1.3}
+.cw-now-kpi>span{font-size:10px;line-height:1.5;color:var(--muted)}
+.cw-now-highlights{display:flex;align-items:center;flex-wrap:wrap;
+ gap:6px 12px;margin:11px 0 17px}
+.cw-now-highlights .cw-now-kpi{padding:6px 8px 6px 0;
+ border:0;flex:0 0 auto}
+.cw-now-highlights .cw-now-kpi strong{font-size:16px}
+.cw-now-top{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;
+ gap:3px;padding:5px 0 5px 13px;border-left:1px solid var(--line)}
+.cw-now-top strong{font-size:12px;line-height:1.6;font-weight:750;overflow-wrap:anywhere}
+.cw-now-details{margin-top:4px;padding-top:4px}
+.cw-now-details>summary,.cw-now-info>summary{min-height:44px;display:list-item;
+ padding:12px 2px;font-size:13px;line-height:1.5}
+.cw-now-details>summary:focus-visible,.cw-now-info>summary:focus-visible{
+ outline:2px solid var(--primary);outline-offset:2px}
+.cw-now-player{padding:10px 2px;line-height:1.6;gap:10px}
+.cw-now-player .cw-now-player-name{flex:1 1 40%;min-width:0;overflow-wrap:anywhere}
+.cw-now-player>span:last-child{flex:1 1 55%;min-width:0}
+.cw-now-attack{font-size:11px;color:var(--muted);line-height:1.65}
+.cw-now-event-list{margin:4px 0 8px;padding-left:22px;font-size:12px;line-height:1.6}
+.cw-now-event-list li{padding:7px 0;border-bottom:1px solid var(--line)}
+.cw-now-event-list li small{color:var(--muted);font-weight:650}
+.cw-now-info{margin-top:10px;border-top:1px solid var(--line);
+ font-size:12px;color:var(--muted);line-height:1.65}
+.cw-now-info p{margin:0 2px 12px}
+@media(max-width:650px){
+ .cw-now-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cw-now-kpis .cw-now-kpi:nth-child(3){border-left:0;border-top:1px solid var(--line)}
+ .cw-now-kpis .cw-now-kpi:nth-child(4){border-top:1px solid var(--line)}
+}
 @media(max-width:360px){.cw-now-head{gap:4px}.cw-now-score{font-size:24px}.cw-now-clan{font-size:11px}}
 
 /* Settings are reached from the gear beside the clan selector, not from Overview. */
