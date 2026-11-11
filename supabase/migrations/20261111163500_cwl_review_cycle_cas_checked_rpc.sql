@@ -67,7 +67,7 @@ begin
     -- An API-linked clan can start a fresh cycle only after the calendar has
     -- genuinely advanced to a new official CWL month. The stronger
     -- API-verified ownerless rollover/atomic archival is tracked in #227.
-    if v_state.season=v_current and exists (
+    if v_state.season=v_current and v_created is null and exists (
       select 1 from public.cwl_clans
       where id=p_clan and clash_tag is not null
     ) then raise exception 'new_season_not_confirmed' using errcode='42501';end if;
