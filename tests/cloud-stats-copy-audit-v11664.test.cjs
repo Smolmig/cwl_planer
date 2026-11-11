@@ -20,8 +20,8 @@ test("#226: stats overview and form show concise language, detail stays in discl
  assert.doesNotMatch(html,/Nur 3★-Quote \(roh\)|Anzahl gleich-RH-Angriffe|Eigenständige Formanalyse aus der gesamten/);
  const stats=read("cwl-stats.mjs");
  assert.match(stats,/unassessed\+" ohne auswertbare Angriffe/);
- assert.match(stats,/Zuerst nach Angriffsmenge \(in Gruppen\)/);
- assert.match(stats,/Die Reihenfolge ist keine Rangliste der Spielerstärke/);
+ assert.match(stats,/Nach Angriffsmenge, dann 3★-Quote/);
+ assert.match(stats,/Keine Rangliste der Spielerstärke/);
  assert.match(stats,/Keine Angriffe gegen gleiches RH erfasst/);
  assert.match(stats,/Erst wenige Angriffe/);
  assert.match(stats,/computePlayerFormWindows\(wars,attacks/);
