@@ -77,30 +77,36 @@ function viewPlayers(s){
 }
 // Inline, read-only postseason recap in the original Plan view. Reuses the
 // existing CWL-season source of truth; no player/lock/archival mutation.
-export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle){
+// Three clear tabs replace the long all-in-one post-season scroll. The
+// same underlying season/group functions power the existing full season view.
+export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle,selectedTab="rounds"){
  if(lifecycle?.mode!=="postseason"||!snapshot?.season)return "";
  const model=summarizeCwlSeason({...profile,cwlLive:snapshot});
  if(!model)return "";
- const groupRaw=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
- const ranking=groupRaw?summarizeCwlGroup(groupRaw):null;
+ const sameGroup=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
+ const ranking=sameGroup?summarizeCwlGroup(sameGroup):null;
  const complete=lifecycle.verifiedSeven===true;
- const status=complete?
-  "Alle sieben Kriege aus vollständigen Clash-Ergebnissen bestätigt":
-  lifecycle.savedDays===7?
-   "Gespeicherte Kriegstage vollständig; einzelne Clash-Ergebnisse noch nicht bestätigt":
-   (lifecycle.savedDays??0)+"/7 Tage als gespielt bestätigt · fehlende Ergebnisse werden nicht ergänzt";
- const detail=complete?
-   "Die CWL ist beendet. Deine Resultate bleiben hier sichtbar, bis eine neue Saison sicher erkannt und archiviert ist.":
-   "Die CWL ist laut Clash nicht mehr aktiv. Der Abschluss ist noch offen: Ohne final bestätigte Daten für jeden Krieg wird nichts als gespielt markiert. Du kannst die bisher bekannten Ergebnisse trotzdem ansehen.";
+ const saved=Number.isInteger(lifecycle.savedDays)?lifecycle.savedDays:0;
+ const status=complete?"Alle 7 Kriegstage abgeschlossen":
+  saved===7?"7 von 7 Tagen gespeichert · einzelne Ergebnisse werden noch geprüft":
+   saved+" von 7 Tagen gespeichert · letztes Ergebnis noch offen";
+ const tabs=[["rounds","Kriegstage"],["group","Tabelle"],["players","Spieler"]];
+ const selected=tabs.some(t=>t[0]===selectedTab)?selectedTab:"rounds";
+ const nav='<div class="plan-postseason-tabs" role="tablist" aria-label="CWL-Rückblick">'+
+  tabs.map(([id,label])=>'<button type="button" role="tab" data-postseason-tab="'+id+
+   '" aria-selected="'+(id===selected)+'" tabindex="'+(id===selected?0:-1)+'"'+
+   ' class="plan-postseason-tab'+(id===selected?' active':'')+'">'+label+'</button>').join("")+
+  '</div>';
+ const body=selected==="group"?viewGroup(model,ranking):
+  selected==="players"?viewPlayers(model):viewRounds(model,ranking);
  return '<section class="plan-postseason-results" aria-label="CWL-Saisonrückblick">'+
-  '<div class="section-title"><div><span class="view-lead-kicker">CWL-RÜCKBLICK</span>'+
+  '<div class="plan-postseason-heading"><span class="view-lead-kicker">LETZTE CWL</span>'+
   '<h3>'+esc(dateLabel(model.season))+'</h3>'+
-  '<p class="statusline">'+esc(status)+'</p></div></div>'+
-  '<p class="plan-postseason-description">'+esc(detail)+'</p>'+
-  '<div class="plan-postseason-group"><h4>Gruppenstand</h4>'+viewGroup(model,ranking)+'</div>'+
-  '<div class="plan-postseason-rounds"><h4>Ergebnisse der Kriegstage</h4>'+viewRounds(model,ranking)+'</div>'+
-  '<details class="plan-postseason-players"><summary>Spielerleistungen dieser CWL ansehen</summary>'+
-  viewPlayers(model)+'</details></section>';
+  '<p class="statusline">'+esc(status)+'</p></div>'+
+  nav+'<div class="plan-postseason-panel" role="tabpanel" data-postseason-panel="'+selected+'">'+
+  body+'</div>'+
+  (!complete?'<p class="plan-postseason-hint">Noch nicht alle Ergebnisse von Clash bestätigt. Die gespeicherten Werte bleiben sichtbar.</p>':'')+
+  '</section>';
 }
 export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected,refresh}){
  let tab="rounds";
