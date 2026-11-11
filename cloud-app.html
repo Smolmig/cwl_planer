@@ -4428,6 +4428,9 @@ function renderKpis(){
    (prefix<days?" · Nächster Krieg: Tag "+(prefix+1):"");
  }
  const manage=document.getElementById("manageCwlBtn");
+ // A linked Cloud clan follows the official league lifecycle; only the
+ // offline/manual planner offers a new-season/reset control.
+ manage.hidden=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.();
  manage.textContent=postseason||lifecycle?.mode==="transition"?
   "CWL archivieren / neue Saison vorbereiten":
   played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";
@@ -5075,6 +5078,9 @@ function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;
 }state.archivedMembers=[];state.cwlLiveIgnoredSeason=state.cwlLive?.season||state.cwlLiveIgnoredSeason||null;delete state.cwlLive;}
 async function handleCwlManage(){
  const cloud=window.CWLCloud,startedClan=cloud?.active?cloud.getActiveClanId?.():null;
+ if(cloud?.active&&cloud.hasApiClan?.()){
+  showToast("Die neue CWL wird hier automatisch erkannt und gestartet.");return;
+ }
  if(cloud?.active&&cloud.isPlanLocked?.()&&!cloud.isOwner?.()){
   showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return;
  }
@@ -5950,22 +5956,45 @@ window.CWLLegacy={
   renderArchives();saveApp();
   return true;
  },
- // Automatic *new-season* transition is only permitted after archival has
- // been durably queued and the current owner stays on the same Cloud clan.
- autoAdvanceCwl:async(oldSeason,newSeason)=>{
+ // Store the previous season once, including partially confirmed days.
+ // The archive must never claim that unverified day seven was played.
+ archivePreviousCwlForRollover:(oldSeason,newSeason,expectedClanTag)=>{
+  const cloud=window.CWLCloud;
+  const tag=String(state.cwlLive?.clanTag||"").toUpperCase();
+  const season=/^20\d{2}-(0[1-9]|1[0-2])$/;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     !navigator.onLine||!season.test(oldSeason)||!season.test(newSeason)||
+     newSeason<=oldSeason||state.cwlLive?.season!==oldSeason||
+     tag!==String(expectedClanTag||"").toUpperCase())return false;
+  if(state.archives.some(a=>a.sourceSeason===oldSeason))return true;
+  const archive=archiveCurrentCwl();
+  if(archive.sourceSeason!==oldSeason)return false;
+  const locks=state.locks.slice(0,7);
+  const finalSeven=state.config.days===7&&locks.length===7&&
+   locks.every((lock,i)=>lock?.locked&&lock.source==="coc-api"&&
+    lock.season===oldSeason&&lock.warTag===state.cwlLive.rounds?.[i]?.warTag&&
+    state.cwlLive.rounds?.[i]?.state==="warEnded");
+  archive.complete=!!finalSeven;
+  archive.autoRollover=true;
+  state.archives.push(archive);
+  renderArchives();saveApp();
+  return true;
+ },
+ // Only the app-clan owner advances the shared plan; never restart on a
+ // transient no-CWL response. A NEW officially observed season is required.
+ autoAdvanceCwl:async(oldSeason,newSeason,expectedClanTag)=>{
   const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
   if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      !navigator.onLine||state.cwlLive?.season!==oldSeason||
-     state.config.days!==7||oldSeason===newSeason||
+     state.cwlLive?.clanTag!==expectedClanTag||
+     !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(oldSeason||""))||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
-     !state.archives.some(a=>a.sourceSeason===oldSeason&&a.complete))return false;
-  const locks=state.locks.slice(0,7);
-  if(locks.length!==7||!locks.every((l,i)=>l?.locked&&l.source==="coc-api"&&
-      l.season===oldSeason&&l.warTag===state.cwlLive?.rounds?.[i]?.warTag))return false;
+     newSeason<=oldSeason||
+     !state.archives.some(a=>a.sourceSeason===oldSeason))return false;
   await cloud.openNewCycle();
   if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
   resetPlanningData();
-  renderAll("✓ Abgeschlossene CWL archiviert · neue Saisonplanung vorbereitet");
+  renderAll("Neue CWL erkannt · vorherige Saison gesichert · Planung bereit");
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
