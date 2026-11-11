@@ -3,7 +3,7 @@
 **Status:** Verbindlicher Projektstandard für neue Features, Änderungen und Reviews. Stand: 04.11.2026.
 **Gilt für:** gesamte Cloud-App (Plan, Mitglieder, Einsätze, Statistik, Mehr, Konto, CWL-Saison & Archiv), lokale Offline-PWA, Smartphone und Desktop, Gold-/Dark-/Light-Themes. Abweichungen nur mit bewusstem und dokumentiertem Grund.
 
-## Der Merksatz
+Für alle nutzerseitigen Texte zusätzlich [Textstandard und laufendes Audit #226](COPY_STYLE_GUIDE.md) beachten: Titel, Status, Button, Leer-/Fehlerfall, Hilfe und Mobile/A11y separat prüfen.\n\n## Der Merksatz
 
 > **Zeige das Wichtige zuerst, gruppiere mit Abstand statt mit Kästen, und ändere niemals ungefragt das, womit jemand gerade arbeitet.**
 
