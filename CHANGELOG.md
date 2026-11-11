@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.61] - 2026-11-11
+
+### Plan nach der CWL: aktueller CW zuerst, letzter CWL-Rückblick eingeklappt
+- Plan-Startseite folgt dem Spiel: Nach CWL drei kompakte Reiter **Kriegstage / Tabelle / Spieler** mit den bestehenden echten Liga-Ergebnissen; bei Beginn des normalen CW-Kampftags rückt dessen Anzeige ganz nach oben und die vergangene CWL wird eingeklappt, bleibt aber über **Letzte CWL** abrufbar. Bei neuer CW-Vorbereitung ist der CWL-Rückblick wieder leichter zugänglich.
+- Normaler CW erhält **Angriffe / Unser Team / Gegner** mit beiden Clans, Sternen, Zerstörung, verbleibenden/verwendeten Angriffen und einzelnen Spielern/Basen. Beste dokumentierte Angriffe werden nach Sternen/Zerstörung sortiert; **kein falscher „Heroischster Angriff“**. Zuletzt eingetroffene Angriffe nur bei tatsächlicher API-Angriffsreihenfolge.
+- Daten bleiben aus dem bisherigen authentifizierten Clash-Proxy. Zusätzliche validierte API-Felder nur `mapPosition` und `order`; keine neue Tabelle, kein Durchreichen fremder Clanverwaltung, keine automatischen Sanktionen oder Plan-/Solver-Schreibaktionen.
+- Tastatursteuerung und ausgewählte Reiter bleiben bei Refresh erhalten. 320/390/430px, Desktop, Gold/Dark/Light und Rollenregressionen ergänzt. Hilfeseite aktualisiert; weitere globale Textbereinigung bewusst noch offen.
+- **Offen:** echte Owner-/iOS-/Android-/API-Fall-Abnahme #213, volle Cross-Clan-Freigabe #212, Full-Backup #178.
+
 ## [1.16.60] - 2026-11-11
 
 ### CWL-Abschluss-Hotfix: Bereits archivierte Saisons nur einmal sichern
