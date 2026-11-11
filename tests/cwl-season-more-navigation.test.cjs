@@ -69,7 +69,7 @@ test("season page navigates three functional read-only tabs and escapes opponent
   const season=createCwlSeasonView({getProfile:fixture,getSnapshot:()=>fixture().cwlLive,
     isConnected:()=>true,refresh:()=>{refreshCount++}});
   season.render();
-  assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Runde 1/);
+  assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/Kriegstag 1/);
   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/24 : 18/);
   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/– : –/);
   dom.window.document.querySelector('[data-season-tab="group"]').click();
