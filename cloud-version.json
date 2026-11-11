@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.59",
-  "released": "2026-11-10",
-  "summary": "Cloud-CWL-Saisonende: Plan zeigt gespeicherte Ergebnisse und normale Clan Wars, Tag 7 bleibt ohne finalen API-Beleg offen, gesicherte neue CWL-Zyklen."
+  "version": "v1.16.60",
+  "released": "2026-11-11",
+  "summary": "Hotfix CWL-Archiv: Kein Doppelarchiv beim manuellen Neustart nach Autoarchivierung, sichere Rücknahme bei Cloud-Fehler und Clanwechsel-Schutz."
 }
