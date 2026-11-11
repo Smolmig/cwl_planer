@@ -4,6 +4,12 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.16.68",
+    "date": "2026-11-11",
+    "title": "Vergleiche und Kriegsverlauf klarer erklärt",
+    "description": "Statistiken zeigen verständlicher, welche Angriffe zählen. Kalenderwochen, leere Auswertungen und erfasste Sterne sind eindeutig beschriftet."
+  },
+  {
     "version": "v1.16.67",
     "date": "2026-11-11",
     "title": "Einsätze und Mitglieder verständlicher bedienen",

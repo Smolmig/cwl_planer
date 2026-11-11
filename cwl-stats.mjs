@@ -205,10 +205,21 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const chosen=comparisonWars();
     const warTypeLabel=compareType==="normal"?"normale CWs":
       compareType==="cwl"?"CWL-Kriegstage":"CW-/CWL-Kriegstage";
-    if(label)label.textContent="Verglichen werden "+chosen.length+
-      " abgeschlossene "+warTypeLabel+" im gewählten Vergleichszeitraum. "+
-      "Die freie Spielerstatistik und Spielerform bleiben davon unabhängig.";
-    const data=computeThMatchupComparison(chosen,attacks,{type:"all",last:"all",cwlSeasons:"all"});
+    if(label)label.textContent=chosen.length?
+      chosen.length+" abgeschlossene "+warTypeLabel+
+        " ausgewählt. Die übrige Statistik bleibt unverändert.":
+      wars.length?
+        "Keine abgeschlossenen Kriege für diese Auswahl. Zeitraum oder Kriegsart ändern.":
+        "Noch keine abgeschlossenen Kriege erfasst.";
+        const data=computeThMatchupComparison(chosen,attacks,{type:"all",last:"all",cwlSeasons:"all"});
+    if(!data.some(row=>row.attacks>0)){
+      host.innerHTML="<p class='stats-note'>"+(chosen.length?
+        "Für diese Kriege sind noch keine Angriffe erfasst. Eine 3★-Quote ist deshalb nicht bekannt.":
+        "Keine Kriege für diesen Vergleich. Wähle einen anderen Zeitraum oder eine andere Kriegsart.")+
+        "</p>";
+      lastMatchupVersion=version;lastMatchupClan=context().clanId;
+      return;
+    }
     const labels={lower:"Gegner-RH niedriger",same:"Gleiches Rathaus",higher:"Gegner-RH höher",unknown:"RH unbekannt"};
     // Only show the selected war type in the optional breakdown. A CW-only
     // filter must not leave an empty CWL panel (or vice versa).
@@ -296,7 +307,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     first.value=duelLeft;second.value=duelRight;
     if($("statsDuelSameTH"))$("statsDuelSameTH").checked=duelSameTH;
     if(!duelLeft||!duelRight){
-      host.innerHTML="<p class='stats-note'>Hierfür benötigen wir zwei Spieler mit dokumentierten Angriffen im ausgewählten Vergleichszeitraum.</p>";
+      host.innerHTML="<p class='stats-note'>Für einen direkten Vergleich brauchst du zwei Spieler mit erfassten Angriffen. Wähle bei Bedarf einen größeren Zeitraum.</p>";
       return;
     }
     const results=computePlayerDuel(chosen,attacks,duelLeft,duelRight,{
@@ -306,7 +317,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const fmtAvg=n=>n===null?"–":n.toLocaleString("de-AT",{
       minimumFractionDigits:2,maximumFractionDigits:2})+" ★";
     const dataQuality=n=>n===0?"Keine Angriffe":n<6?"Wenige Daten":
-      n<15?"Erste Tendenz":"Mehr Vergleichsdaten";
+      n<15?"Erste Tendenz":"Viele Angriffe erfasst";
     // Render the same underlying numbers, but with a single visible
     // comparison hierarchy. Detailed star charts belong behind one disclosure.
     const renderOne=(p,i)=>{
@@ -383,27 +394,28 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const missingLabel=trendGranularity==="week"?"Wochen":
       trendGranularity==="day"?"Tage":"Monate";
     const coverage=rows.length===0?
-      "Keine beobachteten Zeiträume für diese Auswahl.":
+      "Noch keine Angriffe für einen Verlauf erfasst.":
       rows.length===1?
         "Nur ein beobachteter Zeitraum – ein Trend ist daraus nicht ableitbar.":
         layout.missingPeriods?
           "Zwischen den dargestellten Punkten liegen "+layout.missingPeriods+" "+
             missingLabel+" ohne dokumentierte Angriffe – keine 0-%-Werte.":
           "Zwischen den dargestellten Punkten gibt es keine ganzen unbeobachteten "+missingLabel+".";
-    if($("statsTrendScope"))$("statsTrendScope").textContent=ownWars.length+
-      (ownWars.length===1?" ausgewählter Krieg · ":" ausgewählte Kriege · ")+
+    if($("statsTrendScope"))$("statsTrendScope").textContent=!ownWars.length?
+      (wars.length?
+        "Keine abgeschlossenen Kriege für diese Auswahl. Zeitraum oder Kriegsart ändern.":
+        "Noch keine abgeschlossenen Kriege erfasst."):
+      ownWars.length+(ownWars.length===1?" ausgewählter Krieg · ":" ausgewählte Kriege · ")+
       trend.recordedAttacks+(trend.recordedAttacks===1?
-        " dokumentierter Angriff. ":" dokumentierte Angriffe. ")+
-      "Die Zeitachse zeigt echte Kalenderabstände. "+
-      coverage+(rows.length>1?
-        " Verbunden werden nur direkt aufeinanderfolgende Zeiträume derselben Kriegsart.":"");
-    const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
+        " erfasster Angriff. ":" erfasste Angriffe. ")+coverage+
+      (rows.length>1?" Lücken bleiben im Diagramm offen.":"");
+        const signature=[version,trendType,trendDays,trendMetric,trendGranularity].join("|");
     if(chart.dataset.signature===signature)return;
     chart.dataset.signature=signature;
     const label=trendMetric==="hitRate"?"3★-Quote":"Ø Sterne";
     const colors={normal:"series-cw",cwl:"series-cwl"};
     if(!rows.length){
-      chart.innerHTML="<p class='stats-note'>Noch keine Angriffe für einen Verlauf in dieser Auswahl.</p>";
+      chart.innerHTML="<p class='stats-note'>Noch kein Verlauf möglich: In dieser Auswahl sind keine Angriffe erfasst.</p>";
       detail.replaceChildren();return;
     }
     const plotH=H-T-B,maximum=trendMetric==="hitRate"?100:3;
@@ -414,7 +426,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(v===null)return null;
       return {x:x(i),y:y(v),value:v,n,key:row.key,
         title:(kind==="cwl"?"CWL":"Normaler CW")+" · "+formatTrendPeriod(row.key,trendGranularity)+
-          " · "+v+(trendMetric==="hitRate"?" %":" ★")+
+          " · "+(trendMetric==="hitRate"?"3★-Quote: ":"Ø Sterne je Angriff: ")+
+          v+(trendMetric==="hitRate"?" %":" ★")+
           " · "+attackCount(n)};
     };
     const grid=[0,.25,.5,.75,1].map(part=>{
@@ -486,7 +499,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "aria-label='Verlaufstabelle; auf kleinen Bildschirmen seitlich scrollen'>"+
       "<table><thead><tr><th scope='col'>Zeitraum</th><th scope='col'>CW</th><th scope='col'>CWL</th></tr></thead><tbody>"+
       table+"</tbody></table></div></details>"+
-      (all.length>20?"<p class='stats-note'>Im Diagramm die letzten 20 Zeitpunkte; Tabelle enthält alle.</p>":"");
+      (all.length>20?"<p class='stats-note'>Das Diagramm zeigt die letzten 20 Zeiträume. In der Tabelle stehen alle.</p>":"");
     lastTrendVersion=version;lastTrendClan=context().clanId;
     const nextTable=detail.querySelector(".stats-war-history-scroll");
     if(tableScrollLeft!==null&&nextTable)nextTable.scrollLeft=tableScrollLeft;
@@ -785,7 +798,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       "<strong class='war-history-stars'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"</strong> "+
       esc(a.destruction)+"% <small>gegen "+esc(a.defender_name||"Gegner")+" · RH"+
       esc(a.defender_th??"?")+"</small></span></div>").join(""):
-      "<p class='stats-note'>Keine Einzelangriffe hinterlegt.</p>";
+      "<p class='stats-note'>Für diesen Krieg liegen noch keine Einzelangriffe vor.</p>";
     target.dataset.rendered="1";
   }
   function renderWarHistory(earlyScrollAnchor=null){
@@ -822,7 +835,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     host.dataset.historySignature=historySignature;
     host.dataset.historyClan=String(ctx.clanId||"");
     host.dataset.historyVersion=String(version);
-    if(!relevant.length){host.innerHTML="<p class='stats-note'>Noch keine abgeschlossenen Kriege gespeichert.</p>";return;}
+    if(!relevant.length){host.innerHTML="<p class='stats-note'>"+(wars.length?
+      "Keine abgeschlossenen Kriege für diese Auswahl. Zeitraum oder Kriegsart ändern.":
+      "Noch keine abgeschlossenen Kriege gespeichert.")+"</p>";return;}
     host.innerHTML=relevant.map(w=>{
       const entries=index.get(w.war_key)||[];
       const when=new Date(w.started_at).toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric"});
@@ -836,7 +851,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         (openWars.has(w.war_key)?" open":"")+"><summary><span><strong>"+
         esc(kind+" · "+when+" · "+size)+"</strong><small>gegen "+
         esc(w.opponent_name||"unbekannt")+uncertainty+"</small></span><span>"+
-        entries.length+(entries.length===1?" erfasster Angriff":" erfasste Angriffe")+" · "+stars+" ★</span></summary>"+
+        entries.length+(entries.length===1?" erfasster Angriff":" erfasste Angriffe")+" · "+(entries.length?stars+" erfasste Sterne":"Sterne noch nicht bekannt")+"</span></summary>"+
         "<div class='war-history-detail'></div></details>";
     }).join("");
     for(const disclosure of host.querySelectorAll(".war-history-item[open]"))renderHistoryAttacks(disclosure);

@@ -119,7 +119,7 @@ test("Timeline shows Austrian date labels on chart, tooltip and table without ch
     for(const chart of [day,week,month]){
      assert.equal(chart.points,4,context);
      assert.ok(chart.gaps>=1,"keep real calendar gaps: "+context);
-     assert.match(chart.scope,/4 dokumentierte Angriffe/,context);
+     assert.match(chart.scope,/4 erfasste Angriffe/,context);
      assert.equal(chart.open,true,context);
      assert.ok(chart.pageOverflow<=3,context);
      assert.doesNotMatch(chart.axis.join(" "),/\b(?:2026-11|11-03)\b/,context);
