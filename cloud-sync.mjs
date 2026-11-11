@@ -627,7 +627,8 @@ window.CWLGroupArchive=createCwlGroupArchiveView({
  sb,
  getClanId:()=>cloud.active?clanId:null,
  getProfile:()=>storage.getProfile(),
- isConnected:()=>!!cloud.active&&!!clanId
+ isConnected:()=>!!cloud.active&&!!clanId,
+ refreshFromClash:()=>live.refresh()
 });
 window.CWLSeasonView=createCwlSeasonView({
  getProfile:()=>storage.getProfile(),
