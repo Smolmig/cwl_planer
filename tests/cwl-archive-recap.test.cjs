@@ -55,8 +55,8 @@ test("archived manual plan remains usable without historical league API data",as
   const {createArchivedCwlRecapView}=await import(moduleUrl("cwl-archive-recap.mjs"));
   let requests=0;
   const sb={from(){requests++;throw Error("must not access DB")}};
-  const view=createArchivedCwlRecapView({sb,getClanId:()=>null});
-  await view.open({id:"manual",label:"August 2025",days:5,lineups:[]});
+  const view=createArchivedCwlRecapView({sb,getClanId:()=>"clan-a"});
+  await view.open({id:"manual",label:"Manueller Plan",sourceSeason:"2026-11",days:5,lineups:[]});
   const host=dom.window.document.getElementById("archiveRecap");
   assert.match(host.textContent,/Aufstellungen/);
   assert.equal(requests,0);
