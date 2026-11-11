@@ -5106,7 +5106,9 @@ async function handleCwlManage(){
    (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
  // A complete 7/7 API season may have already been archived at postseason.
  // Never insert a duplicate for the same Cloud clan/season.
- const archive=alreadyArchived?null:archiveCurrentCwl();
+ const isArchivedNow=alreadyArchived||!!sourceSeason&&!!cloud?.active&&
+  state.archives.some(a=>a.sourceSeason===sourceSeason);
+ const archive=isArchivedNow?null:archiveCurrentCwl();
  if(archive)state.archives.push(archive);
  try{await cloud?.openNewCycle?.()}
  catch(e){
@@ -5117,7 +5119,7 @@ async function handleCwlManage(){
  if(state!==profileAtStart||(startedClan&&
    (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
  resetPlanningData();
- renderAll(alreadyArchived?"Neue CWL-Planung vorbereitet ✓":
+ renderAll(isArchivedNow?"Neue CWL-Planung vorbereitet ✓":
   "Vorherige CWL archiviert · neue CWL gestartet ✓");
 }
 function buildFullPlanText(){
