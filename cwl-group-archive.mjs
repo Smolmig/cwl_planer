@@ -132,7 +132,7 @@ function archiveStatus(data,ownRows){
   return {label:"Stand vorläufig",
     note:"Der gespeicherte Gruppenstand reicht noch nicht für eine endgültige Tabelle."};
 }
-export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=()=>null}){
+export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=()=>null,refreshFromClash=null}){
   let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false;
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
   if(!host)return {open(){},invalidate(){}};
@@ -226,7 +226,16 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
       host.innerHTML='<p class="season-empty">Das Gruppenarchiv konnte nicht geladen werden. Bitte Verbindung und Anmeldung prüfen und erneut versuchen. Deine bisherigen Plan-Archive bleiben erhalten.</p>';
     }
   }
-  refresh?.addEventListener("click",()=>open(true));
+  refresh?.addEventListener("click",async()=>{
+    if(refresh.disabled)return;
+    refresh.disabled=true;
+    try{
+      // Reload saved data only after the authorized status check has had
+      // a chance to finish any verified post-season archive backfill.
+      if(typeof refreshFromClash==="function")await refreshFromClash();
+      await open(true);
+    }finally{refresh.disabled=false}
+  });
   return {open,invalidate(){
     requestSerial++;
     const id=current(),changed=loadedId!==null&&loadedId!==id;
