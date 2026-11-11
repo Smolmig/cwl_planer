@@ -70,7 +70,7 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudSaved,applyVerifiedPause}) {
+export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,ensureCloudSaved,applyVerifiedPause}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   let lastKnownGroup=null; // Last validated group from THIS linked clan only.
@@ -1063,6 +1063,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       }
       current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
+      // Live war placement and page panels must update on EVERY successful
+      // API state, including new preparation rounds with incomplete group
+      // details. Recording finalized statistics remains separately gated.
+      try{onStatus?.(data)}catch(e){console.warn(
+       "Live-CW-Anzeige:",String(e?.message||e))}
       // Optional statistics sink only; a failed stats save must never break planning.
       if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
         Promise.resolve().then(()=>stillCurrent()?onSnapshot(data):undefined)
