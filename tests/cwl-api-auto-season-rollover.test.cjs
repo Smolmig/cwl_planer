@@ -93,4 +93,8 @@ test("In linked Cloud no manual new-CWL button; offline guest still uses manual 
  assert.match(live,/await ensureCloudSaved\(\)/);
  assert.match(live,/await storage\.autoAdvanceCwl\?\.\(previous\.season,data\.season\)/);
  assert.match(live,/data\.season>previous\.season/);
+ const cloud=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
+ assert.match(live,/onStatus\?\.\(data\)/);
+ assert.match(cloud,/onStatus:data=>\{/);
+ assert.match(cloud,/onSnapshot:data=>stats\.captureCwl\(data\)/);
 });
