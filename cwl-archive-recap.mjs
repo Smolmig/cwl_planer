@@ -75,14 +75,20 @@ export function createArchivedCwlRecapView({sb,getClanId}){
    if(!archive){host.innerHTML="";return}
    loading=!!getClanId()&&!!(archive.sourceSeason||archive.cwlLive?.season);
    render();
-   const clan=getClanId(),season=archive.sourceSeason||archive.cwlLive?.season;
-   if(!clan||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||""))){loading=false;render();return}
+   const clan=getClanId(),season=archive.sourceSeason||archive.cwlLive?.season,
+     sourceTag=archive.cwlLive?.clanTag;
+   // Never bind an imported/manual archive to a group's standings by month
+   // alone. Historical group lookup requires an exact original Clash clan tag.
+   if(!clan||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||""))||
+      !/^#[0289PYLQGRJCUV]{3,15}$/.test(String(sourceTag||""))){
+     loading=false;render();return
+   }
    try{
      const {data,error}=await sb.from("cwl_group_archives")
        .select("season,group_json").eq("clan_id",clan).eq("season",season).maybeSingle();
      if(request!==serial||!archive)return;
      if(!error&&data?.season===season&&data.group_json?.season===season&&
-       data.group_json?.clanTag===(archive.cwlLive?.clanTag||data.group_json.clanTag))
+       data.group_json?.clanTag===sourceTag)
        group=summarizeCwlGroup(data.group_json);
    }catch{
      // A failed optional historical group read must not hide saved lineups.
