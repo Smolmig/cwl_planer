@@ -10,6 +10,24 @@ Die erste regulär unter der neuen Konvention freigegebene Version ist `v1.0.0`.
 
 ## Regeln für neue Releases
 
+## Verbindliche Release-Entscheidung ab 11.11.2026
+
+Die Schreibweise `vMAJOR.MINOR.PATCH` allein genügt nicht: **Der Inhalt eines Releases bestimmt den Versionssprung.** Seit `v1.16.x` wurden teils auch eigenständige neue Funktionen als PATCH veröffentlicht. Diese historischen offiziellen Tags bleiben unverändert, werden aber **nicht** als Maßstab für die weitere Nummerierung verwendet.
+
+- **PATCH** (`v1.16.70 → v1.16.71`): Fehlerbehebungen, Sicherheitskorrekturen, kleine Text-, Layout- und Bedienkorrekturen **ohne neue eigenständige Funktion**. Ein Patch darf mehrere zusammengehörige Korrekturen bündeln; nicht für jeden Commit eine Version anlegen.
+- **MINOR** (`v1.16.70 → v1.17.0`): jede neue eigenständige, rückwärtskompatible App-Funktion, ein neuer nutzbarer Bereich oder eine funktionale Erweiterung bestehender Bereiche. Bei gemischtem Funktions- und Fix-Release gilt MINOR. Die PATCH-Zahl wird dabei **auf 0 zurückgesetzt**. Nach `v1.17.0` heißt der erste Patch `v1.17.1`, nicht `v1.16.72`.
+- **MAJOR** (`v1.x.y → v2.0.0`): absichtlicher Bruch einer zugesagten öffentlichen Schnittstelle, Datenkompatibilität oder zentralen Nutzungsweise, der eine echte Migration/Bewusstentscheidung erfordert. Große interne Refactorings allein reichen **nicht**.
+- **Kein Cloud-App-Release:** reine Dokumentation/Tests, interne technische Arbeiten oder ein Backend-Commit ohne nutzerwirksame Cloud-App-Änderung; die bestehende offizielle Cloud-Version bleibt stehen. Cloud und die getrennte Offline-PWA werden unabhängig voneinander versioniert. Backend-Deployments werden weiterhin unabhängig dokumentiert.
+
+**Vor jedem Release (auch über automatische Release-Workflows):**
+1. Im PR die Entscheidung **Kein Release / PATCH / MINOR / MAJOR** mit einem kurzen Satz zur tatsächlichen Nutzeränderung begründen; bei mehreren Änderungen zählt der höchste erforderliche Sprung. Entsprechende PR-Checkliste verwenden.
+2. Bei einem Cloud-App-Release `cloud-version.json`, `APP_VERSION` in `cloud-app.html`, Cache-Parameter, neueste Einstellungs-Notiz, `CHANGELOG.md`, Hilfe und den ersten Eintrag in `cloud-release-history.mjs` gemeinsam aktualisieren. Dort `releaseType: "patch" | "minor" | "major"` setzen. Ein Test vergleicht die deklarierte Stufe mit der Versionsdifferenz zum vorherigen Release.
+3. CI/Tests erfolgreich abwarten. Erst danach offiziellen Tag/Release erstellen. **Kein** Umnummerieren früherer Releases oder Tags und kein Neuaufsetzen der Daten-/Backup-Versionen ohne Migration.
+4. Die CI kann den *numerischen* Sprung prüfen. Ob eine Änderung fachlich eine neue Funktion oder ein Fix ist, muss der PR-Review anhand der beschriebenen Nutzerwirkung entscheiden. Keine bloße Nummernerhöhung, um den Prüfpunkt zu umgehen.
+
+**Einordnung der jüngsten Historie:** `v1.16.66` (neue öffentlich sichtbare Update-History) hätte nach diesen Kriterien eher MINOR statt PATCH sein müssen. `v1.16.70` (Korrektur der Einsatzanzeige nach einer CWL) ist dagegen ein plausibler PATCH. Die Historie bleibt wahrheitsgetreu und wird nicht umgeschrieben.
+
+
 | Beispiel | Verwendung | Konsequenz |
 | --- | --- | --- |
 | `1.0.1` (PATCH) | Fehlerkorrektur, kleine Darstellungskorrektur, Sicherheit, PWA-Hotfix | Bestehende Daten und Funktionen bleiben kompatibel |
