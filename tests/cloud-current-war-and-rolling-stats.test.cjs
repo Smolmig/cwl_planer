@@ -50,14 +50,14 @@ test("Current CW appears only in Plan and never writes to CWL plan or stats earl
     startTime:"20261030T100000.000Z",endTime:"20261031T200000.000Z",
     clan:{name:"United Fighters",stars:35,members:[
       {name:"Spieler <script>alert(1)</script>",townHallLevel:18,
-       attacks:[{stars:3,defenderTag:"#8PY"}]}]},
+       attacks:[{stars:3,defenderTag:"#8PY",destructionPercentage:100}]}]},
     opponent:{name:"Gegner",stars:27,members:[{name:"Basis",tag:"#8PY"}]}}};
   widget.update(data);
   const host=dom.window.document.getElementById("currentWarCard");
   assert.equal(host.hidden,false);
   assert.match(host.textContent,/35\s*:\s*27/);
-  assert.match(host.textContent,/Wir: 1\/30 Angriffe/);
-  assert.match(host.textContent,/Gegner: 0\/30 Angriffe/);
+  assert.match(host.textContent,/Unser Clan[\s\S]*1\/30[\s\S]*Angriffe/);
+  assert.match(host.textContent,/Gegner[\s\S]*0\/30[\s\S]*Angriffe/);
   assert.match(host.textContent,/Gegner/);
   assert.equal(host.querySelector("script"),null,"Player names are HTML escaped");
   dom.window.document.getElementById("currentWarRefresh").click();
