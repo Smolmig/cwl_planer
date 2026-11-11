@@ -14,6 +14,7 @@ const documentSource='<!doctype html><html lang="de"><head><meta name="viewport"
  styles+'</head><body><main class="content">'+plan+'</main></body></html>';
 const warSource=read("cwl-current-war.mjs")
  .replace(/^import .*\n/m,'const safeBadgeUrl=x=>x; const clashTime=s=>Date.parse(s);\n')
+ .replace("export function summarizeCurrentWar(","function summarizeCurrentWar(")
  .replace("export function createCurrentWarOverview(","function createCurrentWarOverview(");
 const payload={currentWar:{
  state:"inWar",teamSize:2,attacksPerMember:2,
