@@ -3646,11 +3646,12 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.59</strong><span>Plan · CWL-Abschluss & normale CW</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.60</strong><span>CWL-Abschluss · Archiv geschützt</span></div>
        <ul>
         <li><b>Nach der Liga:</b> Gespeicherte CWL-Ergebnisse, Gruppenstand und Spielerleistungen direkt unter Plan statt einer leeren Aufstellung.</li>
         <li><b>Tag 7 sicher:</b> Fehlende letzte Clash-Ergebnisse bleiben als Abschluss offen – niemals stillschweigend als gespielt gezählt.</li>
         <li><b>Zwischen den CWLs:</b> Normale Clankriege mit Punktestand, Zerstörung, Aufstellungen und Angriffen direkt im Plan.</li>
+        <li><b>Archiv sicher:</b> Eine bereits automatisch archivierte CWL wird beim manuellen Neustart nicht dupliziert. Bei Cloudfehler bleiben gespielte Tage stehen.</li>
         <li><b>Neue CWL:</b> Erst nach bestätigtem Abschluss und Archivierung startet automatisch die neue Planung; offline weiter manuell.</li>
        </ul>
     </div></div></div></div>
@@ -3808,7 +3809,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
-   <p class="cloud-help-note">Während einer CWL zeigt der Plan bekannte Gegner, Rathaus-Verteilungen und – soweit von Clash freigegeben – vorläufige Tagesaufstellungen. Wechselhinweise vergleichen Clash mit der Empfehlung und verändern deinen Plan nicht. Nach Kriegsende kann der Planer tatsächliche Aufstellungen übernehmen. <b>Nach der CWL</b> zeigt „Plan“ die gespeicherten Saisonergebnisse, Gruppentabelle, Kriegsrunden und Spielerleistungen direkt auf der Seite statt der bisherigen Tagesaufstellungen. Eine Meldung der Clash-API, dass keine CWL mehr aktiv ist, beendet <b>nicht</b> automatisch jeden einzelnen Kriegstag: Bei fehlendem finalen Clash-Nachweis bleibt z. B. Tag 7 ausdrücklich „Abschluss offen“ statt erfunden als gespielt zu zählen. Bei bestätigtem 7/7-Abschluss archiviert der Cloud-Clanführer die Saison beim nächsten sicheren Abgleich automatisch; beim Start einer neuen CWL wird deren Planung erst nach erfolgreicher Archivierung und Freigabe des vorherigen Cloud-Zyklus zurückgesetzt. Unvollständige vorherige Saison? Keine automatische Überschreibung. Zwischen den Ligen findest du <b>normale Clan Wars direkt unter „Plan“</b> mit Clanpunkten, Zerstörung, beiden Aufstellungen und konkreten Angriffen aus der Clash-API; historische CW/CWL bleiben in „Statistik“. In der Offline-PWA erfolgen Abschluss, Archivierung und Neustart weiterhin manuell. Ohne aktuelle Clash-Daten bleibt der gespeicherte Plan erhalten.</p>
+   <p class="cloud-help-note">Während einer CWL zeigt der Plan bekannte Gegner, Rathaus-Verteilungen und – soweit von Clash freigegeben – vorläufige Tagesaufstellungen. Wechselhinweise vergleichen Clash mit der Empfehlung und verändern deinen Plan nicht. Nach Kriegsende kann der Planer tatsächliche Aufstellungen übernehmen. <b>Nach der CWL</b> zeigt „Plan“ die gespeicherten Saisonergebnisse, Gruppentabelle, Kriegsrunden und Spielerleistungen direkt auf der Seite statt der bisherigen Tagesaufstellungen. Eine Meldung der Clash-API, dass keine CWL mehr aktiv ist, beendet <b>nicht</b> automatisch jeden einzelnen Kriegstag: Bei fehlendem finalen Clash-Nachweis bleibt z. B. Tag 7 ausdrücklich „Abschluss offen“ statt erfunden als gespielt zu zählen. Bei bestätigtem 7/7-Abschluss archiviert der Cloud-Clanführer die Saison beim nächsten sicheren Abgleich automatisch; beim Start einer neuen CWL wird deren Planung erst nach erfolgreicher Archivierung und Freigabe des vorherigen Cloud-Zyklus zurückgesetzt. Unvollständige vorherige Saison? Keine automatische Überschreibung. Eine bereits automatisch archivierte CWL wird beim manuellen Neustart nicht ein zweites Mal archiviert; wenn die Cloud-Freigabe scheitert, bleiben die gespielten Aufstellungen unverändert. Zwischen den Ligen findest du <b>normale Clan Wars direkt unter „Plan“</b> mit Clanpunkten, Zerstörung, beiden Aufstellungen und konkreten Angriffen aus der Clash-API; historische CW/CWL bleiben in „Statistik“. In der Offline-PWA erfolgen Abschluss, Archivierung und Neustart weiterhin manuell. Ohne aktuelle Clash-Daten bleibt der gespeicherte Plan erhalten.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -4128,11 +4129,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.59"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.59"></script>
-<script src="./cwl-planning-core.js?v=1.16.59"></script>
+<script src="./clan-management-core.js?v=1.16.60"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.60"></script>
+<script src="./cwl-planning-core.js?v=1.16.60"></script>
 <script>
-const APP_VERSION="v1.16.59";
+const APP_VERSION="v1.16.60";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5072,7 +5073,56 @@ function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;
   }
  }
 }state.archivedMembers=[];state.cwlLiveIgnoredSeason=state.cwlLive?.season||state.cwlLiveIgnoredSeason||null;delete state.cwlLive;}
-async function handleCwlManage(){if(window.CWLCloud?.active&&window.CWLCloud?.isPlanLocked?.()&&!window.CWLCloud?.isOwner?.()){showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return}const played=playedCount();if(!played){if(!await confirmInline("Tagesregeln werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true}))return;try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");return}const incomplete=played<state.config.days;if(!await confirmInline(`Der aktuelle Stand (${played}/${state.config.days} gespielt${incomplete?", unvollständig":""}) wird vorher archiviert. Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.`,{title:"Neue CWL starten?",confirmText:"Archivieren & neu starten"}))return;state.archives.push(archiveCurrentCwl());try{await window.CWLCloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}resetPlanningData();renderAll("Vorherige CWL archiviert · neue CWL gestartet ✓")}
+async function handleCwlManage(){
+ const cloud=window.CWLCloud,startedClan=cloud?.active?cloud.getActiveClanId?.():null;
+ if(cloud?.active&&cloud.isPlanLocked?.()&&!cloud.isOwner?.()){
+  showToast("Plan freigegeben – nur der Clanführer kann eine neue Planung beginnen");return;
+ }
+ const played=playedCount(),profileAtStart=state;
+ if(!played){
+  if(!await confirmInline("Tagesregeln werden zurückgesetzt. Mitglieder, Dabei/Fix, Prio, RH und 3★-Stärke bleiben erhalten.",{
+   title:"Planung zurücksetzen?",confirmText:"Planung zurücksetzen",danger:true
+  }))return;
+  try{await cloud?.openNewCycle?.()}catch(e){showToast(String(e.message||e));return}
+  if(state!==profileAtStart||(startedClan&&
+    (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+  resetPlanningData();renderAll("Planung zurückgesetzt · frisch neu berechnet ✓");
+  return;
+ }
+ const incomplete=played<state.config.days;
+ const sourceSeason=/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(state.cwlLive?.season||""))?
+  state.cwlLive.season:null;
+ const alreadyArchived=!!sourceSeason&&!!cloud?.active&&
+  state.archives.some(a=>a.sourceSeason===sourceSeason);
+ const prompt=alreadyArchived?
+  "Die bereits archivierte CWL wird nicht erneut ins Archiv kopiert. "+ 
+  "Gespielte Tage und Verfügbarkeitsregeln der aktuellen Planung werden zurückgesetzt.":
+  "Der aktuelle Stand ("+played+"/"+state.config.days+" gespielt"+
+  (incomplete?", unvollständig":"")+") wird vorher archiviert. "+
+  "Mitglieder und Stammdaten bleiben erhalten; gespielte Tage und Verfügbarkeitsregeln werden zurückgesetzt.";
+ if(!await confirmInline(prompt,{
+  title:"Neue CWL starten?",confirmText:alreadyArchived?"Neue Planung starten":"Archivieren & neu starten"
+ }))return;
+ if(state!==profileAtStart||(startedClan&&
+   (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+ // A complete 7/7 API season may have already been archived at postseason.
+ // Never insert a duplicate for the same Cloud clan/season.
+ const isArchivedNow=alreadyArchived||!!sourceSeason&&!!cloud?.active&&
+  state.archives.some(a=>a.sourceSeason===sourceSeason);
+ const archive=isArchivedNow?null:archiveCurrentCwl();
+ if(archive)state.archives.push(archive);
+ try{await cloud?.openNewCycle?.()}
+ catch(e){
+  // A failed Cloud plan-cycle RPC must not leave a phantom extra archive.
+  if(archive)profileAtStart.archives=profileAtStart.archives.filter(a=>a!==archive);
+  showToast(String(e.message||e));return;
+ }
+ if(state!==profileAtStart||(startedClan&&
+   (!cloud?.active||cloud.getActiveClanId?.()!==startedClan)))return;
+ resetPlanningData();
+ renderAll(isArchivedNow?"Neue CWL-Planung vorbereitet ✓":
+  "Vorherige CWL archiviert · neue CWL gestartet ✓");
+}
 function buildFullPlanText(){
  const days=lastPlan?.dayPlans||[],slots=state.config.slots;
  const apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud.hasApiClan?.();
@@ -5953,6 +6003,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.59"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.60"></script>
 </body>
 </html>

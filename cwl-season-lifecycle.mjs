@@ -1,6 +1,6 @@
 /* Safe Cloud CWL season lifecycle. Never infer a finished attack/war or
    mutate a historic plan just because the leaguegroup endpoint says notInWar. */
-import { sanitizeSnapshot, canFinalize } from "./cwl-live-core.mjs?v=1.16.59";
+import { sanitizeSnapshot, canFinalize } from "./cwl-live-core.mjs?v=1.16.60";
 
 function monthDistance(season,now) {
  const m=/^(20\d\d)-(0[1-9]|1[0-2])$/.exec(String(season||""));

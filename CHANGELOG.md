@@ -12,6 +12,13 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.60] - 2026-11-11
+
+### CWL-Abschluss-Hotfix: Bereits archivierte Saisons nur einmal sichern
+- Nach automatischer 7/7-Archivierung führt „Neue CWL starten“ keine zweite Kopie derselben Cloud-Saison mehr an. Vor dem tatsächlichen Commit wird erneut nach einem saisonidentischen Archiv gesucht (auch wenn es während des Bestätigungsdialogs angelegt wurde).
+- Scheitert die Cloud-Freigabe des neuen Planzyklus, wird eine gerade erzeugte, noch nicht sicher gespeicherte Archivkopie zurückgenommen; der bisherige gespielte Plan bleibt unberührt. Nach einem Clan-/Profilwechsel während der Bestätigung oder Cloud-Antwort wird nicht versehentlich ein fremder Plan zurückgesetzt.
+- Hilfe, Regressionstest und Cloud-Cache-Version gemeinsam aktualisiert; keine Datenbank-Migration, Änderung am Solver, API-Provenienz oder automatischen Sanktionen.
+
 ## [1.16.59] - 2026-11-10
 
 ### CWL-Saisonende: Plan-Rückblick statt verschwundener Liga, normale CW zwischen Ligen
