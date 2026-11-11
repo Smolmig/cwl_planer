@@ -8,7 +8,8 @@ export function summarizeCwlSeason(profile){
   const stateLabels={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
   const safeScore=value=>Number.isInteger(value)&&value>=0?value:null;
   const players=new Map(),opponents=new Map();
-  const rounds=Array.from({length:7},(_,index)=>{
+  const warCount=live.warCount===5?5:7;
+  const rounds=Array.from({length:warCount},(_,index)=>{
     const day=index+1,r=live.rounds.find(x=>Number(x?.day)===day);
     if(!r?.available||!stateLabels[r.state]||!r.clan||!r.opponent)
       return {day,available:false,state:"unknown",label:"Noch nicht verfügbar"};
@@ -45,7 +46,7 @@ export function summarizeCwlSeason(profile){
     available:rounds.filter(r=>r.available).length,
     ended:rounds.filter(r=>r.state==="warEnded").length,
     started:rounds.filter(r=>r.state==="inWar").length,
-    rounds,opponents:[...opponents.values()],
+    rounds,warCount,opponents:[...opponents.values()],
     players:[...players.values()].map(p=>({...p,averageStars:p.attacks?p.stars/p.attacks:null}))
       .sort((a,b)=>b.stars-a.stars||b.attacks-a.attacks||a.name.localeCompare(b.name,"de"))};
 }
