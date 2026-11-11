@@ -16,7 +16,8 @@ export function summarizeCwlGroup(group){
  }
  if(clans.size<2)return null;
  let expected=0,known=0,ended=0,missing=0;
- const rounds=Array.from({length:7},(_,index)=>{
+ const warCount=clans.size===6?5:7;
+ const rounds=Array.from({length:warCount},(_,index)=>{
    const source=group.rounds.find(r=>Number(r?.day)===index+1);
    const matches=(Array.isArray(source?.matches)?source.matches:[]).slice(0,4).map(match=>{
      expected++;
@@ -83,6 +84,6 @@ export function summarizeCwlGroup(group){
    last=key;
  }
  return {season:group.season,clanTag:normalizedTag(group.clanTag),clans:table,
-   rounds,complete,expected,known,ended,missing,
+   rounds,warCount,complete,expected,known,ended,missing,
    partial:missing>0||table.some(t=>t.unknownScores>0)};
 }

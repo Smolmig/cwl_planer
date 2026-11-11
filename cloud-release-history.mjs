@@ -4,6 +4,13 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.17.0",
+    "releaseType": "minor",
+    "date": "2026-11-11",
+    "title": "CWL-Größe und kurze Ligen werden automatisch erkannt",
+    "description": "Verknüpfte Clans übernehmen die Kriegsgröße und die Zahl der Kriege aus Clash. Auch fünf Kriege bei sechs Clans werden im Plan und Saisonrückblick richtig behandelt. Offline bleiben eigene Formate möglich."
+  },
+  {
     "version": "v1.16.72",
     "releaseType": "patch",
     "date": "2026-11-11",

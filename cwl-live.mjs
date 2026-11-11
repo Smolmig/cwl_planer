@@ -1,8 +1,8 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.72";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.72";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.72";
-import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.16.72";
-import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.16.72";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.17.0";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.17.0";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.17.0";
+import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.17.0";
+import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.17.0";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -329,7 +329,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     summary.textContent="Letzte CWL · "+label;
     const tab=postseasonTabByScope.get(scope)||"rounds";
     const key=ctx.clanId+"|"+JSON.stringify({
-      mode:model.mode,season,verifiedSeven:model.verifiedSeven,
+      mode:model.mode,season,warCount:model.warCount,verifiedAll:model.verifiedAll,verifiedSeven:model.verifiedSeven,
       savedDays:model.savedDays,rounds:model.snapshot?.rounds,
       group:group||null,tab
     });
@@ -919,7 +919,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
         ". Ein Angriff könnte bereits erfolgt sein. Bitte zuerst CWL-Daten aktualisieren; keine Missed- oder Erinnerungsbestätigung aus gespeicherten Angaben.</small></div>";
     })():"";
     node.innerHTML="<strong>CWL "+esc(info.season)+" · Live</strong> <span class='statusline'>"+
-      ended+" Kriege beendet · "+info.rounds.filter(r=>r.available).length+"/7 Gegner verfügbar"+
+      ended+" Kriege beendet · "+info.rounds.slice(0,info.warCount===5?5:7).filter(r=>r.available).length+"/"+(info.warCount===5?5:7)+" Gegner verfügbar"+
       (offlineReason?" · ⚠ "+esc(offlineReason):"")+esc(detailsWarning)+"</span>"+attentionHtml+reviewHtml;
     node.querySelector(".cwl-attention-ack")?.addEventListener("click",()=>{
       const active=context(),latest=effective();

@@ -3811,7 +3811,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   </div>
   <div class="card">
     <div class="section-title"><h3>Planung & Daten</h3></div>
-    <div class="settings-subcard" id="settingsRulesSection"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
+    <div class="settings-subcard" id="settingsRulesSection"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">Mit Clash verbunden: Größe und Kriegszahl kommen automatisch aus der Liga. Ohne Cloud-Verknüpfung kannst du manuell planen, auch mit historischen oder eigenen Formaten bis 50 Spielern pro Krieg.</div></div>
     <div class="settings-subcard" id="settingsAutoRosterBox">
   <h4>Clash-Mitglieder</h4>
   <label class="settings-auto-roster"><input type="checkbox" id="settingsAutoRoster" checked> Automatisch abgleichen</label>
@@ -3820,11 +3820,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.72</strong><span>Freigaben gegen veraltete Sitzungen geschützt</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.17.0</strong><span>CWL-Größe kommt direkt aus Clash</span></div>
       <ul>
-       <li><b>CWL-Plan:</b> Freigaben gehören jetzt zur genauen gemeinsamen Saison und zum richtigen Planzyklus.</li>
-       <li><b>Vize-Vorschläge:</b> Alte Browser-Tabs können Änderungen nicht versehentlich in einen neu begonnenen Plan übernehmen.</li>
-       <li><b>Nach Saisonende:</b> Ein belegter abgeschlossener letzter CWL-Krieg verhindert neue Freigaben dieser alten Saison.</li>
+       <li><b>Cloud-Planung:</b> Kriegsgröße und Anzahl der CWL-Kriege werden aus der offiziellen Gruppenauslosung übernommen, sobald Clash verlässliche Daten liefert.</li>
+       <li><b>Sonderfälle:</b> Eine Liga mit sechs Clans hat nur fünf Kriege. Der Saisonrückblick und das Archiv berücksichtigen das.</li>
+       <li><b>Offline:</b> Manuelle Größen und Kriegstage bleiben für lokale Pläne verfügbar. Gespielte Aufstellungen werden nicht überschrieben.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4003,6 +4003,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> findest du zwei getrennte Quellen: <b>Gruppenergebnisse aus Clash</b> (Tabellen und Runden) und <b>archivierte CWL-Pläne</b> (frühere Aufstellungen und Einsätze). Fehlt ein Gruppenstand, heißt das nicht, dass der Plan verloren ist. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
+    <div class="help-item"><b>Kriegsgröße und verkürzte CWL</b><div>Mit einem verknüpften Clash-Clan übernimmt die Cloud-Planung die offiziell gemeldete Größe der Tagesaufstellung (etwa 15 oder 30) und die Zahl der Kriege. Acht Clans spielen normalerweise sieben Kriege; bei sechs Clans sind es fünf. Während Clash noch keine verlässlichen Gruppendaten liefert, bleibt der bisherige Plan erhalten. Gespielte Tage werden bei einer Abweichung nicht automatisch umgeschrieben. Die Teilnehmerliste ist nicht dasselbe wie die Größe einer einzelnen Kriegsaufstellung. Für lokale Pläne ohne API kannst du Größe und Kriegstage weiterhin selbst wählen; alte 5-gegen-5-CWLs bleiben im Archiv nachvollziehbar.</div></div>
     <div class="help-item"><b>Planfreigabe zwischen den CWLs</b><div>Im verknüpften Cloud-Clan kann der Clanführer die aktuelle Planung während der Vorbereitung und laufenden CWL freigeben. Nach einem durch Clash bestätigten Saisonende oder während einer bestätigten Pause zeigt „Mitglieder“ stattdessen einen kurzen Hinweis. Sobald eine neue CWL offiziell erkannt und der neue Plan eröffnet ist, steht die Freigabe wieder bereit. Alte Freigaben und Vorschläge bleiben bei ihrer Saison. Bei unklaren Clash-Daten wird kein Saisonende angenommen. Im Gastmodus ändert sich nichts. Serverseitig werden Freigaben und Vorschläge außerdem an Saison und Planzyklus gebunden. Ein alter Tab muss nach einem Zykluswechsel neu laden. Ist der letzte CWL-Krieg durch Clash als beendet belegt, sperrt der Server weitere Freigaben für diese Saison. Fehlen Abschlussnachweise, wird kein Ende erfunden.</div></div>
      <div class="help-item"><b>Einsätze zwischen den CWLs</b><div>Nach einer durch Clash bestätigten beendeten CWL oder in einer bestätigten CWL-Pause zeigt „Einsätze“ keine alten Balken, Filter oder 8-Sterne-Ziele mehr als aktuell. Stattdessen führt „CWL-Archiv ansehen“ zu den gespeicherten Gruppenergebnissen und Planarchiven. Dort werden nur die tatsächlich früher gespeicherten Angaben gezeigt; fehlende Sterne oder Einsätze werden nicht nachträglich berechnet. Sobald Clash eine neue CWL meldet, erscheinen die neuen Einsätze bereits in der Vorbereitung vor Tag 1. Bei unklaren oder verzögerten Clash-Daten bleibt der bekannte Stand geschützt.</div></div>
     <div class="help-item"><b>Filter in Einsätze</b><div>Mit <b>＋ Filter</b> wählst du beispielsweise <b>Rotierende Spieler</b>, <b>Ziel offen</b> oder <b>8 Sterne offen</b>. Jeder Filter erscheint als Chip und lässt sich mit <b>×</b> einzeln entfernen. Verschiedene Filter kannst du kombinieren; eine andere Auswahl innerhalb derselben Gruppe ersetzt die vorige. <b>Ziel offen</b> zeigt Spieler, denen laut Plan oder persönlichem Einsatzziel noch bestätigte Angriffe fehlen – beispielsweise <b>3/4</b> oder <b>1/5</b>. <b>Ziel erreicht</b> bedeutet, dass die entsprechende Zahl bestätigt ist. <b>Im Plan: 3/4 Einsätze</b> meint die aktuell vorgesehenen Einsätze, <b>Ziel: 3/4 Einsätze</b> ein ausdrücklich festgelegtes Einsatzziel. Nur echte Angriffe zählen als ausgeführt. <b>8 Sterne offen</b> und <b>8 Sterne erreicht</b> beziehen sich auf die bestätigten Sterne dieser CWL. Bei unvollständigen Clash-Daten bleibt der Status ungeklärt, statt fehlende Angriffe zu erfinden. Mit der Suche kannst du einen Spieler direkt finden.</div></div>
@@ -4309,11 +4310,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.72"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.72"></script>
-<script src="./cwl-planning-core.js?v=1.16.72"></script>
+<script src="./clan-management-core.js?v=1.17.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.17.0"></script>
+<script src="./cwl-planning-core.js?v=1.17.0"></script>
 <script>
-const APP_VERSION="v1.16.72";
+const APP_VERSION="v1.17.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5455,9 +5456,11 @@ function importMemberText(text,participating=false){if(manualRosterRestricted())
 function buildBugUrl(){const participants=state.members.filter(m=>m.participating).length,fixed=state.members.filter(m=>m.participating&&m.fixed).length,body=["**Was ist passiert?**","Bitte beschreiben…","","**Schritte zum Nachstellen**","1. ","2. ","3. ","","**Technische Infos**",`- App: ${APP_VERSION}`,`- Datenformat: ${DATA_VERSION}`,`- Profile: ${app.profiles.length}`,`- Teilnehmer im aktiven Profil: ${participants}`,`- Fixspieler: ${fixed}`,`- Kriegsgröße: ${state.config.slots}`,`- Kriege: ${state.config.days}`,`- Gerät/Browser: ${navigator.userAgent}`].join("\n");return BUG_URL+"?title="+encodeURIComponent("[Bug] ")+"&body="+encodeURIComponent(body)}
 function applyBulkValue(field,value){if(!selectedMembers.size){showToast("Bitte zuerst Mitglieder auswählen");return}if(field==="townHall"&&[...selectedMembers].some(id=>apiManagedRosterMember(memberById(id)))){showToast("Rathaus kommt aus Clash – für Korrekturen die Notfallbearbeitung aktivieren.");return}for(const id of selectedMembers){const m=state.members.find(x=>x.id===id);if(m&&!(field==="rotationWeight"&&m.fixed)){markRosterAbsenceEdit(m,field);m[field]=value}}renderAll(`${selectedMembers.size} Mitglieder geändert · Plan aktualisiert ✓`)}
 async function createProfilePrompt(){const raw=await promptInline("Neues Profil / Clan","Profilname","Neuer Clan"),name=(raw||"").trim();if(!name){renderProfileUI();return}if(profileNameExists(name)){showToast("Ein Profil mit diesem Namen existiert bereits");renderProfileUI();return}const p=freshProfile(name);app.profiles.push(p);setActiveProfile(p.id)}
-function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
-async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
-function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
+function syncConfigInputs(){const apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud?.hasApiClan?.(),locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked||apiLinked;custom.disabled=locked||apiLinked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked||apiLinked;
+ const lockNote=document.getElementById("configLockNote");lockNote.classList.toggle("hidden",!locked&&!apiLinked);
+ lockNote.textContent=apiLinked?"Clash bestimmt die CWL-Kriegsgröße und Anzahl der Kriege. Nach einer offiziellen Auslosung übernimmt die App die Werte automatisch; bei unbekannten Daten bleibt die bisherige Planung erhalten.":"🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.";document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
+async function changeDays(newDays){if(window.CWLCloud?.active&&window.CWLCloud?.hasApiClan?.()){showToast("Die CWL-Kriegszahl kommt automatisch aus Clash.");syncConfigInputs();return}if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
+function setSlots(value){if(window.CWLCloud?.active&&window.CWLCloud?.hasApiClan?.()){showToast("Die CWL-Kriegsgröße kommt automatisch aus Clash.");syncConfigInputs();return}if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
 function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="arena"?"#151a20":resolved==="dark"?"#0f172a":"#f4f7fb"}
 function renderRecoveryBanner(){
   const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
@@ -5935,7 +5938,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.72");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.17.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6214,16 +6217,17 @@ window.CWLLegacy={
  archiveConfirmedCwl:(season)=>{
   const cloud=window.CWLCloud;
   if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
-     state.config.days!==7||state.cwlLive?.season!==season||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||state.cwlLive?.season!==season||
      state.cwlLiveIgnoredSeason===season)return false;
-  const locked=state.locks.slice(0,7);
-  if(locked.length!==7||!locked.every((lock,i)=>lock?.locked===true&&
+  const warCount=state.cwlLive?.warCount===5?5:7;
+  const locked=state.locks.slice(0,warCount);
+  if(locked.length!==warCount||!locked.every((lock,i)=>lock?.locked===true&&
      lock.source==="coc-api"&&lock.season===season&&
      lock.warTag===state.cwlLive?.rounds?.[i]?.warTag&&
      state.cwlLive?.rounds?.[i]?.state==="warEnded"))return false;
   if(state.archives.some(archive=>archive.sourceSeason===season))return true;
   const archived=archiveCurrentCwl();
-  if(!archived.complete||archived.lineups.length!==7)return false;
+  if(!archived.complete||archived.lineups.length!==warCount)return false;
   state.archives.push(archived);
   renderArchives();saveApp();
   return true;
@@ -6235,12 +6239,13 @@ window.CWLLegacy={
   const cloud=window.CWLCloud;
   if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      state.cwlLive?.season!==season||
-     state.cwlLiveIgnoredSeason===season||state.config.days!==7||
+     state.cwlLiveIgnoredSeason===season||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||"")))return false;
   if(state.archives.some(a=>a.sourceSeason===season))return true;
   const prior=archiveCurrentCwl();
-  if(prior.sourceSeason!==season||prior.playedCount>7||
-     prior.lineups.some(l=>l.day<1||l.day>7))return false;
+  if(prior.sourceSeason!==season||prior.playedCount>state.config.days||
+     prior.lineups.some(l=>l.day<1||l.day>state.config.days))return false;
   state.archives.push(prior);
   renderArchives();
   saveApp();
@@ -6253,12 +6258,12 @@ window.CWLLegacy={
   const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
   if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      !navigator.onLine||state.cwlLive?.season!==oldSeason||
-     state.config.days!==7||oldSeason>=newSeason||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||oldSeason>=newSeason||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
      !state.archives.some(a=>a.sourceSeason===oldSeason))return false;
   // No completeness assumption. An archived old 6/7 remains 6/7; this
   // transition is a fresh planning cycle, not an automatic "played" mark.
-  const locks=state.locks.slice(0,7);
+  const locks=state.locks.slice(0,state.config.days);
   if(locks.some((l,i)=>l?.locked&&l.source==="coc-api"&&
      (l.season!==oldSeason||l.warTag!==state.cwlLive?.rounds?.[i]?.warTag)))
    return false;
@@ -6306,6 +6311,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.72"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.17.0"></script>
 </body>
 </html>

@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.17.0] - 2026-11-11
+
+### Offizielle CWL-Formate und Gruppengrößen (#254) – MINOR
+- **Neue Cloud-Funktion:** Bei API-verknüpften Clans werden Kriegsgröße und Kriegsanzahl aus der verifizierten Clash-Gruppenauslosung und den echten Kriegsteams übernommen, sobald vollständige eindeutige Angaben vorliegen. Die beiden Einstellungen sind dann nicht mehr manuell editierbar. Ungültige/widersprüchliche Antworten verändern sie nicht. Gespielte Locks und manuelle Historie werden **nicht** automatisch umgeschrieben.
+- **Fünf statt sieben Kriegstage:** Bei sechs offiziellen Clans sind fünf Begegnungen vollständig. Solver, vergangene CWL, Gruppentabelle, verifizierter Saisonabschluss, saisonbezogenes lokales Planarchiv und Owner-Rollover unterscheiden 5/5 von einer echten unvollständigen 7er-CWL (z. B. 6/7). Kein erfundener sechster oder siebenter Krieg.
+- **Größen:** Eigene API-CWL-Formate mit 15 und 30 sind ab den erkannten offiziellen Teamgrößen planbar. Historisches 5v5 aus März 2026 bleibt darstellbar; 11 Spieler im Clan-Pool sind **nicht** dasselbe wie eine offizielle 11v11-CWL. Offline- und nicht verknüpfte Pläne bleiben manuell einstellbar.
+- **Sicherheitsgrenzen:** Keine Änderung am Solver, Supabase-RLS, bestehenden Gruppenarchiven oder automatischen Server-Cycle-RPC. Der serverseitige `private.cwl_review_last_round_ended`-Guard ist derzeit noch auf den siebenten Kriegstag ausgerichtet; Anpassung für amtlich bestätigte fünf Runden und ownerloser Saisonwechsel (#227) verbleiben im neuen Issue #254 als gesonderte Migrations-/UAT-Aufgabe.
+- **Testabdeckung:** 6 vs. 8 Clans, 5/15/30 Größe, 11-Spieler-Pool, unklare API, gespeicherte Locks, 5/5-Postseason sowie 15/30 bestehende Regressionen. Echte 30er-/5er-CWL-Mehrgeräte-UAT erst mit passender realer Saison.
+
 ## [1.16.72] - 2026-11-11
 
 ### Serverseitige Planzyklus-Prüfung für Freigabe und Vize-Vorschläge (#37)
