@@ -44,6 +44,13 @@
 
 Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusmeldungen und Erklärungen im Quelltext; sie ist **keine** abgeschlossene Nutzer-UAT. In jedem Teilpaket die bestehende **Hilfe-Seite aktualisieren**, keine Berechnung/Cloud-Daten/Clash-Aufstellung ändern und die reale Geräteabnahme #213 offen lassen.
 
+## Öffentlicher Update-Verlauf (v1.16.66)
+
+- Unter **Mehr → Update-Verlauf** wird jede dokumentierte Version knapp und aus Nutzersicht dargestellt, nach echtem Veröffentlichungsdatum der Cloud-Releases. Frühere Prototypen ohne gesichertes Einzeldatum sind ausdrücklich separat eingeordnet.
+- **Keine** internen Ticketnummern, GitHub-Bezeichnungen, Datenbanktabellen, Funktionsnamen oder unverständliche Abkürzungen im öffentlichen Verlauf. Eine Änderung = ein kurzer sprechender Titel, größere Neuerungen mit einem zusätzlichen verständlichen Satz.
+- **Pflicht pro künftigem Cloud-Release:** `cloud-release-history.mjs` um genau einen datierten Eintrag ergänzen, keine Entwürfe als veröffentlicht darstellen, Versionsabgleich automatisiert testen. Den neuesten Hinweis in **Design & Aktualisierung** weiterhin separat pflegen und die Hilfe mitprüfen.
+- Gruppen und Suchfilter müssen auf Smartphones lesbar, per Tastatur bedienbar und ohne Flackern/Startzeit-Verlängerung aufrufbar sein.
+
 ## Pflichtcheck für neue PRs
 
 - [ ] **Titel:** Bedeutung ohne Entwicklerkontext?
