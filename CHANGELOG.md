@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.71] - 2026-11-11
+
+### Freigabe eines beendeten CWL-Plans nicht mehr anbieten (#37)
+- **Mitglieder/Plan:** Sobald der vorhandene Clash-Lifecycle eine beendete Saison, einen Übergang oder eine bestätigte CWL-Pause meldet, erscheinen keine Freigabe- oder Vorschlagsaktionen des alten Plans. Ein kurzer Hinweis erklärt, dass die nächste Planung wieder freigegeben werden kann.
+- **Neue CWL vor Tag 1:** Der bestätigte neue Planungszyklus zeigt die Freigabe wieder wie bisher; bei unklaren API-Daten, im Gastmodus sowie bei anderen Clans wird nichts fälschlich abgeschaltet.
+- **Verzögerte Dialoge:** Vor der Owner-RPC werden Clan, Account-Epoche, Planzyklus und aktueller Saisonstatus im Browser nochmals geprüft. Vorschlagsaktionen werden in verifizierter Pause nicht gestartet. Beim Clash-Statuswechsel aktualisiert sich auch der Mitglieder-Freigabestatus.
+- **Nicht verändert:** gespeicherte Profile, alte Vorschläge/Archive, Solver, Clanrechte, Datenbankschema, Supabase-RPCs, Gast-PWA. Eine serverseitige Sperre gegen bereits laufende Requests und ein ownerloser automatischer Saisonwechsel (#227) bleiben **separat offen**; keine falsche Sicherheitsgarantie.
+- **Hilfe, neuester Einstellungs-Hinweis, öffentlicher Update-Verlauf und Regressionstests** synchronisiert. Echte Owner/Vize/Viewer-Mobiltests #213 stehen aus.
+
 ## [1.16.70] - 2026-11-11
 
 ### Einsätze zwischen den CWLs: alte Saison nicht als aktuell darstellen (#187)
