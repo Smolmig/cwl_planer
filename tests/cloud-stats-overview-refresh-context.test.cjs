@@ -89,10 +89,10 @@ test("Overview always describes all recorded wars; player-specific filters canno
       };
     },theme);
     const info=JSON.stringify({width,theme,result});
-    assert.match(result.intro,/Alle gespeicherten abgeschlossenen CWs und CWL-Tage/,info);
+    assert.match(result.intro,/Ergebnisse aus allen gespeicherten, abgeschlossenen Kriegen/,info);
     assert.doesNotMatch(result.intro,/oben ausgewählten Kriege/,info);
     assert.match(result.allCount,/1 normaler CW \+ 1 CWL-Kriegstag/,info);
-    assert.match(result.allCoverage,/alle gespeicherten Kriege/,info);
+    assert.match(result.allCoverage,/aus gespeicherten Kriegen/,info);
      assert.equal(result.basisClosed,true,info);
      assert.match(result.basisText,/Ausgewertet werden/,info);
      assert.ok(result.basisTouchHeight>=44,info);
