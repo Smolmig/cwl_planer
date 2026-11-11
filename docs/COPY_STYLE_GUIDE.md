@@ -86,6 +86,13 @@ Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusm
 - **Pflicht pro künftigem Cloud-Release:** `cloud-release-history.mjs` um genau einen datierten Eintrag ergänzen, keine Entwürfe als veröffentlicht darstellen, Versionsabgleich automatisiert testen. Den neuesten Hinweis in **Design & Aktualisierung** weiterhin separat pflegen und die Hilfe mitprüfen.
 - Gruppen und Suchfilter müssen auf Smartphones lesbar, per Tastatur bedienbar und ohne Flackern/Startzeit-Verlängerung aufrufbar sein.
 
+## Freigabe zwischen CWLs (v1.16.71)
+
+- „Derzeit keine CWL-Planung“ statt altem Freigabe-Button bei **bestätigter** CWL-Pause oder beendetem Saisonzyklus.
+- Neue bestätigte Vorbereitung (auch vor Tag 1) erlaubt wieder die Freigabe des **neuen** Plans, ohne historische Freigaben oder Vize-Vorschläge umzuhängen.
+- Fehlende oder veraltete Clash-Daten gelten nicht als sicherer Abschluss; keine stillen Plan- oder Archivänderungen.
+- Diese UI- und Client-Prüfung ersetzt **keinen** serverseitigen Guard gegen alte Freigabe-RPCs; #227/#213 bleiben offen.
+
 ## Pflichtcheck für neue PRs
 
 - [ ] **Titel:** Bedeutung ohne Entwicklerkontext?
