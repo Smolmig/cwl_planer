@@ -34,7 +34,7 @@ test("Rolling stats use last 50 normal CWs and three latest CWL seasons",async()
  assert.equal(total.wars,71);
  assert.equal(total.totalCwlSeasons,4);
 });
-test("Current CW appears only in Overview and never writes to CWL plan or stats early",async()=>{
+test("Current CW appears only in Plan and never writes to CWL plan or stats early",async()=>{
  const dom=new JSDOM('<section id="currentWarCard" hidden><div id="currentWarContent"></div>'+
    '<button id="currentWarRefresh"></button></section>',{url:"https://example.test"});
  const old=global.document;
@@ -56,8 +56,8 @@ test("Current CW appears only in Overview and never writes to CWL plan or stats 
   const host=dom.window.document.getElementById("currentWarCard");
   assert.equal(host.hidden,false);
   assert.match(host.textContent,/35\s*:\s*27/);
-  assert.match(host.textContent,/1 von 30 Angriffen/);
-  assert.match(host.textContent,/29 offen/);
+  assert.match(host.textContent,/Wir: 1\/30 Angriffe/);
+  assert.match(host.textContent,/Gegner: 0\/30 Angriffe/);
   assert.match(host.textContent,/Gegner/);
   assert.equal(host.querySelector("script"),null,"Player names are HTML escaped");
   dom.window.document.getElementById("currentWarRefresh").click();

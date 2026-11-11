@@ -12,6 +12,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.59] - 2026-11-10
+
+### CWL-Saisonende: Plan-Rückblick statt verschwundener Liga, normale CW zwischen Ligen
+- Die Cloud-Planseite wechselt nach dem bestätigten Ende der Liga zu einem **inline** Saisonrückblick mit bekannter Gruppentabelle, Ergebnissen aller sieben Tage und Spielerwerten, unter Verwendung der vorhandenen Saisonanzeige. Der bisherige Saison-Button und die leeren Aufstellungs-Karten werden dann ausgeblendet, ohne den alten Plan zu löschen.
+- Ein `notInWar` der Clash-Ligagruppe ist **kein** belegter letzter Krieg: 6/7 bleibt ausdrücklich **„Abschluss offen“** statt 7/7 oder fälschlich „CWL läuft“. Offizielle bereits archivierte Clan-/Tag-7-Kriegstags-Tags werden bei API-Ende einmal gezielt am offiziellen War-Endpunkt nachgeprüft. Ausschließlich vollständige, tatsächlich beendete und clanidentische Ergebnisse dürfen Tag 7 vervollständigen.
+- Nach einer **nachweislich abgeschlossenen 7/7-API-CWL** archiviert der berechtigte Cloud-Owner den bisherigen Plan bei einem frischen Abruf idempotent. Eine neu erkannte CWL setzt die Planung erst nach gesicherter Archivierung, Cloud-Synchronisation und neuem Planzyklus zurück. Nicht abgeschlossene oder manuelle Tage bleiben geschützt.
+- Zwischen Ligen erscheinen die **normalen Clan Wars auf „Plan“** (nicht mehr unter Einsätze): Namen/Wappen, War-Sterne, Zerstörung, Status/Zeiten, Angriffe beider Clans und ausklappbare Aufstellungen mit Angriffszielen. Kein falscher verpasster Angriff und keine Sanktion.
+- Offline-PWA bleibt manuell. Die Automation läuft bei berechtigtem Cloud-Browser-Abgleich, nicht als behaupteter permanenter Hintergrund-Prozess. Gegenwärtige Kriegs-/CWL-Archivdaten werden nicht destruktiv migriert.
+- Hilfe/Releasehinweise aktualisiert. Offene Nachweise: echte betroffene Supercell-Tag-7-Abfrage, Edge-Deployment, Main-CI, Pages, Release, iOS-/Android-Owner-UAT #213, vollumfängliches Backup #178 und spätere serverseitige Lifecycle-Cron-Automation.
+
 ## [1.16.58] - 2026-11-10
 
 ### Clanverwaltung #183 – manuelle Prüfhinweise quittieren und Ausnahmen

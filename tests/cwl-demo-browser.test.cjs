@@ -6,7 +6,7 @@ const path=require("node:path");
 const http=require("node:http");
 const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"..");
-const allowed=new Set(["cwl-demo.html","cwl-demo-data.mjs","cwl-live.mjs","cwl-live-core.mjs","cwl-medal-goals.mjs","cwl-verified-pause.mjs"]);
+const allowed=new Set(["cwl-demo.html","cwl-demo-data.mjs","cwl-live.mjs","cwl-live-core.mjs","cwl-medal-goals.mjs","cwl-verified-pause.mjs","cwl-season-lifecycle.mjs","cwl-season-view.mjs","cwl-season-core.mjs","cwl-group-core.mjs"]);
 function demoServer(){
  return http.createServer((req,res)=>{
   const file=decodeURIComponent((req.url||"/").split("?")[0]).replace(/^\/+/,"");

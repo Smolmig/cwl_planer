@@ -1,6 +1,8 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.58";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.58";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.58";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.16.59";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.59";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.59";
+import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.16.59";
+import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.16.59";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -71,6 +73,7 @@ function townHallSummary(members) {
 export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudSaved,applyVerifiedPause}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
+  let lastKnownGroup=null; // Last validated group from THIS linked clan only.
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set(),expandedMissReviews=new Set();
   let ownerDecisions=[],decisionScope="",decisionBusy=false,decisionError="";
@@ -250,6 +253,71 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       notify("Pause nicht bestätigt: "+String(e?.message||e).slice(0,160)+
         " Bitte den gemeinsamen Plan überprüfen.");
     }finally{decisionBusy=false;render()}
+  }
+
+  const getLifecycle=()=>{
+    const ctx=context();
+    if(!ctx.active||!ctx.clanId||!ctx.hasClanTag)
+      return {mode:"idle",snapshot:null,verifiedSeven:false};
+    return assessCwlLifecycle({
+      profile:ctx.profile,
+      liveSnapshot:current?.active&&activeClan===ctx.clanId?current:null,
+      groupState:current?.groupState||"",
+      confirmedNoCwl:confirmedNoCwl&&activeClan===ctx.clanId,
+      clanTag:ctx.clanTag,now:Date.now()
+    });
+  };
+  function renderPostseason(){
+    const view=document.getElementById("view-plan"),
+      host=document.getElementById("planCwlPostseason");
+    if(!view||!host)return false;
+    const ctx=context(),model=getLifecycle();
+    const transition=ctx.active&&model.mode==="transition";
+    const postseason=ctx.active&&(model.mode==="postseason"||transition);
+    const between=ctx.active&&model.mode==="idle"&&confirmedNoCwl;
+    view.classList.toggle("plan-postseason-mode",!!postseason);
+    view.classList.toggle("plan-between-cwl-mode",!!between);
+    host.hidden=!postseason&&!between;
+    if(!postseason&&!between){host.dataset.renderKey="";host.replaceChildren();return false}
+    if(between){
+      const key=ctx.clanId+"|between";
+      if(host.dataset.renderKey!==key){
+        host.dataset.renderKey=key;
+        host.innerHTML='<section class="plan-postseason-results"><div class="section-title">'+
+          '<div><span class="view-lead-kicker">ZWISCHEN DEN LIGEN</span>'+
+          '<h3>Aktuell keine CWL</h3><p class="statusline">Normale Clankriege erscheinen hier, sobald Clash Daten liefert.</p></div></div>'+
+          '<p class="plan-postseason-description">Dein letzter CWL-Plan bleibt unverändert. '+ 
+          'Wenn eine neue CWL beginnt, erkennt der Planer die neue Saison. Eine ältere Planung wird nicht ohne sichere Archivierung überschrieben.</p></section>';
+      }
+      return true;
+    }
+    const season=model.season||model.oldSeason||model.snapshot?.season;
+    const group=lastKnownGroup?.season===season&&
+      lastKnownGroup.clanTag===model.snapshot?.clanTag?lastKnownGroup:null;
+    const key=ctx.clanId+"|"+JSON.stringify({
+      mode:model.mode,season,verifiedSeven:model.verifiedSeven,
+      savedDays:model.savedDays,rounds:model.snapshot?.rounds,
+      group:group||null
+    });
+    if(host.dataset.renderKey!==key){
+      const details=host.querySelector(".plan-postseason-players");
+      const open=details?.open===true;
+      const focused=details?.contains(document.activeElement)===true;
+      host.innerHTML=(transition?
+        '<p class="plan-postseason-description"><strong>Neue CWL '+model.newSeason+
+        ' noch nicht gestartet:</strong> Die neue Liga wurde erkannt, aber der vorherige Plan '+
+        'ist nicht vollständig archiviert. Bitte die letzten Ergebnisse prüfen und '+
+        'anschließend „CWL archivieren / neue Saison vorbereiten“ wählen. '+
+        'Keine automatische Überschreibung.</p>':'')+
+        renderInlineCwlPostseason(ctx.profile,model.snapshot,group,{
+         ...model,mode:"postseason",season,
+         savedDays:model.savedDays??0
+        });
+      host.querySelector(".plan-postseason-players")?.toggleAttribute("open",open);
+      if(focused)host.querySelector(".plan-postseason-players summary")?.focus({preventScroll:true});
+      host.dataset.renderKey=key;
+    }
+    return true;
   }
 
   const effective=()=>{
@@ -603,6 +671,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     // Re-rendering after an API refresh must not discard a user's open swap.
     closeSwapPopover({preserve:true});
     const ctx=context(),view=document.getElementById("view-plan");
+    const postMode=renderPostseason();
     const old=document.getElementById("cwlLiveOverview");
     const button=document.getElementById("cwlLiveRefresh");
     if(!ctx.active || !ctx.clanId || !ctx.hasClanTag || !view){
@@ -632,6 +701,11 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     if(!node){
       node=document.createElement("section");node.id="cwlLiveOverview";node.className="cwl-live-overview";
       view.querySelector(".plan-overview")?.append(node);
+    }
+    if(postMode){
+      node.hidden=true;node.textContent="";
+      document.querySelectorAll(".cwl-live-day").forEach(n=>n.remove());
+      return;
     }
     if(!info){
       node.hidden=!offlineReason;
@@ -883,9 +957,27 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
         throw new Error(msg);
       }
       if(!stillCurrent())return;
+      // Only a complete, same-clan seven-day API record can be automatically
+      // archived and advanced to a NEW month. Never clobber 6/7 or manual locks.
+      let previous=ctx.profile?.cwlLive;
+      if(data.active&&previous?.season&&previous.season!==data.season&&
+         ctx.role==="owner"&&ctx.canApply&&typeof ensureCloudSaved==="function"){
+        const old=assessCwlLifecycle({
+         profile:ctx.profile,clanTag:ctx.clanTag,
+         confirmedNoCwl:true,now:Date.now()
+        });
+        if(old.canAutoArchive&&storage.archiveConfirmedCwl?.(previous.season)){
+          await ensureCloudSaved();
+          if(!stillCurrent())return;
+          if(await storage.autoAdvanceCwl?.(previous.season,data.season)){
+            notify("✓ Vorige CWL sicher archiviert · neue CWL "+data.season+
+             " automatisch zum Planen vorbereitet.");
+            previous=ctx.profile?.cwlLive;
+          }
+        }
+      }
       // A temporary failure to fetch individual wars must not wipe previously
       // confirmed, same-season information saved by another clan leader.
-      const previous=ctx.profile?.cwlLive;
       const nextStaleDays=new Set();
       if(data.active && data.detailsStatus && data.detailsStatus!=="complete" &&
          previous?.season===data.season && previous?.clanTag===data.clanTag &&
@@ -899,7 +991,28 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
           return round;
         });
       }
+      if(data.active&&previous?.season===data.season&&
+         previous?.clanTag===data.clanTag){
+        const preserved=preservedCwlRound(previous,data);
+        data.rounds=preserved.rounds;
+      }
       staleRoundDays=nextStaleDays;
+      if(data.active&&data.group?.season===data.season&&
+         data.group.clanTag===data.clanTag)lastKnownGroup=data.group;
+      if(!data.active&&!data.pending&&previous?.season&&
+         previous.clanTag===ctx.clanTag&&
+         !lastKnownGroup&&typeof sb.from==="function"){
+        // Existing cloud group archive is tenant-RLS protected; do not
+        // silently lose standings on a new device after leaguegroup closes.
+        const {data:savedGroup,error:groupError}=await sb.from("cwl_group_archives")
+          .select("group_json").eq("clan_id",id).eq("season",previous.season)
+          .maybeSingle();
+        if(!stillCurrent())return;
+        const archive=savedGroup?.group_json;
+        if(!groupError&&archive?.season===previous.season&&
+           archive.clanTag===ctx.clanTag&&Array.isArray(archive.rounds)&&
+           Array.isArray(archive.clans))lastKnownGroup=archive;
+      }
       current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
       // Optional statistics sink only; a failed stats save must never break planning.
@@ -914,11 +1027,18 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
             notify("✓ CWL-Tag "+result.lockedDays.join(", ")+" automatisch mit tatsächlicher Aufstellung abgeschlossen");
         }
       }
+      if(ctx.role==="owner"&&ctx.canApply&&
+         getLifecycle().canAutoArchive&&
+         storage.archiveConfirmedCwl?.(getLifecycle().season))
+        Promise.resolve(ensureCloudSaved?.()).catch(e=>console.warn(
+         "CWL auto archive save:",String(e?.message||e)));
       if(data.active&&data.season&&typeof sb.from==="function")
         await loadOwnerDecisions(id,data.season).catch(e=>console.warn(
           "CWL owner decisions unavailable:",String(e?.message||e)));
       if(manual && data.pending)notify("Die CWL-Auslosung ist noch nicht vollständig verfügbar. Dein Plan bleibt erhalten.");
-      else if(manual && !data.active)notify("Derzeit keine CWL-Daten verfügbar – der manuelle Planer bleibt aktiv.");
+      else if(manual && !data.active)notify(getLifecycle().mode==="postseason"?
+       "✓ CWL beendet. Gespeicherte Ergebnisse sind im Plan-Rückblick sichtbar; fehlende Finalnachweise bleiben offen.":
+       "Derzeit keine aktive CWL. Normale Clankriege erscheinen im Plan.");
     }catch(err){
       if(!stillCurrent())return;
       offlineReason=cwlErrorMessage(String(err?.message||""));
@@ -930,7 +1050,7 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
   }
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
-    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;
+    activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;lastKnownGroup=null;
     closeSwapPopover();openedOutgoing.clear();
     expandedDays.clear();expandedOpponentDays.clear();expandedMissReviews.clear();staleRoundDays.clear();
     ownerDecisions=[];decisionScope="";decisionBusy=false;decisionError="";
@@ -953,7 +1073,9 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     return ctx.active&&ctx.clanId&&snapshot?.rounds?
       recordedCwlAttackResults(snapshot):{};
   };
-  return {start,stop,render,refresh:()=>refreshNow(true),getPlayedAttackResults:()=>{
+  return {start,stop,render,refresh:()=>refreshNow(true),
+   getLifecycle,getPostseasonSnapshot:()=>getLifecycle().mode==="postseason"?getLifecycle().snapshot:null,
+   getPlayedAttackResults:()=>{
     // Backward-compatible completed-war contract for legacy statistics/viewers.
     // Live operational progress calls getObservedCwlAttackResults instead.
     const completed={};
@@ -990,10 +1112,12 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       current.detailsStatus!=="complete")||!!staleRoundDays.size};
   },getGroupSnapshot:()=>{
     const ctx=context();
-    if(!current?.active||activeClan!==ctx.clanId||
-       current.group?.season!==current.season||
-       ctx.profile?.cwlLiveIgnoredSeason===current.season)return null;
-    return current.group||null;
+    const group=current?.active&&activeClan===ctx.clanId?current.group:lastKnownGroup;
+    if(!ctx.active||activeClan!==ctx.clanId||
+       !group?.season||
+       ctx.profile?.cwlLiveIgnoredSeason===group.season||
+       group.clanTag!==ctx.clanTag)return null;
+    return group;
   },getSnapshot:()=>{
     if(!current?.active||activeClan!==context().clanId)return null;
     const clean=sanitizeSnapshot(current);

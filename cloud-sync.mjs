@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.58";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.58";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.58";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.58";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.58";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.58";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.59";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.59";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.59";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.59";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.59";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.59";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -439,6 +439,7 @@ const cloud={
  },
  hasApiClan:()=>!!clans.find(c=>c.id===clanId)?.clash_tag,
  renderLive(){if(this.active)live.render()},
+ getCwlLifecycle:()=>live.getLifecycle(),
  getMedalOverview:()=>live.getMedalOverview(),
  getPlayedAttackResults:()=>live.getPlayedAttackResults(),
  getObservedCwlAttackResults:()=>live.getObservedCwlAttackResults(),
@@ -546,7 +547,8 @@ const live=createCwlLive({
     window.CWLGroupArchive?.invalidate?.();
   return stats.captureCwl(data);
  },
- context:()=>({active:cloud.active,clanId,role,hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
+ context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
+   hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
 });
 window.CWLGroupArchive=createCwlGroupArchiveView({

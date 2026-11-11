@@ -1072,7 +1072,25 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #view-stats .stats-overview-source>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 #view-stats .stats-overview-source .stats-season-details{margin:0 0 8px;padding-left:14px}
 
-/* Current normal clan war: optional read-only card in Overview. */
+/* Plan now shows the post-CWL recap and normal CW between leagues.
+   Offline PWA remains manual. No nested card wall on mobile. */
+#planCwlPostseason[hidden]{display:none!important}
+#view-plan.plan-postseason-mode #planDays,
+#view-plan.plan-postseason-mode #mobileDaySwitcher,
+#view-plan.plan-postseason-mode #planReviewPanel,
+#view-plan.plan-postseason-mode #planCwlSeasonEntry,
+#view-plan.plan-between-cwl-mode #planDays,
+#view-plan.plan-between-cwl-mode #mobileDaySwitcher,
+#view-plan.plan-between-cwl-mode #planReviewPanel,
+#view-plan.plan-between-cwl-mode #planCwlSeasonEntry{display:none!important}
+.plan-postseason-results{margin:15px 0 22px;min-width:0}
+.plan-postseason-results h4{font-size:14px;margin:24px 0 9px}
+.plan-postseason-description{line-height:1.6;color:var(--muted);font-size:13px;max-width:850px}
+.plan-postseason-players{margin:20px 0 8px;border-top:1px solid var(--line);padding:12px 0}
+.plan-postseason-players>summary{cursor:pointer;min-height:44px;font-size:14px;font-weight:700;padding:9px 0}
+.plan-postseason-results .season-group-scroll,.plan-postseason-results .season-player-scroll{max-width:100%;overflow-x:auto}
+@media(max-width:430px){.plan-postseason-results{margin:10px 0 16px}.plan-postseason-results h4{margin-top:19px}}
+/* Current normal clan war: optional read-only card in Plan. */
 #currentWarCard[hidden]{display:none!important}
 .cw-now-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:10px 0}
 .cw-now-clan{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;overflow-wrap:anywhere;font-size:12px}
@@ -3380,6 +3398,14 @@ html[data-theme] #view-more-settings .latest-changelog{
   <div class="mobile-day-tabs" id="mobileDayTabs"></div>
 </div>
   <div id="planDays"></div>
+  <div id="planCwlPostseason" hidden aria-live="off"></div>
+  <div class="card cw-now-card" id="currentWarCard" hidden>
+    <div class="section-title">
+      <div><h3>Aktueller Clankrieg</h3><div class="statusline">Clash-Spielstand, Angriffe und Aufstellung</div></div>
+      <button class="btn small" type="button" id="currentWarRefresh">↻ Aktualisieren</button>
+    </div>
+    <div id="currentWarContent"></div>
+  </div>
 </section>
 <section id="view-members" class="view">
   <div class="card">
@@ -3471,13 +3497,6 @@ html[data-theme] #view-more-settings .latest-changelog{
   </div>
 </section>
 <section id="view-summary" class="view">
-  <div class="card cw-now-card" id="currentWarCard" hidden>
-    <div class="section-title">
-      <div><h3>Aktueller Clankrieg</h3><div class="statusline">Spielstand und Angriffe deines Clans</div></div>
-      <button class="btn small" type="button" id="currentWarRefresh">↻ Aktualisieren</button>
-    </div>
-    <div id="currentWarContent"></div>
-  </div>
   <div class="card"><div class="section-title view-lead-heading"><div class="view-lead-copy"><span class="view-lead-kicker">EINSÄTZE</span><h3>Einsatzverteilung</h3><div class="statusline" id="rotationSummary">Noch keine Rotation berechnet</div></div><span class="badge ok" id="fairBadge" title="Spanne = höchste minus niedrigste Einsatzanzahl der Rotationsspieler">–</span></div><div id="summaryMedalOverview" class="summary-medal-overview" role="status" aria-live="polite" hidden></div><div class="summary-tools">
   <input type="search" id="summarySearch" placeholder="Spieler suchen …" aria-label="Spieler in der Einsatzübersicht suchen">
   <select id="summaryFilter" aria-label="Einsätze filtern">
@@ -3627,12 +3646,12 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.58</strong><span>Clanverwaltung · Prüfhinweise verwalten</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.59</strong><span>Plan · CWL-Abschluss & normale CW</span></div>
        <ul>
-        <li><b>Quittieren:</b> Einen nachgewiesenen Prüfhinweis abhaken; neue relevante Nachweise öffnen ihn wieder.</li>
-        <li><b>Ausnahme:</b> Einen konkreten Prüfhinweis dauerhaft ausblenden, bis du die Ausnahme aufhebst.</li>
-        <li><b>Pro Clan:</b> Entscheidungen bleiben beim jeweiligen Clan und Spieler – mit Schutz vor parallelem Überschreiben.</li>
-        <li><b>Keine Sanktionen:</b> Weiterhin kein automatisches Befördern, Degradieren oder Kicken.</li>
+        <li><b>Nach der Liga:</b> Gespeicherte CWL-Ergebnisse, Gruppenstand und Spielerleistungen direkt unter Plan statt einer leeren Aufstellung.</li>
+        <li><b>Tag 7 sicher:</b> Fehlende letzte Clash-Ergebnisse bleiben als Abschluss offen – niemals stillschweigend als gespielt gezählt.</li>
+        <li><b>Zwischen den CWLs:</b> Normale Clankriege mit Punktestand, Zerstörung, Aufstellungen und Angriffen direkt im Plan.</li>
+        <li><b>Neue CWL:</b> Erst nach bestätigtem Abschluss und Archivierung startet automatisch die neue Planung; offline weiter manuell.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3789,7 +3808,7 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
-   <p class="cloud-help-note">Während einer CWL zeigt der Plan bekannte Gegner, Rathaus-Verteilungen und – soweit von Clash freigegeben – vorläufige Tagesaufstellungen. Wechselhinweise vergleichen Clash mit der Empfehlung und verändern deinen Plan nicht. Nach Kriegsende kann der Planer tatsächliche Aufstellungen übernehmen. Normale Clankriege und Angriffsdaten findest du unter „Statistik“. Ohne aktuelle Clash-Daten bleibt die Planung nutzbar.</p>
+   <p class="cloud-help-note">Während einer CWL zeigt der Plan bekannte Gegner, Rathaus-Verteilungen und – soweit von Clash freigegeben – vorläufige Tagesaufstellungen. Wechselhinweise vergleichen Clash mit der Empfehlung und verändern deinen Plan nicht. Nach Kriegsende kann der Planer tatsächliche Aufstellungen übernehmen. <b>Nach der CWL</b> zeigt „Plan“ die gespeicherten Saisonergebnisse, Gruppentabelle, Kriegsrunden und Spielerleistungen direkt auf der Seite statt der bisherigen Tagesaufstellungen. Eine Meldung der Clash-API, dass keine CWL mehr aktiv ist, beendet <b>nicht</b> automatisch jeden einzelnen Kriegstag: Bei fehlendem finalen Clash-Nachweis bleibt z. B. Tag 7 ausdrücklich „Abschluss offen“ statt erfunden als gespielt zu zählen. Bei bestätigtem 7/7-Abschluss archiviert der Cloud-Clanführer die Saison beim nächsten sicheren Abgleich automatisch; beim Start einer neuen CWL wird deren Planung erst nach erfolgreicher Archivierung und Freigabe des vorherigen Cloud-Zyklus zurückgesetzt. Unvollständige vorherige Saison? Keine automatische Überschreibung. Zwischen den Ligen findest du <b>normale Clan Wars direkt unter „Plan“</b> mit Clanpunkten, Zerstörung, beiden Aufstellungen und konkreten Angriffen aus der Clash-API; historische CW/CWL bleiben in „Statistik“. In der Offline-PWA erfolgen Abschluss, Archivierung und Neustart weiterhin manuell. Ohne aktuelle Clash-Daten bleibt der gespeicherte Plan erhalten.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -4109,11 +4128,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.58"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.58"></script>
-<script src="./cwl-planning-core.js?v=1.16.58"></script>
+<script src="./clan-management-core.js?v=1.16.59"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.59"></script>
+<script src="./cwl-planning-core.js?v=1.16.59"></script>
 <script>
-const APP_VERSION="v1.16.58";
+const APP_VERSION="v1.16.59";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4190,7 +4209,8 @@ function normalizeArchive(a){
   return{id:a.id||uid("a"),label:String(a.label||"Archivierte CWL"),createdAt:Number(a.createdAt)||Date.now(),
     slots:Math.max(1,Math.min(50,Number(a.slots)||15)),days:Math.max(1,Math.min(7,Number(a.days)||7)),
     playedCount:Math.max(0,Math.min(7,Number(a.playedCount)||lineups.length)),complete:!!a.complete,
-    players,lineups,counts,cwlLive:a.cwlLive&&typeof a.cwlLive==="object"?a.cwlLive:null};
+    players,lineups,counts,cwlLive:a.cwlLive&&typeof a.cwlLive==="object"?a.cwlLive:null,
+    sourceSeason:/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(a.sourceSeason||""))?a.sourceSeason:null};
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
@@ -4372,7 +4392,48 @@ function calculatePlan(){
 }
 function renderProfileUI(){const sel=document.getElementById("profileSelect");sel.innerHTML=app.profiles.map(p=>`<option value="${p.id}" ${p.id===state.id?"selected":""}>${esc(p.name)}</option>`).join("")+`<option disabled>────────────</option><option value="__new__">＋ Neues Profil erstellen…</option>`;document.getElementById("activeProfileName").textContent=state.name;document.getElementById("profileCountBadge").textContent=`${app.profiles.length} Profil${app.profiles.length===1?"":"e"}`}
 function rotationStats(){const rows=state.members.filter(m=>m.participating&&!m.fixed&&m.name.trim()).map(m=>lastPlan.counts[m.id]||0);if(!rows.length)return null;return{min:Math.min(...rows),max:Math.max(...rows),spread:Math.max(...rows)-Math.min(...rows)}}
-function renderKpis(){const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,rot=rotationStats();document.getElementById("kpiParticipants").textContent=participants;document.getElementById("kpiFixed").textContent=fixed;document.getElementById("kpiSlots").textContent=state.config.slots;document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,status=document.getElementById("cwlStatus");if(played===0)status.textContent=lastPlan.dayPlans.some(p=>p.locked)?`CWL läuft: Team bereits gestarteter Kriege steht fest. Ergebnis noch offen.`:`Plan bereit · ${days} Kriegstage · noch keiner als gespielt gespeichert`;else if(played===days)status.textContent=`✓ CWL abgeschlossen · ${played}/${days} gespielt`;else status.textContent=`CWL läuft · ${played}/${days} gespielt${prefix<days?` · Nächster Krieg: Tag ${prefix+1}`:""}`;const manage=document.getElementById("manageCwlBtn");manage.textContent=played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";const next=document.getElementById("nextDayBtn");next.classList.toggle("hidden",!(played>0&&prefix<days));next.textContent=prefix<days?`↓ Zu Tag ${prefix+1}`:"";}
+function renderKpis(){
+ const participants=state.members.filter(m=>m.participating&&m.name.trim()).length,
+  fixed=state.members.filter(m=>m.participating&&m.fixed&&m.name.trim()).length,
+  rot=rotationStats();
+ document.getElementById("kpiParticipants").textContent=participants;
+ document.getElementById("kpiFixed").textContent=fixed;
+ document.getElementById("kpiSlots").textContent=state.config.slots;
+ document.getElementById("kpiRotation").textContent=rot?`${rot.min}–${rot.max}×`:"–";
+ const played=playedCount(),prefix=playedPrefixLength(),days=state.config.days,
+  status=document.getElementById("cwlStatus"),
+  lifecycle=window.CWLCloud?.active?window.CWLCloud.getCwlLifecycle?.():null;
+ const postseason=lifecycle?.mode==="postseason";
+ const between=lifecycle?.mode==="idle"&&
+  document.getElementById("view-plan")?.classList.contains("plan-between-cwl-mode");
+ if(lifecycle?.mode==="transition"){
+  status.textContent="Neue CWL "+lifecycle.newSeason+
+   " erkannt · vorherigen Plan zuerst sicher abschließen und archivieren";
+ }else if(postseason){
+  status.textContent=lifecycle.verifiedSeven?
+   "✓ CWL beendet · 7/7 Clash-Kriege bestätigt · Saisonrückblick unten":
+   "CWL beendet · Abschluss offen · "+played+"/"+days+
+    " gespielt (letzte Ergebnisse noch nicht vollständig bestätigt)";
+ }else if(between){
+  status.textContent="Keine aktive CWL · normale Clankriege im Plan";
+ }else if(played===0){
+  status.textContent=lastPlan.dayPlans.some(p=>p.locked)?
+   "CWL läuft: Team gestarteter Kriege steht fest. Ergebnis noch offen.":
+   "Plan bereit · "+days+" Kriegstage · noch keiner als gespielt gespeichert";
+ }else if(played===days){
+  status.textContent="✓ CWL abgeschlossen · "+played+"/"+days+" gespielt";
+ }else{
+  status.textContent="CWL läuft · "+played+"/"+days+" gespielt"+
+   (prefix<days?" · Nächster Krieg: Tag "+(prefix+1):"");
+ }
+ const manage=document.getElementById("manageCwlBtn");
+ manage.textContent=postseason||lifecycle?.mode==="transition"?
+  "CWL archivieren / neue Saison vorbereiten":
+  played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";
+ const next=document.getElementById("nextDayBtn");
+ next.classList.toggle("hidden",postseason||between||lifecycle?.mode==="transition"||!(played>0&&prefix<days));
+ next.textContent=prefix<days?"↓ Zu Tag "+(prefix+1):"";
+}
 function renderPlanDayWarnings(dp){
  // The global solver may repeat every day's shortage on every day plan.
  // Show a day-specific notice only on its own card, and global conflicts once.
@@ -4969,10 +5030,15 @@ function archiveCurrentCwl(){
   }).filter(Boolean);
   const counts=Object.fromEntries(players.map(p=>[p.id,0]));
   for(const l of lineups)for(const id of l.lineup)counts[id]=(counts[id]||0)+1;
-  const played=lineups.length,date=new Date(),base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric"}),
-    same=state.archives.filter(a=>a.label.startsWith(base)).length,label=same?`${base} · ${same+1}`:base;
+  const played=lineups.length,season=/^(20\d\d)-(0[1-9]|1[0-2])$/.exec(String(state.cwlLive?.season||"")),
+    date=season?new Date(Date.UTC(Number(season[1]),Number(season[2])-1,1)):new Date(),
+    base=date.toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"}),
+    same=state.archives.filter(a=>a.label.startsWith(base)).length,
+    label=same?`${base} · ${same+1}`:base;
   return{id:uid("a"),label,createdAt:Date.now(),slots:state.config.slots,days:state.config.days,
-    playedCount:played,complete:played===state.config.days,players,lineups,counts,cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
+    playedCount:played,complete:played===state.config.days,players,lineups,counts,
+    sourceSeason:season?.[0]||null,
+    cwlLive:state.cwlLive?structuredClone(state.cwlLive):null};
 }
 function renderArchives(){const root=document.getElementById("archiveList"),badge=document.getElementById("archiveCountBadge"),viewer=!!window.CWLCloud?.active&&!!window.CWLCloud?.isViewer?.();badge.textContent=`${state.archives.length} Archiv${state.archives.length===1?"":"e"}`;root.innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.createdAt-a.createdAt).map(a=>`<div class="archive-row"><div><b>${esc(a.label)}</b><div class="statusline">${a.playedCount}/${a.days} gespielt · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div></div><div class="archive-actions"><button class="btn small view-archive" data-id="${esc(a.id)}">Ansehen</button>${viewer?"":`<button class="btn small danger delete-archive" data-id="${esc(a.id)}" title="Archivierte CWL löschen">Löschen</button>`}</div></div>`).join(""):'<div class="empty compact-empty">Noch keine vergangenen CWLs archiviert.</div>';root.querySelectorAll(".view-archive").forEach(b=>b.onclick=()=>openArchiveModal(b.dataset.id));
  root.querySelectorAll(".delete-archive").forEach(b=>b.onclick=async()=>{
@@ -5815,6 +5881,43 @@ if(typeof ResizeObserver!=="undefined"){
 renderAll();
 window.CWLLegacy={
  getProfile:()=>state,
+ // Non-destructive, idempotent Cloud archive. Only seven previously persisted
+ // API-war locks from this same season; no guessed completed days.
+ archiveConfirmedCwl:(season)=>{
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     state.config.days!==7||state.cwlLive?.season!==season||
+     state.cwlLiveIgnoredSeason===season)return false;
+  const locked=state.locks.slice(0,7);
+  if(locked.length!==7||!locked.every((lock,i)=>lock?.locked===true&&
+     lock.source==="coc-api"&&lock.season===season&&
+     lock.warTag===state.cwlLive?.rounds?.[i]?.warTag&&
+     state.cwlLive?.rounds?.[i]?.state==="warEnded"))return false;
+  if(state.archives.some(archive=>archive.sourceSeason===season))return true;
+  const archived=archiveCurrentCwl();
+  if(!archived.complete||archived.lineups.length!==7)return false;
+  state.archives.push(archived);
+  renderArchives();saveApp();
+  return true;
+ },
+ // Automatic *new-season* transition is only permitted after archival has
+ // been durably queued and the current owner stays on the same Cloud clan.
+ autoAdvanceCwl:async(oldSeason,newSeason)=>{
+  const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
+  if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     !navigator.onLine||state.cwlLive?.season!==oldSeason||
+     state.config.days!==7||oldSeason===newSeason||
+     !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
+     !state.archives.some(a=>a.sourceSeason===oldSeason&&a.complete))return false;
+  const locks=state.locks.slice(0,7);
+  if(locks.length!==7||!locks.every((l,i)=>l?.locked&&l.source==="coc-api"&&
+      l.season===oldSeason&&l.warTag===state.cwlLive?.rounds?.[i]?.warTag))return false;
+  await cloud.openNewCycle();
+  if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
+  resetPlanningData();
+  renderAll("✓ Abgeschlossene CWL archiviert · neue Saisonplanung vorbereitet");
+  return true;
+ },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
@@ -5846,10 +5949,10 @@ window.CWLLegacy={
  normalize:(p)=>normalizeProfile(p),
  rerender:()=>renderAll(),
  createPlanPlayerChip:member=>{const template=document.createElement("template");template.innerHTML=planLineupPlayerChip(member);return template.content.firstElementChild},
- refreshSummary:()=>{if(window.CWLCloud?.active&&lastPlan)renderPlan();renderSummary()},
+ refreshSummary:()=>{if(window.CWLCloud?.active&&lastPlan){renderKpis();renderPlan()}renderSummary()},
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.58"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.59"></script>
 </body>
 </html>
