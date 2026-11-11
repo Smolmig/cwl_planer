@@ -20,7 +20,7 @@ test("Editor proposal reuses original server-side played histories despite norma
  let submitted=null,reloaded=0,refreshed=0;
  const context={
    clanId:"clan-id",role:"editor",changedSerial:JSON.stringify(normalized),
-   rawSavedProfile:raw,revision:4,planIsLocked:()=>true,
+   rawSavedProfile:raw,revision:4,planIsLocked:()=>true,isPlanReviewPaused:()=>false,
    suggestionChanges:()=>["Einsatzziel geändert"],
    assertPlanningReady:profile=>{assert.equal(profile.members[0].targetDays,3);assert.deepEqual(JSON.parse(JSON.stringify(profile.locks)),raw.locks);},
    storage:{confirmAction:async()=>true,toast:()=>{}},
