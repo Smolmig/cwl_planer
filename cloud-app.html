@@ -1090,6 +1090,57 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 .plan-postseason-players>summary{cursor:pointer;min-height:44px;font-size:14px;font-weight:700;padding:9px 0}
 .plan-postseason-results .season-group-scroll,.plan-postseason-results .season-player-scroll{max-width:100%;overflow-x:auto}
 @media(max-width:430px){.plan-postseason-results{margin:10px 0 16px}.plan-postseason-results h4{margin-top:19px}}
+/* Plan context: CWL when active; results between leagues; CW live first.
+   Simple sections, not a stack of technical cards. */
+#view-plan.plan-postseason-mode #planOverview,
+#view-plan.plan-between-cwl-mode #planOverview{display:none!important}
+.plan-postseason-disclosure{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.plan-postseason-summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:66px;padding:12px 2px;list-style:none}
+.plan-postseason-summary::-webkit-details-marker{display:none}
+.plan-postseason-summary-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.plan-postseason-summary-copy>small{font-weight:750;color:var(--muted);font-size:10px;letter-spacing:.065em}
+.plan-postseason-summary-copy>strong{font-size:clamp(15px,3.4vw,19px);line-height:1.2}
+.plan-postseason-summary-copy>span{font-size:12px;color:var(--muted)}
+.plan-postseason-chevron{color:var(--muted);transition:transform .2s;font-size:20px;flex:0 0 auto}
+.plan-postseason-disclosure[open] .plan-postseason-chevron{transform:rotate(180deg)}
+.plan-postseason-body{padding:4px 0 15px;min-width:0}
+.plan-postseason-tabs,.cw-now-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border-bottom:1px solid var(--line);margin:13px 0}
+.plan-postseason-tabs button,.cw-now-tabs button{appearance:none;cursor:pointer;min-height:44px;border:0;border-bottom:2px solid transparent;color:var(--muted);background:transparent;font:inherit;font-size:13px;font-weight:650;padding:8px 6px;border-radius:0;white-space:nowrap}
+.plan-postseason-tabs button.active,.cw-now-tabs button.active{color:var(--text);border-bottom-color:var(--primary)}
+.plan-postseason-tabs button:focus-visible,.cw-now-tabs button:focus-visible{outline:2px solid var(--primary);outline-offset:-3px}
+[data-postseason-panel][hidden],[data-cw-panel][hidden]{display:none!important}
+#view-plan.plan-cw-live-mode #currentWarCard{border-color:var(--line);box-shadow:0 2px 18px rgba(0,0,0,.05);margin-bottom:12px}
+.cw-now-status{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;justify-content:space-between;color:var(--muted);font-size:12px;margin:7px 0}
+.cw-now-phase{font-weight:750;color:var(--text)}
+.cw-now-score-foot{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin:8px 0 15px}
+.cw-now-attack-progress{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 18px}
+.cw-now-team-metric{display:flex;min-width:72px;flex:0 1 115px;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+.cw-now-team-metric:last-child{text-align:right;align-items:flex-end}
+.cw-now-team-metric strong{font-size:19px;color:var(--text);line-height:1.1;font-variant-numeric:tabular-nums}
+.cw-now-team-metric small{font-size:10px}
+.cw-now-progress-bars{flex:1;min-width:40px;display:flex;flex-direction:column;gap:6px}
+.cw-now-progress-row{height:6px;border-radius:9px;background:var(--line);overflow:hidden}
+.cw-now-progress-row>span{height:100%;display:block;max-width:100%;background:var(--primary)}
+.cw-now-progress-row.foe>span{background:var(--muted)}
+.cw-now-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:13px 0}
+.cw-now-kpis>div{padding:7px 0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.cw-now-kpis strong{font-size:clamp(18px,3.8vw,24px);font-variant-numeric:tabular-nums}
+.cw-now-kpis span{font-size:11px;color:var(--muted);line-height:1.35}
+.cw-now-dual-list,.cw-now-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cw-now-dual-list h4,.cw-now-highlights h4{font-size:13px;margin:12px 0}
+.cw-now-attack,.cw-now-roster-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.cw-now-attack-names,.cw-now-roster-player{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
+.cw-now-attack-names small,.cw-now-attack-result small,.cw-now-roster-player small,.cw-now-roster-results small{font-size:11px;color:var(--muted);line-height:1.45}
+.cw-now-attack-result,.cw-now-roster-results{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right;min-width:0}
+.cw-now-attack-result strong{white-space:nowrap;color:var(--text);font-size:14px}
+.cw-now-roster-results{flex:0 0 44%}
+.cw-now-attack-result{flex:0 0 34%}
+.cw-now-order{margin-right:4px}
+.cw-now-fineprint,.cw-now-empty,.cw-now-lead{font-size:12px;color:var(--muted);line-height:1.6}
+.cw-now-panel-content{min-width:0}
+.cw-now-highlight h4 abbr{font-size:11px;cursor:help;text-decoration:none}
+@media(max-width:650px){.cw-now-highlights,.cw-now-dual-list{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media(max-width:360px){.cw-now-attack-progress{gap:5px}.cw-now-team-metric{min-width:62px}.cw-now-roster-results{flex-basis:47%}.cw-now-tabs button,.plan-postseason-tabs button{font-size:12px}}
 /* Current normal clan war: optional read-only card in Plan. */
 #currentWarCard[hidden]{display:none!important}
 .cw-now-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:10px 0}
