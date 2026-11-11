@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" data-theme="arena" class="cloud-startup-pending">
+<html lang="de" data-theme="arena">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -23,6 +23,12 @@ try{
 // before Cloud auth, saved clan and the first Clash status have been checked.
 // Never strand the user if a network dependency cannot initialize.
 (()=>{
+ // No stored session: show the intentional local guest mode immediately.
+ // The splash is only for returning Cloud members, never on invitations.
+ try{
+  if(localStorage.getItem("sb-yjldnvfwposfwmzmcsow-auth-token"))
+   document.documentElement.classList.add("cloud-startup-pending");
+ }catch{/* Storage may be disabled; the regular guest view stays available. */}
  let finished=false;
  const finish=()=>{
   if(finished)return;
