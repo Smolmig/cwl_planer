@@ -4319,9 +4319,9 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.17.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.17.0"></script>
-<script src="./cwl-planning-core.js?v=1.17.0"></script>
+<script src="./clan-management-core.js?v=1.18.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.18.0"></script>
+<script src="./cwl-planning-core.js?v=1.18.0"></script>
 <script>
 const APP_VERSION="v1.17.0";
 const DATA_VERSION=9;
@@ -5948,7 +5948,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.17.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.18.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6321,6 +6321,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.17.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.18.0"></script>
 </body>
 </html>
