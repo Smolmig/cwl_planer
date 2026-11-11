@@ -467,6 +467,9 @@ const cloud={
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
+  const cloudCwlIsAutomatic=this.active&&!!activeClan?.clash_tag;
+  const manualNewSeason=$("manageCwlBtn");
+  if(manualNewSeason)manualNewSeason.hidden=cloudCwlIsAutomatic;
   const managementAllowed=this.active&&role==="owner"&&!!activeClan?.clash_tag;
   const managementEntry=document.querySelector('[data-more-action="management"]');
   if(managementEntry)managementEntry.hidden=!managementAllowed;
