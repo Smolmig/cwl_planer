@@ -141,7 +141,12 @@ async function loadStatus(clanTag,key) {
   const groupClans=new Map((Array.isArray(group.clans)?group.clans:[])
     .filter(clan=>valid(tag(clan?.tag)))
     .map(clan=>[tag(clan.tag),clan]));
+  const groupWarCount=groupClans.size===6?5:groupClans.size===8?7:null;
+  // Unusual official six-clan leagues have five real wars. A missing or
+  // malformed round list must never manufacture a 6th or 7th opponent.
   const rawRounds=group.rounds.slice(0,7);
+  const warCount=groupWarCount&&
+    (rawRounds.length===0||rawRounds.length===groupWarCount)?groupWarCount:null;
   const tags=[...new Set(rawRounds.flatMap(r=>Array.isArray(r?.warTags)?r.warTags:[])
     .map(tag).filter(t=>valid(t)))].slice(0,32);
   const results=new Map();
@@ -217,6 +222,7 @@ async function loadStatus(clanTag,key) {
   });
   while(rounds.length<7)rounds.push({day:rounds.length+1,available:false});
   return {ok:true,active:true,season,clanTag,rounds,group:groupSummary,
+    ...(warCount?{warCount}: {}),
     groupState, // league lifecycle is distinct from each war's warEnded state
     currentWar:groupState==="ended"?await currentNormalWar(clanTag,key):null,
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
