@@ -3466,7 +3466,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <div id="planCwlPostseason" hidden aria-live="off"></div>
   <div class="card cw-now-card" id="currentWarCard" hidden>
     <div class="section-title">
-      <div><h3>Aktueller Clankrieg</h3><div class="statusline">Clash-Spielstand, Angriffe und Aufstellung</div></div>
+      <div><h3>Aktueller Clankrieg</h3><div class="statusline">Sterne, Angriffe und Aufstellungen</div></div>
       <button class="btn small" type="button" id="currentWarRefresh">↻ Aktualisieren</button>
     </div>
     <div id="currentWarContent"></div>
@@ -3711,13 +3711,12 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.60</strong><span>CWL-Abschluss · Archiv geschützt</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.61</strong><span>Plan · Clankriege im Blick</span></div>
        <ul>
-        <li><b>Nach der Liga:</b> Gespeicherte CWL-Ergebnisse, Gruppenstand und Spielerleistungen direkt unter Plan statt einer leeren Aufstellung.</li>
-        <li><b>Tag 7 sicher:</b> Fehlende letzte Clash-Ergebnisse bleiben als Abschluss offen – niemals stillschweigend als gespielt gezählt.</li>
-        <li><b>Zwischen den CWLs:</b> Normale Clankriege mit Punktestand, Zerstörung, Aufstellungen und Angriffen direkt im Plan.</li>
-        <li><b>Archiv sicher:</b> Eine bereits automatisch archivierte CWL wird beim manuellen Neustart nicht dupliziert. Bei Cloudfehler bleiben gespielte Tage stehen.</li>
-        <li><b>Neue CWL:</b> Erst nach bestätigtem Abschluss und Archivierung startet automatisch die neue Planung; offline weiter manuell.</li>
+        <li><b>Live-Krieg oben:</b> Sobald der Kampftag beginnt, siehst du zuerst den aktuellen Clankrieg.</li>
+        <li><b>Alle Angriffe:</b> Beide Teams, Sterne, Zerstörung und die stärksten dokumentierten Angriffe bequem durchblättern.</li>
+        <li><b>Letzte CWL:</b> Kriegstage, Gruppentabelle und Spielerleistungen über drei übersichtliche Reiter ansehen.</li>
+        <li><b>Weniger Platz:</b> Während des Kampftags ist der alte CWL-Rückblick eingeklappt, bleibt aber erreichbar.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3874,7 +3873,10 @@ html[data-theme] #view-more-settings .latest-changelog{
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
-   <p class="cloud-help-note">Während einer CWL zeigt der Plan bekannte Gegner, Rathaus-Verteilungen und – soweit von Clash freigegeben – vorläufige Tagesaufstellungen. Wechselhinweise vergleichen Clash mit der Empfehlung und verändern deinen Plan nicht. Nach Kriegsende kann der Planer tatsächliche Aufstellungen übernehmen. <b>Nach der CWL</b> zeigt „Plan“ die gespeicherten Saisonergebnisse, Gruppentabelle, Kriegsrunden und Spielerleistungen direkt auf der Seite statt der bisherigen Tagesaufstellungen. Eine Meldung der Clash-API, dass keine CWL mehr aktiv ist, beendet <b>nicht</b> automatisch jeden einzelnen Kriegstag: Bei fehlendem finalen Clash-Nachweis bleibt z. B. Tag 7 ausdrücklich „Abschluss offen“ statt erfunden als gespielt zu zählen. Bei bestätigtem 7/7-Abschluss archiviert der Cloud-Clanführer die Saison beim nächsten sicheren Abgleich automatisch; beim Start einer neuen CWL wird deren Planung erst nach erfolgreicher Archivierung und Freigabe des vorherigen Cloud-Zyklus zurückgesetzt. Unvollständige vorherige Saison? Keine automatische Überschreibung. Eine bereits automatisch archivierte CWL wird beim manuellen Neustart nicht ein zweites Mal archiviert; wenn die Cloud-Freigabe scheitert, bleiben die gespielten Aufstellungen unverändert. Zwischen den Ligen findest du <b>normale Clan Wars direkt unter „Plan“</b> mit Clanpunkten, Zerstörung, beiden Aufstellungen und konkreten Angriffen aus der Clash-API; historische CW/CWL bleiben in „Statistik“. In der Offline-PWA erfolgen Abschluss, Archivierung und Neustart weiterhin manuell. Ohne aktuelle Clash-Daten bleibt der gespeicherte Plan erhalten.</p>
+   <p class="cloud-help-note"><b>Während der CWL</b> bleibt die Tagesplanung im Vordergrund. Der Plan zeigt Gegner, Aufstellungen und belegte Ergebnisse. Noch nicht bestätigte Kriegstage bleiben offen.</p>
+   <p class="cloud-help-note"><b>Nach der CWL</b> kannst du die letzte Liga direkt auf der Plan-Seite durchblättern: Kriegstage, Gruppentabelle und Spieler. Sobald ein normaler Kampftag beginnt, steht der aktuelle CW oben und die letzte CWL ist unter „Letzte CWL“ einklappbar. Während der Vorbereitung ist der Rückblick weiterhin gut sichtbar.</p>
+   <p class="cloud-help-note"><b>Aktueller Clankrieg:</b> Im Bereich „Angriffe“ siehst du die bisher erfassten Angriffe und die nach Sternen und Zerstörung sortierten besten Angriffe. Unter „Unser Team“ und „Gegner“ findest du die Aufstellungen mit Position, Rathaus und Einzelangriffen – soweit Clash diese Daten freigibt. Die offizielle Auszeichnung „Heroischster Angriff“ ist in diesen Daten nicht eindeutig erkennbar und wird deshalb nicht erfunden. Die Zahlen werden beim Aktualisieren übernommen; offene Angriffe sind nicht automatisch vergessen.</p>
+   <p class="cloud-help-note"><b>Übergang zur nächsten CWL:</b> Nur tatsächlich abgeschlossene Kriegstage werden gesichert. Solange beispielsweise Tag 7 noch nicht von Clash bestätigt ist, bleibt „Abschluss offen“ stehen. Bei einer neuen Liga wird die alte CWL nur nach sicherer Archivierung ersetzt. Ohne Cloud-Verbindung sind Abschluss und Neustart weiterhin manuell.</p>
   </div>
   <h4 class="help-section-heading">So gehst du vor</h4>
   <div class="help-steps">
@@ -4194,11 +4196,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.60"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.60"></script>
-<script src="./cwl-planning-core.js?v=1.16.60"></script>
+<script src="./clan-management-core.js?v=1.16.61"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.61"></script>
+<script src="./cwl-planning-core.js?v=1.16.61"></script>
 <script>
-const APP_VERSION="v1.16.60";
+const APP_VERSION="v1.16.61";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6068,6 +6070,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.60"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.61"></script>
 </body>
 </html>
