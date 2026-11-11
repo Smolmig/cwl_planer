@@ -155,7 +155,7 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.doesNotMatch(outcome.singleNormal.count,/Alle 1|1 Angriffe/,note);
     assert.match(outcome.singleNormal.row,/Details dieser Auswahl · 1 Angriff/,note);
     assert.match(outcome.singleNormal.row,/1 von 1 Angriff mit 3★/,note);
-    assert.match(outcome.singleHistory.scope,/1 ausgewählter Krieg · 1 dokumentierter Angriff/,note);
+    assert.match(outcome.singleHistory.scope,/1 ausgewählter Krieg · 1 erfasster Angriff/,note);
     assert.ok(outcome.singleHistory.tooltip.some(t=>t.includes("1 Angriff")),note);
     assert.match(outcome.singleHistory.table,/1 Angriff/,note);
     assert.match(outcome.singleHistory.wars,/1 erfasster Angriff/,note);
