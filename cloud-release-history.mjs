@@ -4,6 +4,13 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.16.71",
+    "releaseType": "patch",
+    "date": "2026-11-11",
+    "title": "Planfreigabe nach der CWL pausiert",
+    "description": "Nach einer bestätigten beendeten CWL wird der alte Plan nicht mehr zur Freigabe angeboten. Die nächste CWL kann schon in der Vorbereitung wieder gemeinsam geplant und freigegeben werden."
+  },
+  {
     "version": "v1.16.70",
     "releaseType": "patch",
     "date": "2026-11-11",
