@@ -85,11 +85,12 @@ export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle,selec
  if(!model)return "";
  const sameGroup=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
  const ranking=sameGroup?summarizeCwlGroup(sameGroup):null;
- const complete=lifecycle.verifiedSeven===true;
+ const complete=lifecycle.verifiedAll===true||lifecycle.verifiedSeven===true;
+ const total=model.warCount||7;
  const saved=Number.isInteger(lifecycle.savedDays)?lifecycle.savedDays:0;
- const status=complete?"Alle 7 Kriegstage abgeschlossen":
-  saved===7?"7 von 7 Tagen gespeichert · einzelne Ergebnisse werden noch geprüft":
-   saved+" von 7 Tagen gespeichert · letztes Ergebnis noch offen";
+ const status=complete?"Alle "+total+" Kriegstage abgeschlossen":
+  saved===total?total+" von "+total+" Tagen gespeichert · einzelne Ergebnisse werden noch geprüft":
+   saved+" von "+total+" Tagen gespeichert · letztes Ergebnis noch offen";
  const tabs=[["rounds","Kriegstage"],["group","Tabelle"],["players","Spieler"]];
  const selected=tabs.some(t=>t[0]===selectedTab)?selectedTab:"rounds";
  const nav='<div class="plan-postseason-tabs" role="tablist" aria-label="CWL-Rückblick">'+
@@ -141,7 +142,7 @@ export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected
    if(shortcut)shortcut.hidden=!(connected&&model&&
      profile?.cwlLiveIgnoredSeason!==model.season);
    if(hint&&model)hint.textContent=dateLabel(model.season)+
-     (group?" · "+group.clans.length+" Clans · "+group.known+" von "+group.expected+" Paarungen":" · "+model.available+" von 7 Gegnern bekannt");
+     (group?" · "+group.clans.length+" Clans · "+group.known+" von "+group.expected+" Paarungen":" · "+model.available+" von "+(model.warCount||7)+" Gegnern bekannt");
    $("cwlSeasonRefresh").hidden=!connected;
    if(!connected){
      caption.textContent="Saisoninformationen sind mit einem verbundenen Cloud-Clan verfügbar.";
@@ -156,7 +157,7 @@ export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected
    const fresh=!!snapshot?.season&&snapshot.season===model.season;
    caption.textContent=dateLabel(model.season)+' · '+
      (group?group.clans.length+' Clans · '+group.known+' von '+group.expected+' Paarungen bekannt':
-      model.ended+' Kriege beendet · '+model.available+' von 7 Gegnern bekannt')+
+      model.ended+' Kriege beendet · '+model.available+' von '+(model.warCount||7)+' Gegnern bekannt')+
       (fresh?' · aus Clash abgerufen':' · zuletzt gespeichert');
    host.innerHTML=tab==="group"?viewGroup(model,group):tab==="players"?viewPlayers(model):viewRounds(model,group);
  }
