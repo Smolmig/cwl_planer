@@ -93,8 +93,8 @@ test("SQL prevents cross-tenant reads, vices and anonymous writes; optimistic re
  assert.match(sync,/cwl_clan_review_decisions/);
  assert.doesNotMatch(sync,/service_role/);
  const ui=read("cloud-app.html");
- assert.match(ui,/Quittieren/);
- assert.match(ui,/Ausnahme aufheben/);
+ assert.match(ui,/Als geprüft markieren/);
+ assert.match(ui,/Wieder anzeigen/);
  assert.match(ui,/renderClanManagementReviewAction/);
  assert.doesNotMatch(ui,/<button[^>]*id="clanManagement(?:Promote|Demote|Kick)"/i);
 });

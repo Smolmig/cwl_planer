@@ -3761,11 +3761,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.64</strong><span>Ruhiger starten · Live-CW</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.65</strong><span>Clanverwaltung verständlicher</span></div>
        <ul>
-        <li><b>Ruhiger App-Start:</b> Gespeicherte Cloud-Anmeldungen zeigen die Seite erst, wenn Clan und erster Kriegsstatus geprüft sind.</li>
-        <li><b>Live-CW ohne Flackern:</b> Unveränderte Kriegsdaten bauen die geöffneten Teamlisten nicht mehr neu auf.</li>
-        <li><b>Weiter nutzbar:</b> Auch bei verzögertem Clash-Abgleich erscheint dein vorhandener Stand.</li>
+        <li><b>Ränge prüfen:</b> Klare Hinweise zu möglichen Beförderungen und zurückgekehrten Spielern.</li>
+        <li><b>Prüfung abhaken:</b> Vorschläge als geprüft markieren oder bewusst ausblenden und später wieder anzeigen.</li>
+        <li><b>Mehr Ruhe:</b> Details zur Datengrundlage sind ausklappbar. Alle Entscheidungen bleiben im Planer und ändern keinen Clash-Rang.</li>
        </ul>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
@@ -3914,7 +3914,7 @@ html.cloud-startup-pending .cloud-startup-splash{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
-    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Ein belegter Prüfhinweis kann vom Clanführer <b>quittiert</b> werden: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Eine <b>Ausnahme</b> blendet nur diesen Vorschlag für diesen Clan und Spieler dauerhaft aus, bis sie bewusst aufgehoben wird. Beides ist privat, betrifft keine Spiel-/Clan-Daten und kann mit „Erneut öffnen“ rückgängig gemacht werden. Eine Entschuldigung für einen angeblich verpassten CW-Angriff ist erst nach belastbarer Verstoß-Erfassung vorgesehen. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Eine Entschuldigung für einen angeblich verpassten CW-Angriff ist erst nach belastbarer Verstoß-Erfassung vorgesehen. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
@@ -3954,47 +3954,47 @@ html.cloud-startup-pending .cloud-startup-splash{
 </div></section>
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
-  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge & Nachweise</h2>
-   <p>Clash-Ränge, bestätigte Clanzeit und manuelle Prüfhinweise. Quittierungen und Ausnahmen gelten nur für diesen Clan.</p>
+  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge prüfen</h2>
+   <p>Hier siehst du aktuelle Clash-Ränge und Vorschläge zur Beförderung oder Rückkehr. Du entscheidest selbst – im Spiel ändert sich nichts automatisch.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
  <div class="clan-management-actions">
-  <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanstand prüfen</button>
-  <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine aktuelle Clanliste geladen.</span>
+  <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanliste aktualisieren</button>
+  <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine Clanliste geprüft.</span>
  </div>
  <details id="clanManagementCriteria" class="clan-management-criteria">
-  <summary>Kriterien für Beförderungen <span class="subtle">· pro Clan</span></summary>
+  <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
-   <p>Leistungspfad für Mitglieder: Belegte Clanzeit und abgeschlossene API-Kriege dieses Clans. Keine automatische Rangänderung.</p>
-   <label class="clan-rule-toggle"><input id="clanRuleEnabled" type="checkbox" checked> Leistungspfad aktiv</label>
+   <p>Für Beförderungsvorschläge zählen bestätigte Clanzeit und Angriffe aus abgeschlossenen Kriegen dieses Clans. Im Spiel wird nichts automatisch geändert.</p>
+   <label class="clan-rule-toggle"><input id="clanRuleEnabled" type="checkbox" checked> Angriffsleistung berücksichtigen</label>
    <div class="clan-rule-fields">
-    <label>Mindestens Clanzeit (Tage)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDays" value="14" required></label>
-    <label>Mindestens Angriffe<input type="number" inputmode="numeric" min="1" max="100" step="1" id="clanRuleAttacks" value="10" required></label>
+    <label>Mindestens bestätigte Clantage<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDays" value="14" required></label>
+    <label>Mindestens belegte Angriffe<input type="number" inputmode="numeric" min="1" max="100" step="1" id="clanRuleAttacks" value="10" required></label>
     <label>3★-Quote mindestens (%)<input type="number" inputmode="numeric" min="0" max="100" step="1" id="clanRulePercent" value="80" required></label>
-    <label>Angriffe der letzten Tage<input type="number" inputmode="numeric" min="7" max="730" step="1" id="clanRuleLookback" value="14" required></label>
+    <label>Angriffe aus den letzten Tagen<input type="number" inputmode="numeric" min="7" max="730" step="1" id="clanRuleLookback" value="14" required></label>
    </div>
    <details class="clan-rule-future">
     <summary>Treue &amp; Rückkehr <span class="subtle">· optional</span></summary>
-    <p>Auch ohne Kriegsangriffe: nur bestätigte Clanzeit und beobachtete positive Spendenanstiege. Längere beobachtete Abwesenheit bedeutet eine Rückkehr-Prüfung, keine automatische Löschung der Clanzeit.</p>
-    <label class="clan-rule-toggle"><input id="clanRuleLoyaltyEnabled" type="checkbox"> Treuepfad aktiv</label>
+    <p>Zusätzlich können bestätigte Clanzeit und beobachtete Spenden neue Vorschläge auslösen – auch ohne Kriegsangriffe. Eine längere belegte Abwesenheit erfordert nur eine Prüfung.</p>
+    <label class="clan-rule-toggle"><input id="clanRuleLoyaltyEnabled" type="checkbox"> Clanzeit und Spenden berücksichtigen</label>
     <div class="clan-rule-fields">
-     <label>Mindestens Clanzeit (Tage)<input type="number" inputmode="numeric" min="1" max="730" step="1" id="clanRuleLoyalty" value="60" required></label>
-     <label>Bestätigter Spendenzuwachs (mind.)<input type="number" inputmode="numeric" min="1" max="100000" step="1" id="clanRuleDonations" value="50" required></label>
-     <label>Spendentage (mind.)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDonationDays" value="3" required></label>
-     <label>Spenden-Zeitraum (Tage)<input type="number" inputmode="numeric" min="7" max="365" step="1" id="clanRuleDonationWindow" value="30" required></label>
-     <label>Abwesenheit prüfen ab (Tage, leer = nie)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleReset" value="10"></label>
+     <label>Mindestens bestätigte Clantage<input type="number" inputmode="numeric" min="1" max="730" step="1" id="clanRuleLoyalty" value="60" required></label>
+     <label>Mindestens zusätzliche Spenden (belegt)<input type="number" inputmode="numeric" min="1" max="100000" step="1" id="clanRuleDonations" value="50" required></label>
+     <label>Mindestens Tage mit neuen Spenden<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDonationDays" value="3" required></label>
+     <label>Spenden der letzten Tage<input type="number" inputmode="numeric" min="7" max="365" step="1" id="clanRuleDonationWindow" value="30" required></label>
+     <label>Rückkehr prüfen ab (Tage Abwesenheit; leer = nie)<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleReset" value="10"></label>
     </div>
     <p class="small">Zusätzlich muss ein bestätigter Spendenanstieg innerhalb der letzten 14 Tage vorliegen. Fehlende Beobachtungen gelten nicht als Untätigkeit; ob CW-Angriffe versäumt wurden, ist getrennt zu prüfen.</p>
    </details>
    <div class="clan-rule-actions">
     <button class="btn small primary" id="clanRulesSave" type="submit" disabled>Kriterien speichern</button>
-    <span id="clanRulesStatus" role="status" aria-live="polite">Clanregeln werden geladen …</span>
+    <span id="clanRulesStatus" role="status" aria-live="polite">Kriterien werden geladen …</span>
    </div>
   </form>
  </details>
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
- <p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse zählen ausschließlich als beobachtete positive Änderungen zwischen vollständigen API-Snapshots; nicht erfasste Spenden sind unbekannt, ein Reset des Saisonwertes ist kein Negativsignal. Ein früherer Ältestenrang kann zur Wiederherstellungsprüfung erscheinen; unbemerkte Kurzwechsel bleiben unbekannt. Längere Abwesenheits-Snapshotfolgen führen beim Treuepfad nur zu einer manuellen Qualifikationsprüfung, nie zu einem automatischen Zurücksetzen historischer Clanzeiten. Prüfhinweise lassen sich quittieren (bis sich relevante Nachweise ändern) oder als Ausnahme bis zur bewussten Aufhebung ausblenden; beide Entscheidungen bleiben clanprivat. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p>
+ <details class="clan-management-criteria clan-management-explanation"><summary>Wie entstehen diese Vorschläge?</summary><p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse zählen ausschließlich als beobachtete positive Änderungen zwischen vollständigen API-Snapshots; nicht erfasste Spenden sind unbekannt, ein Reset des Saisonwertes ist kein Negativsignal. Ein früherer Ältestenrang kann zur Wiederherstellungsprüfung erscheinen; unbemerkte Kurzwechsel bleiben unbekannt. Längere beobachtete Abwesenheit führt nur zu einer manuellen Prüfung; keine automatische Löschung der Clanzeit. Prüfhinweise lassen sich quittieren (bis sich relevante Nachweise ändern) oder als Ausnahme bis zur bewussten Aufhebung ausblenden; beide Entscheidungen bleiben clanprivat. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p></details>
  <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
 </section>
 <section id="view-account" class="view more-subview" aria-labelledby="cloudAccountTitle">
@@ -4243,11 +4243,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.64"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.64"></script>
-<script src="./cwl-planning-core.js?v=1.16.64"></script>
+<script src="./clan-management-core.js?v=1.16.65"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.65"></script>
+<script src="./cwl-planning-core.js?v=1.16.65"></script>
 <script>
-const APP_VERSION="v1.16.64";
+const APP_VERSION="v1.16.65";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5576,17 +5576,17 @@ function renderClanManagementReviewSummary(){
  const confirmed=cases.filter(x=>x.state==="acknowledged").length;
  const excepted=cases.filter(x=>x.state==="exception").length;
  const summary=document.getElementById("clanManagementSummary");
- summary.textContent=preview.total+" in Clash · "+preview.counts.member+" Mitglieder · "+
+ summary.textContent=preview.total+" Spieler in Clash · "+preview.counts.member+" Mitglieder · "+
   preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
-  " Vize/Clanführer ausgenommen"+
+  " Vize/Clanführer nicht bewertet"+
   (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
   (clanManagementReviewsReadable?
-   (open?" · "+open+" offene Prüfhinweise":" · keine offenen Prüfhinweise")+
-   (confirmed?" · "+confirmed+" quittiert":"")+
-   (excepted?" · "+excepted+" Ausnahmen":""):
+   (open?" · "+open+(open===1?" Vorschlag offen":" Vorschläge offen"):" · keine Vorschläge offen")+
+   (confirmed?" · "+confirmed+" geprüft":"")+
+   (excepted?" · "+excepted+" ausgeblendet":""):
    (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"")+
    (preview.promotionReviewChecks?" · "+preview.promotionReviewChecks+" Beförderungen prüfen":"")+
-   " · Prüfentscheidungen derzeit nicht abrufbar");
+   " · gespeicherte Entscheidungen nicht verfügbar");
  summary.hidden=false;
 }
 function renderClanManagementReviewAction(group,person,item){
@@ -5596,12 +5596,12 @@ function renderClanManagementReviewAction(group,person,item){
  group.appendChild(label);
  const state=document.createElement("span");
  state.className="review-state";
- state.textContent=item.state==="acknowledged"?"Quittiert":
-  item.state==="exception"?"Ausnahme aktiv":"Offen";
+ state.textContent=item.state==="acknowledged"?"Geprüft":
+  item.state==="exception"?"Ausgeblendet":"Offen";
  group.appendChild(state);
  const actions=item.state==="open"
-  ?[["Quittieren","acknowledged"],["Ausnahme","exception"]]:
-   [[item.state==="exception"?"Ausnahme aufheben":"Erneut öffnen","open"]];
+  ?[["Als geprüft markieren","acknowledged"],["Vorschlag ausblenden","exception"]]:
+   [[item.state==="exception"?"Wieder anzeigen":"Prüfung wieder öffnen","open"]];
  for(const [title,disposition] of actions){
   const button=document.createElement("button");
   button.type="button";button.className="btn small";
@@ -5640,13 +5640,13 @@ function clearClanManagement(){
  clanManagementRequest++;
  document.getElementById("clanManagementList").replaceChildren();
  document.getElementById("clanManagementSummary").hidden=true;
- document.getElementById("clanManagementStatus").textContent="Noch keine aktuelle Clanliste geladen.";
+ document.getElementById("clanManagementStatus").textContent="Noch keine Clanliste geprüft.";
  document.getElementById("clanManagementRefresh").disabled=false;
  clanRulesLoaded=false;clanRulesRevision=null;clanRulesDirty=false;
  clanManagementLastPreview=null;clanManagementReviewsReadable=false;
  displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
  document.getElementById("clanRulesSave").disabled=true;
- document.getElementById("clanRulesStatus").textContent="Clanregeln werden geladen …";
+ document.getElementById("clanRulesStatus").textContent="Kriterien werden geladen …";
 }
 window.CWLClanManagementView={
  accessChanged(next){
@@ -5669,7 +5669,7 @@ window.CWLClanManagementView={
   const request=++clanManagementRequest,clan=cloud.getActiveClanId();
   const status=document.getElementById("clanManagementStatus");
   const refresh=document.getElementById("clanManagementRefresh");
-  refresh.disabled=true;status.textContent="Aktueller Clash-Clanstand wird geprüft …";
+  refresh.disabled=true;status.textContent="Clash-Mitglieder werden geladen …";
   try{
    const result=await cloud.fetchManagementRoster();
    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
@@ -5685,8 +5685,8 @@ window.CWLClanManagementView={
     clanRulesLoaded=true;
     document.getElementById("clanRulesSave").disabled=true;
     document.getElementById("clanRulesStatus").textContent=
-     result.ruleRevision===null?"Standardkriterien · noch nicht individuell gespeichert":
-      "Kriterien für diesen Clan gespeichert";
+     result.ruleRevision===null?"Standardwerte für diesen Clan":
+      "Kriterien gespeichert";
    }
    if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
    clanManagementLastPreview=preview;
@@ -5716,10 +5716,10 @@ window.CWLClanManagementView={
     const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
     row.append(left,rank);list.appendChild(row);
    }
-   status.textContent="Clash-Stand: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
-    (result.tenure===null?" · Clanzeit derzeit nicht abrufbar.":" · Clanzeit nur aus bestätigten Beobachtungen.")+
+   status.textContent="Clash zuletzt geprüft: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
+    (result.tenure===null?" · Clanzeit derzeit nicht abrufbar.":" · Clanzeit zählt nur für bestätigte Zeiträume.")+
     (loadedRules?.loyalty_enabled&&result.loyalty===null?" · Treuenachweise derzeit nicht abrufbar.":"")+
-    (!clanManagementReviewsReadable?" · Quittierungen derzeit nicht abrufbar.":"");
+    (!clanManagementReviewsReadable?" · gespeicherte Entscheidungen nicht verfügbar.":"");
   }catch(err){
    if(request!==clanManagementRequest)return;
    document.getElementById("clanManagementSummary").hidden=true;
@@ -6145,6 +6145,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.64"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.65"></script>
 </body>
 </html>

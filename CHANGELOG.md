@@ -12,6 +12,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.65] - 2026-11-11
+
+### Clanverwaltung: Vorschläge verstehen und selbst entscheiden (#226)
+- **Mehr → Clanverwaltung:** „Ränge prüfen“ mit kurzen Bezeichnungen für Regeln, offene Hinweise und gesicherte Clanzeit. Die langen Methoden- und Datenlückenhinweise stehen in einem vorhandenen, schlanken Aufklappbereich und in der Hilfe.
+- **Manuelle Entscheidungen:** „Als geprüft markieren“ statt „Quittieren“; „Vorschlag ausblenden“ statt „Ausnahme“; nachvollziehbare Zustände „Geprüft“ / „Ausgeblendet“ sowie „Wieder anzeigen“ / „Prüfung wieder öffnen“. Ausschließlich bestehende, pro Spieler/Clan gespeicherte Review-Zustände; keine neue Aktion oder andere Wirkung.
+- **Kriterien und Datenstand:** Klare Eingabefelder für belegte Zeit/Angriffe/Spenden, eigene Nachweise und die letzte Clash-Prüfung. Unbekannt bleibt unbekannt; App-Owner-Rolle und Ingame-Rang bleiben getrennt.
+- Version/Cache, Releasehinweise, Hilfe, Copy-Checkliste und Tests aktualisiert. Keine Änderung an Bewertungsformeln, Endpoints, DB, Collector, ACL/RLS, Plan, Rollen, Clash-Rängen oder Offline-PWA. Echte Mobile-Owner-Abnahme #213 bleibt offen; übriges Textaudit #226 folgt in kleinen weiteren Paketen.
+
 ## [1.16.64] - 2026-11-11
 
 ### Verständlichere Statistiktexte – erster Teil des App-Audits #226
