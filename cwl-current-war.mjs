@@ -1,6 +1,6 @@
 // Live normal Clan War on the Cloud Plan page. Read-only; Cloud clan scope
 // and permissions are enforced by the existing authenticated Edge proxy.
-import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.60";
+import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.61";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const star=n=>Number.isInteger(n)&&n>=0&&n<=150?String(n):"–";
 const badge=side=>{
