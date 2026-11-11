@@ -1074,6 +1074,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 
 /* Plan now shows the post-CWL recap and normal CW between leagues.
    Offline PWA remains manual. No nested card wall on mobile. */
+#manageCwlBtn[hidden]{display:none!important}
 #planCwlPostseason[hidden]{display:none!important}
 #view-plan.plan-postseason-mode #planDays,
 #view-plan.plan-postseason-mode #mobileDaySwitcher,
@@ -4428,6 +4429,9 @@ function renderKpis(){
    (prefix<days?" · Nächster Krieg: Tag "+(prefix+1):"");
  }
  const manage=document.getElementById("manageCwlBtn");
+ // Cloud owners, editors and viewers use the official league-group state.
+ // Only the offline guest needs the manual new-CWL/reset control.
+ manage.hidden=!!window.CWLCloud?.active&&!!window.CWLCloud?.hasApiClan?.();
  manage.textContent=postseason||lifecycle?.mode==="transition"?
   "CWL archivieren / neue Saison vorbereiten":
   played?"🔄 Neue CWL starten":"↻ Planung zurücksetzen";
@@ -5950,22 +5954,44 @@ window.CWLLegacy={
   renderArchives();saveApp();
   return true;
  },
- // Automatic *new-season* transition is only permitted after archival has
- // been durably queued and the current owner stays on the same Cloud clan.
+ // A newly detected CWL must resume planning without making a cloud owner
+ // click "Neue CWL starten". Preserve even 6/7, NEVER invent day seven.
+ // Same-clan profile archive is idempotent and deliberately marked partial.
+ archivePriorCwlForRollover:(season)=>{
+  const cloud=window.CWLCloud;
+  if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
+     state.cwlLive?.season!==season||
+     state.cwlLiveIgnoredSeason===season||
+     !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||"")))return false;
+  if(state.archives.some(a=>a.sourceSeason===season))return true;
+  const prior=archiveCurrentCwl();
+  if(prior.sourceSeason!==season||prior.playedCount>7||
+     prior.lineups.some(l=>l.day<1||l.day>7))return false;
+  state.archives.push(prior);
+  renderArchives();
+  saveApp();
+  return true;
+ },
+ // Automatic *new-season* transition is only permitted after an archived
+ // previous season (including a clearly marked partial 6/7) has been durably
+ // queued and the current owner stays on exactly the same cloud clan.
  autoAdvanceCwl:async(oldSeason,newSeason)=>{
   const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
   if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      !navigator.onLine||state.cwlLive?.season!==oldSeason||
-     state.config.days!==7||oldSeason===newSeason||
+     state.config.days!==7||oldSeason>=newSeason||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
-     !state.archives.some(a=>a.sourceSeason===oldSeason&&a.complete))return false;
+     !state.archives.some(a=>a.sourceSeason===oldSeason))return false;
+  // No completeness assumption. An archived old 6/7 remains 6/7; this
+  // transition is a fresh planning cycle, not an automatic "played" mark.
   const locks=state.locks.slice(0,7);
-  if(locks.length!==7||!locks.every((l,i)=>l?.locked&&l.source==="coc-api"&&
-      l.season===oldSeason&&l.warTag===state.cwlLive?.rounds?.[i]?.warTag))return false;
+  if(locks.some((l,i)=>l?.locked&&l.source==="coc-api"&&
+     (l.season!==oldSeason||l.warTag!==state.cwlLive?.rounds?.[i]?.warTag)))
+   return false;
   await cloud.openNewCycle();
   if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
   resetPlanningData();
-  renderAll("✓ Abgeschlossene CWL archiviert · neue Saisonplanung vorbereitet");
+  renderAll("Neue CWL erkannt · dein Plan ist bereit");
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
