@@ -85,22 +85,31 @@ export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle){
  const ranking=groupRaw?summarizeCwlGroup(groupRaw):null;
  const complete=lifecycle.verifiedSeven===true;
  const status=complete?
-  "Alle sieben Kriege aus vollständigen Clash-Ergebnissen bestätigt":
+  "Alle 7 Kriegstage abgeschlossen":
   lifecycle.savedDays===7?
-   "Gespeicherte Kriegstage vollständig; einzelne Clash-Ergebnisse noch nicht bestätigt":
-   (lifecycle.savedDays??0)+"/7 Tage als gespielt bestätigt · fehlende Ergebnisse werden nicht ergänzt";
- const detail=complete?
-   "Die CWL ist beendet. Deine Resultate bleiben hier sichtbar, bis eine neue Saison sicher erkannt und archiviert ist.":
-   "Die CWL ist laut Clash nicht mehr aktiv. Der Abschluss ist noch offen: Ohne final bestätigte Daten für jeden Krieg wird nichts als gespielt markiert. Du kannst die bisher bekannten Ergebnisse trotzdem ansehen.";
- return '<section class="plan-postseason-results" aria-label="CWL-Saisonrückblick">'+
-  '<div class="section-title"><div><span class="view-lead-kicker">CWL-RÜCKBLICK</span>'+
+   "7/7 Tage gespeichert · Clash-Bestätigung steht noch aus":
+   (lifecycle.savedDays??0)+"/7 Tage abgeschlossen · letzter Spielstand wird geprüft";
+ const intro=complete?
+   "Alle bekannten Ergebnisse dieser CWL auf einen Blick.":
+   "Der letzte CWL-Stand bleibt erhalten. Noch nicht bestätigte Ergebnisse werden nicht dazugerechnet.";
+ const tabs=[["rounds","Kriegstage"],["group","Tabelle"],["players","Spieler"]];
+ const navigation='<div class="plan-postseason-tabs" role="tablist" aria-label="CWL-Rückblick">'+
+  tabs.map(([id,label],i)=>'<button type="button" role="tab" '+
+   'id="postseason-tab-'+id+'" data-postseason-tab="'+id+'" '+
+   'aria-controls="postseason-panel-'+id+'" aria-selected="'+(i===0?"true":"false")+'" '+
+   'tabindex="'+(i===0?"0":"-1")+'">'+esc(label)+'</button>').join("")+'</div>';
+ return '<section class="plan-postseason-results" aria-label="Letzte CWL">'+
+  '<div class="section-title"><div><span class="view-lead-kicker">LETZTE CWL</span>'+
   '<h3>'+esc(dateLabel(model.season))+'</h3>'+
   '<p class="statusline">'+esc(status)+'</p></div></div>'+
-  '<p class="plan-postseason-description">'+esc(detail)+'</p>'+
-  '<div class="plan-postseason-group"><h4>Gruppenstand</h4>'+viewGroup(model,ranking)+'</div>'+
-  '<div class="plan-postseason-rounds"><h4>Ergebnisse der Kriegstage</h4>'+viewRounds(model,ranking)+'</div>'+
-  '<details class="plan-postseason-players"><summary>Spielerleistungen dieser CWL ansehen</summary>'+
-  viewPlayers(model)+'</details></section>';
+  '<p class="plan-postseason-description">'+esc(intro)+'</p>'+
+  navigation+
+  '<div id="postseason-panel-rounds" class="plan-postseason-panel" role="tabpanel" aria-labelledby="postseason-tab-rounds">'+
+   viewRounds(model,ranking)+'</div>'+
+  '<div id="postseason-panel-group" class="plan-postseason-panel" role="tabpanel" aria-labelledby="postseason-tab-group" hidden>'+
+   viewGroup(model,ranking)+'</div>'+
+  '<div id="postseason-panel-players" class="plan-postseason-panel" role="tabpanel" aria-labelledby="postseason-tab-players" hidden>'+
+   viewPlayers(model)+'</div></section>';
 }
 export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected,refresh}){
  let tab="rounds";
