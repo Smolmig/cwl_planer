@@ -38,6 +38,11 @@ begin
   if auth.uid() is null or not private.cwl_is_owner(p_clan) then
     raise exception 'owner_only' using errcode='42501';
   end if;
+  -- PostgreSQL treats NULL as neither TRUE nor FALSE. Reject it explicitly:
+  -- a nullable p_new_cycle must never bypass the finished-season branch.
+  if p_locked is null or p_new_cycle is null then
+    raise exception 'invalid_plan_action' using errcode='22023';
+  end if;
   select * into v_state from public.cwl_plan_review_state
     where clan_id=p_clan for update;
   if not found then
