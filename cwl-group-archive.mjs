@@ -143,13 +143,13 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
   function render(){
     const id=current();
     if(!id){
-      host.innerHTML='<p class="season-empty">Das Gruppenarchiv ist für angemeldete Mitglieder eines Cloud-Clans verfügbar. Deine bereits gespeicherten Plan-Archive stehen darunter weiterhin bereit.</p>';
+      host.innerHTML='<p class="season-empty">Gruppenergebnisse aus Clash siehst du nach der Anmeldung in einem Cloud-Clan. Deine gespeicherten CWL-Pläne bleiben im Abschnitt darunter verfügbar.</p>';
       if(refresh)refresh.hidden=true;
       return;
     }
     if(refresh)refresh.hidden=false;
-    if(busy){host.innerHTML='<p class="season-empty">Gruppensaisons werden geladen …</p>';return}
-    if(!rows.length){host.innerHTML='<p class="season-empty">Noch keine Gruppensaison gespeichert. Beim nächsten erfolgreichen Clash-Abruf wird die aktuelle Saison automatisch gesichert.</p>';return}
+    if(busy){host.innerHTML='<p class="season-empty">Gespeicherte Gruppenergebnisse werden geladen …</p>';return}
+    if(!rows.length){host.innerHTML='<p class="season-empty">Noch keine Gruppenergebnisse archiviert. Sobald Clash Gruppendaten liefert und der Abruf erfolgreich ist, werden sie hier angezeigt.</p>';return}
     replaceContent('<div class="season-group-archive-list">'+rows.map(row=>{
       const d=summarizeCwlGroup(row.group_json);
       if(!d||d.clanTag!==row.group_json?.clanTag||row.season!==d.season)return "";
@@ -157,8 +157,8 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
       const date=Number.isNaN(checked.getTime())?"Stand unbekannt":checked.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
       return '<details class="season-archive-item" data-archive-key="season:'+esc(d.season)+'"><summary><span><strong>'+esc(month(d.season))+'</strong>'+
         '<small>'+d.clans.length+' Clans · '+d.ended+' / '+d.expected+' Kriege abgeschlossen</small></span>'+
-        '<span class="season-archive-chip">'+(d.complete?"Abgeschlossen":"Gespeicherter Zwischenstand")+'</span></summary>'+
-        '<div class="season-archive-body"><p class="statusline">Zuletzt gesichert: '+esc(date)+
+        '<span class="season-archive-chip">'+(d.complete?"Abgeschlossen":"Noch nicht vollständig")+'</span></summary>'+
+        '<div class="season-archive-body"><p class="statusline">Zuletzt von Clash gespeichert: '+esc(date)+
         '. Die Rangfolge ist bei offenen oder fehlenden Kriegen vorläufig. Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
         groupTable(d)+
         '<h4>Runden</h4>'+groupRounds(d,ownRows,getProfile?.())+'</div></details>';
