@@ -51,6 +51,7 @@ test("member approval uses its original trigger to close, with no floating Schli
  let refreshes=0;
  const functions=vm.runInNewContext(src+";({openPlanReviewInMembers,restorePlanReviewToPlan})",{
   $:id=>document.getElementById(id),cloud:{active:true},role:"owner",
+  isConfirmedReviewPause:()=>false,
   renderMembersReview:()=>{refreshes++},bind:()=>{},document
  });
  const trigger=document.getElementById("membersReviewOpenPlan");
