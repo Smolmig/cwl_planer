@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.72] - 2026-11-11
+
+### Serverseitige Planzyklus-Prüfung für Freigabe und Vize-Vorschläge (#37)
+- **Verbindliche Zykluskennung:** Freigabe, Wiederöffnung, neue CWL, Vorschläge sowie Annehmen/Ablehnen/Zurückziehen nennen die zuvor gelesene `cycle_id` und `season`. Supabase prüft beide Werte unter derselben Zeilensperre wie die Mutation. Ein alter Tab kann nach dem Wechsel nicht in den neuen Zyklus schreiben.
+- **Belegtes Saisonende:** Das Backend prüft ausschließlich die servicegeschützten Clash-Gruppenarchive. Wenn der eigene letzte CWL-Krieg dort tatsächlich als `warEnded` belegt ist, werden Freigaben/Vorschläge gesperrt. Eine unvollständige 6/7-Saison **ohne** verifizierten letzten Krieg bleibt ungewiss und wird nicht anhand des Datums als beendet erklärt.
+- **Sichere Einführung:** Neue `*_checked`-RPCs sind als additive Migration vorgesehen; alte ungeschützte RPC-Berechtigungen werden **erst nach aktualisiertem Client und geprüftem Deployment** separat widerrufen. Bis zur Abschaltung der Legacy-Endpunkte ist die serverseitige Absicherung ausdrücklich **noch nicht vollständig aktiv**. Alte Tabs müssen danach aktualisiert werden.
+- **Keine Datenumschreibung:** Gespielte Tage, Vorschlagshistorie, Clanrollen, Offline-PWA, Solver und Archive bleiben unangetastet; der Owner-offline-Saisonwechsel und vollständige 6/7-Verifikation bleiben #227.
+- Hilfe, Changelog, Release-History, aktuelle Settings-Hinweise und Tests aktualisiert; echte Mehrgeräte-/Rollen-UAT #213 noch offen.
+
 ## [1.16.71] - 2026-11-11
 
 ### Planfreigabe nach der CWL vorübergehend ausblenden (#37, #227)
