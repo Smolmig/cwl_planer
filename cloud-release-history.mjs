@@ -4,6 +4,12 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.16.67",
+    "date": "2026-11-11",
+    "title": "Einsätze und Mitglieder verständlicher bedienen",
+    "description": "Klarere Filter, Einsatzziele und Hinweise zum Datenstand. Tagesregeln lassen sich deutlicher öffnen und schließen; die Planung bleibt unverändert."
+  },
+  {
     "version": "v1.16.66",
     "date": "2026-11-11",
     "title": "Neuer Update-Verlauf: Was hat sich verändert?",

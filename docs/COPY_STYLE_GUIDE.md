@@ -38,11 +38,20 @@
 | **Plan / normale CW / letzte CWL** | Wichtigsten Krieg zuerst, kompakter Saisonrückblick, 1./2. Angriff und neutrale Nicht-Nachweis-Texte | v1.16.61–.62 in Produktion; später allgemeine Feinprüfung |
 | **Statistik → Überblick / Spielerform** | Formsortierung und Health-Status waren zu technisch; Haupttexte kurz, methodische Details bereits in Hilfe/Disclosure | v1.16.64 als erstes Teilpaket #226 |
 | **Clanverwaltung** | Aktionen „Als geprüft markieren“ / „Vorschlag ausblenden“, aussagekräftige Kriterien und verständlicher Status; Datenlücken in bestehender Hilfe und ausklappbar | **v1.16.65 Teilpaket**; weitere Regeltexte später prüfen |
-| **Einsätze / Mitglieder** | Status „offen“ versus „verpasst“, Rotationsziele und Hilfe bei Filterkombinationen einheitlich prüfen | Offen, eigener Teilabschnitt |
+| **Einsätze / Mitglieder** | „Tagesregeln anzeigen/schließen“, klare Ziele (Plan vs. feste Vorgabe), offene Einsätze und 8★-Sortierung; ausstehend bleibt der umfangreiche weitere Gesamt-UX-Audit | **v1.16.67 erstes Copy-Paket**; spätere Detailprüfung offen |
 | **Statistik → Vergleiche / Verlauf / Kriege** | Einheiten, Leerfälle und Grundgesamtheiten konsequent kurz benennen | Offen, eigener Teilabschnitt |
 | **Mehr / Einstellungen / CWL-Archiv / Konto** | Buttons und Speichermeldungen aus Sicht von Clanmitgliedern und Beobachtern prüfen | Offen, eigener Teilabschnitt |
 
 Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusmeldungen und Erklärungen im Quelltext; sie ist **keine** abgeschlossene Nutzer-UAT. In jedem Teilpaket die bestehende **Hilfe-Seite aktualisieren**, keine Berechnung/Cloud-Daten/Clash-Aufstellung ändern und die reale Geräteabnahme #213 offen lassen.
+
+## Einsätze & Mitglieder (v1.16.67)
+
+- **Klarer Soll-Ist-Vergleich:** „Im Plan: 3/4 Einsätze“ ist eine aus dem aktuellen Plan abgeleitete Anzahl, „Ziel: 3/4 Einsätze“ eine ausdrücklich festgelegte Vorgabe. Beide bleiben offen, solange nur drei Angriffe belegt sind. Geplante Einsätze zählen nicht automatisch als ausgeführt.
+- **Verfügbarkeit ≠ Einsatzziel:** „6 von 7 Tagen verfügbar“ sagt, an wie vielen Tagen kein RAUS gilt – nicht, wie oft jemand tatsächlich eingeplant ist oder angreifen muss.
+- **Filter:** Gewünschte kurze Chips („Ziel offen“, „Ziel erreicht“, „8 Sterne offen/erreicht“), aber ausgeschriebene Sortieroptionen („Offene Einsätze“, „Ausgeführte Angriffe“). Keine Weiterentwicklung der Filterberechnung im Copy-Paket.
+- **Sicherheit bei Datenlücken:** Weder fehlende Clash-Angriffe noch ein abgeschlossener Krieg werden als bestätigter ausgeführter oder verpasster Angriff ausgegeben. Aktuelle CWL-Angriffe und letzte sieben gespeicherte CW-/CWL-Angriffe nicht vermischen.
+- **Hilfeseite:** Keine namentlichen echten Spieler als Beispiele, möglichst kurze allgemeine Fälle wie 3/4 oder 1/5; bestehende Details erklären bei Bedarf mehr.
+- **Spätere UX-Aufgaben:** Visuelle Datenmenge in Mitgliedern, Hitrate im laufenden CWL-Block und weitere Bedienungsfragen separat gegen #226/#213 beurteilen; nicht durch das Textpaket als erledigt markieren.
 
 ## Öffentlicher Update-Verlauf (v1.16.66)
 

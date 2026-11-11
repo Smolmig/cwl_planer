@@ -129,7 +129,7 @@ test("Chromium: linked Clash roster rejects manual mutations until emergency is 
    });
    assert.equal(await page.locator("#emptyMultiAdd").count(),0,"linked empty roster must not offer manual bulk import");
    assert.equal(await page.locator("#emptyImport").count(),0);
-   assert.match(await page.locator("#memberList").textContent(),/Mitglieder aktualisieren/);
+   assert.match(await page.locator("#memberList").textContent(),/Jetzt abgleichen/);
    await page.evaluate(()=>{
     window.CWLCloud.isEmergencyEditing=()=>true;
     window.CWLLegacy.rerender();
