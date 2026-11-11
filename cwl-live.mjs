@@ -2,7 +2,7 @@ import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, rev
 import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.16.60";
 import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.16.60";
 import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.16.60";
-import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.16.60";
+import { renderInlineCwlPostseason, selectInlineCwlPostseasonTab } from "./cwl-season-view.mjs?v=1.16.60";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
@@ -267,27 +267,59 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
       clanTag:ctx.clanTag,now:Date.now()
     });
   };
+  const postseasonHost=document.getElementById("planCwlPostseason");
+  if(postseasonHost){
+    postseasonHost.addEventListener("click",event=>{
+      const button=event.target.closest?.("[data-postseason-tab]");
+      if(button&&postseasonHost.contains(button))
+        selectInlineCwlPostseasonTab(postseasonHost,button.dataset.postseasonTab);
+    });
+    postseasonHost.addEventListener("keydown",event=>{
+      if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+      const button=event.target.closest?.("[data-postseason-tab]");
+      if(!button||!postseasonHost.contains(button))return;
+      const tabs=["group","rounds","players"];
+      const i=tabs.indexOf(button.dataset.postseasonTab);
+      if(i<0)return;
+      const next=event.key==="Home"?tabs[0]:event.key==="End"?tabs[2]:
+        tabs[(i+(event.key==="ArrowRight"?1:2))%3];
+      selectInlineCwlPostseasonTab(postseasonHost,next);
+      postseasonHost.querySelector('[data-postseason-tab="'+next+'"]')?.focus();
+      event.preventDefault();
+    });
+  }
   function renderPostseason(){
     const view=document.getElementById("view-plan"),
       host=document.getElementById("planCwlPostseason");
     if(!view||!host)return false;
     const ctx=context(),model=getLifecycle();
+    if(host.dataset.clanId!==String(ctx.clanId||"")){
+      host.dataset.clanId=String(ctx.clanId||"");
+      host.dataset.selectedPostseasonTab="group";
+      host.dataset.renderKey="";
+      host.dataset.compact="";
+    }
     const transition=ctx.active&&model.mode==="transition";
     const postseason=ctx.active&&(model.mode==="postseason"||transition);
     const between=ctx.active&&model.mode==="idle"&&confirmedNoCwl;
+    const compact=postseason&&
+      ["inWar","warEnded"].includes(view.dataset.normalWarState);
     view.classList.toggle("plan-postseason-mode",!!postseason);
     view.classList.toggle("plan-between-cwl-mode",!!between);
+    view.classList.toggle("plan-cw-priority",!!compact);
     host.hidden=!postseason&&!between;
-    if(!postseason&&!between){host.dataset.renderKey="";host.replaceChildren();return false}
+    if(!postseason&&!between){
+      host.dataset.renderKey="";host.dataset.compact="";host.replaceChildren();
+      return false;
+    }
     if(between){
       const key=ctx.clanId+"|between";
       if(host.dataset.renderKey!==key){
-        host.dataset.renderKey=key;
-        host.innerHTML='<section class="plan-postseason-results"><div class="section-title">'+
-          '<div><span class="view-lead-kicker">ZWISCHEN DEN LIGEN</span>'+
-          '<h3>Aktuell keine CWL</h3><p class="statusline">Normale Clankriege erscheinen hier, sobald Clash Daten liefert.</p></div></div>'+
-          '<p class="plan-postseason-description">Dein letzter CWL-Plan bleibt unverändert. '+ 
-          'Wenn eine neue CWL beginnt, erkennt der Planer die neue Saison. Eine ältere Planung wird nicht ohne sichere Archivierung überschrieben.</p></section>';
+        host.dataset.renderKey=key;host.dataset.compact="";
+        host.innerHTML='<section class="plan-between-cwl-note">'+
+          '<span class="view-lead-kicker">ZWISCHEN DEN LIGEN</span>'+
+          '<h3>Gerade ist keine CWL aktiv</h3>'+
+          '<p>Den aktuellen Clankrieg findest du hier im Plan. Die nächste CWL erscheint automatisch, sobald Clash sie freigibt.</p></section>';
       }
       return true;
     }
@@ -297,25 +329,37 @@ export function createCwlLive({sb,context,storage,notify,onSnapshot,ensureCloudS
     const key=ctx.clanId+"|"+JSON.stringify({
       mode:model.mode,season,verifiedSeven:model.verifiedSeven,
       savedDays:model.savedDays,rounds:model.snapshot?.rounds,
-      group:group||null
+      group:group||null,compact
     });
     if(host.dataset.renderKey!==key){
-      const details=host.querySelector(".plan-postseason-players");
-      const open=details?.open===true;
-      const focused=details?.contains(document.activeElement)===true;
-      host.innerHTML=(transition?
-        '<p class="plan-postseason-description"><strong>Neue CWL '+model.newSeason+
-        ' noch nicht gestartet:</strong> Die neue Liga wurde erkannt, aber der vorherige Plan '+
-        'ist nicht vollständig archiviert. Bitte die letzten Ergebnisse prüfen und '+
-        'anschließend „CWL archivieren / neue Saison vorbereiten“ wählen. '+
-        'Keine automatische Überschreibung.</p>':'')+
-        renderInlineCwlPostseason(ctx.profile,model.snapshot,group,{
-         ...model,mode:"postseason",season,
-         savedDays:model.savedDays??0
-        });
-      host.querySelector(".plan-postseason-players")?.toggleAttribute("open",open);
-      if(focused)host.querySelector(".plan-postseason-players summary")?.focus({preventScroll:true});
+      const oldCompact=host.dataset.compact==="true";
+      const previouslyOpen=host.querySelector(".plan-postseason-disclosure")?.open===true;
+      const tabFocus=host.contains(document.activeElement)?
+        document.activeElement?.dataset?.postseasonTab:null;
+      const summaryFocused=host.querySelector(".plan-postseason-disclosure summary")===
+        document.activeElement;
+      const recap=renderInlineCwlPostseason(ctx.profile,model.snapshot,group,{
+        ...model,mode:"postseason",season,savedDays:model.savedDays??0
+      });
+      const transitionNote=transition?
+        '<p class="plan-postseason-description"><strong>Neue CWL erkannt.</strong> '+
+        'Bitte zuerst den letzten Kriegsstand prüfen und die vorherige Saison archivieren. '+
+        'Deine bisherige Planung bleibt erhalten.</p>':"";
+      host.innerHTML=compact?
+        '<details class="plan-postseason-disclosure">'+
+          '<summary><span><strong>Letzte CWL · '+season+'</strong>'+
+          '<small>Ergebnisse und Spielerleistungen ansehen</small></span>'+
+          '<span aria-hidden="true" class="plan-postseason-disclosure-arrow">⌄</span></summary>'+
+          transitionNote+recap+'</details>':
+          transitionNote+recap;
+      if(compact&&oldCompact&&previouslyOpen)
+        host.querySelector(".plan-postseason-disclosure").open=true;
+      selectInlineCwlPostseasonTab(host,host.dataset.selectedPostseasonTab||"group");
+      if(tabFocus)host.querySelector('[data-postseason-tab="'+tabFocus+'"]')?.focus({preventScroll:true});
+      else if(summaryFocused)host.querySelector(".plan-postseason-disclosure summary")
+        ?.focus({preventScroll:true});
       host.dataset.renderKey=key;
+      host.dataset.compact=compact?"true":"false";
     }
     return true;
   }
