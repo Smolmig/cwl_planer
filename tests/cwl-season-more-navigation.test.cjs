@@ -74,7 +74,7 @@ test("season page navigates three functional read-only tabs and escapes opponent
   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/– : –/);
   dom.window.document.querySelector('[data-season-tab="group"]').click();
   const html=dom.window.document.querySelector("#cwlSeasonContent").innerHTML;
-  assert.match(html,/Bekannte Gegner/);
+  assert.match(html,/Unsere Gegner/);
   assert.doesNotMatch(html,/<img src=x onerror=alert\(1\)>/);
   assert.match(dom.window.document.querySelector("#cwlSeasonContent").textContent,/nicht geschätzt/);
   dom.window.document.querySelector('[data-season-tab="players"]').click();
