@@ -37,7 +37,7 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.addScriptTag({content:fakeCloud});
     await page.addScriptTag({content:manager});
     await page.evaluate(()=>window.CWLClanManagementView.open());
-    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash-Stand"));
+    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
     assert.match(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
     await page.locator("#clanManagementCriteria > summary").click();
     await page.locator("#clanRuleDays").fill("15");
