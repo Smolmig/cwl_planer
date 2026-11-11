@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.63",
+  "version": "v1.16.64",
   "released": "2026-11-11",
-  "summary": "CWL/Cloud Start ruhiger: bestehende Anmeldung und erster Clash-Status vor dem Anzeigen, unveränderte normale CW-Angriffe ohne Neuzeichnen; Hilfe aktualisiert."
+  "summary": "Statistik verständlicher: klarer Datenstand, einfache Spielerform-Filter und Sortierung; Berechnungen und Grenzen bleiben erklärt."
 }

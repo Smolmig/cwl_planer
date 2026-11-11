@@ -10,22 +10,22 @@ const chunks=(xs,n)=>Array.from({length:Math.ceil(xs.length/n)},(_,i)=>xs.slice(
    scheduled collector may be delayed; an old success must not look current. */
 export function collectorHealthDisplay(health,enabled,now=Date.now()){
   if(!enabled)return {state:"none",
-    text:"Automatische Statistikerfassung ist für verbundene Cloud-Clans verfügbar."};
+    text:"Für die automatische Erfassung melde dich an und wähle einen Clan aus."};
   const last=health?.last_success_at?new Date(health.last_success_at):null;
   const valid=last&&!Number.isNaN(last.getTime());
   const lastText=valid?
     last.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):
     "noch kein erfolgreicher Abgleich";
   if(health?.last_error)return {state:"error",
-    text:"Automatische Erfassung: letzter Versuch fehlgeschlagen. Letzter erfolgreicher Server-Abgleich: "+lastText+"."};
+    text:"Der letzte automatische Abgleich ist fehlgeschlagen. Zuletzt erfolgreich: "+lastText+"."};
   if(!valid)return {state:"none",
-    text:"Automatische Erfassung: bisher noch kein erfolgreicher Server-Abgleich nachgewiesen."};
+    text:"Noch kein erfolgreicher automatischer Abgleich bestätigt."};
   const hoursSinceSuccess=now-last.getTime();
   if(!Number.isFinite(hoursSinceSuccess)||hoursSinceSuccess>3*60*60*1000)
     return {state:"stale",
-      text:"Automatische Erfassung möglicherweise verspätet. Letzter erfolgreicher Server-Abgleich: "+lastText+". Neue Angriffe könnten noch fehlen."};
+      text:"Neue Kriegsdaten kommen möglicherweise verspätet. Zuletzt erfolgreich: "+lastText+". Neue Angriffe könnten noch fehlen."};
   return {state:"ok",
-    text:"Automatische Erfassung: letzter erfolgreicher Server-Abgleich "+lastText+". Laufende Kriege bleiben bis zum Abschluss vorläufig."};
+    text:"Kriegsdaten zuletzt erfolgreich geprüft: "+lastText+". Laufende Kriege bleiben bis zum Abschluss vorläufig."};
 }
 export function statsLoadNotice(wars=[]){
   const items=Array.isArray(wars)?wars:[];
@@ -115,15 +115,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
-    if(desc)desc.textContent="Letzte "+formWindow+" Kalendertage · "+usable+
-      " Spieler mit belegten Angriffen auf gleiches RH · "+
-      unassessed+" ohne gleich-RH-Auswertung. "+
+    if(desc)desc.textContent="Letzte "+formWindow+" Tage · "+usable+
+      " Spieler mit passenden Angriffen · "+
+      unassessed+" ohne auswertbare Angriffe. "+
       (formSort==="evidence"?
-        "Sortiert nach Datenmenge, danach 3★-Quote. ":
-        formSort==="hitRate"?"Nach roher 3★-Quote sortiert – auch bei wenigen Angriffen. ":
-        formSort==="attacks"?"Nach Anzahl der gleich-RH-Angriffe sortiert. ":
+        "Nach Angriffsmenge, dann 3★-Quote sortiert. ":
+        formSort==="hitRate"?"Nach 3★-Quote sortiert (auch bei wenigen Angriffen). ":
+        formSort==="attacks"?"Nach Angriffszahl sortiert. ":
         "Alphabetisch sortiert. ")+
-      "Listenplätze sind keine Stärkerangliste.";
+      "Keine Rangliste der Spielerstärke.";
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
       lastFormRowsVersion>=0&&lastFormRowsVersion!==version&&lastFormRowsClan===ctx.clanId;
     const topMargin=Math.max(0,document.querySelector(".topbar")
@@ -136,7 +136,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const markup=rows.length?rows.map((p,i)=>{
       const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
       const why=b.excludedDifferentRH+b.excludedUnknownRH;
-      const quality=b.attacks?b.quality:why?"Kein auswertbarer Angriff gegen gleiches RH":
+      const quality=b.attacks?b.quality:why?"Keine Angriffe gegen gleiches RH erfasst":
         "Keine erfassten Angriffe im Zeitraum";
       const few=b.attacks>0&&b.attacks<5;
       const other=why?" · "+b.excludedDifferentRH+" andere RH · "+
@@ -145,7 +145,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Zeile "+(i+1)+"'>"+
           (i+1)+".</span><b>"+esc(p.name)+"</b>"+
         "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+
-          (few&&!/wenige Angriffe/i.test(quality)?" · Kleine Stichprobe":"")+"</small></div>"+
+          (few&&!/wenige Angriffe/i.test(quality)?" · Erst wenige Angriffe":"")+"</small></div>"+
         "<div class='stats-form-results'>"+
           "<div class='stats-form-figure'><span>3★-Quote · Gegner mit gleichem RH</span>"+
             "<strong>"+pct+"</strong></div>"+
@@ -603,7 +603,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       });
     const missedCoverageHost=$("statsMissedCoverage");
     if(missedCoverageHost)missedCoverageHost.textContent=summary.wars?
-      "Verpasste Angriffe nach Kriegsart (alle gespeicherten Kriege): "+coverageDescriptions.join(" · "):
+      "Verpasste Angriffe aus gespeicherten Kriegen: "+coverageDescriptions.join(" · "):
       "Noch keine abgeschlossenen Kriege gespeichert.";
     $("statsSummary").innerHTML=[
       ["3★-Quote",pct(summary.hitRate)],

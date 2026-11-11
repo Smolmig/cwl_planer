@@ -12,6 +12,14 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.64] - 2026-11-11
+
+### Verständlichere Statistiktexte – erster Teil des App-Audits #226
+- **Überblick und Spielerstatistik:** Formulierungen zur Kriegsgrundlage und Auswahl vereinfacht; detaillierte Berechnungsfragen bleiben in den vorhandenen aufklappbaren Erklärungen.
+- **Spielerform:** Sortierungen heißen nun „Angriffsmenge & 3★-Quote“, „3★-Quote (auch bei wenigen Angriffen)“ und „Angriffe auf gleiches RH“. Die Zusammenfassung nennt auswertbare statt technisch klingender Teilmengen; die geringe Aussagekraft einzelner Angriffe bleibt ausdrücklich klar.
+- **Automatische Erfassung:** Erfolgs-, Fehler- und Verzögerungsmeldungen verwenden Alltagssprache, nennen weiterhin die nachgewiesene Aktualität und versprechen keine bereits abgeschlossenen laufenden Kriege.
+- Bestehende Hilfe ergänzt, Textstandard und offene Tab-Prioritäten in `docs/COPY_STYLE_GUIDE.md` festgehalten. Regressionen für neue Texte, historische Daten/Filter/Warnungen und Mobile bleiben aktiv. **Keine Änderung** an Erfassungsintervallen, Rohdaten, Quoten, Berechnungen, Cloud-/Clash-Rollen, API, DB, Solver oder Offline-PWA. Echte iOS-/Android-/Owner-Abnahme #213 bleibt offen.
+
 ## [1.16.63] - 2026-11-11
 
 ### Cloudstart: erst den richtigen Clan zeigen, Routine-Refresh nicht flackern lassen

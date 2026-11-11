@@ -11,7 +11,7 @@ test("a recent successful collector is informational, not a guaranteed complete 
  const now=Date.parse("2026-11-06T21:05:00Z");
  const view=collectorHealthDisplay({last_success_at:"2026-11-06T20:05:00Z",last_error:null},true,now);
  assert.equal(view.state,"ok");
- assert.match(view.text,/letzter erfolgreicher Server-Abgleich/);
+ assert.match(view.text,/Kriegsdaten zuletzt erfolgreich geprüft/);
  assert.match(view.text,/Laufende Kriege bleiben bis zum Abschluss vorläufig/);
 });
 test("an old success is visibly stale even if no error is recorded",async()=>{
@@ -28,7 +28,7 @@ test("a recent collector failure takes priority over a recent past success",asyn
   last_success_at:"2026-11-06T20:05:00Z",last_error:"clash_api_unavailable:leaguewar:http_429"
  },true,Date.parse("2026-11-06T21:05:00Z"));
  assert.equal(view.state,"error");
- assert.match(view.text,/letzter Versuch fehlgeschlagen/);
+ assert.match(view.text,/letzte automatische Abgleich ist fehlgeschlagen/);
  assert.doesNotMatch(view.text,/http_429|leaguewar/,"internal diagnostics stay out of the UI");
 });
 test("missing/invalid timestamps and disconnected mode are not presented as fresh",async()=>{

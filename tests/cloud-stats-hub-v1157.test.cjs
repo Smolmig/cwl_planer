@@ -50,7 +50,7 @@ test("relative RH comparison counts CW and CWL separately, including missing RH"
 test("form, list position and selected wars are explicitly separate from the seven recent member attacks",()=>{
  assert.match(script,/cwlSeasons="all"/);
  assert.match(script,/Diese Tabelle berücksichtigt ausschließlich /);
- assert.match(script,/formWindow\+" Kalendertage/);
+ assert.match(script,/formWindow\+" Tage/);
  assert.doesNotMatch(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
  assert.match(script,/Listenposition /);
  assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
@@ -59,7 +59,7 @@ test("form, list position and selected wars are explicitly separate from the sev
   assert.match(html,new RegExp('data-stats-panel="'+section+'"'));
  assert.match(html,/statsMatchupComparison/);
  assert.match(html,/Nr\. · Spieler/);
- assert.match(html,/Nur für Spielerstatistik|Kriege für Auswertung/);
+ assert.match(html,/Nur für Spielerstatistik|Kriege auswählen/);
  assert.doesNotMatch(html,/50 CWs \+ 3 CWLs/);
 });
 
