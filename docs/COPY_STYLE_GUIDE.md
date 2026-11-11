@@ -23,13 +23,21 @@
 | Abgeschlossener Nachweis | **Verpasster Angriff** | Nur bei vollständig bestätigten Kriegs-/Aufstellungsdaten; sonst „offen“/„unbekannt“ |
 | Rollen und Handlungen | **Clanführer / Vize / Beobachter; Prüfung, Vorschlag, Bestätigung** | App-Berechtigung und Ingame-Rang nicht vermischen; nie automatische Clash-Änderung behaupten |
 
+## Clanverwaltung: Begriffe für Entscheidungen (v1.16.65)
+
+- **Vorschlag offen:** Eine manuelle Prüfung steht an; daraus folgt keine Beförderung und keine automatische Ingame-Aktion.
+- **Geprüft:** Ein Vorschlag wurde abgehakt. Neue entscheidende Nachweise können wieder eine Prüfung auslösen.
+- **Ausgeblendet:** Nur dieser Vorschlag für diesen Spieler in diesem Cloud-Clan wird verborgen; mit „Wieder anzeigen“ rückgängig.
+- **Clanzeit:** Nur durch regelmäßige vollständige Listen bestätigte Zeiträume, kein verlässlicher Beleg für den allerersten Ingame-Beitritt.
+- **Clash-Rang vs. App-Besitzer:** Aktueller Rang aus Clash; Entscheidungen nur durch berechtigten Besitzer in der Web-App und keine Änderung am Spielkonto.
+
 ## Bestandsaufnahme und Priorisierung
 
 | Oberfläche | Befund / nächster Schritt | Stand |
 | --- | --- | --- |
 | **Plan / normale CW / letzte CWL** | Wichtigsten Krieg zuerst, kompakter Saisonrückblick, 1./2. Angriff und neutrale Nicht-Nachweis-Texte | v1.16.61–.62 in Produktion; später allgemeine Feinprüfung |
 | **Statistik → Überblick / Spielerform** | Formsortierung und Health-Status waren zu technisch; Haupttexte kurz, methodische Details bereits in Hilfe/Disclosure | v1.16.64 als erstes Teilpaket #226 |
-| **Clanverwaltung** | Lange und teils technische Prüf-, Abwesenheits- und Quittierungstexte; Anfänger-Vokabular und Owner-/Ingame-Unterschied prüfen | **Nächster Teilabschnitt** |
+| **Clanverwaltung** | Aktionen „Als geprüft markieren“ / „Vorschlag ausblenden“, aussagekräftige Kriterien und verständlicher Status; Datenlücken in bestehender Hilfe und ausklappbar | **v1.16.65 Teilpaket**; weitere Regeltexte später prüfen |
 | **Einsätze / Mitglieder** | Status „offen“ versus „verpasst“, Rotationsziele und Hilfe bei Filterkombinationen einheitlich prüfen | Offen, eigener Teilabschnitt |
 | **Statistik → Vergleiche / Verlauf / Kriege** | Einheiten, Leerfälle und Grundgesamtheiten konsequent kurz benennen | Offen, eigener Teilabschnitt |
 | **Mehr / Einstellungen / CWL-Archiv / Konto** | Buttons und Speichermeldungen aus Sicht von Clanmitgliedern und Beobachtern prüfen | Offen, eigener Teilabschnitt |
