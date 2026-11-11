@@ -17,9 +17,15 @@ const safeMember=m=>({
   tag:tag(m?.tag),name:String(m?.name||"").slice(0,80),
   townHallLevel:Number.isInteger(m?.townhallLevel)?m.townhallLevel:
     Number.isInteger(m?.townHallLevel)?m.townHallLevel:null,
+  mapPosition:Number.isInteger(m?.mapPosition)&&m.mapPosition>=1&&
+    m.mapPosition<=50?m.mapPosition:null,
   attacks:(Array.isArray(m?.attacks)?m.attacks:[]).slice(0,4).map(a=>({
     attackerTag:tag(a?.attackerTag),defenderTag:tag(a?.defenderTag),
-    stars:a?.stars,destructionPercentage:a?.destructionPercentage
+    stars:Number.isInteger(a?.stars)&&a.stars>=0&&a.stars<=3?a.stars:null,
+    destructionPercentage:typeof a?.destructionPercentage==="number"&&
+      Number.isFinite(a.destructionPercentage)&&a.destructionPercentage>=0&&
+      a.destructionPercentage<=100?a.destructionPercentage:null,
+    order:Number.isInteger(a?.order)&&a.order>=1&&a.order<=500?a.order:null
   }))
 });
 // Official CWL war fields: war stars are *not* the sum of all attacks.
