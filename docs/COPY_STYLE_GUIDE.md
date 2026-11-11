@@ -40,7 +40,7 @@
 | **Clanverwaltung** | Aktionen „Als geprüft markieren“ / „Vorschlag ausblenden“, aussagekräftige Kriterien und verständlicher Status; Datenlücken in bestehender Hilfe und ausklappbar | **v1.16.65 Teilpaket**; weitere Regeltexte später prüfen |
 | **Einsätze / Mitglieder** | „Tagesregeln anzeigen/schließen“, klare Ziele (Plan vs. feste Vorgabe), offene Einsätze und 8★-Sortierung; ausstehend bleibt der umfangreiche weitere Gesamt-UX-Audit | **v1.16.67 erstes Copy-Paket**; spätere Detailprüfung offen |
 | **Statistik → Vergleiche / Verlauf / Kriege** | Kalenderwoche erklärt, Kennzahl pro Angriff präzisiert; keine berechnete 0 bei fehlenden Kriegen/Angriffen; Sternsumme aus erfassten Angriffen, kein finales Kriegsergebnis | **v1.16.68 Copy-Paket**; größere UX-Prüfung offen |
-| **Mehr / Einstellungen / CWL-Archiv / Konto** | Buttons und Speichermeldungen aus Sicht von Clanmitgliedern und Beobachtern prüfen | Offen, eigener Teilabschnitt |
+| **Mehr / Einstellungen / CWL-Archiv / Konto** | Klarere Einstiege, App-Rechte, Lesemodus-Hinweis, Gruppenarchiv vs. Planarchiv und lokales JSON vs. gemeinsame Plan-Sicherung | **v1.16.69 Copy-Paket**; weiterführendes UX-Review offen |
 
 Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusmeldungen und Erklärungen im Quelltext; sie ist **keine** abgeschlossene Nutzer-UAT. In jedem Teilpaket die bestehende **Hilfe-Seite aktualisieren**, keine Berechnung/Cloud-Daten/Clash-Aufstellung ändern und die reale Geräteabnahme #213 offen lassen.
 
@@ -61,6 +61,15 @@ Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusm
 - **Sterne in der Kriegsliste:** Summe aus den vorhandenen Einzelangriffen, nicht automatisch das offizielle Kriegsresultat. Bei fehlenden Einzelangriffen: unbekannt, nicht 0★.
 - **Leere/gefiltete Liste:** „Noch keine Kriege gespeichert“ nur bei leerer Datenbank; bei vorhandenen Kriegen ohne Treffer: Filter bzw. Zeitraum ändern. Kein Eingriff in Collector, Statistikformeln, Kriegsdaten.
 - **Weitere Prüfung offen:** Mobile-Owner-/Viewer-UAT und ein gesamtheitlicher Layout-/Informationsumfang-Review bleiben #213/#226.
+
+## Mehr / CWL-Archiv / Clan & Konto (v1.16.69)
+
+- **Mehr:** Kein Entwicklerstatus wie „in Vorbereitung“ für Funktionen, die bereits eine lesende Oberfläche haben. Kurze Beschreibungen statt internem Fachjargon.
+- **Zwei Archivquellen:** „Gruppenergebnisse aus Clash“ sind Gruppentabelle, Runde und gespeicherte Datenstände; „Archivierte CWL-Pläne“ sind früher gespeicherte eigene Aufstellungen und Einsatzverteilungen. Eine leere Quelle bedeutet nicht, dass die andere leer ist.
+- **Aufbewahrung / Löschen:** Das Löschen eines archivierten CWL-Plans ist keine Änderung des aktuellen Plans. Rücknahme erfordert eine geeignete eigene zuvor erstellte JSON-Sicherung, nicht automatisch einen gemeinsamen Plan-Sicherungspunkt. Keine pauschale Behauptung, alle Daten würden im Cloud-Backup enthalten sein.
+- **Rollen:** Beobachter dürfen nachsehen, nicht planen; Vizes haben begrenzte Schreibrechte je nach Freigabe; Besitzer können Cloud-Planstände wiederherstellen. App-Rollen ändern keine Clash-Ränge. Lesemodus-Hinweis in CWL-Regeln ist eine Textanzeige und ersetzt nicht die bestehenden Zugriffskontrollen.
+- **Sicherungsarten:** „Backup & Import“ exportiert/importiert eine Datei; die gemeinsamen Plan-Sicherungspunkte sind getrennt, enthalten keine Angriffsstatistik/Benutzerkonten/Rollen und ersetzen keinen umfassenden App-Export.
+- **Offen:** Echte Rechte- und Gerätetests #213 sowie umfassende Rollen-/Sicherungs-UX und Off-Season-Archivdarstellung; bloßes Textpaket nicht als Vollabschluss ausgeben.
 
 ## Öffentlicher Update-Verlauf (v1.16.66)
 

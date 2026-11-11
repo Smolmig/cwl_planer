@@ -20,7 +20,7 @@ test("new invitation links are recoverable without recreating or revoking an inv
  assert.match(sync,/select\("id,role,created_by,expires_at,reusable,link_label,use_count"\)/);
  assert.doesNotMatch(sync,/\.select\([^\n]*invite_code/);
  assert.match(sync,/Dieser ältere Link kann nicht erneut angezeigt werden/);
- assert.match(html,/Neue Einladungslinks kannst du später unter „Aktive Einladungslinks“ erneut kopieren/);
+ assert.match(html,/Neue Einladungslinks findest du später unter „Aktive Einladungslinks“/);
 });
 
 test("recoverable invite tokens are private and readable only via an authorized scoped RPC",()=>{

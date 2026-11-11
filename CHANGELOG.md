@@ -12,6 +12,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.69] - 2026-11-11
+
+### Mehr, CWL-Archiv und Clan & Konto verständlicher (#226)
+- **Mehr:** Kürzere Menübeschreibungen für Clan, Archiv, Clanverwaltung und JSON-Sicherungen. Bestehende Unterseiten und Aktionen bleiben an Ort und Stelle.
+- **CWL-Archiv:** Gruppenergebnisse aus Clash klar von **archivierten CWL-Plänen** (Aufstellungen und Einsätze) getrennt; aussagekräftige Leer- und Ladehinweise. Der Gruppenstand ist kein Archiv einzelner Angriffsstatistiken. Fehlende archivierte Pläne sind nicht gleichbedeutend mit fehlenden Gruppenständen. Archivzeilen und Löschhinweis nennen die tatsächliche Datenart und die Notwendigkeit einer vorherigen JSON-Sicherung.
+- **Clan & Konto:** Eindeutigere Schaltflächen für Abmeldung und Prüfung des gemeinsamen Planstands. App-Rollen (Beobachter / Vize / Besitzer) und ihre Trennung von Ingame-Rängen verständlicher erklärt. Wiederherstellbare Cloud-Planstände von lokalen JSON-Dateien abgegrenzt; Sicherungsstände enthalten nicht Statistik/Konten/Rollen. Kein Zugriff verändert.
+- **Einstellungen:** Beobachtern wird bei den CWL-Regeln ein Lesemodus-Hinweis angezeigt. Bestehende Rollenprüfung und deaktivierte Schreibaktionen bleiben unverändert.
+- **Hilfe**, öffentliche Update-History, „Neu in …“, Release-Version, Cache-Parameter und Regressionstests synchronisiert.
+- **Keine Änderung** an Berechtigungen (Supabase/RLS), Benutzer-/Clan-Daten, API, Solver, Import-/Export-Logik, Backup-Schema, Archivierungsmechanik oder Offline-PWA. Echte Owner-/Vize-/Viewer-Abnahme auf iOS/Android #213 bleibt offen.
+
 ## [1.16.68] - 2026-11-11
 
 ### Statistik: Vergleiche und Kriegsverlauf verständlicher (#226)

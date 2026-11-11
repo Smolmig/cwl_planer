@@ -84,7 +84,7 @@ test("historic groups render independently of existing plan archives and HTML is
   await view.open();
   let html=dom.window.document.getElementById("cwlGroupArchiveContent").innerHTML;
   assert.match(html,/November 2026/);
-  assert.match(html,/Gespeicherter Zwischenstand/);
+  assert.match(html,/Noch nicht vollständig/);
   assert.match(html,/24/);
   assert.match(html,/Runde 1/);
   assert.doesNotMatch(html,/<img src=x onerror=alert\(1\)>/);
@@ -136,7 +136,7 @@ test("group archive remains usable on iPhone and desktop without horizontal page
       const host=document.getElementById("cwlGroupArchiveContent");
       host.innerHTML='<details class="season-archive-item" open><summary><span>'+
        '<strong>November 2026</strong><small>8 Clans · 3 / 28 abgeschlossen</small></span>'+
-       '<span class="season-archive-chip">Gespeicherter Zwischenstand</span></summary>'+
+       '<span class="season-archive-chip">Noch nicht vollständig</span></summary>'+
        '<div class="season-archive-body"><div class="season-group-scroll">'+
        '<table class="season-group-table"><tbody>'+
        Array.from({length:8},(_,i)=>'<tr><td>'+(i+1)+'.</td><td>United Fighters</td>'+
