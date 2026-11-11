@@ -6029,7 +6029,7 @@ window.CWLLegacy={
   const cloud=window.CWLCloud;
   if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      state.cwlLive?.season!==season||
-     state.cwlLiveIgnoredSeason===season||
+     state.cwlLiveIgnoredSeason===season||state.config.days!==7||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||"")))return false;
   if(state.archives.some(a=>a.sourceSeason===season))return true;
   const prior=archiveCurrentCwl();
