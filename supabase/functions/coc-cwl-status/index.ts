@@ -13,13 +13,25 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const fail=(error,status=502)=>Response.json({ok:false,error},{status,headers:CORS});
 const tag=v=>{const t=String(v||"").trim().toUpperCase();return t.startsWith("#")?t:t?"#"+t:""};
 const valid=t=>/^#[0289PYLQGRJCUV]{3,15}$/.test(t);
+// Return only official values. No guessed "most heroic" awards, replays,
+// unwitnessed attacks, or raw API blobs. Extra bounded fields enable a real
+// normal-war timeline and sorting of both rosters on the Plan dashboard.
 const safeMember=m=>({
   tag:tag(m?.tag),name:String(m?.name||"").slice(0,80),
   townHallLevel:Number.isInteger(m?.townhallLevel)?m.townhallLevel:
     Number.isInteger(m?.townHallLevel)?m.townHallLevel:null,
+  mapPosition:Number.isInteger(m?.mapPosition)&&m.mapPosition>=1&&
+    m.mapPosition<=50?m.mapPosition:null,
+  opponentAttacks:Number.isInteger(m?.opponentAttacks)&&
+    m.opponentAttacks>=0&&m.opponentAttacks<=100?m.opponentAttacks:null,
   attacks:(Array.isArray(m?.attacks)?m.attacks:[]).slice(0,4).map(a=>({
     attackerTag:tag(a?.attackerTag),defenderTag:tag(a?.defenderTag),
-    stars:a?.stars,destructionPercentage:a?.destructionPercentage
+    stars:Number.isInteger(a?.stars)&&a.stars>=0&&a.stars<=3?a.stars:null,
+    destructionPercentage:safeDestruction(a?.destructionPercentage),
+    order:Number.isInteger(a?.order)&&a.order>=1&&a.order<=100?
+      a.order:null,
+    duration:Number.isInteger(a?.duration)&&a.duration>=0&&a.duration<=600?
+      a.duration:null
   }))
 });
 // Official CWL war fields: war stars are *not* the sum of all attacks.
