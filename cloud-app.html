@@ -2225,6 +2225,15 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .season-group-score small{font-size:9px}
 }
 
+/* Archived recap stays readable inside the historical plan dialog. */
+#archiveModal .modalbox{width:min(740px,calc(100vw - 24px));max-width:740px;max-height:min(90vh,880px);overflow-y:auto}
+#archiveRecap .archive-recap-section{margin:8px 0 20px}
+#archiveRecap .archive-recap-intro h4{margin:0 0 3px;font-size:16px}
+#archiveRecap .archive-recap-intro .statusline{margin:0 0 12px}
+#archiveRecap .plan-postseason-panel{margin-top:10px}
+#archiveRecap .plan-postseason-tabs{margin:0}
+#archiveContent>h4{margin:22px 0 10px;border-top:1px solid var(--line);padding-top:16px}
+@media(max-width:430px){#archiveModal .modalbox{width:calc(100vw - 16px);padding:14px}}
 /* Shared, server-protected CWL group archives beside existing plan archives. */
 #view-archive #cwlGroupArchiveSection{margin-top:16px}
 #cwlGroupArchiveSection .section-title{gap:12px;align-items:center;flex-wrap:wrap}
@@ -4188,7 +4197,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
     <div class="townhall-picker-grid" id="townHallPickerGrid"></div>
   </div>
 </div>
-<div class="modal" id="archiveModal"><div class="modalbox"><div class="section-title"><div><h3 id="archiveTitle">Vergangene CWL</h3><div class="statusline">Archivierter, schreibgeschützter Stand.</div></div><button class="btn small" id="archiveClose">Schließen</button></div><div id="archiveContent"></div></div></div>
+<div class="modal" id="archiveModal"><div class="modalbox"><div class="section-title"><div><h3 id="archiveTitle">Vergangene CWL</h3><div class="statusline">Archivierter, schreibgeschützter Stand.</div></div><button class="btn small" id="archiveClose">Schließen</button></div><div id="archiveRecap"></div><div id="archiveContent"></div></div></div>
 
 <div class="modal" id="whyModal" role="dialog" aria-modal="true" aria-labelledby="whyTitle"><div class="modalbox">
   <div class="section-title"><h3 id="whyTitle">Warum diese Aufstellung?</h3><button class="btn small" id="whyClose" type="button">Schließen</button></div>
@@ -5242,8 +5251,9 @@ function openArchiveModal(id){
   const map=new Map(a.players.map(p=>[p.id,p]));
   document.getElementById("archiveTitle").textContent=a.label;
   const counts=a.players.map(p=>({p,n:a.counts?.[p.id]||0})).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name,"de"));
-  document.getElementById("archiveContent").innerHTML=`<div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Kriegstag ${l.day} · als gespielt gespeichert</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsätze dieser CWL</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
+  document.getElementById("archiveContent").innerHTML=`<h4>Gespeicherte Aufstellungen & Einsätze</h4><div class="helpbox"><b>${a.playedCount}/${a.days} Tage gespielt</b> · ${a.slots}vs${a.slots}${a.complete?" · abgeschlossen":" · unvollständig"}</div>${a.lineups.map(l=>`<div class="archive-day"><b>Kriegstag ${l.day} · als gespielt gespeichert</b><div>${l.lineup.map(id=>esc(l.snapshots?.[id]?.name||map.get(id)?.name||"Unbekannt")).join(", ")}</div></div>`).join("")}<h4>Einsätze dieser CWL</h4>${counts.map(x=>`<div class="archive-count"><span>${esc(x.p.name)}${x.p.playerTag?` <small>${esc(x.p.playerTag)}</small>`:""}</span><b>${x.n}×</b></div>`).join("")||'<div class="empty">Keine Teilnehmer gespeichert.</div>'}`;
   openModal("archiveModal");
+  void window.CWLArchivedRecap?.open?.(a);
 }
 function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
  // Previous-CWL day rules/targets must not be resurrected when an absent player rejoins.
@@ -6170,7 +6180,7 @@ document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelect
  if(!added){showToast("Es wurden keine Mitglieder hinzugefügt");return}
  closeBulkModal();
  renderAll(added+" Mitglieder hinzugefügt · Plan aktualisiert ✓");
-};bindModalBackdropClose("bulkModal",closeBulkModal);document.getElementById("archiveClose").onclick=()=>closeModalById("archiveModal");bindModalBackdropClose("archiveModal",()=>closeModalById("archiveModal"));
+};bindModalBackdropClose("bulkModal",closeBulkModal);document.getElementById("archiveClose").onclick=()=>{window.CWLArchivedRecap?.close?.();closeModalById("archiveModal")};bindModalBackdropClose("archiveModal",()=>closeModalById("archiveModal"));
 // Recovery
 document.getElementById("recoveryAcceptBtn").onclick=()=>{suspendWrites=false;startupStorageIssue=null;saveApp();renderAll("Wiederhergestellter Stand übernommen ✓")};document.getElementById("recoveryImportBtn").onclick=()=>document.getElementById("importFile").click();document.getElementById("recoveryEmptyBtn").onclick=async()=>{if(!await confirmInline("Die beschädigten lokalen Daten bleiben dadurch nicht erhalten.",{title:"Mit leerem Profil starten?",confirmText:"Leeres Profil starten",danger:true}))return;app=defaultApp();state=app.profiles[0];suspendWrites=false;startupStorageIssue=null;localStorage.removeItem(STORAGE_KEY);renderAll("Leeres Profil gestartet ✓")};
 document.getElementById("inlineActionClose").onclick=()=>closeInlineAction();document.getElementById("inlineActionBackdrop").onclick=()=>closeInlineAction();document.getElementById("inlineActionInput").addEventListener("keydown",e=>{if(e.key==="Escape")closeInlineAction();if(e.key==="Enter"){const b=document.querySelector("#inlineActionButtons .primary");if(b)b.click()}});window.addEventListener("keydown",e=>{
