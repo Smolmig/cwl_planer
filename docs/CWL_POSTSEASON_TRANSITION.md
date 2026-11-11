@@ -1,5 +1,7 @@
 # CWL lifecycle transition – Cloud Plan after the final war
 
+> **Live-Nachtrag 11.11.2026:** v1.16.61 ist über [PR #225](https://github.com/Smolmig/cwl_planer/pull/225) veröffentlicht. Haupt-CI 630/630, Pages/Release erfolgreich, Edge coc-cwl-status v11 aktiv und identisch mit GitHub main. Die drei CWL-Reiter, die prominentere normale CW und der Cloud-Autostart nach erfolgreichem Archiv/CAS sind live. Die obigen älteren Phasen beschreiben historische Zwischenschritte; maßgeblich ist die UX-Ausbau-Sektion unten. Duplikat [PR #224](https://github.com/Smolmig/cwl_planer/pull/224) ohne Merge geschlossen. Kein echter Owner-/iOS-/Android-Akzeptanztest nachgewiesen; #213 bleibt offen.
+
 **Scope:** Requested 10.11.2026 after November CWL ended. Design/implementation in branch `feat/cwl-postseason-plan-view-2026-11`, release target v1.16.59. The older clan-verification #183 development branch is **paused, not discarded**.
 
 ## Observed production issue and source of truth
