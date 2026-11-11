@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.66] - 2026-11-11
+
+### Öffentlicher Update-Verlauf für alle Nutzer
+- **Mehr → Update-Verlauf:** Neue lesbare Unterseite mit der gesamten dokumentierten Historie von v1.0.0 bis zum aktuellen Stand, nach tatsächlichem Cloud-Veröffentlichungsdatum gruppiert und mit Themen-/Versionssuche. Die ältere Entwicklungszeit vor v1.0.0 ist als eigene, ehrlich datierte Meilenstein-Gruppe enthalten (ohne erfundene Einzeldaten).
+- **Verständlich statt Entwicklersprache:** 124 kurze, redaktionell formulierte Einträge, wichtige Neuerungen mit ergänzendem Satz. Gruppen sind aufklappbar, damit auch die vielen kleinen Updates lesbar bleiben. Keine technische Roh-Changelog-Textwand in der App.
+- **Einstieg:** Eigene Seite unter Mehr sowie „Alle Updates ansehen“ beim bisherigen Hinweis zur neuesten Version unter Design & Aktualisierung. Bestehender aktueller Changelog bleibt; Hilfe erläutert den neuen Verlauf.
+- **Technik:** Statisches, nur beim Öffnen geladenes Cloud-Modul; keine Datenbank, keinen Login, keinen zusätzlichen Start-Request und keine Veränderung der Offline-PWA. Cloud-Service-Worker behandelt das Modul als online-only. Version/Cache und Regressionen mitgepflegt.
+- **Pflegepflicht:** Bei jedem künftigen App-Release einen klaren Eintrag in `cloud-release-history.mjs` ergänzen; Regression prüft, dass die angezeigte aktuelle Version und die Cloud-Version übereinstimmen. Echte mobile Owner-/Viewer-Abnahme #213 steht weiter aus.
+
 ## [1.16.65] - 2026-11-11
 
 ### Clanverwaltung: Vorschläge verstehen und selbst entscheiden (#226)
