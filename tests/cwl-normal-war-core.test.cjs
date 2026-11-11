@@ -48,7 +48,7 @@ test("Preparation and finished wars change headings and never fabricate a missed
  const ended=summarizeNormalWar({...war,state:"warEnded"},now);
  assert.equal(ended.isFinished,true);
  assert.doesNotMatch(source,/mostHeroic|heroicRanking|missed_count/i);
- assert.match(source,/never infer missing attacks/);
+ assert.match(source,/Never infer missing attacks/);
  assert.equal(summarizeNormalWar({...war,teamSize:0}),null);
  assert.equal(summarizeNormalWar({...war,state:"notInWar"}),null);
 });
