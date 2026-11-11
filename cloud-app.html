@@ -3424,6 +3424,35 @@ html.cloud-startup-pending .cloud-startup-splash{
 @media(prefers-reduced-motion:reduce){.cloud-startup-spinner{animation:none;border-top-color:var(--line)}}
 .cloud-startup-splash[hidden]{display:none!important}
 
+
+/* Public update history: quiet dated timeline, no nested cards or scroll-jumps. */
+#view-updates{max-width:1000px;margin-inline:auto}
+.updates-controls{max-width:640px;margin:0 0 18px;display:grid;gap:8px}
+.updates-controls label{font-size:13px;font-weight:700}
+.updates-controls input{width:100%;min-width:0;min-height:44px;padding:10px 13px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:11px;font:inherit}
+.updates-controls input:focus-visible,.updates-day-summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.updates-controls .statusline{margin:1px 0 0}
+.updates-history{max-width:850px;min-width:0}
+.updates-day{border-top:1px solid var(--line)}
+.updates-day:last-child{border-bottom:1px solid var(--line)}
+.updates-day-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;cursor:pointer;padding:14px 0;font-weight:750;list-style-position:inside}
+.updates-day-summary::marker{color:var(--muted)}
+.updates-day-summary::-webkit-details-marker{color:var(--muted)}
+.updates-day-date{font-size:15px}
+.updates-day-count{font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap}
+.updates-list{list-style:none;padding:0 0 12px 18px;margin:0 0 0 5px;border-left:2px solid var(--line);display:grid;gap:0}
+.updates-entry{padding:10px 0 13px 16px;min-width:0}
+.updates-entry+.updates-entry{border-top:1px solid var(--line)}
+.updates-entry-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 12px;min-width:0}
+.updates-version{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.updates-entry-title{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.updates-entry-description{font-size:13px;line-height:1.55;color:var(--muted);margin:5px 0 0;max-width:700px;overflow-wrap:anywhere}
+.updates-early-note,.updates-note{font-size:12px;line-height:1.55;color:var(--muted);max-width:770px}
+.updates-early-note{margin:0 0 11px}.updates-note{margin:18px 0}
+.updates-empty{font-size:14px;color:var(--muted);padding:18px 0}
+#openReleaseHistory{min-height:44px;align-self:flex-start;margin-top:4px}
+@media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3664,6 +3693,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Vergangene Ligen und gespeicherte Aufstellungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="updates"><span class="more-tile-symbol" aria-hidden="true">◷</span><span><strong>Update-Verlauf</strong><small>Alle Neuerungen seit dem ersten Planer</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>Sicherung exportieren oder wiederherstellen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
@@ -3693,6 +3723,22 @@ html.cloud-startup-pending .cloud-startup-splash{
   <p class="install-guide-check"><strong>Wichtig:</strong> Speichere den gemeinsamen Planer mit „Clan & Konto“ und „Statistik“ als App auf deinem Gerät.</p>
   <details class="install-troubleshoot"><summary>Installierte App ohne Anmeldung oder Statistik?</summary><p>Dann ist vermutlich eine ältere oder die lokale Planer-Ansicht gespeichert. Öffne diesen gemeinsamen Planer im Browser, entferne die bisherige Startbildschirm-Verknüpfung und füge diese Seite erneut hinzu. Deine gespeicherten Cloud-Daten bleiben erhalten.</p></details>
  </div>
+</section>
+<section id="view-updates" class="view more-subview" aria-labelledby="updatesTitle">
+ <div class="more-detail-header">
+  <div><span class="more-eyebrow">CWL PLANER</span><h2 id="updatesTitle">Update-Verlauf</h2>
+   <p class="statusline">Was ist neu? Alle Änderungen – von den ersten Versionen bis heute.</p></div>
+  <button type="button" class="btn small more-detail-back" id="updatesBack">Zurück zu Mehr</button>
+ </div>
+ <div class="updates-controls">
+  <label for="updatesSearch">Update suchen</label>
+  <input id="updatesSearch" type="search" placeholder="Zum Beispiel: Statistik, Einsätze, v1.16 …" autocomplete="off">
+  <p id="updatesCount" class="statusline" role="status" aria-live="polite"></p>
+ </div>
+ <div id="updatesHistory" class="updates-history">
+  <p class="statusline">Update-Verlauf wird beim Öffnen geladen.</p>
+ </div>
+ <p class="updates-note">Die Datumsangaben beziehen sich auf die veröffentlichten Versionen. Bei den ersten Entwicklungsständen sind nicht alle einzelnen Veröffentlichungsdaten erhalten.</p>
 </section>
 <section id="view-more-settings" class="view more-subview" aria-labelledby="moreSettingsTitle">
  <div class="more-detail-header">
@@ -3761,12 +3807,13 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.65</strong><span>Clanverwaltung verständlicher</span></div>
-       <ul>
-        <li><b>Ränge prüfen:</b> Klare Hinweise zu möglichen Beförderungen und zurückgekehrten Spielern.</li>
-        <li><b>Prüfung abhaken:</b> Vorschläge als geprüft markieren oder bewusst ausblenden und später wieder anzeigen.</li>
-        <li><b>Mehr Ruhe:</b> Details zur Datengrundlage sind ausklappbar. Alle Entscheidungen bleiben im Planer und ändern keinen Clash-Rang.</li>
-       </ul>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.66</strong><span>Alle Updates im Überblick</span></div>
+      <ul>
+       <li><b>Update-Verlauf:</b> Alle veröffentlichten Neuerungen mit Datum und kurzer Erklärung.</li>
+       <li><b>Einfach nachschauen:</b> Nach Themen suchen oder ältere Versionen aufklappen.</li>
+       <li><b>Wie bisher:</b> Der Hinweis zum neuesten Update bleibt hier in den Einstellungen.</li>
+      </ul>
+      <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
     <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
@@ -3909,6 +3956,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-help" class="view more-subview" aria-labelledby="helpTitle"><div class="card help-page">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Zurück zu Mehr</button></div>
   <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf bis zu sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
+  <p class="statusline">Du möchtest sehen, was sich am Planer verändert hat? Unter <b>Mehr → Update-Verlauf</b> findest du alle dokumentierten Versionen mit Datum und kurzen Erklärungen. Das neueste Update steht weiterhin unter Design & Aktualisierung.</p>
   <div id="cloudHelpSection" hidden class="helpbox cloud-help">
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
@@ -4243,11 +4291,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.65"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.65"></script>
-<script src="./cwl-planning-core.js?v=1.16.65"></script>
+<script src="./clan-management-core.js?v=1.16.66"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.66"></script>
+<script src="./cwl-planning-core.js?v=1.16.66"></script>
 <script>
-const APP_VERSION="v1.16.65";
+const APP_VERSION="v1.16.66";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5471,7 +5519,7 @@ function showPlannerView(view){
  if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive","more-settings","install","clan-management"].includes(visible)?"more":visible;
+   ["help","account","archive","more-settings","updates","install","clan-management"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -5789,9 +5837,96 @@ document.getElementById("clanManagementRulesForm").addEventListener("submit",eve
 document.getElementById("clanManagementBack").onclick=()=>showPlannerView("more");
 document.getElementById("clanManagementRefresh").onclick=()=>window.CWLClanManagementView.refresh();
 
+
+let releaseHistoryData=null;
+const expandedReleaseDays=new Set();
+function updateHistoryDate(iso){
+ return new Intl.DateTimeFormat("de-AT",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(iso+"T12:00:00Z"));
+}
+function updateHistoryElement(tag,className,textValue){
+ const element=document.createElement(tag);
+ if(className)element.className=className;
+ if(textValue!==undefined)element.textContent=textValue;
+ return element;
+}
+function renderReleaseHistory(){
+ if(!releaseHistoryData)return;
+ const query=document.getElementById("updatesSearch").value.trim().toLocaleLowerCase("de");
+ const matches=entry=>[entry.title,entry.description||"",entry.version,entry.date].some(v=>v.toLocaleLowerCase("de").includes(query));
+ const found=releaseHistoryData.releaseHistory.filter(matches);
+ const early=releaseHistoryData.earlyMilestones.filter(matches);
+ const host=document.getElementById("updatesHistory");
+ const count=document.getElementById("updatesCount");
+ count.textContent=query
+  ?found.length+early.length+" passende Einträge"
+  :releaseHistoryData.releaseHistory.length+" veröffentlichte Versionen und "+releaseHistoryData.earlyMilestones.length+" frühere Entwicklungsstände";
+ host.replaceChildren();
+ if(!found.length&&!early.length){
+  host.append(updateHistoryElement("p","updates-empty","Keine passenden Updates gefunden. Versuche ein anderes Stichwort."));
+  return;
+ }
+ const groups=releaseHistoryData.groupReleasesByDate(found);
+ for(const [groupIndex,group] of groups.entries()){
+  const details=updateHistoryElement("details","updates-day");
+  const summary=updateHistoryElement("summary","updates-day-summary");
+  summary.append(
+   updateHistoryElement("span","updates-day-date",updateHistoryDate(group.date)),
+   updateHistoryElement("span","updates-day-count",group.items.length+" "+(group.items.length===1?"Update":"Updates"))
+  );
+  details.append(summary);
+  details.open=!!query||expandedReleaseDays.has(group.date)||(!expandedReleaseDays.size&&groupIndex===0);
+  details.addEventListener("toggle",()=>{
+   if(query)return;
+   if(details.open)expandedReleaseDays.add(group.date);
+   else expandedReleaseDays.delete(group.date);
+  });
+  const list=updateHistoryElement("ol","updates-list");
+  for(const item of group.items){
+   const entry=updateHistoryElement("li","updates-entry");
+   const head=updateHistoryElement("div","updates-entry-head");
+   head.append(updateHistoryElement("span","updates-version",item.version),updateHistoryElement("strong","updates-entry-title",item.title));
+   entry.append(head);
+   if(item.description)entry.append(updateHistoryElement("p","updates-entry-description",item.description));
+   list.append(entry);
+  }
+  details.append(list);
+  host.append(details);
+ }
+ if(early.length){
+  const old=updateHistoryElement("details","updates-day updates-early");
+  const header=updateHistoryElement("summary","updates-day-summary");
+  header.append(updateHistoryElement("span","updates-day-date","Die ersten Entwicklungsstände · bis 29. Oktober 2026"),
+   updateHistoryElement("span","updates-day-count",early.length+" Meilensteine"));
+  old.open=!!query;
+  old.append(header,updateHistoryElement("p","updates-early-note","Vor der einheitlichen Versionsnummerierung wurden diese Entwicklungsstände anders bezeichnet. Die genauen Einzeldaten sind nicht vollständig dokumentiert."));
+  const list=updateHistoryElement("ol","updates-list");
+  for(const item of early){
+   const row=updateHistoryElement("li","updates-entry");
+   const head=updateHistoryElement("div","updates-entry-head");
+   head.append(updateHistoryElement("span","updates-version",item.version),updateHistoryElement("strong","updates-entry-title",item.title));
+   row.append(head);list.append(row);
+  }
+  old.append(list);host.append(old);
+ }
+}
+async function openReleaseHistory(){
+ showPlannerView("updates");
+ if(releaseHistoryData){renderReleaseHistory();return}
+ const host=document.getElementById("updatesHistory");
+ try{
+  // Load only when opened, never during the Cloud login or live-war refresh.
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.16.66");
+  if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
+ }catch(error){
+  if(document.getElementById("view-updates").classList.contains("active"))
+   host.replaceChildren(updateHistoryElement("p","updates-empty","Der Verlauf konnte nicht geladen werden. Bitte öffne ihn erneut, sobald du online bist."));
+ }
+}
+
 document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
+  if(action==="updates"){openReleaseHistory();return}
   if(action==="help"){showPlannerView("help");return}
   if(action==="install"){renderInstallGuide();showPlannerView("install");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
@@ -5864,6 +5999,9 @@ function dismissInstallHint(){
  try{localStorage.setItem(CLOUD_INSTALL_HINT_KEY,"1")}catch{}
  updateCloudInstallSuggestion();
 }
+document.getElementById("updatesBack").onclick=()=>{showPlannerView("more");document.querySelector('[data-more-action="updates"]')?.focus({preventScroll:true})};
+document.getElementById("openReleaseHistory").onclick=openReleaseHistory;
+document.getElementById("updatesSearch").addEventListener("input",()=>renderReleaseHistory());
 document.getElementById("installBack").onclick=()=>showPlannerView("more");
 document.getElementById("installSuggestionOpen").onclick=()=>{
  dismissInstallHint();renderInstallGuide();showPlannerView("install");
@@ -6145,6 +6283,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.65"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.66"></script>
 </body>
 </html>
