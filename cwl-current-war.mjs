@@ -1,7 +1,7 @@
 // Current normal Clan War on the Cloud Plan page.
 // No guesses about the game's "heroic" award: Top-Angriff is a transparent
 // local comparison of the actual stars and damage that Supercell exposes.
-import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.62";
+import {safeBadgeUrl,clashTime} from "./cwl-live-core.mjs?v=1.16.63";
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({
  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
