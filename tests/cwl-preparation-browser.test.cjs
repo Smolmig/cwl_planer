@@ -13,13 +13,17 @@ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 const core=fs.readFileSync(path.join(root,"cwl-live-core.mjs"),"utf8");
 const medal=fs.readFileSync(path.join(root,"cwl-medal-goals.mjs"),"utf8");
 const pause=fs.readFileSync(path.join(root,"cwl-verified-pause.mjs"),"utf8");
+const lifecycle=fs.readFileSync(path.join(root,"cwl-season-lifecycle.mjs"),"utf8");
+const seasonView=fs.readFileSync(path.join(root,"cwl-season-view.mjs"),"utf8");
+const seasonCore=fs.readFileSync(path.join(root,"cwl-season-core.mjs"),"utf8");
+const groupCore=fs.readFileSync(path.join(root,"cwl-group-core.mjs"),"utf8");
 function serve(){
  return http.createServer((req,res)=>{
   const u=(req.url||"").split("?")[0];
   const type=u.endsWith(".mjs")?"text/javascript":"text/html";
-  res.writeHead(u==="/test.html"||u==="/cwl-live.mjs"||u==="/cwl-live-core.mjs"||u==="/cwl-medal-goals.mjs"||u==="/cwl-verified-pause.mjs"?200:404,
+  res.writeHead(u==="/test.html"||u==="/cwl-live.mjs"||u==="/cwl-live-core.mjs"||u==="/cwl-medal-goals.mjs"||u==="/cwl-verified-pause.mjs"||u==="/cwl-season-lifecycle.mjs"||u==="/cwl-season-view.mjs"||u==="/cwl-season-core.mjs"||u==="/cwl-group-core.mjs"?200:404,
    {"content-type":type+"; charset=utf-8"});
-  res.end(u==="/test.html"?app:u==="/cwl-live.mjs"?live:u==="/cwl-live-core.mjs"?core:u==="/cwl-medal-goals.mjs"?medal:u==="/cwl-verified-pause.mjs"?pause:"");
+  res.end(u==="/test.html"?app:u==="/cwl-live.mjs"?live:u==="/cwl-live-core.mjs"?core:u==="/cwl-medal-goals.mjs"?medal:u==="/cwl-verified-pause.mjs"?pause:u==="/cwl-season-lifecycle.mjs"?lifecycle:u==="/cwl-season-view.mjs"?seasonView:u==="/cwl-season-core.mjs"?seasonCore:u==="/cwl-group-core.mjs"?groupCore:"");
  });
 }
 test("Chromium: mobile/desktop preparation swaps and opponent dropdown fit the viewport",{timeout:150000},async()=>{
