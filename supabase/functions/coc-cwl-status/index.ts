@@ -294,6 +294,76 @@ async function recoverFinalRound(clanId,clanTag,key,ctx) {
   }
 }
 
+// Once the leaguegroup endpoint closes, it cannot provide the last four
+// match details. Revisit ONLY already witnessed, tenant-bound war tags from
+// our own saved group. Never infer a completed result from league end or
+// copy another clan's season. Failed/invalid rechecks leave the archive intact.
+async function recoverArchivedGroup(clanId,clanTag,key,ctx) {
+  try{
+    const {data,error}=await ctx.supabase.from("cwl_group_archives")
+      .select("season,clan_tag,group_json").eq("clan_id",clanId)
+      .order("season",{ascending:false}).limit(1);
+    if(error||!Array.isArray(data)||data.length!==1)return null;
+    const record=data[0],saved=record.group_json;
+    if(!saved||record.clan_tag!==clanTag||tag(saved.clanTag)!==clanTag||
+       !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(record.season||""))||
+       saved.season!==record.season||!Array.isArray(saved.clans)||
+       !Array.isArray(saved.rounds))return null;
+    const count=saved.clans.length;
+    if(![6,8].includes(count)||saved.rounds.length!==(count===6?5:7))return null;
+    const clans=new Set(saved.clans.map(c=>tag(c?.tag)));
+    if(clans.size!==count||!clans.has(clanTag)||[...clans].some(t=>!valid(t)))return null;
+    const parts=record.season.split("-").map(Number),now=new Date();
+    const months=(now.getUTCFullYear()-parts[0])*12+now.getUTCMonth()+1-parts[1];
+    if(months<0||months>1)return null;
+    let changed=0;
+    const rounds=[];
+    for(const r of saved.rounds){
+      if(!Number.isInteger(r?.day)||r.day<1||r.day>7||
+         !Array.isArray(r.matches)||r.matches.length>4)return null;
+      const matches=[];
+      for(const m of r.matches){
+        if(m?.available!==true||m.state!=="inWar"||!valid(tag(m.warTag))||
+           !clans.has(tag(m.clan?.tag))||!clans.has(tag(m.opponent?.tag))||
+           tag(m.clan.tag)===tag(m.opponent.tag)){
+          matches.push(m);continue;
+        }
+        let war=null;
+        try{war=await getWar(tag(m.warTag),key)}catch{/* preserve old evidence */}
+        const warClans=[tag(war?.clan?.tag),tag(war?.opponent?.tag)];
+        if(war?.state!=="warEnded"||
+           !warClans.includes(tag(m.clan.tag))||
+           !warClans.includes(tag(m.opponent.tag))||
+           !Number.isInteger(war.teamSize)||war.teamSize<1||war.teamSize>50||
+           (Number.isInteger(m.teamSize)&&m.teamSize!==war.teamSize)){
+          matches.push(m);continue;
+        }
+        const sideFor=tagValue=>tag(war.clan.tag)===tagValue?war.clan:war.opponent;
+        const validSide=x=>safeStars(x?.stars)!==null&&
+          safeDestruction(x?.destructionPercentage)!==null;
+        const a=sideFor(tag(m.clan.tag)),b=sideFor(tag(m.opponent.tag));
+        if(!validSide(a)||!validSide(b)){matches.push(m);continue}
+        const updateSide=(old,side)=>({
+          ...old,stars:safeStars(side.stars),
+          destructionPercentage:safeDestruction(side.destructionPercentage),
+          attacks:Array.isArray(side.members)?side.members.reduce((n,member)=>
+            n+(Array.isArray(member.attacks)?member.attacks.length:0),0):null
+        });
+        matches.push({...m,state:"warEnded",teamSize:war.teamSize,
+          clan:updateSide(m.clan,a),opponent:updateSide(m.opponent,b)});
+        changed++;
+      }
+      rounds.push({...r,matches});
+    }
+    return changed?{...saved,rounds}:null;
+  }catch(error){
+    console.warn("coc-cwl-status: archived group recheck unavailable",{
+      code:String(error?.message||"unavailable").slice(0,80)
+    });
+    return null;
+  }
+}
+
 // Archive only sanitized group data after the same authenticated clan membership
 // check as the live status. Supabase service credentials never reach the browser.
 async function saveGroupArchive(clanId,group) {
@@ -378,8 +448,15 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
     // full-ended war details to recover a previously known day-seven tag.
     const recovered=!observed.active&&!observed.pending?
       await recoverFinalRound(clanId,clanTag,key,ctx):null;
+    const completedGroup=!observed.active&&!observed.pending?
+      await recoverArchivedGroup(clanId,clanTag,key,ctx):null;
     const response=recovered?
-      {...recovered,currentWar:observed.currentWar||null}:observed;
+      {...recovered,group:completedGroup||recovered.group,
+        currentWar:observed.currentWar||null}:observed;
+    // An archived group is still updated even if the own final was already
+    // known or unavailable. The DB merge guards against snapshot regression.
+    if(completedGroup&&!response.active)
+      try{await saveGroupArchive(clanId,completedGroup)}catch{/* optional */}
     // Archiving is best-effort and never blocks CWL planning on storage errors.
     if(response.active){
       await Promise.allSettled([

@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.18.0",
+    "releaseType": "minor",
+    "date": "2026-11-11",
+    "title": "Der CWL-Rückblick bleibt im Archiv",
+    "description": "Frühere Kriegstage, Gruppentabelle und Spielerleistungen sind jetzt direkt beim archivierten Plan zu sehen. Bekannte Gruppenspiele können nach Saisonende erneut mit Clash abgeglichen werden."
+  },
+
+  {
     "version": "v1.17.0",
     "releaseType": "minor",
     "date": "2026-11-11",

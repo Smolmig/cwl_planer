@@ -1,5 +1,5 @@
 {
-  "version": "v1.17.0",
+  "version": "v1.18.0",
   "released": "2026-11-11",
-  "summary": "CWL-Kriegsgröße und verkürzte Fünf-Kriege-Ligen werden bei verbundenen Clans aus Clash übernommen."
+  "summary": "Vergangene CWLs zeigen jetzt einen vollständigen Rückblick neben den Einsätzen. Fehlende Gruppen-Endstände werden über gespeicherte Kriegskennzeichen erneut geprüft."
 }

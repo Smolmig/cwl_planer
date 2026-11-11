@@ -19,6 +19,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.18.0] - 2026-11-11
+
+### CWL-Archiv: Saisonrückblick und sichere Endstands-Nachprüfung – MINOR
+- Archivierte CWL-Pläne bieten künftig denselben kompakten Rückblick mit **Kriegstage / Tabelle / Spieler** wie die Plan-Startseite, zusätzlich zu den gesicherten Aufstellungen und Einsatzhäufigkeiten. Alte, lokale Pläne ohne API-Nachweise bleiben lesbar.
+- Das getrennte Gruppenarchiv kennzeichnet **veraltete Gruppenstände** ausdrücklich, wenn der eigene letzte Krieg bereits aus Clash bestätigt wurde. Es unterscheidet fehlende Endstände von fehlenden Spielständen, statt pauschal von einer unfertigen CWL zu sprechen.
+- Nach dem Ende der CWL kann die authentifizierte Status-Funktion bereits **zuvor gespeicherte** CWL-Kriegskennzeichen erneut abfragen und ausschließlich verifizierte `warEnded`-Ergebnisse in die Gruppendaten übernehmen. Keine Kriegskennzeichen erraten, keine anderen Clans lesen, keine alten Clan-Archive überschreiben.
+- „Mit Clash abgleichen“ löst einen autorisierten Abgleich und danach einen erneuten Archiv-Read aus. Cloud-Rollen/Originalpläne/Altdaten bleiben unverändert; keine Schema- oder RLS-Migration.
+- Regressionen: stale 24/28 vs. eigener 7/7, falsche Clan-Tags, HTTP-Fehler, historische Rückblicke/Tabwechsel, Theme/Mobile und Read-only-Verhalten. Hilfe-Seite, Update-Verlauf und Cloud-Version angepasst.
+
 ## [1.17.0] - 2026-11-11
 
 ### Offizielle CWL-Formate und Gruppengrößen (#254) – MINOR

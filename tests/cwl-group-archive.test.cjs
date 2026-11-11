@@ -84,7 +84,7 @@ test("historic groups render independently of existing plan archives and HTML is
   await view.open();
   let html=dom.window.document.getElementById("cwlGroupArchiveContent").innerHTML;
   assert.match(html,/November 2026/);
-  assert.match(html,/Noch nicht vollständig/);
+  assert.match(html,/Ergebnisse fehlen/);
   assert.match(html,/24/);
   assert.match(html,/Runde 1/);
   assert.doesNotMatch(html,/<img src=x onerror=alert\(1\)>/);
@@ -92,6 +92,35 @@ test("historic groups render independently of existing plan archives and HTML is
   assert.ok(dom.window.document.querySelectorAll(".season-archive-item").length===1);
  }finally{if(original===undefined)delete global.document;else global.document=original;dom.window.close()}
 });
+test("verified own last war displays an outdated group status, never 28/28",async()=>{
+ const dom=wrapper(),previous=global.document;global.document=dom.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  const stored=group();
+  for(let d=0;d<7;d++)stored.rounds[d].matches=Array.from({length:4},(_,i)=>({
+    available:true,warTag:d===6&&i===0?"#2PYY":"#2PYQ",
+    state:d===6?"inWar":"warEnded",teamSize:15,
+    clan:{tag:d===6&&i===0?TAGS[0]:TAGS[(i+1)%8],name:"Clan",stars:21,destructionPercentage:85,attacks:14},
+    opponent:{tag:d===6&&i===0?TAGS[1]:TAGS[(i+2)%8],name:"Other",stars:20,destructionPercentage:80,attacks:14}
+  }));
+  const rows=[{season:"2026-11",day:7,war_tag:"#2PYY",state:"warEnded",team_size:15,
+    lineup_json:{members:Array.from({length:15},(_,i)=>({name:"Player "+i,attacks:[]}))}}];
+  const client={from(table){return {
+    select(){return this},eq(){return this},order(){return this},
+    async limit(){return {data:table==="cwl_group_archives"?
+      [{season:"2026-11",group_json:stored,updated_at:"2026-11-11T22:00:00Z"}]:rows,error:null}}
+  }}};
+  const view=createCwlGroupArchiveView({sb:client,getClanId:()=>"c",isConnected:()=>true});
+  await view.open();
+  const output=dom.window.document.getElementById("cwlGroupArchiveContent");
+  assert.match(output.textContent,/24 \/ 28 Gruppenspiele beendet/);
+  assert.match(output.textContent,/Gruppenstand veraltet/);
+  assert.doesNotMatch(output.textContent,/28 \/ 28/);
+  output.querySelector(".season-archive-item").open=true;
+  assert.match(output.textContent,/Euer eigener letzter Krieg ist bereits als beendet gespeichert/);
+ }finally{if(previous===undefined)delete global.document;else global.document=previous;dom.window.close()}
+});
+
 test("when user switches clans mid-request stale archive data is discarded",async()=>{
  const dom=wrapper(),original=global.document;global.document=dom.window.document;
  try{

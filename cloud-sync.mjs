@@ -1,10 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.17.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.17.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.17.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.17.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.17.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.17.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.18.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.18.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.18.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.18.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.18.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.18.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.18.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -618,11 +619,16 @@ const live=createCwlLive({
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
 });
+window.CWLArchivedRecap=createArchivedCwlRecapView({
+ sb,
+ getClanId:()=>cloud.active?clanId:null
+});
 window.CWLGroupArchive=createCwlGroupArchiveView({
  sb,
  getClanId:()=>cloud.active?clanId:null,
  getProfile:()=>storage.getProfile(),
- isConnected:()=>!!cloud.active&&!!clanId
+ isConnected:()=>!!cloud.active&&!!clanId,
+ refreshFromClash:()=>live.refresh()
 });
 window.CWLSeasonView=createCwlSeasonView({
  getProfile:()=>storage.getProfile(),
