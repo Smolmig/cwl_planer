@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" data-theme="arena">
+<html lang="de" data-theme="arena" class="cloud-startup-pending">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -17,6 +17,23 @@ try{
   theme==="cyber"?"#03050b":theme==="cyberlight"?"#eaf8fb":
   theme==="arena"?"#151a20":theme==="dark"?"#0f172a":"#f4f7fb";
 }catch(e){/* New users and inaccessible storage retain Arena/Gold. */}
+</script>
+<script>
+// One visual gate on a cold start: the legacy guest screen must not flash
+// before Cloud auth, saved clan and the first Clash status have been checked.
+// Never strand the user if a network dependency cannot initialize.
+(()=>{
+ let finished=false;
+ const finish=()=>{
+  if(finished)return;
+  finished=true;
+  clearTimeout(watchdog);
+  document.documentElement.classList.remove("cloud-startup-pending");
+  document.getElementById("cloudStartupSplash")?.setAttribute("hidden","");
+ };
+ const watchdog=setTimeout(finish,12000);
+ window.CWLStartup={finish};
+})();
 </script>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#132238;--muted:#66758a;--line:#dce3ec;--primary:#2563eb;--green:#15803d;--greenbg:#dcfce7;--red:#b91c1c;--redbg:#fee2e2;--amber:#a16207;--amberbg:#fef3c7;--bluebg:#dbeafe;--shadow:0 8px 24px rgba(15,23,42,.08)}
@@ -3385,6 +3402,22 @@ html[data-theme] #view-more-settings .latest-changelog{
  #planReviewDisclosure>.plan-review-summary{transition:none}
 }
 
+/* Only the first page load is covered. Routine Cloud/Clash refreshes remain interactive. */
+.cloud-startup-splash{display:none}
+html.cloud-startup-pending .cloud-startup-splash{
+ position:fixed;inset:0;z-index:1000;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:12px;padding:calc(20px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom));
+ text-align:center;background:var(--bg);color:var(--text)
+}
+.cloud-startup-splash strong{font-size:19px;letter-spacing:.025em}
+.cloud-startup-splash span{font-size:13px;color:var(--muted)}
+.cloud-startup-spinner{width:24px;height:24px;border:2px solid var(--line);
+ border-top-color:var(--primary);border-radius:50%;animation:cloud-startup-spin .9s linear infinite}
+@keyframes cloud-startup-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.cloud-startup-spinner{animation:none;border-top-color:var(--line)}}
+.cloud-startup-splash[hidden]{display:none!important}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3408,6 +3441,11 @@ html[data-theme] #view-more-settings .latest-changelog{
 <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
+<div id="cloudStartupSplash" class="cloud-startup-splash" role="status" aria-label="Planer wird geöffnet">
+ <strong>CWL Planer</strong>
+ <div class="cloud-startup-spinner" aria-hidden="true"></div>
+ <span>Dein Clan wird geladen …</span>
+</div>
 <div class="app">
 <div class="topbar">
   <div class="toprow">
@@ -3717,7 +3755,7 @@ html[data-theme] #view-more-settings .latest-changelog{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.16.62</strong><span>Clankrieg · Angriffe im Blick</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.16.63</strong><span>Clankrieg · Angriffe im Blick</span></div>
        <ul>
         <li><b>Pro Spieler:</b> 1. und 2. Angriff mit Sternen, Zerstörung und Ziel direkt unter dem Namen.</li>
         <li><b>In richtiger Reihenfolge:</b> Liegt die Angriffsreihenfolge vor, erscheint der frühere Angriff zuerst.</li>
@@ -4198,11 +4236,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.16.62"></script>
-<script src="./cwl-deployment-filters.js?v=1.16.62"></script>
-<script src="./cwl-planning-core.js?v=1.16.62"></script>
+<script src="./clan-management-core.js?v=1.16.63"></script>
+<script src="./cwl-deployment-filters.js?v=1.16.63"></script>
+<script src="./cwl-planning-core.js?v=1.16.63"></script>
 <script>
-const APP_VERSION="v1.16.62";
+const APP_VERSION="v1.16.63";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6100,6 +6138,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.16.62"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.16.63"></script>
 </body>
 </html>
