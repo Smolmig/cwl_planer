@@ -1090,6 +1090,71 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 .plan-postseason-players>summary{cursor:pointer;min-height:44px;font-size:14px;font-weight:700;padding:9px 0}
 .plan-postseason-results .season-group-scroll,.plan-postseason-results .season-player-scroll{max-width:100%;overflow-x:auto}
 @media(max-width:430px){.plan-postseason-results{margin:10px 0 16px}.plan-postseason-results h4{margin-top:19px}}
+/* Cloud Plan hub: one current focal point, last CWL tucked beneath the CW.
+   Native details and ARIA tabs keep keyboard/VoiceOver navigation predictable. */
+#view-plan.plan-postseason-mode #planOverview,
+#view-plan.plan-between-cwl-mode #planOverview{margin-top:14px;padding:14px 16px;background:transparent;border-color:var(--line);box-shadow:none}
+#view-plan.plan-postseason-mode #planOverview .kpis,
+#view-plan.plan-between-cwl-mode #planOverview .kpis,
+#view-plan.plan-postseason-mode #copyFullPlanBtn,
+#view-plan.plan-between-cwl-mode #copyFullPlanBtn{display:none!important}
+#view-plan.plan-postseason-mode #planOverview .view-lead-kicker,
+#view-plan.plan-between-cwl-mode #planOverview .view-lead-kicker{display:none}
+#view-plan.plan-postseason-mode #planOverview h3,
+#view-plan.plan-between-cwl-mode #planOverview h3{font-size:15px}
+.plan-last-cwl{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:9px 0 16px}
+.plan-last-cwl>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:12px 0;cursor:pointer;list-style:none;line-height:1.45}
+.plan-last-cwl>summary::-webkit-details-marker{display:none}
+.plan-last-cwl>summary::after{content:"⌄";color:var(--muted);font-size:19px;transition:transform .15s}
+.plan-last-cwl[open]>summary::after{transform:rotate(180deg)}
+.plan-last-cwl-title{font-size:14px;font-weight:750;color:var(--text)}
+.plan-last-cwl-hint{font-size:12px;color:var(--muted);margin-left:auto}
+.plan-last-cwl>summary:focus-visible,
+.plan-postseason-tabs button:focus-visible,
+.cw-now-tabs button:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.plan-last-cwl-body{padding:0 0 8px}
+.plan-postseason-tabs,.cw-now-tabs{display:flex;align-items:center;gap:5px;border-bottom:1px solid var(--line);overflow-x:auto;padding:0 0 2px;scrollbar-width:thin}
+.plan-postseason-tabs button,.cw-now-tabs button{appearance:none;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);border-radius:0;min-height:44px;padding:9px 13px;white-space:nowrap;cursor:pointer;font:inherit;font-size:13px;font-weight:650}
+.plan-postseason-tabs button[aria-selected="true"],
+.cw-now-tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--primary);font-weight:780}
+.plan-postseason-panel,.cw-now-panel{padding-top:13px;min-width:0}
+.plan-postseason-panel[hidden],.cw-now-panel[hidden]{display:none!important}
+.plan-postseason-panel>.season-rounds,.plan-postseason-panel>.season-group-scroll{margin-top:0}
+.plan-postseason-panel .season-player-scroll{max-width:100%;overflow-x:auto}
+#view-plan.plan-cw-battle-mode #currentWarCard{margin:4px 0 16px}
+.cw-now-status{display:flex;gap:7px 14px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.cw-now-state{color:var(--text);font-weight:780}
+.cw-now-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 15px}
+.cw-now-metric{min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 6px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cw-now-metric small,.cw-now-metric span{font-size:11px;color:var(--muted)}
+.cw-now-metric b{font-size:17px;font-variant-numeric:tabular-nums}
+.cw-now-subtitle{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:13px 0 7px;font-size:13px;font-weight:760}
+.cw-now-subtitle small{font-size:11px;color:var(--muted);font-weight:450;text-align:right}
+.cw-now-attack{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:9px 1px;font-size:12px;min-width:0}
+.cw-now-attack>span:first-child{display:grid;gap:2px;min-width:0}
+.cw-now-attack strong{overflow-wrap:anywhere}
+.cw-now-attack small{font-size:11px;color:var(--muted);line-height:1.45}
+.cw-now-attack-result{display:grid;gap:2px;text-align:right;white-space:nowrap;flex:0 0 auto}
+.cw-now-attack-result b,.cw-now-hit b{color:var(--text)}
+.cw-now-details{margin-top:0}
+.cw-now-details summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.cw-now-player{align-items:center}
+.cw-now-player>span:first-child{min-width:0;display:grid;gap:3px;overflow-wrap:anywhere}
+.cw-now-player-stats{display:grid;gap:4px;text-align:right}
+.cw-now-hits{display:grid;gap:4px}
+.cw-now-hit{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.cw-now-none{font-size:11px;color:var(--muted)}
+.cw-now-hint{margin-top:12px;padding:6px 0;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.cw-now-hint summary{min-height:40px;display:flex;align-items:center;cursor:pointer;font-weight:650}
+.cw-now-hint p{line-height:1.65;margin:0 0 9px}
+@media(max-width:430px){
+ .plan-last-cwl>summary{gap:5px}
+ .plan-last-cwl-title{font-size:13px}
+ .plan-last-cwl-hint{font-size:11px}
+ .plan-postseason-tabs button,.cw-now-tabs button{padding:8px 11px;font-size:12px}
+ .cw-now-attack{gap:8px;font-size:11px}
+ .cw-now-subtitle{align-items:flex-start;flex-direction:column;gap:3px}
+}
 /* Current normal clan war: optional read-only card in Plan. */
 #currentWarCard[hidden]{display:none!important}
 .cw-now-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:10px 0}
