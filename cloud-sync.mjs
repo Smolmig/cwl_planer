@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.71";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.71";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.71";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.71";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.71";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.71";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.72";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.72";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.72";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.72";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.72";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.72";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -79,6 +79,15 @@ async function enableRosterEmergency(){
 }
 
 const currentSeason=()=>new Date().toISOString().slice(0,7);
+const reviewCycleToken=()=>({
+ p_expected_cycle:planReview?.cycle_id||null,
+ p_expected_season:planReview?.season||currentSeason()
+});
+function reviewRpcError(err){
+ if(/stale_plan_cycle|season_outdated|cwl_season_finished|new_season_not_confirmed/i.test(String(err?.message||err)))
+  return Error("Die CWL-Planung hat sich geändert oder ist beendet. Bitte aktualisiere den gemeinsamen Plan.");
+ return err;
+}
 const planIsLocked=()=>!!planReview?.locked&&planReview.season===currentSeason();
 // Never publish an impossible plan as approved, including a pending editor proposal.
 function assertPlanningReady(profile){
@@ -267,6 +276,7 @@ async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
  assertReviewSeasonAvailable();
  const expectedClan=clanId,expectedCycle=planReview?.cycle_id,expectedEpoch=accountEpoch;
+ const token=reviewCycleToken();
  const lock=!planIsLocked();
  if(lock)assertPlanningReady(storage.getProfile());
  await ensureSaved();
@@ -279,14 +289,17 @@ async function togglePlanLock(){
     expectedEpoch!==accountEpoch||role!=="owner")
   throw Error("Clan oder Saison haben sich geändert. Bitte die Planung erneut öffnen.");
  assertReviewSeasonAvailable();
- const {error:err}=await sb.rpc("cwl_set_plan_lock",{p_clan:clanId,p_locked:lock,p_new_cycle:false});
- if(err)throw err;
+ const {error:err}=await sb.rpc("cwl_set_plan_lock_checked",{
+  p_clan:expectedClan,p_locked:lock,p_new_cycle:false,...token
+ });
+ if(err)throw reviewRpcError(err);
  await loadPlanReview();
  storage.toast(lock?"✓ CWL-Plan freigegeben":"✓ Plan wieder zur Bearbeitung geöffnet");
 }
 async function submitPlanSuggestion(){
  assertReviewSeasonAvailable();
  if(!clanId||role!=="editor"||!planIsLocked()||!changedSerial)throw Error("Kein offener Änderungsvorschlag.");
+ const expectedClan=clanId,expectedEpoch=accountEpoch,token=reviewCycleToken();
  const proposal=JSON.parse(changedSerial);
  // Legacy profiles are normalized in memory; preserve the server's exact
  // protected snapshots so an unrelated edit cannot invalidate a suggestion.
@@ -300,9 +313,13 @@ async function submitPlanSuggestion(){
  if(!await storage.confirmAction(changes.slice(0,8).join("; ")+"\n\nDiesen Vorschlag dem Clanführer zur Prüfung vorlegen?",
    {title:"Änderung vorschlagen",confirmText:"Vorschlag einreichen"}))return;
  assertReviewSeasonAvailable();
- const {error:err}=await sb.rpc("cwl_submit_plan_suggestion",{p_clan:clanId,
-    p_base_revision:revision,p_profile:proposal});
- if(err)throw err;
+ if(expectedClan!==clanId||expectedEpoch!==accountEpoch||
+    token.p_expected_cycle!==reviewCycleToken().p_expected_cycle)
+  throw Error("Clan oder Saison haben sich geändert. Bitte neu laden.");
+ const {error:err}=await sb.rpc("cwl_submit_plan_suggestion_checked",{
+   p_clan:expectedClan,p_base_revision:revision,p_profile:proposal,...token
+ });
+ if(err)throw reviewRpcError(err);
  changedSerial=null;clearTimeout(debounce);
  await loadCloudProfile(true);await loadPlanReview();
  storage.toast("✓ Änderungsvorschlag eingereicht");
@@ -310,9 +327,10 @@ async function submitPlanSuggestion(){
 async function decidePlanSuggestion(id,action){
  assertReviewSeasonAvailable();
  if(!clanId||!["owner","editor"].includes(role))throw Error("Keine Berechtigung.");
+ const token=reviewCycleToken();
  if(action==="withdraw"){
-   const {error}=await sb.rpc("cwl_withdraw_plan_suggestion",{p_suggestion:id});
-   if(error)throw error;
+   const {error}=await sb.rpc("cwl_withdraw_plan_suggestion_checked",{p_suggestion:id,...token});
+   if(error)throw reviewRpcError(error);
  }else{
    if(role!=="owner")throw Error("Nur der Clanführer kann Vorschläge entscheiden.");
    if(action==="accept"){
@@ -327,8 +345,10 @@ async function decidePlanSuggestion(id,action){
      {title:action==="accept"?"Vorschlag übernehmen":"Vorschlag ablehnen",
        confirmText:action==="accept"?"Übernehmen":"Ablehnen"}))return;
    assertReviewSeasonAvailable();
- const {error}=await sb.rpc("cwl_resolve_plan_suggestion",{p_suggestion:id,p_accept:action==="accept"});
-   if(error)throw error;
+ const {error}=await sb.rpc("cwl_resolve_plan_suggestion_checked",{
+    p_suggestion:id,p_accept:action==="accept",...token
+   });
+   if(error)throw reviewRpcError(error);
    if(action==="accept")await loadCloudProfile(true);
  }
  await loadPlanReview();cloud.afterRender();
@@ -339,8 +359,10 @@ async function openNewPlanCycle(){
  if(role!=="owner"&&planIsLocked())throw Error("Nur der Clanführer kann einen freigegebenen CWL-Plan zurücksetzen.");
  if(role!=="owner")return;
  await ensureSaved();
- const {error:err}=await sb.rpc("cwl_set_plan_lock",{p_clan:clanId,p_locked:false,p_new_cycle:true});
- if(err)throw err;
+ const {error:err}=await sb.rpc("cwl_set_plan_lock_checked",{
+   p_clan:clanId,p_locked:false,p_new_cycle:true,...reviewCycleToken()
+ });
+ if(err)throw reviewRpcError(err);
  await loadPlanReview();
 }
 
