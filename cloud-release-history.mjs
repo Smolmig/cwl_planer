@@ -5,6 +5,7 @@
 export const releaseHistory = [
   {
     "version": "v1.16.70",
+    "releaseType": "patch",
     "date": "2026-11-11",
     "title": "Nach der CWL direkt zum Archiv",
     "description": "Zwischen den CWLs wird die alte Einsatzübersicht ausgeblendet. Stattdessen führt ein Link zu den gespeicherten Ergebnissen und Aufstellungen. Neue CWLs bleiben schon während der Vorbereitung sichtbar."
