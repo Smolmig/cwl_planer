@@ -56,8 +56,8 @@ test("Current CW appears only in Plan and never writes to CWL plan or stats earl
   const host=dom.window.document.getElementById("currentWarCard");
   assert.equal(host.hidden,false);
   assert.match(host.textContent,/35\s*:\s*27/);
-  assert.match(host.textContent,/Wir: 1\/30 Angriffe/);
-  assert.match(host.textContent,/Gegner: 0\/30 Angriffe/);
+  assert.match(host.textContent,/Unsere Angriffe1 Angriffe erfasst/);
+  assert.match(host.textContent,/Angriffe Gegner0 Angriffe erfasst/);
   assert.match(host.textContent,/Gegner/);
   assert.equal(host.querySelector("script"),null,"Player names are HTML escaped");
   dom.window.document.getElementById("currentWarRefresh").click();

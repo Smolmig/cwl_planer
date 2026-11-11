@@ -7,6 +7,12 @@
 
 > **Zeige das Wichtige zuerst, gruppiere mit Abstand statt mit Kästen, und ändere niemals ungefragt das, womit jemand gerade arbeitet.**
 
+## Ergänzung 11.11.2026: Clankrieg und Alltag zwischen den CWLs
+
+- **Das aktuelle Ereignis gewinnt:** Nach der CWL zeigen wir den Rückblick mit maximal drei direkt erkennbaren Reitern. In der normalen CW-Vorbereitung bleibt der alte Rückblick geöffnet; mit dem ersten echten Kampftag rückt der **normaler CW** nach oben, der vorherige Rückblick ist optional aufklappbar.
+- **Besitzer einer API-verknüpften Cloud** sollen keine manuell zu startende CWL sehen: offizielle Saisonkennung statt Datumsannahmen, Archiv mit belegten unvollständigen Ergebnissen vor sicherem neuen Zyklus. Ohne berechtigten Owner darf die App einen Cloud-Zyklus nicht vorgeben; Offline bleibt bewusst manuell.
+- **Textprüfung bei jedem Feature:** Sichtbare Hauptüberschriften und Aktionen brauchen Alltagssprache, nicht Codewörter, Privatszenarien, API-Datenqualitäts- oder Release-Begriffe. Erklärung der Berechnung gehört hinter Hilfe/Info. Niemals offiziell nicht verfügbare Clash-Metriken wie `Most Heroic Attack` als echten API-Wert ausgeben.
+
 ## 1. Informationsarchitektur & Navigation
 
 - Täglich relevante Aktionen und aktuelle CWL-Informationen gehören in den zugehörigen Haupt-Workflow. Seltene Verwaltung, historische Daten, Import/Export und Kontoeinstellungen gehören unter „Mehr“.

@@ -20,7 +20,7 @@ function viewGroup(s,g){
    const intro='<div class="season-info"><strong>'+(g.complete?"Gruppenergebnis":"Gruppenstand · vorläufig")+'</strong>'+
      '<p>'+g.ended+' von '+g.expected+' Kriegen beendet'+
      (g.missing?' · '+g.missing+' Paarungen noch nicht verfügbar':'')+
-     '. Sterne enthalten +10 für bestätigte Siege; laufende Kriege zeigen Zwischenstände. Bei Punktgleichheit entscheidet die Zerstörung. Die Rangfolge bleibt bei offenen/fehlenden Spielen vorläufig.</p></div>';
+     '.</p><details class="season-explain"><summary>Wie wird die Tabelle gewertet?</summary>'+ '<p>Siege bringen zehn zusätzliche Sterne. Bei gleicher Sternzahl entscheidet die Gesamtzerstörung. Offene Kriege können die Reihenfolge noch verändern.</p></details></div>';
    const rows=g.clans.map(r=>'<tr'+(r.tag===g.clanTag?' class="season-own-clan"':'')+'>'+
      '<td><strong>'+r.position+'.</strong></td><td><span class="season-clan">'+badge(r)+
      '<strong>'+esc(r.name)+'</strong></span></td><td>'+r.wins+'</td><td><strong>'+r.stars+'</strong>'+
@@ -31,7 +31,7 @@ function viewGroup(s,g){
      '<tbody>'+rows+'</tbody></table></div>';
  }
 
- const intro='<div class="season-info"><strong>Bekannte Gegner</strong><p>Die bisher abgerufenen eigenen Begegnungen werden angezeigt. Eine vollständige Gruppentabelle mit allen acht Clans und ihrer Rangfolge ist erst möglich, wenn auch die übrigen Gruppenspiele abgerufen werden. Fehlende Plätze und Ergebnisse werden nicht geschätzt.</p></div>';
+ const intro='<div class="season-info"><strong>Unsere Gegner</strong><p>Unsere bisherigen Begegnungen.</p>'+ '<details class="season-explain"><summary>Warum fehlt die Tabelle?</summary>'+ '<p>Clash hat noch nicht alle Ergebnisse der Ligagruppe geliefert. Fehlende Plätze werden nicht geschätzt.</p></details></div>';
  const list=s.opponents.length?'<div class="season-opponents">'+s.opponents.map(p=>
    '<div class="season-opponent">'+badge(p)+'<span><strong>'+esc(p.name)+'</strong><small>Gegner in Runde '+p.day+'</small></span></div>').join("")+'</div>':
    '<p class="season-empty">Noch keine Gegner von Clash freigegeben.</p>';
@@ -40,13 +40,13 @@ function viewGroup(s,g){
 function viewRounds(s,g){
  if(g?.expected){
    return '<div class="season-info"><p>'+g.known+' von '+g.expected+
-     ' Paarungen derzeit verfügbar. Vorbereitungen haben noch kein Ergebnis; laufende Kriege zeigen Zwischenstände.</p></div>'+
+     ' Begegnungen verfügbar.</p></div>'+ 
      '<div class="season-rounds">'+g.rounds.map(round=>
        '<div class="season-round"><div class="season-round-heading"><strong>Runde '+round.day+'</strong>'+
        '<span class="season-state">'+round.matches.filter(m=>m.available).length+
        ' Paarungen bekannt</span></div>'+
        '<div class="season-group-matches">'+(round.matches.length?round.matches.map(match=>{
-         if(!match.available)return '<div class="season-group-match season-missing">Paarung noch nicht freigegeben</div>';
+         if(!match.available)return '<div class="season-group-match season-missing">Ergebnis noch offen</div>';
          return '<div class="season-group-match'+
            (match.clan.tag===g.clanTag||match.opponent.tag===g.clanTag?' season-own-match':'')+'">'+
            '<span class="season-clan">'+badge(match.clan)+'<strong>'+esc(match.clan.name)+'</strong></span>'+
@@ -58,10 +58,10 @@ function viewRounds(s,g){
  }
 
  return '<div class="season-rounds">'+s.rounds.map(r=>{
-   if(!r.available)return '<div class="season-round season-missing"><strong>Runde '+r.day+'</strong><span>Noch keine Kriegsdaten verfügbar</span></div>';
+   if(!r.available)return '<div class="season-round season-missing"><strong>Kriegstag '+r.day+'</strong><span>Ergebnis noch nicht verfügbar</span></div>';
    const total=r.teamSize?'<span>'+r.teamSize+' gegen '+r.teamSize+'</span>':"";
    const attacks=r.state==="preparation"?"Aufstellungen vorläufig":r.own.attacks+' eigene Angriffe · '+r.opponent.attacks+' gegnerische Angriffe';
-   return '<div class="season-round"><div class="season-round-heading"><strong>Runde '+r.day+'</strong><span class="season-state '+esc(r.state)+'">'+stateLabel(r)+'</span></div>'+
+   return '<div class="season-round"><div class="season-round-heading"><strong>Kriegstag '+r.day+'</strong><span class="season-state '+esc(r.state)+'">'+stateLabel(r)+'</span></div>'+
      '<div class="season-round-match"><span class="season-clan">'+badge(r.own)+'<strong>'+esc(r.own.name)+'</strong></span>'+
      '<b class="season-score">'+score(r)+'</b>'+
      '<span class="season-clan right">'+badge(r.opponent)+'<strong>'+esc(r.opponent.name)+'</strong></span></div>'+
@@ -70,37 +70,43 @@ function viewRounds(s,g){
 }
 function viewPlayers(s){
  if(!s.players.length)return '<p class="season-empty">Spielerleistungen erscheinen, sobald ein CWL-Krieg begonnen hat und seine Aufstellung verfügbar ist. Vorbereitungsteams werden noch nicht als Einsatz gezählt.</p>';
- return '<div class="season-info"><p>Nur aktuelle, aus Clash bekannte CWL-Kriege. Laufende Angriffe sind Zwischenstände; die Werte enthalten keine unbekannten früheren Saisons. Die ausführlichen Filter bleiben unter „Statistik“.</p></div>'+
+ return '<div class="season-info"><p>So haben unsere Spieler in dieser CWL abgeschnitten.</p><details class="season-explain"><summary>Welche Angriffe zählen?</summary><p>Nur bekannte CWL-Angriffe dieser Saison. Laufende Kriege zeigen Zwischenstände; weitere Filter findest du unter „Statistik“.</p></details></div>'+
  '<div class="season-player-scroll"><table class="season-player-table"><thead><tr><th>Spieler</th><th>Kriege</th><th>Angriffe</th><th>Sterne</th><th>Ø</th></tr></thead><tbody>'+
  s.players.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><small>RH '+esc(p.townHallLevel??"–")+'</small></td><td>'+p.days+'</td><td>'+p.attacks+'</td><td>'+p.stars+'</td><td>'+
    (p.averageStars===null?"–":p.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2}))+'</td></tr>').join("")+'</tbody></table></div>';
 }
 // Inline, read-only postseason recap in the original Plan view. Reuses the
 // existing CWL-season source of truth; no player/lock/archival mutation.
-export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle){
+// Three clear tabs replace the long all-in-one post-season scroll. The
+// same underlying season/group functions power the existing full season view.
+export function renderInlineCwlPostseason(profile,snapshot,group,lifecycle,selectedTab="rounds"){
  if(lifecycle?.mode!=="postseason"||!snapshot?.season)return "";
  const model=summarizeCwlSeason({...profile,cwlLive:snapshot});
  if(!model)return "";
- const groupRaw=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
- const ranking=groupRaw?summarizeCwlGroup(groupRaw):null;
+ const sameGroup=group?.season===model.season&&group?.clanTag===model.clanTag?group:null;
+ const ranking=sameGroup?summarizeCwlGroup(sameGroup):null;
  const complete=lifecycle.verifiedSeven===true;
- const status=complete?
-  "Alle sieben Kriege aus vollständigen Clash-Ergebnissen bestätigt":
-  lifecycle.savedDays===7?
-   "Gespeicherte Kriegstage vollständig; einzelne Clash-Ergebnisse noch nicht bestätigt":
-   (lifecycle.savedDays??0)+"/7 Tage als gespielt bestätigt · fehlende Ergebnisse werden nicht ergänzt";
- const detail=complete?
-   "Die CWL ist beendet. Deine Resultate bleiben hier sichtbar, bis eine neue Saison sicher erkannt und archiviert ist.":
-   "Die CWL ist laut Clash nicht mehr aktiv. Der Abschluss ist noch offen: Ohne final bestätigte Daten für jeden Krieg wird nichts als gespielt markiert. Du kannst die bisher bekannten Ergebnisse trotzdem ansehen.";
+ const saved=Number.isInteger(lifecycle.savedDays)?lifecycle.savedDays:0;
+ const status=complete?"Alle 7 Kriegstage abgeschlossen":
+  saved===7?"7 von 7 Tagen gespeichert · einzelne Ergebnisse werden noch geprüft":
+   saved+" von 7 Tagen gespeichert · letztes Ergebnis noch offen";
+ const tabs=[["rounds","Kriegstage"],["group","Tabelle"],["players","Spieler"]];
+ const selected=tabs.some(t=>t[0]===selectedTab)?selectedTab:"rounds";
+ const nav='<div class="plan-postseason-tabs" role="tablist" aria-label="CWL-Rückblick">'+
+  tabs.map(([id,label])=>'<button type="button" role="tab" data-postseason-tab="'+id+
+   '" aria-selected="'+(id===selected)+'" tabindex="'+(id===selected?0:-1)+'"'+
+   ' class="plan-postseason-tab'+(id===selected?' active':'')+'">'+label+'</button>').join("")+
+  '</div>';
+ const body=selected==="group"?viewGroup(model,ranking):
+  selected==="players"?viewPlayers(model):viewRounds(model,ranking);
  return '<section class="plan-postseason-results" aria-label="CWL-Saisonrückblick">'+
-  '<div class="section-title"><div><span class="view-lead-kicker">CWL-RÜCKBLICK</span>'+
+  '<div class="plan-postseason-heading"><span class="view-lead-kicker">LETZTE CWL</span>'+
   '<h3>'+esc(dateLabel(model.season))+'</h3>'+
-  '<p class="statusline">'+esc(status)+'</p></div></div>'+
-  '<p class="plan-postseason-description">'+esc(detail)+'</p>'+
-  '<div class="plan-postseason-group"><h4>Gruppenstand</h4>'+viewGroup(model,ranking)+'</div>'+
-  '<div class="plan-postseason-rounds"><h4>Ergebnisse der Kriegstage</h4>'+viewRounds(model,ranking)+'</div>'+
-  '<details class="plan-postseason-players"><summary>Spielerleistungen dieser CWL ansehen</summary>'+
-  viewPlayers(model)+'</details></section>';
+  '<p class="statusline">'+esc(status)+'</p></div>'+
+  nav+'<div class="plan-postseason-panel" role="tabpanel" data-postseason-panel="'+selected+'">'+
+  body+'</div>'+
+  (!complete?'<p class="plan-postseason-hint">Noch nicht alle Ergebnisse von Clash bestätigt. Die gespeicherten Werte bleiben sichtbar.</p>':'')+
+  '</section>';
 }
 export function createCwlSeasonView({getProfile,getSnapshot,getGroup,isConnected,refresh}){
  let tab="rounds";

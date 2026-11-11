@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.60";
-import { createCwlLive } from "./cwl-live.mjs?v=1.16.60";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.16.60";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.60";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.60";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.60";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.16.61";
+import { createCwlLive } from "./cwl-live.mjs?v=1.16.61";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.16.61";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.16.61";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.16.61";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.16.61";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -447,6 +447,9 @@ const cloud={
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
  openNewCycle:()=>openNewPlanCycle(),
+ // Used by authorized automatic CWL rollover to persist the cleared plan
+ // immediately, rather than rely on a delayed browser debounce.
+ flushPendingChanges:()=>ensureSaved(),
  onLocalChange(){
   if(!this.active||hydrating||role==="viewer")return;
   if(!navigator.onLine){msg("Cloud ist offline. Bearbeiten ist nicht möglich; bitte neu laden, wenn die Verbindung zurück ist.",true);blocked=true;return}
@@ -467,6 +470,10 @@ const cloud={
   document.body.classList.toggle("cloud-mode",this.active);
   document.body.classList.toggle("cloud-role-viewer",this.active&&role==="viewer");
   const activeClan=clans.find(c=>c.id===clanId);
+  // Cloud + a real Clash tag starts each CWL from the API, never a manual
+  // new-season control. The offline plan keeps its existing button.
+  const startButton=$("manageCwlBtn");
+  if(startButton)startButton.hidden=this.active&&!!activeClan?.clash_tag;
   const managementAllowed=this.active&&role==="owner"&&!!activeClan?.clash_tag;
   const managementEntry=document.querySelector('[data-more-action="management"]');
   if(managementEntry)managementEntry.hidden=!managementAllowed;
@@ -540,13 +547,13 @@ const live=createCwlLive({
  sb,storage,notify:message=>storage.toast(message),
  ensureCloudSaved:()=>ensureSaved(),
  applyVerifiedPause:args=>applyVerifiedPause(args),
- onSnapshot:data=>{
+ onStatus:data=>{
   currentWarOverview?.update(data);
   window.CWLSeasonView?.render?.();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
-  return stats.captureCwl(data);
  },
+ onSnapshot:data=>stats.captureCwl(data),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})

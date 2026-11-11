@@ -14,6 +14,7 @@ const documentSource='<!doctype html><html lang="de"><head><meta name="viewport"
  styles+'</head><body><main class="content">'+plan+'</main></body></html>';
 const warSource=read("cwl-current-war.mjs")
  .replace(/^import .*\n/m,'const safeBadgeUrl=x=>x; const clashTime=s=>Date.parse(s);\n')
+ .replace("export function summarizeCurrentWar(","function summarizeCurrentWar(")
  .replace("export function createCurrentWarOverview(","function createCurrentWarOverview(");
 const payload={currentWar:{
  state:"inWar",teamSize:2,attacksPerMember:2,
@@ -55,11 +56,13 @@ test("Normal CW belongs on Plan, not Einsätze, with both rosters and real attac
     await page.locator("#currentWarCard").waitFor({state:"visible"});
     assert.match(await page.locator("#currentWarContent").innerText(),
      /United Fighters[\s\S]*5[\s\S]*4[\s\S]*Other Clan/);
-    assert.match(await page.locator("#currentWarContent").innerText(),/76,3 % Zerstörung/);
-    assert.match(await page.locator("#currentWarContent").innerText(),/58,1 % Zerstörung/);
+    assert.match(await page.locator("#currentWarContent").innerText(),/76,3 %/);
+    assert.match(await page.locator("#currentWarContent").innerText(),/58,1 %/);
     assert.match(await page.locator("#currentWarContent").innerText(),/1\/4 Angriffe/);
-    const own=page.locator(".cw-now-details").first();
-    const enemy=page.locator(".cw-now-details").last();
+    assert.equal(await page.evaluate(()=>document.getElementById("currentWarCard").nextElementSibling?.id),"planOverview",
+      "Live battle card should appear above the CWL Plan summary");
+    const own=page.locator('.cw-now-details[data-team="own"]');
+    const enemy=page.locator('.cw-now-details[data-team="enemy"]');
     await own.locator("summary").click();
     await enemy.locator("summary").click();
     assert.match(await own.innerText(),/Luki/);

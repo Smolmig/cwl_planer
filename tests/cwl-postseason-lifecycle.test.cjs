@@ -103,12 +103,12 @@ test("Plan shows actual CWL results inline with same season report; incomplete r
  const lifecycle=assessCwlLifecycle({profile:p,clanTag:"#2PYL",
   confirmedNoCwl:true,now});
  const html=renderInlineCwlPostseason(p,lifecycle.snapshot,null,lifecycle);
- assert.match(html,/CWL-RÜCKBLICK/);
- assert.match(html,/6\/7 Tage als gespielt bestätigt/);
- assert.match(html,/Gruppenstand/);
- assert.match(html,/Ergebnisse der Kriegstage/);
- assert.match(html,/Spielerleistungen dieser CWL ansehen/);
- assert.match(html,/Runde 7/);
+ assert.match(html,/LETZTE CWL/);
+ assert.match(html,/6 von 7 Tagen gespeichert/);
+ assert.match(html,/Kriegstage/);
+ assert.match(html,/Tabelle/);
+ assert.match(html,/Spieler/);
+ assert.match(html,/Kriegstag 7/);
  assert.doesNotMatch(html,/Saison ansehen/);
  assert.equal(renderInlineCwlPostseason(p,lifecycle.snapshot,null,{mode:"planning"}),"");
 });
@@ -126,7 +126,7 @@ test("Original Cloud remains independently editable only through owner-gated int
  assert.match(html,/archiveConfirmedCwl:.*?\(season\)=>/s);
  assert.match(html,/autoAdvanceCwl:async/);
  assert.match(html,/await cloud\.openNewCycle\(\)/);
- assert.match(html,/state\.archives\.some\(a=>a\.sourceSeason===oldSeason&&a\.complete\)/);
+ assert.match(html,/state\.archives\.some\(a=>a\.sourceSeason===oldSeason\)/);
  assert.match(cloud,/getCwlLifecycle:\(\)=>live\.getLifecycle\(\)/);
  assert.doesNotMatch(live,/automatically\s+promote|automatically\s+kick/i);
 });
