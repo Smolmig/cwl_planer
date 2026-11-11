@@ -60,7 +60,7 @@ const roster=(group,enemy,per,state)=>{
   const own=records.get(m.tag)||[],against=opponentByBase.get(m.tag)||[];
   const used=own.length;const best=against.sort(rank)[0];
   const defense=state==="preparation"?"Vorbereitungsphase":
-   best?"Beste Verteidigung gegen Angreifer: "+best.stars+"★ · "+pct(best.destruction):
+   best?"Bester Angriff des Gegners: "+best.stars+"★ · "+pct(best.destruction):
    "Noch kein gegnerischer Angriff auf diese Basis erfasst";
   return '<div class="cw-now-roster-row">'+
    '<span class="cw-now-roster-player"><small>'+(m.mapPosition?"#"+m.mapPosition:"–")+
@@ -101,6 +101,7 @@ export function createCurrentWarOverview({context,refresh}){
   host.hidden=true;host.classList.remove("cw-now-featured");
   page?.classList.remove("plan-cw-live-mode");
   content.replaceChildren();warState=null;lastWarKey=null;
+  delete host.dataset.warState;
   activeTab="overview";
  }
  content.addEventListener("click",event=>{
@@ -132,7 +133,15 @@ export function createCurrentWarOverview({context,refresh}){
    lastWarKey=key;
   }
   const live=war.state==="inWar"||war.state==="warEnded";
+  const enteredWar=war.state==="inWar"&&warState!=="inWar";
   warState=war.state;
+  host.dataset.warState=war.state;
+  // The CW becomes the primary screen when the battle begins. The CWL
+  // history remains accessible underneath, never removed or reset.
+  if(enteredWar){
+   const disclosure=recap?.querySelector(".plan-postseason-disclosure");
+   if(disclosure)disclosure.open=false;
+  }
   if(live&&page&&overview){
    page.insertBefore(host,overview);
   }else if(!live&&page&&recap){
