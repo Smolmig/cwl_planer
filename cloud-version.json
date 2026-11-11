@@ -1,5 +1,5 @@
 {
   "version": "v1.16.61",
   "released": "2026-11-11",
-  "summary": "Plan-Startseite: laufender CW zuerst, CWL-Rückblick in drei Reitern; neue CWL startet per Clash-API automatisch, Cloud-Neustart-Button entfällt."
+  "summary": "Plan: laufender CW zuerst, CWL-Rückblick mit drei Reitern und automatischer CWL-Start per Clash-API ohne Cloud-Neustart-Button."
 }
