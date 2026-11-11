@@ -8,7 +8,7 @@ const {JSDOM}=require("jsdom");
 const root=path.resolve(__dirname,"..");
 const read=name=>fs.readFileSync(path.join(root,name),"utf8");
 
-function makeUi(role,locked,pending=[],draft=null){
+function makeUi(role,locked,pending=[],draft=null,paused=false){
  const sync=read("cloud-sync.mjs");
  const source=sync.slice(sync.indexOf("function renderMembersReview(){"),sync.indexOf("async function loadPlanReview("));
  const doc=new JSDOM('<section id="planReviewPanel"><details id="planReviewDisclosure"><summary>'+
@@ -25,7 +25,7 @@ function makeUi(role,locked,pending=[],draft=null){
    document:doc.window.document,cloud:{active:true},clanId:"clan",role,
    planReview:{season:"2026-11",cycle_id:"one",locked},planSuggestions:pending,
    planReviewPeople:new Map([["vize","Test-Vize"]]),user:{id:"owner"},
-   changedSerial:draft,planIsLocked:()=>locked,currentSeason:()=> "2026-11",
+   changedSerial:draft,planIsLocked:()=>locked,isPlanReviewPaused:()=>paused,currentSeason:()=> "2026-11",
    storage:{getPlanningState:()=>({ok:true})},
    suggestionChanges:()=>["Testspieler · Einsatzziel: 3 → 4"],
    JSON,Date,
@@ -86,4 +86,48 @@ test("member roster remains visible but edit controls are hidden, with read-only
  assert.match(sync,/bind\("membersSubmitSuggestion","click",submitPlanSuggestion\)/);
  assert.match(sync,/cwl_resolve_plan_suggestion/);
  assert.match(sync,/role==="viewer" && !keep\.has\(el\.id\)/);
+});
+
+test("verified CWL pause hides approval for owner, editor and observer without clearing members",()=>{
+ for(const role of ["owner","editor","viewer"]){
+   for(const locked of [false,true]){
+     const {doc}=makeUi(role,locked,[],JSON.stringify({members:[]}),true);
+     const el=id=>doc.window.document.getElementById(id);
+     assert.equal(el("membersReviewContext").hidden,false);
+     assert.match(el("membersReviewTitle").textContent,/keine CWL-Planung/);
+     assert.match(el("membersReviewHint").textContent,/nächsten CWL-Vorbereitung/);
+     assert.equal(el("membersReviewOpenPlan").hidden,true);
+     assert.equal(el("membersReviewOpenPlan").getAttribute("aria-expanded"),"false");
+     assert.equal(el("membersSubmitSuggestion").hidden,true);
+     assert.equal(el("planReviewPanel").hidden,true);
+   }
+ }
+});
+test("after a fresh CWL preparation the owner can approve again",()=>{
+ const owner=makeUi("owner",false,[],null,false);
+ assert.equal(owner.doc.window.document.getElementById("membersReviewOpenPlan").hidden,false);
+ assert.equal(owner.doc.window.document.getElementById("planReviewToggle").hidden,false);
+ assert.match(owner.doc.window.document.getElementById("planReviewToggle").textContent,/Plan freigeben/);
+});
+test("approval guards reject a stale season or a season change during confirmation",async()=>{
+ const sync=read("cloud-sync.mjs");
+ const source=sync.slice(sync.indexOf("async function togglePlanLock(){"),sync.indexOf("async function submitPlanSuggestion(){"));
+ let paused=true,rpcCalls=0;
+ const state={clanId:"clan",role:"owner",accountEpoch:1,planReview:{cycle_id:"cycle",locked:false},
+   isPlanReviewPaused:()=>paused,planIsLocked:()=>false,assertPlanningReady:()=>{},
+   storage:{getProfile:()=>({}),confirmAction:async()=>{paused=true;return true;},toast:()=>{}},
+   ensureSaved:async()=>{},sb:{rpc:async()=>{rpcCalls++;return {error:null}}},loadPlanReview:async()=>{}};
+ const run=vm.runInNewContext(source+";togglePlanLock",state);
+ await assert.rejects(run(),/CWL ist beendet/);
+ paused=false;
+ await assert.rejects(run(),/CWL-Planung hat sich geändert/);
+ assert.equal(rpcCalls,0,"no old-season approval can leave the browser");
+});
+test("review actions use verified lifecycle and do not update a different clan",()=>{
+ const sync=read("cloud-sync.mjs"),live=read("cwl-live.mjs");
+ assert.match(sync,/isPlanReviewPaused=\(\)=>!!\(cloud.active&&clanId&&cloud.hasApiClan/);
+ assert.match(sync,/const expectedClan=clanId,expectedEpoch=accountEpoch,expectedCycle=planReview\?\.cycle_id/);
+ assert.match(sync,/renderPlanReview\(\);\s*if\(document\.getElementById\("view-archive"\)/);
+ assert.match(live,/mode==="postseason"\|\|mode==="transition"/);
+ assert.match(live,/mode==="idle"&&confirmedNoCwl/);
 });
