@@ -81,12 +81,13 @@ function moveWarInPlan(host,state){
  // navigation aligned with the visual hierarchy. A live battle comes first;
  // preparation belongs after the previous CWL summary.
  if(state==="inWar"||state==="warEnded"){
+  if(host.nextElementSibling!==recap||recap.nextElementSibling!==overview){
+   view.insertBefore(recap,overview);
+   view.insertBefore(host,recap);
+  }
+ }else if(recap.nextElementSibling!==host||host.nextElementSibling!==overview){
   view.insertBefore(host,overview);
-  view.insertBefore(recap,overview);
-  if(host.nextElementSibling!==recap)view.insertBefore(recap,host.nextSibling);
- }else{
-  view.insertBefore(recap,overview);
-  view.insertBefore(host,overview);
+  view.insertBefore(recap,host);
  }
 }
 export function createCurrentWarOverview({context,refresh}){
