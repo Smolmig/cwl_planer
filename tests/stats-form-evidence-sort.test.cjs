@@ -59,8 +59,8 @@ test("form sort respects selected window and rejects unknown options",async()=>{
 test("UI distinguishes evidence ordering from the explicitly raw hit-rate choice",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const js=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
- assert.match(html,/<option value="evidence" selected>Datenbasis &amp; 3★-Quote<\/option>/);
- assert.match(html,/<option value="hitRate">Nur 3★-Quote \(roh\)<\/option>/);
+ assert.match(html,/<option value="evidence" selected>Angriffsmenge &amp; 3★-Quote<\/option>/);
+ assert.match(html,/<option value="hitRate">3★-Quote \(auch bei wenigen Angriffen\)<\/option>/);
  assert.match(js,/formWindow=90,formSearch="",formSort="evidence"/);
  assert.match(js,/sortPlayerFormRows\(data\.players\.filter/);
  assert.match(js,/Sortiert nach Datenmenge, danach 3★-Quote/i);
