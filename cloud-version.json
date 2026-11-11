@@ -1,5 +1,5 @@
 {
-  "version": "v1.16.60",
+  "version": "v1.16.61",
   "released": "2026-11-11",
-  "summary": "Hotfix CWL-Archiv: Kein Doppelarchiv beim manuellen Neustart nach Autoarchivierung, sichere Rücknahme bei Cloud-Fehler und Clanwechsel-Schutz."
+  "summary": "Plan-Startseite: laufender CW zuerst, CWL-Rückblick in drei Reitern; neue CWL startet per Clash-API automatisch, Cloud-Neustart-Button entfällt."
 }
