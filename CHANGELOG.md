@@ -12,6 +12,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.16.68] - 2026-11-11
+
+### Statistik: Vergleiche und Kriegsverlauf verständlicher (#226)
+- **Vergleiche:** Einfache Erläuterung zum gewählten Kriegsumfang. Eine leere Auswahl bzw. abgeschlossene Kriege ohne erfasste Angriffe werden als fehlende Daten statt als 0-%-Quote dargestellt; der direkte Spielervergleich erklärt die Voraussetzung zweier Spieler mit belegten Angriffen.
+- **Verlauf & Kriege:** „KW 12/26“ als Kalenderwoche 12 im Jahr 2026 erklärt; letzte 30/90/180/365 Tage einheitlich beschriftet; klar benannte Wochen-/Tages-/Monatsansicht. Erfasste Angriffszahlen, Achsenlücken und leere Zeiträume besser erläutert. In der Kriegsliste heißt die Sternsumme ausdrücklich „erfasste Sterne“, damit niemand sie mit dem offiziellen Kriegsergebnis verwechselt; gefilterte Leeransichten bieten eine klare Handlung.
+- **Hilfe:** Datengrundlage für Vergleiche, unabhängige Filter, 3★-Quote und Ø Sterne pro Angriff, Kalenderwochen und Sternsumme erklärt.
+- Öffentlicher Update-Verlauf, aktueller Einstellungs-Changelog, Cloud-Version und Cache-Busting mitgepflegt; zusätzliche Regressionen für Copy-/Leerdatenfälle.
+- **Unverändert:** Werteberechnungen, Quell-/Verifizierungsregeln, Auswahl-/Filtersemantik, Auth/RLS, Cloud-Daten und Offline-PWA. Echte Mobile-/Rollen-UAT #213 bleibt ausstehend.
+
 ## [1.16.67] - 2026-11-11
 
 ### Einsätze und Mitglieder: Klartext bei der Planung (#226)
