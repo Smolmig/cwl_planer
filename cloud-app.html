@@ -1075,6 +1075,33 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 /* Plan now shows the post-CWL recap and normal CW between leagues.
    Offline PWA remains manual. No nested card wall on mobile. */
 #manageCwlBtn[hidden]{display:none!important}
+/* Keep the current war as the single headline during battle day.
+   Outside battle day the last CWL stays expanded above the next preparation. */
+#view-plan.plan-postseason-mode .plan-overview,
+#view-plan.plan-between-cwl-mode .plan-overview{display:none!important}
+.plan-last-cwl{margin:10px 0 22px;min-width:0}
+.plan-last-cwl>summary{font-size:14px;font-weight:750;cursor:pointer;min-height:48px;
+ display:list-item;padding:14px 4px;border-top:1px solid var(--line);
+ border-bottom:1px solid var(--line);color:var(--text)}
+.plan-last-cwl>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.plan-postseason-heading{margin:12px 0 15px}
+.plan-postseason-heading h3{font-size:clamp(18px,3.5vw,22px);margin:5px 0 2px}
+.plan-postseason-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+ margin:16px 0 13px;padding:3px;background:var(--bluebg);border-radius:11px;min-width:0}
+.plan-postseason-tab{display:flex;align-items:center;justify-content:center;min-height:44px;
+ padding:8px 5px;border:0;border-radius:8px;background:transparent;
+ color:var(--muted);font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+.plan-postseason-tab[aria-selected="true"]{background:var(--surface);color:var(--text);
+ box-shadow:0 1px 4px #00000012;font-weight:800}
+.plan-postseason-tab:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.plan-postseason-panel{min-width:0}
+.plan-postseason-hint{font-size:12px;color:var(--muted);margin:13px 0;line-height:1.55}
+.plan-postseason-panel .season-group-scroll,.plan-postseason-panel .season-player-scroll{
+ max-width:100%;overflow-x:auto}
+#view-plan.plan-current-war-live #currentWarCard{border-color:var(--primary);
+ box-shadow:0 4px 18px #0000000d}
+@media(max-width:430px){.plan-last-cwl{margin-top:5px}
+ .plan-postseason-tabs{gap:3px}.plan-postseason-tab{font-size:12px;padding-inline:2px}}
 #planCwlPostseason[hidden]{display:none!important}
 #view-plan.plan-postseason-mode #planDays,
 #view-plan.plan-postseason-mode #mobileDaySwitcher,
@@ -3399,7 +3426,10 @@ html[data-theme] #view-more-settings .latest-changelog{
   <div class="mobile-day-tabs" id="mobileDayTabs"></div>
 </div>
   <div id="planDays"></div>
-  <div id="planCwlPostseason" hidden aria-live="off"></div>
+  <details id="planCwlPostseason" class="plan-last-cwl" hidden open>
+    <summary id="planCwlPostseasonSummary">Letzte CWL ansehen</summary>
+    <div id="planCwlPostseasonContent"></div>
+  </details>
   <div class="card cw-now-card" id="currentWarCard" hidden>
     <div class="section-title">
       <div><h3>Aktueller Clankrieg</h3><div class="statusline">Clash-Spielstand, Angriffe und Aufstellung</div></div>
