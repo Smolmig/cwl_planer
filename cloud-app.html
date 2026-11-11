@@ -5455,9 +5455,11 @@ function importMemberText(text,participating=false){if(manualRosterRestricted())
 function buildBugUrl(){const participants=state.members.filter(m=>m.participating).length,fixed=state.members.filter(m=>m.participating&&m.fixed).length,body=["**Was ist passiert?**","Bitte beschreiben…","","**Schritte zum Nachstellen**","1. ","2. ","3. ","","**Technische Infos**",`- App: ${APP_VERSION}`,`- Datenformat: ${DATA_VERSION}`,`- Profile: ${app.profiles.length}`,`- Teilnehmer im aktiven Profil: ${participants}`,`- Fixspieler: ${fixed}`,`- Kriegsgröße: ${state.config.slots}`,`- Kriege: ${state.config.days}`,`- Gerät/Browser: ${navigator.userAgent}`].join("\n");return BUG_URL+"?title="+encodeURIComponent("[Bug] ")+"&body="+encodeURIComponent(body)}
 function applyBulkValue(field,value){if(!selectedMembers.size){showToast("Bitte zuerst Mitglieder auswählen");return}if(field==="townHall"&&[...selectedMembers].some(id=>apiManagedRosterMember(memberById(id)))){showToast("Rathaus kommt aus Clash – für Korrekturen die Notfallbearbeitung aktivieren.");return}for(const id of selectedMembers){const m=state.members.find(x=>x.id===id);if(m&&!(field==="rotationWeight"&&m.fixed)){markRosterAbsenceEdit(m,field);m[field]=value}}renderAll(`${selectedMembers.size} Mitglieder geändert · Plan aktualisiert ✓`)}
 async function createProfilePrompt(){const raw=await promptInline("Neues Profil / Clan","Profilname","Neuer Clan"),name=(raw||"").trim();if(!name){renderProfileUI();return}if(profileNameExists(name)){showToast("Ein Profil mit diesem Namen existiert bereits");renderProfileUI();return}const p=freshProfile(name);app.profiles.push(p);setActiveProfile(p.id)}
-function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
-async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
-function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
+function syncConfigInputs(){const apiLinked=!!window.CWLCloud?.active&&!!window.CWLCloud?.hasApiClan?.(),locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked||apiLinked;custom.disabled=locked||apiLinked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked||apiLinked;
+ const lockNote=document.getElementById("configLockNote");lockNote.classList.toggle("hidden",!locked&&!apiLinked);
+ lockNote.textContent=apiLinked?"Clash bestimmt die CWL-Kriegsgröße und Anzahl der Kriege. Nach einer offiziellen Auslosung übernimmt die App die Werte automatisch; bei unbekannten Daten bleibt die bisherige Planung erhalten.":"🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.";document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
+async function changeDays(newDays){if(window.CWLCloud?.active&&window.CWLCloud?.hasApiClan?.()){showToast("Die CWL-Kriegszahl kommt automatisch aus Clash.");syncConfigInputs();return}if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
+function setSlots(value){if(window.CWLCloud?.active&&window.CWLCloud?.hasApiClan?.()){showToast("Die CWL-Kriegsgröße kommt automatisch aus Clash.");syncConfigInputs();return}if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
 function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="arena"?"#151a20":resolved==="dark"?"#0f172a":"#f4f7fb"}
 function renderRecoveryBanner(){
   const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
@@ -6214,16 +6216,17 @@ window.CWLLegacy={
  archiveConfirmedCwl:(season)=>{
   const cloud=window.CWLCloud;
   if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
-     state.config.days!==7||state.cwlLive?.season!==season||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||state.cwlLive?.season!==season||
      state.cwlLiveIgnoredSeason===season)return false;
-  const locked=state.locks.slice(0,7);
-  if(locked.length!==7||!locked.every((lock,i)=>lock?.locked===true&&
+  const warCount=state.cwlLive?.warCount===5?5:7;
+  const locked=state.locks.slice(0,warCount);
+  if(locked.length!==warCount||!locked.every((lock,i)=>lock?.locked===true&&
      lock.source==="coc-api"&&lock.season===season&&
      lock.warTag===state.cwlLive?.rounds?.[i]?.warTag&&
      state.cwlLive?.rounds?.[i]?.state==="warEnded"))return false;
   if(state.archives.some(archive=>archive.sourceSeason===season))return true;
   const archived=archiveCurrentCwl();
-  if(!archived.complete||archived.lineups.length!==7)return false;
+  if(!archived.complete||archived.lineups.length!==warCount)return false;
   state.archives.push(archived);
   renderArchives();saveApp();
   return true;
@@ -6235,12 +6238,13 @@ window.CWLLegacy={
   const cloud=window.CWLCloud;
   if(!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      state.cwlLive?.season!==season||
-     state.cwlLiveIgnoredSeason===season||state.config.days!==7||
+     state.cwlLiveIgnoredSeason===season||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(season||"")))return false;
   if(state.archives.some(a=>a.sourceSeason===season))return true;
   const prior=archiveCurrentCwl();
-  if(prior.sourceSeason!==season||prior.playedCount>7||
-     prior.lineups.some(l=>l.day<1||l.day>7))return false;
+  if(prior.sourceSeason!==season||prior.playedCount>state.config.days||
+     prior.lineups.some(l=>l.day<1||l.day>state.config.days))return false;
   state.archives.push(prior);
   renderArchives();
   saveApp();
@@ -6253,12 +6257,12 @@ window.CWLLegacy={
   const cloud=window.CWLCloud,clan=cloud?.getActiveClanId?.();
   if(!clan||!cloud?.active||!cloud?.isOwner?.()||!cloud?.hasApiClan?.()||
      !navigator.onLine||state.cwlLive?.season!==oldSeason||
-     state.config.days!==7||oldSeason>=newSeason||
+     state.config.days!==(state.cwlLive?.warCount===5?5:7)||oldSeason>=newSeason||
      !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
      !state.archives.some(a=>a.sourceSeason===oldSeason))return false;
   // No completeness assumption. An archived old 6/7 remains 6/7; this
   // transition is a fresh planning cycle, not an automatic "played" mark.
-  const locks=state.locks.slice(0,7);
+  const locks=state.locks.slice(0,state.config.days);
   if(locks.some((l,i)=>l?.locked&&l.source==="coc-api"&&
      (l.season!==oldSeason||l.warTag!==state.cwlLive?.rounds?.[i]?.warTag)))
    return false;
