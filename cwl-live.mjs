@@ -70,7 +70,7 @@ function townHallSummary(members) {
   return [...counts].sort((a,b)=>(parseInt(b[0].slice(3))||0)-(parseInt(a[0].slice(3))||0))
     .map(([key,n])=>"<span class='cwl-live-th'>"+esc(key)+" <b>×"+n+"</b></span>").join("");
 }
-export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onInitialSettled,ensureCloudSaved,applyVerifiedPause}) {
+export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onInitialSettled,onPhaseApplied,ensureCloudSaved,applyVerifiedPause}) {
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   let lastKnownGroup=null; // Last validated group from THIS linked clan only.
@@ -283,6 +283,9 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     view.classList.toggle("plan-postseason-mode",!!postseason);
     view.classList.toggle("plan-between-cwl-mode",!!between);
     host.hidden=!postseason&&!between;
+    // The approval strip needs the final verified phase classes, not the
+    // earlier onStatus callback (which may run before awaited API work).
+    try{onPhaseApplied?.()}catch(err){console.warn("CWL approval phase:",String(err?.message||err))}
     if(!postseason&&!between){
       host.dataset.renderKey="";host.dataset.scope="";host.dataset.warMode="";
       host.open=true;body.replaceChildren();return false;
