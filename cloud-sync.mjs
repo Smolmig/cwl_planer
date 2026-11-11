@@ -5,6 +5,7 @@ import { createCloudStats } from "./cwl-stats.mjs?v=1.17.0";
 import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.17.0";
 import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.17.0";
 import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.17.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.17.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -617,6 +618,10 @@ const live=createCwlLive({
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),
    canApply:(role==="owner"||!planIsLocked())&&!changedSerial&&!saving&&!blocked&&!hydrating&&!editingDialog()&&navigator.onLine})
+});
+window.CWLArchivedRecap=createArchivedCwlRecapView({
+ sb,
+ getClanId:()=>cloud.active?clanId:null
 });
 window.CWLGroupArchive=createCwlGroupArchiveView({
  sb,
