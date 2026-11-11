@@ -146,7 +146,7 @@ export function createCurrentWarOverview({context,refresh}){
   const metric=(name,side,players,used)=>
    '<div class="cw-now-metric"><small>'+name+'</small><b>'+
    formatPct(side?.destructionPercentage)+'</b><span>'+
-   used+"/"+attackMax+" Angriffe erfasst</span></div>";
+   used+"/"+attackMax+' Angriffe erfasst</span></div>';
   const overview='<div class="cw-now-status">'+
     '<span class="cw-now-state">'+esc(states[war.state])+'</span>'+
     '<span>'+size+" gegen "+size+'</span><span>'+
