@@ -360,8 +360,11 @@ async function decidePlanSuggestion(id,action){
 // before archiving. If the ownerless server writer already committed, leave
 // its history untouched and offer an explicit Cloud reload instead.
 function flagRemoteCwlCycleChange(){
+ // A server-created cycle supersedes this whole browser snapshot, even when
+ // the tab currently has no dirty edits. Prevent any later old-cycle write
+ // until the shared profile is explicitly reloaded.
  remotePending=true;
- if(changedSerial||saving)blocked=true;
+ blocked=true;
  status("Cloud: CWL-Zyklus geändert – aktualisieren",true);
  showChangeToast("Ein neuer CWL-Zyklus wurde bereits im Hintergrund gespeichert. "+
    "Bitte den gemeinsamen Plan aktualisieren; offene Änderungen werden nicht überschrieben.",true);
