@@ -955,6 +955,13 @@ async function listClans(epoch=accountEpoch,selected){
 }
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
+ // The old clan's screen should not be visible while another tenant's
+ // profile, memberships, stats and first Clash snapshot are still loading.
+ // The initial login has its own shield already; no flash for same-clan
+ // refreshes, no overlay on routine realtime changes.
+ const nextClan=$("cloudClanSelect").value||null;
+ if(cloud.active&&clanId&&nextClan&&clanId!==nextClan)
+  window.CWLStartup?.begin?.("Der gewählte Clan wird geladen …");
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
