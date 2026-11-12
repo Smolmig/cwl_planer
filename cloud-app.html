@@ -6302,6 +6302,11 @@ window.CWLLegacy={
   saveApp();
   return true;
  },
+ // The verified new season can arrive while another tab's Cloud sync is
+ // still on the old cycle. Ask the Cloud bridge to read the authoritative
+ // review cycle and source revision BEFORE mutating any local archive.
+ canAutoAdvanceCwl:(oldSeason,newSeason)=>
+  window.CWLCloud?.authorizeBrowserCwlRollover?.(oldSeason,newSeason)??Promise.resolve(false),
  // Automatic *new-season* transition is only permitted after an archived
  // previous season (including a clearly marked partial 6/7) has been durably
  // queued and the current owner stays on exactly the same cloud clan.
@@ -6318,7 +6323,7 @@ window.CWLLegacy={
   if(locks.some((l,i)=>l?.locked&&l.source==="coc-api"&&
      (l.season!==oldSeason||l.warTag!==state.cwlLive?.rounds?.[i]?.warTag)))
    return false;
-  await cloud.openNewCycle();
+  await cloud.openNewCycle(oldSeason);
   if(cloud.getActiveClanId()!==clan||!cloud.active||!cloud.isOwner())return false;
   resetPlanningData();
   renderAll("Neue CWL erkannt · dein Plan ist bereit");

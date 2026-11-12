@@ -1018,6 +1018,12 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       if(data.active&&previous?.season&&data.season>previous.season&&
          previous.clanTag===ctx.clanTag&&
          ctx.role==="owner"&&ctx.canApply&&typeof ensureCloudSaved==="function"){
+        // A previous owner tab can observe the new group AFTER the service
+        // transaction has already advanced the shared cycle. Fail closed
+        // before even appending an old archive to the local dirty profile.
+        const mayAdvance=await storage.canAutoAdvanceCwl?.(previous.season,data.season);
+        if(!stillCurrent())return;
+        if(mayAdvance!==true)return;
         if(storage.archivePriorCwlForRollover?.(previous.season)){
           await ensureCloudSaved();
           if(!stillCurrent())return;
