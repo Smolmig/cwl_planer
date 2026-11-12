@@ -48,9 +48,10 @@ begin
     end if;
     new.first_seen_at:=old.first_seen_at;
     new.rounds_count:=greatest(old.rounds_count,new.rounds_count);
-    if case new.group_state when 'ended' then 3 when 'inWar' then 2 else 1 end <
-       case old.group_state when 'ended' then 3 when 'inWar' then 2 else 1 end
-    then new.group_state:=old.group_state;end if;
+    if (new.group_state='preparation' and old.group_state in ('inWar','ended'))
+       or (new.group_state='inWar' and old.group_state='ended') then
+      new.group_state:=old.group_state;
+    end if;
   else
     new.first_seen_at:=now();
   end if;
