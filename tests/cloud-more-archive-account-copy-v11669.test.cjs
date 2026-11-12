@@ -9,7 +9,7 @@ const root=path.resolve(__dirname,"..");
 const read=name=>fs.readFileSync(path.join(root,name),"utf8");
 const html=read("cloud-app.html");
 
-test("More, account and separate Clash-group and planner archives explain their real scope",()=>{
+test("More, account and one CWL archive entry explain their real scope",()=>{
  assert.match(html,/<h2 id="moreTitle">Mehr<\/h2>/);
  assert.match(html,/Gruppenergebnisse aus Clash/);
  assert.match(html,/Archivierte CWL-Pläne/);
@@ -23,7 +23,7 @@ test("More, account and separate Clash-group and planner archives explain their 
  assert.match(html,/Neu in v1\.18\.1/);
  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.18.1");
  assert.match(read("cloud-release-history.mjs"),/"version": "v1\.18\.1"/);
- assert.match(read("cwl-group-archive.mjs"),/Noch keine Gruppenergebnisse archiviert/);
+ assert.match(read("cwl-group-archive.mjs"),/Noch keine CWL archiviert/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
 });
 
