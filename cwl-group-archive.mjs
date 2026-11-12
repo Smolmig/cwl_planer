@@ -252,7 +252,12 @@ function seasonPane(item,tab,ownRows,profile,canDelete){
     '<p class="season-empty">Für diese CWL wurde keine Gruppentabelle gespeichert. Deine eigenen Aufstellungen bleiben erhalten.</p>';
   if(tab==="players"){
     const verified=playersFromRows(ownVerifiedRows(group,ownRows));
-    const rows=verified.length?verified:model?.players||[];
+    const saved=model?.players||[];
+    // A partial server roster must not hide more complete, independently
+    // archived player results from the same verified CWL season.
+    const attackCount=list=>list.reduce((n,p)=>n+(Number(p.attacks)||0),0);
+    const rows=attackCount(verified)>attackCount(saved)?verified:
+      saved.length?saved:verified;
     return rows.length?viewPlayers({...model,players:rows}):
       '<p class="season-empty">Keine einzelnen Spielerangriffe aus dieser CWL gespeichert. Die Einsatzhäufigkeit findest du unter „Einsätze“.</p>';
   }
