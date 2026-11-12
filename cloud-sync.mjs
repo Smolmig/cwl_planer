@@ -629,7 +629,7 @@ window.CWLGroupArchive=createCwlGroupArchiveView({
  getClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  getProfile:()=>storage.getProfile(),
  isConnected:()=>!!cloud.active&&!!clanId,
- isViewer:()=>cloud.active&&role==="viewer",
+ isViewer:()=>cloud.active&&!["owner","editor"].includes(role),
  onDeletePlan:id=>storage.deleteArchivedCwl?.(id)??false,
  refreshFromClash:()=>live.refresh()
 });
