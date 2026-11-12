@@ -355,13 +355,80 @@ async function decidePlanSuggestion(id,action){
  await loadPlanReview();cloud.afterRender();
  storage.toast(action==="accept"?"✓ Vorschlag übernommen":action==="reject"?"Vorschlag abgelehnt":"Vorschlag zurückgezogen");
 }
-async function openNewPlanCycle(){
+// The old browser fallback is NEVER a signal that a Cloud cycle can be
+// reopened. Verify BOTH saved profile revision and review cycle immediately
+// before archiving. If the ownerless server writer already committed, leave
+// its history untouched and offer an explicit Cloud reload instead.
+function flagRemoteCwlCycleChange(){
+ remotePending=true;
+ if(changedSerial||saving)blocked=true;
+ status("Cloud: CWL-Zyklus geändert – aktualisieren",true);
+ showChangeToast("Ein neuer CWL-Zyklus wurde bereits im Hintergrund gespeichert. "+
+   "Bitte den gemeinsamen Plan aktualisieren; offene Änderungen werden nicht überschrieben.",true);
+}
+async function authorizeBrowserCwlRollover(oldSeason,newSeason){
+ if(!cloud.active||!clanId||role!=="owner"||blocked||saving||changedSerial||
+    !navigator.onLine||!/^20\\d{2}-(0[1-9]|1[0-2])$/.test(String(oldSeason||""))||
+    !/^20\\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
+    newSeason<=oldSeason)return false;
+ const initialCycle=planReview?.cycle_id,initialRevision=revision;
+ const id=clanId,epoch=accountEpoch;
+ if(!initialCycle||planReview.season!==oldSeason||
+    !Number.isSafeInteger(initialRevision)||initialRevision<1)return false;
+ const [{data:review,error:reviewError},{data:profile,error:profileError}]=await Promise.all([
+  sb.from("cwl_plan_review_state").select("cycle_id,season")
+   .eq("clan_id",id).maybeSingle(),
+  sb.from("cwl_cloud_profiles").select("revision,profile_json")
+   .eq("clan_id",id).maybeSingle()
+ ]);
+ if(reviewError||profileError)
+  throw Error("Der CWL-Zyklus konnte nicht sicher überprüft werden. Bitte Cloud aktualisieren.");
+ if(id!==clanId||epoch!==accountEpoch||!cloud.active||role!=="owner")
+  return false;
+ const local=storage.getProfile(),source=profile?.profile_json;
+ const consistent=review?.cycle_id===initialCycle&&
+   review?.season===oldSeason&&planReview?.cycle_id===initialCycle&&
+   planReview?.season===oldSeason&&
+   Number(profile?.revision)===initialRevision&&revision===initialRevision&&
+   source?.cwlLive?.season===oldSeason&&
+   local?.cwlLive?.season===oldSeason&&
+   source?.cwlLiveIgnoredSeason!==oldSeason;
+ if(!consistent){flagRemoteCwlCycleChange();return false}
+ return true;
+}
+async function openNewPlanCycle(expectedSourceSeason=null){
  if(!cloud.active)return;
  if(role!=="owner"&&planIsLocked())throw Error("Nur der Clanführer kann einen freigegebenen CWL-Plan zurücksetzen.");
  if(role!=="owner")return;
+ const id=clanId,epoch=accountEpoch,token=reviewCycleToken();
+ if(expectedSourceSeason&&(planReview?.season!==expectedSourceSeason||
+     !token.p_expected_cycle)){
+  flagRemoteCwlCycleChange();
+  throw Error("Der alte CWL-Zyklus wurde bereits gewechselt. Bitte Cloud aktualisieren.");
+ }
  await ensureSaved();
+ // Never use reviewCycleToken() again after await: a poll may have loaded
+ // the server-created NEW cycle in the meantime. A stale owner must not
+ // accidentally open another cycle using that new token.
+ if(id!==clanId||epoch!==accountEpoch||role!=="owner"||
+    token.p_expected_cycle!==planReview?.cycle_id||
+    token.p_expected_season!==planReview?.season){
+  flagRemoteCwlCycleChange();
+  throw Error("CWL-Zyklus wurde während der Planung geändert. Bitte Cloud aktualisieren.");
+ }
+ if(expectedSourceSeason){
+  const {data:remote,error:remoteError}=await sb.from("cwl_plan_review_state")
+   .select("cycle_id,season").eq("clan_id",id).maybeSingle();
+  if(remoteError)throw Error("CWL-Zyklus konnte nicht überprüft werden. Bitte Cloud aktualisieren.");
+  if(id!==clanId||epoch!==accountEpoch||role!=="owner"||
+     remote?.cycle_id!==token.p_expected_cycle||
+     remote?.season!==expectedSourceSeason){
+    flagRemoteCwlCycleChange();
+    throw Error("Der CWL-Zyklus wurde im Hintergrund bereits gewechselt. Bitte Cloud aktualisieren.");
+  }
+ }
  const {error:err}=await sb.rpc("cwl_set_plan_lock_checked",{
-   p_clan:clanId,p_locked:false,p_new_cycle:true,...reviewCycleToken()
+  p_clan:id,p_locked:false,p_new_cycle:true,...token
  });
  if(err)throw reviewRpcError(err);
  await loadPlanReview();
@@ -504,7 +571,8 @@ const cloud={
  isPlanLocked:()=>planIsLocked(),
  isOwner:()=>role==="owner",
  isViewer:()=>role==="viewer",
- openNewCycle:()=>openNewPlanCycle(),
+ openNewCycle:oldSeason=>openNewPlanCycle(oldSeason),
+ authorizeBrowserCwlRollover:(oldSeason,newSeason)=>authorizeBrowserCwlRollover(oldSeason,newSeason),
  // Used by authorized automatic CWL rollover to persist the cleared plan
  // immediately, rather than rely on a delayed browser debounce.
  flushPendingChanges:()=>ensureSaved(),
