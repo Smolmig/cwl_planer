@@ -182,9 +182,15 @@ function playersFromRows(rows){
       a.name.localeCompare(b.name,"de"));
 }
 function selectSeasonModel(item,ownRows){
-  const source=item.plans.find(p=>p.cwlLive?.season===item.season&&
-    p.cwlLive?.clanTag===item.clanTag)?.cwlLive;
-  const archive=source?item.plans.find(p=>p.cwlLive===source):null;
+  const archive=item.plans.find(p=>{
+    const snapshot=p.cwlLive;
+    if(!snapshot?.season||!Array.isArray(snapshot.rounds))return false;
+    // Even an old unlinked plan may display its *own* saved war history.
+    // It must not be merged with an unrelated Clash group by month alone.
+    return item.season? snapshot.season===item.season&&
+      snapshot.clanTag===item.clanTag : /^20\d{2}-(0[1-9]|1[0-2])$/.test(snapshot.season);
+  });
+  const source=archive?.cwlLive;
   const saved=source?summarizeCwlSeason({name:archive?.label||"",cwlLive:source}):null;
   const verified=item.group?ownWarsFromGroup(item.group):null;
   if(!saved)return verified;
