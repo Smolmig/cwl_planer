@@ -1089,6 +1089,13 @@ html[data-theme="arena"] .cwl-live-team-enemy>summary{background:rgba(227,177,90
 .stats-number{font-variant-numeric:tabular-nums}
 .stats-empty{padding:22px 12px;color:var(--muted)}
 .stats-note{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 0}
+#view-stats .stats-import-entry{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+ margin:15px 0 5px;padding:13px 14px;border:1px solid var(--line);background:var(--bg);border-radius:12px}
+#view-stats .stats-import-entry[hidden]{display:none!important}
+#view-stats .stats-import-entry strong{font-size:13px;color:var(--text)}
+#view-stats .stats-import-entry p{margin:4px 0 0;max-width:440px;font-size:12px;color:var(--muted);line-height:1.5}
+#view-stats .stats-import-entry button{min-height:44px}
+@media(max-width:470px){#view-stats .stats-import-entry button{width:100%}}
 .stats-import-actions{margin:10px 0}
 @media(max-width:380px){.stats-player-head,.stats-player-row{grid-template-columns:minmax(87px,1fr) 56px 50px 48px;gap:3px;padding:10px 6px}.stats-name b{font-size:11px}.stats-th{width:27px;height:28px;font-size:9px}.stats-player{gap:5px}.stats-player-head{font-size:9px}}
 #statsNav[hidden]{display:none!important}
@@ -1129,6 +1136,7 @@ body.cloud-mode .navinner{grid-template-columns:repeat(4,minmax(0,1fr))}
 #view-plan.plan-postseason-mode .plan-overview,
 #view-plan.plan-between-cwl-mode .plan-overview{display:none!important}
 .plan-last-cwl{margin:10px 0 22px;min-width:0}
+#planCwlPostseason>summary[hidden]{display:none!important}
 .plan-last-cwl>summary{font-size:14px;font-weight:750;cursor:pointer;min-height:48px;
  display:list-item;padding:14px 4px;border-top:1px solid var(--line);
  border-bottom:1px solid var(--line);color:var(--text)}
@@ -3905,6 +3913,16 @@ html.cloud-startup-pending .cloud-startup-splash{
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
     <details class="stats-overview-source" id="statsSeasonDisclosure" hidden><summary>Welche Kriege zählen?</summary><p class="stats-season-details" id="statsSeasonDetails"></p></details>
+    <div class="stats-import-entry" id="statsImportEntry" hidden>
+      <div><strong>Fehlen frühere Kriege?</strong><p>Ergänze deine Kriegsstatistik mit bereits gesicherten Daten. Vorhandene Kriege werden nicht doppelt angelegt.</p></div>
+      <button type="button" class="btn" id="statsImportButton" hidden>Frühere Kriege importieren (JSON)</button>
+      <input type="file" id="statsImportFile" accept=".json,application/json" hidden>
+    </div>
+    <details class="stats-coverage-guide" id="statsCoverageGuide" hidden>
+      <summary>ClashPerk-Exporte und fehlende Angriffe</summary>
+      <p>ClashPerk bietet getrennte CW-/CWL-Exporte und historische Discord-Logs für verpasste Angriffe und Aufstellungswechsel. Die direkte Excel-Übernahme ist noch nicht verfügbar; derzeit akzeptiert der Planer nur sein vorbereitetes Statistik-JSON. Fehlende Logs sind kein Beweis für null verpasste Angriffe. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">ClashPerk-Logs erklärt</a>.</p>
+    </details>
+    <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
@@ -3950,13 +3968,7 @@ html.cloud-startup-pending .cloud-startup-splash{
       <div id="statsRows"><div class="stats-empty">Statistik wird geladen …</div></div>
     </div>
 <p class="stats-note" id="statsMissingNote" hidden></p>
-    <details class="stats-coverage-guide" id="statsCoverageGuide" hidden>
-      <summary>Fehlende CWL-Angriffe mit ClashPerk belegen</summary>
-      <p>Für ältere CWL-Tage brauchen wir <strong>die tatsächliche Aufstellung jedes Tages</strong> und einen Nachweis, wer einen Angriff ausgelassen hat. ClashPerk bietet CWL-Missed-Attack- und Lineup-Change-Logs; nicht jeder alte Krieg ist rückwirkend vollständig verfügbar. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">Welche Logs es gibt</a>.</p>
-      <p>Bitte erst die Originaldaten je CWL-Tag prüfen, nicht fehlende Datensätze als null versäumte Angriffe zählen. Der normale Statistik-JSON-Import akzeptiert keine beliebigen Screenshots oder ClashPerk-Dateien direkt.</p>
-    </details>
-    <div class="stats-import-actions"><button type="button" class="btn" id="statsImportButton" hidden>↓ Frühere Kriege importieren</button><input type="file" id="statsImportFile" accept=".json,application/json" hidden></div>
-    <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
+
     <p class="stats-asset-credit">Rathausbilder: <a href="https://github.com/ClashKingInc/ClashKingAssets" target="_blank" rel="noopener noreferrer">ClashKingAssets</a> · inoffizielle Fan-App, nicht von Supercell unterstützt.</p>
     <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </section>
