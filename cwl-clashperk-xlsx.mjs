@@ -90,7 +90,7 @@ export async function readClashPerkXlsx(file){
   return decoder.decode(result);
  };
  const workbook=xmlDoc(await get("xl/workbook.xml"));
- if(localElements(workbook,"workbookPr").some(e=>e.getAttribute("date1904")==="1"))
+ if(localElements(workbook,"workbookPr").some(e=>["1","true"].includes(e.getAttribute("date1904"))))
   throw Error("Excel-Datei verwendet ein nicht unterstütztes Datumsformat.");
  const relationships=xmlDoc(await get("xl/_rels/workbook.xml.rels"));
  const rels=new Map(localElements(relationships,"Relationship").map(e=>[
@@ -179,8 +179,8 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
        !integer(globalOrder,1,200)||!integer(team,1,50)||
        !integer(home,0,1)||!integer(stars,0,3)||
        !Number.isFinite(dest)||dest<0||dest>100||
-       (r[3]!==null&&!integer(r[3],3,30))||
-       (r[14]!==null&&!integer(r[14],3,30)))
+       (r[3]!=null&&!integer(r[3],3,30))||
+       (r[14]!=null&&!integer(r[14],3,30)))
       throw Error("ClashPerk-Angriffszeile ist beschädigt oder gehört zum falschen Clan.");
     const date=dateFromSerial(r[22]),id=keyFor(warId);
     const known=wars.get(id);
