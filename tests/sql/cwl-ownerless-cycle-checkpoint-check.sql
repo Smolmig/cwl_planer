@@ -104,7 +104,7 @@ begin
     rev_json is distinct from
        (select to_jsonb(s) from public.cwl_plan_review_state s
          where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') or
-    source_json#>>'{}' is null then
+    v_hash is null then
     raise exception 'checkpoint changed source or dropped history';end if;
  if (select source_profile_sha256 from public.cwl_ownerless_cycle_checkpoints
        where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
