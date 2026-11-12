@@ -58,11 +58,5 @@ insert into public.cwl_plan_review_state(clan_id,cycle_id,season) values
  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   '22222222-2222-4222-8222-222222222222','2026-11');
 
--- The official eight-clan observation for only tenant A is inserted
--- AFTER the stage-1 migration has installed its per-tenant RLS and guards.
-insert into public.cwl_verified_league_observations
- (clan_id,season,clan_tag,group_tags,war_count,rounds_count,group_state)
-values
- ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','2026-12','#2PYL',
-  '["#2PY0","#2PY9","#2PYC","#2PYG","#2PYL","#2PYQ","#2PYR","#2PYV"]'::jsonb,
-  7,0,'preparation');
+-- The corresponding official group observation is seeded separately AFTER
+-- the real stage-1 observation migration has installed its guards.
