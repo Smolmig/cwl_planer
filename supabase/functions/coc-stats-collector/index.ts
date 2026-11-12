@@ -4,6 +4,7 @@ import {verifyCollectorIdentity} from "./collector-auth.mjs";
 import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./collector-cron-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
+import {verifiedLeagueObservation} from "./collector-season-evidence.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -149,6 +150,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set())
   try{group=await game("/clans/"+encodeURIComponent(gameTag)+
     "/currentwar/leaguegroup",key)}
   catch(e){notes.push(apiDiagnostic(e,"leaguegroup"))}
+  const seasonObservation=verifiedLeagueObservation(group,gameTag);
   if(group?.rounds&&Array.isArray(group.rounds)){
     const requested=new Set();
     let calls=0;
@@ -191,7 +193,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set())
   const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
     .map(x=>x.war.started_at));
   return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
-    !leagueStarts.has(x.war.started_at)),notes};
+    !leagueStarts.has(x.war.started_at)),notes,seasonObservation};
 }
 async function archiveForAppClan(settings,clanId,snapshots,checkedAt,partialError=null){
   const unique=new Map(snapshots.map(s=>[s.war.war_key,s]));
@@ -278,6 +280,7 @@ export default {
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
+    let seasonObservationsSaved=0,seasonObservationWriteErrors=0;
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
@@ -306,6 +309,16 @@ export default {
             scan.notes[0]||null);
           observedWars+=result.warCount;observedAttacks+=result.attacksCount;
           completed+=result.finalCount;processed++;
+          // Only service-verified linked tenants receive an official group
+          // observation. Nothing here advances/replaces any saved plan.
+          if(scan.seasonObservation){
+            try{
+              await upsert(settings,"cwl_verified_league_observations",[
+                {clan_id:id,...scan.seasonObservation}
+              ],"clan_id,season");
+              seasonObservationsSaved++;
+            }catch{seasonObservationWriteErrors++}
+          }
           if(scan.notes.length)errors++;
           if(observedDetails){
             try{
@@ -325,12 +338,13 @@ export default {
     }
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
-      ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0,
+      ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0&&
+        seasonObservationWriteErrors===0,
       tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
-      rosterFailureClasses,
+      rosterFailureClasses,seasonObservationsSaved,seasonObservationWriteErrors,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
-    },errors||tenureWriteErrors||tenureSkippedProfiles?503:200);
+    },errors||tenureWriteErrors||tenureSkippedProfiles||seasonObservationWriteErrors?503:200);
   }
 };
