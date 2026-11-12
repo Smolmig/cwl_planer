@@ -202,7 +202,7 @@ begin
  if (select count(*) from public.cwl_ownerless_cycle_checkpoints
      where clan_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')<>0
  then raise exception 'unverified tenant checkpoint';end if;
- if (select profile_json->>'testEdit'
+ if (select source_profile->>'testEdit'
      from public.cwl_ownerless_cycle_checkpoints
      where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
        and source_revision=20) is not null
