@@ -30,6 +30,8 @@ create table public.cwl_plan_suggestions (
  decided_by uuid
 );
 grant select,update on public.cwl_plan_suggestions to service_role;
+grant select,update on public.cwl_cloud_profiles to authenticated;
+grant select on public.cwl_plan_review_state to authenticated;
 insert into public.cwl_plan_suggestions(clan_id,cycle_id) values
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111'),
  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','22222222-2222-4222-8222-222222222222');
@@ -57,13 +59,23 @@ update public.cwl_cloud_profiles set profile_json=
  where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
 
+-- Independent five-war tenant (same synthetic official eight-clan NEW group,
+-- old source is the special historical six-clan/5-war format).
+insert into public.cwl_cloud_profiles(clan_id,profile_json,revision)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+  jsonb_set(public.test_cwl_profile(5,5,'2026-11'),
+    '{cwlLive,clanTag}','"#2PYQ"'::jsonb),30);
+insert into public.cwl_plan_review_state(clan_id,cycle_id,season)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+  '33333333-3333-4333-8333-333333333333','2026-11');
+
 -- Same trigger definitions / assumptions as deployed Cloud v1.18.1:
 -- a sessionless service UPDATE must be REJECTED by both the original
 -- plan guard and original revision trigger until phase 4 adds the
 -- strictly checkpoint-verified system branch.
 create function private.cwl_plan_can_write(p_clan uuid)
 returns boolean language sql stable security definer set search_path=''
-as $fn$select false$fn$;
+as $fn$select auth.uid() = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'::uuid$fn$;
 
 create function private.cwl_plan_write_guard()
 returns trigger language plpgsql security definer set search_path=''
