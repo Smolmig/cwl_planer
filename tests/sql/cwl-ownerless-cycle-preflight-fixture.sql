@@ -20,6 +20,11 @@ create table public.cwl_plan_review_state(
 );
 grant select on public.cwl_clans,public.cwl_cloud_profiles,
   public.cwl_plan_review_state to service_role;
+-- PostgreSQL SELECT FOR UPDATE requires the UPDATE table privilege even for a
+-- read-and-lock-only RPC. Actual Supabase service_role has these grants;
+-- the disposable test schema must reflect that real contract.
+grant update on public.cwl_cloud_profiles,public.cwl_plan_review_state
+  to service_role;
 
 create function public.test_cwl_profile(
   p_days int,p_locked int,p_season text

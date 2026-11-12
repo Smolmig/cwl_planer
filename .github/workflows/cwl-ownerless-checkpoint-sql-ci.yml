@@ -1,0 +1,106 @@
+name: CWL ownerless checkpoint SQL (synthetic PostgreSQL 17)
+on:
+  pull_request:
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_cycle_checkpoint.sql'
+      - 'scripts/DRAFT_cwl_ownerless_cycle_preflight.sql'
+      - 'supabase/migrations/20261112101500_cwl_verified_league_observations.sql'
+      - 'tests/sql/cwl-ownerless-cycle-checkpoint-*.sql'
+      - 'tests/sql/cwl-ownerless-cycle-preflight-*.sql'
+      - '.github/workflows/cwl-ownerless-checkpoint-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_cycle_checkpoint.sql'
+      - 'tests/sql/cwl-ownerless-cycle-checkpoint-*.sql'
+      - '.github/workflows/cwl-ownerless-checkpoint-sql-ci.yml'
+permissions:
+  contents: read
+jobs:
+  archive-checkpoint-transactions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: ci-synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client (disposable)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Prepare fake tenants and actual stage-1 migration
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112101500_cwl_verified_league_observations.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-seed.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_cycle_preflight.sql
+      - name: Install checkpoint DRAFT in disposable Postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_cycle_checkpoint.sql
+      - name: Verify rollback, retries, full old JSON, 5/5, 6/7, 7/7, isolation, permissions
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-checkpoint-check.sql
+      - name: Verify concurrent writer cannot produce a half-checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This is synthetic-only. In real Supabase, profile revision is
+          # incremented by an existing before-update trigger.
+          psql -v ON_ERROR_STOP=1 -c "
+            update public.cwl_cloud_profiles set revision=24
+              where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+          "
+          psql -v ON_ERROR_STOP=1 -c "
+            BEGIN;
+            SELECT clan_id FROM public.cwl_plan_review_state
+              WHERE clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' FOR UPDATE;
+            SELECT pg_sleep(4);
+            ROLLBACK;
+          " >/tmp/cwl-checkpoint-holder.log 2>&1 &
+          holder=$!
+          sleep 1
+          set +e
+          result="$(psql -v ON_ERROR_STOP=1 -c "
+            SET ROLE service_role;
+            SET lock_timeout='1000ms';
+            SELECT public.cwl_ownerless_cycle_checkpoint(
+              'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              '11111111-1111-4111-8111-111111111111',
+              24,'2026-12');
+          " 2>&1)"
+          status=$?
+          set -e
+          wait "$holder"
+          if [[ "$status" -eq 0 ]] || ! grep -qi 'lock timeout' <<<"$result"; then
+            echo "::error::Expected 1s lock timeout against concurrent cycle writer"
+            echo "$result"
+            exit 1
+          fi
+          test "$(psql -At -v ON_ERROR_STOP=1 -c "
+            select count(*) from public.cwl_ownerless_cycle_checkpoints
+              where source_revision=24;")" = "0"
+          psql -At -v ON_ERROR_STOP=1 -c "
+            SET ROLE service_role;
+            SELECT public.cwl_ownerless_cycle_checkpoint(
+              'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              '11111111-1111-4111-8111-111111111111',
+              24,'2026-12')->>'created';
+          " | grep -qx true
+          test "$(psql -At -v ON_ERROR_STOP=1 -c "
+            select count(*) from public.cwl_ownerless_cycle_checkpoints
+              where source_revision=24;")" = "1"
+          echo "PASS: lock contention rolled back cleanly, retry safely succeeded"
