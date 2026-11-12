@@ -955,6 +955,13 @@ async function listClans(epoch=accountEpoch,selected){
 }
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
+ // The old clan's screen should not be visible while another tenant's
+ // profile, memberships, stats and first Clash snapshot are still loading.
+ // The initial login has its own shield already; no flash for same-clan
+ // refreshes, no overlay on routine realtime changes.
+ const nextClan=$("cloudClanSelect").value||null;
+ if(cloud.active&&clanId&&nextClan&&clanId!==nextClan)
+  window.CWLStartup?.begin?.("Der gewählte Clan wird geladen …");
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
  if(channel){await sb.removeChannel(channel);channel=null}
@@ -1645,7 +1652,16 @@ async function getRoster({automatic=false}={}){
  const existingMap=new Map(existing.filter(m=>m.playerTag).map(m=>[normalizeTag(m.playerTag),m]));
  const added=[...rosterMap.values()].filter(m=>!existingMap.has(normalizeTag(m.tag)));
  const departed=existing.filter(m=>m.playerTag&&!rosterMap.has(normalizeTag(m.playerTag))&&m.cocSyncState!=="former"&&m.cocSyncState!=="kept");
- const planDays=storage.getPlannedLineups();
+ // A finished CWL is history, not an active line-up. The planning
+ // engine can still calculate seven theoretical days from that old profile,
+ // but they must NOT cause ten stale "keep/remove for Day 1–7" prompts.
+ // Membership differences remain reviewable without changing played locks.
+ // When the comparison is used without an initialized live bridge
+ // (e.g. isolated imports/tests), retain the conservative old behavior:
+ // never silently drop an active-player warning without phase evidence.
+ const lifecycle=typeof live!=="undefined"?live.getLifecycle?.():null;
+ const activeCwlPlanning=!lifecycle||lifecycle.mode==="planning";
+ const planDays=activeCwlPlanning?storage.getPlannedLineups():[];
  const safeDays=Array.isArray(planDays)?planDays:[];
  const critical=departed.map(m=>({member:m,days:safeDays.filter(d=>Array.isArray(d?.lineup)&&d.lineup.includes(m.id)).map(d=>d.day)}))
    .filter(item=>item.days.length>0);
@@ -1673,7 +1689,7 @@ async function getRoster({automatic=false}={}){
   const title=document.createElement("strong");
   title.textContent="⚠️ "+critical.length+" Spieler nicht mehr im Clan, aber noch in der CWL-Aufstellung";
   const description=document.createElement("p");
-  description.textContent="Diese Spieler stehen noch im CWL-Plan. Entscheide, ob sie weiterhin eingesetzt werden sollen. Gespielte Tage bleiben erhalten:";
+  description.textContent="Diese Spieler stehen in einer laufenden CWL-Aufstellung. Entscheide, ob sie weiterhin eingesetzt werden sollen. Gespielte Tage bleiben erhalten:";
   warn.append(title,description);
   for(const item of critical){
    const label=document.createElement("label");
@@ -1689,11 +1705,17 @@ async function getRoster({automatic=false}={}){
  toggle("cloudDepartedWarnings",critical.length>0);
  toggle("cloudRosterDiff",true);
  toggle("cloudApplyRoster",role!=="viewer"&&((added.length+updated.length+departed.length)>0||(typeof manualRosterPending==="function"&&manualRosterPending())));
- text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" ausgetreten"+(unusuallyManyDeparted?" · ⚠️ Ungewöhnlich viele Austritte – manuell prüfen":critical.length?" · ⚠️ Aufstellungen prüfen":""));
+ text("cloudRosterStatus",incoming.length+" Mitglieder geprüft · "+added.length+" neu · "+updated.length+" geändert · "+departed.length+" nicht mehr im Clan"+
+   (unusuallyManyDeparted?" · ⚠️ Viele Abgänge – Clanbestand prüfen":
+    critical.length?" · ⚠️ Laufende CWL-Aufstellungen prüfen":
+    !activeCwlPlanning&&departed.length?" · Beendete CWL bleibt unverändert":""));
  if(automatic){
   if(critical.length||unusuallyManyDeparted){
    toggle("cloudRosterBox",true);
-   text("autoRosterStatus",unusuallyManyDeparted?"Ungewöhnlich viele Austritte erkannt. Bitte den Mitgliederabgleich manuell prüfen.":"Aufstellung prüfen: "+critical.length+" ausgetretene Spieler sind noch eingeplant.");
+   text("autoRosterStatus",unusuallyManyDeparted?
+     (activeCwlPlanning?"Ungewöhnlich viele Austritte erkannt. Bitte den Mitgliederabgleich manuell prüfen.":
+       "Nach der CWL haben sich viele Mitglieder verändert. Bitte den Clanbestand prüfen; alte Aufstellungen bleiben erhalten."):
+       "Laufende CWL-Aufstellung prüfen: "+critical.length+" Spieler sind nicht mehr im Clan.");
    storage.toast("⚠ Mitgliederabgleich: bitte manuell prüfen");
   }else{
    const changes=added.length+updated.length+normalDeparted.length;

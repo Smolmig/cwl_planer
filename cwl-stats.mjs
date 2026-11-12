@@ -535,7 +535,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       freshness.textContent=presentation.text;
       freshness.dataset.health=presentation.state;
     }
-    const ctl=$("statsImportButton");if(ctl)ctl.hidden=!enabled||ctx.role==="viewer";
+    const canImport=enabled&&(ctx.role==="owner"||ctx.role==="editor");
+    const ctl=$("statsImportButton");if(ctl)ctl.hidden=!canImport;
+    const entry=$("statsImportEntry");if(entry)entry.hidden=!canImport;
     const copy=$("statsNoCloud");if(copy)copy.hidden=enabled;
     if(!enabled){
       $("statsSummary").innerHTML="";
