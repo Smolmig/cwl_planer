@@ -272,18 +272,15 @@ export function createCwlGroupArchiveView({
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
   if(!host)return {open(){},invalidate(){}};
   const current=()=>isConnected()?getClanId():null;
-  function captureOpen(){
-    return new Set([...host.querySelectorAll('details[data-archive-key][open]')]
-      .map(node=>node.getAttribute("data-archive-key")).filter(Boolean));
-  }
   function replaceContent(html){
-    const opened=captureOpen();
+    const previous=new Map([...host.querySelectorAll('details[data-archive-key]')]
+      .map(node=>[node.dataset.archiveKey,node.open]));
     const active=host.contains(document.activeElement)?document.activeElement:null;
     const focusKey=active?.closest?.('details[data-archive-key]')?.dataset.archiveKey;
     const onSummary=active?.tagName==="SUMMARY";
     host.innerHTML=html;
     for(const node of host.querySelectorAll('details[data-archive-key]'))
-      if(opened.has(node.dataset.archiveKey))node.open=true;
+      if(previous.has(node.dataset.archiveKey))node.open=previous.get(node.dataset.archiveKey);
     if(focusKey&&onSummary){
       const node=[...host.querySelectorAll('details[data-archive-key]')]
         .find(n=>n.dataset.archiveKey===focusKey);
