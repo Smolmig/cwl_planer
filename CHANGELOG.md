@@ -19,6 +19,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.18.1] - 2026-11-12
+
+### Ein gemeinsamer CWL-Saisonrückblick – PATCH
+- **Ein CWL-Monat, eine Ansicht:** Clash-Gruppentabelle und gesicherte Planstände derselben bestätigten Clan-Saison werden als **eine** Saisonkarte gezeigt. Kriegstage, Tabelle (mit allen Begegnungen), Spieler und Einsätze sind vier kompakte Reiter.
+- Bereits gespeicherte CWL-Pläne bleiben erhalten und können mit den bisherigen Zugriffsrechten sowie der vorhandenen Sicherheitsbestätigung gezielt gelöscht werden. Beobachter haben kein Löschrecht.
+- Clan-/Saisonzuordnung benötigt die originale Clash-Clan-Kennung, die offizielle Saison und die gleiche Cloud-Clanbindung. Ein gleich benannter importierter oder manueller Monat reicht nicht aus: solche Pläne erscheinen als eigenständige Einträge.
+- Auch ohne aktuellen Cloud-Login bleiben lokal archivierte Pläne sichtbar. Fehlende Gruppenstände/Angriffsdaten werden klar gekennzeichnet und nicht erfunden. Historische Aufstellungen, Liga-Endstände und die Offline-PWA werden nicht migriert oder überschrieben.
+- Bestehende Datenquellen (RLS-geschütztes Gruppen-/Rosterarchiv und Cloud-Profilarchiv) bleiben unverändert. Beibehaltung des bewährten Clash-Abgleichs, keine Datenbank-/Edge-Migration.
+- Redaktionelle Hilfe, Settings-Changelog und öffentlicher Update-Verlauf aktualisiert; Regression zu 5- und 7-Kriege-Saisons, Clanwechsel, Reload, Mobilansicht und Rollen ergänzt.
+
 ## [1.18.0] - 2026-11-11
 
 ### CWL-Archiv: Saisonrückblick und sichere Endstands-Nachprüfung – MINOR
