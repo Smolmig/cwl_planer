@@ -1,0 +1,57 @@
+name: CWL ownerless preflight SQL (synthetic PostgreSQL 17)
+on:
+  pull_request:
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_cycle_preflight.sql'
+      - 'supabase/migrations/20261112101500_cwl_verified_league_observations.sql'
+      - 'tests/sql/cwl-ownerless-cycle-preflight-*.sql'
+      - '.github/workflows/cwl-ownerless-preflight-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_cycle_preflight.sql'
+      - 'supabase/migrations/20261112101500_cwl_verified_league_observations.sql'
+      - 'tests/sql/cwl-ownerless-cycle-preflight-*.sql'
+      - '.github/workflows/cwl-ownerless-preflight-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  safe-read-only-rollover-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: ci-synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client on disposable runner
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create synthetic tenant schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-fixture.sql
+      - name: Apply observation migration in disposable Postgres ONLY
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112101500_cwl_verified_league_observations.sql
+      - name: Create synthetic Supercell group observation
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-seed.sql
+      - name: Install READ-ONLY DRAFT preflight on disposable Postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_cycle_preflight.sql
+      - name: Execute 5/5 6/7 7/7 tenant/RLS/stale/archive checks
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-check.sql
