@@ -125,7 +125,8 @@ test("Original Cloud remains independently editable only through owner-gated int
  assert.match(html,/sourceSeason:season\?\.\[0\]/);
  assert.match(html,/archiveConfirmedCwl:.*?\(season\)=>/s);
  assert.match(html,/autoAdvanceCwl:async/);
- assert.match(html,/await cloud\.openNewCycle\(\)/);
+ assert.match(html,/await cloud\.openNewCycle\(oldSeason\)/);
+ assert.match(cloud,/async function authorizeBrowserCwlRollover\(oldSeason,newSeason\)/);
  assert.match(html,/state\.archives\.some\(a=>a\.sourceSeason===oldSeason\)/);
  assert.match(cloud,/getCwlLifecycle:\(\)=>live\.getLifecycle\(\)/);
  assert.doesNotMatch(live,/automatically\s+promote|automatically\s+kick/i);
