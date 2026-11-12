@@ -1,0 +1,106 @@
+name: CWL ownerless atomic rollover (isolated PG17)
+on:
+  pull_request:
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_atomic_rollover.sql'
+      - 'scripts/DRAFT_cwl_ownerless_cycle_checkpoint.sql'
+      - 'scripts/DRAFT_cwl_ownerless_cycle_preflight.sql'
+      - 'supabase/migrations/20261112101500_cwl_verified_league_observations.sql'
+      - 'tests/sql/cwl-ownerless-cycle-atomic-*.sql'
+      - 'tests/sql/cwl-ownerless-cycle-preflight-*.sql'
+      - '.github/workflows/cwl-ownerless-atomic-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/DRAFT_cwl_ownerless_atomic_rollover.sql'
+      - 'tests/sql/cwl-ownerless-cycle-atomic-*.sql'
+      - '.github/workflows/cwl-ownerless-atomic-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  atomic-rollover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-test-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install disposable PostgreSQL 17 client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Load real stage-1 schema and stages 2/3 drafts, all on fake tenants
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112101500_cwl_verified_league_observations.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-preflight-seed.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_cycle_preflight.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_cycle_checkpoint.sql
+      - name: Install old actual guard/revision behavior plus synthetic audit triggers
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-atomic-production-mock.sql
+      - name: Install atomic rollover DRAFT
+        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_ownerless_atomic_rollover.sql
+      - name: Verify full rollback, archival JSON, idempotency, special formats and owner edits
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/cwl-ownerless-cycle-atomic-check.sql
+      - name: Verify conflicting cron/owner locks and replay is harmless
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -c "
+            BEGIN;
+            SELECT clan_id FROM public.cwl_plan_review_state
+              WHERE clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+              FOR UPDATE;
+            SELECT pg_sleep(3);
+            ROLLBACK;
+          " >/tmp/cwl-atomic-lock.log 2>&1 &
+          holder=$!
+          sleep 1
+          set +e
+          result="$(psql -v ON_ERROR_STOP=1 -c "
+            SET ROLE service_role;
+            SET lock_timeout='900ms';
+            SELECT public.cwl_ownerless_atomic_rollover(
+              'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              '11111111-1111-4111-8111-111111111111',
+              20,'2026-12');
+          " 2>&1)"
+          status=$?
+          set -e
+          wait "$holder"
+          if [[ "$status" -eq 0 ]] || ! grep -qi 'lock timeout' <<<"$result"; then
+            echo "::error::Unexpected concurrent write behavior"
+            echo "$result"
+            exit 1
+          fi
+          test "$(psql -At -v ON_ERROR_STOP=1 -c "
+            SELECT count(*) FROM public.cwl_ownerless_cycle_transitions;")" = "3"
+          psql -At -v ON_ERROR_STOP=1 -c "
+            SET ROLE service_role;
+            SELECT public.cwl_ownerless_atomic_rollover(
+              'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              '11111111-1111-4111-8111-111111111111',
+              20,'2026-12')->>'reason';
+          " | grep -qx already_applied
+          test "$(psql -At -v ON_ERROR_STOP=1 -c "
+            SELECT count(*) FROM public.cwl_ownerless_cycle_transitions;")" = "3"
+          echo "PASS: concurrent role lock -> no half-commit; idempotent retry"
