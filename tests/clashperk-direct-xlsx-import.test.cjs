@@ -95,6 +95,16 @@ test("complete roster with exactly all attack or missed slots is marked complete
  assert.equal(got.missed[0].missed_count,2);
 });
 
+test("missing historical Rathaus information stays unknown, not an import rejection or invented RH",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const row=hit(1);
+ row[3]=undefined;row[14]=null;
+ const got=parseClashPerkSheets([attackSheet([row])],tag);
+ assert.equal(got.attacks.length,1);
+ assert.equal(got.attacks[0].attacker_th,null);
+ assert.equal(got.attacks[0].defender_th,null);
+});
+
 test("wrong-clan sheet, mixed clan rows and conflicting duplicate attack are rejected",async()=>{
  const {parseClashPerkSheets}=await xlsx();
  assert.throws(()=>parseClashPerkSheets([attackSheet([hit(1)])],other),/anderen Clan/);
