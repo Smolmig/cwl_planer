@@ -124,7 +124,7 @@ test("Historical import sits in the visible overview, not behind player statisti
  assert.match(overview,/id="statsImportEntry"/);
  assert.match(overview,/id="statsImportButton"/);
  assert.match(overview,/id="statsFeedback"/);
- assert.match(overview,/accept="\.json,application\/json"/);
+ assert.match(overview,/accept="[^"]*\.xlsx[^"]*\.json[^"]*"/);
  assert.match(overview,/Excel-Übernahme ist noch nicht verfügbar/);
  assert.doesNotMatch(players,/id="statsImportButton"/);
  const stats=read("cwl-stats.mjs");
