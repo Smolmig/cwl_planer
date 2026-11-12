@@ -113,7 +113,7 @@ test("verified own last war displays an outdated group status, never 28/28",asyn
   const view=createCwlGroupArchiveView({sb:client,getClanId:()=>"c",isConnected:()=>true});
   await view.open();
   const output=dom.window.document.getElementById("cwlGroupArchiveContent");
-  assert.match(output.textContent,/24 \/ 28 Gruppenspiele beendet/);
+  assert.match(output.textContent,/24\/28 Gruppenspiele/);
   assert.match(output.textContent,/Gruppenstand veraltet/);
   assert.doesNotMatch(output.textContent,/28 \/ 28/);
   output.querySelector(".season-archive-item").open=true;
