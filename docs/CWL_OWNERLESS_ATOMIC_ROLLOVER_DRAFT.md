@@ -89,6 +89,16 @@ Sperrkonflikt und erneuter Versuch, bekannte/ungültige Spieler,
 Saison-/Clanzugehörigkeit, Archivduplikate, RLS/EXECUTE, alte
 Vorschläge, Admin- und normale Owner-Updates nach dem Wechsel.
 
+## Verifizierter CI-Stand vom 12.11.2026
+
+**Der ausführbare Phase-4-Code (Commit `2367dd65124f93039a4a49fbc553bf91d5e4ca69`) besteht alle verfügbaren Gates:**
+
+- [691/691 CWL-Planer-App-Regressionen, 0 Fehler](https://github.com/Smolmig/cwl_planer/actions/runs/43216131267).
+- [PG17 Transaktions- und End-to-End-Fixtures: erfolgreich](https://github.com/Smolmig/cwl_planer/actions/runs/43216131571), inklusive absichtlich spät fehlschlagendem Audit-Insert mit komplettem Rollback, 5/5, 6/7, 7/7, zwei identische Clash-Tags verschiedener App-Clans, alte Owner-Bearbeitung nach Reset, Retry und Lock-Timeout.
+- [Historische SQL-Regression: erfolgreich](https://github.com/Smolmig/cwl_planer/actions/runs/43216131270).
+
+**Dies beweist nur die isolierte DB-Funktion in der synthetischen Umgebung, noch keine Live-UAT oder Edge-Aktivierung.**
+
 ## NICHT implementiert / Freigabesperren
 
 - **Kein Live-Deployment:** Draft-Datei liegt unter `scripts/DRAFT_...`,
