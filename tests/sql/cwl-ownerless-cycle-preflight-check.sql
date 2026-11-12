@@ -175,10 +175,14 @@ end $t$;
 
 -- Genuine service-invoker execution, restricted result shape, no write.
 set role service_role;
-select case when
- (public.cwl_ownerless_cycle_preflight(
-  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')->>'candidate')='true'
- then 'service_preflight_pass' else
-  (1/0)::text end as service_only_check;
+do $t$
+declare r jsonb;
+begin
+ r:=public.cwl_ownerless_cycle_preflight('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+ if r->>'candidate'<>'true' then
+   raise exception 'service-only preflight was denied: %',r;
+ end if;
+end
+$t$;
 reset role;
 select 'PASS: synthetic preflight and permissions' as result;
