@@ -1,7 +1,11 @@
 // Durable, read-only CWL group histories. Separate from the planner's own
 // archived lineups. All queries use the logged-in Supabase session and RLS.
-import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.18.0";
-import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.18.0";
+import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.18.1";
+import {unifyCwlArchiveSeasons} from "./cwl-unified-archive-core.mjs?v=1.18.1";
+import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.18.1";
+import {viewRounds,viewPlayers} from "./cwl-season-view.mjs?v=1.18.1";
+
+import {safeBadgeUrl} from "./cwl-live-core.mjs?v=1.18.1";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("de-AT",{maximumFractionDigits:1});
@@ -132,106 +136,268 @@ function archiveStatus(data,ownRows){
   return {label:"Stand vorläufig",
     note:"Der gespeicherte Gruppenstand reicht noch nicht für eine endgültige Tabelle."};
 }
-export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=()=>null,refreshFromClash=null}){
-  let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false;
+
+function ownWarsFromGroup(group){
+  if(!group)return null;
+  const rounds=group.rounds.map(round=>{
+    const match=round.matches.find(m=>m.available&&
+      (m.clan.tag===group.clanTag||m.opponent.tag===group.clanTag));
+    if(!match)return {day:round.day,available:false,state:"unknown"};
+    const ourSide=match.clan.tag===group.clanTag?match.clan:match.opponent;
+    const opponent=ourSide===match.clan?match.opponent:match.clan;
+    return {day:round.day,available:true,state:match.state,warTag:match.warTag,
+      teamSize:match.teamSize,own:{...ourSide},opponent:{...opponent}};
+  });
+  return {season:group.season,clanTag:group.clanTag,warCount:group.warCount,
+    rounds,available:rounds.filter(r=>r.available).length,
+    ended:rounds.filter(r=>r.state==="warEnded").length,players:[],opponents:[]};
+}
+function ownVerifiedRows(group,rows){
+  if(!group)return [];
+  const officialTags=new Set(group.rounds.flatMap(r=>r.matches
+    .filter(m=>m.available&&(m.clan.tag===group.clanTag||
+      m.opponent.tag===group.clanTag)).map(m=>m.warTag)));
+  return rows.filter(r=>r.season===group.season&&officialTags.has(r.war_tag)&&
+    ["warEnded","inWar"].includes(r.state)&&Array.isArray(r.lineup_json?.members)&&
+    r.lineup_json.members.length===r.team_size);
+}
+function playersFromRows(rows){
+  const byTag=new Map();
+  for(const r of rows){
+    for(const p of r.lineup_json.members){
+      if(!validTag(p?.tag))continue;
+      let record=byTag.get(p.tag);
+      if(!record){record={tag:p.tag,name:String(p.name||p.tag),
+        townHallLevel:p.townHallLevel??null,days:0,attacks:0,stars:0};
+        byTag.set(p.tag,record)}
+      record.days++;
+      for(const a of (Array.isArray(p.attacks)?p.attacks:[])){
+        if(!Number.isInteger(a?.stars)||a.stars<0||a.stars>3)continue;
+        record.attacks++;record.stars+=a.stars;
+      }
+    }
+  }
+  return [...byTag.values()].map(r=>({...r,averageStars:r.attacks?r.stars/r.attacks:null}))
+    .sort((a,b)=>b.stars-a.stars||b.attacks-a.attacks||
+      a.name.localeCompare(b.name,"de"));
+}
+function selectSeasonModel(item,ownRows){
+  const source=item.plans.find(p=>p.cwlLive?.season===item.season&&
+    p.cwlLive?.clanTag===item.clanTag)?.cwlLive;
+  const archive=source?item.plans.find(p=>p.cwlLive===source):null;
+  const saved=source?summarizeCwlSeason({name:archive?.label||"",cwlLive:source}):null;
+  const verified=item.group?ownWarsFromGroup(item.group):null;
+  if(!saved)return verified;
+  if(!verified)return saved;
+  // A finished official group score takes precedence over an older,
+  // still-in-war planner snapshot of the exact same war.
+  const rounds=saved.rounds.map(r=>{
+    const fromGroup=verified.rounds.find(m=>m.day===r.day&&m.available&&
+      m.warTag===r.warTag&&m.state==="warEnded");
+    return fromGroup?{...r,...fromGroup}:r;
+  });
+  return {...saved,rounds,ended:rounds.filter(r=>r.state==="warEnded").length};
+}
+function renderSavedPlan(plan,index,showDelete){
+  const lineups=(Array.isArray(plan.lineups)?plan.lineups:[])
+    .filter(x=>Number.isInteger(x?.day)&&Array.isArray(x.lineup))
+    .sort((a,b)=>a.day-b.day);
+  const players=Array.isArray(plan.players)?plan.players:[];
+  const names=new Map(players.map(p=>[String(p.id),String(p.name||"Unbekannt")]));
+  const counts=new Map();
+  for(const lineup of lineups)for(const id of lineup.lineup)
+    counts.set(String(id),(counts.get(String(id))||0)+1);
+  const people=[...counts.entries()].map(([id,count])=>({
+    id,name:names.get(id)||String(id),count
+  })).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"));
+  const roster=lineups.map(lineup=>'<details class="season-archive-lineup" data-archive-key="saved:'+esc(plan.id)+':'+lineup.day+'">'+
+    '<summary>Kriegstag '+lineup.day+' · '+lineup.lineup.length+' Spieler</summary>'+
+    '<div class="season-archive-roster">'+lineup.lineup.map(id=>{
+      const name=lineup.snapshots?.[id]?.name||names.get(String(id))||"Unbekannt";
+      return '<div class="season-archive-player"><strong>'+esc(name)+'</strong></div>';
+    }).join("")+'</div></details>').join("");
+  const details='<p class="statusline">'+Number(plan.playedCount||lineups.length)+
+    '/'+Number(plan.days||7)+' Tage gespielt · '+Number(plan.slots||15)+'vs'+
+    Number(plan.slots||15)+(plan.complete?' · Plan abgeschlossen':' · Planstand gespeichert')+'</p>'+
+    '<div class="season-group-archive-rounds">'+roster+'</div>'+
+    '<h4>Einsatzhäufigkeit</h4>'+
+    (people.length?'<div class="archive-deployment-list">'+people.map(p=>
+      '<div class="archive-count"><span>'+esc(p.name)+'</span><strong>'+p.count+'×</strong></div>'
+    ).join("")+'</div>':'<p class="season-empty">Keine Einsätze gespeichert.</p>')+
+    (showDelete?'<div class="archive-plan-danger"><button type="button" class="btn small danger" data-unified-delete-id="'+
+      esc(plan.id)+'">Diesen gespeicherten Plan löschen</button></div>':"");
+  return '<details class="archive-saved-plan" data-archive-key="plan:'+esc(plan.id)+'"'+
+    (index===0?' open':'')+'><summary>'+esc(plan.label||"Gespeicherter Plan")+
+    ' · '+lineups.length+' Einsatztage</summary>'+details+'</details>';
+}
+function renderOwnLineups(item,ownRows,profile){
+  if(!item.group)return '<p class="season-empty">Keine bestätigten Clash-Aufstellungen archiviert.</p>';
+  const dayRows=item.group.rounds.map(r=>{
+    const lineup=ownLineupForDay(item.group,r.day,ownRows,profile);
+    return lineup?lineupDetail(lineup,item.group.season,r.day):"";
+  }).filter(Boolean);
+  return dayRows.length?'<div class="season-group-archive-rounds">'+dayRows.join("")+'</div>':
+    '<p class="season-empty">Keine bestätigten Clash-Aufstellungen archiviert.</p>';
+}
+function seasonPane(item,tab,ownRows,profile,viewer){
+  const group=item.group,model=selectSeasonModel(item,ownRows);
+  if(tab==="rounds")return model?viewRounds(model,null):
+    '<p class="season-empty">Für diese CWL wurden keine Kriegsergebnisse gespeichert. Aufstellungen findest du unter „Einsätze“.</p>';
+  if(tab==="group")return group?
+    groupTable(group)+
+    '<details class="archive-all-matches" data-archive-key="matches:'+esc(item.id)+'"><summary>Alle Begegnungen ansehen</summary>'+
+    groupRounds(group,ownRows,profile)+'</details>'+
+    (!group.complete?'<p class="statusline">Die Tabelle ist vorläufig: '+group.ended+
+      ' von '+group.expected+' Gruppenspielen sind mit Endstand gespeichert.</p>':""):
+    '<p class="season-empty">Für diese CWL wurde keine Gruppentabelle gespeichert. Deine eigenen Aufstellungen bleiben erhalten.</p>';
+  if(tab==="players"){
+    const verified=playersFromRows(ownVerifiedRows(group,ownRows));
+    const rows=verified.length?verified:model?.players||[];
+    return rows.length?viewPlayers({...model,players:rows}):
+      '<p class="season-empty">Keine einzelnen Spielerangriffe aus dieser CWL gespeichert. Die Einsatzhäufigkeit findest du unter „Einsätze“.</p>';
+  }
+  return item.plans.length?
+    '<div class="archive-deployment-content">'+item.plans.map((p,i)=>
+      renderSavedPlan(p,i,!viewer)).join("")+'</div>':
+    renderOwnLineups(item,ownRows,profile);
+}
+const archiveTabs=[["rounds","Kriegstage"],["group","Tabelle"],
+  ["players","Spieler"],["deployments","Einsätze"]];
+export function createCwlGroupArchiveView({
+  sb,getClanId,isConnected,getClanTag=()=>null,getProfile=()=>null,
+  isViewer=()=>false,onDeletePlan=null,refreshFromClash=null
+}){
+  let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false,loadError=false;
+  const selected=new Map();
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
   if(!host)return {open(){},invalidate(){}};
   const current=()=>isConnected()?getClanId():null;
-  // A live API poll can refresh the archive while a user is reading it.
-  // Remember *every* open disclosure, including nested rounds/rosters,
-  // then restore them synchronously after replacing data. Only a real clan
-  // switch clears this state. Do not store it in the shared planner profile.
   function captureOpen(){
     return new Set([...host.querySelectorAll('details[data-archive-key][open]')]
       .map(node=>node.getAttribute("data-archive-key")).filter(Boolean));
   }
-  function restoreOpen(keys){
-    for(const node of host.querySelectorAll('details[data-archive-key]'))
-      if(keys.has(node.getAttribute("data-archive-key")))node.open=true;
-  }
   function replaceContent(html){
-    const keys=captureOpen();
+    const opened=captureOpen();
     const active=host.contains(document.activeElement)?document.activeElement:null;
-    const focusedKey=active?.closest?.('details[data-archive-key]')?.getAttribute("data-archive-key");
-    const summaryWasFocused=active?.tagName==="SUMMARY";
+    const focusKey=active?.closest?.('details[data-archive-key]')?.dataset.archiveKey;
+    const onSummary=active?.tagName==="SUMMARY";
     host.innerHTML=html;
-    restoreOpen(keys);
-    if(focusedKey&&summaryWasFocused){
-      // Keyboard users must not lose their place when a new API snapshot
-      // replaces a section they were currently inspecting.
-      const target=[...host.querySelectorAll('details[data-archive-key]')]
-        .find(node=>node.getAttribute("data-archive-key")===focusedKey);
-      target?.querySelector(":scope > summary")?.focus({preventScroll:true});
+    for(const node of host.querySelectorAll('details[data-archive-key]'))
+      if(opened.has(node.dataset.archiveKey))node.open=true;
+    if(focusKey&&onSummary){
+      const node=[...host.querySelectorAll('details[data-archive-key]')]
+        .find(n=>n.dataset.archiveKey===focusKey);
+      node?.querySelector(":scope > summary")?.focus({preventScroll:true});
     }
   }
   function render(){
-    const id=current();
-    if(!id){
-      host.innerHTML='<p class="season-empty">Gruppenergebnisse aus Clash siehst du nach der Anmeldung in einem Cloud-Clan. Deine gespeicherten CWL-Pläne bleiben im Abschnitt darunter verfügbar.</p>';
-      if(refresh)refresh.hidden=true;
+    if(refresh)refresh.hidden=!current();
+    const profile=getProfile?.()||{};
+    const entries=unifyCwlArchiveSeasons(rows,profile.archives,getClanTag?.());
+    if(busy&&!entries.length){
+      replaceContent('<p class="season-empty">Gespeicherte CWLs werden geladen …</p>');
       return;
     }
-    if(refresh)refresh.hidden=false;
-    if(busy){host.innerHTML='<p class="season-empty">Gespeicherte Gruppenergebnisse werden geladen …</p>';return}
-    if(!rows.length){host.innerHTML='<p class="season-empty">Noch keine Gruppenergebnisse archiviert. Sobald Clash Gruppendaten liefert und der Abruf erfolgreich ist, werden sie hier angezeigt.</p>';return}
-    replaceContent('<div class="season-group-archive-list">'+rows.map(row=>{
-      const d=summarizeCwlGroup(row.group_json);
-      if(!d||d.clanTag!==row.group_json?.clanTag||row.season!==d.season)return "";
-      const checked=new Date(row.updated_at);
-      const date=Number.isNaN(checked.getTime())?"Stand unbekannt":checked.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"});
-      const status=archiveStatus(d,ownRows);
-      return '<details class="season-archive-item" data-archive-key="season:'+esc(d.season)+'"><summary><span><strong>'+esc(month(d.season))+'</strong>'+
-        '<small>'+d.clans.length+' Clans · '+d.ended+' / '+d.expected+' Gruppenspiele beendet</small></span>'+
-        '<span class="season-archive-chip">'+esc(status.label)+'</span></summary>'+
-        '<div class="season-archive-body"><p class="statusline">Gespeicherter Gruppenstand vom '+esc(date)+
-        '. '+esc(status.note)+' Einzelne Angreifer werden im Gruppenarchiv nicht gespeichert.</p>'+
-        groupTable(d)+
-        '<h4>Runden</h4>'+groupRounds(d,ownRows,getProfile?.())+'</div></details>';
+    if(!entries.length){
+      replaceContent('<p class="season-empty">Noch keine CWL archiviert. Nach einer CWL findest du hier die Ergebnisse und gespeicherten Aufstellungen.</p>');
+      return;
+    }
+    replaceContent((loadError?'<p class="statusline">Die Gruppendaten konnten derzeit nicht geladen werden. Deine gespeicherten Pläne bleiben verfügbar.</p>':"")+
+      '<div class="season-group-archive-list">'+entries.map(item=>{
+      const group=item.group,plan=item.plans[0];
+      const status=group?archiveStatus(group,ownRows):{
+        label:"Plan gespeichert",note:"Für diesen Plan liegt keine verbundene Gruppentabelle vor."};
+      const model=selectSeasonModel(item,ownRows);
+      const played=plan?Number(plan.playedCount)||0:null;
+      const total=plan?Number(plan.days)||7:group?.warCount||7;
+      const meta=[
+        group?group.clans.length+' Clans · '+group.ended+'/'+group.expected+' Gruppenspiele':null,
+        played!==null?played+'/'+total+' eigene Tage':null,
+        plan?plan.slots+'vs'+plan.slots:null
+      ].filter(Boolean).join(' · ');
+      const tab=selected.get(item.id)||"rounds";
+      const checked=group?new Date(item.groupRow?.updated_at):null;
+      const savedAt=checked&&!Number.isNaN(checked.getTime())?
+        checked.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):null;
+      const intro=group?'<p class="statusline">'+esc(status.note)+
+        (savedAt?' · Gruppenstand: '+esc(savedAt):"")+'</p>':
+        '<p class="statusline">Aus deinem Planarchiv. Keine Gruppendaten mit derselben bestätigten Clan-Kennung vorhanden.</p>';
+      const tabs='<div class="plan-postseason-tabs archive-season-tabs" role="tablist" aria-label="Saisonrückblick">'+
+        archiveTabs.map(([id,label])=>'<button type="button" role="tab" data-unified-archive-tab="'+id+
+          '" class="plan-postseason-tab'+(id===tab?' active':'')+'" aria-selected="'+
+          (id===tab)+'" tabindex="'+(id===tab?0:-1)+'">'+label+'</button>').join("")+'</div>';
+      return '<details class="season-archive-item" data-archive-key="'+esc(item.id)+'">'+
+        '<summary><span><strong>'+esc(item.label)+'</strong><small>'+esc(meta||"Gespeicherter CWL-Plan")+
+        '</small></span><span class="season-archive-chip">'+esc(status.label)+'</span></summary>'+
+        '<div class="season-archive-body">'+intro+tabs+
+        '<div class="plan-postseason-panel archive-season-panel" role="tabpanel" data-unified-panel="'+tab+'">'+
+        seasonPane(item,tab,ownRows,profile,isViewer?.())+'</div></div></details>';
     }).join("")+'</div>');
   }
+  host.addEventListener("click",async event=>{
+    const tabButton=event.target.closest("[data-unified-archive-tab]");
+    if(tabButton&&host.contains(tabButton)){
+      const box=tabButton.closest("details[data-archive-key]");
+      if(!box)return;
+      const tab=tabButton.dataset.unifiedArchiveTab;
+      if(!archiveTabs.some(([id])=>id===tab))return;
+      selected.set(box.dataset.archiveKey,tab);
+      const key=box.dataset.archiveKey;
+      render();
+      const currentBox=[...host.querySelectorAll('details.season-archive-item')]
+        .find(node=>node.dataset.archiveKey===key);
+      currentBox?.querySelector('[data-unified-archive-tab="'+tab+'"]')
+        ?.focus({preventScroll:true});
+      return;
+    }
+    const remove=event.target.closest("[data-unified-delete-id]");
+    if(remove&&host.contains(remove)&&!isViewer?.()&&typeof onDeletePlan==="function"){
+      event.preventDefault();
+      const key=remove.dataset.unifiedDeleteId;
+      const changed=await onDeletePlan(key);
+      if(changed){render()}
+    }
+  });
   async function open(force=false){
     const id=current(),token=++requestSerial;
-    if(!id){loadedId=null;rows=[];ownRows=[];busy=false;render();return}
+    if(!id){
+      loadedId=null;rows=[];ownRows=[];busy=false;loadError=false;
+      render();return;
+    }
     if(!force&&loadedId===id&&!busy){render();return}
-    // Keep visible rows and expanded panels in place during a background
-    // refresh. A spinner-only replacement loses both focus and scroll position.
-    const keepVisible=loadedId===id&&rows.length>0;
-    busy=!keepVisible;
-    if(!keepVisible){rows=[];ownRows=[];render()}
+    const sameClan=loadedId===id;
+    if(!sameClan){rows=[];ownRows=[];selected.clear()}
+    busy=!sameClan||!rows.length;loadError=false;
+    if(busy)render();
     try{
       const {data,error}=await sb.from("cwl_group_archives")
         .select("season,group_json,updated_at")
         .eq("clan_id",id).order("season",{ascending:false}).limit(18);
       if(token!==requestSerial||id!==current())return;
       if(error)throw error;
-      // A temporary roster-storage error must not hide the historical group.
-      let rosterQuery={data:[],error:null};
-      try{rosterQuery=await sb.from("cwl_own_lineup_archives")
+      let rosters={data:[],error:null};
+      try{rosters=await sb.from("cwl_own_lineup_archives")
         .select("season,day,war_tag,state,team_size,lineup_json,updated_at")
         .eq("clan_id",id).order("season",{ascending:false}).limit(140)}
-      catch{rosterQuery={data:[],error:true}}
+      catch{rosters={data:[],error:true}}
       if(token!==requestSerial||id!==current())return;
-      if(refresh)refresh.title="Bereits gespeicherte Gruppenergebnisse neu laden (kein neuer Clash-Abruf).";
       loadedId=id;rows=Array.isArray(data)?data:[];
-      ownRows=!rosterQuery.error&&Array.isArray(rosterQuery.data)?rosterQuery.data:[];busy=false;render();
+      ownRows=!rosters.error&&Array.isArray(rosters.data)?rosters.data:ownRows;
+      busy=false;loadError=false;render();
     }catch(error){
       if(token!==requestSerial||id!==current())return;
-      busy=false;
+      busy=false;loadError=true;
       if(loadedId===id&&rows.length){
-        // A transient refresh failure must not close a single open round.
-        if(refresh)refresh.title="Aktualisierung derzeit nicht möglich – der gespeicherte Stand bleibt sichtbar.";
+        if(refresh)refresh.title="Clash-Abgleich gerade nicht möglich; gespeicherte Daten bleiben sichtbar.";
         return;
       }
-      loadedId=null;rows=[];ownRows=[];
-      host.innerHTML='<p class="season-empty">Das Gruppenarchiv konnte nicht geladen werden. Bitte Verbindung und Anmeldung prüfen und erneut versuchen. Deine bisherigen Plan-Archive bleiben erhalten.</p>';
+      loadedId=id;rows=[];ownRows=[];render();
     }
   }
   refresh?.addEventListener("click",async()=>{
     if(refresh.disabled)return;
     refresh.disabled=true;
     try{
-      // Reload saved data only after the authorized status check has had
-      // a chance to finish any verified post-season archive backfill.
       if(typeof refreshFromClash==="function")await refreshFromClash();
       await open(true);
     }finally{refresh.disabled=false}
@@ -239,9 +405,7 @@ export function createCwlGroupArchiveView({sb,getClanId,isConnected,getProfile=(
   return {open,invalidate(){
     requestSerial++;
     const id=current(),changed=loadedId!==null&&loadedId!==id;
-    if(changed){loadedId=null;rows=[];ownRows=[];busy=false}
-    // A periodic live refresh is not a navigation event: keep rows, opened
-    // panels and the current reading position until new data arrives.
+    if(changed){loadedId=null;rows=[];ownRows=[];busy=false;selected.clear()}
     if($("view-archive")?.classList.contains("active"))void open(true);
-  }};
+  },render};
 }
