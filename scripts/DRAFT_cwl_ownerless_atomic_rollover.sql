@@ -238,6 +238,18 @@ revoke all on function private.cwl_ownerless_checked_system_write(
  public.cwl_cloud_profiles,public.cwl_cloud_profiles)
  from PUBLIC,anon,authenticated;
 
+-- The established private schema only granted USAGE to authenticated.
+-- The SECURITY INVOKER service RPC also needs explicit, narrow EXECUTE
+-- on its pure JSON helpers (not on existing owner-only private helpers).
+grant usage on schema private to service_role;
+grant execute on function private.cwl_ownerless_player_snapshot(jsonb,text),
+ private.cwl_ownerless_reset_member(jsonb),
+ private.cwl_ownerless_build_archive(jsonb,text,uuid,timestamptz),
+ private.cwl_ownerless_next_profile(jsonb,text,int,uuid,timestamptz),
+ private.cwl_ownerless_checked_system_write(
+   public.cwl_cloud_profiles,public.cwl_cloud_profiles)
+ to service_role;
+
 -- Surgical changes ONLY to two existing triggers. Existing owner/editor
 -- checks remain unchanged in the normal path. Do not globally bypass RLS.
 create or replace function private.cwl_plan_write_guard()
