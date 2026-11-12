@@ -141,6 +141,28 @@ test("manual standalone plan is available while logged out, with no network call
   assert.match(host.textContent,/Manuell/);
  }finally{global.document=original;d.window.close()}
 });
+test("legacy unlinked plan can show its own historical wars without absorbing the group",async()=>{
+ const previous=global.document,d=dom();global.document=d.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  const old={...plan("legacy"),sourceSeason:null,label:"Legacy November"};
+  const view=createCwlGroupArchiveView({
+   sb:fakeDb([{season:"2026-11",group_json:group(),updated_at:"2026-11-11T22:00:00Z"}]),
+   getClanId:()=>"same",getClanTag:()=>TAGS[0],isConnected:()=>true,
+   getProfile:()=>({archives:[old]})
+  });
+  await view.open();
+  const host=d.window.document.querySelector("#cwlGroupArchiveContent");
+  assert.equal(host.querySelectorAll(".season-archive-item").length,2,
+   "unverified legacy source must stay separate from official group");
+  const legacy=[...host.querySelectorAll(".season-archive-item")]
+   .find(x=>x.textContent.includes("Legacy November"));
+  legacy.open=true;
+  assert.match(legacy.textContent,/Kriegstag 1/);
+  assert.match(legacy.textContent,/25 : 20/);
+ }finally{global.document=previous;d.window.close()}
+});
+
 test("viewer cannot delete a stored plan, owner must use the supplied confirmation workflow",async()=>{
  const original=global.document,d=dom();global.document=d.window.document;
  try{
