@@ -50,7 +50,7 @@ function extractLineup(profile,season,day,warTag,clanTag){
   // A manually locked lineup from an older plan is still useful, but is
   // labelled as planning data, never misrepresented as an API-confirmed team.
   for(const archived of (Array.isArray(profile?.archives)?profile.archives:[])){
-    if(archived?.cwlLive?.season!==season)continue;
+    if(archived?.cwlLive?.season!==season||archived.cwlLive.clanTag!==clanTag)continue;
     const dayLineup=(archived.lineups||[]).find(l=>l?.day===day);
     if(!dayLineup||!Array.isArray(dayLineup.lineup))continue;
     const players=new Map((archived.players||[]).map(p=>[p.id,p]));
@@ -305,12 +305,12 @@ export function createCwlGroupArchiveView({
       const status=group?archiveStatus(group,ownRows):{
         label:"Plan gespeichert",note:"Für diesen Plan liegt keine verbundene Gruppentabelle vor."};
       const model=selectSeasonModel(item,ownRows);
-      const played=plan?Number(plan.playedCount)||0:null;
+      const played=plan?Math.max(Number(plan.playedCount)||0,Array.isArray(plan.lineups)?plan.lineups.length:0):null;
       const total=plan?Number(plan.days)||7:group?.warCount||7;
       const meta=[
         group?group.clans.length+' Clans · '+group.ended+'/'+group.expected+' Gruppenspiele':null,
         played!==null?played+'/'+total+' eigene Tage':null,
-        plan?plan.slots+'vs'+plan.slots:null
+        Number.isInteger(plan?.slots)?plan.slots+'vs'+plan.slots:null
       ].filter(Boolean).join(' · ');
       const tab=selected.get(item.id)||"rounds";
       const checked=group?new Date(item.groupRow?.updated_at):null;
