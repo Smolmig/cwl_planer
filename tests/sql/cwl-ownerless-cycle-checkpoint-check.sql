@@ -86,16 +86,16 @@ reset role;
 -- After checkpoint, current profile, review cycle and locks are STILL LIVE
 -- and byte-identical. The archive snapshot includes ALL original JSON keys.
 do $t$
-declare old_json jsonb; saved_json jsonb; source_json jsonb; rev_json jsonb;
+declare old_json jsonb; saved_json jsonb; rev_json jsonb; v_hash text;
 begin
  select p.profile_json into old_json from public.cwl_cloud_profiles p
    where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
  select cp.source_profile,cp.source_review_state,
-   cp.source_profile_sha256 into saved_json,rev_json,source_json
+   cp.source_profile_sha256 into saved_json,rev_json,v_hash
  from public.cwl_ownerless_cycle_checkpoints cp
  where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
  if saved_json is distinct from old_json or
-    source_json#>>'{}' is null or
+    v_hash is null or
     (select revision from public.cwl_cloud_profiles
        where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>20 or
     (select cycle_id::text from public.cwl_plan_review_state
