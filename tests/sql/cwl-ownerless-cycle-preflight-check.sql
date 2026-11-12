@@ -100,9 +100,16 @@ update public.cwl_cloud_profiles set profile_json=
 
 -- Refuse old or future observations, including the same season as the
 -- plan review state. Date of observation is not proof of warEnded.
+-- The stage-1 real trigger intentionally forces last_seen_at=now() on
+-- every write. Only in this disposable synthetic CI database, briefly
+-- suspend that ONE trigger to simulate 48 hours without any collector poll.
+alter table public.cwl_verified_league_observations
+  disable trigger cwl_verified_league_observation_guard;
 update public.cwl_verified_league_observations
  set last_seen_at=now()-interval '48 hours'
  where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+alter table public.cwl_verified_league_observations
+  enable trigger cwl_verified_league_observation_guard;
 do $t$ declare r jsonb;
 begin
  r:=public.cwl_ownerless_cycle_preflight('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
