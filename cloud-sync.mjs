@@ -368,8 +368,8 @@ function flagRemoteCwlCycleChange(){
 }
 async function authorizeBrowserCwlRollover(oldSeason,newSeason){
  if(!cloud.active||!clanId||role!=="owner"||blocked||saving||changedSerial||
-    !navigator.onLine||!/^20\\d{2}-(0[1-9]|1[0-2])$/.test(String(oldSeason||""))||
-    !/^20\\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
+    !navigator.onLine||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(oldSeason||""))||
+    !/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(newSeason||""))||
     newSeason<=oldSeason)return false;
  const initialCycle=planReview?.cycle_id,initialRevision=revision;
  const id=clanId,epoch=accountEpoch;
