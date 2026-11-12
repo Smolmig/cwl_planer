@@ -86,6 +86,19 @@ nicht Teil dieses Pull Requests.
   Rollover verursacht dennoch einen sichtbaren Collector-503,
   statt eine falsche Erfolgsmeldung zu erzeugen.
 
+## Verifizierter Teststand (12. November 2026)
+
+**[GitHub Actions – vollständige CWL-Planer-Regression #43233875390](https://github.com/Smolmig/cwl_planer/actions/runs/43233875390):
+713 von 713 Tests bestanden, 0 Fehler.** Die neu ergänzten zwölf
+Collector-/RPC-Gate-Tests sind mit der vorhandenen App-/Browser-Regression
+durchgelaufen; die bisherigen Browser-CAS- und Saisonwechsel-Tests
+bleiben erfolgreich. Der SQL-Writer selbst wurde zuvor unabhängig im
+synthetischen PostgreSQL-17-Lauf aus #265 validiert.
+
+Dieser grüne Testlauf **ersetzt nicht** den noch offenen Restore-, echten
+Supabase-RLS- und Staging-Canary-Test. Erst danach darf `apply`
+irgendwo produktiv aktiviert werden.
+
 ## Tests und Release-Gates
 
 `tests/collector-ownerless-rollover.test.cjs` führt die Adapterlogik
