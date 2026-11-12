@@ -65,7 +65,7 @@ test("backend persists only sanitized authenticated group, not opponent members"
  await save("00000000-0000-4000-8000-000000000001",bad);
  assert.equal(captured.length,1,"malformed season not saved");
 });
-test("historic groups render independently of existing plan archives and HTML is escaped",async()=>{
+test("group-only season remains readable without a saved plan and escapes HTML",async()=>{
  const dom=wrapper(),original=global.document;global.document=dom.window.document;
  try{
   const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
@@ -86,7 +86,7 @@ test("historic groups render independently of existing plan archives and HTML is
   assert.match(html,/November 2026/);
   assert.match(html,/Ergebnisse fehlen/);
   assert.match(html,/24/);
-  assert.match(html,/Runde 1/);
+  assert.match(html,/Kriegstag 1/);
   assert.doesNotMatch(html,/<img src=x onerror=alert\(1\)>/);
   assert.doesNotMatch(html,/delete-archive|Löschen/);
   assert.ok(dom.window.document.querySelectorAll(".season-archive-item").length===1);
@@ -209,12 +209,15 @@ test("background polling retains expanded season, round and own roster; temporar
   const view=createCwlGroupArchiveView({sb:client,getClanId:()=>"clan-a",isConnected:()=>true});
   await view.open();
   const root=dom.window.document.querySelector("#cwlGroupArchiveContent");
+  const season=root.querySelector("details.season-archive-item");season.open=true;
+  root.querySelector('[data-unified-archive-tab="group"]').click();
   let details=[...root.querySelectorAll("details[data-archive-key]")];
-  // Seven rounds exist even when only one has a real own-team roster.
-  assert.equal(details.length,9,"season, seven rounds and own roster use stable keys");
-  const expanded=new Set(["season:2026-11","round:2026-11:1","roster:2026-11:1"]);
+  // One season, its all-matches disclosure, seven rounds and an own roster.
+  assert.equal(details.length,10,"all historical sections retain stable keys");
+  const key=root.querySelector("details.season-archive-item").dataset.archiveKey;
+  const expanded=new Set([key,"matches:"+key,"round:2026-11:1","roster:2026-11:1"]);
   details.forEach(node=>{node.open=expanded.has(node.dataset.archiveKey)});
-  assert.equal(details.filter(node=>node.open).length,3);
+  assert.equal(details.filter(node=>node.open).length,4);
   assert.ok(root.textContent.includes("24"),"initial score displayed");
   const before=root.innerHTML;
   view.invalidate();
