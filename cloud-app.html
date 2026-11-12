@@ -29,16 +29,32 @@ try{
   if(localStorage.getItem("sb-yjldnvfwposfwmzmcsow-auth-token"))
    document.documentElement.classList.add("cloud-startup-pending");
  }catch{/* Storage may be disabled; the regular guest view stays available. */}
- let finished=false;
- const finish=()=>{
-  if(finished)return;
-  finished=true;
-  clearTimeout(watchdog);
+ let sequence=0,watchdog=null;
+ // The same visual shield also covers deliberate Cloud clan switches.
+ // A generation token prevents the previous clan's timeout from revealing
+ // a half-loaded different clan. Routine realtime refreshes never call begin.
+ const finish=(ticket=sequence)=>{
+  if(ticket!==sequence)return;
+  clearTimeout(watchdog);watchdog=null;
   document.documentElement.classList.remove("cloud-startup-pending");
   document.getElementById("cloudStartupSplash")?.setAttribute("hidden","");
  };
- const watchdog=setTimeout(finish,12000);
- window.CWLStartup={finish};
+ const begin=(message="Dein Clan wird geladen …")=>{
+  const ticket=++sequence;
+  clearTimeout(watchdog);
+  const splash=document.getElementById("cloudStartupSplash");
+  if(splash){
+   splash.removeAttribute("hidden");
+   const caption=splash.querySelector("span");
+   if(caption)caption.textContent=message;
+  }
+  document.documentElement.classList.add("cloud-startup-pending");
+  watchdog=setTimeout(()=>finish(ticket),12000);
+  return ticket;
+ };
+ if(document.documentElement.classList.contains("cloud-startup-pending"))
+  begin();
+ window.CWLStartup={begin,finish};
 })();
 </script>
 <style>
@@ -3451,7 +3467,8 @@ html[data-theme] #view-more-settings .latest-changelog{
  #planReviewDisclosure>.plan-review-summary{transition:none}
 }
 
-/* Only the first page load is covered. Routine Cloud/Clash refreshes remain interactive. */
+/* Initial Cloud load AND deliberate clan switches use the same shield.
+   Realtime/Clash refreshes stay interactive and do not trigger it. */
 .cloud-startup-splash{display:none}
 html.cloud-startup-pending .cloud-startup-splash{
  position:fixed;inset:0;z-index:1000;
