@@ -1656,7 +1656,11 @@ async function getRoster({automatic=false}={}){
  // engine can still calculate seven theoretical days from that old profile,
  // but they must NOT cause ten stale "keep/remove for Day 1–7" prompts.
  // Membership differences remain reviewable without changing played locks.
- const activeCwlPlanning=live.getLifecycle?.()?.mode==="planning";
+ // When the comparison is used without an initialized live bridge
+ // (e.g. isolated imports/tests), retain the conservative old behavior:
+ // never silently drop an active-player warning without phase evidence.
+ const lifecycle=typeof live!=="undefined"?live.getLifecycle?.():null;
+ const activeCwlPlanning=!lifecycle||lifecycle.mode==="planning";
  const planDays=activeCwlPlanning?storage.getPlannedLineups():[];
  const safeDays=Array.isArray(planDays)?planDays:[];
  const critical=departed.map(m=>({member:m,days:safeDays.filter(d=>Array.isArray(d?.lineup)&&d.lineup.includes(m.id)).map(d=>d.day)}))
