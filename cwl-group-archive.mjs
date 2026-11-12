@@ -239,7 +239,7 @@ function renderOwnLineups(item,ownRows,profile){
   return dayRows.length?'<div class="season-group-archive-rounds">'+dayRows.join("")+'</div>':
     '<p class="season-empty">Keine bestätigten Clash-Aufstellungen archiviert.</p>';
 }
-function seasonPane(item,tab,ownRows,profile,viewer){
+function seasonPane(item,tab,ownRows,profile,canDelete){
   const group=item.group,model=selectSeasonModel(item,ownRows);
   if(tab==="rounds")return model?viewRounds(model,null):
     '<p class="season-empty">Für diese CWL wurden keine Kriegsergebnisse gespeichert. Aufstellungen findest du unter „Einsätze“.</p>';
@@ -258,7 +258,7 @@ function seasonPane(item,tab,ownRows,profile,viewer){
   }
   return item.plans.length?
     '<div class="archive-deployment-content">'+item.plans.map((p,i)=>
-      renderSavedPlan(p,i,!viewer)).join("")+'</div>':
+      renderSavedPlan(p,i,canDelete)).join("")+'</div>':
     renderOwnLineups(item,ownRows,profile);
 }
 const archiveTabs=[["rounds","Kriegstage"],["group","Tabelle"],
@@ -328,7 +328,7 @@ export function createCwlGroupArchiveView({
         '</small></span><span class="season-archive-chip">'+esc(status.label)+'</span></summary>'+
         '<div class="season-archive-body">'+intro+tabs+
         '<div class="plan-postseason-panel archive-season-panel" role="tabpanel" data-unified-panel="'+tab+'">'+
-        seasonPane(item,tab,ownRows,profile,isViewer?.())+'</div></div></details>';
+        seasonPane(item,tab,ownRows,profile,!isViewer?.()&&typeof onDeletePlan==="function")+'</div></div></details>';
     }).join("")+'</div>');
   }
   host.addEventListener("click",async event=>{
