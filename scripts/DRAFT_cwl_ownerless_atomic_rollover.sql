@@ -37,7 +37,7 @@ begin
       end if;
     end loop;
     if jsonb_typeof(v_before->'edited')='object' then
-      v_edited:=v_before->'edited'-'targetDays';
+      v_edited:=(v_before->'edited')-'targetDays'::text;
       for v_i in 0..6 loop
         v_edited:=v_edited-('statuses.'||v_i::text);
       end loop;
