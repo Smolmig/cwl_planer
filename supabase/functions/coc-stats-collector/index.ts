@@ -5,6 +5,7 @@ import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./colle
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
 import {verifiedLeagueObservation} from "./collector-season-evidence.mjs";
+import {ownerlessRolloverPolicy,attemptOwnerlessRollover} from "./collector-ownerless-rollover.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -271,6 +272,12 @@ export default {
         return response({ok:false,error:"unauthorized"},401);
       try{settings=adminSettings()}catch{return response({ok:false,error:ERROR.config},503)}
     }
+    // Code stays dormant by default. Only an operator-configured per-clan
+    // allowlist AND explicit mode='apply' can ever call the mutation RPC.
+    // This value comes from server-side secrets, never request JSON/headers.
+    const policy=ownerlessRolloverPolicy(
+      Deno.env.get("CWL_OWNERLESS_ROLLOVER_MODE"),
+      Deno.env.get("CWL_OWNERLESS_ROLLOVER_CLAN_IDS"));
     const started=Date.now(),deadline=started+PER_RUN_BUDGET_MS;
     let groups;
     try{groups=await loadLinkedClans(settings)}
@@ -281,6 +288,8 @@ export default {
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
     let seasonObservationsSaved=0,seasonObservationWriteErrors=0;
+    let rolloverChecked=0,rolloverCandidates=0,rolloverApplied=0;
+    let rolloverAlreadyApplied=0,rolloverSkipped=0,rolloverErrors=0;
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
@@ -312,12 +321,32 @@ export default {
           // Only service-verified linked tenants receive an official group
           // observation. Nothing here advances/replaces any saved plan.
           if(scan.seasonObservation){
+            let evidenceSaved=false;
             try{
               await upsert(settings,"cwl_verified_league_observations",[
                 {clan_id:id,...scan.seasonObservation}
               ],"clan_id,season");
               seasonObservationsSaved++;
+              evidenceSaved=true;
             }catch{seasonObservationWriteErrors++}
+            // Never call preflight or mutation unless THIS app clan's
+            // official observation was saved by THIS verified run.
+            // A leaguegroup-only response is not permission to advance.
+            if(policy.mode!=="off"&&evidenceSaved){
+              try{
+                const outcome=await attemptOwnerlessRollover({
+                  policy,settings,clanId:id,linkedTag:gameTag,
+                  observation:scan.seasonObservation,evidenceSaved,
+                  deadline
+                });
+                if(outcome.status==="candidate")rolloverCandidates++;
+                else if(outcome.status==="applied")rolloverApplied++;
+                else if(outcome.status==="already_applied")rolloverAlreadyApplied++;
+                else rolloverSkipped++;
+                if(!["off","not_allowed","no_evidence","time_budget"].includes(outcome.status))
+                  rolloverChecked++;
+              }catch{rolloverErrors++}
+            }
           }
           if(scan.notes.length)errors++;
           if(observedDetails){
@@ -339,12 +368,16 @@ export default {
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
       ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0&&
-        seasonObservationWriteErrors===0,
+        seasonObservationWriteErrors===0&&rolloverErrors===0,
       tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
       rosterFailureClasses,seasonObservationsSaved,seasonObservationWriteErrors,
+      rolloverMode:policy.mode,
+      rolloverChecked,rolloverCandidates,rolloverApplied,
+      rolloverAlreadyApplied,rolloverSkipped,rolloverErrors,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
-    },errors||tenureWriteErrors||tenureSkippedProfiles||seasonObservationWriteErrors?503:200);
+    },errors||tenureWriteErrors||tenureSkippedProfiles||
+      seasonObservationWriteErrors||rolloverErrors?503:200);
   }
 };
