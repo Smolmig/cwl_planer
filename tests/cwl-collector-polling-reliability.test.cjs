@@ -22,6 +22,9 @@ function harness(handler){
   },
   tag:normalize,validTag:v=>/^#[0289PYLQGRJCUV]{3,15}$/.test(v),
   hasCapturedCwlRound:()=>false,
+  // The polling fixture isolates old war-fetch logic; new season evidence is
+  // exercised independently with official 6/8-clan groups in its own suite.
+  verifiedLeagueObservation:()=>null,
   buildWarSnapshot:(raw,clanTag,{warTag})=>raw.state==="preparation"?null:{
    war:{war_key:"cwl:"+warTag,war_type:"cwl",started_at:"2026-11-06T10:00:00Z"},attacks:[]
   },
