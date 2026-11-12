@@ -1,5 +1,5 @@
 {
-  "version": "v1.18.0",
-  "released": "2026-11-11",
-  "summary": "Vergangene CWLs zeigen jetzt einen vollständigen Rückblick neben den Einsätzen. Fehlende Gruppen-Endstände werden über gespeicherte Kriegskennzeichen erneut geprüft."
+  "version": "v1.18.1",
+  "released": "2026-11-12",
+  "summary": "Ein gemeinsames CWL-Saisonarchiv zeigt Gruppenergebnisse, Kriegstage, Spieler und Einsätze ohne doppelte Monatseinträge."
 }

@@ -2266,6 +2266,30 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 }
 
 
+/* Single CWL archive surface: one card per verified clan/season; old list stays hidden for backward compatibility. */
+#view-archive #archiveSection[hidden]{display:none!important}
+#view-archive #cwlGroupArchiveSection{border:0;box-shadow:none;background:transparent;padding:0}
+.archive-season-tabs{display:flex;flex-wrap:nowrap;gap:5px;min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.archive-season-tabs>.plan-postseason-tab{flex:1 0 auto;white-space:nowrap;min-width:0;padding:9px 11px}
+.archive-season-panel{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.archive-all-matches{margin-top:10px;border-top:1px solid var(--line);padding-top:11px}
+.archive-all-matches>summary{cursor:pointer;font-weight:700;font-size:12px}
+.archive-all-matches .season-group-archive-rounds{margin-top:10px}
+.archive-deployment-content{display:grid;gap:12px}
+.archive-saved-plan{border-top:1px solid var(--line);padding-top:10px}
+.archive-saved-plan:first-child{border-top:0;padding-top:0}
+.archive-saved-plan>summary{cursor:pointer;font-weight:750;font-size:13px;margin-bottom:10px}
+.archive-saved-plan .season-group-archive-rounds{margin:12px 0}
+.archive-saved-plan h4{font-size:13px;margin:15px 0 8px}
+.archive-deployment-list{display:grid;gap:0}
+.archive-deployment-list .archive-count{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.archive-plan-danger{display:flex;justify-content:flex-end;margin:16px 0 8px}
+@media(max-width:430px){
+ .archive-season-tabs>.plan-postseason-tab{font-size:11px;padding:9px 10px}
+ .season-archive-item>summary{align-items:flex-start}
+ .season-archive-item>summary>span:first-child{flex-basis:100%}
+ .season-archive-chip{max-width:fit-content}
+}
 /* One compact read-only gateway from the operating plan into the live CWL season. */
 .plan-cwl-season-shortcut{display:flex;align-items:center;justify-content:space-between;gap:14px;
  border:1px solid var(--line);border-left:3px solid var(--primary);border-radius:14px;
@@ -3792,17 +3816,17 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="card archive-page">
   <div class="section-title more-subview-heading">
    <div><span class="more-eyebrow">RÜCKBLICK</span><h2 id="cwlArchiveTitle">CWL-Archiv</h2>
-   <p class="statusline">Vergangene CWLs ansehen: Gruppenergebnisse aus Clash und gesicherte Aufstellungen aus deinem Plan.</p></div>
+   <p class="statusline">Deine vergangenen CWLs an einem Ort: Kriegstage, Tabellen, Spieler und Einsätze.</p></div>
    <button type="button" class="btn small" id="cwlArchiveBack">Zurück zu Mehr</button>
   </div>
   <div class="card" id="cwlGroupArchiveSection">
-   <div class="section-title"><div><h3>Gruppenergebnisse aus Clash</h3>
-      <p class="statusline">Gespeicherte Gruppentabellen und Begegnungen. Mit „Mit Clash abgleichen“ lassen sich verfügbare Endstände nachladen.</p></div>
+   <div class="section-title"><div><h3>Vergangene CWL-Saisons</h3>
+      <p class="statusline">Pro Saison ein Eintrag. Die gespeicherten Clash-Ergebnisse und deine damaligen Aufstellungen bleiben erhalten.</p></div>
      <button class="btn small" id="cwlGroupArchiveRefresh" type="button">Mit Clash abgleichen</button>
    </div>
    <div id="cwlGroupArchiveContent" aria-live="polite"><p class="season-empty">Gruppensaisons werden im verbundenen Cloud-Clan geladen.</p></div>
   </div>
-  <div class="card" id="archiveSection"><div class="section-title"><h3>Archivierte CWL-Pläne</h3><span class="badge ok" id="archiveCountBadge">0 Pläne</span></div><div id="archiveList"></div></div>
+  <div class="card" id="archiveSection" hidden aria-hidden="true"><div class="section-title"><h3>Archivierte CWL-Pläne</h3><span class="badge ok" id="archiveCountBadge">0 Pläne</span></div><div id="archiveList"></div></div>
  </div>
 </section>
 <section id="view-settings" class="view" role="dialog" aria-modal="true" aria-label="Einstellungen"><div class="settings-window"><div class="settings-dialog-head"><strong>Einstellungen</strong><button class="btn small" type="button" id="settingsClose">Schließen</button></div>
@@ -3829,11 +3853,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.18.0</strong><span>Der ganze CWL-Rückblick bleibt im Archiv</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.18.1</strong><span>Ein gemeinsames CWL-Saisonarchiv</span></div>
       <ul>
-       <li><b>CWL-Archiv:</b> Unter „Ansehen“ findest du jetzt auch die vergangenen Kriegstage, Gruppentabelle und Spielerleistungen – zusammen mit den damaligen Aufstellungen und Einsätzen.</li>
-       <li><b>Ergebnisse abgleichen:</b> Nach der CWL werden gespeicherte Kriegskennzeichen erneut geprüft, damit bestätigte Endstände auch im Gruppenarchiv ankommen.</li>
-       <li><b>Klare Hinweise:</b> Ist euer eigener Krieg bereits beendet, die Gruppentabelle aber noch älter, wird das deutlich erklärt statt pauschal „unvollständig“ angezeigt.</li>
+       <li><b>Ein Eintrag pro Saison:</b> Die Gruppenergebnisse aus Clash und deine gespeicherten CWL-Pläne werden übersichtlich zusammen angezeigt.</li>
+       <li><b>Alles am selben Ort:</b> Im Monatsrückblick wechselst du zwischen Kriegstagen, Tabelle, Spielern und Einsätzen.</li>
+       <li><b>Historische Daten bleiben sicher:</b> Alte und manuelle Pläne bleiben erhalten. Ohne eindeutige Clan-Zuordnung werden keine Daten fälschlich zusammengeführt.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4009,7 +4033,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
     <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerform“ wählst du 30, 90 oder 180 Tage. „Angriffsmenge &amp; 3★-Quote“ berücksichtigt zuerst, wie viele Angriffe gegen gleiches Rathaus tatsächlich vorliegen, und vergleicht dann die Quote innerhalb von Gruppen. „3★-Quote (auch bei wenigen Angriffen)“ sortiert ausschließlich nach Quote. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
-    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> findest du zwei getrennte Quellen: <b>Gruppenergebnisse aus Clash</b> (Tabellen und Begegnungen) und <b>archivierte CWL-Pläne</b>. Öffne einen früheren Plan über <b>Ansehen</b>: Der Saisonrückblick bündelt <b>Kriegstage, Tabelle und Spieler</b>, darunter stehen die damaligen Aufstellungen und Einsätze. Ist der eigene letzte Krieg bestätigt, die Gruppe aber noch nicht, zeigt das Archiv den unterschiedlichen Datenstand. <b>Mit Clash abgleichen</b> prüft bekannte Kriegskennzeichen auf verfügbare Endergebnisse, ohne fehlende Werte zu erfinden. Für ältere Pläne ohne Clash-Ergebnisse bleiben Aufstellungen und Einsätze sichtbar. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
+    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gespeicherte Aufstellungen und Einsätze sichtbar. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Kriegsgröße und verkürzte CWL</b><div>Mit einem verknüpften Clash-Clan übernimmt die Cloud-Planung die offiziell gemeldete Größe der Tagesaufstellung (etwa 15 oder 30) und die Zahl der Kriege. Acht Clans spielen normalerweise sieben Kriege; bei sechs Clans sind es fünf. Während Clash noch keine verlässlichen Gruppendaten liefert, bleibt der bisherige Plan erhalten. Gespielte Tage werden bei einer Abweichung nicht automatisch umgeschrieben. Die Teilnehmerliste ist nicht dasselbe wie die Größe einer einzelnen Kriegsaufstellung. Für lokale Pläne ohne API kannst du Größe und Kriegstage weiterhin selbst wählen; alte 5-gegen-5-CWLs bleiben im Archiv nachvollziehbar.</div></div>
@@ -4319,11 +4343,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.18.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.18.0"></script>
-<script src="./cwl-planning-core.js?v=1.18.0"></script>
+<script src="./clan-management-core.js?v=1.18.1"></script>
+<script src="./cwl-deployment-filters.js?v=1.18.1"></script>
+<script src="./cwl-planning-core.js?v=1.18.1"></script>
 <script>
-const APP_VERSION="v1.18.0";
+const APP_VERSION="v1.18.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5948,7 +5972,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.18.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.18.1");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6220,8 +6244,25 @@ if(typeof ResizeObserver!=="undefined"){
  if(header)new ResizeObserver(syncCwlDayTopbarHeight).observe(header);
 }
 renderAll();
+// Shared read-only archive view may request deletion, never bypass the
+// existing confirmation, Cloud roles or the current clan/profile boundary.
+async function deleteArchivedCwl(id){
+ const profile=state,clan=window.CWLCloud?.getActiveClanId?.();
+ if(window.CWLCloud?.active&&window.CWLCloud?.isViewer?.())return false;
+ const archive=state.archives.find(a=>String(a.id)===String(id));
+ if(!archive)return false;
+ const approved=await confirmInline('„'+archive.label+'“ wird aus dem CWL-Archiv entfernt. Alle anderen Saisons, Gruppenergebnisse und Mitglieder bleiben erhalten. Diese Aktion lässt sich nicht direkt rückgängig machen. Sichere bei Bedarf vorher ein Backup.',{
+  title:"Gespeicherten Plan löschen?",confirmText:"Plan löschen",danger:true
+ });
+ if(!approved||state!==profile||(window.CWLCloud?.getActiveClanId?.()||null)!==(clan||null)||
+    window.CWLCloud?.active&&window.CWLCloud?.isViewer?.())return false;
+ state.archives=state.archives.filter(a=>a!==archive);
+ renderAll("Archivierter Plan gelöscht ✓");
+ return true;
+}
 window.CWLLegacy={
  getProfile:()=>state,
+ deleteArchivedCwl:id=>deleteArchivedCwl(id),
  // Non-destructive, idempotent Cloud archive. Only seven previously persisted
  // API-war locks from this same season; no guessed completed days.
  archiveConfirmedCwl:(season)=>{
@@ -6321,6 +6362,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.18.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.18.1"></script>
 </body>
 </html>

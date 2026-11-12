@@ -93,7 +93,9 @@ test("historical round expands verified roster with players, town halls and atta
   const v=createCwlGroupArchiveView({sb:record(group(),server),getClanId:()=>"id",isConnected:()=>true,getProfile:()=>({archives:[]})});
   await v.open();
   const content=d.window.document.querySelector("#cwlGroupArchiveContent");
-  assert.ok(content.querySelector(".season-archive-lineup"),"own team has a dedicated expandable section");
+  content.querySelector(".season-archive-item").open=true;
+  content.querySelector('[data-unified-archive-tab="group"]').click();
+  assert.ok(content.querySelector(".season-archive-lineup"),"own team remains expandable under the group table");
   assert.match(content.textContent,/Unser Team · 15 Spieler/);
   assert.match(content.textContent,/Clash · Krieg abgeschlossen/);
   assert.match(content.textContent,/Kämpfer 2/);
@@ -112,7 +114,10 @@ test("old plan snapshots still serve as clearly labelled fallback without preten
      {day:1,lineup:["p1"],snapshots:{}}]}]};
   const v=createCwlGroupArchiveView({sb:record(group(),[]),getClanId:()=>"id",isConnected:()=>true,getProfile:()=>profile});
   await v.open();
-  const text=d.window.document.querySelector("#cwlGroupArchiveContent").textContent;
+  const content=d.window.document.querySelector("#cwlGroupArchiveContent");
+  content.querySelector(".season-archive-item").open=true;
+  content.querySelector('[data-unified-archive-tab="group"]').click();
+  const text=content.textContent;
   assert.match(text,/Archivierter Spieler/);
   assert.match(text,/Aus dem Planarchiv · nicht mit Clash abgeglichen/);
  }finally{if(before===undefined)delete global.document;else global.document=before;d.window.close()}

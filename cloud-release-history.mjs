@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.18.1",
+    "releaseType": "patch",
+    "date": "2026-11-12",
+    "title": "CWL-Archiv ohne doppelte Monatseinträge",
+    "description": "Gruppentabelle, Kriegstage, Spieler und gespeicherte Einsätze stehen jetzt gemeinsam in einer Saisonkarte. Manuelle Pläne ohne eindeutige Clash-Zuordnung bleiben getrennt."
+  },
+
+  {
     "version": "v1.18.0",
     "releaseType": "minor",
     "date": "2026-11-11",
