@@ -34,6 +34,29 @@ insert into public.cwl_plan_suggestions(clan_id,cycle_id) values
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111'),
  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','22222222-2222-4222-8222-222222222222');
 
+-- Current client format, including a participant and previous-day rules.
+-- Only synthetic, non-personal player identifiers.
+update public.cwl_cloud_profiles set profile_json=
+ jsonb_set(jsonb_set(profile_json,
+  '{members}',
+  '[{"id":"p01","name":"Testspieler","playerTag":"#2PYR","participating":true,
+   "fixed":true,"note":"historical","statuses":["auto","auto","auto","auto","auto","auto","auto"],
+   "targetDays":4,"firstDay":2,"outFromDay":null,
+   "cocBeforeDeparture":{
+     "before":{"targetDays":4,"statuses":["must","must","auto","auto","auto","auto","auto"]},
+     "automatic":{"targetDays":3,"statuses":["auto","auto","auto","auto","auto","auto","auto"]},
+     "edited":{"targetDays":4,"statuses.0":"must","statuses.1":"out","preserveNote":"yes"}
+   }}]'::jsonb),
+  '{locks,0,lineup}','["p01"]'::jsonb)
+ where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+-- Snapshot override for locked-day zero is a synthetic named player.
+update public.cwl_cloud_profiles set profile_json=
+ jsonb_set(profile_json,'{locks,0,snapshots}',
+ '{"p01":{"id":"p01","name":"Testspieler damals","playerTag":"#2PYR",
+ "townHall":18,"threeStar":"high","fixed":true}}'::jsonb)
+ where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+
 -- Same trigger definitions / assumptions as deployed Cloud v1.18.1:
 -- a sessionless service UPDATE must be REJECTED by both the original
 -- plan guard and original revision trigger until phase 4 adds the
@@ -116,39 +139,20 @@ end $fn$;
 create trigger cwl_auto_snapshot before update on public.cwl_cloud_profiles
 for each row execute function private.cwl_auto_snapshot();
 
--- Current client format, including a participant and previous-day rules.
--- Only synthetic, non-personal player identifiers.
-update public.cwl_cloud_profiles set profile_json=
- jsonb_set(jsonb_set(profile_json,
-  '{members}',
-  '[{"id":"p01","name":"Testspieler","playerTag":"#2PYR","participating":true,
-   "fixed":true,"note":"historical","statuses":["auto","auto","auto","auto","auto","auto","auto"],
-   "targetDays":4,"firstDay":2,"outFromDay":null,
-   "cocBeforeDeparture":{
-     "before":{"targetDays":4,"statuses":["must","must","auto","auto","auto","auto","auto"]},
-     "automatic":{"targetDays":3,"statuses":["auto","auto","auto","auto","auto","auto","auto"]},
-     "edited":{"targetDays":4,"statuses.0":"must","statuses.1":"out","preserveNote":"yes"}
-   }}]'::jsonb),
-  '{locks,0,lineup}','["p01"]'::jsonb)
- where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
--- Snapshot override for locked-day zero is a synthetic named player.
-update public.cwl_cloud_profiles set profile_json=
- jsonb_set(profile_json,'{locks,0,snapshots}',
- '{"p01":{"id":"p01","name":"Testspieler damals","playerTag":"#2PYR",
- "townHall":18,"threeStar":"high","fixed":true}}'::jsonb)
- where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-
--- Demonstrate the ORIGINAL systemless writer is denied BEFORE phase-4 SQL.
+-- Genuine negative test with the original guard: a service role still
+-- cannot change a locked plan without the new *verified* transition.
+set role service_role;
 do $t$
 declare denied boolean:=false;
 begin
  begin
-  set local role service_role;
   update public.cwl_cloud_profiles set profile_json=
     jsonb_set(profile_json,'{danger}','true'::jsonb)
     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
  exception when insufficient_privilege then denied:=true;
  end;
- reset role;
- if not denied then raise exception 'original plan guard unexpectedly permits service writes';end if;
+ if not denied then
+  raise exception 'original plan guard unexpectedly permits service writes';
+ end if;
 end $t$;
+reset role;
