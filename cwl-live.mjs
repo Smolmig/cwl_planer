@@ -283,6 +283,9 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     view.classList.toggle("plan-postseason-mode",!!postseason);
     view.classList.toggle("plan-between-cwl-mode",!!between);
     host.hidden=!postseason&&!between;
+    // Outside a running/finished normal CW, the latest CWL recap is the
+    // only meaningful Plan-page content. Never let it collapse to an empty
+    // page; show its full contents as the main view instead.
     // The approval strip needs the final verified phase classes, not the
     // earlier onStatus callback (which may run before awaited API work).
     try{onPhaseApplied?.()}catch(err){console.warn("CWL approval phase:",String(err?.message||err))}
@@ -291,6 +294,8 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       host.open=true;body.replaceChildren();return false;
     }
     if(between){
+      summary.hidden=true;
+      host.open=true;
       const scope=ctx.clanId+"|between";
       if(host.dataset.scope!==scope){
         host.dataset.scope=scope;host.open=true;host.dataset.renderKey="";
@@ -311,6 +316,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     const battleState=current?.currentWar?.state||"";
     const battleOngoing=battleState==="inWar"||battleState==="warEnded";
     const warMode=battleOngoing?"battle":"preparation";
+    summary.hidden=!battleOngoing;
     if(host.dataset.scope!==scope){
       host.dataset.scope=scope;
       host.open=!battleOngoing;
@@ -322,6 +328,9 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       host.open=!battleOngoing;
       host.dataset.warMode=warMode;
     }
+    // An earlier manual collapse must not survive after the normal CW
+    // disappears. Otherwise the entire Plan page could look empty.
+    if(!battleOngoing)host.open=true;
     const dateMatch=/^(20\d\d)-(0[1-9]|1[0-2])$/.exec(season||"");
     const date=dateMatch?new Date(Date.UTC(+dateMatch[1],+dateMatch[2]-1,1)):null;
     const label=date?date.toLocaleDateString("de-AT",{
