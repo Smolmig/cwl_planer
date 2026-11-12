@@ -99,6 +99,27 @@ test("one unified 28/28 season card exposes all four views and its stored deploy
   assert.equal(host.querySelector(".season-archive-item").open,true,"expanded season survives reload");
  }finally{global.document=original;global.window=windowBefore;d.window.close()}
 });
+test("partial server roster never masks fuller saved CWL attack evidence",async()=>{
+ const old=global.document,d=dom();global.document=d.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  const server=[{season:"2026-11",day:1,war_tag:"#2PYL",state:"warEnded",
+    team_size:1,lineup_json:{members:[{tag:"#2PYL",name:"Testspieler",
+      townHallLevel:18,attacks:[]}]}}];
+  const view=createCwlGroupArchiveView({
+   sb:fakeDb([{season:"2026-11",group_json:group(),updated_at:"2026-11-11T22:00:00Z"}],server),
+   getClanId:()=>"clan",isConnected:()=>true,getProfile:()=>({archives:[plan()]}),
+   getClanTag:()=>TAGS[0]
+  });
+  await view.open();
+  const host=d.window.document.querySelector("#cwlGroupArchiveContent");
+  host.querySelector(".season-archive-item").open=true;
+  host.querySelector('[data-unified-archive-tab="players"]').click();
+  assert.match(host.textContent,/Testspieler/);
+  assert.match(host.textContent,/3,00/,"confirmed archived 3-star attack is not replaced by empty server roster");
+ }finally{global.document=old;d.window.close()}
+});
+
 test("manual standalone plan is available while logged out, with no network call",async()=>{
  const original=global.document,d=dom();global.document=d.window.document;
  try{
