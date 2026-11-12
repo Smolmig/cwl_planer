@@ -99,6 +99,12 @@ Die **46** im Missed-Blatt dokumentierten War IDs sind **alle rechnerisch exakt 
 
 **Gegner-Lücken bleiben getrennt**: Beide Seiten haben in den Attack Logs zahlreiche Angriffe; nicht angreifende **gegnerische** Roster-Mitglieder lassen sich aber aus Attack-Zeilen allein nicht sicher ermitteln. Für den vollständigen CW-Archivbericht tatsächliche Original-Roster-/Final-Scores aus signierten Supercell-/ClashKing-Snapshots getrennt erfassen.
 
+## 4a. Bestehende Planer-Limits müssen mit dem neuen Import wachsen
+
+Der bisherige JSON-Validator `cwl-stats-core.mjs/validateHistoryFile` lässt **maximal 150 Kriege pro Datei** zu. `cwl-stats.mjs/load` lädt `cwl_stat_wars` mit **`.limit(200)`**, während Attack-Zeilen bis 10.000 paginiert werden. Bereits die beiden geprüften Attack-Log-Dateien enthalten **200 unterschiedliche War-IDs**. Ein zusätzlicher automatisch erfasster Krieg oder ein früherer ClashPerk-Export würde die 200-War-Ladegrenze überschreiten; eine simple XLSX→altes JSON-Konvertierung mit allen 200 Kriegen würde schon am 150-War-Validator scheitern.
+
+**Pflicht vor XLSX-Release:** Import **seiten-/batchweise** mit expliziten sinnvollen Obergrenzen, DB-Dedupe und rückrollbarer Vollständigkeit; Statistik-Kriegsabfrage paginieren statt still bei den neuesten 200 zu enden. UI-Zeitraum-/CW-/CWL-Filter müssen auf **allen archivierten** Kriegen arbeiten oder deutlich gekennzeichnet serverseitig aggregieren, nicht eine verdeckte Stichprobe als Gesamthistorie ausgeben. Separate Tests mit 200, 201, 500+ Kriegen und großen xlsx (kein Absturz und keine stille Abschneidung).
+
 ## 5. Historische Spieler und Tenant-Isolation
 
 - Player-Tags sind stabile Spieler-Identität; Name/RH können historisch wechseln. Nicht anhand des Namens zusammenführen.
