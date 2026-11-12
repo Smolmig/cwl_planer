@@ -75,7 +75,7 @@ values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc',
 -- strictly checkpoint-verified system branch.
 create function private.cwl_plan_can_write(p_clan uuid)
 returns boolean language sql stable security definer set search_path=''
-as $fn$select auth.uid() = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'::uuid$fn$;
+as $fn$select coalesce(auth.uid() = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'::uuid,false)$fn$;
 
 create function private.cwl_plan_write_guard()
 returns trigger language plpgsql security definer set search_path=''
