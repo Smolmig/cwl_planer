@@ -216,7 +216,7 @@ async function preparePage(page,email,role,base){
 
 async function upload(page,items,expected){
  await page.locator("#statsImportFile").setInputFiles(items);
- await page.waitForFunction(expected,{timeout:45000});
+ await page.waitForFunction(expected,null,{timeout:45000});
  await page.waitForFunction(()=>!document.getElementById("statsImportButton").disabled);
  return page.evaluate(()=>({
   feedback:document.getElementById("statsFeedback").textContent,
