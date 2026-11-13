@@ -159,17 +159,45 @@ jobs:
           set -euo pipefail
           cd "$WORK/local"
           supabase init --yes
+          # GitHub runners can already have port 54322 occupied. Select an
+          # available local port and use it consistently for this restore.
+          restore_port="$(python3 - <<'PY'
+          import re
+          import socket
+          from pathlib import Path
+          cfg=Path('supabase/config.toml')
+          source=cfg.read_text()
+          with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
+              sock.bind(('127.0.0.1',0))
+              port=sock.getsockname()[1]
+          lines=source.splitlines(keepends=True)
+          in_db=False
+          replacements=0
+          for index,line in enumerate(lines):
+              if line.lstrip().startswith('['):
+                  in_db=line.strip()=='[db]'
+              elif in_db and re.match(r'^\s*port\s*=\s*[0-9]+',line):
+                  lines[index]=re.sub(r'(port\s*=\s*)[0-9]+',lambda m:m.group(1)+str(port),line,count=1)
+                  replacements+=1
+          if replacements!=1:
+              raise SystemExit('::error::Unable to isolate local Supabase DB port.')
+          cfg.write_text(''.join(lines))
+          print(port)
+          PY
+          )"
+          [[ "$restore_port" =~ ^[0-9]+$ ]] || { echo '::error::Invalid local port'; exit 1; }
+          echo "CWL_RESTORE_DB_PORT=$restore_port" >> "$GITHUB_ENV"
           supabase db start
           sudo apt-get update -qq >/dev/null
           sudo apt-get install -y -qq postgresql-client >/dev/null
-          PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
+          PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT" -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -qAt -c 'SELECT 1' | grep -qx 1
 
       - name: Restore schema, auth data and app data in one transaction
         shell: bash
         run: |
           set -euo pipefail
-          if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p 54322 -U postgres -d postgres \
+          if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT" -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -v VERBOSITY=verbose --single-transaction \
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
             -c 'SET session_replication_role = replica;' \
@@ -252,7 +280,7 @@ jobs:
                     'public.cwl_stat_wars', 'public.cwl_stat_attacks',
                     'public.cwl_stat_missed']
           def sql(query):
-              p = subprocess.run(['psql', '-X', '-qAt', '-h', '127.0.0.1', '-p', '54322',
+              p = subprocess.run(['psql', '-X', '-qAt', '-h', '127.0.0.1', '-p', os.environ['CWL_RESTORE_DB_PORT'],
                                   '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
                                   '-c', query], text=True, capture_output=True)
               if p.returncode:
@@ -282,12 +310,13 @@ jobs:
         shell: bash
         env:
           PGHOST: 127.0.0.1
-          PGPORT: '54322'
+
           PGUSER: postgres
           PGDATABASE: postgres
           PGPASSWORD: postgres
         run: |
           set -euo pipefail
+          export PGPORT="$CWL_RESTORE_DB_PORT"
           python3 scripts/verify_clashperk_restore.py "$WORK/unpacked/cwl-backup/data-local.sql"
 
       - name: Remove disposable database and decrypted files
