@@ -1094,6 +1094,8 @@ html[data-theme="arena"] .cwl-live-team-enemy>summary{background:rgba(227,177,90
 #view-stats .stats-import-entry[hidden]{display:none!important}
 #view-stats .stats-import-entry strong{font-size:13px;color:var(--text)}
 #view-stats .stats-import-entry p{margin:4px 0 0;max-width:440px;font-size:12px;color:var(--muted);line-height:1.5}
+#view-stats #statsFeedback[data-state="error"]{display:block;margin:9px 0 12px;padding:12px 14px;border:1px solid rgba(210,75,75,.7);border-radius:10px;background:rgba(210,75,75,.09);color:var(--text);font-size:13px;line-height:1.5;font-weight:650;overflow-wrap:anywhere}
+#view-stats #statsFeedback[data-state="success"]{margin:9px 0 12px;padding:9px 12px;border-left:3px solid var(--accent);line-height:1.5;overflow-wrap:anywhere}
 #view-stats #statsImportHelp{margin:0 0 12px;border-top:1px solid var(--line)}
 #view-stats #statsImportHelp>summary{font-size:12px}
 #view-stats .stats-import-entry button{min-height:44px}
@@ -3880,11 +3882,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.19.0</strong><span>Alte Kriege aus ClashPerk ergänzen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.19.1</strong><span>ClashPerk-Import verständlicher</span></div>
       <ul>
-       <li><b>Excel-Dateien direkt importieren:</b> Lade die originalen Dateien aus Discord in die Statistik. Die App erkennt CW und CWL selbst.</li>
-       <li><b>Erst prüfen, dann speichern:</b> Eine Vorschau zeigt die Ergänzungen. Bestätigte Clash-Ergebnisse bleiben geschützt.</li>
-       <li><b>Clanwechsel verbessert:</b> Alte Daten des vorherigen Clans erscheinen nicht mehr beim Wechsel.</li>
+       <li><b>Missed Attacks nachträglich:</b> Verpasste Angriffe lassen sich jetzt auch einzeln nach den Attack-Logs importieren.</li>
+       <li><b>Übersichtliche Vorschau:</b> Neue Kriege, gespeicherte Kriege und fehlende Nachweise werden getrennt dargestellt.</li>
+       <li><b>Fehler gut sichtbar:</b> Falls ein Export nicht passt, erscheint die Erklärung direkt beim Datei-Upload.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -3921,20 +3923,20 @@ html.cloud-startup-pending .cloud-startup-splash{
       <button type="button" class="btn" id="statsImportButton" hidden>Excel-Dateien auswählen</button>
       <input type="file" id="statsImportFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.json,application/json" multiple hidden>
     </div>
+    <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
     <details id="statsImportHelp" class="stats-coverage-guide">
       <summary>Welche ClashPerk-Dateien brauche ich?</summary>
-      <p><strong>Diese 3 Dateien brauchst du pro Clan:</strong> Öffne Discord und wähle bei jedem Export unter <strong>clans</strong> denselben Clan wie in dieser App.</p>
+      <p><strong>Für eine vollständige Historie sind drei Exportarten sinnvoll.</strong> Öffne Discord und wähle bei jedem Export unter <strong>clans</strong> denselben Clan wie in dieser App.</p>
       <p><strong>1.</strong> <strong>/export attack-log</strong> mit <strong>war_type: Regular</strong> und <strong>limit: 100</strong> (Maximum).</p>
       <p><strong>2.</strong> <strong>/export attack-log</strong> mit <strong>war_type: CWL</strong> und <strong>limit: 100</strong>.</p>
       <p><strong>3.</strong> <strong>/export missed</strong> mit <strong>limit: 100</strong>. <strong>Nur einmal:</strong> Dieser Export enthält sowohl normale CWs als auch CWL. Hier musst du keinen Kriegstyp getrennt auswählen.</p>
-      <p>Wähle die drei unveränderten Excel-Dateien gemeinsam aus. Ein oder zwei Attack-Logs allein funktionieren ebenfalls; ohne passende Missed-Einträge bleiben fehlende Angriffe allerdings „nicht bekannt“. <strong>limit: 100</strong> umfasst nur die neuesten erfassten Kriege je Export, nicht automatisch die gesamte Clan-Geschichte. Bewahre ältere Exporte auf und lade neue regelmäßig nach; doppelte Kriege werden abgeglichen.</p>
+      <p><strong>Reihenfolge ist flexibel:</strong> Du kannst die Excel-Dateien gemeinsam hochladen oder zunächst die Attack-Logs und danach separat „Missed Attacks“. Ein reiner Missed-Export ergänzt nur bereits gespeicherte, eindeutig passende Kriege; er legt keine neuen an. Ohne passende Missed-Einträge bleiben nicht beobachtete Angriffe „unbekannt“. <strong>limit: 100</strong> umfasst nur die neuesten erfassten Kriege je Export, nicht automatisch die ganze Clan-Geschichte. Bewahre ältere Exporte auf; beim erneuten Import werden Einträge abgeglichen.</p>
       <p><strong>Nicht nötig:</strong> <strong>/export wars</strong> liefert hauptsächlich zusammengefasste Spielerwerte und ersetzt keine einzelnen Angriffe. Der alte Statistik-JSON-Import bleibt als einzelne Datei möglich. Ehemalige Clanmitglieder behalten ihre historischen Ergebnisse, werden aber nicht als aktuelle Mitglieder angezeigt.</p>
     </details>
     <details class="stats-coverage-guide" id="statsCoverageGuide" hidden>
       <summary>ClashPerk-Exporte und fehlende Angriffe</summary>
-      <p>Für die Statistik brauchst du je Clan zwei <strong>Attack-Logs</strong> (Regular und CWL) und nur einen gemeinsamen <strong>Missed-Attacks-Export</strong> für beide Kriegstypen, jeweils mit <strong>limit: 100</strong>. Du kannst die Excel-Dateien direkt im Statistik-Überblick prüfen und nach Bestätigung übernehmen. Zusätzliche CWL-Missed- und Aufstellungswechsel-Meldungen erscheinen in Discord, sind aber keine weiteren erforderlichen Excel-Dateien. Ohne belegte Angaben können verpasste Angriffe nicht mit null gleichgesetzt werden. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">ClashPerk-Logs erklärt</a>.</p>
+      <p>Für die Statistik brauchst du je Clan zwei <strong>Attack-Logs</strong> (Regular und CWL) und nur einen gemeinsamen <strong>Missed-Attacks-Export</strong> für beide Kriegstypen, jeweils mit <strong>limit: 100</strong>. Du kannst die Excel-Dateien zusammen oder nacheinander im Statistik-Überblick prüfen und nach Bestätigung übernehmen. Ein alleiniger Missed-Export benötigt bereits gespeicherte Attack-Logs derselben Kriege. Zusätzliche CWL-Missed- und Aufstellungswechsel-Meldungen erscheinen in Discord, sind aber keine weiteren erforderlichen Excel-Dateien. Ohne belegte Angaben können verpasste Angriffe nicht mit null gleichgesetzt werden. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">ClashPerk-Logs erklärt</a>.</p>
     </details>
-    <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
@@ -4386,11 +4388,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.19.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.19.0"></script>
-<script src="./cwl-planning-core.js?v=1.19.0"></script>
+<script src="./clan-management-core.js?v=1.19.1"></script>
+<script src="./cwl-deployment-filters.js?v=1.19.1"></script>
+<script src="./cwl-planning-core.js?v=1.19.1"></script>
 <script>
-const APP_VERSION="v1.19.0";
+const APP_VERSION="v1.19.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6015,7 +6017,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.19.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.19.1");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6405,6 +6407,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.19.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.19.1"></script>
 </body>
 </html>
