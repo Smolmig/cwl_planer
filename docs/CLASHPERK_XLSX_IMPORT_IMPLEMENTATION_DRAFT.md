@@ -73,10 +73,21 @@ und `2 Missed Attacks` werden ebenfalls nicht noch einmal eingelesen.
   Echte Abbrüche bei sehr großen Datenbeständen statt stiller
   Abschneidung. Bisherige JSON-Validierung (max. 150 War-IDs
   *pro JSON-Datei*) bleibt unverändert; XLSX ist eigener Pfad.
-- Bereits vorhandene historische Spieler werden in ihren originalen
-  Kriegen auf Basis ihres **Player-Tags** mitgezählt. Die spätere
-  robuste Klassifikation tatsächlicher aktueller Mitglieder vs.
-  weiterhin für CWL vorgemerkter Ex-Spieler bleibt Issue #96.
+- Bereits vorhandene historische Spieler bleiben in ihren originalen
+  Kriegen auf Basis ihres **Player-Tags** erhalten. Im Cloud-Statistikkontext
+  zählen gespeicherte Mitglieder mit `cocSyncState=former/kept` nun **nicht
+  mehr als aktuell im Clan**, sodass historische UF-2-Gäste nach ihrem
+  Rückwechsel korrekt „Ehemals im Clan“ erscheinen. Die unabhängige
+  API-Mitgliedschaftsprüfung bleibt als weitergehendes Thema in #96.
+- Ein Attack-Log kann auch einen noch laufenden Krieg enthalten. Kriege
+  mit Startzeit innerhalb der letzten **72 Stunden** werden mangels
+  verifiziertem Endstatus einzeln ausgelassen und in der Importvorschau
+  erklärt; die ältere Historie derselben Datei wird dennoch verarbeitet.
+- Neue importierte Kriege werden zuerst mit `finalized=false` als
+  **vorläufiger Schreibstand** angelegt. Erst nach erfolgreichen
+  Attack- und Missed-Batches werden sie als `finalized=true` markiert
+  und die tatsächlich nachgewiesene Missed-Abdeckung freigeschaltet.
+  Bei Abbruch kann derselbe Upload gefahrlos erneut durchgeführt werden.
 
 ## Sicherheits-/Veröffentlichungsgrenzen
 
@@ -96,7 +107,9 @@ validierender RPC mit Staging-Tabelle notwendig (ggf. mit #178 bündeln).
 
 Noch ausstehende Test-/Freigabeschritte:
 - Node-/JSDOM-/Browser-Test auf den synthetischen 2/10/205 War-Fixtures,
-  echten ZIP/XLSX-Codepfad inkl. Dedupe/Missed/Clan-Isolation.
+  echten ZIP/XLSX-Codepfad auch mit `sharedStrings.xml`, Dedupe,
+  Missed/Clan-Isolation, unterbrochenen Imports mit Wiederaufnahme sowie
+  Altkriegen neben aktuellem Krieg (nur aktuelle Zeilen überspringen).
 - Auf bereits vom Nutzer gesendeten **vier Originaldateien** die
   erwarteten Summen und 208 CWL-Dubletten im **Browser/UAT** bestätigen,
   ohne Original-Personendaten in öffentliche Test-Fixtures zu committen.
