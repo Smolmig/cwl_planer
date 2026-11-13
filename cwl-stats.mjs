@@ -1,6 +1,6 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.43";
-import {readClashPerkXlsx,parseClashPerkSheets} from "./cwl-clashperk-xlsx.mjs?v=xlsx-draft-1";
-import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=xlsx-draft-1";
+import {readClashPerkXlsx,parseClashPerkSheets} from "./cwl-clashperk-xlsx.mjs?v=1.19.0";
+import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.0";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);

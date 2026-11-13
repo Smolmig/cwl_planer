@@ -50,9 +50,9 @@ test("The direct ClashPerk upload is explained in-app without requiring manual J
  assert.match(browser,/commitClashPerkMerge/);
  assert.match(browser,/await load\(true\)/);
 });
-test("A DRAFT release review does not prematurely publish a version or enable the production RPC",()=>{
+test("Released ClashPerk import has a MINOR version without automatic DB migration",()=>{
  const v=JSON.parse(read("cloud-version.json"));
- assert.equal(v.version,"v1.18.1");
+ assert.equal(v.version,"v1.19.0");
  // In this branch we create a migration file but NEVER run the production
  // supabase db push/deploy commands, and no production credentials are stored.
  const jobs=[".github/workflows/clashperk-local-supabase-auth-ci.yml"];

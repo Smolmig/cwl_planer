@@ -29,7 +29,7 @@ test("public update timeline covers every official Cloud release and correctly d
  }
  const groups=groupReleasesByDate();
  assert.equal(groups.flatMap(g=>g.items).length,releaseHistory.length);
- assert.equal(groups[0].date,"2026-11-12");
+ assert.equal(groups[0].date,"2026-11-14");
 });
 
 test("history is discoverable in More and alongside the existing newest-update note",()=>{
@@ -41,11 +41,11 @@ test("history is discoverable in More and alongside the existing newest-update n
  assert.match(app,/id="updatesBack"/);
  assert.match(app,/id="openReleaseHistory"/);
  assert.match(app,/id="latestChangelog"/);
- assert.match(app,/Neu in v1\.18\.1/);
+ assert.match(app,/Neu in v1\.19\.0/);
  assert.match(app,/Mehr → Update-Verlauf/,"help explains the new page");
  assert.match(app,/\["help","account","archive","more-settings","updates","install","clan-management"\]/);
  assert.match(app,/if\(action==="updates"\)\{openReleaseHistory\(\);return\}/);
- assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.18\.1"\)/);
+ assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.19\.0"\)/);
  assert.match(sw,/cloud-release-history\\\.mjs/,"offline service worker must not cache Cloud history");
 });
 
