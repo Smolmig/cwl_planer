@@ -1,6 +1,12 @@
 name: Encrypted Supabase backup
 on:
   workflow_dispatch:
+  # Trigger a fresh encrypted recovery point when this one-time workflow
+  # configuration change reaches main. Keep the daily schedule unchanged.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/encrypted-backup.yml'
   schedule:
     - cron: '17 2 * * *'
 permissions:
