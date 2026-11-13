@@ -52,7 +52,7 @@ function makePayload(id,clanTag=tagA){
   clanTag,
   wars:[{
    war_key:warKey,war_type:"normal",
-   started_at:"2026-02-01T00:00:00Z",
+   started_at:new Date(Date.UTC(2026,1,1+(id-720))).toISOString(),
    team_size:2,opponent_tag:"#2PYL",opponent_name:"Synthetic Enemy"
   }],
   attacks:[1,2].map((n)=>({
