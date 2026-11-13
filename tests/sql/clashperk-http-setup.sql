@@ -7,11 +7,10 @@ grant usage on schema public to anon,authenticated;
 create or replace function auth.uid() returns uuid
 language sql stable set search_path=''
 as $$
- select nullif(
-   coalesce(
-     nullif(pg_catalog.current_setting('request.jwt.claim.sub',true),''),
-     nullif(pg_catalog.current_setting('request.jwt.claims',true),'')::jsonb->>'sub'
-   ),'')::uuid
+ -- Current PostgREST on PostgreSQL 17 emits the JSON claims variable.
+ -- Do not prefer legacy per-claim GUCs: in connection-pooled tests they
+ -- could be stale and must never authorize a different JWT user.
+ select (nullif(pg_catalog.current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid
 $$;
 -- Real Supabase auth.uid() semantics (JWT subject) without real accounts.
 -- Authorization must never use editable user_metadata claims.
