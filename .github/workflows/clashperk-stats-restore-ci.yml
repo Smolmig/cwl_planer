@@ -6,7 +6,7 @@ on:
       - 'scripts/verify_clashperk_restore.py'
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
   push:
     branches: [main]
     paths:
@@ -14,7 +14,7 @@ on:
       - 'scripts/verify_clashperk_restore.py'
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
 permissions:
   contents: read
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
-          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
       - name: Backup synthetic historical statistics to private temporary dump
         run: |
