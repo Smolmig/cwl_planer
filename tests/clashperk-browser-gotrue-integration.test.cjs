@@ -230,7 +230,10 @@ async function currentRows(page,table){
   const q=await window.testSb.from(table).select("*")
    .eq("clan_id",window.testClanId).range(0,100);
   if(q.error)throw Error(q.error.message);
-  return q.data;
+  // The preceding GoTrue HTTP UAT shares this isolated database and has
+  // already inserted its own synthetic cp:720 war. Check ONLY the two wars
+  // uploaded by this browser, never assume the local DB starts empty.
+  return q.data.filter(row=>["cp:321","cp:322"].includes(row.war_key));
  },table);
 }
 
