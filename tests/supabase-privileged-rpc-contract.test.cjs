@@ -57,7 +57,6 @@ function failures(def,spec,grants){
  for(const fragment of spec.checks)
   if(!def.includes(fragment))faults.push("identity/evidence check: "+fragment);
  const safeName=spec.name;
- const prefix="(?:revoke|grant)";
  if(!new RegExp("revoke\\s+all\\s+on\\s+function\\s+public\\."+safeName+
    "\\s*\\([^;]*\\)\\s+from\\s+public\\s*,\\s*anon\\s*;","i").test(grants))
   faults.push("PUBLIC/anon execution revoke");
@@ -89,7 +88,7 @@ test("contract catches removed/mis-scoped owner, editor, session, GRANT and CAS 
  broken(ownerDef,owner,s=>s.replace("security definer","security invoker"));
  broken(ownerDef,owner,s=>s.replace("auth.uid() is null","false"));
  broken(ownerDef,owner,s=>s.replace("private.cwl_is_owner(p_clan)","true"));
- broken(ownerDef,owner,s=>s.replace("stale_plan_cycle","ignored_cycle"));
+ broken(ownerDef,owner,s=>s.replaceAll("stale_plan_cycle","ignored_cycle"));
  broken(editorDef,editor,s=>s.replace("role='editor'","role='viewer'"));
  broken(editorDef,editor,s=>s.replace("clan_id=p_clan","clan_id is not null"));
  const unsafeGrants=grants.replace(
