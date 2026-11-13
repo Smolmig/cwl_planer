@@ -1,0 +1,79 @@
+name: ClashPerk actual local Supabase Auth UAT
+on:
+  pull_request:
+    paths:
+      - 'tests/sql/clashperk-local-supabase-auth-fixture.sql'
+      - 'tests/clashperk-local-gotrue-auth.test.cjs'
+      - '.github/workflows/clashperk-local-supabase-auth-ci.yml'
+      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261031125500_cwl_private_attack_history_stats.sql'
+      - 'supabase/migrations/20261031133000_cwl_statistics_missed_attack_log.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/sql/clashperk-local-supabase-auth-fixture.sql'
+      - 'tests/clashperk-local-gotrue-auth.test.cjs'
+      - '.github/workflows/clashperk-local-supabase-auth-ci.yml'
+permissions:
+  contents: read
+
+jobs:
+  actual-auth-rpc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LOCAL_WORK: ${{ runner.temp }}/cwl-local-auth
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - name: Initialize disposable local Supabase (never link production)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${LOCAL_WORK}"
+          cd "${LOCAL_WORK}"
+          supabase init --yes
+          # Keep GoTrue Auth + Kong API + PostgREST + PG.
+          # Exclude optional services to fit the hosted CI runner.
+          supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          umask 077
+          supabase status -o env > "${LOCAL_WORK}/local.env"
+      - name: Install isolated clan data, RLS and atomic XLSX import RPC
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "${LOCAL_WORK}/local.env"
+          set +a
+          test -n "${DB_URL:-}" && test -n "${API_URL:-}"
+          [[ "${DB_URL}" == *"127.0.0.1"* || "${DB_URL}" == *"localhost"* ]]
+          [[ "${API_URL}" == http://127.0.0.1:* || "${API_URL}" == http://localhost:* ]]
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f tests/sql/clashperk-local-supabase-auth-fixture.sql
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261031125500_cwl_private_attack_history_stats.sql
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261031133000_cwl_statistics_missed_attack_log.sql
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+          # Do not accidentally reuse a remote Supabase project's URL or keys.
+          sleep 3
+      - name: Real sign-in and tenant-scoped RPC with GoTrue-issued JWTs
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "${LOCAL_WORK}/local.env"
+          set +a
+          test -n "${ANON_KEY:-}" && test -n "${SERVICE_ROLE_KEY:-}"
+          CWL_LOCAL_SUPABASE_UAT=1 node --test tests/clashperk-local-gotrue-auth.test.cjs
+      - name: Stop and remove ephemeral Supabase and local credentials
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d "${LOCAL_WORK}/supabase" ]]; then
+            (cd "${LOCAL_WORK}" && supabase stop --no-backup) || true
+          fi
+          rm -rf "${LOCAL_WORK}"
