@@ -29,7 +29,8 @@ Die konkreten Sicherungen:
 - **Nur getrennte Kopie:** Ausgabeverzeichnis muss absolut, neu und **außerhalb des Repositories** sein. Es werden keine Quell-Dateien, keine Live-App-Version und keine Supabase-Datenbank verändert.
 - **Alle Projektbindungen:** Die Kopie verwendet die Staging-URL, deren *öffentlichen* Publishable-Key und die passende Staging-Auth-Storage-Kennung, auch für den Rückkehrer-Ladebildschirm. Die produktive Kennung darf in keiner generierten Textdatei verbleiben.
 - **Mobil deutlich:** Im Test-HTML ein sichtbarer Hinweis **„TESTUMGEBUNG · Keine Echtdaten“**, im Browser-Tab „CWL Planer · TEST“ und im PWA-Manifest „CWL TEST“.
-- **Kein falscher Offline-Cache:** Der normale Service Worker ist für die separate Offline-App geschrieben und würde `index.html` voraussetzen. Der Test-Build erzeugt deshalb einen eigenen schlanken **Online-only**-Service-Worker, der kein Offline-Profil cached. Das installierbare Cloud-Manifest bleibt enthalten.
+- **PWA-Installationsweg tatsächlich aktiv:** Die Produktions-Cloud-Seite registriert auf `cloud-app.html` bewusst keinen Worker. **Nur die generierte Testkopie** registriert den eigenen online-only Worker auf diesem Einstieg. Der Test-Worker leitet gleichoriginige GET-Anfragen ohne Cache an das Netz weiter; weder Offline-Profile noch alte Importskripte werden zwischengespeichert. Das Cloud-Manifest bleibt erhalten.
+- **Zusätzlicher echter Chromium-Smoke-Test (synthetisch, ohne Supabase/Internet):** `tests/clashperk-staging-browser.test.cjs` startet die *erzeugte* Testkopie an einer temporären Loopback-Adresse, ersetzt lediglich das externe `supabase-js`-Modul durch eine künstliche Gastsession, kontrolliert die Staging-Projekt-URL, TEST-Kennzeichnung, mobile Breite, Service-Worker-Registrierung und dessen Kontrolle nach Reload. Fremde Netzwerkanfragen werden abgebrochen und gemeldet. **Kein** Ersatz für iOS-PWA-/Cloud-Echtlogin, aber ein direkter Test des ausgelieferten Preview-Builds.
 - **Keine Original-ClashPerk-Dateien, Nutzerdaten, Tokens oder privilegierten Schlüssel** gehören in Git, GitHub-Logs oder in die öffentliche statische Testvorschau.
 
 Die generierten Dateien können später **auf einer eigenen HTTPS-Test-Origin** (nicht im produktiven Live-PWA-Scope!) gehostet werden. Die Veröffentlichung selbst ist nicht automatisiert und benötigt separate Freigabe. Eine öffentliche HTTPS-URL bedeutet nicht „geschützter Test“: Testkonten ausschließlich mit künstlichen Daten; echte Berechtigungen bleiben serverseitig durch RLS erzwungen.
@@ -62,7 +63,7 @@ Die generierten Dateien können später **auf einer eigenen HTTPS-Test-Origin** 
 ## 5. Go/No-Go
 
 - [x] Kostenfreie Alternative als **Option** geprüft; Free-Plan-Metadaten read-only bestätigt. **Keine Kosten-/Projektfreigabe.**
-- [x] Separate statische Staging-Vorschau mit hartem Produktions-Target-Guard und klarer iPhone-/PWA-Kennzeichnung implementiert.
+- [x] Separate statische Staging-Vorschau mit hartem Produktions-Target-Guard und klarer iPhone-/PWA-Kennzeichnung implementiert; Testseite registriert eigenen online-only Worker; generierte Dateien werden in Chromium mit synthetischer Gastsession auch nach Reload geprüft.
 - [ ] Reale Staging-Projektkosten abgerufen, ausdrücklich bestätigt und separates Projekt eingerichtet.
 - [ ] Migrationen und RLS/HTTP-Rollen gegen **dieses gehostete Testprojekt** geprüft.
 - [ ] Test-Build auf separater HTTPS-Origin geöffnet; Routing ausschließlich zu Staging bestätigt.
