@@ -11,7 +11,12 @@ const integer=(value,min,max)=>Number.isInteger(Number(value))&&Number(value)>=m
 const dateFromSerial=value=>{
  const n=Number(value);
  if(!Number.isFinite(n)||n<35000||n>100000)throw Error("Ungültiges ClashPerk-Kriegsdatum.");
- return new Date(Date.UTC(1899,11,30)+Math.round(n*86400000)).toISOString();
+ const iso=new Date(Date.UTC(1899,11,30)+Math.round(n*86400000)).toISOString();
+ // The attack-log alone has no authoritative warEnded flag. A recent
+ // unfinished war must not be reported as a completed historical result.
+ if(Date.parse(iso)>Date.now()-72*3600000)
+  throw Error("Der Export enthält einen noch laufenden oder zu aktuellen Krieg. Historienimport erst nach Kriegsende erneut durchführen.");
+ return iso;
 };
 const localElements=(element,name)=>Array.from(element.getElementsByTagNameNS("*",name));
 const single=(element,name)=>localElements(element,name)[0]||null;
@@ -186,7 +191,7 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
     const known=wars.get(id);
     const war={war_key:id,war_type:type,started_at:date,team_size:team,
       opponent_tag:opponentTag,opponent_name:string(r[20]),
-      source:"import",roster_tags:null,finalized:false,missed_log_complete:false};
+      source:"import",roster_tags:null,finalized:true,missed_log_complete:false};
     if(known){
      if(known.war_type!==type||known.started_at!==date||known.team_size!==team||
         known.opponent_tag!==opponentTag)
