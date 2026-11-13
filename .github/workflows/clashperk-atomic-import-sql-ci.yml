@@ -2,13 +2,13 @@ name: ClashPerk atomic XLSX history SQL regression
 on:
   pull_request:
     paths:
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'tests/sql/clashperk-atomic-import-*.sql'
       - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
   push:
     branches: [main]
     paths:
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'tests/sql/clashperk-atomic-import-*.sql'
       - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
 
@@ -46,6 +46,6 @@ jobs:
       - name: Create synthetic authenticated tenants and real RLS schema
         run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
       - name: Install DRAFT RPC in disposable PostgreSQL only
-        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
       - name: Verify atomic RLS, rollback, duplicate, partial and API cases
         run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
