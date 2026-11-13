@@ -66,8 +66,16 @@ export async function readClashPerkXlsx(file){
   const p=ent.offset;
   if(p+30>bytes.length||read32(dv,p)!==0x04034b50)
    throw Error("Excel-Datei enthält einen beschädigten ZIP-Eintrag.");
-  const start=p+30+read16(dv,p+26)+read16(dv,p+28);
-  if(start+ent.compressed>bytes.length)throw Error("ZIP-Eintrag abgeschnitten.");
+  // The central directory is not proof that the local entry points to the
+  // same file. Reject mismatched paths/methods rather than parsing substituted
+  // worksheet bytes as a verified ClashPerk export.
+  const localNameLength=read16(dv,p+26),localExtraLength=read16(dv,p+28);
+  const start=p+30+localNameLength+localExtraLength;
+  if(!localNameLength||start>cdOffset||read16(dv,p+8)!==ent.method||
+     read16(dv,p+6)&1||
+     decoder.decode(bytes.subarray(p+30,p+30+localNameLength))!==name)
+   throw Error("Excel-ZIP-Eintrag stimmt nicht mit dem Verzeichnis überein.");
+  if(start+ent.compressed>cdOffset)throw Error("ZIP-Eintrag abgeschnitten.");
   const payload=bytes.subarray(start,start+ent.compressed);
   let result;
   if(ent.method===0)result=payload;
