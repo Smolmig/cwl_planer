@@ -1,5 +1,5 @@
 {
-  "version": "v1.19.0",
+  "version": "v1.19.1",
   "released": "2026-11-14",
-  "summary": "Alte CW- und CWL-Kriege aus den originalen ClashPerk-Excel-Dateien direkt in die Clanstatistik importieren."
+  "summary": "Missed-Attacks-Exporte nachträglich übernehmen, ClashPerk-Import verständlicher anzeigen und Fehler gut sichtbar melden."
 }
