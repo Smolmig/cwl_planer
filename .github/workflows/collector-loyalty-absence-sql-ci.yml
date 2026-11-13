@@ -1,0 +1,60 @@
+name: Clan loyalty absence SQL regression (isolated PostgreSQL 17)
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261110182000_cwl_clan_loyalty_evidence.sql'
+      - 'supabase/migrations/20261113230000_cwl_clan_loyalty_absence_greatest_fix.sql'
+      - 'tests/sql/cwl-loyalty-absence-*.sql'
+      - 'tests/collector-loyalty-sql-contract.test.cjs'
+      - '.github/workflows/collector-loyalty-absence-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261110182000_cwl_clan_loyalty_evidence.sql'
+      - 'supabase/migrations/20261113230000_cwl_clan_loyalty_absence_greatest_fix.sql'
+      - 'tests/sql/cwl-loyalty-absence-*.sql'
+      - 'tests/collector-loyalty-sql-contract.test.cjs'
+      - '.github/workflows/collector-loyalty-absence-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  loyalty-absence-pg17:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: ci-synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install disposable PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create synthetic clans, roles and tenure schema
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/cwl-loyalty-absence-fixture.sql
+      - name: Install exact original loyalty trigger with the reported bug
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261110182000_cwl_clan_loyalty_evidence.sql
+      - name: Reproduce missing pg_catalog.greatest and confirm transaction rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/cwl-loyalty-absence-before.sql
+      - name: Install minimal unreleased fix in disposable database only
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261113230000_cwl_clan_loyalty_absence_greatest_fix.sql
+      - name: Assert bounded absence intervals, safe return, exact trigger grants and no duplication
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/cwl-loyalty-absence-after.sql
