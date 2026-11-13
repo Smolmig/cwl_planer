@@ -1,0 +1,78 @@
+name: ClashPerk statistics backup and restore UAT
+on:
+  pull_request:
+    paths:
+      - 'tests/sql/clashperk-restore-after-check.sql'
+      - 'scripts/verify_clashperk_restore.py'
+      - '.github/workflows/clashperk-stats-restore-ci.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/sql/clashperk-restore-after-check.sql'
+      - 'scripts/verify_clashperk_restore.py'
+      - '.github/workflows/clashperk-stats-restore-ci.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+permissions:
+  contents: read
+
+jobs:
+  stats-disaster-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL 17 command line
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Write synthetic Clan A/B history using production RLS migrations and DRAFT RPC
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
+      - name: Backup synthetic historical statistics to private temporary dump
+        run: |
+          set -euo pipefail
+          umask 077
+          pg_dump --format=custom --file "${RUNNER_TEMP}/clashperk-restore.dump"
+          pg_dump --data-only --schema=public --file "${RUNNER_TEMP}/clashperk-copy.sql"
+          test -s "${RUNNER_TEMP}/clashperk-restore.dump"
+          test -s "${RUNNER_TEMP}/clashperk-copy.sql"
+      - name: Restore into a separate empty PostgreSQL 17 database
+        run: |
+          set -euo pipefail
+          createdb clashperk_restore_test
+          pg_restore --exit-on-error --clean --if-exists --no-owner \
+            --dbname=clashperk_restore_test "${RUNNER_TEMP}/clashperk-restore.dump"
+      - name: Verify exact COPY content, RLS and the restored importer
+        env:
+          PGDATABASE: clashperk_restore_test
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_clashperk_restore.py "${RUNNER_TEMP}/clashperk-copy.sql"
+          psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-restore-after-check.sql
+      - name: Remove disposable backup artifacts
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/clashperk-restore.dump" "${RUNNER_TEMP}/clashperk-copy.sql"
