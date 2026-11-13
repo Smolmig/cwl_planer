@@ -265,6 +265,20 @@ test("ZIP parser rejects macro content, invalid containers and formula-bearing s
  await assert.rejects(readClashPerkXlsx(file(malicious)),/externe oder aktive Inhalte/);
  assert.ok(valid.length>100);
 });
+test("ZIP parser rejects a forged local XLSX header that disagrees with the central directory",async t=>{
+ if(typeof DecompressionStream==="undefined"){t.skip("Node runtime lacks DecompressionStream");return}
+ const {readClashPerkXlsx}=await xlsx();
+ const original=book([header,hit(1)]);
+ const changedMethod=Buffer.from(original);
+ changedMethod.writeUInt16LE(0,8); // local header says STORE, central entry says DEFLATE
+ await assert.rejects(readClashPerkXlsx(file(changedMethod)),
+  /stimmt nicht mit dem Verzeichnis/);
+ const changedName=Buffer.from(original);
+ changedName[30]="y".charCodeAt(0); // local name differs from central directory
+ await assert.rejects(readClashPerkXlsx(file(changedName)),
+  /stimmt nicht mit dem Verzeichnis/);
+});
+
 test("UI accepts several .xlsx files, retains JSON fallback and previews before any write",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
