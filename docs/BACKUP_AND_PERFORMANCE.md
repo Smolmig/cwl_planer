@@ -1,5 +1,25 @@
 # CWL Planer – Backup- und Optimierungskonzept
-Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
+Historisches Grundkonzept ab 31.10.2026 · **letzter technischer Nachweis: 13.11.2026** · produktive Cloud **v1.18.1**
+
+## Bestätigt 13.11.2026 – reales verschlüsseltes Backup vollständig isoliert geprüft
+
+**Erfolgreicher echter Lauf:** [GitHub Actions #43515446413](https://github.com/Smolmig/cwl_planer/actions/runs/43515446413) hat das am 13.11.2026 erzeugte AES-256-verschlüsselte [Produktivbackup #43402344939](https://github.com/Smolmig/cwl_planer/actions/runs/43402344939) mit dem **nach PR #281 hinzugefügten exakten COPY-Inhaltsprüfer** wiederhergestellt. Dieser Nachweis ist erstmals **nach** der Inhaltsprüfungsänderung geführt worden und lässt sich direkt in den Actions-Schritten prüfen.
+
+| Nachgewiesener Teil | Inhalt der isolierten Wiederherstellung |
+| --- | --- |
+| GPG / Backup-Integrität | Verschlüsseltes Artifact heruntergeladen, SHA-256 bestätigt, auf ephemerem Runner entschlüsselt |
+| SQL-Import | Datenbank-Schema, Auth-Daten und Anwendungsdaten in lokales PostgreSQL **vollständig ohne SQL-Fehler** eingespielt |
+| Auth-/App-Rowcounts und RLS | Erwartete COPY-Zeilenanzahlen sowie RLS der vorhandenen App-Tabellen erfolgreich geprüft |
+| `public.cwl_stat_wars` | **73 Kriege**, exakter zeilenreihenfolgeunabhängiger Inhalts-Fingerprint mit Original-Dump identisch; RLS aktiv |
+| `public.cwl_stat_attacks` | **1.502 Angriffe**, exakter Inhalts-Fingerprint identisch; RLS aktiv |
+| `public.cwl_stat_missed` | **48 Fehlangriffsnachweise**, exakter Inhalts-Fingerprint identisch; RLS aktiv |
+| Cleanup | Temporäre Datenbank und entschlüsselte Daten nach Test **erfolgreich gelöscht** |
+
+**Damit ist der zuvor offene Nachweis „echten verschlüsselten Datenbankexport isoliert wiederherstellen und historische CW-/CWL-Statistik bis auf den Inhalt verifizieren“ erledigt.** Das gilt exakt für das Backup vom 13.11.2026. Regelmäßige spätere Backups bleiben weiterhin automatisch mit dem vorhandenen `workflow_run`-Restore zu prüfen; alte Nachweise können neue Änderungen nicht abdecken.
+
+**Begrenzung:** Das ist **keine vollständige Plattform-Disaster-Recovery**. `roles.sql` wird auf dem lokalen Supabase-Runner nicht erneut eingespielt; Supabase-Projekt-/Auth-Provider-Einstellungen, GitHub-Secrets, Edge-Function-Veröffentlichung, E-Mail-Zustellung und ggf. externe Storage-Dateien sind damit **nicht** end-to-end wiederhergestellt. Die öffentliche Cloud-App bleibt auf **v1.18.1**. Der [ClashPerk-Draft #280](https://github.com/Smolmig/cwl_planer/pull/280) ist trotz bestandenem Backup-Gate weiter **NO-GO**, bis getrenntes gehostetes Staging, privater XLSX-Browser-Import, physisches iPhone/PWA, Migration/Help/Changelog/Version und finale Owner-Freigabe erfolgt sind.
+
+---
 
 ## Ergänzung 13.11.2026 – echtes Backup mit dem neuen Inhaltsprüfer erneut testen
 
@@ -13,7 +33,7 @@ Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
 
 **Zweiter echter Re-Drill / Umgebungsvariablen-Scope:** [Run #43514747116](https://github.com/Smolmig/cwl_planer/actions/runs/43514747116) hat das reale Artefakt erneut erfolgreich geprüft und **diesmal die lokale Supabase-Instanz mit einem freien Port gestartet**. Der letzte Health-Probe-`psql`-Befehl derselben GitHub-Actions-Step scheiterte jedoch wegen Bash `set -u`: Der in `GITHUB_ENV` geschriebene Wert `CWL_RESTORE_DB_PORT` wird von GitHub erst in **nachfolgenden** Steps eingelesen, nicht rückwirkend im laufenden Shell-Prozess. Der sichere Fix exportiert die Variable deshalb **zusätzlich im aktuellen Prozess vor der ersten psql-Probe**; die bisherige `GITHUB_ENV`-Weitergabe an die nachfolgenden Schritte bleibt erhalten. Auch dieser Lauf hat noch keinen SQL-Restore/Content-Vergleich ausgeführt und ist **kein** grünes Gate.
 
-**Abnahme – nicht vorgreifen:** Bis die tatsächlich von `main` ausgelöste Wiederholung **grün** ist und ihr Protokoll die drei exakten Datenabgleiche enthält, gilt die neue reale Inhaltsprüfung weiterhin als **offen / NO-GO**. Der Test bestätigt auch nach Erfolg nur die drei Statistik-Tabellen (und die übrigen bestehenden Restore-Checks), **nicht** die vollständige Wiederherstellbarkeit von GitHub-Secrets, Edge-Functions, GitHub-Konfiguration, Auth-E-Mails oder externem Storage. Der ClashPerk-Draft #280 benötigt zusätzlich gehostetes Staging, Original-XLSX, iPhone und die gesonderte Veröffentlichungsentscheidung.
+**Abnahme – erledigt für den konkreten Stand:** Der dritte echte [Wiederholungslauf #43515446413](https://github.com/Smolmig/cwl_planer/actions/runs/43515446413) ist nach den beiden dokumentierten Testumgebungsfehlern **vollständig erfolgreich**. Alle drei exakten Datenabgleiche und das Cleanup sind grün. Die gesamte Plattform-Wiederherstellung und die übrigen ClashPerk-Release-Gates bleiben separat offen (siehe oben).
 
 ---
 
@@ -26,7 +46,7 @@ Eine unabhängige Backup-Prüfungsänderung ergänzt deshalb im bestehenden auto
 - den exakten, zeilenreihenfolgeunabhängigen COPY-Inhaltsabgleich jeder dieser Tabellen nach Wiederherstellung in der **isolierten lokalen Datenbank**, einschließlich RLS;
 - synthetische Negativtests für gleichen Rowcount bei geändertem Sternwert, fehlenden Tabellenblock und ausgeschaltete RLS. Bei Abweichung ist der Restore-Check **rot**, nicht fälschlich grün.
 
-Der Abgleich verwendet nur den **bereits entschlüsselten lokalen Backup-Dump** und die **lokale Restore-Datenbank (127.0.0.1:54322)**; keine Verbindung oder Schreiboperation zur produktiven Supabase-DB. Inhaltliche Zeilen/Hashes werden nicht in GitHub-Logs veröffentlicht. Diese Änderung ist ein **technisches Backup-Gate**, **kein** neues Cloud-App-Backup-/Import-Menü und kein Ersatz für die vollständige Infrastruktur-/Auth-/Storage-Disaster-Recovery (#178). `main` bleibt auf App-Version **v1.18.1**; erst nach Merge und nachfolgendem echtem automatischem Backup-/Restore-Durchlauf gilt der neue Inhaltsvergleich für ein tatsächliches verschlüsseltes Produktiv-Artifact als bestätigt. Die umfangreiche ClashPerk-Release-PR #280 bleibt getrennt und weiterhin ohne Produktiv-Migration.
+Der Abgleich verwendet nur den **bereits entschlüsselten lokalen Backup-Dump** und die **lokale Restore-Datenbank auf 127.0.0.1 mit dynamischem TCP-Port**; keine Verbindung oder Schreiboperation zur produktiven Supabase-DB. Inhaltliche Zeilen/Hashes werden nicht in GitHub-Logs veröffentlicht. Diese Änderung ist ein **technisches Backup-Gate**, **kein** neues Cloud-App-Backup-/Import-Menü und kein Ersatz für die vollständige Infrastruktur-/Auth-/Storage-Disaster-Recovery (#178). `main` bleibt auf App-Version **v1.18.1**. Der echte Inhaltsabgleich ist inzwischen mit dem erfolgreich abgeschlossenen [Restore-Run #43515446413](https://github.com/Smolmig/cwl_planer/actions/runs/43515446413) nachgewiesen. Die umfangreiche ClashPerk-Release-PR #280 bleibt getrennt und weiterhin ohne Produktiv-Migration.
 
 ---
 
