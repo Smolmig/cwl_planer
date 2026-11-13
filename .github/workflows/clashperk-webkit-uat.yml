@@ -1,0 +1,38 @@
+name: ClashPerk Safari WebKit upload UAT
+on:
+  pull_request:
+    paths:
+      - 'tests/clashperk-upload-browser.test.cjs'
+      - 'cwl-clashperk-xlsx.mjs'
+      - 'cwl-clashperk-import-db.mjs'
+      - 'cwl-stats.mjs'
+      - 'cloud-app.html'
+      - '.github/workflows/clashperk-webkit-uat.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/clashperk-upload-browser.test.cjs'
+      - 'cwl-clashperk-xlsx.mjs'
+      - 'cwl-clashperk-import-db.mjs'
+      - 'cwl-stats.mjs'
+      - 'cloud-app.html'
+      - '.github/workflows/clashperk-webkit-uat.yml'
+permissions:
+  contents: read
+jobs:
+  webkit-xlsx-upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright and WebKit dependencies
+        run: |
+          npm install --no-save --no-package-lock jsdom@27 playwright@1.56.1
+          npx playwright install --with-deps webkit
+      - name: Test native file upload and one-RPC preview in WebKit
+        env:
+          CWL_TEST_BROWSER: webkit
+        run: node --test tests/clashperk-upload-browser.test.cjs
