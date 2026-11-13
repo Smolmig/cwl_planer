@@ -4,6 +4,7 @@ on:
     paths:
       - 'tests/sql/clashperk-local-supabase-auth-fixture.sql'
       - 'tests/clashperk-local-gotrue-auth.test.cjs'
+      - 'tests/clashperk-browser-gotrue-integration.test.cjs'
       - '.github/workflows/clashperk-local-supabase-auth-ci.yml'
       - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
       - 'supabase/migrations/20261031125500_cwl_private_attack_history_stats.sql'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'tests/sql/clashperk-local-supabase-auth-fixture.sql'
       - 'tests/clashperk-local-gotrue-auth.test.cjs'
+      - 'tests/clashperk-browser-gotrue-integration.test.cjs'
       - '.github/workflows/clashperk-local-supabase-auth-ci.yml'
 permissions:
   contents: read
@@ -20,7 +22,7 @@ permissions:
 jobs:
   actual-auth-rpc:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       LOCAL_WORK: /tmp/cwl-local-auth-${{ github.run_id }}
     steps:
@@ -69,6 +71,29 @@ jobs:
           set +a
           test -n "${ANON_KEY:-}" && test -n "${SERVICE_ROLE_KEY:-}"
           CWL_LOCAL_SUPABASE_UAT=1 node --test tests/clashperk-local-gotrue-auth.test.cjs
+      - name: Install pinned Playwright browser engines
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Integrated Chromium GoTrue-to-Excel-to-PostgREST UAT
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "${LOCAL_WORK}/local.env"
+          set +a
+          CWL_LOCAL_BROWSER_AUTH_UAT=1 CWL_TEST_BROWSER=chromium \
+            node --test tests/clashperk-browser-gotrue-integration.test.cjs
+      - name: Integrated WebKit GoTrue-to-Excel-to-PostgREST UAT
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "${LOCAL_WORK}/local.env"
+          set +a
+          CWL_LOCAL_BROWSER_AUTH_UAT=1 CWL_TEST_BROWSER=webkit \
+            node --test tests/clashperk-browser-gotrue-integration.test.cjs
       - name: Stop and remove ephemeral Supabase and local credentials
         if: always()
         shell: bash
