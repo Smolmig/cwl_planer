@@ -23,9 +23,12 @@ EXCEPTION WHEN undefined_function THEN
 END;
 $do$;
 RESET ROLE;
-SELECT CASE WHEN
-  (SELECT count(*) FROM public.cwl_clan_absence_observations)=1
-  AND (SELECT max(last_observed_at)='2026-11-13 10:10:00+00'::timestamptz
-       FROM public.cwl_clan_member_tenure)
-  THEN 'PASS: original bug reproduced safely without a partial write'
-  ELSE (SELECT 1/0)::text END;
+DO $do$
+BEGIN
+ IF (SELECT count(*) FROM public.cwl_clan_absence_observations)<>1
+    OR (SELECT max(last_observed_at) FROM public.cwl_clan_member_tenure)
+       IS DISTINCT FROM '2026-11-13 10:10:00+00'::timestamptz
+ THEN RAISE EXCEPTION 'Failed collector write did not roll back atomically'; END IF;
+END;
+$do$;
+SELECT 'PASS: original bug reproduced safely without a partial write';
