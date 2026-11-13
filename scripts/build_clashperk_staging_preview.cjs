@@ -62,6 +62,14 @@ for(const name of copyNames){
   src=src.replace("</head>",watermark+"</head>")
    .replace("<body>",'<body><div id="cwl-staging-watermark" role="status">TESTUMGEBUNG · Keine Echtdaten</div>')
    .replace("<title>CWL Planer</title>","<title>CWL Planer · TEST</title>");
+  // Production Cloud intentionally skips SW registration on cloud-app.html.
+  // The isolated test PWA must register its OWN network-only worker so the
+  // installation/scope can be verified in a real browser without stale caches.
+  const skipCloudWorker='if(location.pathname.endsWith("/cloud-app.html"))return;';
+  if(!src.includes(skipCloudWorker))refuse("Cloud Service-Worker-Startpunkt nicht gefunden.");
+  src=src.replace(skipCloudWorker,
+   'if(location.pathname.endsWith("/cloud-app.html")){ '+
+   'swRegistration=await navigator.serviceWorker.register("./service-worker.js"); return; }');
  }
  if(name==="cloud-manifest.webmanifest"){
   const manifest=JSON.parse(src);
@@ -76,7 +84,12 @@ for(const name of copyNames){
   // Staging Cloud remains intentionally online-only, without cached writes.
   src='// Staging-only, online-only service worker. No planner cache.\\n'+
       'self.addEventListener("install",()=>self.skipWaiting());\\n'+
-      'self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));\\n';
+      'self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));\\n'+
+      'self.addEventListener("fetch",e=>{\\n'+
+      ' if(e.request.method!=="GET")return;\\n'+
+      ' if(new URL(e.request.url).origin!==self.location.origin)return;\\n'+
+      ' e.respondWith(fetch(e.request,{cache:"no-store"}));\\n'+
+      '});\\n';
   src=src.replaceAll("\\n","\n");
  }
  if(src.includes(prodUrl)||src.includes(prodKey)||src.includes(productionRef))
