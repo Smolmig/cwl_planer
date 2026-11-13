@@ -1,0 +1,32 @@
+name: Verify prior encrypted backup content (isolated drill)
+
+# One-time automatic check when this helper is first merged into main.
+# Later: operator may explicitly provide a different successful backup run.
+# No direct connection or writing to production Supabase is possible here.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-encrypted-backup-drill.yml'
+  workflow_dispatch:
+    inputs:
+      backup_run_id:
+        description: 'Existing successful encrypted backup run ID (30-day artifact retention)'
+        type: string
+        required: true
+        default: '43402344939'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  previous-backup-content-drill:
+    if: ${{ github.repository == 'Smolmig/cwl_planer' && github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/test-encrypted-restore.yml
+    with:
+      # The pre-existing 13 November encrypted artifact is still retained.
+      # Workflow_dispatch allows choosing any newer successful run ID later.
+      backup_run_id: ${{ github.event_name == 'push' && '43402344939' || inputs.backup_run_id }}
+    secrets:
+      CWL_BACKUP_PASSPHRASE: ${{ secrets.CWL_BACKUP_PASSPHRASE }}
