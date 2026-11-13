@@ -243,7 +243,7 @@ reset role;
 -- missed-count capacity independently of the browser's preview.
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 declare v jsonb; out jsonb;
 begin
  v:=public.clashperk_test_payload('107');
@@ -270,7 +270,7 @@ begin
   raise exception 'Partial invalid CWL imported despite rollback';
  end if;
 end
-$;
+$$;
 reset role;
 
 do $
