@@ -11,12 +11,7 @@ const integer=(value,min,max)=>Number.isInteger(Number(value))&&Number(value)>=m
 const dateFromSerial=value=>{
  const n=Number(value);
  if(!Number.isFinite(n)||n<35000||n>100000)throw Error("Ungültiges ClashPerk-Kriegsdatum.");
- const iso=new Date(Date.UTC(1899,11,30)+Math.round(n*86400000)).toISOString();
- // The attack-log alone has no authoritative warEnded flag. A recent
- // unfinished war must not be reported as a completed historical result.
- if(Date.parse(iso)>Date.now()-72*3600000)
-  throw Error("Der Export enthält einen noch laufenden oder zu aktuellen Krieg. Historienimport erst nach Kriegsende erneut durchführen.");
- return iso;
+ return new Date(Date.UTC(1899,11,30)+Math.round(n*86400000)).toISOString();
 };
 const localElements=(element,name)=>Array.from(element.getElementsByTagNameNS("*",name));
 const single=(element,name)=>localElements(element,name)[0]||null;
@@ -166,6 +161,7 @@ const string=value=>String(value||"").trim().slice(0,80);
 export function parseClashPerkSheets(sheets,expectedClanTag){
  if(!validTag(tag(expectedClanTag)))throw Error("Kein gültiger Clash-Clan ausgewählt.");
  const wars=new Map(),events=new Map(),missedInput=[],clanNames=new Set(),warnings=[];
+ const recentWarIds=new Set();
  let rawEvents=0,aggregateSheets=0;
  for(const sheet of sheets){
   const rows=sheet?.rows||[],head=rows[0]||[];
@@ -188,6 +184,13 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
        (r[14]!=null&&!integer(r[14],3,30)))
       throw Error("ClashPerk-Angriffszeile ist beschädigt oder gehört zum falschen Clan.");
     const date=dateFromSerial(r[22]),id=keyFor(warId);
+    // ClashPerk can include a CURRENT war among its latest 100.
+    // Attack Log has no verified end time: omit this one, not the 99
+    // valid older wars. Never turn a partial live war into final stats.
+    if(Date.parse(date)>Date.now()-72*3600000){
+     recentWarIds.add(id);
+     continue;
+    }
     const known=wars.get(id);
     const war={war_key:id,war_type:type,started_at:date,team_size:team,
       opponent_tag:opponentTag,opponent_name:string(r[20]),
@@ -231,7 +234,9 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
   }
  }
  if(!wars.size){
-  throw Error("Bitte mindestens einen /export attack-log (Regular oder CWL) hochladen. War Stats allein reichen nicht.");
+  throw Error(recentWarIds.size?
+   "Die ausgewählten Attack-Logs enthalten nur noch laufende oder sehr neue Kriege. Bitte nach deren Abschluss erneut exportieren.":
+   "Bitte mindestens einen /export attack-log (Regular oder CWL) hochladen. War Stats allein reichen nicht.");
  }
  if(wars.size>4000||events.size>140000||missedInput.length>20000)
   throw Error("Zu viele Kriegsdaten in einem Import.");
@@ -289,6 +294,8 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
    completeWars++;
   }else missingWars++;
  }
+ if(recentWarIds.size)warnings.push(recentWarIds.size+
+  " noch laufende oder sehr neue Kriege wurden ausgelassen; alte Kriege bleiben importierbar.");
  if(aggregateSheets)warnings.push(aggregateSheets+" zusammengefasste War-Stats-Tabellen wurden nicht doppelt gezählt.");
  if(unmatchedMissed)warnings.push(unmatchedMissed+" Missed-Einträge ohne zugehörigen Attack-Log-Krieg wurden ausgelassen.");
  if(missingWars)warnings.push(missingWars+" Kriege ohne vollständigen Angriffsnachweis: fehlende Angriffe bleiben unbekannt.");
@@ -298,5 +305,5 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
  const arr=[...wars.values()].sort((a,b)=>a.started_at.localeCompare(b.started_at));
  return {wars:arr,attacks,missed,sourceAttacks:rawEvents,duplicates:rawEvents-events.size,
   enemyAttacks:[...events.values()].filter(e=>!e.home).length,
-  completeWars,missingWars,unmatchedMissed,warnings};
+  completeWars,missingWars,unmatchedMissed,ignoredRecentWars:recentWarIds.size,warnings};
 }
