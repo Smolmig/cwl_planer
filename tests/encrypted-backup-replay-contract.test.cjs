@@ -3,6 +3,8 @@ const {test}=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
+const os=require("node:os");
+const {spawnSync}=require("node:child_process");
 
 const root=path.resolve(__dirname,"..");
 const replay=fs.readFileSync(path.join(root,".github/workflows/verify-encrypted-backup-drill.yml"),"utf8");
@@ -47,4 +49,34 @@ test("original automatic restore remains active and callable replay verifies exa
  for(const name of ["cwl_stat_wars","cwl_stat_attacks","cwl_stat_missed"])
   assert.match(verifier,new RegExp(name));
  assert.match(verifier,/content differs from encrypted backup/);
+});
+
+test("free local restore port is selected from a synthetic config; no fixed occupied port survives",t=>{
+ const marker="restore_port=\"$(python3 - <<'PY'";
+ const pos=restore.indexOf(marker);
+ assert.ok(pos>=0,"Python local port selection not found in restore workflow");
+ const lines=restore.slice(pos).split("\n");
+ const stop=lines.findIndex((line,index)=>index>0&&line.trim()==="PY");
+ assert.ok(stop>0,"Missing Python heredoc end");
+ const script=lines.slice(1,stop).map(line=>{
+  assert.ok(line.startsWith("          "),"Unexpected Python indentation");
+  return line.slice(10);
+ }).join("\n");
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),"cwl-restore-dynamic-port-"));
+ t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const config=path.join(dir,"supabase","config.toml");
+ fs.mkdirSync(path.dirname(config));
+ fs.writeFileSync(config,"[api]\nport = 54321\n[db]\nport = 54322\nshadow_port = 54320\n[db.pooler]\nport = 54329\n");
+ const result=spawnSync("python3",["-c",script],{cwd:dir,encoding:"utf8",timeout:5000});
+ assert.equal(result.status,0,result.stderr);
+ const port=Number(result.stdout.trim());
+ assert.ok(Number.isSafeInteger(port)&&port>1024&&port<65536);
+ const newConfig=fs.readFileSync(config,"utf8");
+ assert.ok(newConfig.includes("[db]\nport = "+port+"\nshadow_port = 54320\n"));
+ assert.ok(newConfig.includes("[api]\nport = 54321\n"));
+ assert.ok(newConfig.includes("[db.pooler]\nport = 54329\n"));
+ fs.writeFileSync(config,"[api]\nport = 54321\n");
+ const invalid=spawnSync("python3",["-c",script],{cwd:dir,encoding:"utf8",timeout:5000});
+ assert.notEqual(invalid.status,0,"Malformed Supabase config must fail closed");
+ assert.match(invalid.stderr,/Unable to isolate local Supabase DB port/);
 });
