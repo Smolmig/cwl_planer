@@ -54,8 +54,10 @@ begin
  end if;
  -- Every concurrent import for this application clan serializes here.
  -- Never use an arbitrary Clash tag as authorization for another app tenant.
+ perform pg_catalog.pg_advisory_xact_lock(
+   pg_catalog.hashtextextended(p_clan::text,424242));
  select upper(c.clash_tag) into v_clan_tag
- from public.cwl_clans c where c.id=p_clan for update;
+ from public.cwl_clans c where c.id=p_clan;
  if v_clan_tag is null or
     v_clan_tag is distinct from upper(p_payload->>'clanTag') or
     v_clan_tag !~ '^#[0289PYLQGRJCUV]{3,15}$' then
