@@ -1,0 +1,51 @@
+name: ClashPerk atomic XLSX history SQL regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'tests/sql/clashperk-atomic-import-*.sql'
+      - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'tests/sql/clashperk-atomic-import-*.sql'
+      - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sql-atomic-import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-test-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create synthetic authenticated tenants and real RLS schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
+      - name: Install DRAFT RPC in disposable PostgreSQL only
+        run: psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+      - name: Verify atomic RLS, rollback, duplicate, partial and API cases
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql

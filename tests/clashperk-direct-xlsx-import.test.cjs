@@ -138,7 +138,7 @@ test("an existing API war wins against the same historical Excel war, even with 
  assert.equal(plan.missed.length,0);
 });
 
-test("repeated Excel imports can add missed evidence but never overwrite existing import or API attacks",async()=>{
+test("repeated Excel imports use exactly ONE RPC with tenant/role guard, never client table writes",async()=>{
  const {parseClashPerkSheets}=await xlsx();
  const {planClashPerkMerge,commitClashPerkMerge}=await db();
  const parsed=parseClashPerkSheets([attackSheet([
@@ -149,24 +149,56 @@ test("repeated Excel imports can add missed evidence but never overwrite existin
  assert.equal(plan.insert.length,0);
  assert.equal(plan.extend.length,1);
  const calls=[];
- const sb={from(table){
-  const record={table};calls.push(record);
-  const response={error:null};
-  const chain={
-   upsert(rows,options){record.rows=rows;record.options=options;return Promise.resolve(response)},
-   update(data){record.update=data;return chain},
-   eq(field,value){(record.where||=[]).push([field,value]);return chain},
-   then(resolve){return Promise.resolve(response).then(resolve)}
-  };
-  return chain;
- }};
- await commitClashPerkMerge(sb,plan,{clanId:"aaa",assertCurrent:()=>true});
- assert.ok(calls.every(c=>c.table!=="cwl_stat_wars"||c.rows===undefined));
- assert.ok(calls.filter(c=>c.options).every(c=>c.options.ignoreDuplicates===true));
- assert.equal(calls.filter(c=>c.table==="cwl_stat_attacks").length,1);
- assert.equal(calls.filter(c=>c.table==="cwl_stat_missed").length,1);
- assert.equal(calls.filter(c=>c.update).length,1);
- assert.ok(calls.find(c=>c.update).where.some(([f,v])=>f==="source"&&v==="import"));
+ const sb={
+  from(){throw Error("non-atomic table writes are forbidden")},
+  rpc(name,args){
+   calls.push({name,args});
+   return Promise.resolve({data:{
+    inserted:0,extended:1,skippedApi:0,attacks:2,missed:1,completeWars:1
+   },error:null});
+  }
+ };
+ const result=await commitClashPerkMerge(sb,plan,{
+  clanId:"synthetic-clan-id",clanTag:tag,assertCurrent:()=>true
+ });
+ assert.equal(result.extended,1);
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].name,"cwl_import_clashperk_atomic");
+ assert.equal(calls[0].args.p_clan,"synthetic-clan-id");
+ assert.equal(calls[0].args.p_payload.clanTag,tag);
+ assert.equal(calls[0].args.p_payload.wars.length,1);
+ assert.equal(calls[0].args.p_payload.attacks.length,2);
+ assert.equal(calls[0].args.p_payload.missed.length,1);
+ assert.ok(!JSON.stringify(calls[0]).includes("service_role"));
+});
+
+test("missing RPC refuses import; it must not fall back to partially committed browser batches",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const {planClashPerkMerge,commitClashPerkMerge}=await db();
+ const parsed=parseClashPerkSheets([attackSheet([hit(1)])],tag);
+ const plan=planClashPerkMerge(parsed,[]);
+ let called=0;
+ const sb={
+  from(){throw Error("client direct writes unexpectedly called")},
+  rpc(){called++;return Promise.resolve({data:null,error:{
+   code:"PGRST202",message:"Missing function"
+  }})}
+ };
+ await assert.rejects(commitClashPerkMerge(sb,plan,{
+  clanId:"fake",clanTag:tag,assertCurrent:()=>true
+ }),/noch nicht auf dem Server verfügbar/);
+ assert.equal(called,1);
+});
+
+test("clan switching or role loss before commit aborts without an RPC",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const {planClashPerkMerge,commitClashPerkMerge}=await db();
+ const plan=planClashPerkMerge(parseClashPerkSheets([attackSheet([hit(1)])],tag),[]);
+ let calls=0;
+ await assert.rejects(commitClashPerkMerge({
+  rpc(){calls++}
+ },plan,{clanId:"fake",clanTag:tag,assertCurrent:()=>false}),/Clan gewechselt/);
+ assert.equal(calls,0);
 });
 
 // Construct one tiny, completely self-contained deflate-compressed XLSX
@@ -262,42 +294,20 @@ test("finished history imports even if same ClashPerk export includes a live unc
   /nur noch laufende oder sehr neue Kriege/);
 });
 
-test("a recovered import is not marked finalized until attack and missed writes complete",async()=>{
+test("database rejects a late failure atomically; browser sends one RPC and never finalizes partial wars",async()=>{
  const {parseClashPerkSheets}=await xlsx();
  const {planClashPerkMerge,commitClashPerkMerge}=await db();
- const parsed=parseClashPerkSheets([attackSheet([
-  hit(7,1,1,"normal","#8PYL"),hit(7,2,1,"normal","#8PYL")
- ]),missedSheet([ms(7,"#QPYL",2)])],tag);
- const plan=planClashPerkMerge(parsed,[]);
- const calls=[];
- let failAttack=true;
- const sb={from(table){
-  return {
-   upsert(rows,options){
-    calls.push({table,rows,options});
-    if(table==="cwl_stat_attacks"&&failAttack)return Promise.resolve({error:{message:"fake network outage"}});
-    return Promise.resolve({error:null});
-   },
-   update(patch){
-    calls.push({table,patch});
-    const chain={eq:()=>chain,then:resolve=>Promise.resolve({error:null}).then(resolve)};
-    return chain;
-   }
-  };
- }};
+ const plan=planClashPerkMerge(parseClashPerkSheets([
+  attackSheet([hit(7,1,1,"normal","#8PYL")]),missedSheet([ms(7,"#QPYL",2)])
+ ],tag),[]);
+ let calls=0;
+ const sb={rpc:async()=>{calls++;return {data:null,error:{
+  message:"late simulated SQL exception: transaction rolled back"
+ }}},from(){throw Error("no direct writes")}};
  await assert.rejects(commitClashPerkMerge(sb,plan,{
-  clanId:"fake",assertCurrent:()=>true
- }),err=>err.message==="fake network outage");
- assert.equal(calls.filter(x=>x.patch).length,0,"no premature completed war");
- assert.equal(calls.find(x=>x.table==="cwl_stat_wars").rows[0].finalized,false);
- failAttack=false;calls.length=0;
- await commitClashPerkMerge(sb,plan,{clanId:"fake",assertCurrent:()=>true});
- assert.equal(calls.find(x=>x.table==="cwl_stat_wars").rows[0].finalized,false);
- const done=calls.find(x=>x.patch);
- assert.equal(done.patch.finalized,true);
- assert.equal(done.patch.missed_log_complete,true);
- assert.equal(done.patch.roster_tags.length,2);
- assert.deepEqual(calls.filter(x=>x.patch).map(x=>x.table),["cwl_stat_wars"]);
+  clanId:"fake",clanTag:tag,assertCurrent:()=>true
+ }),/transaction rolled back/);
+ assert.equal(calls,1);
 });
 
 test("sharedStrings XLSX structure used by real ClashPerk exports parses without any CDN library",async t=>{
