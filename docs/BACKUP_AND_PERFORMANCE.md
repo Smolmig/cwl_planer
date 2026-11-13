@@ -1,6 +1,18 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
 
+## Ergänzung 13.11.2026 – echtes Backup mit dem neuen Inhaltsprüfer erneut testen
+
+**Ziel:** Den bereits vorhandenen, am 13.11.2026 erfolgreich verschlüsselten Backup-Lauf [43402344939](https://github.com/Smolmig/cwl_planer/actions/runs/43402344939) mit dem **neueren** exakten Statistik-Content-Prüfer nochmals in einer unabhängigen lokalen Datenbank wiederherstellen. Das Artefakt `cwl-encrypted-db-43402344939` wurde heute als vorhanden und **nicht abgelaufen** bestätigt (30 Tage Aufbewahrung). Der [ältere Restore-Lauf 43402524839](https://github.com/Smolmig/cwl_planer/actions/runs/43402524839) war grün, liegt jedoch **vor** Einführung des exakten COPY-Inhaltsvergleichs und ist daher **kein** Beleg für diese neue Prüfung.
+
+**Technischer Testpfad:** Der bereits bestehende `.github/workflows/test-encrypted-restore.yml` kann nun zusätzlich als **wiederverwendbarer GitHub-Actions-Workflow** mit einer explizit übergebenen `backup_run_id` genutzt werden. Der neue, auf `main` begrenzte Helper `.github/workflows/verify-encrypted-backup-drill.yml` löst beim **erstmaligen Merge seiner eigenen Workflowdatei** einmalig den sicheren Restore des genannten Bestandsartefakts aus. Später ist derselbe Helper per `workflow_dispatch` mit einer neuen Backup-Run-ID manuell nutzbar. Der nächtliche Auslöser `workflow_run` nach jedem erfolgreichen neuen Backup bleibt weiterhin aktiv.
+
+**Datengrenzen:** Der Helper erhält **ausschließlich** den GitHub-Lesetoken, eine öffentliche Backup-Run-ID und das in den GitHub-Actions-Secrets hinterlegte GPG-Passwort. Er erhält **keine `SUPABASE_DB_URL`**, keinen DB-Admin-Zugang und kein Service-Role-Token. Die Wiederherstellung läuft ausschließlich gegen die temporäre lokale PostgreSQL-Instanz `127.0.0.1:54322`. GPG-Entschlüsselung erfolgt nur innerhalb des Action-Runners. Das Artefakt wird auf SHA-256 geprüft. In den Logs erscheinen **keine** Spieler-/Clan-Datensätze, SQL-Dumps, Geheimnisse oder Vergleichshashes. Nach dem Test werden die temporäre lokale Datenbank und die entschlüsselten Dateien gelöscht. Das bestehende automatische Restore-Gate bleibt unverändert im Verhalten.
+
+**Abnahme – nicht vorgreifen:** Bis die tatsächlich von `main` ausgelöste Wiederholung **grün** ist und ihr Protokoll die drei exakten Datenabgleiche enthält, gilt die neue reale Inhaltsprüfung weiterhin als **offen / NO-GO**. Der Test bestätigt auch nach Erfolg nur die drei Statistik-Tabellen (und die übrigen bestehenden Restore-Checks), **nicht** die vollständige Wiederherstellbarkeit von GitHub-Secrets, Edge-Functions, GitHub-Konfiguration, Auth-E-Mails oder externem Storage. Der ClashPerk-Draft #280 benötigt zusätzlich gehostetes Staging, Original-XLSX, iPhone und die gesonderte Veröffentlichungsentscheidung.
+
+---
+
 ## Ergänzung 13.11.2026 – verschlüsselte Statistik-Wiederherstellung absichern
 
 Die täglichen verschlüsselten Datenbank-Backups und der nachfolgende isolierte Restore wurden am **13.11.2026** auf `main` erfolgreich ausgeführt ([Backup-Lauf](https://github.com/Smolmig/cwl_planer/actions/runs/43402344939), [Restore-Lauf](https://github.com/Smolmig/cwl_planer/actions/runs/43402524839)). Der damalige Produktiv-Workflow verglich zwar Zeilenzahlen und RLS der wichtigen Tabellen, **nicht aber den exakten Inhalt** aller historischen CW/CWL-Angriffe und Missed-Nachweise.
