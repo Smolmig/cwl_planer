@@ -39,7 +39,9 @@ test("original automatic restore remains active and callable replay verifies exa
  assert.match(restore,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  assert.match(restore,/supabase db start/);
  assert.match(restore,/PGHOST: 127\.0\.0\.1/);
- assert.match(restore,/PGPORT: '54322'/);
+ assert.match(restore,/CWL_RESTORE_DB_PORT/);
+ assert.match(restore,/export PGPORT="\$CWL_RESTORE_DB_PORT"/);
+ assert.match(restore,/echo "CWL_RESTORE_DB_PORT=\$restore_port" >> "\$GITHUB_ENV"/);
  assert.match(restore,/supabase stop --no-backup/);
  assert.doesNotMatch(restore,/SUPABASE_DB_URL|service_role|supabase db push|actions\/upload-artifact/);
  for(const name of ["cwl_stat_wars","cwl_stat_attacks","cwl_stat_missed"])
