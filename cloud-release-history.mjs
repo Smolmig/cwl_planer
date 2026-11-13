@@ -2,7 +2,7 @@
 // basieren auf den offiziellen GitHub-Veröffentlichungen, nicht auf Commit-Zeitpunkten.
 // Bei jedem neuen Cloud-App-Release eine verständliche neue Version vorn ergänzen.
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
-export const releaseHistory = [
+export const releaseHistory = [\n  {\n    "version": "v1.19.1",\n    "releaseType": "patch",\n    "date": "2026-11-14",\n    "title": "ClashPerk: Verpasste Angriffe nachträglich ergänzen",\n    "description": "Missed-Attacks-Excel-Dateien lassen sich nach den Angriffsexporten einzeln nachreichen. Der Import erklärt Zahlen und Fehler direkt am Upload; Kriege ohne eindeutige Zuordnung bleiben geschützt."\n  },\n
   {
     "version": "v1.19.0",
     "releaseType": "minor",
