@@ -43,7 +43,7 @@ export async function readAllStatWars(sb,clanId){
  const result=[];
  for(let offset=0;offset<10000;offset+=500){
   const {data,error}=await sb.from("cwl_stat_wars")
-   .select("war_key,war_type,started_at,team_size,opponent_tag,source,missed_log_complete")
+   .select("war_key,war_type,started_at,team_size,opponent_tag,opponent_name,source,missed_log_complete")
    .eq("clan_id",clanId).order("started_at",{ascending:false})
    .range(offset,offset+499);
   if(error)throw error;
