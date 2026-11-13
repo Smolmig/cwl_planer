@@ -53,7 +53,9 @@ test("daily encrypted restore compares all historical stats tables after isolate
  assert.match(workflow,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  for(const table of Object.keys(rows))assert.match(workflow,new RegExp("public\\."+table));
  assert.match(workflow,/PGHOST: 127\.0\.0\.1/);
- assert.match(workflow,/PGPORT: '54322'/);
+ assert.match(workflow,/CWL_RESTORE_DB_PORT/);
+ assert.match(workflow,/export PGPORT="\$CWL_RESTORE_DB_PORT"/);
+ assert.match(workflow,/PGHOST: 127\.0\.0\.1/);
  // No production DB credentials are supplied to this verification step.
  const step=workflow.split("- name: Verify exact restored historical CW/CWL statistics and RLS")[1]
   .split("- name: Remove disposable database")[0];

@@ -1,6 +1,8 @@
 name: Verify prior encrypted backup content (isolated drill)
 
-# One-time automatic check when this helper is first merged into main.
+# Run on an explicit helper edit in main (including the 13 Nov retry).
+# The initial attempt hit a host-port collision at 54322; the reusable
+# restore now chooses a free local port before it starts Docker.
 # Later: operator may explicitly provide a different successful backup run.
 # No direct connection or writing to production Supabase is possible here.
 on:
