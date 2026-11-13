@@ -246,3 +246,89 @@ test("UI accepts several .xlsx files, retains JSON fallback and previews before 
  assert.match(stats,/return importFile\(chosen\[0\]\)/);
  assert.doesNotMatch(stats,/\.limit\(200\)/);
 });
+
+
+test("archived ClashPerk results are finalized, but a war still within the safe 72-hour boundary is rejected",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const older=parseClashPerkSheets([attackSheet([hit(1)])],tag);
+ assert.equal(older.wars[0].finalized,true);
+ const recent=hit(5);
+ recent[22]=Math.floor((Date.now()-3600000-Date.UTC(1899,11,30))/86400000);
+ assert.throws(()=>parseClashPerkSheets([attackSheet([recent])],tag),
+  /laufenden oder zu aktuellen Krieg/);
+});
+
+test("a recovered import is not marked finalized until attack and missed writes complete",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const {planClashPerkMerge,commitClashPerkMerge}=await db();
+ const parsed=parseClashPerkSheets([attackSheet([
+  hit(7,1,1,"normal","#8PYL"),hit(7,2,1,"normal","#8PYL")
+ ]),missedSheet([ms(7,"#QPYL",2)])],tag);
+ const plan=planClashPerkMerge(parsed,[]);
+ const calls=[];
+ let failAttack=true;
+ const sb={from(table){
+  return {
+   upsert(rows,options){
+    calls.push({table,rows,options});
+    if(table==="cwl_stat_attacks"&&failAttack)return Promise.resolve({error:{message:"fake network outage"}});
+    return Promise.resolve({error:null});
+   },
+   update(patch){
+    calls.push({table,patch});
+    const chain={eq:()=>chain,then:resolve=>Promise.resolve({error:null}).then(resolve)};
+    return chain;
+   }
+  };
+ }};
+ await assert.rejects(commitClashPerkMerge(sb,plan,{
+  clanId:"fake",assertCurrent:()=>true
+ }),err=>err.message==="fake network outage");
+ assert.equal(calls.filter(x=>x.patch).length,0,"no premature completed war");
+ assert.equal(calls.find(x=>x.table==="cwl_stat_wars").rows[0].finalized,false);
+ failAttack=false;calls.length=0;
+ await commitClashPerkMerge(sb,plan,{clanId:"fake",assertCurrent:()=>true});
+ assert.equal(calls.find(x=>x.table==="cwl_stat_wars").rows[0].finalized,false);
+ const done=calls.find(x=>x.patch);
+ assert.equal(done.patch.finalized,true);
+ assert.equal(done.patch.missed_log_complete,true);
+ assert.equal(done.patch.roster_tags.length,2);
+ assert.deepEqual(calls.filter(x=>x.patch).map(x=>x.table),["cwl_stat_wars"]);
+});
+
+test("sharedStrings XLSX structure used by real ClashPerk exports parses without any CDN library",async t=>{
+ if(typeof DecompressionStream==="undefined"){t.skip("Node runtime lacks DecompressionStream");return}
+ const {readClashPerkXlsx,parseClashPerkSheets}=await xlsx();
+ const rows=[header,hit(1)];
+ const strings=[],lookup=new Map();
+ const cell=(v,ref)=>{
+  if(typeof v==="number"&&Number.isFinite(v))
+   return '<c r="'+ref+'"><v>'+v+'</v></c>';
+  const value=String(v??"");
+  if(!lookup.has(value)){lookup.set(value,strings.length);strings.push(value)}
+  return '<c r="'+ref+'" t="s"><v>'+lookup.get(value)+'</v></c>';
+ };
+ const sheetRows=rows.map((row,ri)=>{
+  const cells=row.map((v,j)=>{
+   let n=j+1,c="";while(n){c=String.fromCharCode(65+(n-1)%26)+c;n=Math.floor((n-1)/26)}
+   return cell(v,c+(ri+1));
+  });
+  return '<row r="'+(ri+1)+'">'+cells.join("")+'</row>';
+ });
+ const sh='<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+
+  sheetRows.join("")+'</sheetData></worksheet>';
+ const sst='<?xml version="1.0"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+  strings.map(x=>'<si><t>'+x+'</t></si>').join("")+'</sst>';
+ const parts={
+  "xl/workbook.xml":'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="United Fighters (#99JP2RL2)" sheetId="1" r:id="rId1"/></sheets></workbook>',
+  "xl/_rels/workbook.xml.rels":'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+  "xl/sharedStrings.xml":sst,"xl/worksheets/sheet1.xml":sh
+ };
+ const sheets=await readClashPerkXlsx(file(zip(parts)));
+ assert.equal(sheets[0].rows[0][0],"Tag");
+ assert.equal(sheets[0].rows[1][17],"United Fighters");
+ const parsed=parseClashPerkSheets(sheets,tag);
+ assert.equal(parsed.wars.length,1);
+ assert.equal(parsed.attacks.length,1);
+ assert.equal(parsed.wars[0].finalized,true);
+});
