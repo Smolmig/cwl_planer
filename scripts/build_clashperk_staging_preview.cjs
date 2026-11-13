@@ -70,6 +70,24 @@ for(const name of copyNames){
   src=src.replace(skipCloudWorker,
    'if(location.pathname.endsWith("/cloud-app.html")){ '+
    'swRegistration=await navigator.serviceWorker.register("./service-worker.js"); return; }');
+  // iOS uses apple-mobile-web-app-title instead of the manifest's short_name.
+  // Do not let the homescreen icon look like the production app.
+  const appleTitle='<meta name="apple-mobile-web-app-title" content="CWL Planer">';
+  if(!src.includes(appleTitle))refuse("iOS-Home-Screen-Titel nicht gefunden.");
+  src=src.replace(appleTitle,
+   '<meta name="apple-mobile-web-app-title" content="CWL TEST">');
+  // Social/share preview metadata must never send a test link back to the
+  // production Cloud site; staged hosting origin is not known at build time.
+  const liveSocial='https://smolmig.github.io/cwl_planer/';
+  src=src.split("\n").filter(line=>
+   !line.includes('<meta property="og:url"')&&
+   !line.includes('<meta property="og:image"')&&
+   !line.includes('<meta name="twitter:image"')
+  ).join("\n");
+  if(src.includes(liveSocial))
+   refuse("Testseite enthält noch produktive Social-/Share-Links.");
+  src=src.replace('<meta property="og:title" content="CWL Planer Cloud – Dein Clan. Deine Planung.">',
+   '<meta property="og:title" content="CWL TEST – Keine Echtdaten">');
  }
  if(name==="cloud-manifest.webmanifest"){
   const manifest=JSON.parse(src);
