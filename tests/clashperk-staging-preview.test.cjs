@@ -43,6 +43,11 @@ test("staging preview uses only a different hosted Supabase project and shows an
  assert.ok(sync.includes('const SUPABASE_PUBLISHABLE_KEY="'+stagingKey+'";'));
  assert.match(html,/TESTUMGEBUNG · Keine Echtdaten/);
  assert.match(html,/CWL Planer · TEST/);
+ assert.match(html,/swRegistration=await navigator\.serviceWorker\.register\("\.\/service-worker\.js"\)/,
+  "Staging Cloud route must register its own service worker");
+ assert.match(worker,/addEventListener\("fetch"/);
+ assert.match(worker,/cache:"no-store"/);
+ assert.doesNotMatch(worker,/caches\.open|caches\.match|index\.html/);
  assert.match(html,new RegExp("sb-"+stagingRef+"-auth-token"));
  assert.equal(manifest.short_name,"CWL TEST");
  assert.equal(manifest.start_url,"./cloud-app.html");
