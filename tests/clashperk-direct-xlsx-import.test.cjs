@@ -248,14 +248,18 @@ test("UI accepts several .xlsx files, retains JSON fallback and previews before 
 });
 
 
-test("archived ClashPerk results are finalized, but a war still within the safe 72-hour boundary is rejected",async()=>{
+test("finished history imports even if same ClashPerk export includes a live unconfirmed war",async()=>{
  const {parseClashPerkSheets}=await xlsx();
- const older=parseClashPerkSheets([attackSheet([hit(1)])],tag);
- assert.equal(older.wars[0].finalized,true);
  const recent=hit(5);
  recent[22]=Math.floor((Date.now()-3600000-Date.UTC(1899,11,30))/86400000);
+ const older=parseClashPerkSheets([attackSheet([hit(1),recent])],tag);
+ assert.equal(older.wars.length,1);
+ assert.equal(older.wars[0].finalized,true);
+ assert.equal(older.ignoredRecentWars,1);
+ assert.equal(older.attacks.length,1);
+ assert.ok(older.warnings.some(w=>w.includes("ausgelassen")));
  assert.throws(()=>parseClashPerkSheets([attackSheet([recent])],tag),
-  /laufenden oder zu aktuellen Krieg/);
+  /nur noch laufende oder sehr neue Kriege/);
 });
 
 test("a recovered import is not marked finalized until attack and missed writes complete",async()=>{
