@@ -19,6 +19,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.19.1] - 2026-11-14
+
+### Behoben
+- Ein `/export missed`-Export kann nun auch **allein nach bereits importierten Attack-Logs** eingelesen werden. Die 29 historischen UF-2-Kriege aus dem Nutzerbeispiel dienen nur als privates Testmotiv, keine Nutzerdaten werden im Repository gespeichert.
+- Für spätere Missed-Ergänzungen werden vorhandene Kriege nur anhand identischer ClashPerk-War-ID plus Gegner, Typ, Größe und Datum ergänzt. Unbekannte oder widersprüchliche Zeilen werden nicht zu neuen Kriegen umgedeutet; Cloud-API-Kriege und CWL-Pläne bleiben geschützt.
+- Der Vorschautext zeigt eigene und gegnerische Angriffe, neue/vorhandene Kriege und fehlende Nachweise in kurzen Zeilen. Fehler stehen direkt beim Upload und sind für Screenreader als Fehler erkennbar.
+
+### Hilfe
+- Beschreibung ergänzt: Attack-Logs und Missed-Export dürfen **gemeinsam oder nacheinander** hochgeladen werden; ein Missed-Export alleine benötigt zuerst passend gespeicherte Angriffslogs.
+
 ## [1.19.0] - 2026-11-14
 
 ### Hinzugefügt
