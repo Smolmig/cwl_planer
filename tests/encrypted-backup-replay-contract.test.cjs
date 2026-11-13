@@ -44,6 +44,10 @@ test("original automatic restore remains active and callable replay verifies exa
  assert.match(restore,/CWL_RESTORE_DB_PORT/);
  assert.match(restore,/export PGPORT="\$CWL_RESTORE_DB_PORT"/);
  assert.match(restore,/echo "CWL_RESTORE_DB_PORT=\$restore_port" >> "\$GITHUB_ENV"/);
+ const localExport=restore.indexOf('export CWL_RESTORE_DB_PORT="$restore_port"');
+ const localPsql=restore.indexOf('PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT"');
+ assert.ok(localExport>=0&&localPsql>localExport,
+  "GITHUB_ENV is only available from the NEXT Actions step; first psql needs current-shell export");
  assert.match(restore,/supabase stop --no-backup/);
  assert.doesNotMatch(restore,/SUPABASE_DB_URL|service_role|supabase db push|actions\/upload-artifact/);
  for(const name of ["cwl_stat_wars","cwl_stat_attacks","cwl_stat_missed"])
