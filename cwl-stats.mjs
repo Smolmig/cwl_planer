@@ -1,4 +1,6 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.43";
+import {readClashPerkXlsx,parseClashPerkSheets} from "./cwl-clashperk-xlsx.mjs?v=xlsx-draft-1";
+import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=xlsx-draft-1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -900,25 +902,37 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const ctx=context();if(!ctx.active||!ctx.clanId||loading)return;
     const epoch=++version,id=ctx.clanId;loading=true;notice("Statistik wird geladen …");
     try{
-      const {data:ww,error:e1}=await sb.from("cwl_stat_wars").select("*")
-        .eq("clan_id",id).order("started_at",{ascending:false}).limit(200);
-      if(e1)throw e1;
+      // Keep all available completed wars. A pair of ClashPerk limit-100
+      // exports already fills 200 rows before the scheduled collector adds
+      // any new war. Never silently call a partial sample "all history".
+      const ww=[];
+      for(let offset=0;offset<10000;offset+=500){
+        const {data:part,error:e1}=await sb.from("cwl_stat_wars").select("*")
+          .eq("clan_id",id).order("started_at",{ascending:false})
+          .range(offset,offset+499);
+        if(e1)throw e1;
+        ww.push(...(part||[]));
+        if(!part||part.length<500)break;
+        if(offset+500>=10000)throw Error("Statistik umfasst mehr als 10.000 Kriege; Datenabruf bitte erweitern.");
+      }
       const collected=[];
-      for(let offset=0;offset<10000;offset+=800){
+      for(let offset=0;offset<60000;offset+=800){
         const {data:aa,error:e2}=await sb.from("cwl_stat_attacks").select("*")
           .eq("clan_id",id).order("war_key").order("attacker_tag").order("attack_order")
           .range(offset,offset+799);
         if(e2)throw e2;
         collected.push(...(aa||[]));
         if(!aa||aa.length<800)break;
+        if(offset+800>=60000)throw Error("Zu viele Angriffsdatensätze; vollständiger Abruf erforderlich.");
       }
       const missedRows=[];
-      for(let offset=0;offset<5000;offset+=800){
+      for(let offset=0;offset<20000;offset+=800){
         const {data:mm,error:e3}=await sb.from("cwl_stat_missed").select("*")
           .eq("clan_id",id).order("war_key").order("player_tag").range(offset,offset+799);
         if(e3)throw e3;
         missedRows.push(...(mm||[]));
         if(!mm||mm.length<800)break;
+        if(offset+800>=20000)throw Error("Zu viele Missed-Datensätze; vollständiger Abruf erforderlich.");
       }
       let latestHealth=null;
       try{
@@ -974,6 +988,77 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         " Angriffe, "+missedCount+" verpasste Angriffe ("+parsed.missed.length+" Einträge).");
       notify("✓ Kriegsstatistik importiert");
     }finally{importing=false;$("statsImportButton").disabled=false}
+  }
+  async function importClashPerkFiles(files){
+    const ctx=context(),clanId=ctx.clanId,initialRole=ctx.role;
+    if(!ctx.active||!clanId||!["owner","editor"].includes(initialRole))
+      throw Error("Nur Besitzer und Vize können die gemeinsame Statistik ergänzen.");
+    if(!ctx.clanTag)throw Error("Bitte einen mit Clash verbundenen Clan auswählen.");
+    if(importing)throw Error("Ein Import ist bereits aktiv.");
+    if(!files.length||files.length>12||files.some(f=>f.size>7500000)||
+       files.reduce((sum,f)=>sum+f.size,0)>25000000)
+      throw Error("Bitte höchstens 12 XLSX-Dateien mit insgesamt maximal 25 MB auswählen.");
+    importing=true;$("statsImportButton").disabled=true;
+    const stillCurrent=()=>{
+      const now=context();
+      return now.active&&now.clanId===clanId&&
+        ["owner","editor"].includes(now.role)&&cleanTag(now.clanTag)===cleanTag(ctx.clanTag);
+    };
+    try{
+      const sheets=[];
+      for(let i=0;i<files.length;i++){
+        if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
+        notice("ClashPerk-Datei "+(i+1)+" / "+files.length+" prüfen …");
+        sheets.push(...await readClashPerkXlsx(files[i]));
+      }
+      const parsed=parseClashPerkSheets(sheets,ctx.clanTag);
+      if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
+      notice("Vorhandene Kriege abgleichen …");
+      const old=await readAllStatWars(sb,clanId);
+      const plan=planClashPerkMerge(parsed,old);
+      if(plan.conflicts.length)throw Error(plan.conflicts.length+
+        " Kriege widersprechen vorhandenen historischen Daten. Import abgebrochen; nichts wird überschrieben.");
+      const totalMissed=plan.missed.reduce((n,m)=>n+m.missed_count,0);
+      const summary=files.length+" ClashPerk-Datei(en) erkannt. "+
+        parsed.wars.length+" Kriege, "+parsed.attacks.length+" eigene Angriffe und "+
+        parsed.enemyAttacks+" gegnerische Angriffe geprüft. "+
+        parsed.duplicates+" doppelte Einträge entfernt. "+
+        "Neu: "+plan.insert.length+" Kriege; vorhanden: "+plan.extend.length+
+        "; API-Kriege geschützt: "+plan.skip.length+". "+
+        totalMissed+" dokumentierte verpasste Angriffe. "+
+        parsed.completeWars+" lückenlos belegte Kriege, "+
+        parsed.missingWars+" mit offener Abdeckung. "+
+        (parsed.warnings.length?parsed.warnings.join(" ")+" ":"")+
+        "Bestehende API-Ergebnisse und CWL-Aufstellungen bleiben unverändert. Importieren?";
+      if(!plan.insert.length&&!plan.extend.length){
+        notice("Alle "+plan.skip.length+" passenden Kriege sind bereits durch die offizielle API erfasst. Nichts überschrieben.");
+        return;
+      }
+      if(!await confirmAction(summary,{title:"ClashPerk-Historie prüfen",
+        confirmText:"Geprüfte Kriege übernehmen"})){
+        notice("Import abgebrochen. Es wurden keine Daten verändert.");return;
+      }
+      if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
+      notice("ClashPerk-Historie wird gespeichert …");
+      const result=await commitClashPerkMerge(sb,plan,{clanId,
+        assertCurrent:stillCurrent,onProgress:notice});
+      await load();
+      notice("✓ "+result.inserted+" neue Kriege, "+result.attacks+
+        " eigene Angriffe und "+totalMissed+
+        " belegte verpasste Angriffe übernommen. "+
+        result.skippedApi+" API-Kriege unverändert. "+
+        (parsed.missingWars?"Unvollständige Kriege sind gekennzeichnet.":""));
+      notify("✓ ClashPerk-Statistiken ergänzt");
+    }finally{importing=false;$("statsImportButton").disabled=false}
+  }
+  async function importSelectedFiles(files){
+    const chosen=Array.from(files||[]);
+    if(!chosen.length)return;
+    if(chosen.length===1&&/\.json$/i.test(chosen[0].name||""))
+      return importFile(chosen[0]);
+    if(chosen.some(f=>!/\.xlsx$/i.test(f.name||"")))
+      throw Error("Bitte nur ClashPerk-XLSX-Dateien oder einzeln eine Statistik-JSON-Datei auswählen.");
+    return importClashPerkFiles(chosen);
   }
   async function captureCwl(payload){
     const ctx=context();
@@ -1128,7 +1213,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     e("statsRefresh")?.addEventListener("click",()=>load());
     e("statsImportButton")?.addEventListener("click",()=>e("statsImportFile").click());
     e("statsImportFile")?.addEventListener("change",async ev=>{
-      try{await importFile(ev.target.files?.[0])}catch(e){notice("Importfehler: "+String(e.message||e))}
+      try{await importSelectedFiles(ev.target.files)}catch(e){notice("Importfehler: "+String(e.message||e))}
       finally{ev.target.value=""}
     });
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
