@@ -41,7 +41,7 @@ function failures(def,spec,grants){
   {if(!pattern.test(def))faults.push(label)};
  requireMatch(/\bsecurity\s+definer\s+set\s+search_path\s*=\s*''/i,
   "fixed SECURITY DEFINER search_path");
- requireMatch(/\bauth\.uid\(\)\s+is\s+null\b/i,"signed-in guard");
+ requireMatch(/(?:\(\s*select\s+)?auth\.uid\(\)\s*\)?\s+is\s+null\b/i,"signed-in guard");
  requireMatch(new RegExp("raise\\s+exception\\s+'"+
   (spec.role==="owner"?"owner_only":"editor_only")+
   "'\\s+using\\s+errcode\\s*=\\s*'42501'","i"),"permission error");
@@ -87,6 +87,11 @@ test("contract catches removed/mis-scoped owner, editor, session, GRANT and CAS 
  }
  broken(ownerDef,owner,s=>s.replace("security definer","security invoker"));
  broken(ownerDef,owner,s=>s.replace("auth.uid() is null","false"));
+ const pause=cases[0],pauseDef=extract(read(pause.file),pause.name);
+ const unsafePause=pauseDef.replace("(select auth.uid()) is null","false");
+ assert.notEqual(unsafePause,pauseDef,"pause-session mutation did not affect source");
+ assert.ok(failures(unsafePause,pause,read(pause.grants)).includes("signed-in guard"),
+  "Missed-pause RPC must reject missing (select auth.uid()) authorization");
  broken(ownerDef,owner,s=>s.replace("private.cwl_is_owner(p_clan)","true"));
  broken(ownerDef,owner,s=>s.replaceAll("stale_plan_cycle","ignored_cycle"));
  broken(editorDef,editor,s=>s.replace("role='editor'","role='viewer'"));
