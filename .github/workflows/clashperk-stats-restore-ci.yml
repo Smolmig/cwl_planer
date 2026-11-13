@@ -83,6 +83,23 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/verify_clashperk_restore.py "${RUNNER_TEMP}/clashperk-copy.sql"
+          # A same-row-count content mutation MUST be detected (not just counts).
+          changed=$(psql -X -qAt -v ON_ERROR_STOP=1 -c \
+            "UPDATE public.cwl_stat_attacks SET stars=0
+             WHERE war_key='cp:100' AND attacker_tag='#8PYL'
+               AND attack_order=1 RETURNING stars;")
+          test "$changed" = '0'
+          if python3 scripts/verify_clashperk_restore.py \
+               "${RUNNER_TEMP}/clashperk-copy.sql" >/dev/null 2>&1; then
+            echo "::error::Restore hash verifier accepted altered attack content."
+            exit 1
+          fi
+          fixed=$(psql -X -qAt -v ON_ERROR_STOP=1 -c \
+            "UPDATE public.cwl_stat_attacks SET stars=3
+             WHERE war_key='cp:100' AND attacker_tag='#8PYL'
+               AND attack_order=1 RETURNING stars;")
+          test "$fixed" = '3'
+          python3 scripts/verify_clashperk_restore.py "${RUNNER_TEMP}/clashperk-copy.sql"
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-restore-after-check.sql
       - name: Remove disposable backup artifacts
         if: always()
