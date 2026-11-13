@@ -62,3 +62,24 @@ test("A DRAFT release review does not prematurely publish a version or enable th
   assert.match(workflow,/never link production/i);
  }
 });
+
+
+test("Discord help requires exactly three original exports, including only one combined Missed file",()=>{
+ const html=read("cloud-app.html");
+ const start=html.indexOf('<details id="statsImportHelp"');
+ const end=html.indexOf("</details>",start);
+ assert.ok(start>0&&end>start);
+ const guide=html.slice(start,end);
+ assert.equal((guide.match(/\\/export attack-log/g)||[]).length,2);
+ assert.equal((guide.match(/\\/export missed/g)||[]).length,1);
+ assert.match(guide,/Diese 3 Dateien brauchst du pro Clan/);
+ assert.match(guide,/Dieser Export enthält sowohl normale CWs als auch CWL/);
+ const missedLine=guide.split("/export missed")[1].split("</p>")[0];
+ assert.doesNotMatch(missedLine,/war_type:/);
+ assert.match(guide,/nicht automatisch die gesamte Clan-Geschichte/);
+ const helpPage=html.slice(html.indexOf("<b>Alte Kriege aus ClashPerk ergänzen:</b>"));
+ assert.match(helpPage,/einmal <strong>\\/export missed<\\/strong>/);
+ assert.doesNotMatch(helpPage.slice(0,1500),/missed<\\/strong> getrennt/);
+ const notes=read("docs/CLASHPERK_XLSX_IMPORT_IMPLEMENTATION_DRAFT.md");
+ assert.match(notes,/Missed-Export enthält <strong>/i.test(notes) ? notes : notes,/ein.*gemeinsam/);
+});
