@@ -908,12 +908,26 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const epoch=++version;
     loading=true;loadingClan=id;
     if(scope!==id){
-      // Clear the prior tenant's visible summary immediately during a switch;
-      // never show Clan A's percentages under Clan B while fetching.
+      // An initial load has nothing to clear. Rendering an EMPTY initial
+      // table too early would prime the row caches and suppress the first
+      // real table render (seen in unrelated stats browser regressions).
+      const hadOtherClan=scope!==null;
       scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       cachedRecentStats=new Map();comparableProfiles=new Map();
       comparableSummary=null;cachedSummary=null;lastMetricSignature="";
-      render();
+      if(hadOtherClan){
+        // Clear Clan A's visible data before Clan B finishes its fetch.
+        render();
+      }
+      // When the new data comes back, empty-state caches must never be
+      // mistaken for the new clan's fully populated rows.
+      cachedPlayerStats=new Map();lastRowsMarkup=null;lastRowsVersion=-1;
+      lastRowsClan=null;lastRowsHost=null;lastMembersNotifiedVersion=-1;
+      lastComparableRowsMarkup=null;lastFormRowsVersion=-1;lastFormRowsClan=null;
+      lastMatchupVersion=-1;lastMatchupClan=null;
+      lastDuelVersion=-1;lastDuelClan=null;
+      lastTrendVersion=-1;lastTrendClan=null;
+      historyAttacksByWar=new Map();openStatsPlayers.clear();
     }
     notice("Statistik wird geladen …");
     try{
