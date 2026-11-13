@@ -597,8 +597,14 @@ const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
-  memberTags:storage.getProfile()?.members?.map(m=>m.playerTag).filter(Boolean)||[],
-  memberProfiles:storage.getProfile()?.members?.filter(m=>m.playerTag).map(m=>({playerTag:m.playerTag,name:m.name}))||[]})
+  // Historical attacks remain in this clan's history even if their
+  // players later left. Stored former/kept CWL guests are NOT current
+  // roster members, so the statistics badge must not present them as such.
+  memberTags:storage.getProfile()?.members?.filter(m=>
+    m.cocSyncState!=="former"&&m.cocSyncState!=="kept")
+    .map(m=>m.playerTag).filter(Boolean)||[],
+  memberProfiles:storage.getProfile()?.members?.filter(m=>m.playerTag)
+    .map(m=>({playerTag:m.playerTag,name:m.name}))||[]})
 });
 let currentWarOverview=null;
 const finishStartup=()=>window.CWLStartup?.finish?.();
