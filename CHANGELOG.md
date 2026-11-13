@@ -19,6 +19,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.19.0] - 2026-11-14
+
+### Hinzugefügt
+- Originale ClashPerk-Excel-Dateien direkt in **Statistik → Überblick** hochladen und nach einer Vorschau für den ausgewählten Clan übernehmen – normale Clankriege, CWL und nachweislich ausgelassene Angriffe.
+- Mehrere historische Kriege in einem Vorgang ergänzen, auch für ehemalige Mitglieder. Wiederholte Uploads vermeiden Duplikate.
+
+### Verbessert
+- Geschützter, atomarer Cloud-Import mit Clanberechtigung und Konfliktsperre. Schon API-verifizierte Kriege werden nicht überschrieben.
+- Beim Clanwechsel und erneuten Laden erscheinen keine verspäteten Statistikwerte eines anderen Clans.
+
+### Hinweis
+- Der Import wird ausschließlich durch Dateiauswahl und Bestätigung gestartet; keine automatische Discord-Erfassung oder rückwirkend erfundene Fehlangriffe.
+- Die Hilfe erklärt die drei originalen Discord-Exporte. Verschlüsseltes Backup und isolierter Wiederherstellungstest gehören zur Veröffentlichung.
+
 ## [1.18.1] - 2026-11-12
 
 ### Ein gemeinsamer CWL-Saisonrückblick – PATCH

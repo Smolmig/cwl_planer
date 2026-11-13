@@ -1,0 +1,81 @@
+name: ClashPerk atomic XLSX history SQL regression
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'tests/sql/clashperk-atomic-import-*.sql'
+      - 'scripts/clashperk-schema-preflight.sql'
+      - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'tests/sql/clashperk-atomic-import-*.sql'
+      - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sql-atomic-import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-test-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create synthetic authenticated tenants and real RLS schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
+      - name: Preflight the isolated existing statistics schema (read-only; importer must be absent)
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=pre -f scripts/clashperk-schema-preflight.sql)"
+          test "$result" = PASS || { echo "::error::Pre-migration schema preflight: $result"; exit 1; }
+      - name: Install DRAFT RPC in disposable PostgreSQL only
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
+      - name: Postflight the installed RPC, unique keys, RLS and grants (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=post -f scripts/clashperk-schema-preflight.sql)"
+          test "$result" = PASS || { echo "::error::Post-migration schema preflight: $result"; exit 1; }
+      - name: Reject lost-RLS, anonymous-RPC and already-installed preflight (synthetic DB only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The preflight MUST turn red after an importer is installed.
+          before="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=pre -f scripts/clashperk-schema-preflight.sql)"
+          [[ "$before" == FAIL* ]] || { echo "::error::Preflight accepted already-installed RPC"; exit 1; }
+          psql -X -v ON_ERROR_STOP=1 -qAt -c "GRANT EXECUTE ON FUNCTION public.cwl_import_clashperk_atomic(uuid,jsonb) TO anon;"
+          leaked="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=post -f scripts/clashperk-schema-preflight.sql)"
+          [[ "$leaked" == FAIL* ]] || { echo "::error::Postflight allowed anonymous RPC execution"; exit 1; }
+          psql -X -v ON_ERROR_STOP=1 -qAt -c "REVOKE EXECUTE ON FUNCTION public.cwl_import_clashperk_atomic(uuid,jsonb) FROM anon;"
+          psql -X -v ON_ERROR_STOP=1 -qAt -c "ALTER TABLE public.cwl_stat_attacks DISABLE ROW LEVEL SECURITY;"
+          unsafe="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=post -f scripts/clashperk-schema-preflight.sql)"
+          [[ "$unsafe" == FAIL* ]] || { echo "::error::Postflight allowed disabled stats RLS"; exit 1; }
+          psql -X -v ON_ERROR_STOP=1 -qAt -c "ALTER TABLE public.cwl_stat_attacks ENABLE ROW LEVEL SECURITY;"
+          after="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=post -f scripts/clashperk-schema-preflight.sql)"
+          test "$after" = PASS || { echo "::error::Failed to restore synthetic preflight: $after"; exit 1; }
+      - name: Verify atomic RLS, rollback, duplicate, partial and API cases
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql

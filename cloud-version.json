@@ -1,5 +1,5 @@
 {
-  "version": "v1.18.1",
-  "released": "2026-11-12",
-  "summary": "Ein gemeinsames CWL-Saisonarchiv zeigt Gruppenergebnisse, Kriegstage, Spieler und Einsätze ohne doppelte Monatseinträge."
+  "version": "v1.19.0",
+  "released": "2026-11-14",
+  "summary": "Alte CW- und CWL-Kriege aus den originalen ClashPerk-Excel-Dateien direkt in die Clanstatistik importieren."
 }
