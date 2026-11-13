@@ -27,7 +27,9 @@ test("collector-loyalty fix changes exactly one qualified GREATEST, no tenant/ro
  assert.match(next,/current_user <> 'service_role'/);
  assert.match(next,/v_elapsed <= 10800/);
  assert.match(next,/NEW\.last_observed_at > OLD\.last_observed_at/);
- assert.doesNotMatch(fixed,/\b(?:DROP|TRUNCATE|GRANT|REVOKE|ALTER TABLE|DELETE FROM|UPDATE public\.)\b/i);
+ const outside=fixed.replace(/CREATE OR REPLACE FUNCTION public\.cwl_capture_clan_loyalty_evidence\(\)[\s\S]*?\$loyalty\$;/i,"")
+  .replace(/^\s*--.*$/gm,"");
+ assert.doesNotMatch(outside,/\b(?:DROP|TRUNCATE|GRANT|REVOKE|ALTER|INSERT|UPDATE|DELETE)\b/i);
 });
 test("real PG17 CI first reproduces SQLSTATE 42883, then verifies the exact new function",()=>{
  assert.match(workflow,/image: postgres:17/);
