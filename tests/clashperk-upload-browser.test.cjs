@@ -186,8 +186,8 @@ test("Real browser: 2-war XLSX + Missed XLSX follows the visible owner upload, c
     assert.equal(p.attacks,3);
     assert.equal(p.misses,1);
     assert.match(p.feedback,/✓ .*2 neue Kriege.*3 eigene Angriffe/);
-    assert.match(p.confirmations[0],/2 Kriege/);
-    assert.match(p.confirmations[0],/1 lückenlos belegte Kriege/);
+    assert.match(p.confirmations[0],/2 normale CWs/);
+    assert.match(p.confirmations[0],/Vollständig belegte Kriege: 1/);
     assert.ok(p.scrollWidth<=p.viewport+2,"Upload causes horizontal overflow at "+width);
     assert.equal(errors.length,0,errors.join("\n"));
    }finally{await page.close()}
@@ -218,6 +218,58 @@ test("Real browser: cancelling preview, switching clan, viewer role and missing 
    assert.equal(await page.locator("#statsImportButton").isVisible(),false);
    p=await upload(page,[aFile([attack(311)])]);
    assert.equal(p.calls,1);assert.match(p.feedback,/Nur Besitzer und Vize/);
+   assert.equal(errors.length,0,errors.join("\n"));
+  }finally{await page.close()}
+ }finally{await browser.close();await new Promise(ok=>server.close(ok))}
+});
+
+test("Real browser: upload attack log, then missed-only file; repeats do not duplicate rows",{
+ timeout:120000
+},async()=>{
+ const server=serve();await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
+ const browser=await testEngine.launch({headless:true,...(engineLabel==="Chromium"?{args:["--no-sandbox"]}:{})});
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:820}});
+  try{
+   const errors=await setup(page,"http://127.0.0.1:"+server.address().port);
+   let p=await upload(page,[aFile([attack(321,1),attack(321,2)])]);
+   assert.equal(p.calls,1);
+   assert.equal(p.wars,1);
+   assert.equal(p.misses,0);
+   p=await upload(page,[mFile([missed(321)])]);
+   assert.equal(p.calls,2);
+   assert.equal(p.wars,1);
+   assert.equal(p.misses,1);
+   assert.match(p.confirmations.at(-1),/Missed-Export/);
+   assert.match(p.confirmations.at(-1),/Passende gespeicherte Kriege: 1/);
+   assert.match(p.confirmations.at(-1),/Nachgewiesene verpasste Angriffe: 2/);
+   p=await upload(page,[mFile([missed(321)])]);
+   assert.equal(p.wars,1);
+   assert.equal(p.misses,1);
+   assert.equal(p.calls,3);
+   assert.equal(errors.length,0,errors.join("\n"));
+   assert.ok(p.scrollWidth<=p.viewport+2);
+  }finally{await page.close()}
+ }finally{await browser.close();await new Promise(ok=>server.close(ok))}
+});
+
+test("Real browser: standalone missed with unknown war gives nearby visible error, no database write",{
+ timeout:120000
+},async()=>{
+ const server=serve();await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
+ const browser=await testEngine.launch({headless:true,...(engineLabel==="Chromium"?{args:["--no-sandbox"]}:{})});
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:820}});
+  try{
+   const errors=await setup(page,"http://127.0.0.1:"+server.address().port);
+   const p=await upload(page,[mFile([missed(321)])]);
+   assert.equal(p.calls,0);
+   assert.equal(p.wars,0);
+   assert.match(p.feedback,/zuerst die Attack-Logs/);
+   assert.equal(await page.locator("#statsFeedback").getAttribute("data-state"),"error");
+   const uploadBox=await page.locator("#statsImportEntry").boundingBox();
+   const errorBox=await page.locator("#statsFeedback").boundingBox();
+   assert.ok(uploadBox&&errorBox&&errorBox.y>=uploadBox.y);
    assert.equal(errors.length,0,errors.join("\n"));
   }finally{await page.close()}
  }finally{await browser.close();await new Promise(ok=>server.close(ok))}
