@@ -8,7 +8,10 @@ const fs=require("node:fs");
 const http=require("node:http");
 const path=require("node:path");
 const {deflateRawSync}=require("node:zlib");
-const {chromium}=require("playwright");
+const {chromium,webkit}=require("playwright");
+const testEngine=process.env.CWL_TEST_BROWSER==="webkit"?webkit:chromium;
+const engineLabel=process.env.CWL_TEST_BROWSER==="webkit"?"WebKit":"Chromium";
+
 const root=path.resolve(__dirname,"..");
 const serve=()=>http.createServer((req,res)=>{
  const name=new URL(req.url||"/","http://localhost").pathname.slice(1);
@@ -163,11 +166,11 @@ async function upload(page,files){
  }));
 }
 
-test("Real Chromium: 2-war XLSX + Missed XLSX follows the visible owner upload, confirmation and one-RPC path",{
+test("Real browser: 2-war XLSX + Missed XLSX follows the visible owner upload, confirmation and one-RPC path",{
  timeout:120000
 },async()=>{
  const server=serve();await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await testEngine.launch({headless:true,...(engineLabel==="Chromium"?{args:["--no-sandbox"]}:{})});
  try{
   for(const width of [390,1366]){
    const page=await browser.newPage({viewport:{width,height:820}});
@@ -192,11 +195,11 @@ test("Real Chromium: 2-war XLSX + Missed XLSX follows the visible owner upload, 
  }finally{await browser.close();await new Promise(ok=>server.close(ok))}
 });
 
-test("Real Chromium: cancelling preview, switching clan, viewer role and missing RPC never create an upload",{
+test("Real browser: cancelling preview, switching clan, viewer role and missing RPC never create an upload",{
  timeout:120000
 },async()=>{
  const server=serve();await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await testEngine.launch({headless:true,...(engineLabel==="Chromium"?{args:["--no-sandbox"]}:{})});
  try{
   const page=await browser.newPage({viewport:{width:390,height:820}});
   try{
