@@ -209,7 +209,7 @@ test("Real browser: cancelling preview, switching clan, viewer role and missing 
    assert.equal(p.calls,0);assert.match(p.feedback,/Import abgebrochen/);
    await page.evaluate(()=>{window.testAccept=true;window.testClash="#2JGC2J8VG"});
    p=await upload(page,[aFile([attack(311)])]);
-   assert.equal(p.calls,0);assert.match(p.feedback,/Importfehler:.*anderen Clan/);
+   assert.equal(p.calls,0);assert.match(p.feedback,/Import fehlgeschlagen:.*anderen Clan/);
    // No user data is written if the server side RPC is not yet deployed.
    await page.evaluate(()=>{window.testClash="#99JP2RL2";window.testRpcError=true});
    p=await upload(page,[aFile([attack(311)])]);
