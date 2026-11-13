@@ -50,9 +50,9 @@ test("The direct ClashPerk upload is explained in-app without requiring manual J
  assert.match(browser,/commitClashPerkMerge/);
  assert.match(browser,/await load\(true\)/);
 });
-test("Released ClashPerk import has a MINOR version without automatic DB migration",()=>{
+test("ClashPerk follow-up is v1.19.1 without automatic DB migration",()=>{
  const v=JSON.parse(read("cloud-version.json"));
- assert.equal(v.version,"v1.19.0");
+ assert.equal(v.version,"v1.19.1");
  // In this branch we create a migration file but NEVER run the production
  // supabase db push/deploy commands, and no production credentials are stored.
  const jobs=[".github/workflows/clashperk-local-supabase-auth-ci.yml"];
@@ -72,7 +72,8 @@ test("Discord help requires exactly three original exports, including only one c
  const guide=html.slice(start,end);
  assert.equal((guide.match(/\/export attack-log/g)||[]).length,2);
  assert.equal((guide.match(/\/export missed/g)||[]).length,1);
- assert.match(guide,/Diese 3 Dateien brauchst du pro Clan/);
+ assert.match(guide,/drei Exportarten sinnvoll/i);
+ assert.match(guide,/zunächst die Attack-Logs und danach separat/);
  assert.match(guide,/Dieser Export enthält sowohl normale CWs als auch CWL/);
  const missedLine=guide.split("/export missed")[1].split("</p>")[0];
  assert.doesNotMatch(missedLine,/war_type:/);
