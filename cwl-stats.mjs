@@ -1,6 +1,6 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.43";
-import {readClashPerkXlsx,parseClashPerkSheets} from "./cwl-clashperk-xlsx.mjs?v=1.19.0";
-import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.0";
+import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
+import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -48,7 +48,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="week";
-  const notice=message=>{const e=$("statsFeedback");if(e)e.textContent=message||""};
+  const notice=(message,kind="status")=>{
+    const e=$("statsFeedback");if(!e)return;
+    e.textContent=message||"";
+    e.dataset.state=kind;
+    e.setAttribute("role",kind==="error"?"alert":"status");
+  };
   let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
   let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
   let lastFormRowsVersion=-1,lastFormRowsClan=null;
@@ -1040,31 +1045,54 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         notice("ClashPerk-Datei "+(i+1)+" / "+files.length+" prüfen …");
         sheets.push(...await readClashPerkXlsx(files[i]));
       }
-      const parsed=parseClashPerkSheets(sheets,ctx.clanTag);
       if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
       notice("Vorhandene Kriege abgleichen …");
       const old=await readAllStatWars(sb,clanId);
+      const parsed=hasClashPerkAttackSheets(sheets)?
+        parseClashPerkSheets(sheets,ctx.clanTag):
+        parseClashPerkMissedOnly(sheets,ctx.clanTag,old);
       const plan=planClashPerkMerge(parsed,old);
       if(plan.conflicts.length)throw Error(plan.conflicts.length+
         " Kriege widersprechen vorhandenen historischen Daten. Import abgebrochen; nichts wird überschrieben.");
       const totalMissed=plan.missed.reduce((n,m)=>n+m.missed_count,0);
-      const summary=files.length+" ClashPerk-Datei(en) erkannt. "+
-        parsed.wars.length+" Kriege, "+parsed.attacks.length+" eigene Angriffe und "+
-        parsed.enemyAttacks+" gegnerische Angriffe geprüft. "+
-        parsed.duplicates+" doppelte Einträge entfernt. "+
-        "Neu: "+plan.insert.length+" Kriege; vorhanden: "+plan.extend.length+
-        "; API-Kriege geschützt: "+plan.skip.length+". "+
-        totalMissed+" dokumentierte verpasste Angriffe. "+
-        parsed.completeWars+" lückenlos belegte Kriege, "+
-        parsed.missingWars+" mit offener Abdeckung. "+
-        (parsed.warnings.length?parsed.warnings.join(" ")+" ":"")+
-        "Bestehende API-Ergebnisse und CWL-Aufstellungen bleiben unverändert. Importieren?";
+      const normal=parsed.wars.filter(w=>w.war_type==="normal").length;
+      const league=parsed.wars.length-normal;
+      const formatWarCount=(n,unit)=>n+" "+unit;
+      let summary;
+      if(parsed.missedOnly){
+        summary="Missed-Export · "+files.length+" Datei(en) geprüft\n\n"+
+          "Passende gespeicherte Kriege: "+plan.extend.length+"\n"+
+          "Nachgewiesene verpasste Angriffe: "+totalMissed+
+          " ("+plan.missed.length+" Spielereinträge)\n"+
+          "Neue Kriege: 0 · vorhandene Kriege werden ergänzt\n"+
+          (parsed.unmatchedMissed?
+            "Nicht zuordenbare Zeilen: "+parsed.unmatchedMissed+" (werden ausgelassen)\n":"")+
+          "\nDie Zuordnung erfolgt über Kriegs-ID, Gegner, Größe und Datum. "+
+          "Angriffe, API-Ergebnisse und CWL-Aufstellungen bleiben unverändert. "+
+          "Der vollständige Abgleich erfolgt beim Speichern in einem Schritt. Übernehmen?";
+      }else{
+        summary="Angriffsexport · "+files.length+" Datei(en) geprüft\n\n"+
+          "Kriege: "+formatWarCount(normal,"normale CWs")+" · "+formatWarCount(league,"CWL-Tage")+"\n"+
+          "Eigene Angriffe: "+parsed.attacks.length+
+          " · gegnerische Angriffe: "+parsed.enemyAttacks+" (nur geprüft)\n"+
+          "Neue Kriege: "+plan.insert.length+
+          " · bereits vorhanden: "+plan.extend.length+"\n"+
+          "Nachgewiesene verpasste Angriffe: "+totalMissed+"\n"+
+          "Vollständig belegte Kriege: "+parsed.completeWars+
+          " · mit offenen Angaben: "+parsed.missingWars+"\n"+
+          (plan.skip.length?"Offizielle API-Kriege geschützt: "+plan.skip.length+"\n":"")+
+          (parsed.duplicates?"Doppelte Angriffe erkannt: "+parsed.duplicates+"\n":"")+
+          "\nUnbekannte Angriffe bleiben unbekannt. Bestehende Ergebnisse "+
+          "und CWL-Aufstellungen bleiben unverändert. Übernehmen?";
+      }
+      const importantWarnings=parsed.warnings.filter(w=>!w.includes("Kriege ohne vollständigen Angriffsnachweis"));
+      if(importantWarnings.length)summary+="\n\nHinweis: "+importantWarnings.join(" ");
       if(!plan.insert.length&&!plan.extend.length){
-        notice("Alle "+plan.skip.length+" passenden Kriege sind bereits durch die offizielle API erfasst. Nichts überschrieben.");
+        notice("Alle passenden Kriege sind bereits durch die offizielle API erfasst. Nichts überschrieben.");
         return;
       }
       if(!await confirmAction(summary,{title:"ClashPerk-Historie prüfen",
-        confirmText:"Geprüfte Kriege übernehmen"})){
+        confirmText:parsed.missedOnly?"Fehlangriffe ergänzen":"Geprüfte Kriege übernehmen"})){
         notice("Import abgebrochen. Es wurden keine Daten verändert.");return;
       }
       if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
@@ -1074,12 +1102,15 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       // A pending pre-upload load may still return old rows. Force a fresh
       // post-commit query; the monotonic version fences its stale response.
       await load(true);
-      notice("✓ "+result.inserted+" neue Kriege, "+result.attacks+
+      notice(parsed.missedOnly?
+        "✓ "+result.extended+" vorhandene Kriege abgeglichen, "+totalMissed+
+        " nachgewiesene verpasste Angriffe geprüft. Fehlende Angaben bleiben unbekannt.":
+        "✓ "+result.inserted+" neue Kriege, "+result.attacks+
         " eigene Angriffe und "+totalMissed+
-        " belegte verpasste Angriffe übernommen. "+
-        result.skippedApi+" API-Kriege unverändert. "+
-        (parsed.missingWars?"Unvollständige Kriege sind gekennzeichnet.":""));
-      notify("✓ ClashPerk-Statistiken ergänzt");
+        " nachgewiesene verpasste Angriffe abgeglichen. "+
+        (parsed.missingWars?"Unvollständige Kriege bleiben gekennzeichnet.":""),
+        "success");
+      notify("✓ ClashPerk-Statistiken abgeglichen");
     }finally{importing=false;$("statsImportButton").disabled=false}
   }
   async function importSelectedFiles(files){
@@ -1244,7 +1275,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     e("statsRefresh")?.addEventListener("click",()=>load());
     e("statsImportButton")?.addEventListener("click",()=>e("statsImportFile").click());
     e("statsImportFile")?.addEventListener("change",async ev=>{
-      try{await importSelectedFiles(ev.target.files)}catch(e){notice("Importfehler: "+String(e.message||e))}
+      try{await importSelectedFiles(ev.target.files)}catch(e){
+        notice("Import fehlgeschlagen: "+String(e.message||e),"error");
+        notify("Import fehlgeschlagen – Hinweis beim Upload prüfen");
+        $("statsFeedback")?.scrollIntoView({block:"nearest",behavior:"smooth"});
+      }
       finally{ev.target.value=""}
     });
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
