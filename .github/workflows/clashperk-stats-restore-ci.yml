@@ -56,16 +56,27 @@ jobs:
         run: |
           set -euo pipefail
           umask 077
-          pg_dump --format=custom --file "${RUNNER_TEMP}/clashperk-restore.dump"
-          pg_dump --data-only --schema=public --file "${RUNNER_TEMP}/clashperk-copy.sql"
+          # The runner's apt pg_dump may be 16 whereas our server is 17.
+          # Match client/server majors by using the same pinned PG17 image.
+          docker run --rm --network host -e PGPASSWORD=synthetic-only \
+            -v "${RUNNER_TEMP}:/work" postgres:17 \
+            pg_dump -h 127.0.0.1 -U postgres -d postgres \
+            --format=custom --file /work/clashperk-restore.dump
+          docker run --rm --network host -e PGPASSWORD=synthetic-only \
+            -v "${RUNNER_TEMP}:/work" postgres:17 \
+            pg_dump -h 127.0.0.1 -U postgres -d postgres \
+            --data-only --schema=public --file /work/clashperk-copy.sql
           test -s "${RUNNER_TEMP}/clashperk-restore.dump"
           test -s "${RUNNER_TEMP}/clashperk-copy.sql"
       - name: Restore into a separate empty PostgreSQL 17 database
         run: |
           set -euo pipefail
           createdb clashperk_restore_test
-          pg_restore --exit-on-error --clean --if-exists --no-owner \
-            --dbname=clashperk_restore_test "${RUNNER_TEMP}/clashperk-restore.dump"
+          docker run --rm --network host -e PGPASSWORD=synthetic-only \
+            -v "${RUNNER_TEMP}:/work" postgres:17 \
+            pg_restore -h 127.0.0.1 -U postgres \
+            --exit-on-error --clean --if-exists --no-owner \
+            --dbname=clashperk_restore_test /work/clashperk-restore.dump
       - name: Verify exact COPY content, RLS and the restored importer
         env:
           PGDATABASE: clashperk_restore_test
