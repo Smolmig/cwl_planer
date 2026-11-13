@@ -40,9 +40,11 @@ test("real PG17 CI first reproduces SQLSTATE 42883, then verifies the exact new 
   "20261113230000_cwl_clan_loyalty_absence_greatest_fix.sql",
   "tests/sql/cwl-loyalty-absence-after.sql"
  ];
+ const executedSteps=workflow.split("    steps:")[1];
+ assert.ok(executedSteps,"missing SQL CI steps");
  let previous=-1;
  for(const name of order){
-  const at=workflow.indexOf(name);
+  const at=executedSteps.indexOf(name);
   assert.ok(at>previous,"must reproduce bug before applying fix: "+name);
   previous=at;
  }
