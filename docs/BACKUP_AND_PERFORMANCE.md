@@ -1,6 +1,19 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Stand: 31.10.2026 · Cloud v1.1.0-alpha.9 · lokale PWA v1.0.2
 
+## Ergänzung 13.11.2026 – verschlüsselte Statistik-Wiederherstellung absichern
+
+Die täglichen verschlüsselten Datenbank-Backups und der nachfolgende isolierte Restore wurden am **13.11.2026** auf `main` erfolgreich ausgeführt ([Backup-Lauf](https://github.com/Smolmig/cwl_planer/actions/runs/43402344939), [Restore-Lauf](https://github.com/Smolmig/cwl_planer/actions/runs/43402524839)). Der damalige Produktiv-Workflow verglich zwar Zeilenzahlen und RLS der wichtigen Tabellen, **nicht aber den exakten Inhalt** aller historischen CW/CWL-Angriffe und Missed-Nachweise.
+
+Eine unabhängige Backup-Prüfungsänderung ergänzt deshalb im bestehenden automatischen Restore-Workflow:
+- `public.cwl_stat_wars`, `public.cwl_stat_attacks` und `public.cwl_stat_missed` als verpflichtende COPY-Tabellen mit Anzahlprüfung;
+- den exakten, zeilenreihenfolgeunabhängigen COPY-Inhaltsabgleich jeder dieser Tabellen nach Wiederherstellung in der **isolierten lokalen Datenbank**, einschließlich RLS;
+- synthetische Negativtests für gleichen Rowcount bei geändertem Sternwert, fehlenden Tabellenblock und ausgeschaltete RLS. Bei Abweichung ist der Restore-Check **rot**, nicht fälschlich grün.
+
+Der Abgleich verwendet nur den **bereits entschlüsselten lokalen Backup-Dump** und die **lokale Restore-Datenbank (127.0.0.1:54322)**; keine Verbindung oder Schreiboperation zur produktiven Supabase-DB. Inhaltliche Zeilen/Hashes werden nicht in GitHub-Logs veröffentlicht. Diese Änderung ist ein **technisches Backup-Gate**, **kein** neues Cloud-App-Backup-/Import-Menü und kein Ersatz für die vollständige Infrastruktur-/Auth-/Storage-Disaster-Recovery (#178). `main` bleibt auf App-Version **v1.18.1**; erst nach Merge und nachfolgendem echtem automatischem Backup-/Restore-Durchlauf gilt der neue Inhaltsvergleich für ein tatsächliches verschlüsseltes Produktiv-Artifact als bestätigt. Die umfangreiche ClashPerk-Release-PR #280 bleibt getrennt und weiterhin ohne Produktiv-Migration.
+
+---
+
 ## Neue Produktentscheidung 09.11.2026 – vereinfachter Backup-/Import-Pfad (noch nicht live)
 
 **Verbindliche Anforderung aus Nutzerfeedback:** [Issue #178](https://github.com/Smolmig/cwl_planer/issues/178). Die folgenden Punkte sind das **zukünftige Zielbild** und dürfen nicht mit bereits implementierter Funktionalität verwechselt werden.
