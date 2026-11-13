@@ -363,3 +363,27 @@ test("formerly hosted UF2 players keep historical attacks but are no longer curr
  const historicalAttacks=[{attacker_tag:"#8PYL"},{attacker_tag:"#QPYL"},{attacker_tag:"#2PYL"}];
  assert.equal(historicalAttacks.length,3);
 });
+
+
+test("one real-world style Missed export covers both normal CW and CWL, with no second war_type export",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const sheets=[
+  attackSheet([
+   hit(201,1,1,"normal","#8PYL",3),
+   hit(201,2,1,"normal","#8PYL",2),
+   hit(202,1,1,"cwl","#8PYL",3)
+  ]),
+  missedSheet([
+   ms(201,"#QPYL",2,"normal"),
+   ms(202,"#QPYL",1,"cwl")
+  ])
+ ];
+ const result=parseClashPerkSheets(sheets,tag);
+ assert.equal(result.wars.length,2);
+ assert.equal(result.attacks.length,3);
+ assert.equal(result.missed.length,2);
+ assert.equal(result.completeWars,2);
+ assert.equal(result.missingWars,0);
+ assert.deepEqual(result.wars.map(w=>w.war_type),["normal","cwl"]);
+ assert.ok(result.wars.every(w=>w.missed_log_complete===true));
+});
