@@ -207,7 +207,6 @@ test("Real Chromium: cancelling preview, switching clan, viewer role and missing
    await page.evaluate(()=>{window.testAccept=true;window.testClash="#2JGC2J8VG"});
    p=await upload(page,[aFile([attack(311)])]);
    assert.equal(p.calls,0);assert.match(p.feedback,/Importfehler:.*anderen Clan/);
-   await page.evaluate(()=>{window.testClash=ownTag||"#99JP2RL2";});
    // No user data is written if the server side RPC is not yet deployed.
    await page.evaluate(()=>{window.testClash="#99JP2RL2";window.testRpcError=true});
    p=await upload(page,[aFile([attack(311)])]);
