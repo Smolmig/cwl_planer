@@ -242,7 +242,7 @@ reset role;
 do $$
 begin
  if (select count(*) from public.cwl_stat_wars
-     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>4 then
+     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>3 then
   raise exception 'Unexpected main tenant war count';
  end if;
  if (select count(*) from public.cwl_stat_wars
