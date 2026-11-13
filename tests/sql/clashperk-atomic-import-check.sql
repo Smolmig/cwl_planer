@@ -237,6 +237,30 @@ begin
  end if;
 end
 $$;
+-- Read isolation must hold as strongly as write isolation. A real HTTP
+-- test caught this missing assertion in the earlier synthetic fixture.
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $$
+begin
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:106') then
+  raise exception 'First clan owner can SELECT another clan''s war';
+ end if;
+ if not exists(select 1 from public.cwl_stat_wars where war_key='cp:100') then
+  raise exception 'First clan owner lost its own war';
+ end if;
+end
+$$;
+set request.jwt.claim.sub='44444444-4444-4444-8444-444444444444';
+do $$
+begin
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:106') then
+  raise exception 'Viewer can SELECT another clan''s war';
+ end if;
+ if not exists(select 1 from public.cwl_stat_wars where war_key='cp:100') then
+  raise exception 'Viewer cannot read own clan''s war';
+ end if;
+end
+$$;
 reset role;
 
 -- CWL permits ONE attack per player and the server must verify its own
