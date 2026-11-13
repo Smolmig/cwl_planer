@@ -332,3 +332,20 @@ test("sharedStrings XLSX structure used by real ClashPerk exports parses without
  assert.equal(parsed.attacks.length,1);
  assert.equal(parsed.wars[0].finalized,true);
 });
+
+
+test("formerly hosted UF2 players keep historical attacks but are no longer current roster members",()=>{
+ const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
+ assert.match(sync,/memberTags:storage\.getProfile\(\)\?\.members\?\.filter\(m=>[\s\S]*?m\.cocSyncState!=="former"&&m\.cocSyncState!=="kept"\)/);
+ const members=[
+  {playerTag:"#8PYL",cocSyncState:"active"},
+  {playerTag:"#QPYL",cocSyncState:"former"},
+  {playerTag:"#2PYL",cocSyncState:"kept"}
+ ];
+ const activeTags=members.filter(m=>m.cocSyncState!=="former"&&m.cocSyncState!=="kept")
+  .map(m=>m.playerTag);
+ assert.deepEqual(activeTags,["#8PYL"]);
+ // The attack history itself is separate and must not be filtered away.
+ const historicalAttacks=[{attacker_tag:"#8PYL"},{attacker_tag:"#QPYL"},{attacker_tag:"#2PYL"}];
+ assert.equal(historicalAttacks.length,3);
+});
