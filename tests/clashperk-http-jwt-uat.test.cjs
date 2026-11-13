@@ -67,6 +67,9 @@ function isDenied(response,label){
  assert.ok([400,401,403,404,409].includes(response.status),
   label+": expected denial but got "+response.status+" "+JSON.stringify(response.data));
 }
+// Do not dial a local PostgREST endpoint during the regular app regression.
+// This test runs ONLY in the dedicated disposable-Postgres HTTP workflow.
+if(process.env.CWL_TEST_REST_URL){
 test("Real HTTP JWT role claims, RLS isolation and an atomic ClashPerk import",{
  timeout:120000
 },async()=>{
@@ -152,3 +155,5 @@ test("Real HTTP rejects tampered JWT signatures, not merely an unauthorized data
  });
  assert.equal(response.status,401);
 });
+
+} // dedicated PostgREST-only tests
