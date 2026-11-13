@@ -401,3 +401,45 @@ test("one real-world style Missed export covers both normal CW and CWL, with no 
  assert.deepEqual(result.wars.map(w=>w.war_type),["normal","cwl"]);
  assert.ok(result.wars.every(w=>w.missed_log_complete===true));
 });
+
+test("standalone missed export safely supplements matching stored wars without adding wars",async()=>{
+ const {parseClashPerkSheets,parseClashPerkMissedOnly,hasClashPerkAttackSheets}=await xlsx();
+ const {planClashPerkMerge}=await db();
+ const historical=parseClashPerkSheets([attackSheet([hit(312),hit(313)])],tag);
+ const old=historical.wars.map(w=>({...w,source:"import",missed_log_complete:false}));
+ const sheets=[
+  missedSheet([ms(312,"#QPYL",2),ms(312,"#QPYL",2),ms(999,"#QPYL",1)]),
+  {name:"2 Missed Attacks",rows:[["Name","Tag","Miss #1"]]}
+ ];
+ assert.equal(hasClashPerkAttackSheets(sheets),false);
+ const parsed=parseClashPerkMissedOnly(sheets,tag,old);
+ assert.equal(parsed.wars.length,1);
+ assert.equal(parsed.attacks.length,0);
+ assert.equal(parsed.missed.length,1);
+ assert.equal(parsed.missed[0].missed_count,2);
+ assert.equal(parsed.unmatchedMissed,1);
+ const plan=planClashPerkMerge(parsed,old);
+ assert.equal(plan.insert.length,0);
+ assert.equal(plan.extend.length,1);
+ assert.equal(plan.missed.length,1);
+});
+
+test("standalone missed export rejects mismatched war identity and cannot invent wars",async()=>{
+ const {parseClashPerkSheets,parseClashPerkMissedOnly}=await xlsx();
+ const old=parseClashPerkSheets([attackSheet([hit(316)])],tag).wars.map(w=>({...w,source:"import"}));
+ assert.throws(()=>parseClashPerkMissedOnly([missedSheet([ms(316)])],tag,[]),
+  /zuerst die Attack-Logs/);
+ const opponent=ms(316);opponent[3]="Other enemy";
+ assert.throws(()=>parseClashPerkMissedOnly([missedSheet([opponent])],tag,old),
+  /widersprechen/);
+ const wrongType=ms(316);wrongType[6]="CWL";
+ assert.throws(()=>parseClashPerkMissedOnly([missedSheet([wrongType])],tag,old),
+  /widersprechen/);
+ const forgedDate=ms(316);forgedDate[5]=46000+316+200;
+ assert.throws(()=>parseClashPerkMissedOnly([missedSheet([forgedDate])],tag,old),
+  /widersprechen/);
+ const contradictory=ms(316,"#QPYL",1);
+ assert.throws(()=>parseClashPerkMissedOnly([missedSheet([
+  contradictory,ms(316,"#QPYL",2)
+ ])],tag,old),/widersprüchliche doppelte/);
+});
