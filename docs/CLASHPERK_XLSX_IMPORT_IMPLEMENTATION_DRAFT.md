@@ -96,14 +96,40 @@ hochgeladen und keine bestehenden Tabellen verändert. Browser-Support
 auf iOS/Safari 16.4+ muss real getestet werden. Die neuen synthetischen
 Tests sind **kein Ersatz für echten UAT**.
 
-Die Einfügeoperationen laufen über bestehende, tenantgebundene RLS-
-Tabellen in kleinen Batches und sind idempotent (Wiederholung fügt
-keine Duplikate ein), aber **noch nicht eine einzige Datenbanktransaktion**.
-Ein Netzwerkfehler während des Imports kann deshalb bereits einige
-neue War-IDs/Angriffe enthalten; der sichere Nutzerweg ist **erneut
-dieselben Originaldateien hochladen**. Für eine vollständig atomare
-Anwendung über viele Batches wäre ein zusätzlicher, serverseitig
-validierender RPC mit Staging-Tabelle notwendig (ggf. mit #178 bündeln).
+Der neue gestapelte **Etappe-2-Draft `feat/clashperk-atomic-rpc-20261113`**
+behebt die Mehrbatch-Teilübernahme:
+- `scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql` enthält eine
+  **SECURITY INVOKER**-Funktion `cwl_import_clashperk_atomic(uuid,jsonb)`.
+  Der Nutzer muss eingeloggt sein und `private.cwl_can_edit` für exakt
+  den ausgewählten App-Clan erfüllen. Berechtigungen anderer Clans sind
+  ausgeschlossen; `anon` und `PUBLIC` erhalten **kein EXECUTE**.
+- Die App sendet **einmal** das normalisierte JSON aus dem geprüften
+  Original-XLSX an diese RPC. Es gibt ausdrücklich **keinen Fallback**
+  auf mehrere direkte Browser-Schreibaufrufe, falls die Datenbankfunktion
+  fehlt.
+- Die Datenbank prüft Kriegsschlüssel, Clanidentität, 72-Stunden-Puffer
+  für jüngste Kriege, War-Typ, Clan/Gegner/Größe/Zeit, API-Überlappungen,
+  sichere 1./2. Angriffe, bereits vorhandene Werte, Missed-Slots und
+  vollständige Aufstellungen **erneut serverseitig**. Jede Ausnahme
+  rollt Kriegseinträge, Angriffe, Missed-Logs und Finalisierungen
+  **gemeinsam** zurück.
+- Für dieselbe App-Clan-ID serialisiert eine Transaktionssperre den
+  Import, ohne Vize-Mitgliedern Clanverwaltungsrechte zu geben.
+  Der RPC verwendet keine `service_role`-Schlüssel im Browser.
+- Das JSON-Paket ist auf 1.000 War-IDs, 20.000 eigene Angriffe,
+  4.000 Missed-Einträge und 9 MB begrenzt. Der Nutzer wird bei größeren
+  Dateien klar auf getrennte Uploads hingewiesen. Innerhalb **jedes**
+  bestätigten Imports gibt es keine teilweisen Ergebnisse.
+- Zusätzliches SQL-CI gegen eigenständiges PostgreSQL 17 mit
+  **synthetischen** Owner-/Editor-/Viewer-/Zweitclan-Daten testet
+  Rückrollung nach spät auftretendem Fehler, Reupload ohne Duplikate,
+  API-Vorrang, später ergänzte Missed-Belege und RLS.
+
+**Wichtig:** Dieser SQL-Entwurf wurde **noch nicht** auf der Live-DB
+als Migration aktiviert. Ein ungeprüfter Browser-Release wäre
+fail-closed („Import auf dem Server nicht verfügbar“).
+Vor Prod sind Staging, Backup-/Restore-Gate #178 und echte Nutzer-/PWA-UAT
+#213 weiterhin zwingend.
 
 Noch ausstehende Test-/Freigabeschritte:
 - Node-/JSDOM-/Browser-Test auf den synthetischen 2/10/205 War-Fixtures,
