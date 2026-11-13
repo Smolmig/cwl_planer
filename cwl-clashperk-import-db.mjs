@@ -52,55 +52,47 @@ export async function readAllStatWars(sb,clanId){
  }
  throw Error("Sehr große Historie: Import derzeit gesperrt, damit keine alten Kriege übersehen werden.");
 }
-export async function commitClashPerkMerge(sb,plan,{clanId,assertCurrent,onProgress=()=>{}}){
+export async function commitClashPerkMerge(sb,plan,{
+ clanId,clanTag,assertCurrent,onProgress=()=>{}
+}){
  if(plan.conflicts.length)throw Error("Importkonflikte bitte vor dem Speichern klären.");
- const verify=()=>{
-  if(!assertCurrent())throw Error("Clan gewechselt oder Berechtigung geändert. Bitte Import neu starten.");
+ if(!assertCurrent())throw Error("Clan gewechselt oder Berechtigung geändert. Bitte Import neu starten.");
+ if(!/^#[0289PYLQGRJCUV]{3,15}$/.test(String(clanTag||"").trim().toUpperCase()))
+  throw Error("Kein gültiger Clash-Clan für den Import gewählt.");
+ // ONE request, ONE PostgreSQL transaction. NEVER silently downgrade to
+ // multiple client-side upserts if the database RPC is not yet installed.
+ const payload={
+  clanTag:String(clanTag).trim().toUpperCase(),
+  wars:[...plan.insert,...plan.extend].map(w=>({
+   war_key:w.war_key,war_type:w.war_type,started_at:w.started_at,
+   team_size:w.team_size,opponent_tag:w.opponent_tag,
+   opponent_name:w.opponent_name
+  })),
+  attacks:plan.attacks,
+  missed:plan.missed
  };
- verify();
- // API wars retain their rows and history. A repeated XLSX upload inserts
- // only missing cp: rows; it must never overwrite newer/verified information.
- for(const batch of batches(plan.insert)){
-  verify();
-  const {error}=await sb.from("cwl_stat_wars").upsert(
-   // Keep new imported wars provisional until every attack and missed
-   // batch has succeeded. Failed imports can be safely resumed on reupload.
-   batch.map(w=>({...w,clan_id:clanId,
-    finalized:false,roster_tags:null,missed_log_complete:false})),
-   {onConflict:"clan_id,war_key",ignoreDuplicates:true});
-  if(error)throw error;
+ if(!payload.wars.length)return {
+  inserted:0,extended:0,skippedApi:plan.skip.length,attacks:0,missed:0,
+  completeWars:0
+ };
+ if(payload.wars.length>1000||payload.attacks.length>20000||
+    payload.missed.length>4000||
+    new TextEncoder().encode(JSON.stringify(payload)).byteLength>9000000)
+  throw Error("Zu viele Daten für einen sicheren Import. Bitte kleinere Clan-/Zeiträume einzeln exportieren.");
+ onProgress("Alle geprüften Kriege werden gemeinsam gespeichert …");
+ if(!assertCurrent())throw Error("Clan gewechselt oder Berechtigung geändert. Bitte Import neu starten.");
+ const {data,error}=await sb.rpc("cwl_import_clashperk_atomic",{
+  p_clan:clanId,p_payload:payload
+ });
+ if(error){
+  if(error.code==="PGRST202"||error.code==="42883")
+   throw Error("Der sichere Excel-Import ist noch nicht auf dem Server verfügbar. Es wurden keine Daten übernommen.");
+  throw Error("Import nicht übernommen: "+String(error.message||"Datenbankfehler").slice(0,230));
  }
- let n=0;
- for(const batch of batches(plan.attacks)){
-  verify();
-  const {error}=await sb.from("cwl_stat_attacks").upsert(
-   batch.map(a=>({...a,clan_id:clanId})),
-   {onConflict:"clan_id,war_key,attacker_tag,attack_order",ignoreDuplicates:true});
-  if(error)throw error;
-  n+=batch.length;onProgress("Angriffe: "+n+" / "+plan.attacks.length+" …");
- }
- for(const batch of batches(plan.missed)){
-  verify();
-  const {error}=await sb.from("cwl_stat_missed").upsert(
-   batch.map(m=>({...m,clan_id:clanId})),
-   {onConflict:"clan_id,war_key,player_tag",ignoreDuplicates:true});
-  if(error)throw error;
- }
- // Finalize only AFTER all attack and missed batches were successfully
- // saved. Existing official API wars are never edited; an interruption leaves
- // a resumable provisional import rather than a false "finished" result.
- for(const war of [...plan.insert,...plan.extend]){
-  verify();
-  const patch={finalized:war.finalized===true};
-  if(war.missed_log_complete===true){
-   patch.missed_log_complete=true;
-   patch.roster_tags=war.roster_tags;
-  }
-  const {error}=await sb.from("cwl_stat_wars")
-   .update(patch).eq("clan_id",clanId).eq("war_key",war.war_key)
-   .eq("source","import");
-  if(error)throw error;
- }
- return {inserted:plan.insert.length,extended:plan.extend.length,
-  skippedApi:plan.skip.length,attacks:plan.attacks.length,missed:plan.missed.length};
+ if(!data||typeof data!=="object"||!Number.isInteger(data.inserted)||
+    !Number.isInteger(data.extended)||!Number.isInteger(data.attacks)||
+    !Number.isInteger(data.missed)||!Number.isInteger(data.skippedApi))
+  throw Error("Der Server hat keinen bestätigten Importstatus geliefert. Bitte Statistik neu laden.");
+ if(!assertCurrent())throw Error("Der Clan wurde während des Imports gewechselt. Daten wurden nur im zuvor bestätigten Clan übernommen.");
+ return {...data,skippedApi:data.skippedApi+plan.skip.length};
 }
