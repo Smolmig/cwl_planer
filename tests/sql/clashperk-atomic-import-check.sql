@@ -273,7 +273,7 @@ end
 $$;
 reset role;
 
-do $
+do $$
 begin
  if (select count(*) from public.cwl_stat_wars
      where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>4 then
