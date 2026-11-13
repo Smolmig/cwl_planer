@@ -63,8 +63,10 @@ export async function commitClashPerkMerge(sb,plan,{clanId,assertCurrent,onProgr
  for(const batch of batches(plan.insert)){
   verify();
   const {error}=await sb.from("cwl_stat_wars").upsert(
+   // Keep new imported wars provisional until every attack and missed
+   // batch has succeeded. Failed imports can be safely resumed on reupload.
    batch.map(w=>({...w,clan_id:clanId,
-    missed_log_complete:w.missed_log_complete===true})),
+    finalized:false,roster_tags:null,missed_log_complete:false})),
    {onConflict:"clan_id,war_key",ignoreDuplicates:true});
   if(error)throw error;
  }
@@ -84,15 +86,19 @@ export async function commitClashPerkMerge(sb,plan,{clanId,assertCurrent,onProgr
    {onConflict:"clan_id,war_key,player_tag",ignoreDuplicates:true});
   if(error)throw error;
  }
- // A later /export missed can fill in the exact remaining roster slots.
- // Only imports may be upgraded, and only after all their evidence is saved.
+ // Finalize only AFTER all attack and missed batches were successfully
+ // saved. Existing official API wars are never edited; an interruption leaves
+ // a resumable provisional import rather than a false "finished" result.
  for(const war of [...plan.insert,...plan.extend]){
-  if(!war.missed_log_complete)continue;
   verify();
+  const patch={finalized:war.finalized===true};
+  if(war.missed_log_complete===true){
+   patch.missed_log_complete=true;
+   patch.roster_tags=war.roster_tags;
+  }
   const {error}=await sb.from("cwl_stat_wars")
-   .update({missed_log_complete:true,roster_tags:war.roster_tags})
-   .eq("clan_id",clanId).eq("war_key",war.war_key)
-   .eq("source","import").eq("missed_log_complete",false);
+   .update(patch).eq("clan_id",clanId).eq("war_key",war.war_key)
+   .eq("source","import");
   if(error)throw error;
  }
  return {inserted:plan.insert.length,extended:plan.extend.length,
