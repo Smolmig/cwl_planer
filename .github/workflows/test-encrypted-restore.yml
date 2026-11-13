@@ -186,6 +186,8 @@ jobs:
           PY
           )"
           [[ "$restore_port" =~ ^[0-9]+$ ]] || { echo '::error::Invalid local port'; exit 1; }
+          # GITHUB_ENV applies only to later steps; export for THIS step.
+          export CWL_RESTORE_DB_PORT="$restore_port"
           echo "CWL_RESTORE_DB_PORT=$restore_port" >> "$GITHUB_ENV"
           supabase db start
           sudo apt-get update -qq >/dev/null
