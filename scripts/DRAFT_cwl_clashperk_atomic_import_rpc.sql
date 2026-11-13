@@ -32,9 +32,6 @@ declare
  v_war_keys text[] := array[]::text[];
  v_apply_keys text[] := array[]::text[];
  v_skip_keys text[] := array[]::text[];
- v_attacks_seen text[] := array[]::text[];
- v_missed_seen text[] := array[]::text[];
- v_unique_key text;
  v_inserted integer := 0;
  v_extended integer := 0;
  v_api_skipped integer := 0;
@@ -73,6 +70,22 @@ begin
     jsonb_array_length(p_payload->'missed') > 4000 or
     pg_catalog.octet_length(p_payload::text)>9000000 then
   raise exception 'Invalid or oversized ClashPerk import' using errcode='22023';
+ end if;
+ -- Validate duplicate event identities once with a hash aggregation, instead
+ -- of scanning an ever-growing array once per attack (quadratic at 20k).
+ if exists (
+   select 1 from pg_catalog.jsonb_array_elements(p_payload->'attacks') as a(value)
+   group by a.value->>'war_key',upper(a.value->>'attacker_tag'),a.value->>'attack_order'
+   having count(*)>1
+ ) then
+  raise exception 'Duplicate attack in ClashPerk payload' using errcode='22023';
+ end if;
+ if exists (
+   select 1 from pg_catalog.jsonb_array_elements(p_payload->'missed') as m(value)
+   group by m.value->>'war_key',upper(m.value->>'player_tag')
+   having count(*)>1
+ ) then
+  raise exception 'Duplicate missed-attack record' using errcode='22023';
  end if;
  -- Validate every incoming War ID and full identity before writing data.
  for v_war in select value from jsonb_array_elements(p_payload->'wars') loop
@@ -166,11 +179,6 @@ begin
   v_order:=(v_attack->>'attack_order')::integer;
   v_stars:=(v_attack->>'stars')::integer;
   v_destroy:=(v_attack->>'destruction')::integer;
-  v_unique_key:=v_key||'/'||v_attacker||'/'||v_order::text;
-  if v_unique_key=any(v_attacks_seen) then
-   raise exception 'Duplicate attack in ClashPerk payload' using errcode='22023';
-  end if;
-  v_attacks_seen:=array_append(v_attacks_seen,v_unique_key);
   if v_key=any(v_skip_keys) then continue; end if;
   select w.war_type into v_type from public.cwl_stat_wars w
    where w.clan_id=p_clan and w.war_key=v_key;
@@ -217,11 +225,6 @@ begin
    raise exception 'Invalid missed-attack record' using errcode='22023';
   end if;
   v_count:=(v_missed->>'missed_count')::integer;
-  v_unique_key:=v_key||'/'||v_player;
-  if v_unique_key=any(v_missed_seen) then
-   raise exception 'Duplicate missed-attack record' using errcode='22023';
-  end if;
-  v_missed_seen:=array_append(v_missed_seen,v_unique_key);
   if v_key=any(v_skip_keys) then continue; end if;
   select w.war_type into v_type from public.cwl_stat_wars w
    where w.clan_id=p_clan and w.war_key=v_key;
