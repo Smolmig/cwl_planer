@@ -1041,7 +1041,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       if(!stillCurrent())throw Error("Clan gewechselt. Bitte Import neu starten.");
       notice("ClashPerk-Historie wird gespeichert …");
       const result=await commitClashPerkMerge(sb,plan,{clanId,
-        assertCurrent:stillCurrent,onProgress:notice});
+        clanTag:ctx.clanTag,assertCurrent:stillCurrent,onProgress:notice});
       await load();
       notice("✓ "+result.inserted+" neue Kriege, "+result.attacks+
         " eigene Angriffe und "+totalMissed+
