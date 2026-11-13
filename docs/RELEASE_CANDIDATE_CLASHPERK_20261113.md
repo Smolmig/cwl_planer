@@ -1,5 +1,17 @@
 # Release-Kandidat #269 – ClashPerk-Excel-Import und Clanwechsel-UX
 
+> **Aktuelle Freigabeentscheidung 14.11.2026 – KONTROLLIERTER LIVE-TEST, ohne zusätzliche Testumgebung:** Der Nutzer hat nach Bewertung des bereits umfassend lokal getesteten Imports ein zweites gehostetes Supabase-Projekt bewusst abgewählt. Live-Migration und v1.19.0 dürfen nach grünem finalem CI, aktuellem verschlüsselten Produktivbackup sowie erfolgreicher *isolierter* Restore-Prüfung erfolgen. Nur ein bestätigter manueller Upload in einem ausgewählten Clan darf echte historische Daten einspielen. Dieser Freigabeweg hat ein höheres Restrisiko als getrenntes Staging; die UAT mit echtem Original-XLSX und physischem iPhone erfolgt zunächst durch den Nutzer am veröffentlichten Stand und wird gegebenenfalls mit kleinen Korrekturen nachgebessert. Kein neues Supabase-Projekt und keine unkontrollierte Datenmigration.
+
+### Rollout mit kontrollierter Rückfallebene
+- Frischen verschlüsselten Datenbankstand erstellen, außerhalb von Live einspielen und War/Attack/Missed-Werte vergleichen. Erfolgreichen GitHub-Backup- und Restore-Run vor SQL-Änderung dokumentieren.
+- Auf der bestehenden Live-DB ausschließlich die additive versionierte RPC-Migration ausführen und Verfügbarkeit, Grant auf `authenticated` sowie RLS mit einer **reinen Leseprüfung** überprüfen.
+- Frontend mit **v1.19.0** samt Hilfe, Cache-Revisionen, aktuellen Versionshinweisen und Changelog veröffentlichen.
+- Für den ersten Upload: ausgewählten Clan-Tag prüfen, eine kleine originale ClashPerk-XLSX-Datei hochladen, Vorschau vor Bestätigung lesen, danach Kriegs-/Angriffs-/Missed-Kennzahlen und erneuten Import auf Duplikate prüfen.
+- Bei einem Fehler keine weitere Datei importieren; vorherige Cloud-App-Dateien aus dem Git-Commit zurücksetzen, solange die neue Datenbankfunktion additiv installiert bleibt. Kein destruktiver Tabellen- oder Restore-Rollback ohne Prüfung zwischenzeitlich erfasster Daten.
+- **Physisches iPhone Safari/PWA** nach Livefreigabe durchführen; falls der lokale WebKit-Test einen iOS-Sonderfall nicht abdeckt, als eigenständigen Bugfix erfassen.
+
+**Dieser Absatz ersetzt die früheren pauschalen NO-GO-Bedingungen zu gehostetem Staging und zu physischem iPhone als Vorabbedingung.** Die untenstehenden älteren Vorbereitungschecklisten bleiben als technische Historie nachvollziehbar; das frische Backup, Restore, finale CI und explizite Nutzerfreigabe sind unverändert ernst zu nehmen.
+
 **Stand 13.11.2026 | Draft-Stack #270 → #272 → #273 → #274 → #275 → #276 → #277 → #278 → Release-Review #279.**  
 **Status: VORBEREITUNG, NO-GO für Produktionsdeploy; `main` bleibt v1.18.1.**  
 Die Ownerless-CWL-Saisonwechsel-PRs #262–#267 gehören **nicht** zu diesem Release.
