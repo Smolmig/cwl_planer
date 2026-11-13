@@ -11,17 +11,22 @@ verarbeitet. Der bisherige Ein-Datei-JSON-Weg bleibt separat kompatibel.
 
 In Discord für **jeden** verknüpften Clash-Clan:
 
-1. `/export attack-log` → `clans`: diesen Clan; `war_type`: **Regular**; `limit`: **100**.
+1. `/export attack-log` → `clans`: diesen Clan; `war_type`: **Regular**; `limit`: **100** (Maximum).
 2. `/export attack-log` → selber Clan; `war_type`: **CWL**; `limit`: **100**.
-3. `/export missed` → selber Clan; `war_type`: **Regular**; `limit`: **100**.
-4. `/export missed` → selber Clan; `war_type`: **CWL**; `limit`: **100**.
+3. `/export missed` → selber Clan; `limit`: **100**. **Einmal genügt**: Der echte originale Missed-Export enthält **Regular und CWL gemeinsam**, **ohne** separaten `war_type`-Filter.
 
-**Statistik → Überblick → „Excel-Dateien auswählen“** und die verfügbaren
-Attack- und Missed-Exporte **gleichzeitig** auswählen. Es sind nicht
-alle vier erforderlich: ein einzelner Attack-Log-Export mit wenigen
-Kriegen funktioniert; fehlende Missed-Logs reduzieren nur die
-nachweisbare Abdeckung. Alle Dateien müssen zum **gerade ausgewählten**
-App-Clan gehören. Wer UF und UF 2 verwaltet, importiert jeden separat.
+**Statistik → Überblick → „Excel-Dateien auswählen“** und die **drei** originalen
+Attack-/Missed-Exporte **gemeinsam** auswählen. Es sind nicht alle drei
+zwingend: ein einzelner Attack-Log-Export mit wenigen Kriegen
+funktioniert. Fehlende Missed-Einträge reduzieren die
+nachweisbare Abdeckung; fehlende Nachweise sind keine Null. Alle Dateien
+müssen zum **gerade ausgewählten** App-Clan gehören. Wer UF und UF 2
+verwaltet, importiert jeden separat. **`limit: 100` ist die Obergrenze
+für die jüngsten Einträge je Export, nicht die gesamte gespeicherte
+Historie.** Ältere Originalexporte aufbewahren und neue regelmäßig
+hinzufügen; identische Angriffe werden nicht doppelt gezählt.
+`/export wars` ist eine aggregierte Spielerübersicht und für diesen
+Import **nicht** nötig.
 
 `/export wars` enthält laut vier real geprüften Dateien überwiegend
 aggregierte Statistiken. Das Sheet wird **ignoriert**, niemals doppelt
@@ -147,3 +152,37 @@ Noch ausstehende Test-/Freigabeschritte:
 **Der Planungs-/CWL-Archivzustand selbst wird durch diesen Import nicht
 geändert.** Externe Discord-Logs für Aufstellungswechsel werden nicht
 als vorhandene XLSX-Spalten ausgegeben; diese bleiben #268/#269 Folgeumfang.
+
+## 13.11.2026 – Original-XLSX-Audit ohne personenbezogene Veröffentlichung
+
+Die vier echten vom Nutzer hochgeladenen Originaldateien wurden **privat und ohne
+Upload ins öffentliche GitHub** mit einer unabhängigen OOXML-/ZIP-Strukturanalyse
+geprüft. Das ist eine zusätzliche Plausibilitäts- und Vollständigkeitsprüfung:
+Die synthetischen Chromium-/WebKit-Tests durchlaufen weiterhin den eigentlichen
+Browser-Importer; die hier genannten Summen stammen **nicht** aus einem
+produktiven App-Import und ersetzen keine reale iOS-/PWA-Abnahme.
+
+| Originalexport | Festgestellte Struktur |
+| --- | --- |
+| Attack Log Regular | 5.050 Datenzeilen, 25 Spalten, 100 unterschiedliche War-IDs |
+| Attack Log CWL | 3.118 Datenzeilen, 25 Spalten, 100 unterschiedliche War-IDs |
+| Missed Attacks | **ein** Primärblatt mit 99 Einträgen: **96 Regular, 3 CWL**; zwei Pivot-Summary-Blätter sind keine neuen Nachweise |
+| War Stats | zwei reine Clan-Zusammenfassungen ohne exportierbare Einzelangriffs-Historie |
+
+Aus den beiden Attack-Logs ergeben sich im aktuellen **72-Stunden-Sicherheitsfenster**
+99 auswertbare normale CWs und 99 CWL-Kriege; zwei noch zu junge Kriege werden
+korrekt zurückgestellt. Unter den älteren Einträgen waren **208 doppelte
+Attack-Ereignisse**, die nicht doppelt gezählt werden dürfen. Die unabhängige
+Prüfung ergab **4.112 eigene Angriffe** (gegnerische Angriffe bleiben getrennt),
+**131 ausdrücklich dokumentierte verpasste Angriffs-Slots** und **151 vollständig
+nachgewiesene** gegenüber **47 unvollständig belegten** Kriegen. Alle 99
+Missed-Einträge gehörten zu vorhandenen Kriegs-IDs; bei der strukturellen
+Feldprüfung gab es **keine** ungültigen Tags, Größen, Sternewerte oder
+widersprüchlichen Dubletten.
+
+**Wichtige Anleitungskorrektur:** Vorher verlangten UI/Hilfe/Dokumentation
+irrtümlich **zwei** getrennte `/export missed`-Dateien nach Regular/CWL.
+Die echten Exporte beweisen, dass ein **gemeinsamer** Missed-Export beide
+Typen umfasst. Deshalb sind im Normalfall **drei statt vier** Dateien
+nötig. Der War-Stats-Export ist optional, wird aber nicht als zusätzlicher
+Angriffsnachweis verwendet.

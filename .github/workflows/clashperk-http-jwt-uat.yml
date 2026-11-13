@@ -2,14 +2,14 @@ name: ClashPerk authenticated HTTP/RLS UAT
 on:
   pull_request:
     paths:
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'tests/sql/clashperk-http-setup.sql'
       - 'tests/clashperk-http-jwt-uat.test.cjs'
       - '.github/workflows/clashperk-http-jwt-uat.yml'
   push:
     branches: [main]
     paths:
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'tests/sql/clashperk-http-setup.sql'
       - 'tests/clashperk-http-jwt-uat.test.cjs'
       - '.github/workflows/clashperk-http-jwt-uat.yml'
@@ -49,7 +49,7 @@ jobs:
       - name: Create synthetic app tenants, real stats RLS and DRAFT RPC
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
-          psql -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-http-setup.sql
       - name: Start isolated PostgREST (NO production Supabase credentials)
         run: |

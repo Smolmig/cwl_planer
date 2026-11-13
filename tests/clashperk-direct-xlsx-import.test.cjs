@@ -265,6 +265,20 @@ test("ZIP parser rejects macro content, invalid containers and formula-bearing s
  await assert.rejects(readClashPerkXlsx(file(malicious)),/externe oder aktive Inhalte/);
  assert.ok(valid.length>100);
 });
+test("ZIP parser rejects a forged local XLSX header that disagrees with the central directory",async t=>{
+ if(typeof DecompressionStream==="undefined"){t.skip("Node runtime lacks DecompressionStream");return}
+ const {readClashPerkXlsx}=await xlsx();
+ const original=book([header,hit(1)]);
+ const changedMethod=Buffer.from(original);
+ changedMethod.writeUInt16LE(0,8); // local header says STORE, central entry says DEFLATE
+ await assert.rejects(readClashPerkXlsx(file(changedMethod)),
+  /stimmt nicht mit dem Verzeichnis/);
+ const changedName=Buffer.from(original);
+ changedName[30]="y".charCodeAt(0); // local name differs from central directory
+ await assert.rejects(readClashPerkXlsx(file(changedName)),
+  /stimmt nicht mit dem Verzeichnis/);
+});
+
 test("UI accepts several .xlsx files, retains JSON fallback and previews before any write",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const stats=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
@@ -362,4 +376,28 @@ test("formerly hosted UF2 players keep historical attacks but are no longer curr
  // The attack history itself is separate and must not be filtered away.
  const historicalAttacks=[{attacker_tag:"#8PYL"},{attacker_tag:"#QPYL"},{attacker_tag:"#2PYL"}];
  assert.equal(historicalAttacks.length,3);
+});
+
+
+test("one real-world style Missed export covers both normal CW and CWL, with no second war_type export",async()=>{
+ const {parseClashPerkSheets}=await xlsx();
+ const sheets=[
+  attackSheet([
+   hit(201,1,1,"normal","#8PYL",3),
+   hit(201,2,1,"normal","#8PYL",2),
+   hit(202,1,1,"cwl","#8PYL",3)
+  ]),
+  missedSheet([
+   ms(201,"#QPYL",2,"normal"),
+   ms(202,"#QPYL",1,"cwl")
+  ])
+ ];
+ const result=parseClashPerkSheets(sheets,tag);
+ assert.equal(result.wars.length,2);
+ assert.equal(result.attacks.length,3);
+ assert.equal(result.missed.length,2);
+ assert.equal(result.completeWars,2);
+ assert.equal(result.missingWars,0);
+ assert.deepEqual(result.wars.map(w=>w.war_type),["normal","cwl"]);
+ assert.ok(result.wars.every(w=>w.missed_log_complete===true));
 });

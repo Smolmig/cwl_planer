@@ -43,7 +43,7 @@ export function statsLoadNotice(wars=[]){
   return "Historie geladen · "+finishedText+pendingText+".";
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
-  let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,importing=false,version=0,lastCapture=new Set();
+  let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,loadingClan=null,importing=false,version=0,lastCapture=new Set();
   let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
   let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
@@ -898,9 +898,38 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     version++;lastCapture.clear();loading=false;importing=false;
     notice("");render();
   }
-  async function load(){
-    const ctx=context();if(!ctx.active||!ctx.clanId||loading)return;
-    const epoch=++version,id=ctx.clanId;loading=true;notice("Statistik wird geladen …");
+  async function load(force=false){
+    const ctx=context();if(!ctx.active||!ctx.clanId)return;
+    const id=ctx.clanId;
+    // A request from the OLD clan must never block a refresh of the newly
+    // selected clan. Superseding the old epoch also prevents late responses
+    // and render() callbacks from presenting cross-clan statistics.
+    if(loading&&loadingClan===id&&!force)return;
+    const epoch=++version;
+    loading=true;loadingClan=id;
+    if(scope!==id){
+      // An initial load has nothing to clear. Rendering an EMPTY initial
+      // table too early would prime the row caches and suppress the first
+      // real table render (seen in unrelated stats browser regressions).
+      const hadOtherClan=scope!==null;
+      scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
+      cachedRecentStats=new Map();comparableProfiles=new Map();
+      comparableSummary=null;cachedSummary=null;lastMetricSignature="";
+      if(hadOtherClan){
+        // Clear Clan A's visible data before Clan B finishes its fetch.
+        render();
+      }
+      // When the new data comes back, empty-state caches must never be
+      // mistaken for the new clan's fully populated rows.
+      cachedPlayerStats=new Map();lastRowsMarkup=null;lastRowsVersion=-1;
+      lastRowsClan=null;lastRowsHost=null;lastMembersNotifiedVersion=-1;
+      lastComparableRowsMarkup=null;lastFormRowsVersion=-1;lastFormRowsClan=null;
+      lastMatchupVersion=-1;lastMatchupClan=null;
+      lastDuelVersion=-1;lastDuelClan=null;
+      lastTrendVersion=-1;lastTrendClan=null;
+      historyAttacksByWar=new Map();openStatsPlayers.clear();
+    }
+    notice("Statistik wird geladen …");
     try{
       // Keep all available completed wars. A pair of ClashPerk limit-100
       // exports already fills 200 rows before the scheduled collector adds
@@ -949,7 +978,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       notice(statsLoadNotice(wars));
     }catch(e){
       if(epoch===version)notice("Fehler beim Laden der Statistik: "+String(e.message||e));
-    }finally{if(epoch===version){loading=false;render()}}
+    }finally{if(epoch===version){loading=false;loadingClan=null;render()}}
   }
   async function importFile(file){
     const ctx=context();
@@ -1042,7 +1071,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       notice("ClashPerk-Historie wird gespeichert …");
       const result=await commitClashPerkMerge(sb,plan,{clanId,
         clanTag:ctx.clanTag,assertCurrent:stillCurrent,onProgress:notice});
-      await load();
+      // A pending pre-upload load may still return old rows. Force a fresh
+      // post-commit query; the monotonic version fences its stale response.
+      await load(true);
       notice("✓ "+result.inserted+" neue Kriege, "+result.attacks+
         " eigene Angriffe und "+totalMissed+
         " belegte verpasste Angriffe übernommen. "+

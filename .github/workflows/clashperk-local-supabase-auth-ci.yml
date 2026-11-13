@@ -6,7 +6,7 @@ on:
       - 'tests/clashperk-local-gotrue-auth.test.cjs'
       - 'tests/clashperk-browser-gotrue-integration.test.cjs'
       - '.github/workflows/clashperk-local-supabase-auth-ci.yml'
-      - 'scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql'
+      - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'supabase/migrations/20261031125500_cwl_private_attack_history_stats.sql'
       - 'supabase/migrations/20261031133000_cwl_statistics_missed_attack_log.sql'
   push:
@@ -58,7 +58,7 @@ jobs:
           psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f tests/sql/clashperk-local-supabase-auth-fixture.sql
           psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261031125500_cwl_private_attack_history_stats.sql
           psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261031133000_cwl_statistics_missed_attack_log.sql
-          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f scripts/DRAFT_cwl_clashperk_atomic_import_rpc.sql
+          psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
           psql "${DB_URL}" -X -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
           # Do not accidentally reuse a remote Supabase project's URL or keys.
           sleep 3
