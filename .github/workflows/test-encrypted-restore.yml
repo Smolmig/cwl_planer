@@ -237,7 +237,9 @@ jobs:
                   raise SystemExit(f'Incomplete COPY section in {filename}')
           tables = ['auth.users', 'public.cwl_clans', 'public.cwl_clan_memberships',
                     'public.cwl_cloud_profiles', 'public.cwl_change_events',
-                    'public.cwl_profile_snapshots']
+                    'public.cwl_profile_snapshots',
+                    'public.cwl_stat_wars', 'public.cwl_stat_attacks',
+                    'public.cwl_stat_missed']
           def sql(query):
               p = subprocess.run(['psql', '-X', '-qAt', '-h', '127.0.0.1', '-p', '54322',
                                   '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
@@ -264,6 +266,18 @@ jobs:
                   raise SystemExit(f'RLS disabled after restore: {table}')
           print('PASS: restored row counts and RLS match the encrypted backup.')
           PY
+
+      - name: Verify exact restored historical CW/CWL statistics and RLS
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '54322'
+          PGUSER: postgres
+          PGDATABASE: postgres
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_clashperk_restore.py "$WORK/unpacked/cwl-backup/data-local.sql"
 
       - name: Remove disposable database and decrypted files
         if: always()
