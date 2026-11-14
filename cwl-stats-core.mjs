@@ -123,8 +123,14 @@ export function groupCwlRuns(wars) {
 }
 // Keep statistics as rolling windows while retaining older raw records
 // for safe recovery. Only finalized CW/CWL wars count as performance data.
-export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3}={}){
-  const sorted=[...wars].filter(w=>w.source!=="api"||w.finalized===true)
+export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3,days="all",asOf=Date.now()}={}){
+  const end=typeof asOf==="number"?asOf:Date.parse(asOf);
+  const span=days==="all"?Infinity:Number(days)*86400000;
+  if(!Number.isFinite(end)||!(span>0))throw Error("Ungültiger Statistikzeitraum.");
+  const sorted=[...wars].filter(w=>
+    (w.source!=="api"||w.finalized===true)&&
+    Number.isFinite(Date.parse(w.started_at))&&
+    Date.parse(w.started_at)<=end&&end-Date.parse(w.started_at)<=span)
     .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
       String(a.war_key).localeCompare(String(b.war_key)));
   const normal=sorted.filter(w=>w.war_type==="normal");
@@ -183,10 +189,10 @@ export function computeThMatchupComparison(wars, attacks, {type="all",last=50,cw
  * "all" never becomes a misleading "last 50" limit. Past, non-final wars
  * never count as observed outcomes.
  */
-export function describeWarSelection(wars,{type="all",last="all",cwlSeasons="all"}={}){
+export function describeWarSelection(wars,{type="all",last="all",cwlSeasons="all",days="all",asOf=Date.now()}={}){
   const finalized=(wars||[]).filter(w=>(w.source!=="api"||w.finalized===true)&&
     ["normal","cwl"].includes(w.war_type));
-  const selected=selectStatWars(finalized,{type,last,cwlSeasons});
+  const selected=selectStatWars(finalized,{type,last,cwlSeasons,days,asOf});
   const allNormal=finalized.filter(w=>w.war_type==="normal").length;
   const allCwl=groupCwlRuns(finalized).length;
   const selectedNormal=selected.filter(w=>w.war_type==="normal").length;
@@ -196,7 +202,7 @@ export function describeWarSelection(wars,{type="all",last="all",cwlSeasons="all
   const recent=chronological.at(-1)?.started_at||null;
   return {selected,allNormal,allCwl,selectedNormal,selectedCwl,first,recent,
     allWars:finalized.length,selectedWars:selected.length,
-    limitNormal:last,limitCwl:cwlSeasons};
+    limitNormal:last,limitCwl:cwlSeasons,limitDays:days};
 }
 
 /** A different independent query for every functional tab.
@@ -221,7 +227,7 @@ export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}=
  * players without documented attacks; n and date are displayed alongside %.
  */
 export function computePlayerFormWindows(wars,attacks,{
-  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[]
+  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[]
 }={}){
   const now=typeof asOf==="number"?asOf:Date.parse(asOf);
   if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
@@ -238,7 +244,9 @@ export function computePlayerFormWindows(wars,attacks,{
       profiles.set(key,{tag:key,name:String(name||key),
         windows:Object.fromEntries(windows.map(days=>[days,{
           days,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null,
-          normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null
+          normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null,
+          performed:0,missedKnown:0,reliability:null,reliabilityComplete:false,
+          formIndex:null,performanceIndex:null,_unverified:new Set()
         }]))});
     }
     const p=profiles.get(key);
@@ -256,11 +264,64 @@ export function computePlayerFormWindows(wars,attacks,{
     for(const days of windows){
       if(age>days)continue;
       const b=p.windows[days];
+      b.performed++;
+      if(w.missed_log_complete!==true && !(
+        w.war_type==="normal"&&w.finalized===true&&
+        Array.isArray(w.roster_tags)&&w.roster_tags.length===w.team_size &&
+        new Set(w.roster_tags.map(cleanTag)).size===w.team_size
+      ))b._unverified.add(w.war_key);
       if(!thA||!thD){b.excludedUnknownRH++;continue}
       if(a.attacker_th!==a.defender_th){b.excludedDifferentRH++;continue}
       b.attacks++;b.triples+=(a.stars===3?1:0);b.stars+=a.stars;
       if(w.war_type==="normal")b.normal++;else b.cwl++;
       if(!b.newest||time>Date.parse(b.newest))b.newest=w.started_at;
+    }
+  }
+  // Missed slots are independent of 3-star performance. They measure whether
+  // a scheduled attack was used and NEVER become a fabricated 0-star attack.
+  // A partial log provides a lower bound, not proof of full reliability.
+  const missedByWar=new Map();
+  for(const m of missedEvents||[]){
+    const w=byWar.get(m.war_key);
+    if(!w||!validTag(cleanTag(m.player_tag))||!int(m.missed_count,1,2))continue;
+    if(!missedByWar.has(w.war_key))missedByWar.set(w.war_key,new Map());
+    const tags=missedByWar.get(w.war_key);
+    const k=cleanTag(m.player_tag);
+    tags.set(k,Math.max(tags.get(k)||0,m.missed_count));
+  }
+  const usedByWar=new Map();
+  for(const a of attacks||[]){
+    if(!byWar.has(a.war_key)||!validTag(cleanTag(a.attacker_tag))||!int(a.stars,0,3))continue;
+    if(!usedByWar.has(a.war_key))usedByWar.set(a.war_key,new Map());
+    const tags=usedByWar.get(a.war_key),key=cleanTag(a.attacker_tag);
+    tags.set(key,(tags.get(key)||0)+1);
+  }
+  for(const w of byWar.values()){
+    const age=(now-Date.parse(w.started_at))/86400000;
+    if(!Number.isFinite(age)||age<0)continue;
+    const roster=Array.isArray(w.roster_tags)?w.roster_tags.map(cleanTag):[];
+    const fullNormal=w.war_type==="normal"&&w.finalized===true&&
+      roster.length===w.team_size&&new Set(roster).size===w.team_size;
+    const coverage=w.missed_log_complete===true||fullNormal;
+    let evidence=missedByWar.get(w.war_key)||new Map();
+    if(fullNormal&&w.missed_log_complete!==true){
+      evidence=new Map();
+      for(const tag of roster){
+        if(!validTag(tag))continue;
+        const used=usedByWar.get(w.war_key)?.get(tag)||0;
+        const missing=Math.max(0,2-used);
+        if(missing>0)evidence.set(tag,missing);
+      }
+    }
+    for(const [tag,n] of evidence){
+      const p=ensure(tag);
+      if(!p)continue;
+      for(const days of windows){
+        if(age>days)continue;
+        const b=p.windows[days];
+        b.missedKnown+=n;
+        if(!coverage)b._unverified.add(w.war_key);
+      }
     }
   }
   // Current profile membership is an independent source of player identity.
@@ -281,6 +342,26 @@ export function computePlayerFormWindows(wars,attacks,{
       b.averageStars=b.attacks?Math.round(100*b.stars/b.attacks)/100:null;
       b.quality=b.attacks>=15?"umfangreicher":b.attacks>=6?"erste Tendenz":
         b.attacks?"wenige Angriffe":"keine Daten";
+      const obligations=b.performed+b.missedKnown;
+      b.reliabilityComplete=obligations>0&&b._unverified.size===0;
+      b.reliability=b.reliabilityComplete?
+        Math.round(100*b.performed/obligations):null;
+      // Wilson's conservative 80%-style lower bound: four out of four must
+      // outrank zero out of twelve, but tiny samples are visibly uncertain.
+      // This is a heuristic score, NOT a predicted 3-star probability.
+      if(b.attacks){
+        const rate=b.triples/b.attacks,z=1.28,z2=z*z;
+        const denom=1+z2/b.attacks;
+        const center=rate+z2/(2*b.attacks);
+        const distance=z*Math.sqrt(rate*(1-rate)/b.attacks+
+          z2/(4*b.attacks*b.attacks));
+        b.performanceIndex=Math.round(100*Math.max(0,(center-distance)/denom));
+      }
+      // Missed attacks are a separate but heavily weighted reliability axis.
+      // If coverage is incomplete, never invent unknown misses or a composite.
+      b.formIndex=b.performanceIndex!==null&&b.reliability!==null?
+        Math.round(.65*b.performanceIndex+.35*b.reliability):null;
+      delete b._unverified;
     }
     return {...p,former:current.size>0&&!current.has(p.tag)};
   }).sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -294,10 +375,9 @@ export function computePlayerFormWindows(wars,attacks,{
  * Within each bucket the raw 3-star percentage remains visible and sorts.
  */
 export function sortPlayerFormRows(players,windowDays,mode="evidence"){
-  if(!["evidence","hitRate","attacks","name"].includes(mode))
+  if(!["evidence","hitRate","attacks","reliability","name"].includes(mode))
     throw Error("Ungültige Sortierung für Spielerform.");
   const nameSort=(a,b)=>a.name.localeCompare(b.name,"de");
-  const evidenceLevel=n=>n>=15?0:n>=6?1:n>0?2:3;
   return (players||[]).slice().sort((a,b)=>{
     const left=a.windows[windowDays],right=b.windows[windowDays];
     if(!left||!right)throw Error("Formzeitraum ist nicht verfügbar.");
@@ -306,11 +386,18 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
     if(mode==="name")return nameSort(a,b);
     if(mode==="attacks")return volumeDelta||rateDelta||nameSort(a,b);
     if(mode==="hitRate")return rateDelta||volumeDelta||nameSort(a,b);
-    const evidenceDelta=evidenceLevel(left.attacks)-evidenceLevel(right.attacks);
-    return evidenceDelta||rateDelta||volumeDelta||nameSort(a,b);
+    if(mode==="reliability")
+      return (right.reliability??-1)-(left.reliability??-1)||
+        (right.performed+right.missedKnown)-(left.performed+left.missedKnown)||
+        nameSort(a,b);
+    // A single meaningful composite is available only when ALL of that
+    // player's observed attack opportunities have complete missed evidence.
+    // Incomplete profiles show their attack-only lower bound below those.
+    const rank=(b)=>b.formIndex??b.performanceIndex??-1;
+    return (Number(right.formIndex!==null)-Number(left.formIndex!==null))||
+      (rank(right)-rank(left))||volumeDelta||nameSort(a,b);
   });
 }
-
 /**
  * One comparable date bucket per observed week or month, grouped by CW/CWL.
  * Missing periods are not zero-win periods; consumers must show n for each dot.
@@ -486,9 +573,10 @@ export function computePlayerDuel(wars,attacks,firstTag,secondTag,{
   return {sameTH:!!sameTH,selectedWars:chosen.length,players:results};
 }
 
-export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,sameHigher=false,showFormer=true,
+export function computeWarStats(wars,attacks,{type="all",last=50,cwlSeasons=3,days="all",asOf=Date.now(),
+  sameHigher=false,showFormer=true,
   memberTags=[],minAttacks=0,missedEvents=[]}={}){
-  const selected=selectStatWars(wars,{type,last,cwlSeasons});
+  const selected=selectStatWars(wars,{type,last,cwlSeasons,days,asOf});
   const lookup=new Map(selected.map(w=>[w.war_key,w]));
   const lastTenWars=selected.slice(0,10);
   const lastTenKeys=new Set(lastTenWars.map(w=>w.war_key));
