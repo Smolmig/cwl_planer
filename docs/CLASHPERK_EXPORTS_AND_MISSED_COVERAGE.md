@@ -58,3 +58,10 @@ ClashPerk bietet öffentliche Spieler-Kriegshistorien mit Attacken, gegnerischen
 - ClashPerk [FAQ / API-Erfassungsintervalle](https://docs.clashperk.com/faq).
 - Beispiel [öffentliche Spieler-Kriegshistorie](https://clashperk.com/web/players/%23V0R9YQGU/wars).
 - Community-Hinweis zu historischen `/export wars` und `/export cwl`: https://www.reddit.com/r/ClashOfClans/comments/1e8t8t5/
+
+
+## Sichere API-/ClashPerk-Zusammenführung (v1.19.1)
+
+Bei einem Test mit UF 2 wurden dieselben sieben abgeschlossenen CWL-Kriegstage unter zwei Schlüsselarten gespeichert: offizieller API-WarTag und ClashPerk-War-ID. Die Zeitstempel lagen jeweils **24 Stunden auseinander**, alle **100 einzelnen Angriffe** stimmten bei Angreifer, Ziel, Sternen und Zerstörungswert überein. Beim Anzeigen werden die Quellen nur dann als ein Krieg ausgewertet, wenn Gegner-Tag, Kriegstyp, Teamgröße, zeitliche Nähe und **die gesamte Angriffsliste** eindeutig übereinstimmen. Fehlende oder widersprüchliche Angriffsnachweise berechtigen **nicht** zur automatischen Zusammenführung. API-/CWL-Pläne und ursprüngliche Herkunftsdaten bleiben gespeichert. Bei einer vollständigen Missed-Quelle werden die nachgewiesenen verpassten Angriffe ohne Doppelzählung übernommen. Die Herkunft des konkreten Krieges bleibt nachprüfbar.
+
+Für die vollständige Historie jeweils separat empfehlen: `/export attack-log` für Regular und CWL sowie `/export missed` für Regular und CWL, soweit die Discord-Auswahl angeboten wird. Alle passenden Exporte können gemeinsam oder in mehreren Schritten hochgeladen werden. Für umfangreichere Historie alte Exporte archivieren; `limit: 100` garantiert keine vollständige Lebenszeit-Historie. Vor großen Nachimporten in United Fighters zunächst im Vorschaufenster auf 'Neue Kriege', 'Bereits vorhanden' und 'Als API-Krieg wiedererkannt' achten. Bei unklarer Zuordnung wird nicht gespeichert. Reine DB-Rohzeilenzahlen können größer sein als die **logisch deduplizierten** Statistikzahlen; die Originalbelege werden aus Sicherheitsgründen nicht einfach gelöscht.
