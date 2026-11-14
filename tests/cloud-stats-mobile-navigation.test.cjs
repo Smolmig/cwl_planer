@@ -108,12 +108,25 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
             active:formWindows[1].getAttribute("aria-pressed")==="true",
             text:document.getElementById("statsFormIntro").textContent
           }));
+          buttons.find(el=>el.dataset.statsSection==="players").click();
+          const playerType=document.getElementById("statsType").closest(".field").getBoundingClientRect();
+          const periodDetails=document.getElementById("statsPeriodConfig");
+          const playerPeriod=periodDetails.closest(".field").getBoundingClientRect();
+          const periodSummary=document.getElementById("statsPeriodSummary").textContent;
+          periodDetails.open=true;
+          const periodOptions=document.querySelectorAll(".stats-period-options select");
+          const filterWidths=[...periodOptions].map(x=>({
+            width:x.getBoundingClientRect().width,scroll:x.scrollWidth,client:x.clientWidth
+          }));
+          const mobileScope={type:{y:playerType.y,h:playerType.height,w:playerType.width},
+            period:{y:playerPeriod.y,w:playerPeriod.width},periodSummary,filterWidths};
+          periodDetails.open=false;
           buttons.find(el=>el.dataset.statsSection==="compare").click();
           const compareControls=["statsCompareType","statsCompareDays"].map(id=>
             document.getElementById(id).getBoundingClientRect().height);
           return {rects,checks,activeAfterReload:reload.active,
             headerAfterReload:reload.panel,
-            formButtons,formControls,compareControls,formNotes,formReload,
+            formButtons,formControls,compareControls,formNotes,formReload,mobileScope,
             importHidden:document.getElementById("statsImportButton").hidden,
             navWidth:nav.getBoundingClientRect().width,
             horizontalOverflow:document.documentElement.scrollWidth-innerWidth};
@@ -146,6 +159,15 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           n.text.includes("Sortiert nach Formwert")&&
           n.text.includes("Spieler mit vergleichbaren Angriffen")&&
           n.text.length<190),msg);
+        assert.ok(result.mobileScope.periodSummary.length<65,msg);
+        assert.ok(result.mobileScope.filterWidths.every(x=>x.width>=40&&x.client>0),msg);
+        if(width<700){
+          assert.ok(result.mobileScope.period.y>
+            result.mobileScope.type.y+result.mobileScope.type.h-2,msg);
+          assert.ok(Math.abs(result.mobileScope.type.w-result.mobileScope.period.w)<3,msg);
+        }else{
+          assert.ok(Math.abs(result.mobileScope.type.y-result.mobileScope.period.y)<4,msg);
+        }
         assert.equal(result.formReload.active,true,msg);
         assert.ok(result.formReload.text.includes("Sortiert nach Formwert"),msg);
         assert.ok(result.horizontalOverflow<=3,msg);
