@@ -1,5 +1,5 @@
 {
   "version": "v1.22.0",
   "released": "2026-11-14",
-  "summary": "Aktuelles Spielerprofil per geschützter Clash-API-Prüfung abrufen; aktuelle und historische Rathausstufen klar trennen."
+  "summary": "Statistik: Aktuelles Spielerprofil per geschützter Clash-API prüfen und aktuelle RH-/Clanzugehörigkeit klar von historischen Angriffen trennen."
 }
