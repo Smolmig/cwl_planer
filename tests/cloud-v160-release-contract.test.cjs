@@ -20,7 +20,7 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  assert.match(html,/cwl-planning-core\.js\?v=1\.19\.1/);
  assert.match(html,/cwl-deployment-filters\.js\?v=1\.19\.1/);
  for(const mod of ["cloud-backups","cwl-live","cwl-stats","cwl-current-war"])
-  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.19.0"'),mod+" must be cache-busted");
+  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.19.1"'),mod+" must be cache-busted");
  assert.match(live,/cwl-live-core\.mjs\?v=1\.19\.1/);
  assert.match(live,/cwl-verified-pause\.mjs\?v=1\.19\.1/);
  assert.doesNotMatch(html,/v1\.5\.2(?=["<])/,"old live version not visible");
