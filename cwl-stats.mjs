@@ -1,4 +1,5 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.0";
+import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.20.1";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
 import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates,isPotentialClashPerkApiOverlap} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
@@ -191,6 +192,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<small class='stats-form-evidence'>"+esc(reliability+scoreHint)+"</small>"+
           "<details class='stats-form-player-details'><summary>Angriffsdetails</summary>"+
             "<ul>"+details.map(text=>"<li>"+esc(text)+"</li>").join("")+"</ul>"+
+            "<button type='button' class='stats-linked-history-action' data-linked-player='"+esc(p.tag)+"'>Weitere zugängliche Clans prüfen</button>"+
+            "<div class='stats-linked-history-result' role='status' aria-live='polite'></div>"+
           "</details>"+
         "</div></div>";
     }).join(""):"<p class='stats-note'>"+(term?
@@ -1310,6 +1313,42 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         lastComparableRowsMarkup=null;
         renderComparableForm();
       });
+    e("statsFormRows")?.addEventListener("click",async event=>{
+      const button=event.target.closest("button[data-linked-player]");
+      if(!button||button.disabled)return;
+      const host=button.parentElement?.querySelector(".stats-linked-history-result");
+      const ctx=context();
+      if(!host||!ctx.active||scope!==ctx.clanId)return;
+      const clan=ctx.clanId,atVersion=version;
+      button.disabled=true;host.textContent="Berechtigte Clans werden geprüft …";
+      try{
+        const result=await loadAccessiblePlayerHistory(sb,button.dataset.linkedPlayer,clan);
+        // Never render stale private data after switching clans or sessions.
+        if(scope!==clan||context().clanId!==clan||version!==atVersion||!button.isConnected)return;
+        if(!result.clans.length){
+          host.textContent="Keine weiteren dokumentierten Angriffe in zugänglichen Clans gefunden.";
+          return;
+        }
+        host.innerHTML="<p>Weitere zugängliche Clan-Profile (getrennt, keine globale Summe):</p>"+
+          "<ul>"+result.clans.map(c=>{
+            const day=new Date(c.latestAttackDate).toLocaleDateString("de-AT");
+            const th=c.latestDocumentedTh?" · Zuletzt belegtes RH "+c.latestDocumentedTh:"";
+            const flag=c.possibleDuplicateSources?" · Mehrere Datenquellen, Rohwerte":"";
+            return "<li><strong>"+esc(c.clanName)+"</strong> ("+esc(c.clashTag||"")+")"+
+              ": "+esc(c.recordedAttacks)+" dokumentierte Angriffe · "+
+              esc(c.rawThreeStarRate)+" % 3★ · "+esc(day)+esc(th)+
+              esc(flag)+"</li>";
+          }).join("")+"</ul>"+
+          "<small>Nur Clans mit bestehender Berechtigung. Alte Angriffsdaten sind keine aktuellen API-Profildaten."+
+          (result.truncated?" Auswahl unvollständig; keine abschließende Gesamtstatistik.":"")+
+          "</small>";
+      }catch(error){
+        if(scope===clan&&button.isConnected)
+          host.textContent="Weitere Clan-Daten derzeit nicht abrufbar. Bitte Anmeldung und Berechtigungen prüfen.";
+      }finally{
+        if(button.isConnected)button.disabled=false;
+      }
+    });
     e("statsFormSearch")?.addEventListener("input",ev=>{
       formSearch=ev.target.value;renderComparableForm();
     });
