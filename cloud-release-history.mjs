@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.19.1",
+    "releaseType": "patch",
+    "date": "2026-11-14",
+    "title": "ClashPerk-Daten sicher und übersichtlich abgleichen",
+    "description": "API- und ClashPerk-Angriffe werden bei eindeutig verifizierten Doppelmeldungen nur einmal gezählt. Missed-Exporte lassen sich nachreichen. Für unklare Kriegszuordnungen stoppt der Import, statt Ergebnisse zu vermischen."
+  },
+
+  {
     "version": "v1.19.0",
     "releaseType": "minor",
     "date": "2026-11-14",

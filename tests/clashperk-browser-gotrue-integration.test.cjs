@@ -264,8 +264,8 @@ test("Chromium/WebKit actual GoTrue login -> native Excel -> confirmed atomic Po
     const result=await upload(page,files(),
      "()=>/✓.*(?:neue Kriege|eigene Angriffe)/.test(document.getElementById('statsFeedback').textContent)");
     assert.equal(result.calls,1,"Exactly one real PostgREST RPC");
-    assert.match(result.confirmations[0],/2 Kriege/);
-    assert.match(result.confirmations[0],/1 lückenlos belegte Kriege/);
+    assert.match(result.confirmations[0],/2 normale CWs/);
+    assert.match(result.confirmations[0],/Vollständig belegte Kriege: 1/);
     assert.equal(result.width<=result.viewport+2,true,"No horizontal overflow");
     assert.equal((await currentRows(page,"cwl_stat_wars")).length,2);
     const hits=await currentRows(page,"cwl_stat_attacks");

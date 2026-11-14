@@ -315,3 +315,67 @@ export function parseClashPerkSheets(sheets,expectedClanTag){
   enemyAttacks:[...events.values()].filter(e=>!e.home).length,
   completeWars,missingWars,unmatchedMissed,ignoredRecentWars:recentWarIds.size,warnings};
 }
+
+// A /export missed workbook can also be uploaded *after* its attack logs.
+// Its clan is only a display name, not a verified clan tag: never create a
+// war from this file, and only match exact ClashPerk War IDs against this
+// tenant's already imported wars, with independent identity checks.
+export function hasClashPerkAttackSheets(sheets){
+ return sheets.some(sheet=>sameHeaders(sheet?.rows?.[0]||[],ATTACK_HEADERS));
+}
+export function parseClashPerkMissedOnly(sheets,expectedClanTag,existingWars=[]){
+ if(!validTag(tag(expectedClanTag)))throw Error("Kein gültiger Clash-Clan ausgewählt.");
+ const old=new Map(existingWars.filter(w=>w.source==="import"&&
+  /^cp:[0-9]+$/.test(String(w.war_key||""))).map(w=>[w.war_key,w]));
+ const matched=new Map(),missedMap=new Map(),endedMap=new Map();
+ let skipped=0,missedSheets=0;
+ for(const sheet of sheets){
+  const head=sheet?.rows?.[0]||[];
+  if(sameHeaders(head,MISSED_HEADERS)&&sheet.name==="Missed Attacks"){
+   missedSheets++;
+   for(const r of sheet.rows.slice(1)){
+    if(!r.length)continue;
+    const id=Number(r[4]),type=ownWarType(r[6]),size=Number(r[7]);
+    const count=Number(r[8]),playerTag=tag(r[1]),warKey=keyFor(id);
+    if(!integer(id,1,999999999999999)||!type||!validTag(playerTag)||
+       !integer(size,1,50)||!integer(count,1,type==="cwl"?1:2)||
+       !string(r[2])||!string(r[3]))
+      throw Error("Ungültiger ClashPerk-Missed-Eintrag.");
+    const ended=dateFromSerial(r[5]),war=old.get(warKey);
+    if(!war){skipped++;continue}
+    const sameOpponent=string(war.opponent_name).toLocaleLowerCase()===
+      string(r[3]).toLocaleLowerCase();
+    const timeSinceStart=Date.parse(ended)-Date.parse(war.started_at);
+    if(war.war_type!==type||Number(war.team_size)!==size||
+       !sameOpponent||!Number.isFinite(timeSinceStart)||
+       timeSinceStart<0||timeSinceStart>5*86400000)
+      throw Error("Missed-Datei und gespeicherter Krieg widersprechen sich (Kriegs-ID, Gegner, Größe oder Datum). Nichts wurde gespeichert.");
+    const priorEnd=endedMap.get(warKey);
+    if(priorEnd&&priorEnd!==ended)
+      throw Error("ClashPerk-Missed-Datei enthält widersprüchliche Kriegsdaten.");
+    endedMap.set(warKey,ended);
+    const key=warKey+"/"+playerTag,previous=missedMap.get(key);
+    if(previous&&previous.missed_count!==count)
+      throw Error("ClashPerk-Missed-Datei enthält widersprüchliche doppelte Einträge.");
+    if(!previous)missedMap.set(key,{
+      war_key:warKey,player_tag:playerTag,player_name:string(r[0]),missed_count:count
+    });
+    matched.set(warKey,war);
+   }
+  }else if(/^\d Missed Attacks$/.test(sheet.name||"")){
+   // Summary pivots are not individual missed events.
+  }else{
+   throw Error("Diese Datei ist kein eigenständiger ClashPerk-Missed-Export. Bitte den Attack-Log separat importieren.");
+  }
+ }
+ if(!missedSheets)throw Error("Kein ClashPerk-Tabellenblatt „Missed Attacks“ gefunden.");
+ if(!matched.size)throw Error(
+  "Kein passender Krieg vorhanden. Bitte zuerst die Attack-Logs desselben Clans importieren; verpasste Angriffe allein erzeugen keine Kriege.");
+ const wars=[...matched.values()].sort((a,b)=>a.started_at.localeCompare(b.started_at));
+ const missed=[...missedMap.values()];
+ const warnings=skipped?[skipped+
+  " Missed-Zeilen ohne passenden bereits gespeicherten ClashPerk-Krieg wurden übersprungen."]:[];
+ return {wars,attacks:[],missed,sourceAttacks:0,duplicates:0,
+  enemyAttacks:0,completeWars:0,missingWars:0,unmatchedMissed:skipped,
+  ignoredRecentWars:0,warnings,missedOnly:true};
+}

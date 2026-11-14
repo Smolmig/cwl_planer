@@ -19,6 +19,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.19.1] - 2026-11-14
+
+### Behoben
+- Gleiche physische Kriege können als offizielle API-WarTag und ClashPerk-Kriegs-ID doppelt vorliegen. Sind Gegner, Typ, Größe, Zeitnähe **und sämtliche Angriffssignaturen** eindeutig identisch, zeigt die Statistik nur einen Krieg und jeden Angriff einmal. Die Originaleinträge verbleiben unverändert in der Datenbank; das betrifft alle Statistik-/Form-/Verlaufsansichten.
+- Für zukünftige Excel-Uploads wird ein möglicher API-Krieg erst mit den offiziell gespeicherten Einzelangriffen abgeglichen. Ein zweites ClashPerk-Quellprotokoll wird bei bestätigter Identität für belegte Missed-Angriffe angenommen und nicht als neuer statistischer Krieg gezählt. Unklare Zuordnungen blockieren den Import.
+- Die am 14.11.2026 verifizierten **7 UF-2-Dubletten (100 doppelt gezählte Angriffe)** werden ohne Löschen von Tabellenzeilen in der Statistik-Auswertung normalisiert. Andere App-Profile mit demselben echten Clan-Tag bleiben strikt getrennt.
+- Ein `/export missed`-Export kann nun auch **allein nach bereits importierten Attack-Logs** eingelesen werden. Die 29 historischen UF-2-Kriege aus dem Nutzerbeispiel dienen nur als privates Testmotiv, keine Nutzerdaten werden im Repository gespeichert.
+- Für spätere Missed-Ergänzungen werden vorhandene Kriege nur anhand identischer ClashPerk-War-ID plus Gegner, Typ, Größe und Datum ergänzt. Unbekannte oder widersprüchliche Zeilen werden nicht zu neuen Kriegen umgedeutet; Cloud-API-Kriege und CWL-Pläne bleiben geschützt.
+- Der Vorschautext zeigt eigene und gegnerische Angriffe, neue/vorhandene Kriege und fehlende Nachweise in kurzen Zeilen. Fehler stehen direkt beim Upload und sind für Screenreader als Fehler erkennbar.
+
+### Hilfe
+- Vier Exportdateien empfohlen: Attack-Log Regular/CWL und Missed Regular/CWL. Ein gemeinsamer Missed-Export kann bei längerer Historie weniger Kriege abdecken. Die ursprünglichen Discord-Grenzen sind nicht als garantierter vollständiger History-Export zu verstehen.
+- Beschreibung ergänzt: Attack-Logs und Missed-Export dürfen **gemeinsam oder nacheinander** hochgeladen werden; ein Missed-Export alleine benötigt zuerst passend gespeicherte Angriffslogs.
+
 ## [1.19.0] - 2026-11-14
 
 ### Hinzugefügt
