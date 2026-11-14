@@ -584,4 +584,53 @@ begin
 end
 $$;
 reset role;
-select 'legacy global-to-per-player attack order: exact matching, subset, rollback and authorization passed' as result;
+
+-- A Missed-only follow-up must remain accepted for an older ClashPerk war.
+-- Without an accompanying Attack Log, historical attack PKs are untouched.
+-- The user can upload the full attack log later for safe canonicalization.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,opponent_tag,
+ opponent_name,source,finalized)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:185','normal',
+ '2026-01-01'::timestamptz+185*interval '1 day',
+ 2,'#2PYL','Older Missed-only Source','import',true);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction)
+values
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:185',
+ '#8PYL',11,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100),
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:185',
+ '#8PYL',45,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $
+declare payload jsonb; out jsonb;
+begin
+ payload:=jsonb_set(public.clashperk_test_payload('185'),
+    '{attacks}','[]'::jsonb);
+ out:=public.cwl_import_clashperk_canonical_atomic(
+   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',payload);
+ if out->>'extended'<>'1' or out->>'missed'<>'1' or
+    out->>'reconciledLegacyAttacks'<>'0' then
+   raise exception 'Missed-only reimport rejected: %',out;
+ end if;
+ if (select count(*) from public.cwl_stat_attacks
+      where war_key='cp:185' and attack_order in(11,45))<>2 or
+    (select count(*) from public.cwl_stat_missed
+      where war_key='cp:185' and player_tag='#QPYL'
+        and missed_count=2)<>1 then
+   raise exception 'Missed-only import incorrectly modified stored attack keys';
+ end if;
+ out:=public.cwl_import_clashperk_canonical_atomic(
+   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',payload);
+ if out->>'extended'<>'1' or
+    (select count(*) from public.cwl_stat_missed where war_key='cp:185')<>1
+ then raise exception 'Missed-only reupload was not idempotent'; end if;
+end
+$;
+reset role;
+
+select 'legacy global-to-per-player attack order and missed-only follow-ups: verified' as result;
