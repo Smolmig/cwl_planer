@@ -604,7 +604,7 @@ const stats=createCloudStats({
     m.cocSyncState!=="former"&&m.cocSyncState!=="kept")
     .map(m=>m.playerTag).filter(Boolean)||[],
   memberProfiles:storage.getProfile()?.members?.filter(m=>m.playerTag)
-    .map(m=>({playerTag:m.playerTag,name:m.name}))||[]})
+    .map(m=>({playerTag:m.playerTag,name:m.name,townHall:m.townHall}))||[]})
 });
 let currentWarOverview=null;
 const finishStartup=()=>window.CWLStartup?.finish?.();
