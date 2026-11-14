@@ -621,11 +621,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       "Fehlende Angriffe sind keine 0-%-Quote.";
     if($("statsScopeExplainer")){
       const normal=type==="cwl"?"":last==="all"?
-        "Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
+        (playerDays==="all"?"Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
+        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" normalen CWs im Zeitraum"):
         scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+
         " normalen CWs (Obergrenze: "+last+")";
       const league=type==="normal"?"":cwlSeasons==="all"?
-        "alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
+        (playerDays==="all"?"alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
+          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen im Zeitraum"):
         scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
       $("statsScopeExplainer").textContent=scopeInfo.selectedWars?
         [normal,league].filter(Boolean).join(" + ")+
@@ -747,7 +749,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const reportedMiss=p.missedComplete?String(p.missedKnown):
         p.missedKnown?"mind. "+p.missedKnown:"k. A.";
       const detailsOpen=openStatsPlayers.has(p.tag)?" open":"";
-      const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
+      const oneWar=type==="normal"&&last===1?
+        selectStatWars(wars,{type:"normal",last:1,days:playerDays})[0]:null;
       const recent=oneWar?attacks.filter(a=>a.war_key===oneWar.war_key&&cleanTag(a.attacker_tag)===cleanTag(p.tag))
         .sort((a,b)=>a.attack_order-b.attack_order):[];
       const memberProfile=(ctx.memberProfiles||[]).find(m=>
@@ -1395,16 +1398,20 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const parts=[];
     if(type!=="cwl"){
       parts.push(last==="all"?
-        (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
-          scopeInfo.allNormal===1?"1 abgeschlossener CW":
-          "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
+        (playerDays==="all"?
+          (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
+           scopeInfo.allNormal===1?"1 abgeschlossener CW":
+           "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
+          scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs"):
         scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs (Limit "+last+")");
     }
     if(type!=="normal"){
       parts.push(cwlSeasons==="all"?
-        (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
-          scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
-          "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
+        (playerDays==="all"?
+          (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
+           scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
+           "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
+          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen"):
         scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgängen");
     }
     if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=
