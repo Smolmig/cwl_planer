@@ -1,8 +1,10 @@
--- #292 | Replace the 8-hour metadata-only API skip with a server-verified
+-- #292 | Introduce a NEW, separately named verified-import RPC instead of
+-- changing behavior for cached clients of the old atomic importer.
+-- Replace the 8-hour metadata-only API skip with a server-verified
 -- same-war match. This is additive: original API and ClashPerk evidence
 -- remain intact, RLS/owner authorization and the atomic transaction remain.
 -- An ambiguous/partial match aborts the entire import, never guesses.
-create or replace function public.cwl_import_clashperk_atomic(
+create or replace function public.cwl_import_clashperk_verified_atomic(
  p_clan uuid,p_payload jsonb
 ) returns jsonb language plpgsql security invoker
 set search_path = ''
@@ -353,7 +355,7 @@ begin
 end
 $$;
 -- Never expose a privileged function through the implicit PUBLIC grant.
-revoke all on function public.cwl_import_clashperk_atomic(uuid,jsonb)
+revoke all on function public.cwl_import_clashperk_verified_atomic(uuid,jsonb)
  from public,anon,authenticated;
-grant execute on function public.cwl_import_clashperk_atomic(uuid,jsonb)
+grant execute on function public.cwl_import_clashperk_verified_atomic(uuid,jsonb)
  to authenticated;
