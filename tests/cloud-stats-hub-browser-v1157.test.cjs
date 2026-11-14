@@ -118,12 +118,12 @@ test("Stats hub navigation and measured RH table work in the browser at phone an
     assert.deepEqual(result.players.visible,["players"]);
     assert.equal(result.numbered,"1.");
     assert.match(result.playerScope,/2 ausgewählte/);
-    assert.match(result.originalSelection,/1 abgeschlossener CW/);
+    assert.match(result.originalSelection,/Gesamt · 1 CW/);
     assert.match(result.scopeAfter,/1 ausgewählte/);
     assert.deepEqual(result.form.visible,["form"]);
-    assert.match(result.formIntro,/Letzte 90 Tage/);
+    assert.match(result.formIntro,/Sortiert nach Formwert/);
     assert.match(result.formData,/Beispiel/);
-    assert.match(result.shortForm,/Letzte 30 Tage/);
+    assert.match(result.shortForm,/Sortiert nach Formwert/);
     assert.equal(result.thirtySelected,"true");
     assert.deepEqual(result.compare.visible,["compare"]);
     assert.match(result.compareScope,/2 abgeschlossene/);
