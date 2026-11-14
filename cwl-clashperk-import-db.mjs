@@ -107,13 +107,18 @@ export async function commitClashPerkMerge(sb,plan,{
   throw Error("Zu viele Daten für einen sicheren Import. Bitte kleinere Clan-/Zeiträume einzeln exportieren.");
  onProgress("Alle geprüften Kriege werden gemeinsam gespeichert …");
  if(!assertCurrent())throw Error("Clan gewechselt oder Berechtigung geändert. Bitte Import neu starten.");
- const {data,error}=await sb.rpc("cwl_import_clashperk_verified_atomic",{
+ const {data,error}=await sb.rpc("cwl_import_clashperk_canonical_atomic",{
   p_clan:clanId,p_payload:payload
  });
  if(error){
   if(error.code==="PGRST202"||error.code==="42883")
-   throw Error("Der verifizierte Excel-Import ist noch nicht auf dem Server verfügbar. Es wurden keine Daten übernommen.");
-  throw Error("Import nicht übernommen: "+String(error.message||"Datenbankfehler").slice(0,230));
+   throw Error("Der aktualisierte ClashPerk-Import ist noch nicht auf dem Server verfügbar. Es wurden keine Daten übernommen.");
+  const details=String(error.message||"Datenbankfehler").slice(0,230);
+  if(details.includes("Stored ClashPerk attack evidence differs")||
+     details.includes("Cannot prove complete legacy attack mapping"))
+    throw Error("Ein früher gespeicherter Angriff stimmt nicht mit diesem Excel-Export überein. "+
+      "Bitte den betreffenden Krieg prüfen. Nichts wurde übernommen. ("+details+")");
+  throw Error("Import nicht übernommen: "+details);
  }
  if(!data||typeof data!=="object"||!Number.isInteger(data.inserted)||
     !Number.isInteger(data.extended)||!Number.isInteger(data.attacks)||
