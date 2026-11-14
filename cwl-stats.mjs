@@ -750,15 +750,25 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const oneWar=type==="normal"&&last===1?selectStatWars(wars,{type:"normal",last:1})[0]:null;
       const recent=oneWar?attacks.filter(a=>a.war_key===oneWar.war_key&&cleanTag(a.attacker_tag)===cleanTag(p.tag))
         .sort((a,b)=>a.attack_order-b.attack_order):[];
+      const memberProfile=(ctx.memberProfiles||[]).find(m=>
+        cleanTag(m?.playerTag)===cleanTag(p.tag));
+      const active=new Set((ctx.memberTags||[]).map(cleanTag)).has(cleanTag(p.tag));
+      const rosterTh=active&&Number.isInteger(memberProfile?.townHall)&&
+        memberProfile.townHall>=3&&memberProfile.townHall<=20?
+        memberProfile.townHall:null;
+      const shownTh=rosterTh??p.th;
+      const thSource=rosterTh!==null?
+        "RH aus dem gespeicherten aktuellen Clanprofil; nicht live geprüft":
+        "Historisches RH aus dem jüngsten Angriff dieser Auswahl";
       const starChips=oneWar?"<small class='stats-attack-chips' aria-label='Einzelangriffe'>"+
         (recent.length?recent.map(a=>"<span title='"+esc((a.defender_name||"Gegner")+" · "+a.destruction+"% Zerstörung")+
           "'>"+("★".repeat(a.stars)+"☆".repeat(3-a.stars))+"<sup>"+a.attack_order+"</sup></span>").join(""):
           "<span>Kein Angriff</span>")+"</small>":"";
       return "<div class='stats-player-row'>"+
-        "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-row-number' aria-label='Listenposition "+(index+1)+"'>"+(index+1)+".</span><span class='stats-th'>"+
-          (p.th&&Number.isInteger(p.th)&&p.th>=1&&p.th<=18?
-           "<img class='stats-th-icon' src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+p.th+".webp' width='28' height='28' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
-          "<small>"+(p.th?"RH"+p.th:"RH?")+"</small></span><div class='stats-name'>"+
+        "<div class='stats-player' title='"+esc(p.tag)+"'><span class='stats-row-number' aria-label='Listenposition "+(index+1)+"'>"+(index+1)+".</span><span class='stats-th' title='"+esc(thSource)+"'>"+
+          (shownTh&&Number.isInteger(shownTh)&&shownTh>=1&&shownTh<=20?
+           "<img class='stats-th-icon' src='https://assets.clashk.ing/buildings/home-village/town_hall/level_"+shownTh+".webp' width='28' height='28' loading='lazy' decoding='async' alt='' onerror='this.remove()'>":"")+
+          "<small>"+(shownTh?"RH"+shownTh:"RH?")+"</small></span><div class='stats-name'>"+
           "<b>"+esc(p.name)+"</b>"+(p.former?"<small>Ehemals</small>":"")+"</div></div>"+
         "<div class='stats-hit-cell'><small class='stats-mobile-label'>3★-Quote</small><strong class='stats-rate'>"+pct(p.hitRate)+"</strong>"+
         "<small class='stats-rate-avg' title='Durchschnittliche Sterne pro Angriff'>"+
