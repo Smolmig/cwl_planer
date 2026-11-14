@@ -125,14 +125,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
     if(desc)desc.textContent="Letzte "+formWindow+" Tage · "+usable+
-      " Spieler mit vergleichbaren Angriffen · "+
+      " mit gleich-RH-Angriffen · "+
       unassessed+" ohne gleich-RH-Angriffsquote. "+
       (formSort==="evidence"?
-        "Formwert: 65 % konservativ bewertete 3★-Leistung, 35 % belegte Zuverlässigkeit. ":
-        formSort==="hitRate"?"Nach reiner 3★-Quote sortiert (auch bei kleinen Stichproben). ":
-        formSort==="reliability"?"Nach nachgewiesener Zuverlässigkeit sortiert. ":
-        formSort==="attacks"?"Nach Angriffsmenge sortiert. ":"Alphabetisch sortiert. ")+
-      "Fehlende Nachweise erzeugen keinen Strafwert.";
+        "Formwert: 65 % Leistung, 35 % belegte Zuverlässigkeit. ":
+        formSort==="hitRate"?"Nach reiner 3★-Quote sortiert. ":
+        formSort==="reliability"?"Nach Zuverlässigkeit sortiert. ":
+        formSort==="attacks"?"Nach Angriffszahl sortiert. ":"Alphabetisch sortiert. ")+
+      "Keine Rangliste der Spielerstärke.";
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
       lastFormRowsVersion>=0&&lastFormRowsVersion!==version&&lastFormRowsClan===ctx.clanId;
     const topMargin=Math.max(0,document.querySelector(".topbar")
