@@ -43,14 +43,14 @@ $$;
 do $$
 begin
  if (select p.prosecdef from pg_proc p
-     where p.oid='public.cwl_import_clashperk_atomic(uuid,jsonb)'::regprocedure) then
+     where p.oid='public.cwl_import_clashperk_verified_atomic(uuid,jsonb)'::regprocedure) then
   raise exception 'Unsafe SECURITY DEFINER import';
  end if;
- if has_function_privilege('anon','public.cwl_import_clashperk_atomic(uuid,jsonb)','EXECUTE')
- or has_function_privilege('public','public.cwl_import_clashperk_atomic(uuid,jsonb)','EXECUTE') then
+ if has_function_privilege('anon','public.cwl_import_clashperk_verified_atomic(uuid,jsonb)','EXECUTE')
+ or has_function_privilege('public','public.cwl_import_clashperk_verified_atomic(uuid,jsonb)','EXECUTE') then
   raise exception 'Public import EXECUTE grant';
  end if;
- if not has_function_privilege('authenticated','public.cwl_import_clashperk_atomic(uuid,jsonb)','EXECUTE') then
+ if not has_function_privilege('authenticated','public.cwl_import_clashperk_verified_atomic(uuid,jsonb)','EXECUTE') then
   raise exception 'Editor cannot call atomic import RPC';
  end if;
 end
@@ -61,7 +61,7 @@ set request.jwt.claim.sub='44444444-4444-4444-8444-444444444444';
 do $$
 begin
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
    public.clashperk_test_payload('100'));
   raise exception 'Viewer was incorrectly allowed to write';
@@ -74,7 +74,7 @@ set request.jwt.claim.sub='22222222-2222-4222-8222-222222222222';
 do $$
 declare v jsonb;
 begin
- v:=public.cwl_import_clashperk_atomic(
+ v:=public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('100'));
  if v->>'inserted'<>'1' or v->>'attacks'<>'2' or
@@ -87,7 +87,7 @@ begin
   raise exception 'War not finalized with verified attack slots';
  end if;
  -- Reupload is idempotent; neither attacks nor misses double-count.
- v:=public.cwl_import_clashperk_atomic(
+ v:=public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('100'));
  if v->>'extended'<>'1' then
@@ -107,7 +107,7 @@ begin
  v:=pg_catalog.jsonb_set(public.clashperk_test_payload('101'),
   '{missed,0,missed_count}','3'::jsonb);
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
   raise exception 'Expected late Missed validation failure';
  exception when sqlstate '22023' then null;
@@ -127,7 +127,7 @@ begin
  v:=pg_catalog.jsonb_set(public.clashperk_test_payload('100'),
   '{attacks,0,stars}','0'::jsonb);
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
   raise exception 'Expected conflicting evidence failure';
  exception when unique_violation then null;
@@ -147,13 +147,13 @@ begin
  v:=public.clashperk_test_payload('102');
  v:=pg_catalog.jsonb_set(v,'{attacks}',jsonb_build_array(v#>'{attacks,0}'));
  v:=pg_catalog.jsonb_set(v,'{missed}','[]'::jsonb);
- perform public.cwl_import_clashperk_atomic(
+ perform public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
  if not exists(select 1 from public.cwl_stat_wars
   where war_key='cp:102' and finalized and not missed_log_complete) then
   raise exception 'Partial war incorrectly claimed zero missing attacks';
  end if;
- perform public.cwl_import_clashperk_atomic(
+ perform public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('102'));
  if not exists(select 1 from public.cwl_stat_wars
@@ -170,7 +170,7 @@ $$;
 do $$
 begin
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
    public.clashperk_test_payload('103'));
   raise exception 'Tenant hop was incorrectly allowed';
@@ -208,7 +208,7 @@ set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 do $
 declare v jsonb;
 begin
- v:=public.cwl_import_clashperk_atomic(
+ v:=public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('104'));
  if v->>'inserted'<>'1' or v->>'skippedApi'<>'0' or
@@ -220,7 +220,7 @@ begin
     (select count(*) from public.cwl_stat_attacks where war_key='normal:api-collision')<>2 then
   raise exception 'API/ClashPerk source evidence not retained';
  end if;
- v:=public.cwl_import_clashperk_atomic(
+ v:=public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('104'));
  if v->>'extended'<>'1' then
@@ -261,7 +261,7 @@ begin
  v:=pg_catalog.jsonb_set(v,'{attacks,1,defender_tag}','"#2QLL"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{attacks,1,destruction}','75'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{missed}','[]'::jsonb);
- out:=public.cwl_import_clashperk_atomic(
+ out:=public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
  if out->>'inserted'<>'1' or out->>'attacks'<>'2' then
   raise exception '24-hour verified CWL alias was rejected: %',out;
@@ -292,7 +292,7 @@ set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 do $
 begin
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
    public.clashperk_test_payload('110'));
   raise exception 'Unsafe merge of partial API evidence';
@@ -308,7 +308,7 @@ $;
 do $$
 begin
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
    public.clashperk_test_payload('105','#2JGC2J8VG'));
   raise exception 'Editor could write other tenant';
@@ -322,7 +322,7 @@ set request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
 do $$
 declare v jsonb;
 begin
- v:=public.cwl_import_clashperk_atomic(
+ v:=public.cwl_import_clashperk_verified_atomic(
   'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   public.clashperk_test_payload('106','#2JGC2J8VG'));
  if v->>'inserted'<>'1' then
@@ -367,7 +367,7 @@ begin
  v:=pg_catalog.jsonb_set(v,'{wars,0,war_type}','"cwl"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{attacks}',jsonb_build_array(v#>'{attacks,0}'));
  v:=pg_catalog.jsonb_set(v,'{missed,0,missed_count}','1'::jsonb);
- out:=public.cwl_import_clashperk_atomic(
+ out:=public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
  if out->>'completeWars'<>'1' or
     (select war_type from public.cwl_stat_wars where war_key='cp:107')<>'cwl' or
@@ -378,7 +378,7 @@ begin
  v:=pg_catalog.jsonb_set(v,'{wars,0,war_type}','"cwl"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{missed,0,missed_count}','1'::jsonb);
  begin
-  perform public.cwl_import_clashperk_atomic(
+  perform public.cwl_import_clashperk_verified_atomic(
    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
   raise exception 'Incorrectly accepted second CWL attack';
  exception when sqlstate '22023' then null;
