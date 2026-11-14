@@ -1,5 +1,5 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.0";
-import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.20.1";
+import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
 import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates,isPotentialClashPerkApiOverlap} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
