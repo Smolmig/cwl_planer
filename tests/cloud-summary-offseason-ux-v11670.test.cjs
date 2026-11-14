@@ -83,8 +83,8 @@ test("off-season archive button navigates to the real group and plan archives wi
   assert.match(app,/#view-plan\.plan-postseason-mode ~ #view-summary \.summary-live-card/);
   assert.match(app,/#view-plan\.plan-between-cwl-mode ~ #view-summary \.summary-live-card/);
   assert.match(app,/Einsätze zwischen den CWLs/);
-  assert.match(read("cloud-release-history.mjs"),/"version": "v1\.20\.0"/);
-  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.20.0");
+  assert.match(read("cloud-release-history.mjs"),/"version": "v1\.20\.1"/);
+  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.20.1");
   assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
  }finally{dom.window.close()}
 });
