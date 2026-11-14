@@ -42,6 +42,15 @@ test("UF 2 synthetic regression: seven duplicated CWL wars and 100 duplicate att
  assert.equal(normalized.missedEvents.reduce((n,m)=>n+m.missed_count,0),5);
  assert.equal(normalized.wars.every(w=>w.source==="api"&&w.missed_log_complete===true),true);
  assert.equal(normalized.conflicts.length,0);
+ const core=await import(pathToFileURL(path.join(__dirname,"..","cwl-stats-core.mjs")).href);
+ const summary=core.computeWarStats(normalized.wars,normalized.attacks,{
+  type:"all",last:"all",cwlSeasons:"all",missedEvents:normalized.missedEvents
+ });
+ assert.equal(summary.wars,7);
+ assert.equal(summary.attacks,100);
+ assert.equal(summary.misses,5);
+ assert.equal(summary.complete,true);
+ assert.equal(summary.missingCoverage,false);
  assert.equal(normalized.aliases.get("cp:7000"),"cwl:#R0");
  assert.deepEqual(
   normalized.wars.map(w=>w.started_at),
