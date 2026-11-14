@@ -7,7 +7,7 @@ export const validPlayerTag=tag=>/^#[0289PYLQGRJCUV]{3,15}$/.test(tag);
 export const validClanId=id=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id||""));
 export function projectCurrentPlayer(raw,requestedTag,checkedAt){
  const tag=cleanPlayerTag(raw?.tag),wanted=cleanPlayerTag(requestedTag);
- const th=Number(raw?.townHallLevel);
+ const th=raw?.townHallLevel;
  if(!validPlayerTag(tag)||tag!==wanted||
    !Number.isInteger(th)||th<1||th>25)return null;
  const clanTag=cleanPlayerTag(raw?.clan?.tag);
