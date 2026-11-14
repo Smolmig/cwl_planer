@@ -10,7 +10,8 @@ const read=name=>fs.readFileSync(path.join(root,name),"utf8");
 const css=read("cloud-app.html").match(/<style>([\s\S]*?)<\/style>/)?.[1];
 assert.ok(css,"Cloud CSS must exist");
 const modules=["cwl-stats.mjs","cwl-stats-core.mjs","cwl-live-core.mjs","cwl-comparable-form.mjs",
- "cwl-clashperk-xlsx.mjs","cwl-clashperk-import-db.mjs"];
+ "cwl-clashperk-xlsx.mjs","cwl-clashperk-import-db.mjs",
+  "cwl-stats-source-reconciliation.mjs"];
 async function fixtureMain(){
  const wars=Array.from({length:40},(_,i)=>({
   clan_id:"clan-a",war_key:"normal:"+i,war_type:"normal",
