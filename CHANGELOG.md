@@ -19,6 +19,22 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.20.1] - 2026-11-14
+
+### Verbessert
+- Mobile Spielerstatistik: kompakte, klar beschriftete Datenbasis, Zeit- und CW/CWL-Filter untereinander statt hoher verschachtelter Boxen. Anzahl und Zeitfenster sind im Aufklappmenü nachvollziehbar.
+- Spielerform: die **tatsächliche Sortierkennzahl** steht als große Hauptzahl rechts; die 3★-Quote ist sekundär und eindeutig beschriftet. Eine 100%-Quote aus wenigen Angriffen wird dadurch nicht länger mit Platz 1 verwechselt.
+- Doppelte Anzeige „Zuverlässigkeit offen“ entfernt. Fehlen Missed-Nachweise, heißt die Hauptkennzahl klar „Leistungswert“, nicht „Formwert“. Historisches Datum, RH-Verhältnisse und Ø Sterne sind je Spieler unter „Angriffsdetails“ einklappbar.
+- Sortierung nach bloßer Anzahl gleich-RH-Angriffe aus dem Spielerform-Menü entfernt. Detailmethodik und mobile Zeitfenster gekürzt.
+
+### Neues sicheres Teilpaket für #212
+- Unter den Spieler-Angriffsdetails lassen sich **auf ausdrücklichen Klick** weitere dokumentierte Clanprofile mit identischem Player-Tag aus **ausschließlich bereits berechtigten App-Clans** nachschlagen. RLS bleibt zwingend aktiv, kein Service-Key, keine Datenbankmigration, keine tenantprivaten Notizen oder Rollen.
+- Andere Clanprofile werden **getrennt** angezeigt; keine ungeprüfte globale Summe oder automatische Formwert-Übertragung. Letztes RH bleibt klar als *historischer Angriffswert* gekennzeichnet, nicht als Live-API-Profil. Unterschiedliche Quellen können die Rohwerte beeinflussen und werden markiert.
+- Datenlücken, fehlende Rechte und Clanwechsel während eines Abrufs werden defensiv behandelt. Echte globale Share-Projektion mit Freigabe-/Widerrufsregeln bleibt Bestandteil von #212.
+
+### Qualität
+- Neue Testfälle für mobile Filterbeschriftung, Ranking-Semantik, fehlende Zuverlässigkeit, Berechtigungsgrenzen und Player-Tag-Zuordnung. Hilfe-Seite und Update-History aktualisiert.
+
 ## [1.20.0] - 2026-11-14
 
 ### Hinzugefügt
