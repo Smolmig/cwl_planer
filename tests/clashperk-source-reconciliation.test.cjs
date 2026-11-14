@@ -123,3 +123,32 @@ test("No attack evidence, no automatic alias: an old enemy name is not proof",as
  assert.equal(result.aliases.size,0);
  assert.equal(result.conflicts.length,1);
 });
+
+test("Import preview counts verified API overlap as a known logical war while preserving missed source",async()=>{
+ const {classifyClashPerkApiCandidates}=await mod();
+ const {pathToFileURL}=require("node:url");
+ const db=await import(pathToFileURL(path.join(__dirname,"..","cwl-clashperk-import-db.mjs")).href);
+ const official=war(40,"api","cwl");
+ const cp=war(40,"import","cwl");
+ const apiHits=hits(official.war_key,8),cpHits=hits(cp.war_key,8);
+ const parsed={wars:[cp],attacks:cpHits,missed:misses(cp.war_key,1)};
+ const verified=classifyClashPerkApiCandidates(parsed,[official],apiHits);
+ const plan=db.planClashPerkMerge(parsed,[official],{
+  verifiedApiPairs:verified.verified,unverifiedCandidates:verified.conflicts});
+ assert.equal(plan.conflicts.length,0);
+ assert.equal(plan.insert.length,1); // physical source evidence retained
+ assert.equal(plan.logicalNew,0); // BUT no new logical war in the statistics
+ assert.deepEqual(plan.apiMatched,[cp.war_key]);
+ assert.equal(plan.attacks.length,8);
+ assert.equal(plan.missed.length,1);
+ const repeated=db.planClashPerkMerge(parsed,[official,cp],{
+  verifiedApiPairs:verified.verified});
+ assert.equal(repeated.insert.length,0);
+ assert.equal(repeated.extend.length,1);
+ assert.equal(repeated.logicalNew,0);
+ assert.equal(repeated.apiMatched.length,1);
+ const unsafe=db.planClashPerkMerge(parsed,[official],{
+  unverifiedCandidates:[{importKey:cp.war_key,reason:"insufficient_or_different_attacks"}]});
+ assert.equal(unsafe.insert.length,0);
+ assert.deepEqual(unsafe.conflicts,[cp.war_key]);
+});
