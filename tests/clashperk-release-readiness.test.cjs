@@ -50,9 +50,9 @@ test("The direct ClashPerk upload is explained in-app without requiring manual J
  assert.match(browser,/commitClashPerkMerge/);
  assert.match(browser,/await load\(true\)/);
 });
-test("ClashPerk follow-up is v1.19.1 without automatic DB migration",()=>{
+test("ClashPerk v1.19.2 has an independent verified SQL RPC with unchanged legacy RPC",()=>{
  const v=JSON.parse(read("cloud-version.json"));
- assert.equal(v.version,"v1.19.1");
+ assert.equal(v.version,"v1.19.2");
  // In this branch we create a migration file but NEVER run the production
  // supabase db push/deploy commands, and no production credentials are stored.
  const jobs=[".github/workflows/clashperk-local-supabase-auth-ci.yml"];
@@ -81,4 +81,18 @@ test("Discord help recommends four original exports after full UF 2 coverage tes
  assert.match(helpPage,/zweimal <strong>\/export missed<\/strong>/);
  const notes=read("docs/CLASHPERK_XLSX_IMPORT_IMPLEMENTATION_DRAFT.md");
  assert.match(notes,/vier separaten Dateien/);
+});
+
+test("v1.19.2 verified RPC is additive and refuses unproven API collisions",()=>{
+ const sql=read("supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql");
+ assert.match(sql,/create or replace function public\.cwl_import_clashperk_verified_atomic\(/);
+ assert.doesNotMatch(sql,/create or replace function public\.cwl_import_clashperk_atomic\(/);
+ assert.match(sql,/v_payload_attack_count<2/);
+ assert.match(sql,/v_verified_api_count<>1/);
+ assert.match(sql,/v_matched_api_key=any\(v_claimed_api_keys\)/);
+ assert.match(sql,/security invoker/i);
+ assert.match(sql,/revoke all on function public\.cwl_import_clashperk_verified_atomic/);
+ const client=read("cwl-clashperk-import-db.mjs");
+ assert.match(client,/sb\.rpc\("cwl_import_clashperk_verified_atomic"/);
+ assert.doesNotMatch(client,/sb\.rpc\("cwl_import_clashperk_atomic"/);
 });
