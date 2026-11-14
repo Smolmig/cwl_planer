@@ -3950,6 +3950,13 @@ html.cloud-startup-pending .cloud-startup-splash{
         <details class="stats-period" id="statsPeriodConfig">
           <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
           <div class="stats-period-options">
+            <div class="field"><label for="statsPlayerDays">Zeitraum</label>
+              <select id="statsPlayerDays"><option value="all" selected>Alle erfassten Zeiträume</option>
+                <option value="30">Letzte 30 Tage</option>
+                <option value="90">Letzte 90 Tage</option>
+                <option value="180">Letzte 180 Tage</option>
+                <option value="365">Letzte 365 Tage</option>
+              </select></div>
             <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
               <option value="1">Letzter 1 CW</option><option value="2">Letzte 2 CWs</option>
               <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
@@ -3967,7 +3974,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     </div>
     <div class="stats-query-explainer" id="statsScopeExplainer" role="status" aria-live="polite"></div>
     <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
-    <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Kriegszeitraum. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
+    <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Zeitraum oder in den gewählten Kriegen. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
     <details class="stats-explain" id="statsExplain"><summary>Wie wird hier sortiert?</summary>
       <p>Standardmäßig wird nach Anzahl der dokumentierten Angriffe sortiert. Bei jeder anderen Sortierung gilt exakt die oben angezeigte Kriegsmenge. Die Nummern sind Listenpositionen und keine Aussage über Spielerstärke. Eine 100%-Quote aus zwei Angriffen ist weniger belastbar als eine Quote aus vielen Angriffen. Die unabhängige Bewertung der jüngeren Form findest du unter „Spielerform“.</p>
       <p>Alle sichtbaren Werte beziehen sich auf die gewählten Kriege. Gegnerrathaus, Basis-Schwierigkeit, Mirror und Angriffsrolle unterscheiden sich weiterhin; diese Tabelle ist ein Rohdatenvergleich und keine berechnete Stärke-Rangliste.</p>
@@ -3996,17 +4003,17 @@ html.cloud-startup-pending .cloud-startup-splash{
       <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
       <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
     </div>
-    <p class="stats-reading-copy">Die 3★-Quote zählt nur Angriffe gegen Gegner mit <strong>derselben Rathausstufe</strong>. Bei wenigen Angriffen ist sie weniger aussagekräftig.</p>
+    <p class="stats-reading-copy">Die 3★-Quote zählt nur Angriffe gegen <strong>dasselbe RH</strong>. Der neue <strong>Formwert</strong> berücksichtigt die Stichprobengröße und belegte Zuverlässigkeit. Unbekannte Fehlangriffe zählen nicht als Fehler.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Angriffsmenge &amp; 3★-Quote</option><option value="hitRate">3★-Quote (auch bei wenigen Angriffen)</option><option value="attacks">Angriffe auf gleiches RH</option><option value="name">Spielername (A–Z)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (Leistung &amp; Zuverlässigkeit)</option><option value="hitRate">Reine 3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="attacks">Angriffe auf gleiches RH</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
     <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
-      <p>Die Fenster sind feste <strong>Kalendertage</strong> ab dem aktuellen Datum und verwenden alle verfügbaren abgeschlossenen CWs und CWL-Tage im ausgewählten Clan. Sie sind vollständig unabhängig vom Zeitraum unter Spielerstatistik. Aktuelle Clanmitglieder ohne dokumentierten Angriff bleiben mit <strong>„Keine Daten“</strong> in der Spielerform sichtbar; das bedeutet weder 0 % noch einen versäumten Angriff.</p>
-      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Die <strong>Standard-Sortierung</strong> trennt Datenmengen ab 15, 6–14, 1–5 und 0 Angriffen; innerhalb dieser Gruppen wird nach der echten 3★-Quote sortiert. Du kannst die reine Quote ausdrücklich wählen. 100 % aus 2 Angriffen sind nicht so aussagekräftig wie 90 % aus 30 – die Gruppen sind aber keine statistische Spielstärkebewertung. Angriffe gegen niedrigere/höhere oder unbekannte Rathausstufen zählen hier nicht. 0 belegte Angriffe heißen „keine Daten“, nicht 0 %.</p>
-      <p>Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
+      <p>Die Fenster sind feste <strong>Kalendertage</strong> ab heute und verwenden dokumentierte abgeschlossene CWs und CWL-Tage des ausgewählten Clans, unabhängig von den Filtern unter Spielerstatistik. Ohne belegte Angriffe und Pflichtslots bleibt die Anzeige <strong>„Keine Daten“</strong>; es werden keine Fehlschläge erfunden.</p>
+      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Der <strong>Formwert</strong> (0–100) besteht aus 65 % vorsichtig stichprobenbereinigter 3★-Leistung (Wilson-Untergrenze mit z=1,28) und 35 % <strong>Zuverlässigkeit</strong> (durchgeführte / nachweislich verfügbare Pflichtangriffe). Ein verpasster Pflichtangriff beeinflusst nur die Zuverlässigkeit, wird nicht als ausgeführter 0★-Angriff ausgegeben. Sind Missed-Daten unvollständig, zeigen wir statt eines erfundenen Formwerts nur den Leistungswert mit dem Hinweis „Zuverlässigkeit offen“. Ein Formwert ist kein prognostizierter 3★-Erfolg und berücksichtigt noch keine echten Mirror-/First-Hit-Schwierigkeiten. Die reine Quote kann separat sortiert werden. 100 % aus zwei Angriffen sind weniger belastbar als viele dokumentierte Angriffe. Angriffe gegen niedrigere/höhere oder unbekannte Rathausstufen zählen hier nicht. 0 belegte Angriffe heißen „keine Daten“, nicht 0 %.</p>
+      <p>Die Spielerstatistik erlaubt zusätzlich 30/90/180/365 Tage oder alle Kriege. Tages- und Kriegsanzahlfilter gelten gemeinsam, der Clanüberblick bleibt davon unberührt. Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
     </details>
   </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
