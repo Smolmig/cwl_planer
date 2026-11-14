@@ -199,7 +199,7 @@ test("Raw statistics never inherit hidden form ranking or a nested last-ten-war 
  assert.match(html,/stats-player-details/);
  assert.doesNotMatch(html,/option value="performance"/);
  assert.doesNotMatch(html,/option value="lastTen"/);
- assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons\}\)/);
+ assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons,days:playerDays\}\)/);
  assert.match(ui,/computePlayerFormWindows/);
  assert.match(ui,/stats-player-details/);
 });
