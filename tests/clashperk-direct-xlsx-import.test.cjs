@@ -164,7 +164,7 @@ test("repeated Excel imports use exactly ONE RPC with tenant/role guard, never c
  });
  assert.equal(result.extended,1);
  assert.equal(calls.length,1);
- assert.equal(calls[0].name,"cwl_import_clashperk_atomic");
+ assert.equal(calls[0].name,"cwl_import_clashperk_verified_atomic");
  assert.equal(calls[0].args.p_clan,"synthetic-clan-id");
  assert.equal(calls[0].args.p_payload.clanTag,tag);
  assert.equal(calls[0].args.p_payload.wars.length,1);
