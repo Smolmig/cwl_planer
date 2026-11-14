@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.22.1] - 2026-11-14
+
+### Behoben
+- ClashPerk-Import gegen bereits per API erfasste CW-/CWL-Kriege: Die neue, zusätzliche serverseitige Importfunktion prüft komplette Angriffssignaturen, bevor sie denselben physischen Krieg zuordnet. Alte Zeitstempel-Unterschiede von 24 Stunden werden als Kandidaten erkannt, nicht als Beweis.
+- Nachweislich identische Original-Exporte und Missed-Einträge bleiben als Quellen erhalten, werden in der Statistik aber nicht doppelt gezählt. Uneindeutige, teilweise oder widersprüchliche Kriege brechen den Import vollständig ab.
+- Ältere importierte CWs und CWL-Tage mit historisch falscher Kennzeichnung „nicht abgeschlossen“ werden nur dann in der Statistik als beendet berücksichtigt, wenn das belegte Kriegsdatum mindestens 72 Stunden zurückliegt. Ihre Missed-Vollständigkeit wird ausschließlich aus belegten Pflichtangriffen neu bewertet.
+- Existing API-/CWL-Ergebnisse, Planung und tenantbezogene Rechte bleiben erhalten.
+
+### Hilfe
+- Der Importabgleich und die Grenzen fehlender historischer Angriffsnachweise sind in der integrierten Hilfe erklärt. Version, Changelog und Update-Verlauf synchronisiert.
+
+
 ## [1.22.0] - 2026-11-14
 
 ### Neu
