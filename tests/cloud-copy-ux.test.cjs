@@ -19,7 +19,7 @@ test("Cloud user-facing text is consistent with the statistics and actual featur
  assert.match(stats,/Eine CWL-Aufstellung allein ist kein Nachweis/);
  assert.doesNotMatch(html,/>Hit Rate</);
  assert.match(html,/auf bis zu sieben CWL-Kriegstage/);
- assert.match(html,/Neu in v1\.19\.1/);
+ assert.match(html,/Neu in v1\.19\.2/);
 });
 
 test("Every Cloud user decision uses the planner's app-native modal",()=>{
@@ -45,9 +45,9 @@ test("UX release metadata and cloud app references agree without changing offlin
  const html=read("cloud-app.html"),sync=read("cloud-sync.mjs");
  const version=JSON.parse(read("cloud-version.json"));
  assert.equal(version.version,"v1.19.2");
- assert.match(html,/const APP_VERSION="v1\.19\.1";/);
- assert.match(html,/cloud-sync\.mjs\?v=1\.19\.1/);
- assert.match(sync,/cloud-backups\.mjs\?v=1\.19\.1/);
+ assert.match(html,/const APP_VERSION="v1\.19\.2";/);
+ assert.match(html,/cloud-sync\.mjs\?v=1\.19\.2/);
+ assert.match(sync,/cloud-backups\.mjs\?v=1\.19\.2/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
  assert.match(read("CHANGELOG.md"),/\[1\.3\.8\]/);
 });
