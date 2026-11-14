@@ -389,12 +389,50 @@ begin
  end if;
 end
 $$;
+-- A historical import can have a stale true completeness marker even
+-- though only part of the roster is evidenced. A verified reimport must
+-- recompute from actual slots and remove that false claim.
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $
+declare v jsonb;
+begin
+ v:=public.clashperk_test_payload('150');
+ v:=pg_catalog.jsonb_set(v,'{attacks}',jsonb_build_array(v#>'{attacks,0}'));
+ v:=pg_catalog.jsonb_set(v,'{missed}','[]'::jsonb);
+ perform public.cwl_import_clashperk_verified_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
+end
+$;
+reset role;
+update public.cwl_stat_wars set
+ missed_log_complete=true,roster_tags='["#8PYL"]'::jsonb
+where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+ and war_key='cp:150';
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $
+declare v jsonb;
+begin
+ v:=public.clashperk_test_payload('150');
+ v:=pg_catalog.jsonb_set(v,'{attacks}',jsonb_build_array(v#>'{attacks,0}'));
+ v:=pg_catalog.jsonb_set(v,'{missed}','[]'::jsonb);
+ perform public.cwl_import_clashperk_verified_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:150'
+  and (missed_log_complete or roster_tags is not null or not finalized)) then
+  raise exception 'Stale imported completeness was not safely recalculated';
+ end if;
+end
+$;
 reset role;
 
-do $$
+reset role;
+
+do $
 begin
  if (select count(*) from public.cwl_stat_wars
-     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>8 then
+     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>9 then
   raise exception 'Unexpected main tenant war count';
  end if;
  if (select count(*) from public.cwl_stat_wars
