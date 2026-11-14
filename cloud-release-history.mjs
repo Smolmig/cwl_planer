@@ -7,8 +7,8 @@ export const releaseHistory = [
     "version": "v1.19.1",
     "releaseType": "patch",
     "date": "2026-11-14",
-    "title": "ClashPerk: Verpasste Angriffe nachträglich ergänzen",
-    "description": "Missed-Attacks-Excel-Dateien lassen sich nach den Angriffsexporten einzeln nachreichen. Der Import erklärt Zahlen und Fehler direkt am Upload; Kriege ohne eindeutige Zuordnung bleiben geschützt."
+    "title": "ClashPerk-Daten sicher und übersichtlich abgleichen",
+    "description": "API- und ClashPerk-Angriffe werden bei eindeutig verifizierten Doppelmeldungen nur einmal gezählt. Missed-Exporte lassen sich nachreichen. Für unklare Kriegszuordnungen stoppt der Import, statt Ergebnisse zu vermischen."
   },
 
   {
