@@ -630,22 +630,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       (playerDays==="all"?"Kein zusätzlicher Tagesfilter.":"Zeitraum: letzte "+playerDays+" Tage."):
       "Für diese Auswahl sind noch keine abgeschlossenen Kriege bzw. CWL-Tage gespeichert. "+
       "Fehlende Angriffe sind keine 0-%-Quote.";
-    if($("statsScopeExplainer")){
-      const normal=type==="cwl"?"":last==="all"?
-        (playerDays==="all"?"Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" normalen CWs im Zeitraum"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+
-        " normalen CWs (Obergrenze: "+last+")";
-      const league=type==="normal"?"":cwlSeasons==="all"?
-        (playerDays==="all"?"alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
-          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen im Zeitraum"):
-        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
-      $("statsScopeExplainer").textContent=scopeInfo.selectedWars?
-        [normal,league].filter(Boolean).join(" + ")+
-        (playerDays==="all"?"":" · letzte "+playerDays+" Tage")+
-        " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.":
-        "Keine abgeschlossenen Kriege in dieser Auswahl. Noch keine Spielerwerte vorhanden.";
-    }
+    if($("statsScopeExplainer"))$("statsScopeExplainer").textContent=
+      scopeInfo.selectedWars?
+        scopeInfo.selectedWars+" abgeschlossene "+
+        (scopeInfo.selectedWars===1?"Kriegstag":"Kriegstage")+
+        " ausgewählt · "+formatDate(scopeInfo.first)+" – "+
+        formatDate(scopeInfo.recent):
+        "Für diese Auswahl gibt es keine abgeschlossenen Kriege.";
     if(section==="compare"){renderMatchups();renderDuel();}
     if(section==="history"){renderTimeline();renderWarHistory(earlyHistoryAnchor);}
     if(section==="form")renderComparableForm();
@@ -1398,7 +1389,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   }
   function syncPeriodChoices(){
     const periodLabel=$("statsPeriodLabel");
-    if(periodLabel)periodLabel.textContent="Nur für Spielerstatistik";
+    if(periodLabel)periodLabel.textContent="Datenbasis anpassen";
     const cw=$("statsRange"),league=$("statsCwlRange");
     if(cw)cw.value=String(last);
     if(league)league.value=String(cwlSeasons);
@@ -1406,27 +1397,10 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if($("statsCwField"))$("statsCwField").hidden=type==="cwl";
     if($("statsCwlField"))$("statsCwlField").hidden=type==="normal";
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons,days:playerDays});
-    const parts=[];
-    if(type!=="cwl"){
-      parts.push(last==="all"?
-        (playerDays==="all"?
-          (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
-           scopeInfo.allNormal===1?"1 abgeschlossener CW":
-           "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
-          scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs (Limit "+last+")");
-    }
-    if(type!=="normal"){
-      parts.push(cwlSeasons==="all"?
-        (playerDays==="all"?
-          (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
-           scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
-           "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
-          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen"):
-        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgängen");
-    }
-    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=
-      (playerDays==="all"?"":("Letzte "+playerDays+" Tage · "))+parts.join(" + ");
+    const parts=[playerDays==="all"?"Gesamt":playerDays+" Tage"];
+    if(type!=="cwl")parts.push(scopeInfo.selectedNormal+" CW");
+    if(type!=="normal")parts.push(scopeInfo.selectedCwl+" CWL-Durchgänge");
+    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" · ");
   }
   syncPeriodChoices();
   bind();
