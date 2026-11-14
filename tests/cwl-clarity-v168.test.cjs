@@ -53,7 +53,7 @@ test("war history displays war size, recorded count and unknown import completen
  assert.match(stats,/Vollständigkeit nicht bestätigt/);
  assert.match(stats,/erfasste Angriffe/);
  assert.match(stats,/stats-star-legend/);
- assert.match(stats,/few&&!\/wenige Angriffe\/i\.test\(quality\)/);
+ assert.match(stats,/stats-form-player-details/);
 });
 test("member tab opens actual approval controls on same page, not by switching tabs",()=>{
  const html=read("cloud-app.html"),sync=read("cloud-sync.mjs");
