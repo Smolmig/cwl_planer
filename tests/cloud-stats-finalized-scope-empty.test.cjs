@@ -131,8 +131,8 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.match(outcome.loadedNotice,/2 weitere Kriege noch nicht bestätigt/,note);
     assert.doesNotMatch(outcome.loadedNotice,/Statistik aktuell/,note);
     assert.match(outcome.all.scope,/2 ausgewählte abgeschlossene Kriege/,note);
-    assert.match(outcome.all.explainer,/Alle 2 verfügbaren normalen CWs/,note);
-    assert.match(outcome.all.period,/Alle 2 abgeschlossenen CWs/,note);
+    assert.match(outcome.all.explainer,/2 abgeschlossene Kriegstage ausgewählt/,note);
+    assert.match(outcome.all.period,/Gesamt · 2 CW/,note);
     assert.match(outcome.all.count,/Alle 2 abgeschlossenen normalen CWs · 2 Angriffe/,note);
     assert.match(outcome.all.detail,/Alle verfügbaren abgeschlossenen/,note);
     assert.doesNotMatch(outcome.all.scope,/08\.11\./,note);
@@ -140,13 +140,13 @@ test("free stats uses finalized normal CWs for All/Last N and empty selections",
     assert.doesNotMatch(outcome.all.detail,/Bis zu all/,note);
     assert.match(outcome.one.scope,/1 ausgewählten abgeschlossenen Krieg/,note);
     assert.match(outcome.one.count,/1 von 2 abgeschlossenen normalen CWs · 1 Angriff/,note);
-    assert.match(outcome.one.period,/1 von 2 abgeschlossenen CWs/,note);
+    assert.match(outcome.one.period,/Gesamt · 1 CW/,note);
     assert.match(outcome.back.count,/Alle 2 abgeschlossenen normalen CWs/,note);
     assert.match(outcome.empty.scope,/noch keine abgeschlossenen Kriege/,note);
-    assert.match(outcome.empty.period,/Noch keine abgeschlossenen CWL-Durchgänge/,note);
+    assert.match(outcome.empty.period,/Gesamt · 0 CWL-Durchgänge/,note);
     assert.match(outcome.empty.count,/Noch keine abgeschlossenen CWL-Kriegstage gespeichert/,note);
     assert.doesNotMatch(outcome.empty.scope,/– –/,note);
-    assert.match(outcome.empty.explainer,/Keine abgeschlossenen Kriege/,note);
+    assert.match(outcome.empty.explainer,/keine abgeschlossenen Kriege/,note);
     assert.match(outcome.empty.row,/Keine passenden Spieler/,note);
     assert.equal(outcome.empty.scope,outcome.afterReload.scope,note);
     assert.match(outcome.overview.count,/2 normale CWs \+ 0 CWL-Kriegstage/,note);
