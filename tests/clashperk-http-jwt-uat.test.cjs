@@ -54,7 +54,7 @@ async function request(path,sub,method="GET",body){
  return {status:res.status,data,raw:text};
 }
 const post=(sub,id,clanId=A,data=payload(id))=>
- request("/rpc/cwl_import_clashperk_verified_atomic",sub,"POST",{
+ request("/rpc/cwl_import_clashperk_canonical_atomic",sub,"POST",{
   p_clan:clanId,p_payload:data
  });
 const getWars=(sub,key)=>
@@ -148,7 +148,7 @@ test("Real HTTP JWT role claims, RLS isolation and an atomic ClashPerk import",{
 test("Real HTTP rejects tampered JWT signatures, not merely an unauthorized database role",async()=>{
  const good=jwt(owner);
  const tampered=good.slice(0,-2)+(good.slice(-2)==="ZZ"?"YY":"ZZ");
- const response=await fetch(base+"/rpc/cwl_import_clashperk_verified_atomic",{
+ const response=await fetch(base+"/rpc/cwl_import_clashperk_canonical_atomic",{
   method:"POST",
   headers:{Authorization:"Bearer "+tampered,"Content-Type":"application/json"},
   body:JSON.stringify({p_clan:A,p_payload:payload(505)})

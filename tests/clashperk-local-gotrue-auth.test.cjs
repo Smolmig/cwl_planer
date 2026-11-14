@@ -108,7 +108,7 @@ test("Actual GoTrue email/password sessions enforce importer RLS and full rollba
   "('"+clanA+"','"+safeUuid(identities.viewer.id)+"','viewer'),"+
   "('"+clanB+"','"+safeUuid(identities.outsider.id)+"','owner')");
  const rpc=(name,id,clan=clanA,clanTag=tagA,payload=makePayload(id,clanTag))=>
-  call("/rest/v1/rpc/cwl_import_clashperk_verified_atomic","POST",{
+  call("/rest/v1/rpc/cwl_import_clashperk_canonical_atomic","POST",{
     p_clan:clan,p_payload:payload
   },identities[name].access);
  const get=(name,id)=>{

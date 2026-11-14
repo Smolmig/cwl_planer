@@ -4,6 +4,7 @@ on:
     paths:
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
       - 'tests/sql/clashperk-atomic-import-*.sql'
       - 'scripts/clashperk-schema-preflight.sql'
       - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
@@ -12,6 +13,7 @@ on:
     paths:
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
       - 'tests/sql/clashperk-atomic-import-*.sql'
       - '.github/workflows/clashperk-atomic-import-sql-ci.yml'
 
@@ -58,6 +60,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql
       - name: Postflight the installed RPC, unique keys, RLS and grants (read-only)
         shell: bash
         run: |

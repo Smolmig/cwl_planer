@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.22.2",
+    "releaseType": "patch",
+    "date": "2026-11-14",
+    "title": "Alte ClashPerk-Logs ohne Angriffsdoppelung nachreichen",
+    "description": "Historische ClashPerk-Angriffsnummern werden beim Import sicher und nur mit identischem Angriffsnachweis zugeordnet. Alte Sterne und Kriegsdaten bleiben erhalten."
+  },
+
+  {
     "version": "v1.22.1",
     "releaseType": "patch",
     "date": "2026-11-14",

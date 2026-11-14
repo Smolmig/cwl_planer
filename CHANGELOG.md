@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.22.2] - 2026-11-14
+
+### Behoben
+- ClashPerk-Reimport von United Fighters: Alte Excel-Imports speicherten einen globalen Angriffsindex (z. B. `11/45`) statt eines Spielerindex (`1/2`). Das führte trotz korrekter Vorschau beim Bestätigen zu `Conflict with previously stored attack`.
+- Der neue, atomare und `SECURITY INVOKER`-geschützte Import-Endpunkt prüft zuerst jeden vorhandenen Angriff anhand Spieler-Tag, Ziel, Sternen und Zerstörung einschließlich mehrfacher identischer Signaturen. Nur nach exakter, konfliktfreier Zuordnung werden alte technische Angriffsnummern pro Spieler im selben Krieg auf das aktuelle Schema abgebildet. Keine fremden Clans, API-Kriegsergebnisse oder CWL-Aufstellungen werden verändert.
+- Ein echter Widerspruch stoppt weiterhin den gesamten Import ohne Teilübernahme. Alte Daten werden nicht stillschweigend überschrieben.
+- Zusätzliche SQL-Regressionen mit globalen Angriffsnummern, späteren Angriffsbelegen, wiederholten Imports, widersprüchlichen Angaben und unberechtigtem Zugriff.
+- Verständlichere Fehlermeldung für historisch widersprüchliche Angriffsnachweise.
+
+### Hilfe
+- Die App erklärt, warum alte Angriffsnummern abweichen können und warum bei echten Ergebnisdifferenzen keine Übernahme erfolgt.
+
 ## [1.22.1] - 2026-11-14
 
 ### Behoben

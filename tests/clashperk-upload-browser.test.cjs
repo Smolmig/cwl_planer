@@ -126,7 +126,7 @@ async function setup(page,base,role="owner"){
     if(window.testRpcError)return {data:null,error:{
       code:"PGRST202",message:"RPC not installed"
     }};
-    if(name!=="cwl_import_clashperk_verified_atomic")throw Error("Unexpected RPC "+name);
+    if(name!=="cwl_import_clashperk_canonical_atomic")throw Error("Unexpected RPC "+name);
     const p=args.p_payload;
     for(const w of p.wars)if(!window.testWars.some(x=>x.war_key===w.war_key))
       window.testWars.push({...w,source:"import",finalized:true,
