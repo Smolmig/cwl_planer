@@ -55,7 +55,8 @@ jobs:
           result="$(psql -X -qAt -v ON_ERROR_STOP=1 -v stage=pre -f scripts/clashperk-schema-preflight.sql)"
           test "$result" = PASS || { echo "::error::Pre-migration schema preflight: $result"; exit 1; }
       - name: Install DRAFT RPC in disposable PostgreSQL only
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
       - name: Postflight the installed RPC, unique keys, RLS and grants (read-only)
         shell: bash
