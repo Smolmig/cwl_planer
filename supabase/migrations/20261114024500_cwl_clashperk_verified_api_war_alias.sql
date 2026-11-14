@@ -334,11 +334,9 @@ begin
   end if;
   update public.cwl_stat_wars w set
     finalized=true,
-    missed_log_complete=
-       case when v_player_count=v_team and v_capacity_ok
-         then true else w.missed_log_complete end,
+    missed_log_complete=(v_player_count=v_team and v_capacity_ok),
     roster_tags=case when v_player_count=v_team and v_capacity_ok
-         then v_tags else w.roster_tags end
+         then v_tags else null end
    where w.clan_id=p_clan and w.war_key=v_key and w.source='import';
   if not found then
    raise exception 'Import lost authorized war identity during commit'
