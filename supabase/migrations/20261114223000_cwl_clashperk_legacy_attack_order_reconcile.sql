@@ -143,6 +143,13 @@ begin
     raise exception 'Existing ClashPerk War ID conflicts with verified war' using errcode='23505';
    end if;
    v_extended:=v_extended+1;
+   -- An uploaded Missed-only Excel has no attack records. Preserve all
+   -- historical technical keys and only append independently proven misses.
+   -- Never require full Attack-Log evidence for a Missed-only follow-up.
+   if exists (
+     select 1 from pg_catalog.jsonb_array_elements(p_payload->'attacks') x(value)
+     where x.value->>'war_key'=v_key
+   ) then
    -- Historical ClashPerk v1 imports stored the GLOBAL war attack number
    -- (e.g. 11,45) as attack_order. New XLSX exports normalize EACH
    -- player's attacks to 1/2. A naive ON CONFLICT would reject a harmless
@@ -238,6 +245,7 @@ begin
      -- Count only *noncanonical* legacy IDs in the user-facing summary.
      -- Reuploading an already normalized war reports zero corrections.
      v_rekeyed_total:=v_rekeyed_total+v_legacy_orders;
+   end if;
    end if;
   else
    -- The official API and ClashPerk can report the same completed war
