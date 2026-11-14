@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.20.0",
+    "releaseType": "minor",
+    "date": "2026-11-14",
+    "title": "Spielerform mit Zuverlässigkeit und Zeitraumfiltern",
+    "description": "Die Spielerform zeigt die Leistung samt Stichprobe und belegter Zuverlässigkeit. Die Spielerstatistik lässt sich zusätzlich nach 30, 90, 180 oder 365 Tagen filtern."
+  },
+
+  {
     "version": "v1.19.1",
     "releaseType": "patch",
     "date": "2026-11-14",

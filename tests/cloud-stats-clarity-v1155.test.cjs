@@ -26,7 +26,7 @@ test("Stats explain 2-of-2 samples and no longer crown an unvalidated top player
  assert.match(ui,/summary\.missedCoverage\.cwl/);
  assert.doesNotMatch(ui,/statsBestPlayer/);
  assert.doesNotMatch(ui,/n_eff/);
- assert.doesNotMatch(ui,/performanceIndex\+"\/100"/);
+ assert.match(ui,/b\.formIndex/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/dieselbe Rathausstufe/);
 });
@@ -41,7 +41,7 @@ test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL
  assert.match(ui,/if\(guide\.hidden\)guide\.open=false/);
  assert.match(ui,/displayMissed=\(known,complete\)=>complete\?String\(known\)/);
  assert.match(ui,/computeComparableForm\(wars,attacks\)/);
- assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons\}\)/);
+ assert.match(ui,/describeWarSelection\(wars,\{type,last,cwlSeasons,days:playerDays\}\)/);
 });
 
 test("Statistics layout is legible and border-light across 320–1366px and all themes",{

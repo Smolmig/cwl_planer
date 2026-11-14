@@ -1,5 +1,5 @@
 {
-  "version": "v1.19.1",
+  "version": "v1.20.0",
   "released": "2026-11-14",
-  "summary": "ClashPerk- und API-Kriege in der Statistik anhand bestätigter Angriffe sicher abgleichen; Missed-Nachimporte ergänzen und Importfehler verständlich anzeigen."
+  "summary": "Formwert mit Stichprobenkorrektur und belegter Zuverlässigkeit; Spielerstatistik mit flexiblen Zeitfiltern (30/90/180/365 Tage)."
 }

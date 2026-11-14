@@ -23,7 +23,7 @@ test("evidence-first form: robust sample precedes perfect tiny samples",async()=
  assert.equal(list[0].name,"Two","sorting must not mutate original data");
 });
 
-test("within each evidence group raw hit-rate sorts, then attacks, then name",async()=>{
+test("legacy samples without a computed form index fall back deterministically to volume",async()=>{
  const {sortPlayerFormRows}=await core();
  const list=[
   player("Low",7,4),player("High",9,8),
@@ -31,7 +31,7 @@ test("within each evidence group raw hit-rate sorts, then attacks, then name",as
   player("TinyZero",1,0),player("TinyPerfect",3,3)
  ];
  const sorted=sortPlayerFormRows(list,90).map(p=>p.name);
- assert.deepEqual(sorted,["BigHigher","BigLower","High","Low","TinyPerfect","TinyZero"]);
+ assert.deepEqual(sorted,["BigLower","BigHigher","High","Low","TinyPerfect","TinyZero"]);
 });
 
 test("explicit raw-rate mode keeps actual 100% top; no hidden skill score",async()=>{
@@ -59,10 +59,10 @@ test("form sort respects selected window and rejects unknown options",async()=>{
 test("UI distinguishes evidence ordering from the explicitly raw hit-rate choice",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const js=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
- assert.match(html,/<option value="evidence" selected>Angriffsmenge &amp; 3★-Quote<\/option>/);
- assert.match(html,/<option value="hitRate">3★-Quote \(auch bei wenigen Angriffen\)<\/option>/);
+ assert.match(html,/<option value="evidence" selected>Formwert \(Leistung &amp; Zuverlässigkeit\)<\/option>/);
+ assert.match(html,/<option value="hitRate">Reine 3★-Quote<\/option>/);
  assert.match(js,/formWindow=90,formSearch="",formSort="evidence"/);
  assert.match(js,/sortPlayerFormRows\(data\.players\.filter/);
- assert.match(js,/Nach Angriffsmenge, dann 3★-Quote sortiert/i);
- assert.match(html,/kein(?:e)? statistische Spielstärkebewertung/i);
+ assert.match(js,/Formwert: 65 % Leistung, 35 % belegte Zuverlässigkeit/i);
+ assert.match(html,/kein prognostizierter 3★-Erfolg/i);
 });

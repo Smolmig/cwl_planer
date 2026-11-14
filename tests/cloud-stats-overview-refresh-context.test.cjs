@@ -43,7 +43,7 @@ test("Overview always describes all recorded wars; player-specific filters canno
       const {createCloudStats}=await import("./cwl-stats.mjs");
       const wars=[
        {war_key:"normal:one",war_type:"normal",source:"import",finalized:true,
-        started_at:"2026-10-15T10:00:00Z",team_size:15,opponent_name:"Normal"},
+        started_at:"2026-09-15T10:00:00Z",team_size:15,opponent_name:"Normal"},
        {war_key:"cwl:two",war_type:"cwl",source:"import",finalized:true,
         started_at:"2026-11-05T10:00:00Z",team_size:15,opponent_name:"League"}
       ];
@@ -78,9 +78,13 @@ test("Overview always describes all recorded wars; player-specific filters canno
       const select=document.getElementById("statsType");
       select.value="normal";select.dispatchEvent(new Event("change",{bubbles:true}));
       const restricted=document.getElementById("statsPlayerScope").textContent;
+      const daySelect=document.getElementById("statsPlayerDays");
+      daySelect.value="30";daySelect.dispatchEvent(new Event("change",{bubbles:true}));
+      const excluded=document.getElementById("statsPlayerScope").textContent;
+      const filteredRows=document.getElementById("statsRows").querySelectorAll(".stats-player-row").length;
       document.querySelector('[data-stats-section="overview"]').click();
       return {
-       intro,allSummary,allCount,allCoverage,restricted,
+       intro,allSummary,allCount,allCoverage,restricted,excluded,filteredRows,
         basisClosed,basisText,basisTouchHeight,basisOpenAfterReload,
        restoredSummary:document.getElementById("statsSummary").textContent,
        restoredCount:document.getElementById("statsDataCount").textContent,
@@ -98,6 +102,8 @@ test("Overview always describes all recorded wars; player-specific filters canno
      assert.ok(result.basisTouchHeight>=44,info);
      assert.equal(result.basisOpenAfterReload,true,info);
     assert.match(result.restricted,/1 ausgewählten abgeschlossenen Krieg/,info);
+    assert.match(result.excluded,/keine abgeschlossenen Kriege/i,info);
+    assert.equal(result.filteredRows,0,info);
     assert.equal(result.restoredCount,result.allCount,info);
     assert.equal(result.restoredSummary,result.allSummary,info);
     assert.equal(result.importHidden,true,info);

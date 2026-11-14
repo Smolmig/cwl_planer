@@ -15,12 +15,12 @@ test("both member and stats views use the provider-documented CDN and keep RH te
  const ownerCdn="https://assets.clashk.ing/buildings/home-village/town_hall/level_";
  assert.match(html,/function memberTownHallMarkup\(m\)/);
  assert.ok(html.includes("src='"+ownerCdn+'"+th+".webp'));
- assert.ok(stats.includes("src='"+ownerCdn+'"+p.th+".webp'));
+ assert.ok(stats.includes("src='"+ownerCdn+'"+shownTh+".webp'));
  assert.match(html,/onerror='this\.remove\(\)'/);
  assert.match(stats,/onerror='this\.remove\(\)'/);
  assert.match(html,/member-townhall.*RH/);
- assert.match(stats,/p\.th\?"RH"\+p\.th:"RH\?"/);
- assert.match(stats,/<span class='stats-th'>/);
+ assert.match(stats,/shownTh\?"RH"\+shownTh:"RH\?"/);
+ assert.match(stats,/<span class='stats-th' title=/);
  assert.doesNotMatch(html.slice(html.indexOf("function memberTownHallMarkup("),html.indexOf("function rotationWeightLabel(")),/raw\.githubusercontent\.com/);
 });
 test("Rathaus icons scale consistently and Arena surfaces avoid rectangular cut-outs on desktop and mobile",{timeout:120000},async()=>{

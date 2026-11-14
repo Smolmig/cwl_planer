@@ -190,7 +190,8 @@ test("form UI distinguishes unobserved members from real losses; reload keeps re
     assert.match(result.initial.unknownAria,/Keine auswertbaren Angriffe/,context);
     assert.match(result.initial.differentDetail,/1 andere RH/,context);
     assert.match(result.initial.former,/Früherer Spieler/,context);
-    assert.match(result.initial.intro,/ohne auswertbare Angriffe/,context);
+    assert.match(result.initial.former,/Zuverlässigkeit offen/,context);
+    assert.match(result.initial.intro,/ohne gleich-RH-Angriffsquote/,context);
     assert.ok(result.initial.count>=49,context);
     assert.deepEqual(result.searchResult,["Ohne Angriff"],context);
     assert.match(result.noMatch,/Keine Spieler für diese Suche/,context);
