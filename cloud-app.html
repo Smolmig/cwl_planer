@@ -3882,10 +3882,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.19.1</strong><span>ClashPerk-Import verständlicher</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.19.1</strong><span>ClashPerk-Historie sicher abgleichen</span></div>
       <ul>
        <li><b>Missed Attacks nachträglich:</b> Verpasste Angriffe lassen sich jetzt auch einzeln nach den Attack-Logs importieren.</li>
        <li><b>Übersichtliche Vorschau:</b> Neue Kriege, gespeicherte Kriege und fehlende Nachweise werden getrennt dargestellt.</li>
+       <li><b>Doppelzählung verhindert:</b> Identische API- und ClashPerk-Kriege werden in der Statistik nur einmal berücksichtigt; unklare Zuordnungen werden nicht geraten.</li>
        <li><b>Fehler gut sichtbar:</b> Falls ein Export nicht passt, erscheint die Erklärung direkt beim Datei-Upload.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
@@ -3916,6 +3917,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div id="statsSummary" class="stats-kpis" aria-live="polite"></div>
     <p id="statsMissedCoverage" class="stats-missed-coverage" aria-live="polite"></p>
     <div class="statusline" id="statsDataCount">Noch keine Kriege geladen</div>
+    <p id="statsReconciliationNote" class="stats-note" aria-live="polite" hidden></p>
     <details class="stats-overview-source" id="statsSeasonDisclosure" hidden><summary>Welche Kriege zählen?</summary><p class="stats-season-details" id="statsSeasonDetails"></p></details>
     <div class="stats-import-entry" id="statsImportEntry" hidden>
       <div><strong>Alte Kriege aus ClashPerk importieren</strong>
@@ -3926,16 +3928,17 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div id="statsFeedback" role="status" class="statusline" aria-live="polite"></div>
     <details id="statsImportHelp" class="stats-coverage-guide">
       <summary>Welche ClashPerk-Dateien brauche ich?</summary>
-      <p><strong>Für eine vollständige Historie sind drei Exportarten sinnvoll.</strong> Öffne Discord und wähle bei jedem Export unter <strong>clans</strong> denselben Clan wie in dieser App.</p>
+      <p><strong>Für eine vollständige Historie empfehlen wir vier getrennte Exporte.</strong> Öffne Discord und wähle bei jedem Export unter <strong>clans</strong> denselben Clan wie in dieser App.</p>
       <p><strong>1.</strong> <strong>/export attack-log</strong> mit <strong>war_type: Regular</strong> und <strong>limit: 100</strong> (Maximum).</p>
       <p><strong>2.</strong> <strong>/export attack-log</strong> mit <strong>war_type: CWL</strong> und <strong>limit: 100</strong>.</p>
-      <p><strong>3.</strong> <strong>/export missed</strong> mit <strong>limit: 100</strong>. <strong>Nur einmal:</strong> Dieser Export enthält sowohl normale CWs als auch CWL. Hier musst du keinen Kriegstyp getrennt auswählen.</p>
+      <p><strong>3.</strong> <strong>/export missed</strong> für <strong>Regular</strong>, wenn in Discord auswählbar, mit <strong>limit: 100</strong>.</p>
+      <p><strong>4.</strong> <strong>/export missed</strong> für <strong>CWL</strong>, wenn in Discord auswählbar, mit <strong>limit: 100</strong>. Getrennte Exporte haben bei einem vollständigen UF-2-Test mehr Kriege abgedeckt als ein gemeinsamer Export.</p>
       <p><strong>Reihenfolge ist flexibel:</strong> Du kannst die Excel-Dateien gemeinsam hochladen oder zunächst die Attack-Logs und danach separat „Missed Attacks“. Ein reiner Missed-Export ergänzt nur bereits gespeicherte, eindeutig passende Kriege; er legt keine neuen an. Ohne passende Missed-Einträge bleiben nicht beobachtete Angriffe „unbekannt“. <strong>limit: 100</strong> umfasst nur die neuesten erfassten Kriege je Export, nicht automatisch die ganze Clan-Geschichte. Bewahre ältere Exporte auf; beim erneuten Import werden Einträge abgeglichen.</p>
       <p><strong>Nicht nötig:</strong> <strong>/export wars</strong> liefert hauptsächlich zusammengefasste Spielerwerte und ersetzt keine einzelnen Angriffe. Der alte Statistik-JSON-Import bleibt als einzelne Datei möglich. Ehemalige Clanmitglieder behalten ihre historischen Ergebnisse, werden aber nicht als aktuelle Mitglieder angezeigt.</p>
     </details>
     <details class="stats-coverage-guide" id="statsCoverageGuide" hidden>
       <summary>ClashPerk-Exporte und fehlende Angriffe</summary>
-      <p>Für die Statistik brauchst du je Clan zwei <strong>Attack-Logs</strong> (Regular und CWL) und nur einen gemeinsamen <strong>Missed-Attacks-Export</strong> für beide Kriegstypen, jeweils mit <strong>limit: 100</strong>. Du kannst die Excel-Dateien zusammen oder nacheinander im Statistik-Überblick prüfen und nach Bestätigung übernehmen. Ein alleiniger Missed-Export benötigt bereits gespeicherte Attack-Logs derselben Kriege. Zusätzliche CWL-Missed- und Aufstellungswechsel-Meldungen erscheinen in Discord, sind aber keine weiteren erforderlichen Excel-Dateien. Ohne belegte Angaben können verpasste Angriffe nicht mit null gleichgesetzt werden. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">ClashPerk-Logs erklärt</a>.</p>
+      <p>Für vollständige Ergebnisse empfehlen wir je Clan vier Exporte: <strong>Attack-Log Regular</strong>, <strong>Attack-Log CWL</strong>, <strong>Missed Regular</strong> und <strong>Missed CWL</strong>, soweit der Discord-Befehl die getrennte Auswahl anbietet, jeweils mit <strong>limit: 100</strong>. Ein gemeinsamer Missed-Export kann bei umfangreicher Historie unvollständig sein. Du kannst die Excel-Dateien zusammen oder nacheinander im Statistik-Überblick prüfen und nach Bestätigung übernehmen. Ein alleiniger Missed-Export benötigt bereits gespeicherte Attack-Logs derselben Kriege. Ein Import prüft vorhandene API-Kriege auf identische Angriffsbelege. Eindeutig identische API-/ClashPerk-Kriege werden in der Statistik nur einmal gezählt; nicht sicher zuordenbare Kriege werden beim Import nicht automatisch zusammengeführt. Ohne belegte Angaben können verpasste Angriffe nicht mit null gleichgesetzt werden. <a href="https://docs.clashperk.com/features/logs" target="_blank" rel="noopener noreferrer">ClashPerk-Logs erklärt</a>.</p>
     </details>
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
