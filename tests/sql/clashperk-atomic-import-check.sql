@@ -394,7 +394,7 @@ $$;
 -- recompute from actual slots and remove that false claim.
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 declare v jsonb;
 begin
  v:=public.clashperk_test_payload('150');
@@ -403,7 +403,7 @@ begin
  perform public.cwl_import_clashperk_verified_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
 end
-$;
+$$;
 reset role;
 update public.cwl_stat_wars set
  missed_log_complete=true,roster_tags='["#8PYL"]'::jsonb
@@ -411,7 +411,7 @@ where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
  and war_key='cp:150';
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 declare v jsonb;
 begin
  v:=public.clashperk_test_payload('150');
@@ -424,12 +424,12 @@ begin
   raise exception 'Stale imported completeness was not safely recalculated';
  end if;
 end
-$;
+$$;
 reset role;
 
 reset role;
 
-do $
+do $$
 begin
  if (select count(*) from public.cwl_stat_wars
      where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>9 then
