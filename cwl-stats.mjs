@@ -1,6 +1,7 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.43";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
+import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -44,6 +45,7 @@ export function statsLoadNotice(wars=[]){
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,loadingClan=null,importing=false,version=0,lastCapture=new Set();
+  let sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};
   let type="all",last="all",cwlSeasons="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
   let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
@@ -582,6 +584,17 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     });
     cachedPlayerStats=new Map(overviewSummary.rows.map(p=>[cleanTag(p.tag),p]));
     const summary=section==="overview"?overviewSummary:cachedSummary;
+    const provenanceNote=$("statsReconciliationNote");
+    if(provenanceNote){
+      const n=sourceReconciliation.deduplicatedWars,conflicts=sourceReconciliation.conflicts.length;
+      provenanceNote.hidden=!n&&!conflicts;
+      provenanceNote.textContent=
+        (n?n+" API-/ClashPerk-Kriege sicher zusammengeführt · "+
+          sourceReconciliation.deduplicatedAttacks+" Doppelangriffe nur einmal gezählt. "+
+          "Die Originalbelege bleiben gespeichert.":"")+
+        (conflicts?(n?" ":"")+conflicts+
+          " ähnliche Kriege sind nicht eindeutig; bitte Importquellen prüfen.":"");
+    }
     syncPeriodChoices();
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons});
     const selected=scopeInfo.selected;
@@ -875,7 +888,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
   }
   function reset(){
-    scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;cachedPlayerStats.clear();cachedRecentStats.clear();
+    scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
+      sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
     lastFormRowsVersion=-1;lastFormRowsClan=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
@@ -976,11 +990,21 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         if(!healthError)latestHealth=healthRows?.[0]||null;
       }catch{/* The stats panel stays usable during an older DB migration. */}
       if(epoch!==version||context().clanId!==id)return;
-      scope=id;wars=ww||[];attacks=collected;missedEvents=missedRows;collectorHealth=latestHealth;
+      // Collapse only verified duplicate API + ClashPerk wars within this clan.
+      // Original source rows remain in the database for traceability.
+      const reconciled=reconcileClashPerkApiHistory(ww,collected,missedRows);
+      sourceReconciliation=reconciled;
+      scope=id;wars=reconciled.wars;attacks=reconciled.attacks;
+      missedEvents=reconciled.missedEvents;collectorHealth=latestHealth;
       cachedRecentStats=computeRecentAttackStats(wars,attacks,7);
       const comparable=computeComparableForm(wars,attacks);
       comparableProfiles=comparable.profiles;comparableSummary=comparable.summary;
-      notice(statsLoadNotice(wars));
+      notice(statsLoadNotice(wars)+(sourceReconciliation.deduplicatedWars?
+        " · "+sourceReconciliation.deduplicatedWars+
+        " doppelte API-/ClashPerk-Kriege nur einmal ausgewertet.":"")+
+        (sourceReconciliation.conflicts.length?
+        " · "+sourceReconciliation.conflicts.length+
+        " ähnliche Kriege konnten nicht sicher abgeglichen werden.":""));
     }catch(e){
       if(epoch===version)notice("Fehler beim Laden der Statistik: "+String(e.message||e));
     }finally{if(epoch===version){loading=false;loadingClan=null;render()}}
