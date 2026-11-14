@@ -130,7 +130,8 @@ export function selectStatWars(wars,{type="all",last=50,cwlSeasons=3,days="all",
   const sorted=[...wars].filter(w=>
     (w.source!=="api"||w.finalized===true)&&
     Number.isFinite(Date.parse(w.started_at))&&
-    Date.parse(w.started_at)<=end&&end-Date.parse(w.started_at)<=span)
+    (days==="all"||(Date.parse(w.started_at)<=end&&
+      end-Date.parse(w.started_at)<=span)))
     .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
       String(a.war_key).localeCompare(String(b.war_key)));
   const normal=sorted.filter(w=>w.war_type==="normal");
