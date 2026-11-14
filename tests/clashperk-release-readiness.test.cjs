@@ -64,23 +64,21 @@ test("ClashPerk follow-up is v1.19.1 without automatic DB migration",()=>{
 });
 
 
-test("Discord help requires exactly three original exports, including only one combined Missed file",()=>{
+test("Discord help recommends four original exports after full UF 2 coverage test",()=>{
  const html=read("cloud-app.html");
  const start=html.indexOf('<details id="statsImportHelp"');
  const end=html.indexOf("</details>",start);
  assert.ok(start>0&&end>start);
  const guide=html.slice(start,end);
  assert.equal((guide.match(/\/export attack-log/g)||[]).length,2);
- assert.equal((guide.match(/\/export missed/g)||[]).length,1);
- assert.match(guide,/drei Exportarten sinnvoll/i);
+ assert.equal((guide.match(/\/export missed/g)||[]).length,2);
+ assert.match(guide,/vier getrennte Exporte/i);
  assert.match(guide,/zunächst die Attack-Logs und danach separat/);
- assert.match(guide,/Dieser Export enthält sowohl normale CWs als auch CWL/);
- const missedLine=guide.split("/export missed")[1].split("</p>")[0];
- assert.doesNotMatch(missedLine,/war_type:/);
+ assert.match(guide,/Regular/);
+ assert.match(guide,/CWL/);
  assert.match(guide,/nicht automatisch die ganze Clan-Geschichte/);
  const helpPage=html.slice(html.indexOf("<b>Alte Kriege aus ClashPerk ergänzen:</b>"));
- assert.match(helpPage,/einmal <strong>\/export missed<\/strong>/);
- assert.doesNotMatch(helpPage.slice(0,1500),/missed<\/strong> getrennt/);
+ assert.match(helpPage,/zweimal <strong>\/export missed<\/strong>/);
  const notes=read("docs/CLASHPERK_XLSX_IMPORT_IMPLEMENTATION_DRAFT.md");
- assert.match(notes,/Missed-Export enthält \*\*Regular und CWL gemeinsam\*\*/);
+ assert.match(notes,/vier separaten Dateien/);
 });
