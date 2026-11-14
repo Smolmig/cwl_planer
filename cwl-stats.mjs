@@ -587,13 +587,17 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const provenanceNote=$("statsReconciliationNote");
     if(provenanceNote){
       const n=sourceReconciliation.deduplicatedWars,conflicts=sourceReconciliation.conflicts.length;
-      provenanceNote.hidden=!n&&!conflicts;
-      provenanceNote.textContent=
-        (n?n+" API-/ClashPerk-Kriege sicher zusammengeführt · "+
-          sourceReconciliation.deduplicatedAttacks+" Doppelangriffe nur einmal gezählt. "+
-          "Die Originalbelege bleiben gespeichert.":"")+
-        (conflicts?(n?" ":"")+conflicts+
-          " ähnliche Kriege sind nicht eindeutig; bitte Importquellen prüfen.":"");
+      const legacy=sourceReconciliation.legacyReclassified||0;
+      const incomplete=sourceReconciliation.legacyIncomplete||0;
+      provenanceNote.hidden=!n&&!conflicts&&!legacy;
+      provenanceNote.textContent=[
+        n?n+" API-/ClashPerk-Kriege sicher zusammengeführt, "+
+          sourceReconciliation.deduplicatedAttacks+" Angriffe nur einmal gezählt.":"",
+        legacy?legacy+" ältere importierte Kriege zeitlich abgeschlossen; "+
+          (incomplete?incomplete+" davon mit offenen Angriffsnachweisen.":"alle Angriffe belegt."):"",
+        conflicts?conflicts+" ähnliche Kriege ohne eindeutige Zuordnung.":""
+      ].filter(Boolean).join(" ");
+
     }
     syncPeriodChoices();
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons});
