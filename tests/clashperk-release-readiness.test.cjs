@@ -77,7 +77,7 @@ test("Discord help requires exactly three original exports, including only one c
  assert.match(guide,/Dieser Export enthält sowohl normale CWs als auch CWL/);
  const missedLine=guide.split("/export missed")[1].split("</p>")[0];
  assert.doesNotMatch(missedLine,/war_type:/);
- assert.match(guide,/nicht automatisch die gesamte Clan-Geschichte/);
+ assert.match(guide,/nicht automatisch die ganze Clan-Geschichte/);
  const helpPage=html.slice(html.indexOf("<b>Alte Kriege aus ClashPerk ergänzen:</b>"));
  assert.match(helpPage,/einmal <strong>\/export missed<\/strong>/);
  assert.doesNotMatch(helpPage.slice(0,1500),/missed<\/strong> getrennt/);
