@@ -13,10 +13,17 @@ In Discord für **jeden** verknüpften Clash-Clan:
 
 1. `/export attack-log` → `clans`: diesen Clan; `war_type`: **Regular**; `limit`: **100** (Maximum).
 2. `/export attack-log` → selber Clan; `war_type`: **CWL**; `limit`: **100**.
-3. `/export missed` → selber Clan; `limit`: **100**. **Einmal genügt**: Der echte originale Missed-Export enthält **Regular und CWL gemeinsam**, **ohne** separaten `war_type`-Filter.
+3. `/export missed` → selber Clan, wenn verfügbar getrennt **Regular**, `limit`: **100**.
+4. `/export missed` → selber Clan, wenn verfügbar getrennt **CWL**, `limit`: **100**.
 
-**Statistik → Überblick → „Excel-Dateien auswählen“** und die **drei** originalen
-Attack-/Missed-Exporte **gemeinsam** auswählen. Es sind nicht alle drei
+**Aktualisierung nach UF-2-Originaltest 14.11.2026:** Ein gemeinsamer Missed-Export
+kann Regular und CWL enthalten, im Test aber bei langer Historie weniger
+Kriegstage erfassen. Die vier separaten Dateien deckten dort nach
+eindeutigem Kriegsabgleich alle Angriffsplätze ab. Die frühere Empfehlung
+„einmal genügt“ ist deshalb überholt.
+
+**Statistik → Überblick → „Excel-Dateien auswählen“** und die vier originalen
+Attack-/Missed-Exporte **gemeinsam oder nacheinander** auswählen. Es sind nicht alle drei
 zwingend: ein einzelner Attack-Log-Export mit wenigen Kriegen
 funktioniert. Fehlende Missed-Einträge reduzieren die
 nachweisbare Abdeckung; fehlende Nachweise sind keine Null. Alle Dateien
