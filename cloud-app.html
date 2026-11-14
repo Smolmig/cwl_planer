@@ -3525,6 +3525,48 @@ html.cloud-startup-pending .cloud-startup-splash{
 #openReleaseHistory{min-height:44px;align-self:flex-start;margin-top:4px}
 @media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
 
+
+/* v1.20.1: compact, accessible statistics on narrow screens. */
+#view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+#view-stats .stats-period{width:100%;max-width:100%}
+#view-stats .stats-period>summary{font-size:13px;line-height:1.35;overflow-wrap:anywhere;min-height:44px}
+#view-stats .stats-period-options{background:transparent;border-color:var(--line);padding:12px}
+#view-stats .stats-period-options>.field{width:100%;min-width:0}
+#view-stats .stats-period-options select{width:100%;min-width:0;max-width:100%}
+#view-stats .stats-scope-details{margin:3px 0 12px}
+#view-stats .stats-scope-details>summary{cursor:pointer;font-size:12px;color:var(--muted);padding:7px 0}
+#view-stats .stats-scope-details .stats-note{margin:3px 0 6px;font-size:12px}
+#view-stats .stats-query-explainer{margin:8px 0 2px;font-size:12px;color:var(--muted)}
+#view-stats .stats-form-row{display:block;padding:14px 0}
+#view-stats .stats-form-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;min-width:0}
+#view-stats .stats-form-person{flex:1;min-width:0}
+#view-stats .stats-form-person b{display:inline;font-size:15px}
+#view-stats .stats-form-rank{font-weight:700;color:var(--primary);margin-right:8px}
+#view-stats .stats-form-person small{margin-top:3px}
+#view-stats .stats-form-primary{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;min-width:92px;font-variant-numeric:tabular-nums}
+#view-stats .stats-form-primary>span{color:var(--muted);font-size:11px}
+#view-stats .stats-form-primary>strong{color:var(--text);font-size:21px;line-height:1.2;font-weight:800;white-space:nowrap}
+#view-stats .stats-form-row .stats-form-results{display:block;min-width:0;margin-top:9px}
+#view-stats .stats-form-rate,#view-stats .stats-form-evidence{color:var(--text);font-size:12px;line-height:1.5;display:block}
+#view-stats .stats-form-evidence{color:var(--muted)}
+#view-stats .stats-form-row .stats-bar-track{height:5px;margin:6px 0 9px}
+#view-stats .stats-form-player-details{margin-top:5px}
+#view-stats .stats-form-player-details>summary{font-size:12px;color:var(--muted);cursor:pointer;min-height:34px;padding:7px 0}
+#view-stats .stats-form-player-details ul{padding:4px 0 3px 20px;margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+#view-stats .stats-form-player-details>summary:focus-visible,
+#view-stats .stats-scope-details>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:699px){
+  #view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-form-controls{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-period-options{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-form-primary{min-width:82px}
+}
+@media(max-width:359px){
+  #view-stats .stats-form-primary>strong{font-size:18px}
+  #view-stats .stats-form-top{gap:8px}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3943,10 +3985,10 @@ html.cloud-startup-pending .cloud-startup-splash{
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
-    <p class="stats-note">Wähle hier die Kriege für diese Spielerliste aus. Die Spielerform wird separat ausgewertet.</p>
-    <div class="stats-player-scope">    <div class="stats-filters">
+    <p class="stats-note">Filter für diese Spielerliste. Die Spielerform bleibt unabhängig.</p>
+    <div class="stats-player-scope"><div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel">Kriege auswählen</label>
+      <div class="field"><label id="statsPeriodLabel">Datenbasis anpassen</label>
         <details class="stats-period" id="statsPeriodConfig">
           <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
           <div class="stats-period-options">
@@ -3973,7 +4015,9 @@ html.cloud-startup-pending .cloud-startup-splash{
 
     </div>
     <div class="stats-query-explainer" id="statsScopeExplainer" role="status" aria-live="polite"></div>
-    <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
+    <details class="stats-scope-details"><summary>Welche Kriege zählen?</summary>
+      <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
+    </details>
     <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Zeitraum oder in den gewählten Kriegen. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
     <details class="stats-explain" id="statsExplain"><summary>Wie wird hier sortiert?</summary>
       <p>Standardmäßig wird nach Anzahl der dokumentierten Angriffe sortiert. Bei jeder anderen Sortierung gilt exakt die oben angezeigte Kriegsmenge. Die Nummern sind Listenpositionen und keine Aussage über Spielerstärke. Eine 100%-Quote aus zwei Angriffen ist weniger belastbar als eine Quote aus vielen Angriffen. Die unabhängige Bewertung der jüngeren Form findest du unter „Spielerform“.</p>
@@ -3999,21 +4043,22 @@ html.cloud-startup-pending .cloud-startup-splash{
   <section class="card stats-form-card" data-stats-panel="form" aria-label="Unabhängige Spielerform" hidden>
     <div class="section-title"><div><h3>Spielerform</h3><p class="statusline">So liefen die Angriffe in den letzten 30, 90 oder 180 Tagen. Die Auswahl unter „Spielerstatistik“ spielt hier keine Rolle.</p></div></div>
     <div class="stats-form-window" role="group" aria-label="Zeitraum für Spielerform wählen">
-      <button type="button" data-form-window="30" aria-pressed="false">Kurzfristig <small>30 Tage</small></button>
-      <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
-      <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
+      <button type="button" data-form-window="30" aria-pressed="false">30 Tage <small>Kurzfristig</small></button>
+      <button type="button" data-form-window="90" class="active" aria-pressed="true">90 Tage <small>Mittelfristig</small></button>
+      <button type="button" data-form-window="180" aria-pressed="false">180 Tage <small>Langfristig</small></button>
     </div>
-    <p class="stats-reading-copy">Die 3★-Quote zählt nur Angriffe gegen <strong>dasselbe RH</strong>. Der neue <strong>Formwert</strong> berücksichtigt die Stichprobengröße und belegte Zuverlässigkeit. Unbekannte Fehlangriffe zählen nicht als Fehler.</p>
+    <p class="stats-reading-copy">Der <strong>Formwert</strong> gewichtet gleich-RH-Leistung und belegte Zuverlässigkeit. Die 3★-Quote bleibt separat erkennbar.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (Leistung &amp; Zuverlässigkeit)</option><option value="hitRate">Reine 3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="attacks">Angriffe auf gleiches RH</option><option value="name">Spielername (A–Z)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (empfohlen)</option><option value="hitRate">3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
-    <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
-      <p>Die Fenster sind feste <strong>Kalendertage</strong> ab heute und verwenden dokumentierte abgeschlossene CWs und CWL-Tage des ausgewählten Clans, unabhängig von den Filtern unter Spielerstatistik. Ohne belegte Angriffe und Pflichtslots bleibt die Anzeige <strong>„Keine Daten“</strong>; es werden keine Fehlschläge erfunden.</p>
-      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Der <strong>Formwert</strong> (0–100) besteht aus 65 % vorsichtig stichprobenbereinigter 3★-Leistung (Wilson-Untergrenze mit z=1,28) und 35 % <strong>Zuverlässigkeit</strong> (durchgeführte / nachweislich verfügbare Pflichtangriffe). Ein verpasster Pflichtangriff beeinflusst nur die Zuverlässigkeit, wird nicht als ausgeführter 0★-Angriff ausgegeben. Sind Missed-Daten unvollständig, zeigen wir statt eines erfundenen Formwerts nur den Leistungswert mit dem Hinweis „Zuverlässigkeit offen“. Ein Formwert ist kein prognostizierter 3★-Erfolg und berücksichtigt noch keine echten Mirror-/First-Hit-Schwierigkeiten. Die reine Quote kann separat sortiert werden. 100 % aus zwei Angriffen sind weniger belastbar als viele dokumentierte Angriffe. Angriffe gegen niedrigere/höhere oder unbekannte Rathausstufen zählen hier nicht. 0 belegte Angriffe heißen „keine Daten“, nicht 0 %.</p>
-      <p>Die Spielerstatistik erlaubt zusätzlich 30/90/180/365 Tage oder alle Kriege. Tages- und Kriegsanzahlfilter gelten gemeinsam, der Clanüberblick bleibt davon unberührt. Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
+    <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird der Formwert berechnet?</summary>
+      <p><strong>Leistung (65 %):</strong> 3★-Quote gegen gleiches RH, vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
+      <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
+      <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
+      <p>Die Spielerform nutzt alle abgeschlossenen CWs/CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
     </details>
   </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
