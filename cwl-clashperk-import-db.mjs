@@ -9,11 +9,14 @@ const sameIdentity=(a,b)=>a.war_type===b.war_type&&
 const batches=(items,n=80)=>Array.from({length:Math.ceil(items.length/n)},
  (_,i)=>items.slice(i*n,(i+1)*n));
 
-export function planClashPerkMerge(parsed,existing=[]){
+export function planClashPerkMerge(parsed,existing=[],{
+ verifiedApiPairs=new Map(),unverifiedCandidates=[]
+}={}){
  if(!parsed||!Array.isArray(parsed.wars)||!parsed.wars.length)
   throw Error("Kein ClashPerk-Angriffsexport zum Importieren gefunden.");
  const old=new Map(existing.map(w=>[w.war_key,w]));
- const insert=[],extend=[],skip=[],conflicts=[];
+ const insert=[],extend=[],skip=[],conflicts=[],apiMatched=[];
+ const uncertain=new Set(unverifiedCandidates.map(c=>c.importKey));
  for(const w of parsed.wars){
   const direct=old.get(w.war_key);
   if(direct){
@@ -23,10 +26,28 @@ export function planClashPerkMerge(parsed,existing=[]){
    }
    if(direct.source==="api")skip.push(w.war_key);
    else extend.push(w);
+   if(verifiedApiPairs.has(w.war_key))apiMatched.push(w.war_key);
    continue;
   }
-  const api=existing.find(e=>e.source==="api"&&sameIdentity(e,w));
-  if(api){skip.push(w.war_key);continue}
+  if(uncertain.has(w.war_key)){
+   conflicts.push(w.war_key);continue;
+  }
+  const matched=verifiedApiPairs.get(w.war_key);
+  if(matched){
+   // Preserve source evidence under its own cp: ID; a verified API alias
+   // makes it one logical war in every statistics view. Do not discard
+   // its complete missed log just because the API has attacks already.
+   if(old.get(matched)?.source!=="api"){
+    conflicts.push(w.war_key);continue;
+   }
+   apiMatched.push(w.war_key);
+  }else{
+   const api=existing.find(e=>e.source==="api"&&sameIdentity(e,w));
+   if(api){
+    // Metadata alone can never authorize a destructive/losing merge.
+    conflicts.push(w.war_key);continue;
+   }
+  }
   const historical=existing.find(e=>e.source==="import"&&sameIdentity(e,w));
   // Old JSON history and newer ClashPerk War ID may describe one war.
   // Do not guess how to remap 1st/2nd attacks across mismatched identities.
@@ -34,7 +55,8 @@ export function planClashPerkMerge(parsed,existing=[]){
   insert.push(w);
  }
  const allowed=new Set([...insert,...extend].map(w=>w.war_key));
- return {insert,extend,skip,conflicts,
+ return {insert,extend,skip,conflicts,apiMatched,
+  logicalNew:insert.length-apiMatched.filter(key=>insert.some(w=>w.war_key===key)).length,
   attacks:parsed.attacks.filter(a=>allowed.has(a.war_key)),
   missed:parsed.missed.filter(m=>allowed.has(m.war_key)),
   total:parsed.wars.length};
@@ -43,7 +65,7 @@ export async function readAllStatWars(sb,clanId){
  const result=[];
  for(let offset=0;offset<10000;offset+=500){
   const {data,error}=await sb.from("cwl_stat_wars")
-   .select("war_key,war_type,started_at,team_size,opponent_tag,opponent_name,source,missed_log_complete")
+   .select("war_key,war_type,started_at,team_size,opponent_tag,opponent_name,source,finalized,missed_log_complete")
    .eq("clan_id",clanId).order("started_at",{ascending:false})
    .range(offset,offset+499);
   if(error)throw error;
