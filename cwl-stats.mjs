@@ -1205,6 +1205,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         " nachgewiesene verpasste Angriffe abgeglichen. "+
         (plan.apiMatched.length?plan.apiMatched.length+
           " bereits bekannte API-Kriege statistisch zusammengeführt. ":"")+
+        (result.reconciledLegacyAttacks>0?
+          result.reconciledLegacyAttacks+
+          " ältere Angriffsnummern sicher angeglichen (Sterne und Ziele unverändert). ":"")+
         (parsed.missingWars?"Unvollständige Kriege bleiben gekennzeichnet.":""),
         "success");
       notify("✓ ClashPerk-Statistiken abgeglichen");
