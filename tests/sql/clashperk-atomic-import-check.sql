@@ -182,7 +182,9 @@ begin
 end
 $$;
 
--- API war identity takes precedence even with a different key.
+-- Identical API and ClashPerk wars may both be stored AS SOURCE EVIDENCE,
+-- but the read model counts each only once. Never blindly skip a full
+-- Missed import based on metadata alone.
 reset role;
 insert into public.cwl_stat_wars(
  clan_id,war_key,war_type,started_at,team_size,
@@ -193,23 +195,114 @@ insert into public.cwl_stat_wars(
  ('2026-01-01 00:00:00+00'::timestamptz + 104*interval '1 day'),
  2,'#2PYL','API Synthetic','api',true
 );
+insert into public.cwl_stat_attacks (
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction
+) values
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','normal:api-collision',
+ '#8PYL',1,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100),
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','normal:api-collision',
+ '#8PYL',2,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $$
+do $
 declare v jsonb;
 begin
  v:=public.cwl_import_clashperk_atomic(
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   public.clashperk_test_payload('104'));
- if v->>'skippedApi'<>'1' then
-  raise exception 'API collision not skipped: %',v;
+ if v->>'inserted'<>'1' or v->>'skippedApi'<>'0' or
+    v->>'completeWars'<>'1' then
+  raise exception 'Verified API source alias was not preserved: %',v;
  end if;
- if exists(select 1 from public.cwl_stat_wars where war_key='cp:104') or
-    exists(select 1 from public.cwl_stat_attacks where war_key='cp:104') then
-  raise exception 'Duplicate API-owned war created';
+ if (select count(*) from public.cwl_stat_attacks where war_key='cp:104')<>2 or
+    (select count(*) from public.cwl_stat_missed where war_key='cp:104')<>1 or
+    (select count(*) from public.cwl_stat_attacks where war_key='normal:api-collision')<>2 then
+  raise exception 'API/ClashPerk source evidence not retained';
+ end if;
+ v:=public.cwl_import_clashperk_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  public.clashperk_test_payload('104'));
+ if v->>'extended'<>'1' then
+  raise exception 'Repeated API-overlap upload duplicated war';
  end if;
 end
-$$;
+$;
+
+-- The original UF 2 failure: API and ClashPerk start timestamps are
+-- exactly one day apart. Both sources must be accepted and kept auditable.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,
+ opponent_tag,opponent_name,source,finalized
+) values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+ 'cwl:api-day-shift','cwl',
+ ('2026-01-01 00:00:00+00'::timestamptz + 109*interval '1 day' - interval '1 day'),
+ 2,'#2PYL','API Synthetic','api',true
+);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction
+) values
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cwl:api-day-shift',
+ '#8PYL',1,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100),
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cwl:api-day-shift',
+ '#9PYL',1,'Another Player',18,'#2QLL','Synthetic Enemy',18,2,75);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $
+declare v jsonb; out jsonb;
+begin
+ v:=public.clashperk_test_payload('109');
+ v:=pg_catalog.jsonb_set(v,'{wars,0,war_type}','"cwl"'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{attacks,1,attacker_tag}','"#9PYL"'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{attacks,1,attack_order}','1'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{attacks,1,defender_tag}','"#2QLL"'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{attacks,1,destruction}','75'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{missed}','[]'::jsonb);
+ out:=public.cwl_import_clashperk_atomic(
+   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',v);
+ if out->>'inserted'<>'1' or out->>'attacks'<>'2' then
+  raise exception '24-hour verified CWL alias was rejected: %',out;
+ end if;
+end
+$;
+
+-- Same opponent/size/date is insufficient if a single API attack is
+-- missing or has a different result. Entire transaction must roll back.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,
+ opponent_tag,opponent_name,source,finalized
+) values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+ 'normal:partial-api','normal',
+ ('2026-01-01 00:00:00+00'::timestamptz + 110*interval '1 day'),
+ 2,'#2PYL','API Synthetic','api',true
+);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction
+) values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','normal:partial-api',
+ '#8PYL',1,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $
+begin
+ begin
+  perform public.cwl_import_clashperk_atomic(
+   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+   public.clashperk_test_payload('110'));
+  raise exception 'Unsafe merge of partial API evidence';
+ exception when unique_violation then null;
+ end;
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:110') then
+  raise exception 'Partial API overlap survived rollback';
+ end if;
+end
+$;
 
 -- An editor is not allowed to create a war for a second linked app clan.
 do $$
@@ -300,7 +393,7 @@ reset role;
 do $$
 begin
  if (select count(*) from public.cwl_stat_wars
-     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>4 then
+     where clan_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')<>8 then
   raise exception 'Unexpected main tenant war count';
  end if;
  if (select count(*) from public.cwl_stat_wars
