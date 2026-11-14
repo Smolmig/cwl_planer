@@ -124,15 +124,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
-    if(desc)desc.textContent="Letzte "+formWindow+" Tage · "+usable+
-      " mit gleich-RH-Angriffen · "+
-      unassessed+" ohne gleich-RH-Angriffsquote. "+
+    if(desc)desc.textContent=
+      usable+" Spieler mit vergleichbaren Angriffen · "+
+      unassessed+" ohne gleich-RH-Angriffe. "+
       (formSort==="evidence"?
-        "Formwert: 65 % Leistung, 35 % belegte Zuverlässigkeit. ":
-        formSort==="hitRate"?"Nach reiner 3★-Quote sortiert. ":
-        formSort==="reliability"?"Nach Zuverlässigkeit sortiert. ":
-        formSort==="attacks"?"Nach Angriffszahl sortiert. ":"Alphabetisch sortiert. ")+
-      "Keine Rangliste der Spielerstärke.";
+        "Sortiert nach Formwert – nicht nach der reinen 3★-Quote.":
+        formSort==="hitRate"?"Sortiert nach 3★-Quote (kleine Stichproben beachten).":
+        formSort==="reliability"?"Sortiert nach nachgewiesener Zuverlässigkeit.":
+        "Alphabetisch sortiert.");
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
       lastFormRowsVersion>=0&&lastFormRowsVersion!==version&&lastFormRowsClan===ctx.clanId;
     const topMargin=Math.max(0,document.querySelector(".topbar")
@@ -143,44 +142,56 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }):null;
     const anchorTag=anchor?.dataset.formTag,anchorTop=anchor?.getBoundingClientRect().top;
     const markup=rows.length?rows.map((p,i)=>{
-      const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
-      const why=b.excludedDifferentRH+b.excludedUnknownRH;
-      const quality=b.attacks?b.quality:why?"Keine Angriffe gegen gleiches RH erfasst":
-        "Keine erfassten Angriffe im Zeitraum";
-      const few=b.attacks>0&&b.attacks<5;
-      const other=why?" · "+b.excludedDifferentRH+" andere RH · "+
-        b.excludedUnknownRH+" RH unbekannt":"";
-      const reliability=b.reliability===null?
+      const b=p.windows[formWindow],hasAttacks=b.attacks>0;
+      const triples=hasAttacks?b.triples+" von "+b.attacks:"Keine";
+      const pct=b.hitRate===null?"–":b.hitRate+" %";
+      const complete=b.reliability!==null;
+      const quality=hasAttacks?b.quality:"Keine gleich-RH-Angriffe";
+      const sortByForm=formSort==="evidence"||formSort==="name";
+      const mainLabel=formSort==="reliability"?"Zuverlässigkeit":
+        formSort==="hitRate"?"3★-Quote":
+        b.formIndex!==null?"Formwert":"Leistungswert";
+      const mainValue=formSort==="reliability"?
+          (complete?b.reliability+" %":"–"):
+        formSort==="hitRate"?pct:
+        b.formIndex!==null?b.formIndex+" / 100":
+        b.performanceIndex!==null?b.performanceIndex+" / 100":"–";
+      const reliability=complete?
+        "Zuverlässigkeit "+b.reliability+" % · "+b.performed+
+        " von "+(b.performed+b.missedKnown)+" Pflichtangriffen ausgeführt":
         (b.performed+b.missedKnown?
-          "Zuverlässigkeit offen · "+b.performed+" ausgeführt, "+
-          b.missedKnown+" nachweislich verpasst":"Zuverlässigkeit nicht belegbar"):
-        "Zuverlässigkeit "+b.reliability+" % · "+b.performed+" ausgeführt / "+
-        (b.performed+b.missedKnown)+" mögliche";
-      const score=b.formIndex===null?
-        (b.performanceIndex===null?"Kein Formwert":
-          "Leistung "+b.performanceIndex+"/100 · Zuverlässigkeit offen"):
-        "Formwert "+b.formIndex+"/100";
+          "Zuverlässigkeit nicht vollständig belegbar · "+
+            b.performed+" ausgeführt, "+b.missedKnown+" nachweislich verpasst":
+          "Zuverlässigkeit nicht belegbar");
+      const scoreHint=sortByForm&&b.formIndex===null&&b.performanceIndex!==null?
+        " · Nur Leistungswert, weil Fehlangriffe nicht vollständig belegt sind":"";
+      const rateLine="3★-Quote "+pct+" · "+(hasAttacks?
+        b.triples+" von "+b.attacks+" Angriffen gegen gleiches RH":
+        "keine vergleichbaren Angriffe");
+      const other=b.excludedDifferentRH+b.excludedUnknownRH;
+      const details= [
+        "Ø Sterne "+(hasAttacks?
+          b.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":"–"),
+        "Gleiches RH: "+b.attacks+" Angriffe (CW "+b.normal+" / CWL "+b.cwl+")",
+        other?b.excludedDifferentRH+" andere RH · "+b.excludedUnknownRH+" RH unbekannt":null,
+        b.newest?"Letzter gleich-RH-Angriff: "+new Date(b.newest).toLocaleDateString("de-AT"):null
+      ].filter(Boolean);
       return "<div class='stats-form-row' data-form-tag='"+esc(p.tag)+"'>"+
-        "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Zeile "+(i+1)+"'>"+
-          (i+1)+".</span><b>"+esc(p.name)+"</b>"+
-        "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+
-          (few&&!/wenige Angriffe/i.test(quality)?" · Erst wenige Angriffe":"")+"</small></div>"+
+        "<div class='stats-form-top'>"+
+          "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Listenposition "+(i+1)+"'>"+(i+1)+".</span>"+
+            "<b>"+esc(p.name)+"</b><small>"+(p.former?"Ehemaliger Spieler · ":"")+esc(quality)+"</small></div>"+
+          "<div class='stats-form-primary' aria-label='"+esc(mainLabel+" "+mainValue)+"'>"+
+            "<span>"+esc(mainLabel)+"</span><strong>"+esc(mainValue)+"</strong></div>"+
+        "</div>"+
         "<div class='stats-form-results'>"+
-          "<div class='stats-form-figure'><span>3★-Quote · Gegner mit gleichem RH</span>"+
-            "<strong>"+pct+"</strong></div>"+
-          "<div class='stats-bar-track' role='img' aria-label='"+esc(b.attacks?
-            pct+" aus "+b.attacks+" Angriffen gegen gleiches RH":
-            "Keine auswertbaren Angriffe gegen gleiches RH")+"'>"+
-            (b.attacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
+          "<small class='stats-form-rate'>"+esc(rateLine)+"</small>"+
+          "<div class='stats-bar-track' role='img' aria-label='"+esc("3★-Quote "+pct)+"'>"+
+            (hasAttacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
           "</div>"+
-          "<small class='stats-form-breakdown'>"+(b.attacks?
-            b.triples+" von "+b.attacks+" Angriffen mit 3★ · Ø "+
-            b.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+
-            " ★ · CW "+b.normal+" / CWL "+b.cwl:
-            "Keine belegte 3★-Quote")+esc(other)+"</small>"+
-          "<small class='stats-form-evidence'>"+esc(score)+" · "+esc(reliability)+"</small>"+
-          (b.newest?"<small>Letzter gleich-RH-Angriff im Krieg vom "+
-            esc(new Date(b.newest).toLocaleDateString("de-AT"))+"</small>":"")+
+          "<small class='stats-form-evidence'>"+esc(reliability+scoreHint)+"</small>"+
+          "<details class='stats-form-player-details'><summary>Angriffsdetails</summary>"+
+            "<ul>"+details.map(text=>"<li>"+esc(text)+"</li>").join("")+"</ul>"+
+          "</details>"+
         "</div></div>";
     }).join(""):"<p class='stats-note'>"+(term?
       "Keine Spieler für diese Suche.":"Noch keine Clanmitglieder oder dokumentierten Angriffe vorhanden.")+"</p>";
