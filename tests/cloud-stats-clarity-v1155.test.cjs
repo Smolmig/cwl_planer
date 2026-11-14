@@ -34,7 +34,7 @@ test("Stats explain 2-of-2 samples and no longer crown an unvalidated top player
 test("Data provenance is honest: ClashPerk guide only appears for incomplete CWL, not false zeroes",()=>{
  // The combined Missed spreadsheet supports both war types; do not
  // require deprecated jargon or instructions to export it twice.
- assert.match(html,/Zusätzliche CWL-Missed- und Aufstellungswechsel-Meldungen/);
+ assert.match(html,/Ein gemeinsamer Missed-Export kann/);
  assert.match(html,/docs\.clashperk\.com\/features\/logs/);
  assert.match(html,/verpasste Angriffe nicht mit null gleichgesetzt werden/);
  assert.match(ui,/guide\.hidden=!\(cwl\.wars>0&&!cwl\.complete\)/);
