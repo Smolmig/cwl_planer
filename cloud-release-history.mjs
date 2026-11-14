@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "minor",
     "date": "2026-11-14",
     "title": "Spielerform mit Zuverlässigkeit und Zeitraumfiltern",
-    "description": "Die Spielerform berücksichtigt jetzt die Angriffsmenge und dokumentierte versäumte Pflichtangriffe, ohne unbekannte Daten als Misserfolge zu werten. Die Spielerstatistik lässt sich zusätzlich nach 30, 90, 180 oder 365 Tagen eingrenzen."
+    "description": "Die Spielerform zeigt die Leistung samt Stichprobe und belegter Zuverlässigkeit. Die Spielerstatistik lässt sich zusätzlich nach 30, 90, 180 oder 365 Tagen filtern."
   },
 
   {
