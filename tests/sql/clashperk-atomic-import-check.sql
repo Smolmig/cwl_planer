@@ -606,7 +606,7 @@ values
  '#8PYL',45,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $missed_case$
 declare payload jsonb; out jsonb;
 begin
  payload:=jsonb_set(public.clashperk_test_payload('185'),
@@ -630,7 +630,7 @@ begin
     (select count(*) from public.cwl_stat_missed where war_key='cp:185')<>1
  then raise exception 'Missed-only reupload was not idempotent'; end if;
 end
-$;
+$missed_case$;
 reset role;
 
 select 'legacy global-to-per-player attack order and missed-only follow-ups: verified' as result;
