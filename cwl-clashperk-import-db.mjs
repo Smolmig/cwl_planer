@@ -107,18 +107,21 @@ export async function commitClashPerkMerge(sb,plan,{
   throw Error("Zu viele Daten für einen sicheren Import. Bitte kleinere Clan-/Zeiträume einzeln exportieren.");
  onProgress("Alle geprüften Kriege werden gemeinsam gespeichert …");
  if(!assertCurrent())throw Error("Clan gewechselt oder Berechtigung geändert. Bitte Import neu starten.");
- const {data,error}=await sb.rpc("cwl_import_clashperk_atomic",{
+ const {data,error}=await sb.rpc("cwl_import_clashperk_verified_atomic",{
   p_clan:clanId,p_payload:payload
  });
  if(error){
   if(error.code==="PGRST202"||error.code==="42883")
-   throw Error("Der sichere Excel-Import ist noch nicht auf dem Server verfügbar. Es wurden keine Daten übernommen.");
+   throw Error("Der verifizierte Excel-Import ist noch nicht auf dem Server verfügbar. Es wurden keine Daten übernommen.");
   throw Error("Import nicht übernommen: "+String(error.message||"Datenbankfehler").slice(0,230));
  }
  if(!data||typeof data!=="object"||!Number.isInteger(data.inserted)||
     !Number.isInteger(data.extended)||!Number.isInteger(data.attacks)||
     !Number.isInteger(data.missed)||!Number.isInteger(data.skippedApi))
   throw Error("Der Server hat keinen bestätigten Importstatus geliefert. Bitte Statistik neu laden.");
+ if(data.inserted!==plan.insert.length||data.extended!==plan.extend.length||data.skippedApi!==0)
+  throw Error("Der Server hat nicht alle geprüften Quellbelege übernommen. "+
+    "Bitte die Statistik neu laden und den Importstatus prüfen.");
  if(!assertCurrent())throw Error("Der Clan wurde während des Imports gewechselt. Daten wurden nur im zuvor bestätigten Clan übernommen.");
  return {...data,skippedApi:data.skippedApi+plan.skip.length};
 }
