@@ -3526,7 +3526,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 @media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
 
 
-/* v1.21.0: compact, accessible statistics on narrow screens. */
+/* v1.22.0: compact, accessible statistics on narrow screens. */
 #view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 #view-stats .stats-period{width:100%;max-width:100%}
@@ -3579,6 +3579,14 @@ html.cloud-startup-pending .cloud-startup-splash{
 #view-stats .stats-linked-history-result ul{margin:0;padding:0 0 0 17px}
 #view-stats .stats-linked-history-result li{margin:6px 0}
 #view-stats .stats-linked-history-result small{display:block;margin:7px 0;color:var(--muted);font-size:11px}
+#view-stats .stats-current-profile-action{display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;max-width:100%;padding:7px 11px;margin:8px 8px 2px 0;
+ border:1px solid var(--primary);border-radius:9px;background:transparent;color:var(--text);
+ font-size:12px;font-weight:700;cursor:pointer}
+#view-stats .stats-current-profile-action:disabled{opacity:.6;cursor:progress}
+#view-stats .stats-current-profile-action:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+#view-stats .stats-current-profile-result{margin:6px 0 8px;font-size:12px;line-height:1.5;color:var(--muted)}
+#view-stats .stats-current-profile-result:empty{display:none}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3936,12 +3944,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.21.0</strong><span>Statistik mobil aufgeräumt</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.22.0</strong><span>Aktuelles Spielerprofil prüfen</span></div>
       <ul>
-       <li><b>Spielerform klarer:</b> Sortierkennzahl groß, 3★-Quote beschriftet und Details aufklappbar.</li>
-       <li><b>Weniger doppelte Texte:</b> Zuverlässigkeit wird nur noch einmal und eindeutig angezeigt.</li>
-       <li><b>Mobile Filter:</b> Datenbasis und Zeiträume lassen sich ohne verschachtelte Seitenkästen auswählen.</li>
-       <li><b>Verknüpfte Spieler:</b> Weitere Clan-Belege sind bei vorhandenen Zugriffsrechten gezielt abrufbar.</li>
+       <li><b>Aktuelles RH:</b> Bei nachgewiesenen Spielern lässt sich ihr aktuelles Clash-Profil bei Bedarf abrufen.</li>
+       <li><b>Historie geschützt:</b> Das aktuelle Rathaus wird mit Prüfzeitpunkt angezeigt; alte Angriffe bleiben unverändert.</li>
+       <li><b>Zugriff begrenzt:</b> Nur angemeldete Mitglieder mit dokumentierten Angriffen im eigenen App-Clan können das Profil prüfen.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4071,6 +4078,7 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
       <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
       <p>Die Spielerform nutzt alle abgeschlossenen CWs/CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
+      <p><strong>Aktuelles RH prüfen:</strong> Bei Spielern mit dokumentierten Angriffen lässt sich das aktuelle öffentliche Clash-Profil nach Anmeldung gezielt abrufen. Der angegebene Prüfzeitpunkt unterscheidet den aktuellen Stand von damaligen Rathausstufen. Die Historie und der Formwert werden dabei nicht verändert.</p>
     </details>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
     
@@ -4457,11 +4465,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.21.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.21.0"></script>
-<script src="./cwl-planning-core.js?v=1.21.0"></script>
+<script src="./clan-management-core.js?v=1.22.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.22.0"></script>
+<script src="./cwl-planning-core.js?v=1.22.0"></script>
 <script>
-const APP_VERSION="v1.21.0";
+const APP_VERSION="v1.22.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6086,7 +6094,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.21.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.22.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6476,6 +6484,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.21.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.22.0"></script>
 </body>
 </html>

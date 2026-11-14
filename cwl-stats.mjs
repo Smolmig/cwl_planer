@@ -144,6 +144,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const anchorTag=anchor?.dataset.formTag,anchorTop=anchor?.getBoundingClientRect().top;
     const markup=rows.length?rows.map((p,i)=>{
       const b=p.windows[formWindow],hasAttacks=b.attacks>0;
+      const documented=attacks.some(a=>cleanTag(a.attacker_tag)===p.tag);
       const triples=hasAttacks?b.triples+" von "+b.attacks:"Keine";
       const pct=b.hitRate===null?"–":b.hitRate+" %";
       const complete=b.reliability!==null;
@@ -192,6 +193,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "<small class='stats-form-evidence'>"+esc(reliability+scoreHint)+"</small>"+
           "<details class='stats-form-player-details'><summary>Angriffsdetails</summary>"+
             "<ul>"+details.map(text=>"<li>"+esc(text)+"</li>").join("")+"</ul>"+
+            (documented?
+              "<button type='button' class='stats-current-profile-action' data-current-profile='"+esc(p.tag)+"'>Aktuelles RH prüfen</button>"+
+              "<div class='stats-current-profile-result' role='status' aria-live='polite'></div>":"")+
             "<button type='button' class='stats-linked-history-action' data-linked-player='"+esc(p.tag)+"'>Weitere zugängliche Clans prüfen</button>"+
             "<div class='stats-linked-history-result' role='status' aria-live='polite'></div>"+
           "</details>"+
@@ -1313,6 +1317,37 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         lastComparableRowsMarkup=null;
         renderComparableForm();
       });
+    e("statsFormRows")?.addEventListener("click",async event=>{
+      const button=event.target.closest("button[data-current-profile]");
+      if(!button||button.disabled)return;
+      const host=button.parentElement?.querySelector(".stats-current-profile-result");
+      const ctx=context();
+      if(!host||!ctx.active||scope!==ctx.clanId)return;
+      if(!sb.functions?.invoke){host.textContent="Aktuelle Profile sind hier nicht verfügbar.";return}
+      const clan=ctx.clanId,atVersion=version;
+      button.disabled=true;host.textContent="Aktuelles Spielerprofil wird geprüft …";
+      try{
+        const {data,error}=await sb.functions.invoke("coc-player-profile",{
+          body:{clanId:clan,playerTag:button.dataset.currentProfile}
+        });
+        if(scope!==clan||context().clanId!==clan||
+          version!==atVersion||!button.isConnected)return;
+        const p=data?.profile;
+        if(error||!data?.ok||!p||cleanTag(p.tag)!==cleanTag(button.dataset.currentProfile)||
+          !Number.isInteger(p.townHallLevel))throw Error("profile_unavailable");
+        const checked=Number.isFinite(Date.parse(p.checkedAt))?
+          new Date(p.checkedAt).toLocaleString("de-AT"):"gerade";
+        host.textContent="Aktueller API-Stand: "+p.name+
+          " · RH "+p.townHallLevel+
+          (p.clan?" · Clan: "+p.clan.name:" · Ohne Clan")+
+          " · geprüft: "+checked+". Historische RH der Angriffe bleiben unverändert.";
+      }catch{
+        if(scope===clan&&button.isConnected)
+          host.textContent="Aktuelles Profil nicht abrufbar. Bitte Anmeldung, Nachweise und API-Verfügbarkeit prüfen.";
+      }finally{
+        if(button.isConnected)button.disabled=false;
+      }
+    });
     e("statsFormRows")?.addEventListener("click",async event=>{
       const button=event.target.closest("button[data-linked-player]");
       if(!button||button.disabled)return;

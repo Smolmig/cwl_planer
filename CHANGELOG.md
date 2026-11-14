@@ -6,6 +6,21 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-11-14
+
+### Neu
+- On-demand-Prüfung des aktuellen Clash-Spielerprofils für dokumentierte Angreifer innerhalb eines berechtigt verwalteten Clans. Die offizielle API liefert Name, aktuelles Rathaus und aktuelle Clanzugehörigkeit mit transparentem Prüfzeitpunkt.
+- Geschützter Supabase-Edge-Endpunkt: signierte User-Session, bestehende Clanmitgliedschaft, historische Angriffsevidenz und bestehende RLS vor dem API-Zugriff; der Supercell-Key bleibt ausschließlich auf dem Server.
+- Ergebnis nur im aufklappbaren Spielerbereich, keine zusätzlichen Kennzahlen in der normalen Rangliste, kein automatisches Umbenennen oder Umschreiben von historischen Angriffen/Statistiken.
+
+### Qualität
+- Prüflimits, kurzzeitiger API-Cache und minimierte API-Antwort; keine unabhängige global freigegebene Spielerstatistik oder Cross-Tenant-Schreiboperation.
+- Tests für Tag-/Rathaus-Validierung, Berechtigungsabfolge und Browserverhalten.
+
+### Hilfe
+- Unterschied zwischen aktuellem Clash-RH und historischem Angriffs-RH erklärt; Abruf ist gezielt und zeigt Prüfzeitpunkt.
+
+
 ### Server-Korrektur #254 – CWL-Abschluss mit fünf oder sieben Kriegen (ohne neuen Cloud-App-Release)
 - Bei einer belegten **Sechs-Clan-Liga mit genau fünf Runden** erkennt der serverseitige Freigabe-Guard nun den beendeten **fünften** eigenen Krieg als Abschluss. Bei **acht Clans mit sieben Runden** bleibt ausschließlich der beendete siebente eigene Krieg maßgeblich.
 - Die Bewertung verlangt stimmigen servicegeschützten Gruppenstand, korrekten verknüpften Clan, sechs/acht **einzigartige gültige Clan-Tags**, exakt fünf/sieben Runden und einen wirklich als `warEnded` belegten eigenen Finalkrieg; fehlende/unvollständige API-Daten erzeugen keine Sperre.

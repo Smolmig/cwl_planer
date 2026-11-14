@@ -1,5 +1,5 @@
 {
-  "version": "v1.21.0",
+  "version": "v1.22.0",
   "released": "2026-11-14",
-  "summary": "Statistik mobil aufgeräumt: verständlicher Formwert, eindeutige Zuverlässigkeit, kompakte Filter und zugriffsbeschränkte Clanprofile."
+  "summary": "Statistik: aktuelles Spielerprofil per geschützter Clash-API prüfen und historisches von aktuellem Rathaus klar trennen."
 }
