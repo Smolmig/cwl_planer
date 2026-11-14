@@ -374,7 +374,7 @@ begin
     (select count(*) from public.cwl_stat_attacks where war_key='cp:107')<>1 then
   raise exception 'CWL one-attack coverage was not verified';
  end if;
- v:=public.clashperk_test_payload('108');
+ v:=public.clashperk_test_payload('112');
  v:=pg_catalog.jsonb_set(v,'{wars,0,war_type}','"cwl"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{missed,0,missed_count}','1'::jsonb);
  begin
@@ -383,7 +383,7 @@ begin
   raise exception 'Incorrectly accepted second CWL attack';
  exception when sqlstate '22023' then null;
  end;
- if exists(select 1 from public.cwl_stat_wars where war_key='cp:108') then
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:112') then
   raise exception 'Partial invalid CWL imported despite rollback';
  end if;
 end
