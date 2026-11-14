@@ -19,6 +19,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.19.2] - 2026-11-14
+
+### Behoben
+- Der atomare ClashPerk-Import nutzt einen **neuen, versionierten und separat freigegebenen RPC** (`cwl_import_clashperk_verified_atomic`). Die bisherige RPC bleibt für zwischengespeicherte ältere Clients unverändert, bis deren sichere Ablösung vorbereitet ist.
+- Bereits per offizieller Clash-API erfasste Kriege mit unterschiedlichem War-Key und bis zu 36 Stunden Zeitunterschied werden anhand des **gesamten multiset-identischen Angriffsverlaufs einschließlich Sterne und Zerstörung** erkannt. Ein eindeutiger Treffer ist Pflicht; unvollständige, widersprüchliche oder mehrdeutige Angriffe brechen den gesamten Import transaktional ab.
+- Eindeutig passende ClashPerk-Nachweise für ausgeführte und verpasste Angriffe dürfen unter ihrem eigenen Quellschlüssel ergänzt werden. Die Statistik wertet einen bestätigten Krieg dennoch nur einmal aus. Originaldaten, CWL-Plan, API-War-Key, Tenant-RLS und Mitgliedsrechte bleiben unverändert.
+- App- und Datenbankprüfung verwenden dieselben strengen Identitätskriterien; ein Server ohne neue RPC kann keine Teilimportmeldung vortäuschen. Die Importantwort wird gegen die Vorschau abgeglichen.
+
+### Tests
+- Isoliertes PostgreSQL 17, authentifizierte lokale Supabase-/GoTrue-RPCs, PostgREST und WebKit-/Chromium-UAT. Regressionen für +24 Stunden Zeitverschiebung, normalen CW, CWL, unvollständige API-Angriffe und idempotente Wiederholung.
+
 ## [1.19.1] - 2026-11-14
 
 ### Behoben
