@@ -5,11 +5,12 @@
 const tag=value=>String(value||"").trim().toUpperCase();
 const time=value=>Date.parse(value);
 const sameTenant=(a,b)=>!!a.clan_id&&!!b.clan_id?a.clan_id===b.clan_id:true;
-const sameMetadata=(a,b)=>{
+export const isPotentialClashPerkApiOverlap=(a,b)=>{
  const delta=time(b.started_at)-time(a.started_at);
  return a.source==="api"&&b.source==="import"&&
   a.finalized===true&&b.finalized===true&&sameTenant(a,b)&&
-  a.war_type===b.war_type&&tag(a.opponent_tag)===tag(b.opponent_tag)&&
+  a.war_type===b.war_type&&tag(a.opponent_tag).length>=4&&
+  tag(a.opponent_tag)===tag(b.opponent_tag)&&
   Number(a.team_size)===Number(b.team_size)&&
   Number.isFinite(delta)&&Math.abs(delta)<=36*3600000;
 };
@@ -58,7 +59,7 @@ export function reconcileClashPerkApiHistory(wars=[],attacks=[],missedEvents=[])
  const pairCandidates=new Map();
  const conflicts=[];
  for(const imported of imports){
-  const possible=api.filter(w=>sameMetadata(w,imported));
+  const possible=api.filter(w=>isPotentialClashPerkApiOverlap(w,imported));
   if(!possible.length)continue;
   const exact=possible.filter(w=>matchesAttacks(
    byWar.get(w.war_key)||[],byWar.get(imported.war_key)||[]));
@@ -149,7 +150,7 @@ export function classifyClashPerkApiCandidates(parsed,existingWars,existingAttac
  const official=existingWars.filter(w=>w.source==="api"&&w.finalized===true);
  const apiRows=existingAttacks.filter(a=>official.some(w=>w.war_key===a.war_key));
  const candidateWars=parsed.wars.filter(w=>
-  official.some(o=>sameMetadata(o,w)));
+  official.some(o=>isPotentialClashPerkApiOverlap(o,w)));
  if(!candidateWars.length)return {verified:new Map(),conflicts:[]};
  const result=reconcileClashPerkApiHistory(
   [...official,...candidateWars],[...apiRows,...parsed.attacks],[]);
