@@ -125,7 +125,7 @@ test("missed data for wars not included in this file is reported, never forged",
  assert.ok(got.warnings.some(x=>x.includes("ausgelassen")));
 });
 
-test("an existing API war wins against the same historical Excel war, even with a different war_key",async()=>{
+test("API metadata overlap is rejected without independent attack-signature verification",async()=>{
  const {parseClashPerkSheets}=await xlsx();
  const {planClashPerkMerge}=await db();
  const parsed=parseClashPerkSheets([attackSheet([hit(4)])],tag);
@@ -133,7 +133,8 @@ test("an existing API war wins against the same historical Excel war, even with 
  const existing=[{...w,war_key:"normal:2026...",source:"api"}];
  const plan=planClashPerkMerge(parsed,existing);
  assert.equal(plan.insert.length,0);
- assert.equal(plan.skip.length,1);
+ assert.equal(plan.skip.length,0);
+ assert.deepEqual(plan.conflicts,[w.war_key]);
  assert.equal(plan.attacks.length,0);
  assert.equal(plan.missed.length,0);
 });
@@ -286,7 +287,7 @@ test("UI accepts several .xlsx files, retains JSON fallback and previews before 
  assert.match(html,/\/export attack-log/);
  assert.match(html,/\/export missed/);
  assert.match(stats,/await readClashPerkXlsx\(files\[i\]\)/);
- assert.match(stats,/const plan=planClashPerkMerge\(parsed,old\)/);
+ assert.match(stats,/const plan=planClashPerkMerge\(parsed,old,\{/);
  assert.match(stats,/if\(!await confirmAction\(summary/);
  assert.match(stats,/commitClashPerkMerge\(sb,plan/);
  assert.match(stats,/return importFile\(chosen\[0\]\)/);
