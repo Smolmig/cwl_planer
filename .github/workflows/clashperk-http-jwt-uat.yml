@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
       - 'tests/sql/clashperk-http-setup.sql'
       - 'tests/clashperk-http-jwt-uat.test.cjs'
       - '.github/workflows/clashperk-http-jwt-uat.yml'
@@ -10,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
       - 'tests/sql/clashperk-http-setup.sql'
       - 'tests/clashperk-http-jwt-uat.test.cjs'
       - '.github/workflows/clashperk-http-jwt-uat.yml'
@@ -50,6 +52,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-http-setup.sql
       - name: Start isolated PostgREST (NO production Supabase credentials)
         run: |

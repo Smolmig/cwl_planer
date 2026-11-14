@@ -48,14 +48,47 @@ function matchesAttacks(a,b){
  return x&&y&&x.size===y.size&&
   [...x].every(([k,count])=>y.get(k)===count);
 }
+export function normalizeLegacyImportedWarStatuses(wars=[],attacks=[],missedEvents=[],now=Date.now()){
+ // Older source imports could persist 'finalized=false' despite having
+ // ended long ago, and even incorrectly persist missed_log_complete=true.
+ // This is a READ-MODEL correction only: do not mutate source evidence.
+ const slots=new Map();
+ const add=(warKey,playerTag,count)=>{
+  const k=tag(playerTag),n=Number(count);
+  if(!warKey||!k||!Number.isInteger(n)||n<1)return;
+  if(!slots.has(warKey))slots.set(warKey,new Map());
+  const byPlayer=slots.get(warKey);
+  byPlayer.set(k,(byPlayer.get(k)||0)+n);
+ };
+ for(const a of attacks)add(a.war_key,a.attacker_tag,1);
+ for(const m of missedEvents)add(m.war_key,m.player_tag,m.missed_count);
+ let reclassified=0,incomplete=0;
+ const items=wars.map(w=>{
+  const start=time(w.started_at);
+  if(w.source!=="import"||w.finalized!==false||
+     !["normal","cwl"].includes(w.war_type)||
+     !Number.isFinite(start)||start>now-72*3600000)return w;
+  const size=Number(w.team_size),cap=w.war_type==="cwl"?1:2;
+  const players=slots.get(w.war_key)||new Map();
+  const full=Number.isInteger(size)&&size>0&&size<=50&&
+    players.size===size&&[...players.values()].every(n=>n===cap);
+  reclassified++;
+  if(!full)incomplete++;
+  return {...w,finalized:true,missed_log_complete:full,
+    roster_tags:full?[...players.keys()]:null};
+ });
+ return {wars:items,reclassified,incomplete};
+}
 export function reconcileClashPerkApiHistory(wars=[],attacks=[],missedEvents=[]){
+ const legacy=normalizeLegacyImportedWarStatuses(wars,attacks,missedEvents);
+ const normalizedWars=legacy.wars;
  const byWar=new Map();
  for(const row of attacks){
   if(!byWar.has(row.war_key))byWar.set(row.war_key,[]);
   byWar.get(row.war_key).push(row);
  }
- const api=wars.filter(w=>w.source==="api");
- const imports=wars.filter(w=>w.source==="import");
+ const api=normalizedWars.filter(w=>w.source==="api");
+ const imports=normalizedWars.filter(w=>w.source==="import");
  const pairCandidates=new Map();
  const conflicts=[];
  for(const imported of imports){
@@ -100,7 +133,7 @@ export function reconcileClashPerkApiHistory(wars=[],attacks=[],missedEvents=[])
   aliases.set(items[0].war_key,apiKey);
   byOfficial.set(apiKey,items[0]);
  }
- const canonicalWars=wars.filter(w=>!aliases.has(w.war_key)).map(w=>{
+ const canonicalWars=normalizedWars.filter(w=>!aliases.has(w.war_key)).map(w=>{
   const imported=byOfficial.get(w.war_key);
   if(!imported)return w;
   return {...w,missed_log_complete:
@@ -141,7 +174,9 @@ export function reconcileClashPerkApiHistory(wars=[],attacks=[],missedEvents=[])
  return {wars:canonicalWars,attacks:canonicalAttacks,missedEvents:acceptedMisses,
   aliases,conflicts,
   deduplicatedWars:aliases.size,
-  deduplicatedAttacks:attacks.length-canonicalAttacks.length};
+  deduplicatedAttacks:attacks.length-canonicalAttacks.length,
+  legacyReclassified:legacy.reclassified,
+  legacyIncomplete:legacy.incomplete};
 }
 
 // Import preflight can call this with parsed import wars + existing official
