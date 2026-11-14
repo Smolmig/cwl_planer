@@ -48,6 +48,7 @@ declare
  v_saved_attacks integer;
  v_rekeyed integer;
  v_rekeyed_total integer := 0;
+ v_legacy_orders integer;
  v_existing_missed public.cwl_stat_missed%rowtype;
  v_war_keys text[] := array[]::text[];
  v_apply_keys text[] := array[]::text[];
@@ -166,7 +167,10 @@ begin
      raise exception 'Stored ClashPerk attack evidence differs in war %; no changes saved',v_key
        using errcode='23505';
    end if;
-   select count(*)::integer into v_saved_attacks
+   select count(*)::integer,
+          count(*) filter (where a.attack_order >
+            (case when v_type='cwl' then 1 else 2 end))::integer
+      into v_saved_attacks,v_legacy_orders
      from public.cwl_stat_attacks a
      where a.clan_id=p_clan and a.war_key=v_key;
    if v_saved_attacks>0 then
@@ -231,7 +235,9 @@ begin
        raise exception 'Incomplete legacy attack order normalization in war %',v_key
          using errcode='23505';
      end if;
-     v_rekeyed_total:=v_rekeyed_total+v_rekeyed;
+     -- Count only *noncanonical* legacy IDs in the user-facing summary.
+     -- Reuploading an already normalized war reports zero corrections.
+     v_rekeyed_total:=v_rekeyed_total+v_legacy_orders;
    end if;
   else
    -- The official API and ClashPerk can report the same completed war
