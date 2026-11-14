@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.0";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.1";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
 import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates,isPotentialClashPerkApiOverlap} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
@@ -598,13 +598,16 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const provenanceNote=$("statsReconciliationNote");
     if(provenanceNote){
       const n=sourceReconciliation.deduplicatedWars,conflicts=sourceReconciliation.conflicts.length;
-      provenanceNote.hidden=!n&&!conflicts;
-      provenanceNote.textContent=
-        (n?n+" API-/ClashPerk-Kriege sicher zusammengeführt · "+
-          sourceReconciliation.deduplicatedAttacks+" Doppelangriffe nur einmal gezählt. "+
-          "Die Originalbelege bleiben gespeichert.":"")+
-        (conflicts?(n?" ":"")+conflicts+
-          " ähnliche Kriege sind nicht eindeutig; bitte Importquellen prüfen.":"");
+      const legacy=sourceReconciliation.legacyReclassified||0;
+      const incomplete=sourceReconciliation.legacyIncomplete||0;
+      provenanceNote.hidden=!n&&!conflicts&&!legacy;
+      provenanceNote.textContent=[
+        n?n+" API-/ClashPerk-Kriege sicher zusammengeführt, "+
+          sourceReconciliation.deduplicatedAttacks+" Angriffe nur einmal gezählt.":"",
+        legacy?legacy+" ältere importierte Kriege zeitlich abgeschlossen; "+
+          (incomplete?incomplete+" davon mit offenen Angriffsnachweisen.":"alle Angriffe belegt."):"",
+        conflicts?conflicts+" ähnliche Kriege ohne eindeutige Zuordnung.":""
+      ].filter(Boolean).join(" ");
     }
     syncPeriodChoices();
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons,days:playerDays});
@@ -1124,19 +1127,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
             }
           }
           verified=classifyClashPerkApiCandidates(parsed,old,knownAttacks);
-          // The existing atomic RPC still skips a NEW ClashPerk key when
-          // an API war is within 8h. Refuse instead of falsely claiming
-          // the appended Missed evidence was saved. Existing cp keys are safe.
-          const unsupported=[...verified.verified].filter(([cpKey,apiKey])=>{
-            if(old.some(w=>w.war_key===cpKey))return false;
-            const imported=parsed.wars.find(w=>w.war_key===cpKey);
-            const official=nearby.find(w=>w.war_key===apiKey);
-            return imported&&official&&
-              Math.abs(Date.parse(imported.started_at)-Date.parse(official.started_at))<=8*3600000;
-          });
-          if(unsupported.length)throw Error(
-            unsupported.length+" API-Kriege liegen innerhalb des alten 8-Stunden-Abgleichs. "+
-            "Für diese neuen Quellbelege fehlt noch eine serverseitige Erweiterung; nichts gespeichert.");
+          // The additive verified RPC independently checks every potential
+          // API overlap; older servers reject its name before writing.
         }
       }
       const plan=planClashPerkMerge(parsed,old,{
