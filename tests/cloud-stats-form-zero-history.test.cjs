@@ -144,10 +144,10 @@ test("form UI distinguishes unobserved members from real losses; reload keeps re
      const named=get("#PPPP"),unknown=get("#QQQQ"),different=get("#RRRR"),former=get("#JJJJ");
      const initial={
       liveName:named?.querySelector("b")?.textContent,
-      observed:named?.querySelector("strong")?.textContent,
+      observed:named?.querySelector(".stats-form-rate")?.textContent,
       unknownName:unknown?.querySelector("b")?.textContent,
-      unknownQuote:unknown?.querySelector("strong")?.textContent,
-      unknownDetail:unknown?.querySelector(".stats-form-breakdown")?.textContent,
+      unknownQuote:unknown?.querySelector(".stats-form-rate")?.textContent,
+      unknownDetail:unknown?.querySelector(".stats-form-results")?.textContent,
       unknownAria:unknown?.querySelector(".stats-bar-track")?.getAttribute("aria-label"),
       differentDetail:different?.textContent,
       former:former?.textContent,
@@ -182,16 +182,16 @@ test("form UI distinguishes unobserved members from real losses; reload keeps re
     },theme);
     const context=JSON.stringify({width,theme,result});
     assert.equal(result.initial.liveName,"Neuer Name",context);
-    assert.equal(result.initial.observed,"100 %",context);
+    assert.match(result.initial.observed,/3★-Quote 100 %/,context);
     assert.equal(result.initial.unknownName,"Ohne Angriff",context);
-    assert.equal(result.initial.unknownQuote,"Keine Daten",context);
-    assert.match(result.initial.unknownDetail,/Keine belegte 3★-Quote/,context);
+    assert.match(result.initial.unknownQuote,/keine vergleichbaren Angriffe/,context);
+    assert.match(result.initial.unknownDetail,/Zuverlässigkeit nicht belegbar/,context);
     assert.doesNotMatch(result.initial.unknownDetail,/0 von 0/,context);
     assert.match(result.initial.unknownAria,/Keine auswertbaren Angriffe/,context);
     assert.match(result.initial.differentDetail,/1 andere RH/,context);
-    assert.match(result.initial.former,/Früherer Spieler/,context);
-    assert.match(result.initial.former,/Zuverlässigkeit offen/,context);
-    assert.match(result.initial.intro,/ohne gleich-RH-Angriffsquote/,context);
+    assert.match(result.initial.former,/Ehemaliger Spieler/,context);
+    assert.match(result.initial.former,/Zuverlässigkeit nicht vollständig belegbar/,context);
+    assert.match(result.initial.intro,/ohne gleich-RH-Angriffe/,context);
     assert.ok(result.initial.count>=49,context);
     assert.deepEqual(result.searchResult,["Ohne Angriff"],context);
     assert.match(result.noMatch,/Keine Spieler für diese Suche/,context);

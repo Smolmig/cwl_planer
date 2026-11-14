@@ -1,4 +1,5 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.0";
+import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
 import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates,isPotentialClashPerkApiOverlap} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
@@ -124,15 +125,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
-    if(desc)desc.textContent="Letzte "+formWindow+" Tage · "+usable+
-      " mit gleich-RH-Angriffen · "+
-      unassessed+" ohne gleich-RH-Angriffsquote. "+
+    if(desc)desc.textContent=
+      usable+" Spieler mit vergleichbaren Angriffen · "+
+      unassessed+" ohne gleich-RH-Angriffe. "+
       (formSort==="evidence"?
-        "Formwert: 65 % Leistung, 35 % belegte Zuverlässigkeit. ":
-        formSort==="hitRate"?"Nach reiner 3★-Quote sortiert. ":
-        formSort==="reliability"?"Nach Zuverlässigkeit sortiert. ":
-        formSort==="attacks"?"Nach Angriffszahl sortiert. ":"Alphabetisch sortiert. ")+
-      "Keine Rangliste der Spielerstärke.";
+        "Sortiert nach Formwert – nicht nach der reinen 3★-Quote.":
+        formSort==="hitRate"?"Sortiert nach 3★-Quote (kleine Stichproben beachten).":
+        formSort==="reliability"?"Sortiert nach nachgewiesener Zuverlässigkeit.":
+        "Alphabetisch sortiert.");
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
       lastFormRowsVersion>=0&&lastFormRowsVersion!==version&&lastFormRowsClan===ctx.clanId;
     const topMargin=Math.max(0,document.querySelector(".topbar")
@@ -143,44 +143,58 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }):null;
     const anchorTag=anchor?.dataset.formTag,anchorTop=anchor?.getBoundingClientRect().top;
     const markup=rows.length?rows.map((p,i)=>{
-      const b=p.windows[formWindow],pct=b.hitRate===null?"Keine Daten":b.hitRate+" %";
-      const why=b.excludedDifferentRH+b.excludedUnknownRH;
-      const quality=b.attacks?b.quality:why?"Keine Angriffe gegen gleiches RH erfasst":
-        "Keine erfassten Angriffe im Zeitraum";
-      const few=b.attacks>0&&b.attacks<5;
-      const other=why?" · "+b.excludedDifferentRH+" andere RH · "+
-        b.excludedUnknownRH+" RH unbekannt":"";
-      const reliability=b.reliability===null?
+      const b=p.windows[formWindow],hasAttacks=b.attacks>0;
+      const triples=hasAttacks?b.triples+" von "+b.attacks:"Keine";
+      const pct=b.hitRate===null?"–":b.hitRate+" %";
+      const complete=b.reliability!==null;
+      const quality=hasAttacks?b.quality:"Keine gleich-RH-Angriffe";
+      const sortByForm=formSort==="evidence"||formSort==="name";
+      const mainLabel=formSort==="reliability"?"Zuverlässigkeit":
+        formSort==="hitRate"?"3★-Quote":
+        b.formIndex!==null?"Formwert":"Leistungswert";
+      const mainValue=formSort==="reliability"?
+          (complete?b.reliability+" %":"–"):
+        formSort==="hitRate"?pct:
+        b.formIndex!==null?b.formIndex+" / 100":
+        b.performanceIndex!==null?b.performanceIndex+" / 100":"–";
+      const reliability=complete?
+        "Zuverlässigkeit "+b.reliability+" % · "+b.performed+
+        " von "+(b.performed+b.missedKnown)+" Pflichtangriffen ausgeführt":
         (b.performed+b.missedKnown?
-          "Zuverlässigkeit offen · "+b.performed+" ausgeführt, "+
-          b.missedKnown+" nachweislich verpasst":"Zuverlässigkeit nicht belegbar"):
-        "Zuverlässigkeit "+b.reliability+" % · "+b.performed+" ausgeführt / "+
-        (b.performed+b.missedKnown)+" mögliche";
-      const score=b.formIndex===null?
-        (b.performanceIndex===null?"Kein Formwert":
-          "Leistung "+b.performanceIndex+"/100 · Zuverlässigkeit offen"):
-        "Formwert "+b.formIndex+"/100";
+          "Zuverlässigkeit nicht vollständig belegbar · "+
+            b.performed+" ausgeführt, "+b.missedKnown+" nachweislich verpasst":
+          "Zuverlässigkeit nicht belegbar");
+      const scoreHint=sortByForm&&b.formIndex===null&&b.performanceIndex!==null?
+        " · Nur Leistungswert, weil Fehlangriffe nicht vollständig belegt sind":"";
+      const rateLine="3★-Quote "+pct+" · "+(hasAttacks?
+        b.triples+" von "+b.attacks+" Angriffen gegen gleiches RH":
+        "keine vergleichbaren Angriffe");
+      const other=b.excludedDifferentRH+b.excludedUnknownRH;
+      const details= [
+        "Ø Sterne "+(hasAttacks?
+          b.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":"–"),
+        "Gleiches RH: "+b.attacks+" Angriffe (CW "+b.normal+" / CWL "+b.cwl+")",
+        other?b.excludedDifferentRH+" andere RH · "+b.excludedUnknownRH+" RH unbekannt":null,
+        b.newest?"Letzter gleich-RH-Angriff: "+new Date(b.newest).toLocaleDateString("de-AT"):null
+      ].filter(Boolean);
       return "<div class='stats-form-row' data-form-tag='"+esc(p.tag)+"'>"+
-        "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Zeile "+(i+1)+"'>"+
-          (i+1)+".</span><b>"+esc(p.name)+"</b>"+
-        "<small>"+(p.former?"Früherer Spieler · ":"")+esc(quality)+
-          (few&&!/wenige Angriffe/i.test(quality)?" · Erst wenige Angriffe":"")+"</small></div>"+
+        "<div class='stats-form-top'>"+
+          "<div class='stats-form-person'><span class='stats-form-rank' aria-label='Listenposition "+(i+1)+"'>"+(i+1)+".</span>"+
+            "<b>"+esc(p.name)+"</b><small>"+(p.former?"Ehemaliger Spieler · ":"")+esc(quality)+"</small></div>"+
+          "<div class='stats-form-primary' aria-label='"+esc(mainLabel+" "+mainValue)+"'>"+
+            "<span>"+esc(mainLabel)+"</span><strong>"+esc(mainValue)+"</strong></div>"+
+        "</div>"+
         "<div class='stats-form-results'>"+
-          "<div class='stats-form-figure'><span>3★-Quote · Gegner mit gleichem RH</span>"+
-            "<strong>"+pct+"</strong></div>"+
-          "<div class='stats-bar-track' role='img' aria-label='"+esc(b.attacks?
-            pct+" aus "+b.attacks+" Angriffen gegen gleiches RH":
-            "Keine auswertbaren Angriffe gegen gleiches RH")+"'>"+
-            (b.attacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
+          "<small class='stats-form-rate'>"+esc(rateLine)+"</small>"+
+          "<div class='stats-bar-track' role='img' aria-label='"+esc(hasAttacks?"3★-Quote "+pct:"Keine auswertbaren Angriffe gegen gleiches RH")+"'>"+
+            (hasAttacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
           "</div>"+
-          "<small class='stats-form-breakdown'>"+(b.attacks?
-            b.triples+" von "+b.attacks+" Angriffen mit 3★ · Ø "+
-            b.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+
-            " ★ · CW "+b.normal+" / CWL "+b.cwl:
-            "Keine belegte 3★-Quote")+esc(other)+"</small>"+
-          "<small class='stats-form-evidence'>"+esc(score)+" · "+esc(reliability)+"</small>"+
-          (b.newest?"<small>Letzter gleich-RH-Angriff im Krieg vom "+
-            esc(new Date(b.newest).toLocaleDateString("de-AT"))+"</small>":"")+
+          "<small class='stats-form-evidence'>"+esc(reliability+scoreHint)+"</small>"+
+          "<details class='stats-form-player-details'><summary>Angriffsdetails</summary>"+
+            "<ul>"+details.map(text=>"<li>"+esc(text)+"</li>").join("")+"</ul>"+
+            "<button type='button' class='stats-linked-history-action' data-linked-player='"+esc(p.tag)+"'>Weitere zugängliche Clans prüfen</button>"+
+            "<div class='stats-linked-history-result' role='status' aria-live='polite'></div>"+
+          "</details>"+
         "</div></div>";
     }).join(""):"<p class='stats-note'>"+(term?
       "Keine Spieler für diese Suche.":"Noch keine Clanmitglieder oder dokumentierten Angriffe vorhanden.")+"</p>";
@@ -619,22 +633,13 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       (playerDays==="all"?"Kein zusätzlicher Tagesfilter.":"Zeitraum: letzte "+playerDays+" Tage."):
       "Für diese Auswahl sind noch keine abgeschlossenen Kriege bzw. CWL-Tage gespeichert. "+
       "Fehlende Angriffe sind keine 0-%-Quote.";
-    if($("statsScopeExplainer")){
-      const normal=type==="cwl"?"":last==="all"?
-        (playerDays==="all"?"Alle "+scopeInfo.allNormal+" verfügbaren normalen "+(scopeInfo.allNormal===1?"CW":"CWs"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" normalen CWs im Zeitraum"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+
-        " normalen CWs (Obergrenze: "+last+")";
-      const league=type==="normal"?"":cwlSeasons==="all"?
-        (playerDays==="all"?"alle "+scopeInfo.allCwl+" vorhandenen CWL-Durchgänge":
-          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen im Zeitraum"):
-        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen";
-      $("statsScopeExplainer").textContent=scopeInfo.selectedWars?
-        [normal,league].filter(Boolean).join(" + ")+
-        (playerDays==="all"?"":" · letzte "+playerDays+" Tage")+
-        " · alle sichtbaren Spielerwerte nutzen exakt diese Datenbasis.":
-        "Keine abgeschlossenen Kriege in dieser Auswahl. Noch keine Spielerwerte vorhanden.";
-    }
+    if($("statsScopeExplainer"))$("statsScopeExplainer").textContent=
+      scopeInfo.selectedWars?
+        scopeInfo.selectedWars+" abgeschlossene "+
+        (scopeInfo.selectedWars===1?"Kriegstag":"Kriegstage")+
+        " ausgewählt · "+formatDate(scopeInfo.first)+" – "+
+        formatDate(scopeInfo.recent):
+        "Für diese Auswahl gibt es keine abgeschlossenen Kriege.";
     if(section==="compare"){renderMatchups();renderDuel();}
     if(section==="history"){renderTimeline();renderWarHistory(earlyHistoryAnchor);}
     if(section==="form")renderComparableForm();
@@ -1308,6 +1313,42 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         lastComparableRowsMarkup=null;
         renderComparableForm();
       });
+    e("statsFormRows")?.addEventListener("click",async event=>{
+      const button=event.target.closest("button[data-linked-player]");
+      if(!button||button.disabled)return;
+      const host=button.parentElement?.querySelector(".stats-linked-history-result");
+      const ctx=context();
+      if(!host||!ctx.active||scope!==ctx.clanId)return;
+      const clan=ctx.clanId,atVersion=version;
+      button.disabled=true;host.textContent="Berechtigte Clans werden geprüft …";
+      try{
+        const result=await loadAccessiblePlayerHistory(sb,button.dataset.linkedPlayer,clan);
+        // Never render stale private data after switching clans or sessions.
+        if(scope!==clan||context().clanId!==clan||version!==atVersion||!button.isConnected)return;
+        if(!result.clans.length){
+          host.textContent="Keine weiteren dokumentierten Angriffe in zugänglichen Clans gefunden.";
+          return;
+        }
+        host.innerHTML="<p>Weitere zugängliche Clan-Profile (getrennt, keine globale Summe):</p>"+
+          "<ul>"+result.clans.map(c=>{
+            const day=new Date(c.latestAttackDate).toLocaleDateString("de-AT");
+            const th=c.latestDocumentedTh?" · Zuletzt belegtes RH "+c.latestDocumentedTh:"";
+            const flag=c.possibleDuplicateSources?" · Mehrere Datenquellen, Rohwerte":"";
+            return "<li><strong>"+esc(c.clanName)+"</strong> ("+esc(c.clashTag||"")+")"+
+              ": "+esc(c.recordedAttacks)+" dokumentierte Angriffe · "+
+              esc(c.rawThreeStarRate)+" % 3★ · "+esc(day)+esc(th)+
+              esc(flag)+"</li>";
+          }).join("")+"</ul>"+
+          "<small>Nur Clans mit bestehender Berechtigung. Alte Angriffsdaten sind keine aktuellen API-Profildaten."+
+          (result.truncated?" Auswahl unvollständig; keine abschließende Gesamtstatistik.":"")+
+          "</small>";
+      }catch(error){
+        if(scope===clan&&button.isConnected)
+          host.textContent="Weitere Clan-Daten derzeit nicht abrufbar. Bitte Anmeldung und Berechtigungen prüfen.";
+      }finally{
+        if(button.isConnected)button.disabled=false;
+      }
+    });
     e("statsFormSearch")?.addEventListener("input",ev=>{
       formSearch=ev.target.value;renderComparableForm();
     });
@@ -1387,7 +1428,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   }
   function syncPeriodChoices(){
     const periodLabel=$("statsPeriodLabel");
-    if(periodLabel)periodLabel.textContent="Nur für Spielerstatistik";
+    if(periodLabel)periodLabel.textContent="Datenbasis anpassen";
     const cw=$("statsRange"),league=$("statsCwlRange");
     if(cw)cw.value=String(last);
     if(league)league.value=String(cwlSeasons);
@@ -1395,27 +1436,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     if($("statsCwField"))$("statsCwField").hidden=type==="cwl";
     if($("statsCwlField"))$("statsCwlField").hidden=type==="normal";
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons,days:playerDays});
-    const parts=[];
-    if(type!=="cwl"){
-      parts.push(last==="all"?
-        (playerDays==="all"?
-          (scopeInfo.allNormal===0?"Noch keine abgeschlossenen CWs":
-           scopeInfo.allNormal===1?"1 abgeschlossener CW":
-           "Alle "+scopeInfo.allNormal+" abgeschlossenen CWs"):
-          scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs"):
-        scopeInfo.selectedNormal+" von "+scopeInfo.allNormal+" abgeschlossenen CWs (Limit "+last+")");
-    }
-    if(type!=="normal"){
-      parts.push(cwlSeasons==="all"?
-        (playerDays==="all"?
-          (scopeInfo.allCwl===0?"Noch keine abgeschlossenen CWL-Durchgänge":
-           scopeInfo.allCwl===1?"1 abgeschlossener CWL-Durchgang":
-           "Alle "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgänge"):
-          scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" CWL-Durchgängen"):
-        scopeInfo.selectedCwl+" von "+scopeInfo.allCwl+" abgeschlossenen CWL-Durchgängen");
-    }
-    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=
-      (playerDays==="all"?"":("Letzte "+playerDays+" Tage · "))+parts.join(" + ");
+    const parts=[playerDays==="all"?"Gesamt":playerDays+" Tage"];
+    if(type!=="cwl")parts.push(scopeInfo.selectedNormal+" CW");
+    if(type!=="normal")parts.push(scopeInfo.selectedCwl+
+      (scopeInfo.selectedCwl===1?" CWL-Durchgang":" CWL-Durchgänge"));
+    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" · ");
   }
   syncPeriodChoices();
   bind();

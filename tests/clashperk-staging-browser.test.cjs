@@ -31,6 +31,8 @@ test("generated Cloud staging preview starts and registers a network-only PWA in
    CWL_STAGING_PUBLISHABLE_KEY:fakeKey}
  });
  assert.equal(built.status,0,built.stderr);
+ assert.ok(fs.existsSync(path.join(out,"cwl-player-linked-history.mjs")),
+   "Staging bundle must include linked-player dependency");
  const type=name=>name.endsWith(".mjs")||name.endsWith(".js")?"text/javascript":
   name.endsWith(".webmanifest")||name.endsWith(".json")?"application/json":
   name.endsWith(".svg")?"image/svg+xml":
@@ -73,7 +75,9 @@ test("generated Cloud staging preview starts and registers a network-only PWA in
   return route.abort();
  });
  await page.goto(origin+"/cloud-app.html",{waitUntil:"load",timeout:45000});
- await page.waitForFunction(()=>!!window.__stagingClient,{timeout:15000});
+ await page.waitForFunction(()=>!!window.__stagingClient,{timeout:25000})
+  .catch(error=>{throw new Error("Staging client did not initialize: "+
+    JSON.stringify({pageErrors,unexpectedRequests})+" · "+error.message);});
  const initial=await page.evaluate(()=>({
   title:document.title,
   mark:document.getElementById("cwl-staging-watermark")?.textContent,

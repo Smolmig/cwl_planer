@@ -3525,6 +3525,60 @@ html.cloud-startup-pending .cloud-startup-splash{
 #openReleaseHistory{min-height:44px;align-self:flex-start;margin-top:4px}
 @media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
 
+
+/* v1.21.0: compact, accessible statistics on narrow screens. */
+#view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+#view-stats .stats-period{width:100%;max-width:100%}
+#view-stats .stats-period>summary{font-size:13px;line-height:1.35;overflow-wrap:anywhere;min-height:44px}
+#view-stats .stats-period-options{background:transparent;border-color:var(--line);padding:12px}
+#view-stats .stats-period-options>.field{width:100%;min-width:0}
+#view-stats .stats-period-options select{width:100%;min-width:0;max-width:100%}
+#view-stats .stats-scope-details{margin:3px 0 12px}
+#view-stats .stats-scope-details>summary{cursor:pointer;font-size:12px;color:var(--muted);padding:7px 0}
+#view-stats .stats-scope-details .stats-note{margin:3px 0 6px;font-size:12px}
+#view-stats .stats-query-explainer{margin:8px 0 2px;font-size:12px;color:var(--muted)}
+#view-stats .stats-form-row{display:block;padding:14px 0}
+#view-stats .stats-form-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;min-width:0}
+#view-stats .stats-form-person{flex:1;min-width:0}
+#view-stats .stats-form-person b{display:inline;font-size:15px}
+#view-stats .stats-form-rank{font-weight:700;color:var(--primary);margin-right:8px}
+#view-stats .stats-form-person small{margin-top:3px}
+#view-stats .stats-form-primary{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;min-width:92px;font-variant-numeric:tabular-nums}
+#view-stats .stats-form-primary>span{color:var(--muted);font-size:11px}
+#view-stats .stats-form-primary>strong{color:var(--text);font-size:21px;line-height:1.2;font-weight:800;white-space:nowrap}
+#view-stats .stats-form-row .stats-form-results{display:block;min-width:0;margin-top:9px}
+#view-stats .stats-form-rate,#view-stats .stats-form-evidence{color:var(--text);font-size:12px;line-height:1.5;display:block}
+#view-stats .stats-form-evidence{color:var(--muted)}
+#view-stats .stats-form-row .stats-bar-track{height:5px;margin:6px 0 9px}
+#view-stats .stats-form-player-details{margin-top:5px}
+#view-stats .stats-form-player-details>summary{font-size:12px;color:var(--muted);cursor:pointer;min-height:34px;padding:7px 0}
+#view-stats .stats-form-player-details ul{padding:4px 0 3px 20px;margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+#view-stats .stats-form-player-details>summary:focus-visible,
+#view-stats .stats-scope-details>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:699px){
+  #view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-form-controls{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-period-options{grid-template-columns:minmax(0,1fr)}
+  #view-stats .stats-form-primary{min-width:82px}
+}
+@media(max-width:359px){
+  #view-stats .stats-form-primary>strong{font-size:18px}
+  #view-stats .stats-form-top{gap:8px}
+}
+
+
+#view-stats .stats-linked-history-action{display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;max-width:100%;padding:7px 11px;margin:8px 0 2px;border:1px solid var(--line);
+ border-radius:9px;background:transparent;color:var(--text);font-size:12px;font-weight:650;cursor:pointer}
+#view-stats .stats-linked-history-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#view-stats .stats-linked-history-action:disabled{opacity:.6;cursor:progress}
+#view-stats .stats-linked-history-result:empty{display:none}
+#view-stats .stats-linked-history-result{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.6}
+#view-stats .stats-linked-history-result p{margin:0 0 6px}
+#view-stats .stats-linked-history-result ul{margin:0;padding:0 0 0 17px}
+#view-stats .stats-linked-history-result li{margin:6px 0}
+#view-stats .stats-linked-history-result small{display:block;margin:7px 0;color:var(--muted);font-size:11px}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3882,12 +3936,12 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.20.0</strong><span>Spielerform &amp; Zeitraumfilter</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.21.0</strong><span>Statistik mobil aufgeräumt</span></div>
       <ul>
-       <li><b>Formwert:</b> 3★-Leistung mit Stichprobenkorrektur und belegter Angriffszuverlässigkeit.</li>
-       <li><b>Verpasste Angriffe:</b> Senken Zuverlässigkeit, ohne die echte 3★-Quote zu verfälschen. Datenlücken werden kenntlich gemacht.</li>
-       <li><b>Flexible Zeiträume:</b> Spielerstatistik jetzt zusätzlich für 30, 90, 180 oder 365 Tage filterbar.</li>
-       <li><b>RH gekennzeichnet:</b> Gespeichertes Clanprofil und historische Angriffsdaten werden unterschieden.</li>
+       <li><b>Spielerform klarer:</b> Sortierkennzahl groß, 3★-Quote beschriftet und Details aufklappbar.</li>
+       <li><b>Weniger doppelte Texte:</b> Zuverlässigkeit wird nur noch einmal und eindeutig angezeigt.</li>
+       <li><b>Mobile Filter:</b> Datenbasis und Zeiträume lassen sich ohne verschachtelte Seitenkästen auswählen.</li>
+       <li><b>Verknüpfte Spieler:</b> Weitere Clan-Belege sind bei vorhandenen Zugriffsrechten gezielt abrufbar.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -3943,10 +3997,10 @@ html.cloud-startup-pending .cloud-startup-splash{
   </section>
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
-    <p class="stats-note">Wähle hier die Kriege für diese Spielerliste aus. Die Spielerform wird separat ausgewertet.</p>
-    <div class="stats-player-scope">    <div class="stats-filters">
+    <p class="stats-note">Filter für diese Spielerliste. Die Spielerform bleibt unabhängig.</p>
+    <div class="stats-player-scope"><div class="stats-filters">
       <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel">Kriege auswählen</label>
+      <div class="field"><label id="statsPeriodLabel">Datenbasis anpassen</label>
         <details class="stats-period" id="statsPeriodConfig">
           <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
           <div class="stats-period-options">
@@ -3973,7 +4027,9 @@ html.cloud-startup-pending .cloud-startup-splash{
 
     </div>
     <div class="stats-query-explainer" id="statsScopeExplainer" role="status" aria-live="polite"></div>
-    <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
+    <details class="stats-scope-details"><summary>Welche Kriege zählen?</summary>
+      <p class="stats-note" id="statsPlayerScope">Die Spielerwerte beziehen sich auf die oben ausgewählten Kriege.</p>
+    </details>
     <p class="stats-reading-copy">Die <strong>3★-Quote</strong> zeigt echte Dreisterne-Angriffe im gewählten Zeitraum oder in den gewählten Kriegen. Achte immer auch auf die Anzahl der Angriffe: 2 von 2 ergeben 100 %, sind aber wesentlich weniger aussagekräftig als beispielsweise 40 von 60. Ø Sterne bedeutet durchschnittlich erreichte Sterne pro Angriff.</p>
     <details class="stats-explain" id="statsExplain"><summary>Wie wird hier sortiert?</summary>
       <p>Standardmäßig wird nach Anzahl der dokumentierten Angriffe sortiert. Bei jeder anderen Sortierung gilt exakt die oben angezeigte Kriegsmenge. Die Nummern sind Listenpositionen und keine Aussage über Spielerstärke. Eine 100%-Quote aus zwei Angriffen ist weniger belastbar als eine Quote aus vielen Angriffen. Die unabhängige Bewertung der jüngeren Form findest du unter „Spielerform“.</p>
@@ -3999,22 +4055,25 @@ html.cloud-startup-pending .cloud-startup-splash{
   <section class="card stats-form-card" data-stats-panel="form" aria-label="Unabhängige Spielerform" hidden>
     <div class="section-title"><div><h3>Spielerform</h3><p class="statusline">So liefen die Angriffe in den letzten 30, 90 oder 180 Tagen. Die Auswahl unter „Spielerstatistik“ spielt hier keine Rolle.</p></div></div>
     <div class="stats-form-window" role="group" aria-label="Zeitraum für Spielerform wählen">
-      <button type="button" data-form-window="30" aria-pressed="false">Kurzfristig <small>30 Tage</small></button>
-      <button type="button" data-form-window="90" class="active" aria-pressed="true">Mittelfristig <small>90 Tage</small></button>
-      <button type="button" data-form-window="180" aria-pressed="false">Langfristig <small>180 Tage</small></button>
+      <button type="button" data-form-window="30" aria-pressed="false">30 Tage <small>Kurzfristig</small></button>
+      <button type="button" data-form-window="90" class="active" aria-pressed="true">90 Tage <small>Mittelfristig</small></button>
+      <button type="button" data-form-window="180" aria-pressed="false">180 Tage <small>Langfristig</small></button>
     </div>
-    <p class="stats-reading-copy">Die 3★-Quote zählt nur Angriffe gegen <strong>dasselbe RH</strong>. Der neue <strong>Formwert</strong> berücksichtigt die Stichprobengröße und belegte Zuverlässigkeit. Unbekannte Fehlangriffe zählen nicht als Fehler.</p>
+    <p class="stats-reading-copy">Der <strong>Formwert</strong> gewichtet gleich-RH-Leistung und belegte Zuverlässigkeit. Die 3★-Quote bleibt separat erkennbar.</p>
     <div class="stats-form-controls">
       <div class="field"><label for="statsFormSearch">Spieler suchen</label><input id="statsFormSearch" type="search" placeholder="Name oder Player-Tag …"></div>
-      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (Leistung &amp; Zuverlässigkeit)</option><option value="hitRate">Reine 3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="attacks">Angriffe auf gleiches RH</option><option value="name">Spielername (A–Z)</option></select></div>
+      <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (empfohlen)</option><option value="hitRate">3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
-    <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
-    <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird Spielerform berechnet?</summary>
-      <p>Die Fenster sind feste <strong>Kalendertage</strong> ab heute und verwenden dokumentierte abgeschlossene CWs und CWL-Tage des ausgewählten Clans, unabhängig von den Filtern unter Spielerstatistik. Ohne belegte Angriffe und Pflichtslots bleibt die Anzeige <strong>„Keine Daten“</strong>; es werden keine Fehlschläge erfunden.</p>
-      <p>„Angriffe gegen gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Nur diese Angriffe zählen für die angezeigte 3★-Quote. Der <strong>Formwert</strong> (0–100) besteht aus 65 % vorsichtig stichprobenbereinigter 3★-Leistung (Wilson-Untergrenze mit z=1,28) und 35 % <strong>Zuverlässigkeit</strong> (durchgeführte / nachweislich verfügbare Pflichtangriffe). Ein verpasster Pflichtangriff beeinflusst nur die Zuverlässigkeit, wird nicht als ausgeführter 0★-Angriff ausgegeben. Sind Missed-Daten unvollständig, zeigen wir statt eines erfundenen Formwerts nur den Leistungswert mit dem Hinweis „Zuverlässigkeit offen“. Ein Formwert ist kein prognostizierter 3★-Erfolg und berücksichtigt noch keine echten Mirror-/First-Hit-Schwierigkeiten. Die reine Quote kann separat sortiert werden. 100 % aus zwei Angriffen sind weniger belastbar als viele dokumentierte Angriffe. Angriffe gegen niedrigere/höhere oder unbekannte Rathausstufen zählen hier nicht. 0 belegte Angriffe heißen „keine Daten“, nicht 0 %.</p>
-      <p>Die Spielerstatistik erlaubt zusätzlich 30/90/180/365 Tage oder alle Kriege. Tages- und Kriegsanzahlfilter gelten gemeinsam, der Clanüberblick bleibt davon unberührt. Wir wählen nicht nachträglich den günstigsten Zeitraum eines Spielers aus. Es gibt keine automatische Änderung des CWL-Plans oder eine ungesicherte Stärkeprognose.</p>
+    <details class="stats-form-method" id="statsFormDetails"><summary>Warum steht 100 % nicht immer oben?</summary>
+      <p><strong>Leistung (65 %):</strong> „Gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Die 3★-Quote wird vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
+      <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
+      <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
+      <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
+      <p>Die Spielerform nutzt alle abgeschlossenen CWs/CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
     </details>
+    <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
+    
   </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
     <div class="section-title"><div><h3>Vergleiche</h3><p class="statusline">Wähle die Kriege für diesen Vergleich. Andere Statistikbereiche bleiben davon unberührt.</p></div></div>
@@ -4087,7 +4146,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>Pro Kriegstag: „AUTO“ lässt den Planer entscheiden, „MUSS“ verlangt den Einsatz, „RAUS“ schließt ihn für diesen Tag aus. Durch Antippen wechselst du die Einstellung.</div></div>
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
-    <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerstatistik“ kannst du zusätzlich zur Kriegsanzahl auch einen Zeitraum (30/90/180/365 Tage oder alle) auswählen. In „Spielerform“ wählst du unabhängig davon 30, 90 oder 180 Tage. Der Formwert kombiniert einen konservativen 3★-Leistungswert (65 %) und <b>nachgewiesene Zuverlässigkeit</b> (35 %). Fehlangriffe senken die Zuverlässigkeit, nicht die echte 3★-Quote; unbekannte Misses ergeben keinen erfundenen Wert. Die originale Quote und reine Zuverlässigkeit lassen sich auch separat sortieren. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
+    <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerstatistik“ kannst du zusätzlich zur Kriegsanzahl auch einen Zeitraum (30/90/180/365 Tage oder alle) auswählen. In „Spielerform“ wählst du unabhängig davon 30, 90 oder 180 Tage. Der Formwert kombiniert einen konservativen 3★-Leistungswert (65 %) und <b>nachgewiesene Zuverlässigkeit</b> (35 %). Fehlangriffe senken die Zuverlässigkeit, nicht die echte 3★-Quote; unbekannte Misses ergeben keinen erfundenen Wert. Die originale Quote und Zuverlässigkeit lassen sich auch separat sortieren. Der Formwert ist die Hauptzahl bei der Standardsortierung; weitere Angriffsdaten stehen beim jeweiligen Spieler unter „Angriffsdetails“. Dort kannst du zusätzlich dokumentierte Angriffe aus <b>anderen Clans, auf die du bereits Zugriff hast</b>, gezielt abrufen. Diese Clanwerte bleiben getrennt und werden nicht ungeprüft addiert. Ein zuletzt belegtes RH aus einem Angriff ist <b>kein live abgefragtes aktuelles RH</b>. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
     <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gespeicherte Aufstellungen und Einsätze sichtbar. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
@@ -4398,11 +4457,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.20.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.20.0"></script>
-<script src="./cwl-planning-core.js?v=1.20.0"></script>
+<script src="./clan-management-core.js?v=1.21.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.21.0"></script>
+<script src="./cwl-planning-core.js?v=1.21.0"></script>
 <script>
-const APP_VERSION="v1.20.0";
+const APP_VERSION="v1.21.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6027,7 +6086,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.20.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.21.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6417,6 +6476,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.20.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.21.0"></script>
 </body>
 </html>
