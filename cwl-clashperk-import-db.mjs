@@ -42,9 +42,13 @@ export function planClashPerkMerge(parsed,existing=[],{
    }
    apiMatched.push(w.war_key);
   }else{
-   const api=existing.find(e=>e.source==="api"&&sameIdentity(e,w));
+   const api=existing.find(e=>e.source==="api"&&
+    normalizeTag(e.opponent_tag)===normalizeTag(w.opponent_tag)&&
+    Number.isFinite(Date.parse(e.started_at))&&Number.isFinite(Date.parse(w.started_at))&&
+    Math.abs(Date.parse(e.started_at)-Date.parse(w.started_at))<=36*3600000);
    if(api){
-    // Metadata alone can never authorize a destructive/losing merge.
+    // A nearby official war with the same opponent may even have a
+    // conflicting type/size: never claim it as a new verified war.
     conflicts.push(w.war_key);continue;
    }
   }
