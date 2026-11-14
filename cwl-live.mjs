@@ -1,8 +1,8 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.19.1";
-import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.19.1";
-import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.19.1";
-import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.19.1";
-import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.19.1";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.19.2";
+import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.19.2";
+import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.19.2";
+import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.19.2";
+import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.19.2";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusLabel={preparation:"Vorbereitung",inWar:"Krieg läuft",warEnded:"Beendet"};
