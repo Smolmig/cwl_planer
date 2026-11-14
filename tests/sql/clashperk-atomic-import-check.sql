@@ -205,7 +205,7 @@ insert into public.cwl_stat_attacks (
  '#8PYL',2,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 declare v jsonb;
 begin
  v:=public.cwl_import_clashperk_verified_atomic(
@@ -227,7 +227,7 @@ begin
   raise exception 'Repeated API-overlap upload duplicated war';
  end if;
 end
-$;
+$$;
 
 -- The original UF 2 failure: API and ClashPerk start timestamps are
 -- exactly one day apart. Both sources must be accepted and kept auditable.
@@ -251,7 +251,7 @@ insert into public.cwl_stat_attacks(
  '#9PYL',1,'Another Player',18,'#2QLL','Synthetic Enemy',18,2,75);
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 declare v jsonb; out jsonb;
 begin
  v:=public.clashperk_test_payload('109');
@@ -267,7 +267,7 @@ begin
   raise exception '24-hour verified CWL alias was rejected: %',out;
  end if;
 end
-$;
+$$;
 
 -- Same opponent/size/date is insufficient if a single API attack is
 -- missing or has a different result. Entire transaction must roll back.
@@ -289,7 +289,7 @@ insert into public.cwl_stat_attacks(
  '#8PYL',1,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100);
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
-do $
+do $$
 begin
  begin
   perform public.cwl_import_clashperk_verified_atomic(
@@ -302,7 +302,7 @@ begin
   raise exception 'Partial API overlap survived rollback';
  end if;
 end
-$;
+$$;
 
 -- An editor is not allowed to create a war for a second linked app clan.
 do $$
