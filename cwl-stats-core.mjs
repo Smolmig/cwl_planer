@@ -390,12 +390,11 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
       return (right.reliability??-1)-(left.reliability??-1)||
         (right.performed+right.missedKnown)-(left.performed+left.missedKnown)||
         nameSort(a,b);
-    // A single meaningful composite is available only when ALL of that
-    // player's observed attack opportunities have complete missed evidence.
-    // Incomplete profiles show their attack-only lower bound below those.
-    const rank=(b)=>b.formIndex??b.performanceIndex??-1;
-    return (Number(right.formIndex!==null)-Number(left.formIndex!==null))||
-      (rank(right)-rank(left))||volumeDelta||nameSort(a,b);
+    // Missing coverage must not cause 0/12 to outrank 4/4. Compare the
+    // conservative scores directly; incomplete reliability is clearly
+    // identified in the row instead of made into a fictitious failure.
+    const rank=b=>b.formIndex??b.performanceIndex??-1;
+    return (rank(right)-rank(left))||volumeDelta||nameSort(a,b);
   });
 }
 /**
