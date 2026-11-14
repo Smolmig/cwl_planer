@@ -239,7 +239,7 @@ insert into public.cwl_stat_wars(
  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
  'cwl:api-day-shift','cwl',
  ('2026-01-01 00:00:00+00'::timestamptz + 109*interval '1 day' - interval '1 day'),
- 2,'#2PYL','API Synthetic','api',true
+ 2,'#2QPY','API Synthetic','api',true
 );
 insert into public.cwl_stat_attacks(
  clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
@@ -256,6 +256,7 @@ declare v jsonb; out jsonb;
 begin
  v:=public.clashperk_test_payload('109');
  v:=pg_catalog.jsonb_set(v,'{wars,0,war_type}','"cwl"'::jsonb);
+ v:=pg_catalog.jsonb_set(v,'{wars,0,opponent_tag}','"#2QPY"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{attacks,1,attacker_tag}','"#9PYL"'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{attacks,1,attack_order}','1'::jsonb);
  v:=pg_catalog.jsonb_set(v,'{attacks,1,defender_tag}','"#2QLL"'::jsonb);
