@@ -109,7 +109,7 @@ test("Player date filter respects 30, 90, 180 and all without changing overview"
  }).attacks;
  assert.equal(count("30"),1);
  assert.equal(count("90"),2);
- assert.equal(count("180"),2);
+ assert.equal(count("180"),3);
  assert.equal(count("365"),3);
  assert.equal(count("all"),4);
  assert.equal(count("all",2),2);
