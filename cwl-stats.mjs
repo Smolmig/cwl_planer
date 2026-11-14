@@ -1,7 +1,7 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.16.43";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.19.1";
-import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
+import {reconcileClashPerkApiHistory,classifyClashPerkApiCandidates,isPotentialClashPerkApiOverlap} from "./cwl-stats-source-reconciliation.mjs?v=1.19.1";
 import {sanitizeSnapshot,clashTime} from "./cwl-live-core.mjs?v=1.3.6";
 import {computeComparableForm} from "./cwl-comparable-form.mjs?v=1.16.3";
 const $=id=>document.getElementById(id);
@@ -1075,9 +1075,38 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const parsed=hasClashPerkAttackSheets(sheets)?
         parseClashPerkSheets(sheets,ctx.clanTag):
         parseClashPerkMissedOnly(sheets,ctx.clanTag,old);
-      const plan=planClashPerkMerge(parsed,old);
+      let verified={verified:new Map(),conflicts:[]};
+      if(!parsed.missedOnly){
+        const nearby=old.filter(w=>w.source==="api"&&w.finalized===true&&
+          parsed.wars.some(candidate=>isPotentialClashPerkApiOverlap(w,candidate)));
+        const nearbyKeys=[...new Set(nearby.map(w=>w.war_key))];
+        if(nearbyKeys.length){
+          // Only fetch official attacks for plausible overlaps, not every
+          // archived war; the full attack signature decides identity.
+          const knownAttacks=[];
+          for(const keys of chunks(nearbyKeys,40)){
+            for(let offset=0;offset<10000;offset+=500){
+              if(!stillCurrent())throw Error("Clan gewechselt. Import neu starten.");
+              const {data,error}=await sb.from("cwl_stat_attacks")
+                .select("war_key,attacker_tag,defender_tag,stars,destruction")
+                .eq("clan_id",clanId).in("war_key",keys)
+                .order("war_key").order("attacker_tag").order("attack_order")
+                .range(offset,offset+499);
+              if(error)throw error;
+              knownAttacks.push(...(data||[]));
+              if(!data||data.length<500)break;
+              if(offset+500>=10000)throw Error("API-Vergleich zu groß; nichts importiert.");
+            }
+          }
+          verified=classifyClashPerkApiCandidates(parsed,old,knownAttacks);
+        }
+      }
+      const plan=planClashPerkMerge(parsed,old,{
+        verifiedApiPairs:verified.verified,unverifiedCandidates:verified.conflicts
+      });
       if(plan.conflicts.length)throw Error(plan.conflicts.length+
-        " Kriege widersprechen vorhandenen historischen Daten. Import abgebrochen; nichts wird überschrieben.");
+        " Kriege lassen sich nicht eindeutig vorhandenen Ergebnissen zuordnen. "+
+        "Bitte Kriegsdaten und API-Angriffe prüfen; nichts wurde importiert.");
       const totalMissed=plan.missed.reduce((n,m)=>n+m.missed_count,0);
       const normal=parsed.wars.filter(w=>w.war_type==="normal").length;
       const league=parsed.wars.length-normal;
@@ -1099,8 +1128,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
           "Kriege: "+formatWarCount(normal,"normale CWs")+" · "+formatWarCount(league,"CWL-Tage")+"\n"+
           "Eigene Angriffe: "+parsed.attacks.length+
           " · gegnerische Angriffe: "+parsed.enemyAttacks+" (nur geprüft)\n"+
-          "Neue Kriege: "+plan.insert.length+
+          "Neue Kriege: "+plan.logicalNew+
           " · bereits vorhanden: "+plan.extend.length+"\n"+
+          (plan.apiMatched.length?
+            "Als API-Krieg wiedererkannt: "+plan.apiMatched.length+
+            " (ClashPerk-Nachweise werden ergänzt, nicht doppelt gezählt)\n":"")+
           "Nachgewiesene verpasste Angriffe: "+totalMissed+"\n"+
           "Vollständig belegte Kriege: "+parsed.completeWars+
           " · mit offenen Angaben: "+parsed.missingWars+"\n"+
@@ -1129,9 +1161,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       notice(parsed.missedOnly?
         "✓ "+result.extended+" vorhandene Kriege abgeglichen, "+totalMissed+
         " nachgewiesene verpasste Angriffe geprüft. Fehlende Angaben bleiben unbekannt.":
-        "✓ "+result.inserted+" neue Kriege, "+result.attacks+
+        "✓ "+plan.logicalNew+" neue Kriege, "+result.attacks+
         " eigene Angriffe und "+totalMissed+
         " nachgewiesene verpasste Angriffe abgeglichen. "+
+        (plan.apiMatched.length?plan.apiMatched.length+
+          " bereits bekannte API-Kriege statistisch zusammengeführt. ":"")+
         (parsed.missingWars?"Unvollständige Kriege bleiben gekennzeichnet.":""),
         "success");
       notify("✓ ClashPerk-Statistiken abgeglichen");
