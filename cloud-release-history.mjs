@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.20.1",
+    "releaseType": "patch",
+    "date": "2026-11-14",
+    "title": "Spielerform und mobile Statistik verständlicher",
+    "description": "Die Statistik zeigt jetzt die tatsächliche Sortierkennzahl, nur eine Zuverlässigkeitsangabe und kompakte Filter. Weitere Clanbelege eines Spielers können mit bestehender Berechtigung bei Bedarf abgerufen werden."
+  },
+
+  {
     "version": "v1.20.0",
     "releaseType": "minor",
     "date": "2026-11-14",
