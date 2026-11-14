@@ -3567,6 +3567,18 @@ html.cloud-startup-pending .cloud-startup-splash{
   #view-stats .stats-form-top{gap:8px}
 }
 
+
+#view-stats .stats-linked-history-action{display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;max-width:100%;padding:7px 11px;margin:8px 0 2px;border:1px solid var(--line);
+ border-radius:9px;background:transparent;color:var(--text);font-size:12px;font-weight:650;cursor:pointer}
+#view-stats .stats-linked-history-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#view-stats .stats-linked-history-action:disabled{opacity:.6;cursor:progress}
+#view-stats .stats-linked-history-result:empty{display:none}
+#view-stats .stats-linked-history-result{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.6}
+#view-stats .stats-linked-history-result p{margin:0 0 6px}
+#view-stats .stats-linked-history-result ul{margin:0;padding:0 0 0 17px}
+#view-stats .stats-linked-history-result li{margin:6px 0}
+#view-stats .stats-linked-history-result small{display:block;margin:7px 0;color:var(--muted);font-size:11px}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3924,12 +3936,12 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.20.0</strong><span>Spielerform &amp; Zeitraumfilter</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.20.1</strong><span>Statistik mobil aufgeräumt</span></div>
       <ul>
-       <li><b>Formwert:</b> 3★-Leistung mit Stichprobenkorrektur und belegter Angriffszuverlässigkeit.</li>
-       <li><b>Verpasste Angriffe:</b> Senken Zuverlässigkeit, ohne die echte 3★-Quote zu verfälschen. Datenlücken werden kenntlich gemacht.</li>
-       <li><b>Flexible Zeiträume:</b> Spielerstatistik jetzt zusätzlich für 30, 90, 180 oder 365 Tage filterbar.</li>
-       <li><b>RH gekennzeichnet:</b> Gespeichertes Clanprofil und historische Angriffsdaten werden unterschieden.</li>
+       <li><b>Spielerform klarer:</b> Sortierkennzahl groß, 3★-Quote beschriftet und Details aufklappbar.</li>
+       <li><b>Weniger doppelte Texte:</b> Zuverlässigkeit wird nur noch einmal und eindeutig angezeigt.</li>
+       <li><b>Mobile Filter:</b> Datenbasis und Zeiträume lassen sich ohne verschachtelte Seitenkästen auswählen.</li>
+       <li><b>Verknüpfte Spieler:</b> Weitere Clan-Belege sind bei vorhandenen Zugriffsrechten gezielt abrufbar.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4132,7 +4144,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>Pro Kriegstag: „AUTO“ lässt den Planer entscheiden, „MUSS“ verlangt den Einsatz, „RAUS“ schließt ihn für diesen Tag aus. Durch Antippen wechselst du die Einstellung.</div></div>
     <div class="help-item"><b>Erst ab / Raus ab</b><div>Damit begrenzt du die verfügbaren Tage. Beispiel: „Erst ab Tag 2“ und „Raus ab Tag 6“ bedeutet: Tag 2 bis 5 sind möglich.</div></div>
     <div class="help-item"><b>Rotation & Einsatzziel</b><div>Für Rotationsspieler wählst du „Bevorzugt“, „Ausgewogen“ oder „Seltener“. Ein genaues Einsatzziel von 1 bis 6 Tagen hat Vorrang. Wer an allen sieben Tagen spielen soll, wird als Fixspieler markiert. Alte Prioritäten bleiben erhalten, bis du sie bewusst umstellst.</div></div>
-    <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerstatistik“ kannst du zusätzlich zur Kriegsanzahl auch einen Zeitraum (30/90/180/365 Tage oder alle) auswählen. In „Spielerform“ wählst du unabhängig davon 30, 90 oder 180 Tage. Der Formwert kombiniert einen konservativen 3★-Leistungswert (65 %) und <b>nachgewiesene Zuverlässigkeit</b> (35 %). Fehlangriffe senken die Zuverlässigkeit, nicht die echte 3★-Quote; unbekannte Misses ergeben keinen erfundenen Wert. Die originale Quote und reine Zuverlässigkeit lassen sich auch separat sortieren. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
+    <div class="help-item"><b>Rathaus und Angriffswerte</b><div>Im gemeinsamen Planer werden 3★-Quote und durchschnittliche Sterne aus gespeicherten Kriegen berechnet. „Nur Angriffe gegen gleiches oder höheres RH“ begrenzt die Statistik auf ebenbürtige oder schwerere Gegner. Im Offline-Modus bleibt die manuelle Stärke-Einstufung verfügbar. In „Spielerstatistik“ kannst du zusätzlich zur Kriegsanzahl auch einen Zeitraum (30/90/180/365 Tage oder alle) auswählen. In „Spielerform“ wählst du unabhängig davon 30, 90 oder 180 Tage. Der Formwert kombiniert einen konservativen 3★-Leistungswert (65 %) und <b>nachgewiesene Zuverlässigkeit</b> (35 %). Fehlangriffe senken die Zuverlässigkeit, nicht die echte 3★-Quote; unbekannte Misses ergeben keinen erfundenen Wert. Die originale Quote und Zuverlässigkeit lassen sich auch separat sortieren. Der Formwert ist die Hauptzahl bei der Standardsortierung; weitere Angriffsdaten stehen beim jeweiligen Spieler unter „Angriffsdetails“. Dort kannst du zusätzlich dokumentierte Angriffe aus <b>anderen Clans, auf die du bereits Zugriff hast</b>, gezielt abrufen. Diese Clanwerte bleiben getrennt und werden nicht ungeprüft addiert. Ein zuletzt belegtes RH aus einem Angriff ist <b>kein live abgefragtes aktuelles RH</b>. Kein Listenplatz ist eine bestätigte Spielerstärke. Die automatische CWL-Einteilung bleibt auf Fairness und deinen Tagesregeln aufgebaut.</div></div>
     <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gespeicherte Aufstellungen und Einsätze sichtbar. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-/CWL-Angriffe und nicht nur die aktuelle Liga. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
@@ -4443,11 +4455,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.20.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.20.0"></script>
-<script src="./cwl-planning-core.js?v=1.20.0"></script>
+<script src="./clan-management-core.js?v=1.20.1"></script>
+<script src="./cwl-deployment-filters.js?v=1.20.1"></script>
+<script src="./cwl-planning-core.js?v=1.20.1"></script>
 <script>
-const APP_VERSION="v1.20.0";
+const APP_VERSION="v1.20.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6072,7 +6084,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.20.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.20.1");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6462,6 +6474,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.20.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.20.1"></script>
 </body>
 </html>
