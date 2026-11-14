@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.22.1] - 2026-11-14
+
+### Behoben
+- Verifizierter ClashPerk/API-Abgleich auch bei abweichenden Zeitstempeln: Eine neue additive, transaktionale SQL-RPC prüft **alle Angreifer-, Ziel-, Sterne- und Zerstörungswerte** vor der Zuordnung. Unklare oder unvollständige Vergleiche werden ohne Schreiben abgebrochen.
+- Alte als unfertig markierte, tatsächlich längst abgelaufene normale CWs und CWL-Tage werden in der Statistik konservativ als abgeschlossen betrachtet, ohne Rohdaten zu überschreiben. Die Belegabdeckung wird aus ausgeführten und sicher verpassten Angriffsslots neu geprüft; offene Angriffe bleiben offen.
+- Der Reimport kann bestätigte Quellenbelege vollständig ergänzen. Offizielle API-Kriege, CWL-Aufstellungen, Archiv und andere Clan-Tenants bleiben unverändert; Doppelangriffe werden nur einmal ausgewertet.
+- Importvorschau und Tests für wiederholte Imports, falsche Kriegsidentität, 24-Stunden-Versatz, CW/CWL, echte Auth und RLS überarbeitet.
+
+### Hilfe
+- Quellenabgleich, offene Angriffsnachweise und die Unterscheidung von gespeicherten Rohzeilen und statistisch eindeutigen Kriegen erläutert.
+
 ## [1.22.0] - 2026-11-14
 
 ### Neu
