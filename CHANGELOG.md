@@ -19,7 +19,7 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
-## [1.20.1] - 2026-11-14
+## [1.21.0] - 2026-11-14
 
 ### Verbessert
 - Mobile Spielerstatistik: kompakte, klar beschriftete Datenbasis, Zeit- und CW/CWL-Filter untereinander statt hoher verschachtelter Boxen. Anzahl und Zeitfenster sind im Aufklappmenü nachvollziehbar.
