@@ -47,7 +47,7 @@ test("UX release metadata and cloud app references agree without changing offlin
  assert.equal(version.version,"v1.19.1");
  assert.match(html,/const APP_VERSION="v1\.19\.1";/);
  assert.match(html,/cloud-sync\.mjs\?v=1\.19\.1/);
- assert.match(sync,/cloud-backups\.mjs\?v=1\.19\.0/);
+ assert.match(sync,/cloud-backups\.mjs\?v=1\.19\.1/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
  assert.match(read("CHANGELOG.md"),/\[1\.3\.8\]/);
 });
