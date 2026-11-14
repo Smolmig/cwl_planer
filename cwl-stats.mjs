@@ -1099,6 +1099,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
             }
           }
           verified=classifyClashPerkApiCandidates(parsed,old,knownAttacks);
+          // The existing atomic RPC still skips a NEW ClashPerk key when
+          // an API war is within 8h. Refuse instead of falsely claiming
+          // the appended Missed evidence was saved. Existing cp keys are safe.
+          const unsupported=[...verified.verified].filter(([cpKey,apiKey])=>{
+            if(old.some(w=>w.war_key===cpKey))return false;
+            const imported=parsed.wars.find(w=>w.war_key===cpKey);
+            const official=nearby.find(w=>w.war_key===apiKey);
+            return imported&&official&&
+              Math.abs(Date.parse(imported.started_at)-Date.parse(official.started_at))<=8*3600000;
+          });
+          if(unsupported.length)throw Error(
+            unsupported.length+" API-Kriege liegen innerhalb des alten 8-Stunden-Abgleichs. "+
+            "Für diese neuen Quellbelege fehlt noch eine serverseitige Erweiterung; nichts gespeichert.");
         }
       }
       const plan=planClashPerkMerge(parsed,old,{
