@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "patch",
     "date": "2026-11-14",
     "title": "API- und ClashPerk-Kriege ohne Datenverlust abgleichen",
-    "description": "Ein bestätigter Krieg wird nicht mehr nur wegen abweichender Zeitangaben beim Import ausgelassen. Angriffe werden vollständig verglichen, verpasste Angriffe als eigene Belege nachgetragen und widersprüchliche Quellen sicher abgewiesen."
+    "description": "Bei abweichenden Zeitangaben werden nur nachweislich identische Kriege zusammengeführt; verpasste Angriffe bleiben erhalten, unklare Quellen werden abgewiesen."
   },
 
   {
