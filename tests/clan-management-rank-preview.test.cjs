@@ -64,6 +64,6 @@ test("Owner-only read path cannot trigger roster apply, profile save or rank wri
  assert.match(html,/data-more-action="management" hidden/);
  assert.match(html,/id="view-clan-management"/);
  assert.match(html,/Mehr → Clanverwaltung/);
- assert.match(html,/clan-management-core\.js\?v=1\.22\.0/);
+ assert.match(html,/clan-management-core\.js\?v=1\.22\.1/);
  assert.doesNotMatch(html,/<button[^>]*id="clanManagement(?:Promote|Demote|Kick)"/i);
 });
