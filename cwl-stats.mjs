@@ -186,7 +186,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         "</div>"+
         "<div class='stats-form-results'>"+
           "<small class='stats-form-rate'>"+esc(rateLine)+"</small>"+
-          "<div class='stats-bar-track' role='img' aria-label='"+esc("3★-Quote "+pct)+"'>"+
+          "<div class='stats-bar-track' role='img' aria-label='"+esc(hasAttacks?"3★-Quote "+pct:"Keine auswertbaren Angriffe gegen gleiches RH")+"'>"+
             (hasAttacks?"<div class='stats-bar-fill' style='width:"+b.hitRate+"%'></div>":"")+
           "</div>"+
           "<small class='stats-form-evidence'>"+esc(reliability+scoreHint)+"</small>"+
@@ -1438,7 +1438,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons,days:playerDays});
     const parts=[playerDays==="all"?"Gesamt":playerDays+" Tage"];
     if(type!=="cwl")parts.push(scopeInfo.selectedNormal+" CW");
-    if(type!=="normal")parts.push(scopeInfo.selectedCwl+" CWL-Durchgänge");
+    if(type!=="normal")parts.push(scopeInfo.selectedCwl+
+      (scopeInfo.selectedCwl===1?" CWL-Durchgang":" CWL-Durchgänge"));
     if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" · ");
   }
   syncPeriodChoices();
