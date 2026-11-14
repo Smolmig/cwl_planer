@@ -19,6 +19,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.20.1] - 2026-11-14
+
+### Behoben
+- Ein neuer, separat abgesicherter ClashPerk-Import-RPC `cwl_import_clashperk_verified_atomic` vergleicht bei API-Überschneidungen die vollständigen Angriffslisten samt Angreifer, Ziel, Sternen und Zerstörung. Die bisherige RPC bleibt für zwischengespeicherte ältere Clients erhalten.
+- Unterschiedliche API-/ClashPerk-Kriegs-IDs und bis zu 36 Stunden Zeitversatz führen nicht mehr zum Verlust nachgewiesener Missed-Daten: eindeutig bestätigte Belege bleiben unter eigener Quelle erhalten, zählen in Statistik und Spielerform aber nur einmal.
+- Bei unvollständigen, widersprüchlichen oder mehrdeutigen Treffern wird der atomare Import vollständig abgebrochen. Keine Kriegsergebnisse, CWL-Aufstellungen oder fremden Clanbereiche werden überschrieben.
+- Ältere historische ClashPerk-Kriege ohne gespeicherten Abschlussstatus werden in der Statistik berücksichtigt, wenn ihr Kriegszeitraum sicher in der Vergangenheit liegt. Die Missed-Abdeckung wird aus tatsächlich belegten Angriffsplätzen je Spieler abgeleitet; unbekannte Angriffe bleiben offen.
+- Ein erneuter verifizierter Import korrigiert veraltete `missed_log_complete`-Marker in den jeweiligen Quellzeilen anhand der gespeicherten Spielerbelege.
+
+### Tests und Hilfe
+- SQL- und Browserregressionen für normalen CW, CWL mit genau 24 Stunden Datumsabweichung, doppelte Angriffsbelege, Importwiederholung, falsche Quelle, RLS, Rollback und frühere unvollständige CW-Marker.
+- Importhilfe, Einstellungen, öffentliche Update-History und Cache-Version geprüft und aktualisiert.
+
 ## [1.20.0] - 2026-11-14
 
 ### Hinzugefügt

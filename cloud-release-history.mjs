@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.20.1",
+    "releaseType": "patch",
+    "date": "2026-11-14",
+    "title": "ClashPerk-Historie ohne Doppelzählung übernehmen",
+    "description": "API- und ClashPerk-Kriege werden auch bei Zeitabweichungen sicher abgeglichen. Alte historische Kriege werden berücksichtigt, ohne fehlende Angriffe zu erfinden."
+  },
+
+  {
     "version": "v1.20.0",
     "releaseType": "minor",
     "date": "2026-11-14",
