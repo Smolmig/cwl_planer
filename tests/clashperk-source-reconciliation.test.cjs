@@ -161,3 +161,49 @@ test("Import preview counts verified API overlap as a known logical war while pr
  assert.equal(unsafe.insert.length,0);
  assert.deepEqual(unsafe.conflicts,[cp.war_key]);
 });
+
+test("Old non-finalized ClashPerk wars are only marked fully covered from exact player slots",async()=>{
+ const {normalizeLegacyImportedWarStatuses,reconcileClashPerkApiHistory}=await mod();
+ const w1=war(81,"import","normal",{
+   war_key:"cp:99181",finalized:false,missed_log_complete:true,
+   team_size:2,roster_tags:["#STALE"],started_at:"2026-08-20T18:00:00.000Z"
+ });
+ const w2=war(82,"import","normal",{
+   war_key:"cp:99182",finalized:false,missed_log_complete:true,
+   team_size:2,roster_tags:["#STALE"],started_at:"2026-08-22T18:00:00.000Z"
+ });
+ const played=[
+   {...hits(w1.war_key,1)[0],attacker_tag:"#PLY1",attack_order:1},
+   {...hits(w1.war_key,1)[0],attacker_tag:"#PLY1",attack_order:2},
+   {...hits(w2.war_key,1)[0],attacker_tag:"#PLY1",attack_order:1}
+ ];
+ const missed=[{war_key:w1.war_key,player_tag:"#PLY2",missed_count:2,player_name:"Example"}];
+ const now=Date.parse("2026-11-14T01:00:00Z");
+ const r=normalizeLegacyImportedWarStatuses([w1,w2],played,missed,now);
+ assert.equal(r.reclassified,2);
+ assert.equal(r.incomplete,1);
+ assert.equal(r.wars[0].finalized,true);
+ assert.equal(r.wars[0].missed_log_complete,true);
+ assert.deepEqual(new Set(r.wars[0].roster_tags),new Set(["#PLY1","#PLY2"]));
+ assert.equal(r.wars[1].finalized,true);
+ assert.equal(r.wars[1].missed_log_complete,false);
+ assert.equal(r.wars[1].roster_tags,null);
+ assert.equal(w2.missed_log_complete,true,"original source record remains unchanged");
+ const stats=reconcileClashPerkApiHistory([w1,w2],played,missed);
+ assert.equal(stats.legacyReclassified,2);
+ assert.equal(stats.legacyIncomplete,1);
+ assert.equal(stats.wars.length,2);
+ assert.equal(stats.missedEvents.reduce((n,m)=>n+m.missed_count,0),2);
+});
+test("Recent/non-import war statuses are never inferred from missing historical logs",async()=>{
+ const {normalizeLegacyImportedWarStatuses}=await mod();
+ const now=Date.parse("2026-11-14T01:00:00Z");
+ const recent=war(90,"import","normal",{war_key:"cp:9990",finalized:false,
+   started_at:"2026-11-13T01:00:00.000Z"});
+ const official=war(91,"api","normal",{finalized:false,
+   started_at:"2026-10-02T01:00:00.000Z"});
+ const r=normalizeLegacyImportedWarStatuses([recent,official],[],[],now);
+ assert.equal(r.reclassified,0);
+ assert.equal(r.wars[0],recent);
+ assert.equal(r.wars[1],official);
+});
