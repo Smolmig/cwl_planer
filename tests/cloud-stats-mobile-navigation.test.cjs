@@ -143,11 +143,11 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           assert.ok(result.formButtons.every(b=>b.height>=64&&b.font>=13&&b.detailFont>=12),msg);
         }
         assert.ok(result.formNotes.every((n,i)=>n.active&&n.focused&&
-          n.text.includes("Letzte "+[30,90,180][i]+" Tage")&&
-          n.text.includes("Keine Rangliste der Spielerstärke.")&&
+          n.text.includes("Sortiert nach Formwert")&&
+          n.text.includes("Spieler mit vergleichbaren Angriffen")&&
           n.text.length<190),msg);
         assert.equal(result.formReload.active,true,msg);
-        assert.ok(result.formReload.text.includes("Letzte 90 Tage"),msg);
+        assert.ok(result.formReload.text.includes("Sortiert nach Formwert"),msg);
         assert.ok(result.horizontalOverflow<=3,msg);
         assert.deepEqual(problems,[],msg);
       }finally{await page.close()}
