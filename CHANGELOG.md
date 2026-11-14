@@ -19,6 +19,21 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 - Help-Text unverändert geprüft: keine UI- oder Nutzerregeländerung. Bei ausbleibenden GitHub-Schedule-Events weiterhin keine Garantie regelmäßiger Läufe; das ist nur Risikoreduktion und bessere Überwachung.
 
 
+## [1.20.0] - 2026-11-14
+
+### Hinzugefügt
+- Spielerform mit transparenter, stichprobenbereinigter Leistungsbewertung statt grober Sortierung nach Angriffsanzahl: Wilson-Untergrenze als konservativer Vergleichsindex, echte 3★-Quote und Umfang bleiben separat sichtbar.
+- Nachgewiesene verpasste Pflichtangriffe werden als eigene Zuverlässigkeitsachse gewertet. Der kombinierte Formwert (65 % Leistung / 35 % Zuverlässigkeit) wird nur mit vollständigen Missed-Nachweisen gebildet; fehlende Angaben erzeugen keinen 0★-Angriff und keinen fiktiven Zuverlässigkeitswert.
+- Spielerstatistik nach letzten 30, 90, 180 oder 365 Kalendertagen sowie allen Kriegen filterbar; die bestehenden Grenzen für CW-Anzahl und CWL-Durchgänge gelten zusätzlich. Andere Statistikbereiche und der Clanüberblick bleiben unabhängig.
+
+### Korrigiert
+- Spielerform: 0/12 Dreisternen kann nicht mehr durch reine Angriffsmenge besser bewertet werden als 4/4, bei ansonsten belegten Daten.
+- Rathaus im Spielerbereich: Bei aktuellen Clanmitgliedern das gespeicherte Clanprofil-RH nutzen, bei ehemaligen Spielern den historischen Angriffswert ausdrücklich als solchen kennzeichnen.
+- Neue Tests für Zuverlässigkeit, unvollständige Quellen, mehrere Zeiträume und Daten-Unabhängigkeit von Clanüberblick/Planung.
+
+### Hilfe
+- Spielerform-Berechnung, Zuverlässigkeit, Historien-RH und Zeitraumfilter in der integrierten Hilfe und Detailmethodik erklärt.
+
 ## [1.19.1] - 2026-11-14
 
 ### Behoben
