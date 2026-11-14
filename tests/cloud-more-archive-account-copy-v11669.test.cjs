@@ -20,9 +20,9 @@ test("More, account and one CWL archive entry explain their real scope",()=>{
  assert.match(html,/Gemeinsamen Stand prüfen/);
  assert.match(html,/Vom Cloud-Konto abmelden/);
  assert.match(html,/Mehr: Clan &amp; Konto, Archiv und Sicherungen/);
- assert.match(html,/Neu in v1\.19\.1/);
+ assert.match(html,/Neu in v1\.19\.2/);
  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.19.2");
- assert.match(read("cloud-release-history.mjs"),/"version": "v1\.19\.1"/);
+ assert.match(read("cloud-release-history.mjs"),/"version": "v1\.19\.2"/);
  assert.match(read("cwl-group-archive.mjs"),/Noch keine CWL archiviert/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
 });
