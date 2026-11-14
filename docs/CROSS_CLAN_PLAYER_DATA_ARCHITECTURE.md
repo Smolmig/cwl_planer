@@ -56,7 +56,7 @@ Quellen: [Supercell Clan Roles](https://support.supercell.com/clash-of-clans/en/
 **Issues:** [#212](https://github.com/Smolmig/cwl_planer/issues/212), [#103](https://github.com/Smolmig/cwl_planer/issues/103), [#183](https://github.com/Smolmig/cwl_planer/issues/183), [#104](https://github.com/Smolmig/cwl_planer/issues/104), [#90](https://github.com/Smolmig/cwl_planer/issues/90), [#213](https://github.com/Smolmig/cwl_planer/issues/213).
 
 
-## 14.11.2026 – Erste sichere, lesende Spieler-Verknüpfung (Cloud v1.20.1)
+## 14.11.2026 – Erste sichere, lesende Spieler-Verknüpfung (Cloud v1.21.0)
 
 Die App kann bei **bewusstem Klick innerhalb der Angriffsdetails** bereits dokumentierte Ergebnisse desselben Player-Tags in anderen **für den angemeldeten Benutzer ohnehin lesbaren App-Clans** abrufen. Der Client nutzt ausschließlich die regulären RLS-geschützten `cwl_clans`, `cwl_stat_attacks` und `cwl_stat_wars` mit dem authentifizierten Supabase-Client. Ein fremdes App-Tenant kann dadurch nicht ohne bestehende Berechtigung geöffnet werden. Statistiken bleiben pro App-Tenant getrennt, und eigene CWL-Planung, Notizen, Verwaltungsregeln und Missed-Disziplinarstrafen bleiben ausdrücklich unberührt.
 
