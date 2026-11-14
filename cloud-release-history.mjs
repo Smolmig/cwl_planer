@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.22.0",
+    "releaseType": "minor",
+    "date": "2026-11-14",
+    "title": "Aktuelles Rathaus mit API-Prüfzeitpunkt",
+    "description": "Bei Spielern mit dokumentierten Angriffen lässt sich das aktuelle öffentliche Clash-Profil auf Wunsch abrufen. Aktuelles Rathaus und Clan werden mit Prüfzeitpunkt von der historischen Leistung getrennt."
+  },
+
+  {
     "version": "v1.21.0",
     "releaseType": "minor",
     "date": "2026-11-14",
