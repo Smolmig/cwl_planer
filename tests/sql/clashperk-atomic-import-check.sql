@@ -442,3 +442,146 @@ begin
 end
 $$;
 select 'clashperk-atomic-rpc: all owner/editor/viewer/rollback/tenant/API/retry checks passed' as result;
+
+
+-- v1.22.2 regression: old ClashPerk imports used GLOBAL war attack
+-- numbers (11/45) but current parser uses 1/2 for each player.
+-- All attack facts MUST match before any technical PK rekeying.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,opponent_tag,
+ opponent_name,source,finalized)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:180','normal',
+ '2026-01-01'::timestamptz+180*interval '1 day',
+ 2,'#2PYL','Old ClashPerk Source','import',true);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction)
+values
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:180',
+ '#8PYL',11,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,3,100),
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:180',
+ '#8PYL',45,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $$
+declare v jsonb;
+begin
+ v:=public.cwl_import_clashperk_canonical_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  public.clashperk_test_payload('180'));
+ if v->>'extended'<>'1' or v->>'inserted'<>'0'
+    or v->>'reconciledLegacyAttacks'<>'2' then
+   raise exception 'Legacy import rekey failed: %',v;
+ end if;
+ if (select count(*) from public.cwl_stat_attacks where war_key='cp:180')<>2 or
+    (select count(*) from public.cwl_stat_attacks where war_key='cp:180'
+       and attack_order in (1,2))<>2 or
+    (select count(*) from public.cwl_stat_attacks where war_key='cp:180'
+       and defender_tag='#2QPYL' and
+        ((stars=3 and destruction=100 and attack_order=1) or
+         (stars=2 and destruction=90 and attack_order=2)))<>2 then
+   raise exception 'Historical attack facts were not preserved during rekey';
+ end if;
+ v:=public.cwl_import_clashperk_canonical_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  public.clashperk_test_payload('180'));
+ if v->>'extended'<>'1' or
+    (select count(*) from public.cwl_stat_attacks where war_key='cp:180')<>2
+ then raise exception 'Legacy import is not idempotent';end if;
+end
+$$;
+
+-- A partial old log containing only the second attack must match by
+-- full evidence, not by its old order of 56 or its input position.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,
+ opponent_tag,opponent_name,source,finalized)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:182','normal',
+ '2026-01-01'::timestamptz+182*interval '1 day',
+ 2,'#2PYL','Old Partial Log','import',true);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:182',
+ '#8PYL',56,'Synthetic Player',18,'#2QPYL','Synthetic Enemy',18,2,90);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $$
+declare v jsonb;
+begin
+ v:=public.cwl_import_clashperk_canonical_atomic(
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  public.clashperk_test_payload('182'));
+ if v->>'reconciledLegacyAttacks'<>'1' or
+  (select count(*) from public.cwl_stat_attacks where war_key='cp:182')<>2 or
+  not exists(select 1 from public.cwl_stat_attacks
+    where war_key='cp:182' and attack_order=1 and stars=3) or
+  not exists(select 1 from public.cwl_stat_attacks
+    where war_key='cp:182' and attack_order=2 and stars=2) then
+  raise exception 'Partial old attack was lost or duplicated: %',v;
+ end if;
+end
+$$;
+
+-- Genuine contradiction MUST stop the entire batch. A new war in the
+-- same upload may not survive when a previously saved old attack differs.
+reset role;
+insert into public.cwl_stat_wars(
+ clan_id,war_key,war_type,started_at,team_size,
+ opponent_tag,opponent_name,source,finalized)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:181','normal',
+ '2026-01-01'::timestamptz+181*interval '1 day',
+ 2,'#2PYL','Conflicting Old Log','import',true);
+insert into public.cwl_stat_attacks(
+ clan_id,war_key,attacker_tag,attack_order,attacker_name,attacker_th,
+ defender_tag,defender_name,defender_th,stars,destruction)
+values(
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','cp:181',
+ '#8PYL',17,'Synthetic Player',18,'#2QLL','DIFFERENT DEFENDER',18,3,100);
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $$
+declare payload jsonb;
+begin
+ payload:=public.clashperk_test_payload('183');
+ payload:=jsonb_set(payload,'{wars}',
+   (payload->'wars')||(public.clashperk_test_payload('181')->'wars'));
+ payload:=jsonb_set(payload,'{attacks}',
+   (payload->'attacks')||(public.clashperk_test_payload('181')->'attacks'));
+ payload:=jsonb_set(payload,'{missed}',
+   (payload->'missed')||(public.clashperk_test_payload('181')->'missed'));
+ begin
+  perform public.cwl_import_clashperk_canonical_atomic(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',payload);
+  raise exception 'Genuine historical mismatch was silently accepted';
+ exception when unique_violation then null;
+ end;
+ if exists(select 1 from public.cwl_stat_wars where war_key='cp:183') or
+    exists(select 1 from public.cwl_stat_attacks where war_key='cp:183') or
+    (select count(*) from public.cwl_stat_attacks where war_key='cp:181')<>1 or
+    (select attack_order from public.cwl_stat_attacks where war_key='cp:181')<>17
+ then raise exception 'Failed batch was partially imported or old evidence changed'; end if;
+end
+$$;
+
+-- No cross-tenant write, and viewer cannot invoke the new version either.
+set request.jwt.claim.sub='44444444-4444-4444-8444-444444444444';
+do $$
+begin
+ begin
+  perform public.cwl_import_clashperk_canonical_atomic(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    public.clashperk_test_payload('184'));
+  raise exception 'Viewer unexpectedly allowed to rekey';
+ exception when insufficient_privilege then null;
+ end;
+end
+$$;
+reset role;
+select 'legacy global-to-per-player attack order: exact matching, subset, rollback and authorization passed' as result;
