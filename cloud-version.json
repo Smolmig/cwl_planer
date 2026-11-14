@@ -1,5 +1,5 @@
 {
-  "version": "v1.22.0",
+  "version": "v1.22.1",
   "released": "2026-11-14",
-  "summary": "Statistik: aktuelles Spielerprofil per geschützter Clash-API prüfen und historisches von aktuellem Rathaus klar trennen."
+  "summary": "Statistik und ClashPerk-Import: alte abgeschlossene CWs richtig erkennen, verifizierte API-Quellbelege ohne Doppelzählung nachreichen."
 }
