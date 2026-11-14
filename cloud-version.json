@@ -1,5 +1,5 @@
 {
   "version": "v1.20.0",
   "released": "2026-11-14",
-  "summary": "Spielerform mit stichprobenbereinigtem Leistungswert und belegter Zuverlässigkeit; Spielerstatistik nach 30/90/180/365 Tagen filtern."
+  "summary": "Formwert mit Stichprobenkorrektur und belegter Zuverlässigkeit; Spielerstatistik mit flexiblen Zeitfiltern (30/90/180/365 Tage)."
 }
