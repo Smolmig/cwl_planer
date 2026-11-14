@@ -4065,13 +4065,15 @@ html.cloud-startup-pending .cloud-startup-splash{
       <div class="field"><label for="statsFormSort">Sortieren</label><select id="statsFormSort"><option value="evidence" selected>Formwert (empfohlen)</option><option value="hitRate">3★-Quote</option><option value="reliability">Zuverlässigkeit</option><option value="name">Spielername (A–Z)</option></select></div>
     </div>
     <p class="stats-note" id="statsFormIntro"></p>
-    <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
-    <details class="stats-form-method" id="statsFormDetails"><summary>Wie wird der Formwert berechnet?</summary>
+    <details class="stats-form-method" id="statsFormDetails"><summary>Warum steht 100 % nicht immer oben?</summary>
       <p><strong>Leistung (65 %):</strong> „Gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Die 3★-Quote wird vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
       <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
+      <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
       <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
       <p>Die Spielerform nutzt alle abgeschlossenen CWs/CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
     </details>
+    <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
+    
   </section>
   <section class="card stats-compare-card" data-stats-panel="compare" aria-label="Rathaus-Vergleiche" hidden>
     <div class="section-title"><div><h3>Vergleiche</h3><p class="statusline">Wähle die Kriege für diesen Vergleich. Andere Statistikbereiche bleiben davon unberührt.</p></div></div>
