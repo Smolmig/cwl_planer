@@ -24,7 +24,7 @@ test("Recent member attack stats explain exact 3-star and average formula and pr
  assert.equal(s.importedAttacks,3);assert.equal(s.apiAttacks,2);
 });
 test("Players with actual statistics cannot override 3-star strength manually, others can",()=>{
- assert.match(html,/const hasAttackStats=!!\\(formEvidence/);
+ assert.ok(html.includes("const hasAttackStats=!!(formEvidence&&formEvidence.comparable>0)"));
  assert.match(html,/\$\{hasAttackStats\?\x60<span class="member-stat-automatic"/);
  assert.ok(html.includes('el.querySelector(".member-strength-picker")?.addEventListener'));
  assert.match(html,/member-config-help/);
