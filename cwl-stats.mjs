@@ -1444,6 +1444,26 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       trendGranularity=["day","week","month"].includes(ev.target.value)?ev.target.value:"week";
       renderTimeline();
     });
+    e("statsScopeShortcuts")?.addEventListener("click",ev=>{
+      const typeButton=ev.target.closest("button[data-scope-type]");
+      if(typeButton&&["all","normal","cwl"].includes(typeButton.dataset.scopeType)){
+        type=typeButton.dataset.scopeType;
+        syncPeriodChoices();render();return;
+      }
+      const dayButton=ev.target.closest("button[data-scope-days]");
+      if(dayButton&&["all","30","90","180","365"].includes(dayButton.dataset.scopeDays)){
+        playerDays=dayButton.dataset.scopeDays;
+        // Do not silently apply a calendar window AND a war-count cap.
+        last="all";cwlSeasons="all";
+        if($("statsPeriodConfig"))$("statsPeriodConfig").open=false;
+        syncPeriodChoices();render();
+      }
+    });
+    e("statsScopeClear")?.addEventListener("click",()=>{
+      type="all";last="all";cwlSeasons="all";playerDays="all";
+      if($("statsPeriodConfig"))$("statsPeriodConfig").open=false;
+      syncPeriodChoices();render();
+    });
     e("statsType")?.addEventListener("change",ev=>{
       type=ev.target.value;
       syncPeriodChoices();
@@ -1451,15 +1471,18 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     });
     e("statsRange")?.addEventListener("change",ev=>{
       last=ev.target.value==="all"?"all":Math.max(1,Math.min(50,Number(ev.target.value)||50));
+      if(last!=="all")playerDays="all";
       syncPeriodChoices();render();
     });
     e("statsPlayerDays")?.addEventListener("change",ev=>{
       playerDays=["30","90","180","365","all"].includes(ev.target.value)?
         ev.target.value:"all";
+      last="all";cwlSeasons="all";
       syncPeriodChoices();render();
     });
     e("statsCwlRange")?.addEventListener("change",ev=>{
       cwlSeasons=ev.target.value==="all"?"all":Math.max(1,Math.min(3,Number(ev.target.value)||3));
+      if(cwlSeasons!=="all")playerDays="all";
       syncPeriodChoices();render();
     });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
@@ -1485,20 +1508,36 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     document.querySelector('[data-view="stats"]')?.addEventListener("click",()=>load());
   }
   function syncPeriodChoices(){
-    const periodLabel=$("statsPeriodLabel");
-    if(periodLabel)periodLabel.textContent="Datenbasis anpassen";
     const cw=$("statsRange"),league=$("statsCwlRange");
     if(cw)cw.value=String(last);
     if(league)league.value=String(cwlSeasons);
+    if($("statsType"))$("statsType").value=type;
     if($("statsPlayerDays"))$("statsPlayerDays").value=String(playerDays);
     if($("statsCwField"))$("statsCwField").hidden=type==="cwl";
     if($("statsCwlField"))$("statsCwlField").hidden=type==="normal";
+    for(const button of document.querySelectorAll("#statsScopeShortcuts [data-scope-type]")){
+      const active=button.dataset.scopeType===type;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    }
+    const countMode=playerDays==="all"&&(last!=="all"||cwlSeasons!=="all");
+    for(const button of document.querySelectorAll("#statsScopeShortcuts [data-scope-days]")){
+      const active=!countMode&&button.dataset.scopeDays===String(playerDays);
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    }
+    if($("statsScopeCountHint"))$("statsScopeCountHint").hidden=!countMode;
+    const detail=$("statsPeriodConfig");
+    if(detail)detail.classList.toggle("is-custom",countMode);
     const scopeInfo=describeWarSelection(wars,{type,last,cwlSeasons,days:playerDays});
-    const parts=[playerDays==="all"?"Gesamt":playerDays+" Tage"];
-    if(type!=="cwl")parts.push(scopeInfo.selectedNormal+" CW");
-    if(type!=="normal")parts.push(scopeInfo.selectedCwl+
-      (scopeInfo.selectedCwl===1?" CWL-Durchgang":" CWL-Durchgänge"));
-    if($("statsPeriodSummary"))$("statsPeriodSummary").textContent=parts.join(" · ");
+    const parts=[];
+    if(type!=="cwl"&&last!=="all")
+      parts.push("Letzte "+last+" CW");
+    if(type!=="normal"&&cwlSeasons!=="all")
+      parts.push("Letzte "+cwlSeasons+" CWL-Durchgänge");
+    if($("statsPeriodSummary"))
+      $("statsPeriodSummary").textContent=parts.length?
+        "Eigene Kriegsanzahl · "+parts.join(" + "):"Erweiterte Auswahl · letzte X Kriege";
   }
   syncPeriodChoices();
   bind();
