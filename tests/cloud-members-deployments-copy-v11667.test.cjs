@@ -45,7 +45,8 @@ test("help explains the distinction to newcomers without naming a real clan memb
  assert.match(portion,/Ziel: 3\/4 Einsätze/);
  assert.match(portion,/unvollständigen Clash-Daten/);
  assert.doesNotMatch(portion,/Jamie|Pro_Gamer|Summarizer|Raphtor/);
- assert.match(html,/Die Mitgliederliste zeigt dagegen die Form aus der letzten CWL oder jüngsten CWs/);
+ assert.match(html,/Die Mitgliederliste zeigt stattdessen Form und Zuverlässigkeit aus der letzten dokumentierten CWL/);
+ assert.match(html,/jüngsten fünf CWs/);
  assert.match(html,/kein Einsatzziel/);
 });
 
