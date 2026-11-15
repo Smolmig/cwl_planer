@@ -109,12 +109,12 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
             text:document.getElementById("statsFormIntro").textContent
           }));
           buttons.find(el=>el.dataset.statsSection==="players").click();
-          const playerType=document.getElementById("statsType").closest(".field").getBoundingClientRect();
+          const playerType=document.querySelector("#statsScopeTypes").closest(".stats-scope-field").getBoundingClientRect();
+          const playerPeriod=document.querySelector("#statsScopeDays").closest(".stats-scope-field").getBoundingClientRect();
           const periodDetails=document.getElementById("statsPeriodConfig");
-          const playerPeriod=periodDetails.closest(".field").getBoundingClientRect();
           const periodSummary=document.getElementById("statsPeriodSummary").textContent;
           periodDetails.open=true;
-          const periodOptions=document.querySelectorAll(".stats-period-options select");
+          const periodOptions=document.querySelectorAll(".stats-scope-counts select");
           const filterWidths=[...periodOptions].map(x=>({
             width:x.getBoundingClientRect().width,scroll:x.scrollWidth,client:x.clientWidth
           }));
@@ -157,7 +157,7 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
         }
         assert.ok(result.formNotes.every((n,i)=>n.active&&n.focused&&
           n.text.includes("Sortiert nach Formwert")&&
-          n.text.includes("Spieler mit vergleichbaren Angriffen")&&
+          n.text.includes("Spieler mit gleich-RH-Angriffen")&&
           n.text.length<190),msg);
         assert.ok(result.mobileScope.periodSummary.length<65,msg);
         assert.ok(result.mobileScope.filterWidths.every(x=>x.width>=40&&x.client>0),msg);
