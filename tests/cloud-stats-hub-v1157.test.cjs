@@ -53,13 +53,13 @@ test("form, list position and selected wars are explicitly separate from the sev
  assert.match(script,/windows:\[30,90,180\]/);
  assert.doesNotMatch(script,/Letzte 10 Kriege = zehn jüngste ausgewählte Kriege/);
  assert.match(script,/Listenposition /);
- assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
+ assert.match(html,/Alle gespeicherten Durchgänge/);
  assert.match(html,/data-stats-section="overview"/);
  for(const section of ["players","form","compare","history"])
   assert.match(html,new RegExp('data-stats-panel="'+section+'"'));
  assert.match(html,/statsMatchupComparison/);
  assert.match(html,/Nr\. · Spieler/);
- assert.match(html,/Datenbasis anpassen/);
+ assert.match(html,/Erweiterte Auswahl: letzte X Kriege/);
  assert.doesNotMatch(html,/50 CWs \+ 3 CWLs/);
 });
 
