@@ -1471,7 +1471,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     });
     e("statsRange")?.addEventListener("change",ev=>{
       last=ev.target.value==="all"?"all":Math.max(1,Math.min(50,Number(ev.target.value)||50));
-      if(last!=="all")playerDays="all";
+      playerDays="all";
       syncPeriodChoices();render();
     });
     e("statsPlayerDays")?.addEventListener("change",ev=>{
@@ -1482,7 +1482,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     });
     e("statsCwlRange")?.addEventListener("change",ev=>{
       cwlSeasons=ev.target.value==="all"?"all":Math.max(1,Math.min(3,Number(ev.target.value)||3));
-      if(cwlSeasons!=="all")playerDays="all";
+      playerDays="all";
       syncPeriodChoices();render();
     });
     e("statsSameTH")?.addEventListener("change",ev=>{sameHigher=ev.target.checked;render()});
