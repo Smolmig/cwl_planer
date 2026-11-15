@@ -94,6 +94,14 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
               detailFont:parseFloat(getComputedStyle(el.querySelector("small")).fontSize),
               clips:el.scrollWidth>el.clientWidth+1};
           });
+          const cwlFormButton=document.querySelector('[data-form-kind="cwl"]');
+          const allFormButton=document.querySelector('[data-form-kind="all"]');
+          cwlFormButton.click();
+          const cwlFormSelected=cwlFormButton.getAttribute("aria-pressed")==="true"&&
+            document.getElementById("statsFormIntro").textContent.includes("Nur CWL-Kriegstage");
+          allFormButton.click();
+          const allFormSelected=allFormButton.getAttribute("aria-pressed")==="true"&&
+            document.getElementById("statsFormIntro").textContent.includes("CWs und CWL-Kriegstage");
           const formControls=["statsFormSearch","statsFormSort"].map(id=>
             document.getElementById(id).getBoundingClientRect().height);
           const formNotes=[];
@@ -109,6 +117,25 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
             text:document.getElementById("statsFormIntro").textContent
           }));
           buttons.find(el=>el.dataset.statsSection==="players").click();
+          const quick=document.getElementById("statsScopeShortcuts");
+          const day90=quick.querySelector('[data-scope-days="90"]');
+          const cwType=quick.querySelector('[data-scope-type="normal"]');
+          day90.click();cwType.click();
+          const calendarMode=day90.getAttribute("aria-pressed")==="true"&&
+            cwType.getAttribute("aria-pressed")==="true"&&
+            document.getElementById("statsPlayerDays").value==="90"&&
+            document.getElementById("statsRange").value==="all";
+          const range=document.getElementById("statsRange");
+          range.value="1";range.dispatchEvent(new Event("change",{bubbles:true}));
+          const countMode=day90.getAttribute("aria-pressed")==="false"&&
+            document.getElementById("statsPlayerDays").value==="all"&&
+            document.getElementById("statsPeriodSummary").textContent.includes("Letzte 1 CW");
+          quick.querySelector("#statsScopeClear").click();
+          const resetMode=quick.querySelector('[data-scope-type="all"]')
+              .getAttribute("aria-pressed")==="true"&&
+            quick.querySelector('[data-scope-days="all"]')
+              .getAttribute("aria-pressed")==="true"&&
+            range.value==="all";
           const playerType=document.querySelector("#statsScopeShortcuts .stats-scope-group").getBoundingClientRect();
           const periodDetails=document.getElementById("statsPeriodConfig");
           const playerPeriod=document.querySelector("#statsScopeShortcuts .stats-scope-periods").getBoundingClientRect();
@@ -124,7 +151,7 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           buttons.find(el=>el.dataset.statsSection==="compare").click();
           const compareControls=["statsCompareType","statsCompareDays"].map(id=>
             document.getElementById(id).getBoundingClientRect().height);
-          return {rects,checks,activeAfterReload:reload.active,
+          return {rects,checks,calendarMode,countMode,resetMode,cwlFormSelected,allFormSelected,activeAfterReload:reload.active,
             headerAfterReload:reload.panel,
             formButtons,formControls,compareControls,formNotes,formReload,mobileScope,
             importHidden:document.getElementById("statsImportButton").hidden,
@@ -145,6 +172,11 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           assert.ok(result.rects.every(r=>Math.abs(r.y-result.rects[0].y)<2),msg);
         }
         assert.ok(result.checks.every(c=>c.oneActive&&c.onePanel&&c.focused),msg);
+        assert.equal(result.calendarMode,true,msg);
+        assert.equal(result.countMode,true,msg);
+        assert.equal(result.resetMode,true,msg);
+        assert.equal(result.cwlFormSelected,true,msg);
+        assert.equal(result.allFormSelected,true,msg);
         assert.equal(result.activeAfterReload,true,msg);
         assert.equal(result.headerAfterReload,true,msg);
         assert.equal(result.importHidden,true,msg);
