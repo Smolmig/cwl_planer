@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.23.2] - 2026-11-15
+
+### Verbessert
+- Mitglieder: „n=4“ durch „4 Angriffe gegen gleiches RH“ ersetzt. Die Hauptform, 3★-Quote, belegte Zuverlässigkeit und der CW-Vergleich sind klar getrennt und mobil lesbar.
+- Rathaus in der Mitgliederverwaltung verständlich als „Rathausstufe 18 · aus Clash übernommen“ benannt; die Erklärung ist über die Spielerhilfe erreichbar.
+- Spielerbezogene Einstellungshilfe und allgemeine Hilfe mit der neuen CWL-/CW-Form synchronisiert; veraltete Aussagen zu den letzten sieben Angriffen in der Mitgliederliste korrigiert.
+- Nur Darstellung und Hilfetexte, keine Änderung an Berechnung, CWL-Planung, Rollen, Speicherung oder Datenbank.
+
+
 ## [1.23.1] - 2026-11-15
 
 ### Verbessert
