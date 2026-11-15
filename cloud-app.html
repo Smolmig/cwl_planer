@@ -5092,18 +5092,22 @@ function memberPerformance(m){
  const isCwl=form.source==="cwl";
  const value=b.formIndex??b.performanceIndex;
  const mainLabel=(isCwl?"CWL":"CW")+(b.formIndex===null?"-Leistung":"-Form");
- const score=value===null?"–":String(value);
+ const score=value===null?"–":(b.formProvisional?"≈ ":"")+value+"/100";
  const rate=b.hitRate===null?"–":b.hitRate+" %";
  const quality=b.attacks+" gleich-RH-Angriff"+(b.attacks===1?"":"e");
- const reliable=b.reliability===null?"Zuverlässigkeit offen":"Zuverlässigkeit "+b.reliability+" %";
+ const reliable=b.reliability===null?"Zuverlässigkeit offen":
+   "Zuverlässigkeit "+(b.reliabilityProvisional?"≈ ":"")+b.reliability+" %";
  const other=isCwl?form.cw:form.cwl;
  const secondary=other?.attacks?
-   (isCwl?"CW":"CWL")+" "+(other.formIndex??other.performanceIndex??"–")+"/100":"";
+   (isCwl?"CW":"CWL")+" "+(other.formProvisional?"≈ ":"")+
+     (other.formIndex??other.performanceIndex??"–")+"/100":"";
  const note=isCwl?"Letzte CWL":form.source==="cw-fallback"?"CW statt CWL":"";
- const title=[note,quality,"3★-Quote "+rate,reliable,secondary].filter(Boolean).join(" · ");
- return "<span class='member-form-summary' title='"+esc(title)+"'>"+
-  "<span class='member-form-main'><strong>"+esc(mainLabel)+" "+esc(score)+"/100</strong>"+
-    "<small>"+esc(note)+" · n="+b.attacks+"</small></span>"+
+ const warning=b.formProvisional||b.reliabilityProvisional?
+   "Vorläufig: nicht alle Angriffsnachweise sind vollständig; der tatsächliche Wert kann abweichen.":"";
+ const title=[note,quality,"3★-Quote "+rate,reliable,secondary,warning].filter(Boolean).join(" · ");
+ return "<span class='member-form-summary' title='"+esc(title)+"' aria-label='"+esc(title)+"'>"+
+  "<span class='member-form-main'><strong>"+esc(mainLabel)+" "+esc(score)+"</strong>"+
+    "<small>"+esc(note)+" · n="+b.attacks+(b.formProvisional?" · vorläufig":"")+"</small></span>"+
   "<span class='member-form-sub'>"+esc("3★ "+rate+" · "+reliable)+
     (secondary?" · "+esc(secondary):"")+"</span></span>";
 }
