@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "minor",
     "date": "2026-11-15",
     "title": "Einfachere Statistikfilter und getrennte Spielerform",
-    "description": "CWs, CWL und Zeiträume sind direkt auswählbar; spezielle Kriegsanzahlen bleiben optional. Gesamt- und CWL-Form sind getrennt, und die Mitgliederliste zeigt die letzte CWL oder ausdrücklich gekennzeichnete CW-Form mit Zuverlässigkeit."
+    "description": "Direkte CW/CWL- und Zeitraumfilter, optional die letzten X Kriege. Gesamtform und CWL-Form sind getrennt; Mitglieder zeigen die letzte CWL oder ausdrücklich gekennzeichnete CW-Form mit Zuverlässigkeit."
   },
 
   {
