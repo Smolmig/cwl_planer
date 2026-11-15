@@ -71,7 +71,7 @@ test("member evidence uses newest separate CWL run and last five normal CWs",asy
  assert.equal(absent.score,null);
  assert.equal(absent.reliability,null);
 });
-test("member form never treats incomplete missed logs as known reliability",async()=>{
+test("member form gives provisional reliability with evidenced misses, never a confirmed score",async()=>{
  const {computeMemberFormEvidence}=await member();
  const wars=[war("cwl0","2026-11-09T10:00:00Z","cwl",{
    missed_log_complete:false
@@ -82,8 +82,11 @@ test("member form never treats incomplete missed logs as known reliability",asyn
  const p=result.byTag.get("#2PYL");
  assert.equal(p.source,"cwl");
  assert.equal(p.performance!==null,true);
- assert.equal(p.reliability,null);
- assert.equal(p.score,null);
+ assert.equal(p.reliability,50);
+ assert.equal(p.reliabilityComplete,false);
+ assert.equal(p.reliabilityProvisional,true);
+ assert.ok(p.score>0);
+ assert.equal(p.formProvisional,true);
  assert.equal(p.missedKnown,1);
 });
 test("statistics and members present separate sources without changing plan strength",()=>{
