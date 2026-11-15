@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.23.3] - 2026-11-15
+
+### Behoben
+- Ein Clanwechsel kann bei Netzwerkfehlern oder langen API-Laufzeiten nicht mehr durch das bisherige Zwölf-Sekunden-Fallback eine unvollständig geladene andere Clanansicht anzeigen. Stattdessen zeigt die Ladeanzeige eine eindeutige Fehlermeldung mit „Erneut laden“.
+- Die zuletzt erfolgreiche Clan-Auswahl wird erst nach erfolgreichem Laden des nächsten Clans dauerhaft gespeichert. Bei fehlgeschlagenem Wechsel kehrt ein erneutes Laden zur letzten funktionierenden Auswahl zurück.
+- Die Clanauswahl blockiert doppelte parallele Auswahlaktionen, ohne automatische Hintergrundaktualisierungen oder die normalen Profileinstellungen zu verändern.
+- Keine Änderungen an Berechtigungen, Cloud-Datenbank, Profilformat, bestehenden Plänen, CWL-Solver, Ergebnissen oder den Offline-Profilen.
+- Hilfe, Version, öffentlicher Update-Verlauf und Regressionstests gemeinsam aktualisiert.
+
+
 ## [Offline 1.1.0] - 2026-11-15
 
 ### Neu
