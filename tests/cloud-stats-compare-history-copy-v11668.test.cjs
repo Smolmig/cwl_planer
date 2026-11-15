@@ -108,5 +108,5 @@ test("week and war copy is clear without changing the actual timeline and filter
  assert.match(stats,/computeStatsTimeline\(ownWars,attacks/);
  assert.match(read("cloud-release-history.mjs"),/"version": "v1\.23\.2"/);
  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.23.2");
- assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
+ assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
 });
