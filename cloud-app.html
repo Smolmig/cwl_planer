@@ -3587,6 +3587,52 @@ html.cloud-startup-pending .cloud-startup-splash{
 #view-stats .stats-current-profile-action:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 #view-stats .stats-current-profile-result{margin:6px 0 8px;font-size:12px;line-height:1.5;color:var(--muted)}
 #view-stats .stats-current-profile-result:empty{display:none}
+
+/* v1.23: compact Desktop + mobile statistics toolbar with two exclusive scopes. */
+#view-stats .stats-scope-toolbar{display:grid;gap:10px;margin:11px 0 8px}
+#view-stats .stats-scope-primary{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
+#view-stats .stats-scope-field{min-width:0;display:grid;gap:7px}
+#view-stats .stats-scope-label{color:var(--muted);font-size:12px;font-weight:650}
+#view-stats .stats-scope-segments,#view-stats .stats-scope-chips{
+ display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+#view-stats :is(.stats-scope-segments,.stats-scope-chips)>button{
+ color:var(--text);background:transparent;border:1px solid var(--line);
+ border-radius:9px;min-height:40px;padding:7px 13px;font:inherit;font-size:13px;
+ font-weight:650;cursor:pointer;white-space:nowrap}
+#view-stats :is(.stats-scope-segments,.stats-scope-chips)>button[aria-pressed="true"]{
+ color:var(--text);border-color:var(--primary);background:color-mix(in srgb,var(--primary) 15%,transparent)}
+#view-stats :is(.stats-scope-segments,.stats-scope-chips)>button:focus-visible,
+#view-stats .stats-scope-advanced>summary:focus-visible{
+ outline:2px solid var(--primary);outline-offset:3px}
+#view-stats .stats-scope-advanced{max-width:100%;margin:0;border:0;background:transparent}
+#view-stats .stats-scope-advanced>summary{
+ display:inline-flex;align-items:center;min-height:36px;padding:6px 0;cursor:pointer;
+ color:var(--muted);font-size:12px;font-weight:650}
+#view-stats .stats-scope-advanced[open]{border-top:1px solid var(--line);padding-top:7px}
+#view-stats .stats-scope-advanced>.stats-note{margin:0 0 10px;font-size:12px}
+#view-stats .stats-scope-counts{display:flex;gap:12px;flex-wrap:wrap}
+#view-stats .stats-scope-counts>.field{width:min(255px,100%);min-width:0}
+#view-stats .stats-scope-counts>.field[hidden]{display:none!important}
+#view-stats .stats-scope-counts label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+#view-stats .stats-scope-counts select{width:100%;min-width:0}
+#view-stats .stats-scope-toolbar select[hidden]{display:none!important}
+#view-stats .stats-form-kind{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#view-stats .stats-form-kind>button{font:inherit;font-size:13px;font-weight:750;color:var(--text);
+ background:transparent;border:1px solid var(--line);border-radius:10px;padding:9px 16px;
+ cursor:pointer;min-height:46px;text-align:left}
+#view-stats .stats-form-kind small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+#view-stats .stats-form-kind>button[aria-pressed="true"]{
+ border-color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent)}
+#view-stats .stats-form-kind>button:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+#view-stats .stats-form-context{font-size:12px;color:var(--muted);margin:8px 0 4px}
+@media(max-width:699px){
+ #view-stats .stats-scope-primary{display:grid;gap:11px}
+ #view-stats :is(.stats-scope-segments,.stats-scope-chips)>button{min-height:42px;padding:8px 11px}
+ #view-stats .stats-scope-counts{display:grid;grid-template-columns:minmax(0,1fr)}
+ #view-stats .stats-scope-counts>.field{width:100%}
+ #view-stats .stats-form-kind>button{flex:1;min-width:0}
+}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4006,33 +4052,51 @@ html.cloud-startup-pending .cloud-startup-splash{
   <section class="card stats-table-card" data-stats-panel="players" aria-label="Frei wählbare Spielerstatistik" hidden>
     <div class="section-title"><h3>Spielerstatistik</h3></div>
     <p class="stats-note">Filter für diese Spielerliste. Die Spielerform bleibt unabhängig.</p>
-    <div class="stats-player-scope"><div class="stats-filters">
-      <div class="field"><label for="statsType">Kriegstyp</label><select id="statsType"><option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option></select></div>
-      <div class="field"><label id="statsPeriodLabel">Datenbasis anpassen</label>
-        <details class="stats-period" id="statsPeriodConfig">
-          <summary id="statsPeriodSummary" aria-label="Ausgewählte Kriege ändern">Alle gespeicherten Kriege</summary>
-          <div class="stats-period-options">
-            <div class="field"><label for="statsPlayerDays">Zeitraum</label>
-              <select id="statsPlayerDays"><option value="all" selected>Alle erfassten Zeiträume</option>
-                <option value="30">Letzte 30 Tage</option>
-                <option value="90">Letzte 90 Tage</option>
-                <option value="180">Letzte 180 Tage</option>
-                <option value="365">Letzte 365 Tage</option>
-              </select></div>
-            <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
-              <option value="1">Letzter 1 CW</option><option value="2">Letzte 2 CWs</option>
-              <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
-              <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
-              <option value="50">Letzte 50 CWs</option><option value="all" selected>Alle verfügbaren CWs</option>
-            </select></div>
-            <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Durchgänge</label><select id="statsCwlRange">
-              <option value="1">Letzter CWL-Durchgang</option><option value="2">Letzte 2 CWL-Durchgänge</option>
-              <option value="3">Letzte 3 CWL-Durchgänge</option><option value="all" selected>Alle gespeicherten CWL-Durchgänge</option>
-            </select></div>
+    <div class="stats-scope-toolbar" aria-label="Kriege für Spielerstatistik auswählen">
+      <div class="stats-scope-primary">
+        <div class="stats-scope-field">
+          <span class="stats-scope-label" id="statsScopeTypeLabel">Kriegstyp</span>
+          <div id="statsScopeTypes" class="stats-scope-segments" role="group" aria-labelledby="statsScopeTypeLabel">
+            <button type="button" data-stats-type="all" class="active" aria-pressed="true">Alle</button>
+            <button type="button" data-stats-type="normal" aria-pressed="false">CW</button>
+            <button type="button" data-stats-type="cwl" aria-pressed="false">CWL</button>
           </div>
-        </details></div>
-    </div>
-
+          <select id="statsType" hidden aria-hidden="true" tabindex="-1" aria-label="Kriegstyp (intern)">
+            <option value="all">Alle Kriege</option><option value="normal">Normale CWs</option><option value="cwl">CWL</option>
+          </select>
+        </div>
+        <div class="stats-scope-field">
+          <span class="stats-scope-label" id="statsScopeDaysLabel">Zeitraum</span>
+          <div id="statsScopeDays" class="stats-scope-chips" role="group" aria-labelledby="statsScopeDaysLabel">
+            <button type="button" class="active" data-stats-days="all" aria-pressed="true">Gesamt</button>
+            <button type="button" data-stats-days="30" aria-pressed="false">30 Tage</button>
+            <button type="button" data-stats-days="90" aria-pressed="false">90 Tage</button>
+            <button type="button" data-stats-days="180" aria-pressed="false">180 Tage</button>
+            <button type="button" data-stats-days="365" aria-pressed="false">365 Tage</button>
+          </div>
+          <select id="statsPlayerDays" hidden aria-hidden="true" tabindex="-1" aria-label="Zeitraum (intern)">
+            <option value="all">Alle erfassten Zeiträume</option>
+            <option value="30">Letzte 30 Tage</option><option value="90">Letzte 90 Tage</option>
+            <option value="180">Letzte 180 Tage</option><option value="365">Letzte 365 Tage</option>
+          </select>
+        </div>
+      </div>
+      <details class="stats-scope-advanced" id="statsPeriodConfig">
+        <summary id="statsPeriodSummary">Erweiterte Auswahl: letzte X Kriege</summary>
+        <p class="stats-note" id="statsScopeModeHint">Optional statt eines Zeitraums die letzten X CWs / CWL-Durchgänge auswählen.</p>
+        <div class="stats-scope-counts">
+          <div class="field" id="statsCwField"><label for="statsRange">Normale CWs</label><select id="statsRange">
+            <option value="1">Letzter CW</option><option value="2">Letzte 2 CWs</option>
+            <option value="3">Letzte 3 CWs</option><option value="5">Letzte 5 CWs</option>
+            <option value="10">Letzte 10 CWs</option><option value="25">Letzte 25 CWs</option>
+            <option value="50">Letzte 50 CWs</option><option value="all" selected>Alle verfügbaren CWs</option>
+          </select></div>
+          <div class="field" id="statsCwlField"><label for="statsCwlRange">CWL-Durchgänge</label><select id="statsCwlRange">
+            <option value="1">Letzter Durchgang</option><option value="2">Letzte 2 Durchgänge</option>
+            <option value="3">Letzte 3 Durchgänge</option><option value="all" selected>Alle gespeicherten Durchgänge</option>
+          </select></div>
+        </div>
+      </details>
     </div>
     <div class="stats-query-explainer" id="statsScopeExplainer" role="status" aria-live="polite"></div>
     <details class="stats-scope-details"><summary>Welche Kriege zählen?</summary>
@@ -4061,7 +4125,12 @@ html.cloud-startup-pending .cloud-startup-splash{
     <p class="stats-note" id="statsNoCloud">Melde dich an und wähle einen Clan aus, um dessen Kriegsstatistiken zu sehen. Ohne Anmeldung kannst du weiterhin CWL-Aufstellungen planen.</p>
   </section>
   <section class="card stats-form-card" data-stats-panel="form" aria-label="Unabhängige Spielerform" hidden>
-    <div class="section-title"><div><h3>Spielerform</h3><p class="statusline">So liefen die Angriffe in den letzten 30, 90 oder 180 Tagen. Die Auswahl unter „Spielerstatistik“ spielt hier keine Rolle.</p></div></div>
+    <div class="section-title"><div><h3>Spielerform</h3><p class="statusline">Gesamtform oder CWL-Form: derselbe konservative Formwert, aber eine klar getrennte Datenbasis.</p></div></div>
+    <div class="stats-form-kind" role="group" aria-label="Welche Spielerform anzeigen?">
+      <button type="button" data-form-kind="all" class="active" aria-pressed="true">Gesamtform <small>CW + CWL</small></button>
+      <button type="button" data-form-kind="cwl" aria-pressed="false">CWL-Form <small>Nur CWL-Tage</small></button>
+    </div>
+    <p class="stats-form-context" id="statsFormContext">Abgeschlossene CWs und CWL-Tage gemeinsam.</p>
     <div class="stats-form-window" role="group" aria-label="Zeitraum für Spielerform wählen">
       <button type="button" data-form-window="30" aria-pressed="false">30 Tage <small>Kurzfristig</small></button>
       <button type="button" data-form-window="90" class="active" aria-pressed="true">90 Tage <small>Mittelfristig</small></button>
