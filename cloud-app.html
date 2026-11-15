@@ -29,12 +29,12 @@ try{
   if(localStorage.getItem("sb-yjldnvfwposfwmzmcsow-auth-token"))
    document.documentElement.classList.add("cloud-startup-pending");
  }catch{/* Storage may be disabled; the regular guest view stays available. */}
- let sequence=0,watchdog=null,strictSwitch=false;
+ let sequence=0,watchdog=null,strictSwitch=false,failed=false;
  // On first login a bounded loading gate may fall back to the guest view.
  // A deliberate cross-clan switch is different: timed fallback could expose
  // previous tenant data before the new profile has been verified.
  const finish=(ticket=sequence)=>{
-  if(ticket!==sequence)return;
+  if(ticket!==sequence||failed)return;
   clearTimeout(watchdog);watchdog=null;strictSwitch=false;
   const splash=document.getElementById("cloudStartupSplash");
   splash?.classList.remove("cloud-startup-error");
@@ -47,6 +47,7 @@ try{
  };
  const fail=(message="Der Clan konnte nicht vollständig geladen werden. Bitte erneut laden.",ticket=sequence)=>{
   if(ticket!==sequence||!strictSwitch)return;
+  failed=true;
   clearTimeout(watchdog);watchdog=null;
   const splash=document.getElementById("cloudStartupSplash");
   if(splash){
@@ -62,7 +63,7 @@ try{
  const begin=(message="Dein Clan wird geladen …",options={})=>{
   const ticket=++sequence;
   clearTimeout(watchdog);
-  strictSwitch=options.strict===true;
+  strictSwitch=options.strict===true;failed=false;
   const splash=document.getElementById("cloudStartupSplash");
   if(splash){
    splash.removeAttribute("hidden");
