@@ -252,6 +252,7 @@ export function computePlayerFormWindows(wars,attacks,{
           days,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null,
           normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null,
           performed:0,missedKnown:0,reliability:null,reliabilityComplete:false,
+          reliabilityProvisional:false,formProvisional:false,
           formIndex:null,performanceIndex:null,_unverified:new Set()
         }]))});
     }
@@ -350,7 +351,14 @@ export function computePlayerFormWindows(wars,attacks,{
         b.attacks?"wenige Angriffe":"keine Daten";
       const obligations=b.performed+b.missedKnown;
       b.reliabilityComplete=obligations>0&&b._unverified.size===0;
-      b.reliability=b.reliabilityComplete?
+      // If at least one missed obligation is PROVEN, use the observed
+      // executed/(executed+proven-missed) ratio as a *provisional* estimate.
+      // Unknown extra slots are never counted as zeroes or as proven used.
+      // With zero proven missed and incomplete coverage, avoid inventing
+      // a 100%-reliable score from executed attacks alone.
+      b.reliabilityProvisional=!b.reliabilityComplete&&
+        obligations>0&&b.missedKnown>0;
+      b.reliability=(b.reliabilityComplete||b.reliabilityProvisional)?
         Math.round(100*b.performed/obligations):null;
       // Wilson's conservative 80%-style lower bound: four out of four must
       // outrank zero out of twelve, but tiny samples are visibly uncertain.
@@ -363,10 +371,11 @@ export function computePlayerFormWindows(wars,attacks,{
           z2/(4*b.attacks*b.attacks));
         b.performanceIndex=Math.round(100*Math.max(0,(center-distance)/denom));
       }
-      // Missed attacks are a separate but heavily weighted reliability axis.
-      // If coverage is incomplete, never invent unknown misses or a composite.
+      // Provisional totals are usable for planning but NOT verified final
+      // scores: additional undocumented attacks/misses may shift the result.
       b.formIndex=b.performanceIndex!==null&&b.reliability!==null?
         Math.round(.65*b.performanceIndex+.35*b.reliability):null;
+      b.formProvisional=b.formIndex!==null&&!b.reliabilityComplete;
       delete b._unverified;
     }
     return {...p,former:current.size>0&&!current.has(p.tag)};
@@ -394,13 +403,16 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
     if(mode==="hitRate")return rateDelta||volumeDelta||nameSort(a,b);
     if(mode==="reliability")
       return (right.reliability??-1)-(left.reliability??-1)||
+        Number(!!left.reliabilityProvisional)-Number(!!right.reliabilityProvisional)||
         (right.performed+right.missedKnown)-(left.performed+left.missedKnown)||
         nameSort(a,b);
     // Missing coverage must not cause 0/12 to outrank 4/4. Compare the
     // conservative scores directly; incomplete reliability is clearly
     // identified in the row instead of made into a fictitious failure.
     const rank=b=>b.formIndex??b.performanceIndex??-1;
-    return (rank(right)-rank(left))||volumeDelta||nameSort(a,b);
+    return (rank(right)-rank(left))||
+      Number(!!left.formProvisional)-Number(!!right.formProvisional)||
+      volumeDelta||nameSort(a,b);
   });
 }
 /**
