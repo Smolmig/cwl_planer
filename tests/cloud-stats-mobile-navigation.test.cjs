@@ -109,9 +109,9 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
             text:document.getElementById("statsFormIntro").textContent
           }));
           buttons.find(el=>el.dataset.statsSection==="players").click();
-          const playerType=document.getElementById("statsType").closest(".field").getBoundingClientRect();
+          const playerType=document.querySelector("#statsScopeShortcuts .stats-scope-group").getBoundingClientRect();
           const periodDetails=document.getElementById("statsPeriodConfig");
-          const playerPeriod=periodDetails.closest(".field").getBoundingClientRect();
+          const playerPeriod=document.querySelector("#statsScopeShortcuts .stats-scope-periods").getBoundingClientRect();
           const periodSummary=document.getElementById("statsPeriodSummary").textContent;
           periodDetails.open=true;
           const periodOptions=document.querySelectorAll(".stats-period-options select");
@@ -161,7 +161,7 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           n.text.length<190),msg);
         assert.ok(result.mobileScope.periodSummary.length<65,msg);
         assert.ok(result.mobileScope.filterWidths.every(x=>x.width>=40&&x.client>0),msg);
-        if(width<700){
+        if(width<=800){
           assert.ok(result.mobileScope.period.y>
             result.mobileScope.type.y+result.mobileScope.type.h-2,msg);
           assert.ok(Math.abs(result.mobileScope.type.w-result.mobileScope.period.w)<3,msg);
