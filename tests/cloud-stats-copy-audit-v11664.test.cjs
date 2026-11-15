@@ -19,7 +19,7 @@ test("#226: stats overview and form show concise language, detail stays in discl
  assert.match(html,/Formwert.*Zuverlässigkeit/);
  assert.doesNotMatch(html,/Nur 3★-Quote \(roh\)|Anzahl gleich-RH-Angriffe|Eigenständige Formanalyse aus der gesamten/);
  const stats=read("cwl-stats.mjs");
- assert.match(stats,/unassessed\+" ohne gleich-RH-Angriffe/);
+ assert.match(stats,/unassessed\+" ohne Vergleichsdaten/);
  assert.match(stats,/Sortiert nach Formwert/);
  assert.match(stats,/Leistungswert/);
  assert.match(stats,/Keine gleich-RH-Angriffe/);
