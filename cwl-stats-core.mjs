@@ -228,15 +228,20 @@ export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}=
  * players without documented attacks; n and date are displayed alongside %.
  */
 export function computePlayerFormWindows(wars,attacks,{
-  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[]
+  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[],
+  warTypes=["normal","cwl"]
 }={}){
   const now=typeof asOf==="number"?asOf:Date.parse(asOf);
   if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
      windows.some(x=>!Number.isInteger(x)||x<1||x>730))
     throw Error("Ungültige Fenster für Formanalyse.");
+  if(!Array.isArray(warTypes)||!warTypes.length||
+     warTypes.some(t=>!["normal","cwl"].includes(t)))
+    throw Error("Ungültige Kriegstypen für Formanalyse.");
+  const allowedTypes=new Set(warTypes);
   const byWar=new Map((wars||[]).filter(w=>
     (w.source!=="api"||w.finalized===true)&&
-    ["normal","cwl"].includes(w.war_type)).map(w=>[w.war_key,w]));
+    allowedTypes.has(w.war_type)).map(w=>[w.war_key,w]));
   const profiles=new Map();
   const ensure=(tag,name="")=>{
     const key=cleanTag(tag);
