@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "minor",
     "date": "2026-11-15",
     "title": "Zerstörungsprozente in der Spielerform",
-    "description": "Die Spielerform zeigt nun die durchschnittliche Zerstörung der Angriffe gegen gleiches Rathaus. Bei gleichem Formwert und gleicher Sterneleistung entscheiden belegte Prozentwerte über die Reihenfolge. Fehlende Prozente bleiben unbekannt."
+    "description": "Bei gleichem Formwert und gleicher Ø-Sterne-Leistung entscheidet der vollständig belegte Ø-Zerstörungswert; die Formdetails zeigen die zugrunde liegenden Prozentdaten."
   },
 
   {
