@@ -6,6 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.23.0] - 2026-11-15
+
+### Verbessert
+- **Spielerstatistik:** Kriegstyp (Alle/CW/CWL) und Zeitraum (Gesamt/30/90/180/365 Tage) auf einer kompakten, responsiven Fläche; seltene Anzahlfilter für letzte CWs und CWL-Durchgänge hinter „Erweiterte Auswahl“. Wahl des Zeitraums setzt Mengenbegrenzungen zurück und umgekehrt, keine stillen Doppelbegrenzungen. Unter der Auswahl bleibt die tatsächliche Kriegs-/Tagesbasis sichtbar.
+- **Spielerform:** getrennte **Gesamtform** (CW + CWL) und **CWL-Form** (nur CWL) mit unveränderten Formwert-/Wilson-Regeln. In beiden Ansichten bleiben 30/90/180-Tage-Zeiträume, n, fehlende Belege und Zuverlässigkeitsabdeckung erkennbar.
+- **Mitglieder:** kompakter, belastbarer Formwert aus dem jüngsten dokumentierten CWL-Durchgang; wenn dort keine Angriffe oder Fehlangriffe belegt sind, stattdessen die letzten fünf abgeschlossenen CWs als **sichtbar bezeichnete Ersatzbasis**. Belegte Zuverlässigkeit und 3★-Anzahl erscheinen getrennt; bei unvollständigen Fehlangriffsnachweisen wird nur die Leistung gezeigt, keine falsche Zuverlässigkeit. Mitgliedersortierung „Formwert“ und „Zuverlässigkeit“ an die neue Basis angepasst.
+- **Planer:** Planung und gespeicherte Clan-/Spielerdaten bleiben von der Auswertung unberührt. Keine automatischen Stärkerankings, CWL-Rotationsänderungen oder Erfolgsprognosen.
+
+### Qualität
+- Regressionen für CW-/CWL-Trennung, zwei CWLs im selben Kalendermonat, CW-Fallback, Offline-Leerdaten, fehlende Zuverlässigkeit und Desktop-/Mobile-Bedienung.
+- Hilfe- und Release-History-Texte aktualisiert; Smart-Live-Planer und späterer Clanburg-Analyzer ausdrücklich nur als Roadmap.
+
+
+
 ## [1.22.2] - 2026-11-14
 
 ### Behoben
