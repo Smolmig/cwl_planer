@@ -34,8 +34,8 @@ test("combined UI branch leaves auth storage, cloud format and original offline 
  assert.equal(version.version,"v1.23.2");
  assert.match(html,/const DATA_VERSION=9;/);
  assert.match(html,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
- assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2";/);
- assert.match(read("service-worker.js"),/cwl-planer-v1-0-2/);
+ assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0";/);
+ assert.match(read("service-worker.js"),/cwl-planer-v1-1-0/);
  const api=read("supabase/functions/coc-cwl-status/index.ts");
  assert.match(api,/coc-cwl-status|withSupabase/);
  assert.doesNotMatch(live,/sb\.auth\.signOut\(|storage\.saveJson\(/);
