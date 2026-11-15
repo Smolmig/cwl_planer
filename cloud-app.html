@@ -4161,9 +4161,9 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p><strong>Leistung (65 %):</strong> „Gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Die 3★-Quote wird vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
       <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
       <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
-      <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
+      <p><strong>Bei Datenlücken:</strong> Sind Fehlangriffe sicher dokumentiert, berechnen wir einen mit ≈ gekennzeichneten vorläufigen Formwert aus ausgeführten und nachweislich verpassten Angriffen. Weitere unbekannte Angriffe können den tatsächlichen Wert verändern. Fehlen Vollständigkeitsbelege und bestätigte Fehlangriffe, zeigen wir nur den Leistungswert. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
       <p>Die <strong>Gesamtform</strong> berücksichtigt CWs und CWL-Tage gemeinsam. Die <strong>CWL-Form</strong> berücksichtigt nur CWL-Tage; beide nutzen den gewählten Zeitraum (30, 90 oder 180 Kalendertage) und bleiben unabhängig von den Filtern der Spielerstatistik. Angriffe auf andere Rathausstufen stehen weiterhin nur in den Angriffsdetails.</p>
-      <p><strong>Mitglieder:</strong> Die kompakte Form nutzt die letzte dokumentierte CWL. Hat ein Spieler dort keine belegten Angriffe, werden die letzten fünf normalen CWs ausdrücklich als Ersatzbasis gekennzeichnet. Ist die Zuverlässigkeit nicht vollständig nachweisbar, erscheint nur der Leistungswert. Die Daten ändern keine CWL-Aufstellung automatisch.</p>
+      <p><strong>Mitglieder:</strong> Die kompakte Form nutzt die letzte dokumentierte CWL. Hat ein Spieler dort keine belegten Angriffe, werden die letzten fünf normalen CWs als Ersatzbasis gekennzeichnet. Bei nachgewiesenen Fehlangriffen und unvollständigen Daten wird der Formwert mit ≈ markiert; sonst ist nur ein Leistungswert möglich. Die Daten ändern keine CWL-Aufstellung automatisch.</p>
       <p><strong>Aktuelles RH prüfen:</strong> Bei Spielern mit dokumentierten Angriffen lässt sich das aktuelle öffentliche Clash-Profil nach Anmeldung gezielt abrufen. Der angegebene Prüfzeitpunkt unterscheidet den aktuellen Stand von damaligen Rathausstufen. Die Historie und der Formwert werden dabei nicht verändert.</p>
     </details>
     <div class="stats-form-rows" id="statsFormRows" aria-live="polite"></div>
@@ -4963,6 +4963,7 @@ function getDisplayMembers(){
      return list.sort((a,b)=>{
        const left=evidence(a),right=evidence(b);
        return score(right)-score(left)||
+         Number(!!left?.formProvisional)-Number(!!right?.formProvisional)||
          (right?.comparable??0)-(left?.comparable??0)||byName(a,b);
      });
    }
@@ -5095,17 +5096,20 @@ function memberPerformance(m){
  const base=isCwl?"CWL":"CW";
  const title=isCwl?"Letzte dokumentierte CWL":"Ersatzbasis: letzte "+data.cwWarCount+
    " CWs (keine belegten Angriffe in der letzten CWL)";
- const score=data.score!==null?"Formwert "+data.score+"/100":
+ const score=data.score!==null?
+   (data.formProvisional?"Form ≈ ":"Form ")+data.score+"/100":
    data.performance!==null?"Leistung "+data.performance+"/100":"Form offen";
  const sample=data.comparable?
    "3★ "+data.triples+"/"+data.comparable+" gleich-RH-Angriffe":
    "keine gleich-RH-Angriffe";
  const reliability=data.reliability!==null?
-   "Zuverlässigkeit "+data.reliability+" %":
-   "Zuverlässigkeit offen";
+   (data.reliabilityProvisional?"Zuverlässigkeit ≈ ":"Zuverlässigkeit ")+
+     data.reliability+" %":"Zuverlässigkeit offen";
+ const warning=data.formProvisional||data.reliabilityProvisional?
+   " Datenbasis unvollständig; tatsächlicher Wert kann abweichen.":"";
  const detail=title+" · "+score+" · "+sample+" · "+reliability+
    " · "+data.performed+" ausgeführt, "+data.missedKnown+" nachgewiesen verpasst."+
-   (data.reliability===null?" Fehlende Nachweise sind keine Fehlschläge.":"");
+   warning+(data.reliability===null?" Fehlende Nachweise sind keine Fehlschläge.":"");
  return "<span class='member-form-summary' title='"+esc(detail)+"' aria-label='"+esc(detail)+"'>"+
    "<span class='member-form-main'><b>"+esc(base)+"</b> · "+esc(score)+"</span>"+
    "<span class='member-form-meta'>"+esc(sample)+" · "+esc(reliability)+"</span>"+
