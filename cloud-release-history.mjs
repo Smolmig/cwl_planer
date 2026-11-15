@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.23.1",
+    "releaseType": "patch",
+    "date": "2026-11-15",
+    "title": "Vorläufige Spielerform bei belegten Fehlangriffen",
+    "description": "Auch bei unvollständigen Logs wird aus nachweislichen Fehlangriffen eine Zuverlässigkeit und Spielerform berechnet, klar mit ≈ als vorläufig markiert."
+  },
+
+  {
     "version": "v1.23.0",
     "releaseType": "minor",
     "date": "2026-11-15",
