@@ -228,15 +228,22 @@ export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}=
  * players without documented attacks; n and date are displayed alongside %.
  */
 export function computePlayerFormWindows(wars,attacks,{
-  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[]
+  asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[],
+  warType="all",eligibleWarKeys=null
 }={}){
   const now=typeof asOf==="number"?asOf:Date.parse(asOf);
   if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
      windows.some(x=>!Number.isInteger(x)||x<1||x>730))
     throw Error("Ungültige Fenster für Formanalyse.");
+  if(!["all","normal","cwl"].includes(warType)||
+     eligibleWarKeys!==null&&!(eligibleWarKeys instanceof Set))
+    throw Error("Ungültiger Kriegsfilter für Spielerform.");
   const byWar=new Map((wars||[]).filter(w=>
     (w.source!=="api"||w.finalized===true)&&
-    ["normal","cwl"].includes(w.war_type)).map(w=>[w.war_key,w]));
+    ["normal","cwl"].includes(w.war_type)&&
+    (warType==="all"||w.war_type===warType)&&
+    (eligibleWarKeys===null||eligibleWarKeys.has(w.war_key)))
+    .map(w=>[w.war_key,w]));
   const profiles=new Map();
   const ensure=(tag,name="")=>{
     const key=cleanTag(tag);
@@ -367,6 +374,67 @@ export function computePlayerFormWindows(wars,attacks,{
     return {...p,former:current.size>0&&!current.has(p.tag)};
   }).sort((a,b)=>a.name.localeCompare(b.name,"de"));
   return {windows:windows.slice(),asOf:new Date(now).toISOString(),players:rows};
+}
+
+/**
+ * Compact form evidence for current clan members, independent of user-selected
+ * statistics filters. We use the last documented completed CWL run, plus the
+ * last five completed normal CWs. A member ABSENT from that CWL may use CW
+ * evidence, explicitly labelled as such. Missing data is never 0/100.
+ *
+ * The return values are read-only, scoped to the caller's already RLS-filtered
+ * clan wars; they must NOT be merged with another clan by player tag alone.
+ */
+export function computeMemberFormSummary(wars,attacks,{
+  asOf=Date.now(),memberTags=[],memberProfiles=[],missedEvents=[],recentCwCount=5
+}={}){
+  if(!Number.isInteger(recentCwCount)||recentCwCount<1||recentCwCount>20)
+    throw Error("Ungültige Anzahl aktueller CWs.");
+  const eligible=(wars||[]).filter(w=>
+    (w.source!=="api"||w.finalized===true)&&
+    ["normal","cwl"].includes(w.war_type)&&
+    Number.isFinite(Date.parse(w.started_at))&&
+    Date.parse(w.started_at)<=new Date(asOf).getTime());
+  const recentCw=eligible.filter(w=>w.war_type==="normal")
+    .sort((a,b)=>Date.parse(b.started_at)-Date.parse(a.started_at)||
+      String(a.war_key).localeCompare(String(b.war_key)))
+    .slice(0,recentCwCount);
+  const latestCwl=groupCwlRuns(eligible)[0]||null;
+  const cwlKeys=new Set(latestCwl?.warKeys||[]);
+  const cwKeys=new Set(recentCw.map(w=>w.war_key));
+  const bothKeys=new Set([...cwlKeys,...cwKeys]);
+  const shared={asOf,windows:[730],memberTags,memberProfiles,missedEvents};
+  const calc=keys=>computePlayerFormWindows(eligible,attacks,{
+    ...shared,eligibleWarKeys:keys
+  }).players;
+  const cwl=new Map(calc(cwlKeys).map(p=>[p.tag,p.windows[730]]));
+  const cw=new Map(calc(cwKeys).map(p=>[p.tag,p.windows[730]]));
+  const both=new Map(calc(bothKeys).map(p=>[p.tag,p.windows[730]]));
+  const current=new Set((memberTags||[]).map(cleanTag).filter(validTag));
+  const members=[...new Set([
+    ...current,...(memberProfiles||[]).map(p=>cleanTag(p?.playerTag))
+  ])].filter(tag=>validTag(tag)&&(!current.size||current.has(tag)));
+  const empty=()=>({attacks:0,triples:0,hitRate:null,
+    performed:0,missedKnown:0,reliability:null,formIndex:null,
+    performanceIndex:null,quality:"keine Daten"});
+  return {
+    latestCwl:latestCwl?{
+      season:latestCwl.season,from:latestCwl.from,to:latestCwl.to,
+      days:latestCwl.days,inferred:latestCwl.inferred
+    }:null,
+    cwCount:recentCw.length,
+    players:members.map(tag=>{
+      const league=cwl.get(tag)||empty(),normal=cw.get(tag)||empty();
+      const combined=both.get(tag)||empty();
+      const leagueEvidence=league.performed+league.missedKnown>0;
+      const normalEvidence=normal.performed+normal.missedKnown>0;
+      const preferred=leagueEvidence?league:normalEvidence?normal:null;
+      const source=leagueEvidence?"cwl":normalEvidence?"cw-fallback":"none";
+      return {tag,cwl:league,cw:normal,combined,preferred,source,
+        selectedCwCount:recentCw.length,
+        selectedCwlDays:latestCwl?.days||0};
+    })
+  };
 }
 
 /**

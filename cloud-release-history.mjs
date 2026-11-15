@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.23.0",
+    "releaseType": "minor",
+    "date": "2026-11-15",
+    "title": "Einfachere Statistikfilter und getrennte Spielerform",
+    "description": "Direkte CW/CWL- und Zeitraumfilter, optional die letzten X Kriege. Gesamtform und CWL-Form sind getrennt; Mitglieder zeigen die letzte CWL oder ausdrücklich gekennzeichnete CW-Form mit Zuverlässigkeit."
+  },
+
+  {
     "version": "v1.22.2",
     "releaseType": "patch",
     "date": "2026-11-14",

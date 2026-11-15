@@ -11,7 +11,7 @@ test("member and deployment entry text is concise and uses only existing control
  assert.match(html,/Wer ist bei der CWL dabei\?/);
  assert.match(html,/Jetzt abgleichen/);
  assert.match(html,/Keine passenden Mitglieder\. Suche oder Filter ändern/);
- assert.match(html,/3★-Quote · letzte 7 Angriffe/);
+ assert.match(html,/Formwert · letzte CWL\/CWs/);
  assert.match(html,/Tagesregeln anzeigen ▾/);
  assert.match(html,/Tagesregeln schließen ▴/);
  assert.match(html,/el\.querySelector\("\.toggle-rules"\)\.textContent=expanded\?/);
@@ -45,18 +45,18 @@ test("help explains the distinction to newcomers without naming a real clan memb
  assert.match(portion,/Ziel: 3\/4 Einsätze/);
  assert.match(portion,/unvollständigen Clash-Daten/);
  assert.doesNotMatch(portion,/Jamie|Pro_Gamer|Summarizer|Raphtor/);
- assert.match(html,/Die Mitgliederliste zeigt dagegen die letzten sieben erfassten CW-\/CWL-Angriffe/);
+ assert.match(html,/Die Mitgliederliste|In <b>Mitglieder<\/b>/);
  assert.match(html,/kein Einsatzziel/);
 });
 
 test("copy-only Cloud release keeps the current public history and offline PWA intact",()=>{
  const version=JSON.parse(read("cloud-version.json"));
  const history=read("cloud-release-history.mjs");
- assert.equal(version.version,"v1.22.2");
- assert.match(html,/Neu in v1\.22\.2/);
- assert.match(history,/"version": "v1\.22\.2"/);
- assert.match(history,/"title": "Einsätze und Mitglieder verständlicher bedienen"/);
+ assert.equal(version.version,"v1.23.0");
+ assert.match(html,/Neu in v1\.23\.0/);
+ assert.match(history,/"version": "v1\.23\.0"/);
+ assert.match(history,/"title": "Einfachere Statistikfilter und getrennte Spielerform"/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(read("CHANGELOG.md"),/\[1\.22\.2\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.23\.0\]/);
 });

@@ -10,7 +10,7 @@ test("#226: stats overview and form show concise language, detail stays in discl
  const html=read("cloud-app.html");
  assert.match(html,/Ergebnisse aus allen gespeicherten, abgeschlossenen Kriegen/);
  assert.match(html,/<summary>Welche Kriege zählen\?<\/summary>/);
- assert.match(html,/Datenbasis anpassen/);
+ assert.match(html,/Erweiterte Auswahl/);
  assert.match(html,/Formwert \(empfohlen\)/);
  assert.match(html,/<option value="hitRate">3★-Quote<\/option>/);
  assert.doesNotMatch(html,/<option value="attacks">Angriffe auf gleiches RH<\/option>/);

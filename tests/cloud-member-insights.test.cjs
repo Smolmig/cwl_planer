@@ -10,38 +10,51 @@ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
 const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 
-test("Member sort exposes recent seven-attack average in cloud mode",()=>{
+test("Member sort switches from last-seven raw quote to CWL/CW form evidence",()=>{
  assert.match(html,/value="recent-stars"/);
- assert.match(html,/recent\(b\)\?\.averageStars/);
- assert.match(html,/getRecentPlayerStats/);
+ assert.match(html,/Formwert · letzte CWL\/CWs/);
+ assert.match(html,/getMemberForm/);
  assert.match(html,/recentOption\.hidden=!window\.CWLCloud\?\.active/);
+ assert.match(html,/member-form-summary/);
+ assert.doesNotMatch(html,/3★-Quote · letzte 7 Angriffe/);
 });
-test("Cloud member star average and triple rate use the same recent sample",async()=>{
- const {computeRecentAttackStats}=await import(pathToFileURL(path.join(root,"cwl-stats-core.mjs")).href);
- const wars=[{war_key:"old",started_at:"2026-10-01T00:00:00Z",source:"import"},
-             {war_key:"new",started_at:"2026-11-01T00:00:00Z",source:"api",finalized:true}];
- const rows=[
-  ...Array.from({length:5},(_,i)=>({war_key:"old",attacker_tag:"#2PYL",stars:0,attack_order:i+1})),
-  ...Array.from({length:5},(_,i)=>({war_key:"new",attacker_tag:"#2PYL",stars:i%2?2:3,attack_order:i+1}))
- ];
- const recent=computeRecentAttackStats(wars,rows,7).get("#2PYL");
- assert.equal(recent.attacks,7);
- assert.equal(recent.averageStars,Math.round((3+2+3+2+3)/7*100)/100);
- assert.equal(recent.hitRate,Math.round(3/7*100));
- assert.match(html,/const rate="3★-Quote: "\+recent\.hitRate/);
- assert.match(html,/recent\.averageStars/);
+test("Member badge labels CWL or CW fallback and does not invent form for missing data",()=>{
+ const start=html.indexOf("function memberPerformance(m){");
+ const end=html.indexOf("window.CWLRefreshMembers",start);
+ assert.ok(start>0&&end>start);
+ const code=html.slice(start,end);
+ const model={
+  preferred:{formIndex:80,performanceIndex:70,hitRate:95,attacks:12,
+             reliability:100},cwl:{attacks:12},cw:{attacks:3,formIndex:55}
+ };
+ const window={CWLCloud:{active:true},CWLCloudStats:{
+   getMemberForm:()=>({...model,source:"cwl"})}};
+ const render=vm.runInNewContext(code+"\nmemberPerformance({playerTag:'#PYYY',threeStar:'high'})",{
+   window,esc:String,STRENGTH_SHORT:{}
+ });
+ assert.match(render,/CWL-Form 80\/100/);
+ assert.match(render,/Zuverlässigkeit 100 %/);
+ assert.match(render,/CW 55\/100/);
+ window.CWLCloudStats.getMemberForm=()=>({...model,source:"cw-fallback",preferred:model.cw,cwl:{attacks:0},cw:model.cw});
+ const fallback=vm.runInNewContext(code+"\nmemberPerformance({playerTag:'#PQLV'})",{
+   window,esc:String,STRENGTH_SHORT:{}
+ });
+ assert.match(fallback,/CW-Form 55\/100/);
+ assert.match(fallback,/CW statt CWL/);
+ window.CWLCloudStats.getMemberForm=()=>({source:"none",preferred:null});
+ assert.match(vm.runInNewContext(code+"\nmemberPerformance({playerTag:'#PQLV'})",{
+   window,esc:String,STRENGTH_SHORT:{}
+ }),/Keine belegten Einsätze/);
 });
-test("Cloud roster quote sort resolves equal hit rates by observed attacks, not by name",()=>{
- assert.match(html,/3★-Quote · letzte 7 Angriffe/);
- assert.doesNotMatch(html,/3★-Hit-Rate|3★-Hitrate/);
+test("Member form sorting uses conservative scores and keeps missing evidence last",()=>{
  const start=html.indexOf("function getDisplayMembers(){");
  const end=html.indexOf("function availabilityLabel(",start);
- assert.ok(start>0&&end>start,"Member sorting function must be present");
- const stats={
-  "#A":{hitRate:100,attacks:1},
-  "#B":{hitRate:100,attacks:7},
-  "#C":{hitRate:86,attacks:7},
-  "#E":{hitRate:100,attacks:2}
+ assert.ok(start>0&&end>start);
+ const samples={
+  "#A":{formIndex:55,attacks:1,averageStars:3},
+  "#B":{formIndex:88,attacks:7,averageStars:2.8},
+  "#C":{formIndex:72,attacks:7,averageStars:2.7},
+  "#E":{formIndex:82,attacks:2,averageStars:3}
  };
  const state={config:{memberSort:"strength"},members:[
   {name:"A one",playerTag:"#A"},
@@ -51,15 +64,14 @@ test("Cloud roster quote sort resolves equal hit rates by observed attacks, not 
   {name:"B seven",playerTag:"#B"}
  ]};
  const win={CWLCloud:{active:true},CWLCloudStats:{
-  getRecentPlayerStats:tag=>stats[tag]||null
+  getMemberForm:tag=>samples[tag]?{preferred:samples[tag]}:null
  }};
  const sorted=vm.runInNewContext(html.slice(start,end)+"\ngetDisplayMembers()",{
   state,window:win,STRENGTH_RANK:{}
  });
- assert.deepEqual(Array.from(sorted,m=>m.name),[
-  "B seven","E two","A one","C medium","D no-data"
+ assert.deepEqual(Array.from(sorted,x=>x.name),[
+  "B seven","E two","C medium","A one","D no-data"
  ]);
- // Still a raw rate, not a new skill score or changed CWL planner.
  assert.equal(state.config.memberSort,"strength");
 });
 test("Overview player opens day membership with played/planned status",()=>{
@@ -75,5 +87,5 @@ test("Plan rebuild immediately re-attaches live CWL war cards",()=>{
 });
 test("Desktop theme and version notes are stacked while mobile remains unchanged",()=>{
  assert.match(html,/@media \(min-width:700px\)\{[\s\S]*?#view-settings \.settings-row:has\(#themeSelect\)/);
- assert.match(html,/Neu in v1\.22\.2/);
+ assert.match(html,/Neu in v1\.23\.0/);
 });
