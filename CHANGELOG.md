@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.23.1] - 2026-11-15
+
+### Verbessert
+- Bei unvollständiger Belegabdeckung mit nachweislichen Fehlangriffen wird ein **≈ vorläufiger Formwert** berechnet. Beispiel: 16 ausgeführte und 4 sicher verpasste Angriffe ergeben vorläufig 80 % Zuverlässigkeit; zusätzliche unbekannte Angriffe können diese Zahl noch verändern.
+- Gleich-RH-3★-Quote und Sterne aus echten Angriffen bleiben unverändert. Verpasste Angriffe werden weder als ausgeführte 0★-Angriffe erfunden noch als unbekannte Pflichtslots pauschal gezählt.
+- Gesamtform, CWL-Form und Mitglieder-Fallback kennzeichnen den vorläufigen Wert ausdrücklich; bei Gleichstand werden bestätigte Werte vor Schätzungen eingeordnet.
+- Ohne belegte Fehlangriffe und ohne vollständigen Pflichtangriffsnachweis weiterhin nur Leistung statt einer erfundenen 100-%-Zuverlässigkeit.
+
+### Qualität
+- Neue Testfälle für 16/4, CWL-Mitgliederform und unbelegte Misses. Hilfe und Release-History angepasst.
+
+
 ## [1.23.0] - 2026-11-15
 
 ### Verbessert
