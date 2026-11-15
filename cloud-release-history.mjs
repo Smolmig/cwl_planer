@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "minor",
     "date": "2026-11-15",
     "title": "Kompaktere Statistik und Spielerform im Kader",
-    "description": "Kriegstyp und Zeitraum sind direkt wählbar, Anzahlfilter nur bei Bedarf. Gesamtform und CWL-Form bleiben getrennt. Mitglieder zeigen letzte CWL oder jüngste fünf CWs; sicher belegte Fehlangriffe ermöglichen auch einen deutlich als ≈ vorläufig markierten Formwert."
+    "description": "Kriegstyp und Zeitraum sind direkt wählbar, Kriegsanzahlen optional. Gesamt- und CWL-Form sind getrennt. Mitglieder zeigen die letzte CWL-Form oder gekennzeichnet die jüngsten fünf CWs mit belegter Zuverlässigkeit."
   },
 
   {
