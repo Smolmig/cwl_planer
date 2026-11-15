@@ -32,7 +32,7 @@ test("Cloud member cards explain metrics and show readable rotation labels",()=>
  const html=read("cloud-app.html"),stats=read("cwl-stats.mjs");
  assert.match(html,/member-form-summary/);
  assert.match(html,/Zuverlässigkeit /);
- assert.match(html,/CW statt CWL/);
+ assert.match(html,/Letzte 5 CWs · Ersatz für CWL/);
  assert.match(html,/window\.CWLCloud\?\.active\?"":" · "\+rotationWeightLabel\(m\)/);
  assert.doesNotMatch(html,/ · P\$\{m\.priority\}/);
  assert.match(stats,/getMemberForm/);

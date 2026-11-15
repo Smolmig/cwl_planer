@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.23.2",
+    "releaseType": "patch",
+    "date": "2026-11-15",
+    "title": "Spielerform leichter lesen",
+    "description": "In Mitglieder steht die Zahl der vergleichbaren Angriffe jetzt ausgeschrieben. 3★-Quote, Zuverlässigkeit und die CW-Vergleichsform sind getrennt; die Spielerhilfe erklärt ihre Herkunft."
+  },
+
+  {
     "version": "v1.23.1",
     "releaseType": "patch",
     "date": "2026-11-15",
