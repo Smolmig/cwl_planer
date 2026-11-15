@@ -4168,7 +4168,7 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p><strong>Leistung (65 %):</strong> „Gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Die 3★-Quote wird vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
       <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
       <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
-      <p><strong>Bei Datenlücken:</strong> Statt eines vollständigen Formwerts zeigen wir einen vorläufigen Leistungswert. Das lässt sich nicht direkt mit vollständig belegten Formwerten gleichsetzen. Das Ergebnis ist eine Orientierung, keine Spielstärke-Prognose.</p>
+      <p><strong>Bei Datenlücken:</strong> Wenn verpasste Angriffe sicher belegt sind, berechnen wir aus ausgeführten und bestätigten Fehlangriffen einen <strong>mit ≈ gekennzeichneten vorläufigen Formwert</strong>. Weitere unbekannte Angriffe können den tatsächlichen Wert verändern. Ohne vollständige Abdeckung und ohne bestätigte Fehlangriffe zeigen wir nur die Leistung – keine erfundenen 100 % Zuverlässigkeit. Fehlangriffe zählen niemals als ausgeführte 0★-Angriffe. Diese Werte sind eine Orientierung, keine Spielstärke-Prognose.</p>
       <p>Je nach Umschaltung nutzt die Spielerform alle abgeschlossenen CWs/CWL-Kriegstage oder nur CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
       <p><strong>Aktuelles RH prüfen:</strong> Bei Spielern mit dokumentierten Angriffen lässt sich das aktuelle öffentliche Clash-Profil nach Anmeldung gezielt abrufen. Der angegebene Prüfzeitpunkt unterscheidet den aktuellen Stand von damaligen Rathausstufen. Die Historie und der Formwert werden dabei nicht verändert.</p>
     </details>
@@ -4962,6 +4962,7 @@ function getDisplayMembers(){
      const form=m=>m.playerTag?window.CWLCloudStats?.getMemberForm?.(m.playerTag)?.preferred:null;
      const score=b=>b?.formIndex??b?.performanceIndex??-1;
      return list.sort((a,b)=>score(form(b))-score(form(a))||
+       Number(!!form(a)?.formProvisional)-Number(!!form(b)?.formProvisional)||
        (form(b)?.attacks??0)-(form(a)?.attacks??0)||byName(a,b));
    }
    return list.sort((a,b)=>(STRENGTH_RANK[b.threeStar]||0)-(STRENGTH_RANK[a.threeStar]||0)||byName(a,b));
