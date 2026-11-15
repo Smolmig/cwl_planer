@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.20.0";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.23.0";
 import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.22.2";
@@ -48,7 +48,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,loadingClan=null,importing=false,version=0,lastCapture=new Set();
   let sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};
   let type="all",last="all",cwlSeasons="all",playerDays="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
-  let formWindow=90,formSearch="",formSort="evidence",compareType="all",compareDays="all";
+  let formWindow=90,formKind="all",formSearch="",formSort="evidence",compareType="all",compareDays="all";
   let trendType="all",trendDays="all";
   let duelLeft="",duelRight="",duelSameTH=true,trendMetric="hitRate",trendGranularity="week";
   const notice=(message,kind="status")=>{
@@ -57,7 +57,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     e.dataset.state=kind;
     e.setAttribute("role",kind==="error"?"alert":"status");
   };
-  let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),lastMetricSignature="";
+  let cachedPlayerStats=new Map(),cachedRecentStats=new Map(),cachedMemberForms=new Map(),lastMemberFormVersion=-1,lastMetricSignature="";
   let comparableProfiles=new Map(),comparableSummary=null,lastComparableRowsMarkup=null;
   let lastFormRowsVersion=-1,lastFormRowsClan=null;
   let viewComparableProfiles=new Map(),viewComparableSummary=null;
@@ -87,7 +87,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   function getPlayerStats(tag){return scope===context().clanId?cachedPlayerStats.get(cleanTag(tag))||null:null}
   function getRecentPlayerStats(tag){return scope===context().clanId?cachedRecentStats.get(cleanTag(tag))||null:null}
   function getComparablePlayerStats(tag){return scope===context().clanId?comparableProfiles.get(cleanTag(tag))||null:null}
-  window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,getComparablePlayerStats,onUpdate:()=>window.CWLRefreshMembers?.()};
+  function getMemberForm(tag){return scope===context().clanId?cachedMemberForms.get(cleanTag(tag))||null:null}
+  window.CWLCloudStats={getPlayerStats,getRecentPlayerStats,getComparablePlayerStats,getMemberForm,onUpdate:()=>window.CWLRefreshMembers?.()};
   // Current roster names are presentation-only. Historic attack identities and
   // former members remain unchanged; values and saved war records are untouched.
   function withCurrentRosterNames(rows,ctx=context()){
@@ -112,8 +113,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const ctx=context();
     if(!host||!ctx.active||scope!==ctx.clanId)return;
     const data=computePlayerFormWindows(wars,attacks,{
-      windows:[30,90,180],memberTags:ctx.memberTags||[],memberProfiles:ctx.memberProfiles||[],missedEvents
+      windows:[30,90,180],memberTags:ctx.memberTags||[],memberProfiles:ctx.memberProfiles||[],
+      missedEvents,warType:formKind
     });
+    for(const button of document.querySelectorAll("#view-stats [data-form-kind]")){
+      const active=button.dataset.formKind===formKind;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    }
     const term=formSearch.trim().toLocaleLowerCase("de");
     const rows=sortPlayerFormRows(data.players.filter(p=>
       !term||p.name.toLocaleLowerCase("de").includes(term)||p.tag.toLowerCase().includes(term)
@@ -126,6 +133,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     const usable=rows.filter(p=>p.windows[formWindow].attacks>0).length;
     const unassessed=rows.length-usable;
     if(desc)desc.textContent=
+      (formKind==="cwl"?"Nur CWL-Kriegstage":"CWs und CWL-Kriegstage")+" · "+
       usable+" Spieler mit vergleichbaren Angriffen · "+
       unassessed+" ohne gleich-RH-Angriffe. "+
       (formSort==="evidence"?
@@ -738,6 +746,17 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       guide.hidden=!(cwl.wars>0&&!cwl.complete);
       if(guide.hidden)guide.open=false;
     }
+    // Member forms use only the same authorized clan evidence, independently
+    // of filter state. Refresh once per data epoch, not per input change.
+    if(scope===ctx.clanId&&lastMemberFormVersion!==version){
+      const model=computeMemberFormSummary(wars,attacks,{
+        memberTags:ctx.memberTags||[],memberProfiles:ctx.memberProfiles||[],missedEvents
+      });
+      cachedMemberForms=new Map(model.players.map(p=>[p.tag,{
+        ...p,latestCwl:model.latestCwl,cwCount:model.cwCount
+      }]));
+      lastMemberFormVersion=version;
+    }
     // Membership performance badges depend on loaded attack data, not search/sort/filter state.
     if(scope===ctx.clanId&&lastMembersNotifiedVersion!==version){
       lastMembersNotifiedVersion=version;
@@ -928,10 +947,11 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
+    cachedMemberForms.clear();lastMemberFormVersion=-1;
     lastFormRowsVersion=-1;lastFormRowsClan=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
-    formWindow=90;formSearch="";formSort="evidence";
+    formWindow=90;formKind="all";formSearch="";formSort="evidence";
     // Clan switch: no stale dropdown label for a reset view-model.
     if($("statsFormSort"))$("statsFormSort").value=formSort;
     if($("statsFormSearch"))$("statsFormSearch").value="";
@@ -1304,6 +1324,14 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       setStatsSection(button.dataset.statsSection);
       render();
     });
+    document.getElementById("view-stats")?.querySelector(".stats-form-kind")
+      ?.addEventListener("click",ev=>{
+        const button=ev.target.closest("[data-form-kind]");
+        if(!button||!["all","cwl"].includes(button.dataset.formKind))return;
+        formKind=button.dataset.formKind;
+        lastComparableRowsMarkup=null;
+        renderComparableForm();
+      });
     document.getElementById("view-stats")?.querySelector(".stats-form-window")
       ?.addEventListener("click",ev=>{
         const button=ev.target.closest("[data-form-window]");
