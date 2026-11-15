@@ -277,12 +277,12 @@ test("Partial league seasons are not silently expanded to seven days",async()=>{
 test("Statistics UI explicitly labels CWL season period and shows included months",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  const ui=fs.readFileSync(path.join(root,"cwl-stats.mjs"),"utf8");
- assert.match(html,/id="statsPeriodLabel"/);
+ assert.match(html,/id="statsScopeDaysLabel"/);
  assert.match(html,/id="statsSeasonDetails"/);
  assert.match(ui,/cwlSeasons="all"/);
- assert.match(html,/Letzter CWL-Durchgang/);
- assert.match(html,/Letzte 3 CWL-Durchgänge/);
- assert.match(html,/Alle gespeicherten CWL-Durchgänge/);
+ assert.match(html,/Letzter Durchgang/);
+ assert.match(html,/Letzte 3 Durchgänge/);
+ assert.match(html,/Alle gespeicherten Durchgänge/);
  assert.match(ui,/abgeschlossenen CWL-Kriegstagen/);
  assert.match(ui,/erfasste Kriegstage/);
  assert.match(ui,/type,last,cwlSeasons,playerDays,sameHigher/);
@@ -343,6 +343,6 @@ test("Statistics UI explains incomplete historical CWL data and sorts proved mis
  assert.match(ui,/missedCoverageHost\.textContent/);
  assert.match(ui,/order==="missed"\?p\.missedKnown/);
  assert.match(ui,/Eine CWL-Aufstellung allein ist kein Nachweis/,"Missing league data must be explained");
- assert.match(ui,/cwl-stats-core\.mjs\?v=1\.20\.0/);
+ assert.match(ui,/cwl-stats-core\.mjs\?v=1\.23\.0/);
  assert.match(ui,/CWL: /);
 });
