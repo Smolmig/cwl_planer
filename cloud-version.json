@@ -1,5 +1,5 @@
 {
-  "version": "v1.22.2",
-  "released": "2026-11-14",
-  "summary": "Statistik und ClashPerk-Import: ältere globale Angriffsnummern sicher mit neuen Exporten abgleichen, echte Konflikte verständlich melden."
+  "version": "v1.23.0",
+  "released": "2026-11-15",
+  "summary": "Statistik: kompakte CW/CWL-Zeitfilter, getrennte CWL-/Gesamtform und belegte Mitgliederform statt roher 7-Angriffs-Quote."
 }
