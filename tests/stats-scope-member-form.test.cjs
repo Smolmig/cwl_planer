@@ -88,6 +88,22 @@ test("Incomplete missed evidence makes composite unknown without creating false 
  assert.equal(fallback.preferred.reliability,null);
 });
 
+test("Member CWL form uses confirmed missed slots for an explicitly provisional score",async()=>{
+ const {computeMemberFormSummary}=await core();
+ const w=mkWar("uncertain","cwl","2026-11-10T12:00:00Z",{missed_log_complete:false});
+ const data=computeMemberFormSummary([w],[attack("uncertain","#PYYY",3)],{
+   asOf,memberTags:["#PYYY"],
+   missedEvents:[{war_key:"uncertain",player_tag:"#PYYY",missed_count:1}]
+ });
+ const v=player(data,"#PYYY");
+ assert.equal(v.source,"cwl");
+ assert.equal(v.preferred.reliability,50);
+ assert.equal(v.preferred.reliabilityComplete,false);
+ assert.equal(v.preferred.reliabilityProvisional,true);
+ assert.equal(v.preferred.formProvisional,true);
+ assert.ok(v.preferred.formIndex>0);
+ assert.equal(v.preferred.hitRate,100);
+});
 test("Member form does not blend unfinished API CWL or a foreign player's identity",async()=>{
  const {computeMemberFormSummary}=await core();
  const wars=[mkWar("ended","cwl","2026-10-01T12:00:00Z"),

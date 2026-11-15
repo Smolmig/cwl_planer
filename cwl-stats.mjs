@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.23.0";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.23.1";
 import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.22.2";
@@ -155,25 +155,30 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const documented=attacks.some(a=>cleanTag(a.attacker_tag)===p.tag);
       const triples=hasAttacks?b.triples+" von "+b.attacks:"Keine";
       const pct=b.hitRate===null?"–":b.hitRate+" %";
-      const complete=b.reliability!==null;
+      const provisional=b.reliabilityProvisional===true;
       const quality=hasAttacks?b.quality:"Keine gleich-RH-Angriffe";
       const sortByForm=formSort==="evidence"||formSort==="name";
       const mainLabel=formSort==="reliability"?"Zuverlässigkeit":
         formSort==="hitRate"?"3★-Quote":
-        b.formIndex!==null?"Formwert":"Leistungswert";
+        b.formIndex!==null?(b.formProvisional?"Vorläufiger Formwert":"Formwert"):
+        "Leistungswert";
       const mainValue=formSort==="reliability"?
-          (complete?b.reliability+" %":"–"):
+          (b.reliability!==null?(provisional?"≈ ":"")+b.reliability+" %":"–"):
         formSort==="hitRate"?pct:
-        b.formIndex!==null?b.formIndex+" / 100":
+        b.formIndex!==null?(b.formProvisional?"≈ ":"")+b.formIndex+" / 100":
         b.performanceIndex!==null?b.performanceIndex+" / 100":"–";
-      const reliability=complete?
-        "Zuverlässigkeit "+b.reliability+" % · "+b.performed+
-        " von "+(b.performed+b.missedKnown)+" Pflichtangriffen ausgeführt":
+      const reliability=b.reliability!==null?
+        (provisional?"Vorläufige Zuverlässigkeit ≈ ":"Zuverlässigkeit ")+
+        b.reliability+" % · "+b.performed+" ausgeführt, "+
+        b.missedKnown+" nachweislich verpasst"+
+        (provisional?" · Daten unvollständig, tatsächlicher Wert kann abweichen":""):
         (b.performed+b.missedKnown?
           "Zuverlässigkeit nicht vollständig belegbar · "+
             b.performed+" ausgeführt, "+b.missedKnown+" nachweislich verpasst":
           "Zuverlässigkeit nicht belegbar");
-      const scoreHint=sortByForm&&b.formIndex===null&&b.performanceIndex!==null?
+      const scoreHint=b.formProvisional?
+        " · Vorläufige Schätzung aus belegten Angriffen, nicht abschließend":
+        sortByForm&&b.formIndex===null&&b.performanceIndex!==null?
         " · Nur Leistungswert, weil Fehlangriffe nicht vollständig belegt sind":"";
       const rateLine="3★-Quote "+pct+" · "+(hasAttacks?
         b.triples+" von "+b.attacks+" Angriffen gegen gleiches RH":
