@@ -50,7 +50,7 @@ test("Missed attacks strongly reduce reliability but NEVER change actual triple-
  assert.ok(p.get("#PYYY").formIndex<p.get("#PQLV").formIndex);
  assert.equal(sortPlayerFormRows(result.players,30)[0].tag,"#PQLV");
 });
-test("Unproven misses make reliability and composite UNKNOWN, never 100 or 0",async()=>{
+test("Proven misses produce provisional reliability and composite despite incomplete coverage",async()=>{
  const {computePlayerFormWindows}=await core();
  const w=war(3,"2026-11-12T12:00:00Z","normal",{
   missed_log_complete:false,roster_tags:[]
@@ -62,9 +62,46 @@ test("Unproven misses make reliability and composite UNKNOWN, never 100 or 0",as
  assert.equal(player.performed,1);
  assert.equal(player.missedKnown,1);
  assert.equal(player.reliabilityComplete,false);
- assert.equal(player.reliability,null);
- assert.equal(player.formIndex,null);
+ assert.equal(player.reliabilityProvisional,true);
+ assert.equal(player.reliability,50);
+ assert.equal(player.formProvisional,true);
+ assert.ok(player.formIndex>0);
  assert.ok(player.performanceIndex>0);
+});
+test("Unverified logs without a single confirmed missed attack never imply 100% reliability",async()=>{
+ const {computePlayerFormWindows}=await core();
+ const w=war(30,"2026-11-12T12:00:00Z","normal",{
+  missed_log_complete:false,roster_tags:[]
+ });
+ const x=computePlayerFormWindows([w],[attack(w.war_key,"#PYYY",3)],{asOf}).players[0].windows[30];
+ assert.equal(x.performed,1);
+ assert.equal(x.missedKnown,0);
+ assert.equal(x.reliability,null);
+ assert.equal(x.reliabilityProvisional,false);
+ assert.equal(x.formIndex,null);
+ assert.equal(x.performanceIndex>0,true);
+});
+test("Sixteen documented attacks and four proven misses yield ≈80% provisional reliability, never four fabricated zero-star attacks",async()=>{
+ const {computePlayerFormWindows}=await core();
+ const wars=Array.from({length:10},(_,i)=>war("partial"+i,
+   "2026-11-"+String(i+1).padStart(2,"0")+"T12:00:00Z","normal",{
+     missed_log_complete:false,roster_tags:[]
+   }));
+ const actual=wars.slice(0,8).flatMap(w=>[
+   attack(w.war_key,"#PYYY",3,1),attack(w.war_key,"#PYYY",2,2)
+ ]);
+ const missing=wars.slice(8).map(w=>missed(w.war_key,"#PYYY",2));
+ const x=computePlayerFormWindows(wars,actual,{asOf,missedEvents:missing})
+   .players.find(p=>p.tag==="#PYYY").windows[30];
+ assert.equal(x.performed,16);
+ assert.equal(x.missedKnown,4);
+ assert.equal(x.attacks,16);
+ assert.equal(x.triples,8);
+ assert.equal(x.hitRate,50);
+ assert.equal(x.reliability,80);
+ assert.equal(x.reliabilityComplete,false);
+ assert.equal(x.formProvisional,true);
+ assert.equal(x.formIndex,Math.round(.65*x.performanceIndex+.35*80));
 });
 test("Missed-only players are visible without a fabricated 0-percent attack score",async()=>{
  const {computePlayerFormWindows}=await core();
