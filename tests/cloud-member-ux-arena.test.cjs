@@ -29,10 +29,11 @@ test("Players with actual statistics cannot override 3-star strength manually, o
  assert.ok(html.includes('el.querySelector(".member-strength-picker")?.addEventListener'));
  assert.match(html,/member-config-help/);
  assert.match(html,/function openMemberConfigHelp\(m\)/);
- assert.match(html,/stats\.threes/);
- assert.match(html,/stats\.starsTotal/);
- assert.match(html,/stats\.cwlAttacks/);
- assert.match(html,/importierter Historie/);
+ assert.match(html,/Datenbasis der Mitglieder-Form/);
+ assert.match(html,/b\.triples/);
+ assert.match(html,/b\.missedKnown/);
+ assert.match(html,/getMemberForm/);
+ assert.match(html,/Letzte 5 CWs · Ersatz für CWL/);
 });
 test("Member participation and fixed day controls are unambiguous",()=>{
  assert.match(html,/m\.participating\?"Dabei":"Pause"/);
