@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.23.3";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.24.0";
 import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.22.2";
@@ -137,8 +137,8 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       usable+" Spieler mit vergleichbaren Angriffen · "+
       unassessed+" ohne gleich-RH-Angriffe. "+
       (formSort==="evidence"?
-        "Sortiert nach Formwert – nicht nach der reinen 3★-Quote.":
-        formSort==="hitRate"?"Sortiert nach 3★-Quote (kleine Stichproben beachten).":
+        "Sortiert nach Formwert. Bei Gleichstand: Ø Sterne, danach Ø Zerstörung (nur vollständig erfasste %).":
+        formSort==="hitRate"?"Sortiert nach 3★-Quote; bei Gleichstand Ø Sterne, dann Ø Zerstörung (nur vollständig erfasst).":
         formSort==="reliability"?"Sortiert nach nachgewiesener Zuverlässigkeit.":
         "Alphabetisch sortiert.");
     const sameClanRefresh=section==="form"&&$("view-stats")?.classList.contains("active")&&
@@ -155,6 +155,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const documented=attacks.some(a=>cleanTag(a.attacker_tag)===p.tag);
       const triples=hasAttacks?b.triples+" von "+b.attacks:"Keine";
       const pct=b.hitRate===null?"–":b.hitRate+" %";
+      const destructionText=b.averageDestruction===null?"nicht erfasst":
+        b.averageDestruction.toLocaleString("de-AT",{maximumFractionDigits:2})+" %";
+      const destructionCoverage=b.destructionSamples+"/"+b.attacks+" gleich-RH-Angriffe";
       const provisional=b.reliabilityProvisional===true;
       const quality=hasAttacks?b.quality:"Keine gleich-RH-Angriffe";
       const sortByForm=formSort==="evidence"||formSort==="name";
@@ -187,6 +190,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const details= [
         "Ø Sterne "+(hasAttacks?
           b.averageStars.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2})+" ★":"–"),
+        "Ø Zerstörung "+destructionText+" ("+destructionCoverage+")"+
+          (!b.destructionComplete&&hasAttacks?
+            " · lückenhaft, nicht zur Rangfolge verwendet":""),
         "Gleiches RH: "+b.attacks+" Angriffe (CW "+b.normal+" / CWL "+b.cwl+")",
         other?b.excludedDifferentRH+" andere RH · "+b.excludedUnknownRH+" RH unbekannt":null,
         b.newest?"Letzter gleich-RH-Angriff: "+new Date(b.newest).toLocaleDateString("de-AT"):null
