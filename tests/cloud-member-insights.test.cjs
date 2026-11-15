@@ -12,7 +12,7 @@ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 
 test("Member sort switches from last-seven raw quote to CWL/CW form evidence",()=>{
  assert.match(html,/value="recent-stars"/);
- assert.match(html,/Formwert · letzte CWL\/CWs/);
+ assert.match(html,/Formwert · letzte CWL \/ 5 CWs/);
  assert.match(html,/getMemberForm/);
  assert.match(html,/recentOption\.hidden=!window\.CWLCloud\?\.active/);
  assert.match(html,/member-form-summary/);
@@ -34,17 +34,26 @@ test("Member badge labels CWL or CW fallback and does not invent form for missin
  });
  assert.match(render,/CWL-Form 80\/100/);
  assert.match(render,/Zuverlässigkeit 100 %/);
- assert.match(render,/CW 55\/100/);
+ assert.match(render,/Zum Vergleich: CW-Form 55\/100/);
+ assert.match(render,/12 Angriffe gegen gleiches RH/);
+ assert.match(render,/3★-Quote 95 %/);
  window.CWLCloudStats.getMemberForm=()=>({...model,source:"cw-fallback",preferred:model.cw,cwl:{attacks:0},cw:model.cw});
  const fallback=vm.runInNewContext(code+"\nmemberPerformance({playerTag:'#PQLV'})",{
    window,esc:String,STRENGTH_SHORT:{}
  });
  assert.match(fallback,/CW-Form 55\/100/);
- assert.match(fallback,/CW statt CWL/);
+ assert.match(fallback,/Letzte 5 CWs · Ersatz für CWL/);
  window.CWLCloudStats.getMemberForm=()=>({source:"none",preferred:null});
  assert.match(vm.runInNewContext(code+"\nmemberPerformance({playerTag:'#PQLV'})",{
    window,esc:String,STRENGTH_SHORT:{}
- }),/Keine belegten Einsätze/);
+ }),/Keine vergleichbaren Angriffe/);
+});
+test("Member help explains same-RH sample, verified missed attacks and Clash town hall",()=>{
+ assert.match(html,/Rathausstufe \$\{m\.townHall\?\?"–"\} · aus Clash übernommen/);
+ assert.match(html,/Formwerte in Mitglieder/);
+ assert.match(html,/Die sichtbare Anzahl meint/);
+ assert.match(html,/getMemberForm\?\.\(m\.playerTag\)/);
+ assert.doesNotMatch(html,/Die Mitgliederliste zeigt dagegen die letzten sieben erfassten/);
 });
 test("Member form sorting uses conservative scores and keeps missing evidence last",()=>{
  const start=html.indexOf("function getDisplayMembers(){");
@@ -87,5 +96,5 @@ test("Plan rebuild immediately re-attaches live CWL war cards",()=>{
 });
 test("Desktop theme and version notes are stacked while mobile remains unchanged",()=>{
  assert.match(html,/@media \(min-width:700px\)\{[\s\S]*?#view-settings \.settings-row:has\(#themeSelect\)/);
- assert.match(html,/Neu in v1\.23\.1/);
+ assert.match(html,/Neu in v1\.23\.2/);
 });
