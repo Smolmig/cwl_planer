@@ -5,7 +5,7 @@ Stand: 15.11.2026. **Roadmap, keine stillschweigende Freigabe von Planner-Automa
 ## Umgesetzt in PR #303 (v1.23.0, vor Freigabe)
 - Spielerstatistik: übersichtliche Wahl zwischen Zeitraum und Anzahl letzter Kriege. Keine Kombination zweier impliziter Filterlimits.
 - Spielerform: Gesamtform CW + CWL und reine CWL-Form mit derselben 65/35-Heuristik. Beide behalten explizite Kalenderfenster und dokumentierte Angriffs-/Missed-Nachweise.
-- Mitglieder: letzter tatsächlich dokumentierter CWL-Durchgang. Nur wenn ein Spieler dort **keinen belegten Pflichtangriff / keine Missed-Evidenz** hat, dienen die fünf jüngsten normalen CWs als klar gekennzeichnete Ersatzbasis. Sichtbar: Formwert **oder** Leistung bei offener Zuverlässigkeit, gleich-RH-Stichprobe, Datengrundlage. Kein automatisches Update der Planaufstellung.
+- Mitglieder: letzter tatsächlich dokumentierter CWL-Durchgang. Nur wenn ein Spieler dort **keinen belegten Pflichtangriff / keine Missed-Evidenz** hat, dienen die fünf jüngsten normalen CWs als klar gekennzeichnete Ersatzbasis. Sichtbar: bestätigter Formwert, bei sicher dokumentierten Fehlangriffen auch **≈ vorläufiger Formwert** trotz unvollständiger Abdeckung, oder nur Leistung wenn keine belastbare Zuverlässigkeit berechenbar ist; zusätzlich gleich-RH-Stichprobe und Datengrundlage. Kein automatisches Update der Planaufstellung.
 - CWL-Historie wird als Gruppe von Kriegstagen nach bekannten Runs statt nur nach Monat gruppiert (auch zwei CWLs in einem Kalendermonat). Rein lesend; RLS-Clangrenzen bleiben erhalten.
 
 ## Nächste Stufe: Spielerform v2 / Kalibrierung
