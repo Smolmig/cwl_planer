@@ -107,7 +107,7 @@ test("Cloud only: server endpoint is authenticated and app retains local planner
  assert.match(mod,/createCwlLive/);
  assert.match(cloud,/const DATA_VERSION=9;/);
  assert.match(cloud,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
- assert.match(guest,/const APP_VERSION="v1\.0\.2";/);
+ assert.match(guest,/const APP_VERSION="v1\.1\.0";/);
 });
 
 test("CWL presentation module parses and exports the live UI factory",async()=>{

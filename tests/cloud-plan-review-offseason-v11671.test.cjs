@@ -83,5 +83,5 @@ test("approval RPC entry points and latest Help are guarded without mutating arc
  assert.match(sync,/onPhaseApplied:\(\)=>\{if\(cloud\.active\)renderPlanReview\(\)\}/);
  assert.match(read("cwl-live.mjs"),/host\.hidden=!postseason&&!between;[\s\S]*?onPhaseApplied\?\.\(\)/);
  assert.match(html,/Planfreigabe zwischen den CWLs/);
- assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
+ assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
 });

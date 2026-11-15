@@ -138,5 +138,5 @@ test("cloud API controls format, guest remains manual and shorter rollover uses 
  assert.match(html,/state\.config\.days!==\(state\.cwlLive\?\.warCount===5\?5:7\)/);
  assert.match(html,/const warCount=state\.cwlLive\?\.warCount===5\?5:7/);
  assert.match(live,/verifiedAll:model\.verifiedAll/);
- assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
+ assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
 });

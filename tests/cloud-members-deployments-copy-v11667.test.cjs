@@ -56,7 +56,7 @@ test("copy-only Cloud release keeps the current public history and offline PWA i
  assert.match(html,/Neu in v1\.23\.2/);
  assert.match(history,/"version": "v1\.23\.2"/);
  assert.match(history,/"title": "Vorläufige Spielerform bei belegten Fehlangriffen"/);
- assert.match(read("index.html"),/const APP_VERSION="v1\.0\.2"/);
+ assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(read("CHANGELOG.md"),/\[1\.23\.2\]/);
 });

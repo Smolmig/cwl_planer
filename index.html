@@ -1,10 +1,23 @@
 <!doctype html>
-<html lang="de" data-theme="dark">
+<html lang="de" data-theme="arena">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#151a20">
 <title>CWL Planer</title>
+<script>
+// Same preference as Cloud: apply before first paint without rewriting saved
+// settings. Returning visitors keep their explicitly selected theme.
+try{
+ const pref=JSON.parse(localStorage.getItem("cwl_planer_ui_v1")||"{}")?.theme;
+ const choice=["arena","dark","light","system","cyber","cyberlight"].includes(pref)?pref:"arena";
+ const resolved=choice==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):choice;
+ document.documentElement.dataset.theme=resolved;
+ document.querySelector('meta[name="theme-color"]').content=
+  resolved==="arena"?"#151a20":resolved==="dark"?"#0f172a":
+  resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":"#f4f7fb";
+}catch{/* Private browsing or blocked storage: use Arena without writing storage. */}
+</script>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#132238;--muted:#66758a;--line:#dce3ec;--primary:#2563eb;--green:#15803d;--greenbg:#dcfce7;--red:#b91c1c;--redbg:#fee2e2;--amber:#a16207;--amberbg:#fef3c7;--bluebg:#dbeafe;--shadow:0 8px 24px rgba(15,23,42,.08)}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);padding-bottom:92px}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:920px;margin:0 auto}
@@ -623,6 +636,60 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
     html[data-theme="light"] .topbar{background:#f4f7fb!important}
   }
 }
+
+/* Offline-PWA Gold/Arena: parity with the Cloud theme, scoped to preserve
+   explicitly selected Dark/Light/System/Cyber preferences. */
+html[data-theme="arena"]{
+ color-scheme:dark;
+ --bg:#0a0d14;--card:#151a20;--text:#f6f1e8;--muted:#adb5ba;
+ --line:#3e4850;--primary:#dfbd7a;--green:#9fd7b7;
+ --greenbg:#20352e;--red:#f2a5a4;--redbg:#462a2d;
+ --amber:#ebc57f;--amberbg:#3b3021;--bluebg:#292e32;
+ --shadow:0 12px 32px rgba(0,0,0,.25);
+}
+html[data-theme="arena"] body{
+ color:var(--text);
+ background:radial-gradient(ellipse at 11% 0%,rgba(223,189,122,.095),transparent 35rem),
+ radial-gradient(ellipse at 92% 12%,rgba(149,167,157,.06),transparent 30rem),
+ linear-gradient(145deg,#0b0e13,#10151a 55%,#0a0d14);
+ background-attachment:fixed;min-height:100dvh
+}
+html[data-theme="arena"] :is(.topbar,.bottomnav){background:#151b21;border-color:#4a4030;backdrop-filter:none}
+html[data-theme="arena"] :is(.card,.settings-subcard,.modalbox,.bulkbar,.list-management,.profile-active,.member){
+ background:linear-gradient(150deg,#1b2227,#151a20 75%);color:var(--text);border-color:#434b50;
+}
+html[data-theme="arena"] :is(.kpi,.player-chip,.member-snapshot,.member-tools,.member-details,.goal-row,.goal-pill,.member-hint,.info-strip,.helpbox,.help-item,.rule-panel,.changebox){
+ background:#20272d;color:var(--text);border-color:#465059
+}
+html[data-theme="arena"] :is(h1,h2,h3,h4,.day-title){color:#f9f2e5}
+html[data-theme="arena"] :is(.subtitle,.statusline,.member-brief,.player-meta,small){color:#b4bdc2}
+html[data-theme="arena"] :is(input:not([type=checkbox]):not([type=radio]),select,textarea,.name-input,.rulebtn,.sort-select,.modal-search,.profilebar select){
+ background:#111920;color:var(--text);border-color:#51606a
+}
+html[data-theme="arena"] :is(input,textarea)::placeholder{color:#9ca9b0;opacity:1}
+html[data-theme="arena"] :is(select,option){color-scheme:dark}
+html[data-theme="arena"] :is(input[type=checkbox],input[type=radio]){accent-color:var(--primary)}
+html[data-theme="arena"] :is(input,select,textarea,button):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+html[data-theme="arena"] .btn:not(:disabled){
+ background:linear-gradient(145deg,#2b3338,#20272d);color:#f5ecdc;
+ border:1px solid #756245;box-shadow:0 1px 0 rgba(255,235,194,.08) inset
+}
+html[data-theme="arena"] .btn.primary:not(:disabled){
+ background:linear-gradient(120deg,#e6c989,#c49b5b);
+ border-color:#f0d395;color:#221b11;box-shadow:0 3px 14px rgba(195,151,80,.16)
+}
+html[data-theme="arena"] .btn.danger:not(:disabled){color:#ffc4bd;border-color:#905552;background:#34262a}
+html[data-theme="arena"] .btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.45)}
+html[data-theme="arena"] .day-card{border-left-color:#967c52}
+html[data-theme="arena"] .day-card.locked{border-left-color:var(--green)}
+html[data-theme="arena"] :is(.navbtn,.day-tab,.mobile-day-tab){color:#c1c7c8;border-color:#4b5660}
+html[data-theme="arena"] :is(.navbtn.active,.mobile-day-tab.active,.mobile-day-tab[aria-selected="true"]){
+ background:#423626;color:#f2d293;border-color:#c7a369
+}
+html[data-theme="arena"] .badge.ok{background:#263c33;color:#abebc7;border:1px solid #598d75}
+html[data-theme="arena"] .badge.warn{background:#40351e;color:#f5cf83;border:1px solid #927346}
+@media(hover:hover){html[data-theme="arena"] .btn:not(:disabled):hover{border-color:#ecc982;filter:brightness(1.09)}}
+
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
@@ -750,7 +817,7 @@ html[data-theme="cyber"] .btn.primary,html[data-theme="cyberlight"] .btn.primary
   <div class="card">
     <div class="section-title"><h3>Einstellungen & Daten</h3></div>
     <div class="settings-subcard"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">CWL-Standardgrößen sind 15 und 30. Über „Individuell / Event“ bleiben Sonderfälle und zukünftige Formate bis 50 Spieler möglich.</div></div>
-    <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="dark">🌙 Dunkel (Standard)</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn">↻ App aktualisieren</button></div></div></div></div>
+    <div class="settings-subcard"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn">↻ App aktualisieren</button></div></div></div></div>
     <div class="settings-subcard"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
@@ -784,6 +851,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   </div>
   <h4 class="help-section-heading">Was bedeuten die Einstellungen?</h4>
   <div class="help-grid">
+    <div class="help-item"><b>Farbschema &amp; Goldstandard</b><div>Arena (Anthrazit &amp; Gold) ist bei einer neuen Installation ohne gespeicherte Farbauswahl das Standarddesign. In Einstellungen → Darstellung kannst du Dunkel, Hell, System oder Cyberpunk wählen. Deine ausdrücklich gespeicherte Auswahl bleibt beim Neustart und beim Wechsel zwischen Offline-Planer und Cloud erhalten; der Farbwechsel ändert keine Profile, Tagesregeln, Pläne oder Backups.</div></div>
     <div class="help-item"><b>Dabei / Pause</b><div>„Dabei“ bedeutet: Der Spieler kann für diese CWL eingeplant werden. Bei „Pause“ bleibt er in der Mitgliederliste, wird aber nicht neu eingeteilt.</div></div>
     <div class="help-item"><b>Fix</b><div>Der Spieler wird an jedem Tag eingeplant, an dem er verfügbar ist. Eine ausdrückliche Abwesenheit („RAUS“) hat Vorrang.</div></div>
     <div class="help-item"><b>AUTO / MUSS / RAUS</b><div>Pro Kriegstag: „AUTO“ lässt den Planer entscheiden, „MUSS“ verlangt den Einsatz, „RAUS“ schließt ihn für diesen Tag aus. Durch Antippen wechselst du die Einstellung.</div></div>
@@ -821,7 +889,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
 <script>
-const APP_VERSION="v1.0.2";
+const APP_VERSION="v1.1.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -842,7 +910,7 @@ function emptyDayGoal(){return{townHall:{},strength:{high:0,medium:0,low:0,veryl
 function freshMember(name=""){return{id:uid(),name,playerTag:"",participating:true,fixed:false,priority:0,townHall:null,threeStar:"unknown",statuses:Array(7).fill("auto"),firstDay:null,outFromDay:null}}
 function freshProfile(name="Neuer Clan"){return{id:uid("p"),name,config:{slots:15,days:7,memberSort:"manual"},members:[],archivedMembers:[],dayGoals:Array.from({length:7},()=>emptyDayGoal()),locks:Array.from({length:7},()=>({locked:false,lineup:[]})),archives:[],updatedAt:Date.now()}}
 function defaultApp(){const p=freshProfile();return{version:DATA_VERSION,dataVersion:DATA_VERSION,activeProfileId:p.id,profiles:[p],updatedAt:Date.now()}}
-function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"dark",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"dark",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
+function loadUiSettings(){try{const v=JSON.parse(localStorage.getItem(UI_SETTINGS_KEY)||"{}");return{theme:["arena","dark","light","system","cyber","cyberlight"].includes(v.theme)?v.theme:"arena",compactPlan:!!v.compactPlan,dayViewMode:v.dayViewMode==="single"?"single":"all",lastBackupAt:v.lastBackupAt||null}}catch(e){return{theme:"arena",compactPlan:false,dayViewMode:"all",lastBackupAt:null}}}
 let uiSettings=loadUiSettings();
 function saveUiSettings(){try{localStorage.setItem(UI_SETTINGS_KEY,JSON.stringify(uiSettings))}catch(e){/* UI preferences are non-critical */}}
 function normalizePlayerTag(v){const t=String(v||"").trim().replace(/\s+/g,"").toUpperCase();if(!t)return"";return t.startsWith("#")?t:"#"+t}
@@ -1179,7 +1247,7 @@ async function createProfilePrompt(){const raw=await promptInline("Neues Profil 
 function syncConfigInputs(){const locked=playedCount()>0,preset=document.getElementById("slotsPreset"),custom=document.getElementById("slotsCustomInput");preset.value=[15,30].includes(state.config.slots)?String(state.config.slots):"custom";custom.value=state.config.slots;custom.classList.toggle("hidden",preset.value!=="custom");preset.disabled=locked;custom.disabled=locked;document.getElementById("daysInput").value=state.config.days;document.getElementById("daysInput").disabled=locked;document.getElementById("configLockNote").classList.toggle("hidden",!locked);document.getElementById("themeSelect").value=uiSettings.theme;document.getElementById("appVersion").textContent=APP_VERSION;document.getElementById("lastBackupText").textContent=uiSettings.lastBackupAt?new Date(uiSettings.lastBackupAt).toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"}):"noch nie"}
 async function changeDays(newDays){if(playedCount()){showToast("Während einer laufenden CWL sind die Grunddaten gesperrt");syncConfigInputs();return}const old=state.config.days;if(newDays===old)return;if(newDays<old&&!await confirmInline(`Einstellungen für Tag ${newDays+1} bis ${old} werden entfernt.`,{title:`Kriegsanzahl von ${old} auf ${newDays} reduzieren?`,confirmText:"Kriegsanzahl reduzieren",danger:true})){syncConfigInputs();return}state.config.days=newDays;if(newDays<old){for(let d=newDays;d<7;d++){state.dayGoals[d]=emptyDayGoal();state.locks[d]={locked:false,lineup:[]}}for(const m of state.members){for(let d=newDays;d<7;d++)m.statuses[d]="auto";if(m.firstDay&&m.firstDay>newDays)m.firstDay=null;if(m.outFromDay&&m.outFromDay>newDays)m.outFromDay=null}}renderAll("Kriegsanzahl gespeichert · Plan aktualisiert ✓")}
 function setSlots(value){if(playedCount()){showToast("Während einer laufenden CWL ist die Kriegsgröße gesperrt");syncConfigInputs();return}state.config.slots=Math.max(1,Math.min(50,Number(value)||15));renderAll("Kriegsgröße gespeichert · Plan aktualisiert ✓")}
-function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":"#f4f7fb"}
+function applyTheme(){const pref=uiSettings.theme,resolved=pref==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):pref;document.documentElement.dataset.theme=resolved;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==="cyber"?"#03050b":resolved==="cyberlight"?"#eaf8fb":resolved==="dark"?"#0f172a":resolved==="arena"?"#151a20":"#f4f7fb"}
 function renderRecoveryBanner(){
   const box=document.getElementById("recoveryBanner");box.classList.toggle("hidden",!startupStorageIssue);
   if(!startupStorageIssue)return;

@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [Offline 1.1.0] - 2026-11-15
+
+### Neu
+- Die **separate Offline-PWA** verwendet beim allerersten Start ohne gespeichertes Farbschema jetzt den Arena-/Goldstil wie die Cloud. Die Theme-Auswahl enthält Gold neben Dunkel, Hell, System und Cyberpunk.
+- Bestehende ausdrücklich gespeicherte Farbauswahlen bleiben beim Reload und Wechsel zwischen Cloud/Offline unangetastet. Vor dem ersten Rendern wird die gespeicherte Auswahl gelesen, um störendes Theme-Aufblitzen zu vermeiden.
+- Mobile/Browser-Statusleisten passen farblich, Hilfe erklärt den Goldstandard und die Trennung zwischen Design und Planungsdaten. Datenformat, lokale Profile, Backups, gespeicherte Pläne und Cloud-Version bleiben unverändert.
+- Offline-App-Version v1.1.0 (MINOR wegen eigenständig neu nutzbarem Theme); PWA-Cache zu v1.1.0 erhöht.
+
+
 ## [1.23.2] - 2026-11-15
 
 ### Verbessert

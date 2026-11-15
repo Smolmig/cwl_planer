@@ -61,7 +61,7 @@ test("API-linked clan names are read-only while local manual and unlinked profil
 });
 test("offline index remains separate, and cloud note does not require a new SQL table",()=>{
  const offline=fs.readFileSync(path.join(root,"index.html"),"utf8");
- assert.match(offline,/const APP_VERSION="v1\.0\.2"/);
+ assert.match(offline,/const APP_VERSION="v1\.1\.0"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/function exportActiveProfile\(\)/);
  assert.match(html,/JSON\.stringify\(\{kind:"cwl-profile"/);
