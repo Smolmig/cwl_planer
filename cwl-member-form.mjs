@@ -53,7 +53,9 @@ export function computeMemberFormEvidence(wars,attacks,{
       cwl,cw:cwForm,
       lastCwlFrom:lastRun?.from||null,lastCwlTo:lastRun?.to||null,
       cwWarCount:cw.length,hasCwlEvidence:cwlObserved,
-      reliabilityComplete:selected?.reliabilityComplete??false
+      reliabilityComplete:selected?.reliabilityComplete??false,
+      reliabilityProvisional:selected?.reliabilityProvisional??false,
+      formProvisional:selected?.formProvisional??false
     });
   }
   return {byTag:summaries,lastCwlRun:lastRun,cwWarCount:cw.length};
