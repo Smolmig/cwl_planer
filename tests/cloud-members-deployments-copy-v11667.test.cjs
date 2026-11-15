@@ -11,7 +11,7 @@ test("member and deployment entry text is concise and uses only existing control
  assert.match(html,/Wer ist bei der CWL dabei\?/);
  assert.match(html,/Jetzt abgleichen/);
  assert.match(html,/Keine passenden Mitglieder\. Suche oder Filter ändern/);
- assert.match(html,/Formwert · letzte CWL\/CWs/);
+ assert.match(html,/Formwert · letzte CWL \/ 5 CWs/);
  assert.match(html,/Tagesregeln anzeigen ▾/);
  assert.match(html,/Tagesregeln schließen ▴/);
  assert.match(html,/el\.querySelector\("\.toggle-rules"\)\.textContent=expanded\?/);
