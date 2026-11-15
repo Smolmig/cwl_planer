@@ -88,5 +88,5 @@ test("editor rights, legacy rotation and notes coexist without mutating offline 
  assert.match(sync,/assertPlanningReady\(proposal\)/);
  assert.match(sync,/assertPlanningReady\(proposed\.suggested_profile\)/);
  assert.match(sync,/unusuallyManyDeparted/);
- assert.match(fs.readFileSync(path.join(root,"index.html"),"utf8"),/const APP_VERSION="v1\.0\.2";/);
+ assert.match(fs.readFileSync(path.join(root,"index.html"),"utf8"),/const APP_VERSION="v1\.1\.0";/);
 });
