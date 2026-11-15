@@ -5119,19 +5119,6 @@ function memberPerformance(m){
      (data.formProvisional?" · vorläufig":"")+"</span>"+
    "</span>";
 }
-function memberFormComparison(m){
- if(!window.CWLCloud?.active||!m.playerTag)return "";
- const info=window.CWLCloudStats?.getMemberFormSummary?.(m.playerTag);
- if(!info)return "";
- const fmt=(label,b)=>{
-  if(!b||!(b.performed+b.missedKnown))return label+": keine belegten Einsätze";
-  const metric=b.formIndex!==null?"Form "+b.formIndex+"/100":
-    b.performanceIndex!==null?"Leistung "+b.performanceIndex+"/100":"Form offen";
-  return label+": "+metric+" ("+b.attacks+" gleich-RH-AG)";
- };
- const line=fmt("Letzte CWL",info.cwl)+" · "+fmt("Letzte "+info.cwWarCount+" CWs",info.cw);
- return "<div class='member-form-comparison' aria-label='CWL- und CW-Form getrennt'>"+esc(line)+"</div>";
-}
 window.CWLRefreshMembers=()=>{renderMembers.preserveNextViewport=true;renderMembers();if(lastPlan)renderPlan();renderSummary()};
 async function editMemberNote(m){
  if(window.CWLCloud?.active&&(document.body.classList.contains("cloud-role-viewer")||m.cocSyncState==="former"))return;
@@ -5170,7 +5157,21 @@ function toggleMemberCardDetails(el){
  syncMemberExpandedRow(el);
  if(expanded&&singleColumn)el.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
-function renderMembers(){if(memberSearchRenderTimer!==null){clearTimeout(memberSearchRenderTimer);memberSearchRenderTimer=null}const root=document.getElementById("memberList");
+function renderMembers(){
+ function memberFormComparison(m){
+ if(!window.CWLCloud?.active||!m.playerTag)return "";
+ const info=window.CWLCloudStats?.getMemberFormSummary?.(m.playerTag);
+ if(!info)return "";
+ const fmt=(label,b)=>{
+  if(!b||!(b.performed+b.missedKnown))return label+": keine belegten Einsätze";
+  const metric=b.formIndex!==null?"Form "+b.formIndex+"/100":
+    b.performanceIndex!==null?"Leistung "+b.performanceIndex+"/100":"Form offen";
+  return label+": "+metric+" ("+b.attacks+" gleich-RH-AG)";
+ };
+ const line=fmt("Letzte CWL",info.cwl)+" · "+fmt("Letzte "+info.cwWarCount+" CWs",info.cw);
+ return "<div class='member-form-comparison' aria-label='CWL- und CW-Form getrennt'>"+esc(line)+"</div>";
+}
+if(memberSearchRenderTimer!==null){clearTimeout(memberSearchRenderTimer);memberSearchRenderTimer=null}const root=document.getElementById("memberList");
  const keepViewport=renderMembers.preserveNextViewport===true;
  renderMembers.preserveNextViewport=false;
  const memberContext=(window.CWLCloud?.active?(window.CWLCloud?.getActiveClanId?.()||"cloud"):"local")+
