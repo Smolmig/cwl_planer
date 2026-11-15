@@ -1,5 +1,5 @@
 {
-  "version": "v1.23.0",
+  "version": "v1.23.1",
   "released": "2026-11-15",
-  "summary": "Statistik: kompakte CW/CWL-Zeitfilter, getrennte CWL-/Gesamtform und belegte Mitgliederform statt roher 7-Angriffs-Quote."
+  "summary": "Statistik: vorläufiger Formwert und Zuverlässigkeit aus belegten Fehlangriffen trotz unvollständiger Historie."
 }
