@@ -30,9 +30,9 @@ test("Compact member star average is limited to the last seven individual attack
 });
 test("Cloud member cards explain metrics and show readable rotation labels",()=>{
  const html=read("cloud-app.html"),stats=read("cwl-stats.mjs");
- assert.match(html,/3★-Quote: /);
- assert.match(html,/Ø Sterne:/);
- assert.match(html,/letzte 7 Angriffe/);
+ assert.match(html,/Formwert/);
+ assert.match(html,/gleich-RH-Angriffe/);
+ assert.match(html,/letzte CWL/i);
  assert.match(html,/window\.CWLCloud\?\.active\?"":" · "\+rotationWeightLabel\(m\)/);
  assert.doesNotMatch(html,/ · P\$\{m\.priority\}/);
  assert.match(stats,/getRecentPlayerStats/);
