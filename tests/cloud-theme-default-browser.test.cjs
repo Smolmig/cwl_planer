@@ -15,7 +15,7 @@ const serve=()=>http.createServer((req,res)=>{
   res.writeHead(200,{"content-type":"text/javascript"});
   res.end("export {};\n");return;
  }
- if(["cloud-app.html","cwl-planning-core.js"].includes(name)){
+ if(["index.html","cloud-app.html","cwl-planning-core.js"].includes(name)){
   res.writeHead(200,{"content-type":name.endsWith(".html")?"text/html":"text/javascript"});
   res.end(read(name));return;
  }
@@ -29,8 +29,8 @@ test("Cloud Gold first visit, saved choices, system, malformed prefs and separat
  const beforeCss=html.slice(0,html.indexOf("<style>"));
  assert.match(beforeCss,/localStorage\.getItem\("cwl_planer_ui_v1"\)/);
  assert.match(beforeCss,/document\.documentElement\.dataset\.theme=theme/);
- assert.match(offline,/<html lang="de" data-theme="dark">/);
- assert.match(offline,/Dunkel \(Standard\)/);
+ assert.match(offline,/<html lang="de" data-theme="arena">/);
+ assert.match(offline,/Gold \(Standard\)/);
  const server=serve();
  await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
  const url="http://127.0.0.1:"+server.address().port+"/cloud-app.html";
@@ -81,6 +81,24 @@ test("Cloud Gold first visit, saved choices, system, malformed prefs and separat
     assert.deepEqual(errors,[],JSON.stringify({width,errors}));
    }finally{await page.close()}
   }
+  // Both apps use the same visual preference but keep separate planner data.
+  const cross=await browser.newPage({viewport:{width:390,height:840}});
+  try{
+   await cross.goto(url,{waitUntil:"domcontentloaded"});
+   await cross.evaluate(key=>localStorage.setItem(key,JSON.stringify({theme:"dark"})),KEY);
+   await cross.goto(new URL("index.html",url).href,{waitUntil:"domcontentloaded"});
+   assert.equal(await cross.evaluate(()=>document.documentElement.dataset.theme),"dark");
+   assert.equal(await cross.locator("#themeSelect").inputValue(),"dark");
+   await cross.evaluate(()=>{
+    const select=document.getElementById("themeSelect");
+    select.value="arena";
+    select.dispatchEvent(new Event("change",{bubbles:true}));
+   });
+   assert.equal(await cross.evaluate(key=>JSON.parse(localStorage.getItem(key)).theme,KEY),"arena");
+   await cross.goto(url,{waitUntil:"domcontentloaded"});
+   assert.equal(await cross.evaluate(()=>document.documentElement.dataset.theme),"arena");
+   assert.equal(await cross.locator("#themeSelect").inputValue(),"arena");
+  }finally{await cross.close()}
   const page=await browser.newPage({viewport:{width:390,height:840},colorScheme:"light"});
   try{
    await page.goto(url,{waitUntil:"domcontentloaded"});
