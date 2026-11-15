@@ -120,13 +120,28 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           }));
           const mobileScope={type:{y:playerType.y,h:playerType.height,w:playerType.width},
             period:{y:playerPeriod.y,w:playerPeriod.width},periodSummary,filterWidths};
+          // Calendar and last-N-war controls must be mutually exclusive.
+          const day30=document.querySelector('[data-stats-days="30"]');
+          day30.click();
+          const chosenDay=day30.getAttribute("aria-pressed")==="true"&&
+            document.getElementById("statsPlayerDays").value==="30";
+          const countSel=document.getElementById("statsRange");
+          countSel.value="1";countSel.dispatchEvent(new Event("change",{bubbles:true}));
+          const countOnly=document.getElementById("statsPlayerDays").value==="all"&&
+            [...document.querySelectorAll("#statsScopeDays button")]
+              .every(b=>b.getAttribute("aria-pressed")==="false")&&
+            document.getElementById("statsPeriodSummary").textContent.includes("Letzte 1 CW");
+          day30.click();
+          const dateReset=document.getElementById("statsRange").value==="all"&&
+            day30.getAttribute("aria-pressed")==="true";
+          const scopeSwitch={chosenDay,countOnly,dateReset};
           periodDetails.open=false;
           buttons.find(el=>el.dataset.statsSection==="compare").click();
           const compareControls=["statsCompareType","statsCompareDays"].map(id=>
             document.getElementById(id).getBoundingClientRect().height);
           return {rects,checks,activeAfterReload:reload.active,
             headerAfterReload:reload.panel,
-            formButtons,formControls,compareControls,formNotes,formReload,mobileScope,
+            formButtons,formControls,compareControls,formNotes,formReload,mobileScope,scopeSwitch,
             importHidden:document.getElementById("statsImportButton").hidden,
             navWidth:nav.getBoundingClientRect().width,
             horizontalOverflow:document.documentElement.scrollWidth-innerWidth};
@@ -160,6 +175,7 @@ test("All five statistics sections fit a balanced mobile 3+2 navigation and a de
           n.text.includes("Spieler mit gleich-RH-Angriffen")&&
           n.text.length<190),msg);
         assert.ok(result.mobileScope.periodSummary.length<65,msg);
+        assert.ok(Object.values(result.scopeSwitch).every(Boolean),msg);
         assert.ok(result.mobileScope.filterWidths.every(x=>x.width>=40&&x.client>0),msg);
         if(width<700){
           assert.ok(result.mobileScope.period.y>
