@@ -195,7 +195,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
         b.missedKnown+" nachweislich verpasst"+
         (provisional?" · Daten unvollständig, tatsächlicher Wert kann abweichen":""):
         (b.performed+b.missedKnown?
-          "Zuverlässigkeit nicht ausreichend belegbar · "+
+          "Zuverlässigkeit nicht vollständig belegbar · "+
             b.performed+" ausgeführt, "+b.missedKnown+" nachweislich verpasst":
           "Zuverlässigkeit nicht belegbar");
       const scoreHint=b.formProvisional?
