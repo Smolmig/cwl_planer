@@ -137,7 +137,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       usable+" Spieler mit vergleichbaren Angriffen · "+
       unassessed+" ohne gleich-RH-Angriffe. "+
       (formSort==="evidence"?
-        "Sortiert nach Formwert. Bei Gleichstand: Ø Sterne, danach Ø Zerstörung (nur vollständig erfasste %).":
+        "Sortiert nach Formwert · Gleichstand: Ø Sterne, dann Ø Zerstörung (nur vollständig belegt).":
         formSort==="hitRate"?"Sortiert nach 3★-Quote; bei Gleichstand Ø Sterne, dann Ø Zerstörung (nur vollständig erfasst).":
         formSort==="reliability"?"Sortiert nach nachgewiesener Zuverlässigkeit.":
         "Alphabetisch sortiert.");
