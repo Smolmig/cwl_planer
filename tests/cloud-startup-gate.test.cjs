@@ -67,8 +67,11 @@ test("Cloud select change raises a splash only for actual tenant changes",()=>{
  assert.match(sync,/onInitialSettled:expectedClan=>\{if\(cloud\.active&&clanId===expectedClan\)finishStartup\(\)\}/);
 });
 
-test("Startup gate only waits on first live status and always has a bounded fallback",()=>{
- assert.match(startupScript,/setTimeout\(\(\)=>finish\(ticket\),12000\)/);
+test("Startup gate keeps a bounded guest fallback but fails closed on a clan switch",()=>{
+ assert.match(startupScript,/watchdog=setTimeout\(\(\)=>\{/);
+ assert.match(startupScript,/if\(strictSwitch\)fail\(/);
+ assert.match(startupScript,/else finish\(ticket\)/);
+ assert.match(html,/id="cloudStartupRetry"/);
  assert.match(html,/class="cloud-startup-splash"/);
  assert.match(html,/cloud-startup-splash\[hidden\]/);
  assert.match(sync,/onInitialSettled:expectedClan=>\{if\(cloud\.active&&clanId===expectedClan\)finishStartup\(\)\}/);
