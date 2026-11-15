@@ -51,7 +51,7 @@ test("invalid/corrupt/blocked settings fall back to Gold without writing",()=>{
 });
 test("offline-only MINOR release keeps Cloud and profile compatibility",()=>{
  assert.match(html,/const APP_VERSION="v1\.1\.0"/);
- assert.match(cloud,/const APP_VERSION="v1\.23\.2"/);
+ assert.match(cloud,/const APP_VERSION="v1\.23\.3"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/const STORAGE_KEY="cwl_planer_mobile_v9"/);
  assert.match(sw,/const CACHE="cwl-planer-v1-1-0"/);
