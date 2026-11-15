@@ -6,6 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.23.0] - 2026-11-15
+
+### Verbessert
+- Spielerstatistik: direkte, kompakte CW/CWL- und Zeitraum-Schaltflächen auf Desktop und Mobil; die Anzahl der letzten CWs/CWL-Durchgänge liegt hinter „Erweiterte Auswahl“. Kalenderzeitraum und Anzahlfilter schließen sich gegenseitig aus, um unerwartete Teilmengen zu vermeiden.
+- Spielerform: unabhängige Umschaltung zwischen **Gesamtform (CW + CWL)** und **CWL-Form**, jeweils für 30/90/180 Tage. Fehlende CWL-Einsätze bleiben „keine Daten“, niemals 0 %.
+- Mitgliederliste: statt der reinen 3★-Quote der letzten sieben Angriffe erscheinen Formwert bzw. vorläufiger Leistungswert, Stichprobe und belegte Zuverlässigkeit. Primäre Quelle ist die letzte dokumentierte CWL; ohne Teilnahme erfolgt ein expliziter Fallback auf die letzten fünf normalen CWs.
+- Mitglieder-Sortierung „Formwert“ verwendet konservative Stichprobenkorrektur; die optionale Ø-Sterne-Sortierung verwendet dieselbe CWL-/CW-Formbasis. Die laufende CWL-Aufstellung und Planungsregeln bleiben unverändert.
+- Hilfetexte, Release-History und Regressionstests für CWL, CW-Fallback und unvollständige Belege ergänzt.
+
+### Geplant (nicht Bestandteil dieses Releases)
+- Kalibrierter intelligenter Live-Planer auf Basis der Form, Zuverlässigkeit, Rollen und Gegnerstärke mit expliziten Review-Regeln.
+- Späterer, nur nach belegten Gegnerarmeen sinnvoller Clanburg-Analyzer ab Kriegsrunde 2. Keine Prognosen ohne ausreichende gegnerische Angriffsdaten.
+
+
 ## [1.22.2] - 2026-11-14
 
 ### Behoben
