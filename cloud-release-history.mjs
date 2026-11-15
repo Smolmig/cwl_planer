@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.23.3",
+    "releaseType": "patch",
+    "date": "2026-11-15",
+    "title": "Clanwechsel sicherer laden",
+    "description": "Beim Wechsel zwischen Clans bleiben andere Daten verborgen. Bei einer unterbrochenen Verbindung gibt es eine klare Fehlermeldung und eine Möglichkeit zum erneuten Laden."
+  },
+
+  {
     "version": "v1.23.2",
     "releaseType": "patch",
     "date": "2026-11-15",
