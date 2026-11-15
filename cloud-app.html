@@ -5112,7 +5112,8 @@ function memberPerformance(m){
    warning+(data.reliability===null?" Fehlende Nachweise sind keine Fehlschläge.":"");
  return "<span class='member-form-summary' title='"+esc(detail)+"' aria-label='"+esc(detail)+"'>"+
    "<span class='member-form-main'><b>"+esc(base)+"</b> · "+esc(score)+"</span>"+
-   "<span class='member-form-meta'>"+esc(sample)+" · "+esc(reliability)+"</span>"+
+   "<span class='member-form-meta'>"+esc(sample)+" · "+esc(reliability)+
+     (data.formProvisional?" · vorläufig":"")+"</span>"+
    "</span>";
 }
 window.CWLRefreshMembers=()=>{renderMembers.preserveNextViewport=true;renderMembers();if(lastPlan)renderPlan();renderSummary()};
