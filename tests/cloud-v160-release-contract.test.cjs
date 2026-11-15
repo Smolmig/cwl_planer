@@ -28,9 +28,9 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
 test("offline planner format, file cache and existing profiles are not migrated",()=>{
  const offline=read("index.html");
  const sw=read("service-worker.js");
- assert.match(offline,/const APP_VERSION="v1\.0\.2"/);
+ assert.match(offline,/const APP_VERSION="v1\.1\.0"/);
  assert.match(offline,/const DATA_VERSION=9/);
- assert.match(sw,/cwl-planer-v1-0-2/);
+ assert.match(sw,/cwl-planer-v1-1-0/);
  assert.match(sw,/cloudModule=.*cloud-app/);
  const cloud=read("cloud-app.html");
  assert.match(cloud,/const DATA_VERSION=9/);
