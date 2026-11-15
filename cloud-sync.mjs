@@ -1,11 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.23.2";
-import { createCwlLive } from "./cwl-live.mjs?v=1.23.2";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.23.2";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.23.2";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.23.2";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.23.2";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.23.2";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.23.3";
+import { createCwlLive } from "./cwl-live.mjs?v=1.23.3";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.23.3";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.23.3";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.23.3";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.23.3";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.23.3";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -967,11 +967,13 @@ async function chooseClan(epoch=accountEpoch){
  // refreshes, no overlay on routine realtime changes.
  const nextClan=$("cloudClanSelect").value||null;
  if(cloud.active&&clanId&&nextClan&&clanId!==nextClan)
-  window.CWLStartup?.begin?.("Der gewählte Clan wird geladen …");
+  window.CWLStartup?.begin?.("Der gewählte Clan wird geladen …",{strict:true});
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();
- if(channel){await sb.removeChannel(channel);channel=null}
- clanId=$("cloudClanSelect").value||null;if(clanId)rememberClan(clanId);revision=null;role=null;
+ const previousChannel=channel;channel=null;
+ if(previousChannel)await sb.removeChannel(previousChannel);
+ if(epoch!==accountEpoch)return;
+ clanId=nextClan;revision=null;role=null;
  window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
@@ -999,8 +1001,9 @@ async function chooseClan(epoch=accountEpoch){
  toggle("cloudImportFile",role!=="viewer");
  // Switch modes before rendering so cloud records never enter localStorage.
  cloud.active=true;hydrating=true;
- await loadCloudProfile(false);
+ const loaded=await loadCloudProfile(false);
  if(epoch!==accountEpoch)return;
+ if(!loaded)throw Error("Das gewählte Clanprofil konnte nicht geladen werden.");
  await loadPlanReview(clanId);
  text("cloudSyncFeedback",(revision==null?"✓ Noch kein gemeinsames Profil gespeichert":"✓ Gemeinsamer Stand geladen")+" · "+new Date().toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
  await audit();
@@ -1023,6 +1026,9 @@ async function chooseClan(epoch=accountEpoch){
  cloud.afterRender();
  await startPresence();
  live.start();
+ // Only remember a fully loaded clan; after an error reload must return to
+ // the last healthy clan, not to the partially loaded selection.
+ rememberClan(clanId);
  // No official Clash war request will settle for unlinked or offline clans.
  if(!clans.find(c=>c.id===clanId)?.clash_tag||!navigator.onLine)finishStartup();
  stats.load().catch(console.warn);
@@ -2088,7 +2094,31 @@ document.addEventListener("pointerdown",e=>{
 document.addEventListener("keydown",e=>{
  if(e.key==="Escape"&&!accountQuickMenu.hidden)closeAccountQuickMenu();
 });
-bind("cloudClanSelect","change",async()=>{try{await ensureSaved();await chooseClan()}catch(e){$("cloudClanSelect").value=clanId||"";throw e}});
+// Serialize deliberate switches and fail closed when any loading step fails.
+// A failed switch must not reveal a previous tenant's profile under the new label.
+let clanSelectionBusy=false;
+bind("cloudClanSelect","change",async()=>{
+ const select=$("cloudClanSelect");
+ if(clanSelectionBusy){select.value=clanId||"";return}
+ const previous=clanId,requested=select.value;
+ if(requested===previous)return;
+ clanSelectionBusy=true;select.disabled=true;
+ let loadingStarted=false;
+ try{
+  await ensureSaved();
+  loadingStarted=true;
+  await chooseClan();
+ }catch(e){
+  if(loadingStarted&&previous&&requested&&requested!==previous){
+   window.CWLStartup?.fail?.("Clanwechsel nicht abgeschlossen. Bitte erneut laden.");
+  }else{
+   select.value=previous||"";
+  }
+  throw e;
+ }finally{
+  clanSelectionBusy=false;select.disabled=false;
+ }
+});
 bind("cloudReload","click",refreshCloud);
 bind("cloudChangeDismiss","click",hideChangeToast);
 bind("cloudChangeDetails","click",showRemoteChangeDetails);

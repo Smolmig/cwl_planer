@@ -52,11 +52,11 @@ test("help explains the distinction to newcomers without naming a real clan memb
 test("copy-only Cloud release keeps the current public history and offline PWA intact",()=>{
  const version=JSON.parse(read("cloud-version.json"));
  const history=read("cloud-release-history.mjs");
- assert.equal(version.version,"v1.23.2");
- assert.match(html,/Neu in v1\.23\.2/);
- assert.match(history,/"version": "v1\.23\.2"/);
+ assert.equal(version.version,"v1.23.3");
+ assert.match(html,/Neu in v1\.23\.3/);
+ assert.match(history,/"version": "v1\.23\.3"/);
  assert.match(history,/"title": "Vorläufige Spielerform bei belegten Fehlangriffen"/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
  assert.match(html,/const DATA_VERSION=9/);
- assert.match(read("CHANGELOG.md"),/\[1\.23\.2\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.23\.3\]/);
 });
