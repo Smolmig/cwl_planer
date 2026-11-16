@@ -18,7 +18,7 @@ test("Clan review disclosure and action filter remain usable at 320/390/430/1366
     try{
      const source='<!doctype html><html lang="de" data-theme="'+theme+'"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+
        css+'</style></head><body><div class="app" style="padding:14px"><section class="view active">'+
-       '<div class="clan-management-filter"><button aria-pressed="true">Offene Vorschläge 12</button><button aria-pressed="false">Alle Spieler</button></div>'+
+       '<div class="clan-management-filter"><button aria-pressed="true">Offene Vorschläge 12</button><button aria-pressed="false">Gesamte Liste</button></div>'+
        '<div class="clan-management-list"><div class="clan-management-person">'+
        '<div class="clan-management-person-head"><strong>Pro Gamer mit wirklich langem Clash-Spielernamen</strong><span class="clan-management-rank">Clash: Mitglied</span></div>'+
        '<div class="clan-management-person-status">Beförderung prüfen</div>'+
@@ -41,7 +41,7 @@ test("Clan review disclosure and action filter remain usable at 320/390/430/1366
        open:summary.parentElement.open,headWidth:head.getBoundingClientRect().width,
        rankRight:rank.getBoundingClientRect().right};
      });
-     assert.ok(result.filterHeight>=44&&result.detailHeight>=44,{width,theme,result});
+     assert.ok(result.filterHeight>=44&&result.detailHeight>=44&&result.actionHeight>=44,{width,theme,result});
      assert.equal(result.open,true,{width,theme,result});
      assert.ok(result.before<=3&&result.after<=3,{width,theme,result});
      assert.ok(result.headWidth>0&&result.rankRight<=width+1,{width,theme,result});
