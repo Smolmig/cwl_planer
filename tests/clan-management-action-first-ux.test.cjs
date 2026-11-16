@@ -99,8 +99,13 @@ test("details state and safe text survive same-clan refresh without writing a pl
  const f=fixture(p);
  try{
   f.api.setFilter("all");f.api.renderClanManagementRows(false);
+  const stale=f.d.querySelector('[data-player-tag="#2PYL"] details');
   f.api.expanded.add("#2PYL");
   f.api.renderClanManagementRows(false);
+  assert.equal(stale.isConnected,false);
+  stale.open=false;stale.dispatchEvent(new f.dom.window.Event("toggle"));
+  assert.equal(f.api.expanded.has("#2PYL"),true,
+    "a detached old row must not discard the currently open detail");
   const details=[...f.d.querySelectorAll(".clan-management-person")].find(
    x=>x.dataset.playerTag==="#2PYL").querySelector("details");
   assert.equal(details.open,true);
