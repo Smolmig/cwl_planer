@@ -6144,6 +6144,9 @@ function renderClanManagementRows(preserveViewport=true){
   }
   disclosure.appendChild(body);
   disclosure.addEventListener("toggle",()=>{
+   // An old detached disclosure can emit a delayed toggle after refresh
+   // or a tenant switch. Never let that change the new clan's open state.
+   if(!disclosure.isConnected)return;
    if(disclosure.open)clanManagementExpandedTags.add(person.tag);
    else clanManagementExpandedTags.delete(person.tag);
    caption.textContent=disclosure.open?"Details schließen":"Details anzeigen";
