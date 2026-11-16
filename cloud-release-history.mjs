@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.25.0",
+    "releaseType": "minor",
+    "date": "2026-11-16",
+    "title": "Ranghinweise gezielt prüfen",
+    "description": "In der Clanverwaltung stehen offene Beförderungs- und Rückkehrhinweise zuerst. Weitere Spieler und ihre belegten Nachweise lassen sich bei Bedarf anzeigen."
+  },
+
+  {
     "version": "v1.24.0",
     "releaseType": "minor",
     "date": "2026-11-15",
