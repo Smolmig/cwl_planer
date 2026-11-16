@@ -6089,7 +6089,9 @@ function renderClanManagementRows(preserveViewport=true){
  if(!filtered.length){
   const empty=document.createElement("p");
   empty.className="clan-management-empty";empty.setAttribute("role","listitem");
-  empty.textContent="Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen.";
+  empty.textContent=clanManagementFilter==="open"?
+   "Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen.":
+   "Keine Mitglieder oder Ältesten für diese Prüfung vorhanden. Vize und Clanführer sind ausgenommen.";
   list.appendChild(empty);return;
  }
  for(const {person,openCases} of filtered){
