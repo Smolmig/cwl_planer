@@ -2497,17 +2497,37 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .clan-management-summary{font-size:13px;font-weight:750;color:var(--text);line-height:1.6;margin:4px 0 12px}
 .clan-management-disclaimer{font-size:12px;color:var(--muted);line-height:1.65;border-top:1px solid var(--line);padding:13px 0;margin:0}
 .clan-management-list{display:grid;min-width:0}
-.clan-management-person{display:flex;gap:12px;align-items:center;justify-content:space-between;min-width:0;padding:12px 1px;border-bottom:1px solid var(--line)}
-.clan-management-person>span:first-child{display:block;min-width:0;overflow-wrap:anywhere;font-weight:750}
-.clan-management-person small{font-size:11px;font-weight:500;color:var(--muted);display:block;margin-top:3px;line-height:1.5}
+.clan-management-person{min-width:0;padding:14px 1px 12px;border-bottom:1px solid var(--line)}
+.clan-management-person-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;min-width:0}
+.clan-management-person-head strong{font-size:15px;overflow-wrap:anywhere;min-width:0}
+.clan-management-person small{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-top:4px;line-height:1.5}
 .clan-management-rank{flex:0 0 auto;color:var(--muted);font-size:12px}
+.clan-management-person-status{font-size:13px;font-weight:780;margin-top:7px}
+.clan-management-person-status[data-review="open"]{color:var(--primary)}
+.clan-management-person-status[data-review="unknown"]{color:var(--muted)}
+.clan-management-filter{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:7px 0 11px}
+.clan-management-filter[hidden]{display:none!important}
+.clan-management-filter button{min-height:44px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);font-weight:700}
+.clan-management-filter button[aria-pressed="true"]{border-color:var(--primary);background:var(--bluebg)}
+.clan-management-filter button:focus-visible,.clan-management-evidence>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.clan-management-empty{padding:18px 0 24px;color:var(--muted);font-size:13px;line-height:1.6}
+.clan-management-evidence{margin-top:5px;min-width:0}
+.clan-management-evidence>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;color:var(--text);font-size:12px;font-weight:720;list-style:none}
+.clan-management-evidence>summary::-webkit-details-marker{display:none}
+.clan-management-evidence>summary::after{content:"";width:8px;height:8px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 3px 4px 0;transition:transform .16s}
+.clan-management-evidence[open]>summary::after{transform:rotate(225deg);margin-top:6px;margin-bottom:0}
+.clan-management-evidence-body{border-top:1px solid var(--line);padding:8px 0 10px}
+.clan-management-evidence-body p{margin:8px 0;font-size:12px;line-height:1.55;color:var(--muted)}
+.clan-management-evidence-body p strong{font-size:12px;color:var(--text)}
+.clan-management-evidence-empty{font-style:italic}
+@media(prefers-reduced-motion:reduce){.clan-management-evidence>summary::after{transition:none}}
 .clan-management-review-actions{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;margin-top:7px;font-size:11px;font-weight:550;color:var(--muted);line-height:1.5}
 .clan-management-review-actions button{min-height:32px;padding:5px 9px;font-size:11px;white-space:normal}
 .clan-management-review-actions .review-label{font-weight:750;color:var(--text)}
 .clan-management-review-actions .review-state{font-weight:700}
 .clan-management-review-actions .review-error{color:var(--danger,#bf3947)}
 @media(max-width:430px){.clan-management-review-actions{gap:6px 7px}.clan-management-review-actions button{min-height:36px}}
-@media(max-width:430px){.clan-management-person{gap:6px;padding:11px 0}.clan-management-rank{font-size:11px}}
+@media(max-width:430px){.clan-management-person{padding:12px 0}.clan-management-rank{font-size:11px}.clan-management-filter button{flex:1 1 auto;min-width:0}}
 /* v1.14 – real More subpages with reused settings controls, not a scrolled modal. */
 #view-more-settings{max-width:1080px;margin-inline:auto}
 .more-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:3px 0 18px}
@@ -4317,7 +4337,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
   <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge prüfen</h2>
-   <p>Hier siehst du aktuelle Clash-Ränge und Vorschläge zur Beförderung oder Rückkehr. Du entscheidest selbst – im Spiel ändert sich nichts automatisch.</p>
+   <p>Hier prüfst du belegte Beförderungs- und Rückkehrhinweise. Degradierungen und Kicks werden noch nicht bewertet; im Spiel ändert sich nichts automatisch.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
@@ -4356,6 +4376,10 @@ html.cloud-startup-pending .cloud-startup-splash{
   </form>
  </details>
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
+ <div id="clanManagementFilters" class="clan-management-filter" role="group" aria-label="Ranghinweise anzeigen" hidden>
+  <button id="clanManagementFilterOpen" type="button" data-management-filter="open" aria-pressed="true">Offene Vorschläge <span id="clanManagementOpenCount">0</span></button>
+  <button id="clanManagementFilterAll" type="button" data-management-filter="all" aria-pressed="false">Alle Spieler</button>
+ </div>
  <details class="clan-management-criteria clan-management-explanation"><summary>Wie entstehen diese Vorschläge?</summary><p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse zählen ausschließlich als beobachtete positive Änderungen zwischen vollständigen API-Snapshots; nicht erfasste Spenden sind unbekannt, ein Reset des Saisonwertes ist kein Negativsignal. Ein früherer Ältestenrang kann zur Wiederherstellungsprüfung erscheinen; unbemerkte Kurzwechsel bleiben unbekannt. Längere beobachtete Abwesenheit führt nur zu einer manuellen Prüfung; keine automatische Löschung der Clanzeit. Prüfhinweise lassen sich quittieren (bis sich relevante Nachweise ändern) oder als Ausnahme bis zur bewussten Aufhebung ausblenden; beide Entscheidungen bleiben clanprivat. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p></details>
  <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
 </section>
@@ -5970,22 +5994,14 @@ let clanManagementLastPreview=null,clanManagementReviewsReadable=false;
 function renderClanManagementReviewSummary(){
  const preview=clanManagementLastPreview;
  if(!preview)return;
- const cases=preview.rows.flatMap(x=>x.reviewCases||[]);
- const open=cases.filter(x=>x.state==="open").length;
- const confirmed=cases.filter(x=>x.state==="acknowledged").length;
- const excepted=cases.filter(x=>x.state==="exception").length;
+ const openPlayers=preview.rows.filter(person=>
+  (person.reviewCases||[]).some(item=>
+    item.state!=="acknowledged"&&item.state!=="exception")).length;
  const summary=document.getElementById("clanManagementSummary");
- summary.textContent=preview.total+" Spieler in Clash · "+preview.counts.member+" Mitglieder · "+
-  preview.counts.elder+" Älteste · "+(preview.counts.coLeader+preview.counts.leader)+
-  " Vize/Clanführer nicht bewertet"+
-  (preview.counts.unknown?" · "+preview.counts.unknown+" Rang unklar":"")+
-  (clanManagementReviewsReadable?
-   (open?" · "+open+(open===1?" Vorschlag offen":" Vorschläge offen"):" · keine Vorschläge offen")+
-   (confirmed?" · "+confirmed+" geprüft":"")+
-   (excepted?" · "+excepted+" ausgeblendet":""):
-   (preview.restoreRankChecks?" · "+preview.restoreRankChecks+" frühere Ränge prüfen":"")+
-   (preview.promotionReviewChecks?" · "+preview.promotionReviewChecks+" Beförderungen prüfen":"")+
-   " · gespeicherte Entscheidungen nicht verfügbar");
+ summary.textContent=preview.total+" Spieler in Clash · "+openPlayers+
+  (openPlayers===1?" Spieler mit offenem Vorschlag":" Spieler mit offenen Vorschlägen")+
+  (!clanManagementReviewsReadable?" · gespeicherte Prüfstände nicht abrufbar":"")+
+  " · Änderungen am Rang nur in Clash";
  summary.hidden=false;
 }
 function renderClanManagementReviewAction(group,person,item){
@@ -6011,6 +6027,140 @@ function renderClanManagementReviewAction(group,person,item){
  }
 }
 
+// Review decisions are the ONLY action source. Unknown or missing evidence
+// must not be turned into a promotion, degradation or kick recommendation.
+let clanManagementFilter="open";
+const clanManagementExpandedTags=new Set();
+function managementOpenCases(person){
+ return (person.reviewCases||[]).filter(item=>
+   item.state!=="acknowledged"&&item.state!=="exception");
+}
+function managementRowSummary(person,openCases){
+ const kinds=new Set(openCases.map(item=>item.kind));
+ if(kinds.has("return_rank"))
+  return ["Früheren Rang prüfen","Als Ältester vor einem beobachteten Austritt erfasst"];
+ if(kinds.has("performance")){
+  const evidence=String(person.promotionNote||"").match(
+   /Belegte Clanzeit (\d+)\/(\d+) Tage · API-AG (\d+)\/(\d+) · (\d+)\/(\d+) 3★/);
+  return ["Beförderung prüfen",evidence?
+   evidence[1]+"/"+evidence[2]+" Clantage · "+evidence[3]+"/"+evidence[4]+
+   " Angriffe · "+evidence[5]+" von "+evidence[6]+" mit 3★":
+   "Belegte Clanzeit und Angriffsleistung erfüllen die gewählten Kriterien"];
+ }
+ if(kinds.has("loyalty"))
+  return ["Beförderung prüfen","Belegte Clanzeit und Spendenentwicklung erfüllen die Kriterien"];
+ const cases=person.reviewCases||[];
+ if(cases.length&&cases.every(x=>x.state==="exception"))
+  return ["Ausgeblendet","Diese Prüfung wurde für diesen Clan ausgenommen"];
+ if(cases.length&&cases.every(x=>x.state==="acknowledged"||x.state==="exception"))
+  return ["Bereits geprüft","Ein Hinweis wurde bereits quittiert oder ausgeblendet"];
+ if(person.rank==="unknown")return ["Rang unklar","Der aktuelle Clash-Rang ist nicht bestätigt"];
+ if(["Nachweise offen","Daten prüfen"].includes(person.promotionStatus))
+  return [person.promotionStatus,"Für eine Empfehlung fehlen bestätigte Voraussetzungen"];
+ if(person.rank==="elder")return ["Keine Empfehlung","Aktuell als Ältester im Clan geführt"];
+ return ["Keine Empfehlung","Derzeit keine belegte Beförderungsempfehlung"];
+}
+function renderClanManagementRows(preserveViewport=true){
+ const list=document.getElementById("clanManagementList");
+ const filters=document.getElementById("clanManagementFilters");
+ if(!clanManagementLastPreview){
+  list.replaceChildren();filters.hidden=true;return;
+ }
+ const previousFocus=preserveViewport&&list.contains(document.activeElement)?
+  document.activeElement.closest("[data-player-tag]")?.dataset.playerTag:null;
+ const anchor=preserveViewport&&list.firstElementChild?.getAttribute("data-player-tag")?
+  [...list.querySelectorAll("[data-player-tag]")].find(row=>
+   row.classList.contains("clan-management-person")&&
+   row.getBoundingClientRect().bottom>0):null;
+ const anchorTag=anchor?.dataset.playerTag,anchorY=anchor?.getBoundingClientRect().top;
+ const rows=clanManagementLastPreview.rows.map(person=>({
+  person,openCases:managementOpenCases(person)
+ }));
+ const count=rows.filter(row=>row.openCases.length>0).length;
+ document.getElementById("clanManagementOpenCount").textContent=String(count);
+ filters.hidden=false;
+ for(const button of filters.querySelectorAll("[data-management-filter]"))
+  button.setAttribute("aria-pressed",String(button.dataset.managementFilter===clanManagementFilter));
+ const filtered=(clanManagementFilter==="open"?
+  rows.filter(row=>row.openCases.length):rows).sort((a,b)=>
+   Number(b.openCases.length>0)-Number(a.openCases.length>0)||
+   a.person.name.localeCompare(b.person.name,"de",{sensitivity:"base"}));
+ list.replaceChildren();
+ if(!filtered.length){
+  const empty=document.createElement("p");
+  empty.className="clan-management-empty";
+  empty.textContent="Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Alle Spieler“ wählen.";
+  list.appendChild(empty);return;
+ }
+ for(const {person,openCases} of filtered){
+  const row=document.createElement("div");
+  row.className="clan-management-person";row.setAttribute("role","listitem");
+  row.dataset.playerTag=person.tag;
+  const head=document.createElement("div");head.className="clan-management-person-head";
+  const name=document.createElement("strong");name.textContent=person.name;
+  const rank=document.createElement("span");rank.className="clan-management-rank";
+  rank.textContent="Clash: "+person.rankLabel;
+  head.append(name,rank);row.appendChild(head);
+  const [label,reason]=managementRowSummary(person,openCases);
+  const status=document.createElement("div");status.className="clan-management-person-status";
+  status.dataset.review=openCases.length?"open":person.rank==="unknown"?"unknown":"none";
+  status.textContent=label;row.appendChild(status);
+  const note=document.createElement("small");note.textContent=reason;row.appendChild(note);
+  const disclosure=document.createElement("details");
+  disclosure.className="clan-management-evidence";disclosure.dataset.playerTag=person.tag;
+  disclosure.open=clanManagementExpandedTags.has(person.tag);
+  const summary=document.createElement("summary");
+  const caption=document.createElement("span");
+  caption.textContent=disclosure.open?"Details schließen":"Details anzeigen";
+  summary.appendChild(caption);disclosure.appendChild(summary);
+  const body=document.createElement("div");body.className="clan-management-evidence-body";
+  const details=[
+   ["Clanzeit",person.tenureNote],["Spenden",person.donationNote],
+   ["Früherer Rang",person.returnRankNote],
+   ["Angriffsleistung",person.promotionNote],["Treueprüfung",person.loyaltyNote],
+   ["Rang",person.rank==="unknown"?"Aktueller Clash-Rang nicht bestätigt":null]
+  ].filter(([,value])=>!!value);
+  if(!details.length){
+   const missing=document.createElement("p");missing.className="clan-management-evidence-empty";
+   missing.textContent="Noch keine ausreichend belegten Daten verfügbar.";
+   body.appendChild(missing);
+  }
+  for(const [title,value] of details){
+   const paragraph=document.createElement("p"),strong=document.createElement("strong");
+   strong.textContent=title+": ";paragraph.append(strong,document.createTextNode(value));
+   body.appendChild(paragraph);
+  }
+  if(clanManagementReviewsReadable)for(const item of person.reviewCases||[]){
+   const group=document.createElement("div");group.className="clan-management-review-actions";
+   group.setAttribute("role","group");
+   group.setAttribute("aria-label",item.label+" für "+person.name);
+   renderClanManagementReviewAction(group,person,item);
+   body.appendChild(group);
+  }
+  if(!clanManagementReviewsReadable&&openCases.length){
+   const missing=document.createElement("p");
+   missing.textContent="Gespeicherte Prüfentscheidungen nicht abrufbar. Änderungen sind vorerst gesperrt.";
+   body.appendChild(missing);
+  }
+  disclosure.appendChild(body);
+  disclosure.addEventListener("toggle",()=>{
+   if(disclosure.open)clanManagementExpandedTags.add(person.tag);
+   else clanManagementExpandedTags.delete(person.tag);
+   caption.textContent=disclosure.open?"Details schließen":"Details anzeigen";
+  });
+  row.appendChild(disclosure);list.appendChild(row);
+ }
+ if(previousFocus){
+  const focused=[...list.querySelectorAll(".clan-management-person")]
+   .find(row=>row.dataset.playerTag===previousFocus);
+  focused?.querySelector("summary")?.focus({preventScroll:true});
+ }
+ if(anchorTag&&Number.isFinite(anchorY)){
+  const next=[...list.querySelectorAll(".clan-management-person")]
+   .find(row=>row.dataset.playerTag===anchorTag);
+  if(next)window.scrollBy(0,next.getBoundingClientRect().top-anchorY);
+ }
+}
 const clanRuleFields={
  performance_min_days:"clanRuleDays",performance_min_attacks:"clanRuleAttacks",
  performance_three_star_percent:"clanRulePercent",performance_lookback_days:"clanRuleLookback",
@@ -6043,6 +6193,8 @@ function clearClanManagement(){
  document.getElementById("clanManagementRefresh").disabled=false;
  clanRulesLoaded=false;clanRulesRevision=null;clanRulesDirty=false;
  clanManagementLastPreview=null;clanManagementReviewsReadable=false;
+ clanManagementExpandedTags.clear();clanManagementFilter="open";
+ document.getElementById("clanManagementFilters").hidden=true;
  displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
  document.getElementById("clanRulesSave").disabled=true;
  document.getElementById("clanRulesStatus").textContent="Kriterien werden geladen …";
@@ -6091,30 +6243,7 @@ window.CWLClanManagementView={
    clanManagementLastPreview=preview;
    clanManagementReviewsReadable=Array.isArray(result.reviewDecisions);
    renderClanManagementReviewSummary();
-   const list=document.getElementById("clanManagementList");
-   list.replaceChildren();
-   for(const person of preview.rows){
-    const row=document.createElement("div");row.className="clan-management-person";row.setAttribute("role","listitem");
-    const left=document.createElement("span");left.textContent=person.name;
-    const note=document.createElement("small");note.textContent=[person.tenureNote,
-     person.donationNote,person.returnRankNote,
-     person.rank==="unknown"?"Clash-Rang nicht bestätigt":
-      (person.promotionNote?(person.promotionStatus||"Leistung prüfen")+" · "+person.promotionNote:
-       loadedRules?.performance_enabled?"Leistungsprüfung noch offen":""),
-     person.loyaltyNote
-    ].filter(Boolean).join(" · ");
-    left.appendChild(note);
-    if(clanManagementReviewsReadable)for(const item of person.reviewCases||[]){
-     const group=document.createElement("span");
-     group.className="clan-management-review-actions";
-     group.setAttribute("role","group");
-     group.setAttribute("aria-label",item.label+" für "+person.name);
-     renderClanManagementReviewAction(group,person,item);
-     left.appendChild(group);
-    }
-    const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent=person.rankLabel;
-    row.append(left,rank);list.appendChild(row);
-   }
+   renderClanManagementRows();
    status.textContent="Clash zuletzt geprüft: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
     (result.tenure===null?" · Clanzeit derzeit nicht abrufbar.":" · Clanzeit zählt nur für bestätigte Zeiträume.")+
     (loadedRules?.loyalty_enabled&&result.loyalty===null?" · Treuenachweise derzeit nicht abrufbar.":"")+
@@ -6122,6 +6251,7 @@ window.CWLClanManagementView={
   }catch(err){
    if(request!==clanManagementRequest)return;
    document.getElementById("clanManagementSummary").hidden=true;
+   document.getElementById("clanManagementFilters").hidden=true;
    document.getElementById("clanManagementList").replaceChildren();
    status.textContent=err?.message||"Clanliste nicht erreichbar – bitte später erneut prüfen.";
   }finally{
@@ -6142,9 +6272,13 @@ window.CWLClanManagementView={
      !cloud.active||!cloud.isOwner()||!group.isConnected)return;
    item.revision=stored.revision;
    item.state=disposition;
-   renderClanManagementReviewAction(group,person,item);
+   clanManagementExpandedTags.add(person.tag);
    renderClanManagementReviewSummary();
-   group.querySelector("button")?.focus({preventScroll:true});
+   renderClanManagementRows(false);
+   const updated=[...document.querySelectorAll("#clanManagementList .clan-management-person")]
+    .find(row=>row.dataset.playerTag===person.tag);
+   (updated?.querySelector("summary")||document.getElementById("clanManagementFilterOpen"))
+    .focus({preventScroll:true});
   }catch(err){
    if(request!==clanManagementRequest||!group.isConnected)return;
    buttons.forEach(b=>b.disabled=false);
@@ -6184,6 +6318,13 @@ document.getElementById("clanManagementCriteria").addEventListener("input",()=>{
 });
 document.getElementById("clanManagementRulesForm").addEventListener("submit",event=>{
  event.preventDefault();window.CWLClanManagementView.saveRules();
+});
+document.getElementById("clanManagementFilters").addEventListener("click",event=>{
+ const button=event.target.closest("button[data-management-filter]");
+ if(!button)return;
+ clanManagementFilter=button.dataset.managementFilter;
+ renderClanManagementRows(false);
+ button.focus({preventScroll:true});
 });
 document.getElementById("clanManagementBack").onclick=()=>showPlannerView("more");
 document.getElementById("clanManagementRefresh").onclick=()=>window.CWLClanManagementView.refresh();
