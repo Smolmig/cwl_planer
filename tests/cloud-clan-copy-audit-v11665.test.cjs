@@ -11,7 +11,10 @@ test("#226 clan management shows plain actions and keeps detailed evidence behin
  const section=html.slice(html.indexOf('<section id="view-clan-management"'),html.indexOf('<section id="view-account"'));
  assert.ok(section.length>0);
  assert.match(section,/<h2 id="clanManagementTitle">Ränge prüfen<\/h2>/);
- assert.match(section,/Du entscheidest selbst – im Spiel ändert sich nichts automatisch/);
+ assert.match(section,/im Spiel ändert sich nichts automatisch/);
+ assert.match(section,/Degradierungen und Kicks werden noch nicht bewertet/);
+ assert.match(section,/data-management-filter="open"/);
+ assert.match(section,/data-management-filter="all"/);
  assert.match(section,/Wann eine Beförderung prüfen\?/);
  assert.match(section,/Angriffsleistung berücksichtigen/);
  assert.match(section,/Mindestens belegte Angriffe/);
