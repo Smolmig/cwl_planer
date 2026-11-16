@@ -11,7 +11,10 @@ test("#226 clan management shows plain actions and keeps detailed evidence behin
  const section=html.slice(html.indexOf('<section id="view-clan-management"'),html.indexOf('<section id="view-account"'));
  assert.ok(section.length>0);
  assert.match(section,/<h2 id="clanManagementTitle">Ränge prüfen<\/h2>/);
- assert.match(section,/Du entscheidest selbst – im Spiel ändert sich nichts automatisch/);
+ assert.match(section,/im Spiel ändert sich nichts automatisch/);
+ assert.match(section,/Degradierungen und Kicks werden noch nicht bewertet/);
+ assert.match(section,/data-management-filter="open"/);
+ assert.match(section,/data-management-filter="all"/);
  assert.match(section,/Wann eine Beförderung prüfen\?/);
  assert.match(section,/Angriffsleistung berücksichtigen/);
  assert.match(section,/Mindestens belegte Angriffe/);
@@ -39,9 +42,9 @@ test("#226 review labels are clear, but permanent storage decisions and permissi
 });
 
 test("#226 copy release applies only to Cloud and preserves local PWA version",()=>{
- assert.match(html,/Neu in v1\.24\.0/);
- assert.match(html,/const APP_VERSION="v1\.24\.0"/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.24.0");
+ assert.match(html,/Neu in v1\.25\.0/);
+ assert.match(html,/const APP_VERSION="v1\.25\.0"/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.25.0");
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
- assert.match(read("CHANGELOG.md"),/\[1\.24\.0\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.25\.0\]/);
 });

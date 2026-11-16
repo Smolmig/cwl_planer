@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.25.0] - 2026-11-16
+
+### Neu
+- **Clanverwaltung → Ränge prüfen:** Die Übersicht startet bei tatsächlich offenen, belegten Beförderungs- und Rückkehrhinweisen statt einer langen Liste sämtlicher Nachweise. Umschaltung auf „Gesamte Liste“ zeigt auch bestätigte Ränge ohne Empfehlung und Fälle mit unzureichender Datenlage. Priorisierung ist eine Ansichtssortierung, **keine neue Empfehlung oder fachliche Neuberechnung**.
+- **Verständliche Zeilen:** Spielername, aktueller Clash-Rang, konkreter Prüfstatus und ein kurzer, aus bestehenden Belegdaten abgeleiteter Grund. Eingeklappt bleiben Clanzeit, Angriffszahlen, Spenden, historische Rangnachweise und bestehende Prüfaktionen in „Details anzeigen/Details schließen“ – ohne zusätzliche verschachtelte Karten.
+- **Verlässliche Bedienung:** Geöffnete Details und Auswahl bleiben bei erneutem Abgleich innerhalb desselben Clans erhalten; ein Clanwechsel setzt beides zurück. Nach Quittieren/Ausblenden aktualisieren sich Anzahl und aktive Liste. Bei unlesbaren privaten Prüfentscheidungen werden Schreibaktionen nicht gezeigt.
+- **Keine Schein-Funktionen:** Degradierungs-/Kick-/automatische Rangänderungen bleiben weiterhin nicht implementiert; Clanverwaltung ist owner-only, Clash-Ränge müssen im Spiel manuell geändert werden. Keine Änderung an RLS, Cloud-Daten, Clanregeln, CWL-Solver, Statistiken, Mitglieder-Statistikübersicht oder Offline-PWA.
+- Mobile-/Desktop-konforme Touch-Ziele, Fokus und Kontraste; Hilfe, Versionsverwaltung, öffentlicher Update-Verlauf und Regressionstests angepasst. **MINOR** wegen neuer Aufgabenfilterung in der Clanverwaltung.
+
+
 ## [1.24.0] - 2026-11-15
 
 ### Neu

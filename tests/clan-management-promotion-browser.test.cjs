@@ -44,9 +44,12 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     assert.equal(await page.locator("#clanRulesSave").isEnabled(),true);
     await page.locator("#clanRulesSave").click();
     await page.waitForFunction(()=>saveCalls===1);
-    await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("15 Tage"));
+    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
     assert.equal(await page.locator("#clanManagementCriteria").evaluate(x=>x.open),true);
     assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
+    await page.locator("#clanManagementFilterAll").click();
+    await page.locator(".clan-management-evidence > summary").click();
+    await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("14/15 Tage"));
     await page.locator(".clan-rule-future > summary").click();
     await page.locator("#clanRuleLoyaltyEnabled").check();
     await page.locator("#clanRuleDonations").fill("80");

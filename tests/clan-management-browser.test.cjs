@@ -43,14 +43,23 @@ test("More/Clanverwaltung shows current Clash ranks without recommending actions
    await page.evaluate(()=>window.CWLClanManagementView.accessChanged("first"));
    await page.evaluate(()=>window.CWLClanManagementView.open());
    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
+   const first=await page.locator(".clan-management-person").allTextContents();
+   assert.equal(first.length,1,"open recommendations must be the default view");
+   assert.match(first[0],/One/);
+   assert.match(first[0],/Früheren Rang prüfen/);
+   assert.match(await page.locator("#clanManagementSummary").textContent(),/1 Spieler mit offenem Vorschlag/);
+   await page.locator("#clanManagementFilterAll").click();
    const rows=await page.locator(".clan-management-person").allTextContents();
-   assert.equal(rows.length,2);
-   assert.ok(rows.some(s=>s.includes("One")&&s.includes("Mitglied")&&s.includes("Spenden laut Clash")&&s.includes("Ältester")&&s.includes("Rang nach Rückkehr")));
-   assert.ok(rows.some(s=>s.includes("Two")&&s.includes("Ältester")));
-   assert.ok(rows.every(s=>!s.includes("Vize")&&!s.includes("Leader")));
-   assert.match(await page.locator("#clanManagementSummary").textContent(),/2 Vize\/Clanführer nicht bewertet/);
-   assert.match(await page.locator("#clanManagementSummary").textContent(),/1 frühere Ränge prüfen/);
-   assert.equal(await page.locator("#clanManagementList button").count(),0);
+   assert.equal(rows.length,2,"the full evaluated list includes members and elders");
+   assert.ok(rows.some(t=>t.includes("One")&&t.includes("Mitglied")));
+   assert.ok(rows.some(t=>t.includes("Two")&&t.includes("Ältester")&&t.includes("Keine Empfehlung")));
+   assert.ok(rows.every(t=>!t.includes("Vize")&&!t.includes("Leader")));
+   await page.locator('.clan-management-person[data-player-tag="#2PYL"] details > summary').click();
+   const info=await page.locator('.clan-management-person[data-player-tag="#2PYL"]').innerText();
+   assert.match(info,/Spenden laut Clash/);
+   assert.match(info,/Rang nach Rückkehr/);
+   assert.equal(await page.locator("#clanManagementList button").count(),0,
+    "unreadable private decisions never expose write buttons");
    await page.locator("#clanManagementBack").click();
    assert.equal(await page.locator("#view-more").getAttribute("class"),"view active");
    assert.deepEqual(errors,[]);
@@ -95,6 +104,8 @@ test("Compact read-only management screen fits mobile Gold, Dark and Light width
     try{
      await setup(page,theme);
      await page.evaluate(()=>{window.CWLClanManagementView.accessChanged("first");window.CWLClanManagementView.open()});
+     await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
+     await page.locator("#clanManagementFilterAll").click();
      await page.waitForFunction(()=>document.querySelectorAll(".clan-management-person").length===2);
      const layout=await page.evaluate(()=>({
       viewport:innerWidth,

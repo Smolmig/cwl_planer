@@ -49,22 +49,28 @@ test("Owner acknowledges, reopens and exempts a specific evidence review without
     for(const theme of ["arena","dark","light"]){
      await page.evaluate(t=>{document.documentElement.dataset.theme=t;},theme);
      await page.evaluate(()=>window.CWLClanManagementView.open());
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 Vorschlag offen"));
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
+     await page.locator("#clanManagementFilterOpen").click();
+     const disclosure=page.locator('.clan-management-person[data-player-tag="#2PYL"] details');
+     if(!(await disclosure.evaluate(el=>el.open)))await disclosure.locator("summary").click();
      assert.match(await page.locator("#clanManagementList").innerText(),/Leistungsprüfung:\s*Offen/);
      const calls=await page.evaluate(()=>fetchCalls);
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Als geprüft markieren"}).click();
      await page.waitForFunction(()=>saveCalls>=1);
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 geprüft"));
-     assert.equal(await page.evaluate(()=>fetchCalls),calls,"single line update must not force Clash API refresh");
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
+     assert.equal(await page.evaluate(()=>fetchCalls),calls,"reviewing does not force Clash API refresh");
+     assert.equal(await page.locator(".clan-management-person").count(),0,
+      "completed recommendation disappears from the open-only view");
+     await page.locator("#clanManagementFilterAll").click();
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Prüfung wieder öffnen"}).click();
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 Vorschlag offen"));
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Vorschlag ausblenden",exact:true}).click();
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 ausgeblendet"));
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
      assert.match(await page.locator("#clanManagementList").innerText(),/Ausgeblendet/);
      await page.evaluate(()=>window.CWLClanManagementView.refresh());
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 ausgeblendet"));
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Wieder anzeigen"}).click();
-     await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 Vorschlag offen"));
+     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
      const layout=await page.evaluate(()=>({w:document.documentElement.scrollWidth,viewport:innerWidth}));
      assert.ok(layout.w<=layout.viewport+3,JSON.stringify({width,theme,layout}));
     }
@@ -84,12 +90,14 @@ test("Cloud clan switch cannot reuse a different clan's private acknowledgment",
    await page.setContent(markup);await page.addScriptTag({content:core});
    await page.addScriptTag({content:fakeCloud});await page.addScriptTag({content:manager});
    await page.evaluate(()=>window.CWLClanManagementView.open());
-   await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 Vorschlag offen"));
+   await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
+   await page.locator(".clan-management-evidence > summary").click();
    await page.getByRole("button",{name:"Leistungsprüfung für Sample: Als geprüft markieren"}).click();
-   await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 geprüft"));
+   await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
    await page.evaluate(()=>{clanId="clan-b";window.CWLClanManagementView.open();});
-   await page.waitForFunction(()=>document.getElementById("clanManagementSummary").textContent.includes("1 Vorschlag offen"));
-   assert.doesNotMatch(await page.locator("#clanManagementSummary").innerText(),/geprüft/);
+   await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
+   assert.match(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
+   assert.doesNotMatch(await page.locator("#clanManagementSummary").innerText(),/gespeicherte Prüfstände nicht abrufbar/);
    await page.evaluate(()=>{owner=false;window.CWLClanManagementView.accessChanged(null);});
    assert.equal(await page.locator("#clanManagementList").innerText(),"");
   }finally{await page.close()}
