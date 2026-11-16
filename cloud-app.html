@@ -3583,7 +3583,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 @media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
 
 
-/* v1.24.0: compact, accessible statistics on narrow screens. */
+/* v1.25.0: compact, accessible statistics on narrow screens. */
 #view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 #view-stats .stats-period{width:100%;max-width:100%}
@@ -3645,7 +3645,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 #view-stats .stats-current-profile-result{margin:6px 0 8px;font-size:12px;line-height:1.5;color:var(--muted)}
 #view-stats .stats-current-profile-result:empty{display:none}
 
-/* v1.24.0 — dense, comprehensible desktop/mobile selection; no nested empty half-column. */
+/* v1.25.0 — dense, comprehensible desktop/mobile selection; no nested empty half-column. */
 #view-stats .stats-player-scope{display:block;width:100%;margin:10px 0 0}
 #view-stats .stats-scope-toolbar{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:16px}
 #view-stats .stats-scope-group{min-width:0}
@@ -3689,7 +3689,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 }
 
 
-/* v1.24.0: member form — clear primary score, explicit same-RH sample and separate metrics. */
+/* v1.25.0: member form — clear primary score, explicit same-RH sample and separate metrics. */
 #view-members .member-form-summary{display:inline-flex;flex-direction:column;gap:5px;min-width:0;max-width:100%;vertical-align:middle;line-height:1.45}
 #view-members .member-form-main{display:flex;gap:4px 10px;align-items:baseline;flex-wrap:wrap;min-width:0}
 #view-members .member-form-main strong{font-size:13px;font-weight:750;color:var(--text);font-variant-numeric:tabular-nums}
@@ -4063,11 +4063,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.24.0</strong><span>Zerstörung als fairer Form-Gleichstand</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.25.0</strong><span>Ranghinweise übersichtlich prüfen</span></div>
       <ul>
-       <li><b>Ø Zerstörung:</b> Angriffsprozente aus Clash und ClashPerk stehen nun in den Spielerform-Details.</li>
-       <li><b>Gleichstand:</b> Bei gleichem Formwert entscheiden Ø Sterne und danach vollständig belegte Ø Zerstörung.</li>
-       <li><b>Keine Schätzungen:</b> Fehlende Prozentwerte bleiben unbekannt. Die eigentliche Formwert- und Planungsformel ändert sich nicht.</li>
+       <li><b>Offene Vorschläge:</b> In der Clanverwaltung stehen echte Beförderungs- und Rückkehrhinweise zuerst.</li>
+       <li><b>Alle Spieler:</b> Auch Fälle ohne Empfehlung und mit fehlenden Nachweisen lassen sich ansehen.</li>
+       <li><b>Details auf Wunsch:</b> Clanzeit, Angriffsdaten und Prüfentscheidungen sind ausklappbar. Es gibt weiterhin keine automatische Rangänderung.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4285,7 +4285,7 @@ html.cloud-startup-pending .cloud-startup-splash{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
-    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Eine Entschuldigung für einen angeblich verpassten CW-Angriff ist erst nach belastbarer Verstoß-Erfassung vorgesehen. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. „Offene Vorschläge“ zeigt nur belegte Beförderungs- und Rückkehrhinweise, die noch geprüft werden müssen. Unter „Alle Spieler“ sind auch Mitglieder ohne Empfehlung und mit fehlenden Nachweisen sichtbar. „Details anzeigen“ öffnet die Clanzeit, die Angriffs- und Spendenbelege sowie die vorhandenen Prüfentscheidungen; beim Aktualisieren bleiben geöffnete Details erhalten, beim Clanwechsel werden sie zurückgesetzt. Eine Beförderung, Degradierung oder ein Kick wird niemals durch diese Seite automatisch durchgeführt. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Eine Entschuldigung für einen angeblich verpassten CW-Angriff ist erst nach belastbarer Verstoß-Erfassung vorgesehen. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
@@ -4632,11 +4632,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.24.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.24.0"></script>
-<script src="./cwl-planning-core.js?v=1.24.0"></script>
+<script src="./clan-management-core.js?v=1.25.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.25.0"></script>
+<script src="./cwl-planning-core.js?v=1.25.0"></script>
 <script>
-const APP_VERSION="v1.24.0";
+const APP_VERSION="v1.25.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6407,7 +6407,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.24.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.25.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6797,6 +6797,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.24.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.25.0"></script>
 </body>
 </html>
