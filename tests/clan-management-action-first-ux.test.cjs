@@ -125,3 +125,14 @@ test("unavailable review decisions never enable write controls and do not concea
   assert.equal(f.d.querySelectorAll(".clan-management-review-actions button").length,0);
  }finally{f.close()}
 });
+
+test("empty eligible roster explicitly explains owner/vices exclusion",()=>{
+ const p=core.buildPreview([{tag:"#2PYJ",name:"Boss",role:"leader"}]);
+ const f=fixture(p);
+ try{
+  f.api.setFilter("all");f.api.renderClanManagementRows(false);
+  assert.match(f.d.getElementById("clanManagementList").textContent,
+   /Vize und Clanführer sind ausgenommen/);
+  assert.equal(f.d.querySelectorAll(".clan-management-person").length,0);
+ }finally{f.close()}
+});
