@@ -3563,7 +3563,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 @media(max-width:520px){.updates-day-date{font-size:14px}.updates-day-summary{gap:7px;align-items:center}.updates-day-count{font-size:11px}.updates-list{padding-left:12px}.updates-entry{padding-left:12px}}
 
 
-/* v1.23.3: compact, accessible statistics on narrow screens. */
+/* v1.24.0: compact, accessible statistics on narrow screens. */
 #view-stats [data-stats-panel="players"] .stats-player-scope>.stats-filters{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 #view-stats .stats-period{width:100%;max-width:100%}
@@ -3625,7 +3625,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 #view-stats .stats-current-profile-result{margin:6px 0 8px;font-size:12px;line-height:1.5;color:var(--muted)}
 #view-stats .stats-current-profile-result:empty{display:none}
 
-/* v1.23.3 — dense, comprehensible desktop/mobile selection; no nested empty half-column. */
+/* v1.24.0 — dense, comprehensible desktop/mobile selection; no nested empty half-column. */
 #view-stats .stats-player-scope{display:block;width:100%;margin:10px 0 0}
 #view-stats .stats-scope-toolbar{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:16px}
 #view-stats .stats-scope-group{min-width:0}
@@ -3669,7 +3669,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 }
 
 
-/* v1.23.3: member form — clear primary score, explicit same-RH sample and separate metrics. */
+/* v1.24.0: member form — clear primary score, explicit same-RH sample and separate metrics. */
 #view-members .member-form-summary{display:inline-flex;flex-direction:column;gap:5px;min-width:0;max-width:100%;vertical-align:middle;line-height:1.45}
 #view-members .member-form-main{display:flex;gap:4px 10px;align-items:baseline;flex-wrap:wrap;min-width:0}
 #view-members .member-form-main strong{font-size:13px;font-weight:750;color:var(--text);font-variant-numeric:tabular-nums}
@@ -4043,11 +4043,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.23.3</strong><span>Sicherer Clanwechsel</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.24.0</strong><span>Zerstörung als fairer Form-Gleichstand</span></div>
       <ul>
-       <li><b>Clanwechsel:</b> Alte Clan-Inhalte bleiben verborgen, bis die ausgewählten Cloud-Daten sicher geladen wurden.</li>
-       <li><b>Bei Verbindungsproblemen:</b> Die Ladeanzeige bietet „Erneut laden“, statt einen unvollständigen Clan-Stand anzuzeigen.</li>
-       <li><b>Unverändert:</b> Gespeicherte Pläne, Freigaben und die Spielerbewertung werden nicht neu berechnet.</li>
+       <li><b>Ø Zerstörung:</b> Angriffsprozente aus Clash und ClashPerk stehen nun in den Spielerform-Details.</li>
+       <li><b>Gleichstand:</b> Bei gleichem Formwert entscheiden Ø Sterne und danach vollständig belegte Ø Zerstörung.</li>
+       <li><b>Keine Schätzungen:</b> Fehlende Prozentwerte bleiben unbekannt. Die eigentliche Formwert- und Planungsformel ändert sich nicht.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4211,6 +4211,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <details class="stats-form-method" id="statsFormDetails"><summary>Warum steht 100 % nicht immer oben?</summary>
       <p><strong>Leistung (65 %):</strong> „Gleiches RH“ bedeutet: Angreifer und Ziel haben dieselbe Rathausstufe. Die 3★-Quote wird vorsichtig an die Anzahl der Angriffe angepasst. Bei wenigen Angriffen wird die Leistung weniger sicher eingeschätzt (Wilson-Untergrenze, z = 1,28).</p>
       <p><strong>Zuverlässigkeit (35 %):</strong> Nachweislich ausgeführte Angriffe geteilt durch belegte Pflichtangriffe. Verpasste Angriffe senken diesen Wert, sind aber <strong>keine ausgeführten 0★-Angriffe</strong>.</p>
+      <p><strong>Bei gleichem Ergebnis:</strong> Erst der Formwert (bei fehlender Zuverlässigkeit der Leistungswert), dann der Durchschnitt der Sterne, danach die durchschnittliche Zerstörung in %. Die Prozente zählen nur für echte Angriffe gegen gleiches RH und nur dann als Gleichstandsentscheidung, wenn sie bei beiden Spielern für alle vergleichbaren Angriffe erfasst sind. Diese Ergänzung verändert die Formel 65/35 nicht.</p>
       <p>100 % Dreisterne aus einem einzelnen Angriff bedeuten nicht automatisch einen Formwert von 100 Punkten.</p>
       <p><strong>Bei Datenlücken:</strong> Wenn verpasste Angriffe sicher belegt sind, berechnen wir aus ausgeführten und bestätigten Fehlangriffen einen <strong>mit ≈ gekennzeichneten vorläufigen Formwert</strong>. Weitere unbekannte Angriffe können den tatsächlichen Wert verändern. Ohne vollständige Abdeckung und ohne bestätigte Fehlangriffe zeigen wir nur die Leistung – keine erfundenen 100 % Zuverlässigkeit. Fehlangriffe zählen niemals als ausgeführte 0★-Angriffe. Diese Werte sind eine Orientierung, keine Spielstärke-Prognose.</p>
       <p>Je nach Umschaltung nutzt die Spielerform alle abgeschlossenen CWs/CWL-Kriegstage oder nur CWL-Kriegstage des ausgewählten Clans der letzten 30, 90 oder 180 Kalendertage – unabhängig von den Filtern der Spielerstatistik. Eigene Angriffe gegen niedrigere oder höhere RH erscheinen nur in den aufklappbaren Angriffsdetails.</p>
@@ -4293,7 +4294,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Clan wechseln &amp; Laden</b><div>Beim Wechsel zwischen verknüpften Clans bleibt die vorherige Clanansicht verborgen, bis das neue Profil geladen wurde. Bei einem Verbindungsproblem erscheint „Erneut laden“ statt gemischter Clan-Daten. Bereits gespeicherte Pläne bleiben bestehen. Im lokalen Offline-Planer gelten eigene Profile.</div></div>
     <div class="help-item"><b>Rathaus &amp; Planung</b><div>RH bedeutet Rathausstufe. Im verbundenen Cloud-Clan stammt die aktuelle Stufe aus Clash, nicht aus einer manuellen Eingabe. Historische Angriffe behalten ihre damalige Rathausstufe. In der Offline-Planung kann die Stärke manuell geschätzt werden. Die automatische CWL-Einteilung nutzt weiterhin Fairness, Einsatzziele und Tagesregeln; der Formwert ist keine automatische Einsatzgarantie.</div></div>
     <div class="help-item"><b>Formwerte in Mitglieder</b><div>Die <b>letzte dokumentierte CWL</b> ist die erste Datenbasis. Hat ein Spieler darin keine belegten Angriffe, dienen die <b>letzten fünf abgeschlossenen normalen CWs</b> als gekennzeichneter Ersatz. Die sichtbare Anzahl meint <b>Angriffe gegen gleiches RH</b>, nicht CWL-Tage. <b>3★-Quote</b> bewertet nur diese vergleichbaren ausgeführten Angriffe. <b>Zuverlässigkeit</b> berücksichtigt dagegen alle belegten ausgeführten und sicher verpassten Pflichtangriffe. Der Formwert kombiniert 65 % vorsichtig bewertete Leistung und 35 % Zuverlässigkeit. Bei lückenhaften Daten mit belegten Fehlangriffen zeigen wir <b>≈ vorläufig</b>. Ohne ausreichende Nachweise zeigen wir nur den Leistungswert, keine erfundene 100-%-Zuverlässigkeit oder Nullsterne. Unter „Einstellungen erklärt“ steht die Datenbasis für den jeweiligen Spieler.</div></div>
-    <div class="help-item"><b>Spielerstatistik &amp; Spielerform</b><div>In <b>Spielerstatistik</b> wählst du CW/CWL sowie Gesamt/30/90/180/365 Tage direkt; unter „Erweiterte Auswahl“ alternativ die letzten X CWs oder CWL-Durchgänge. Zeitraum und Anzahl begrenzen nicht heimlich gleichzeitig. <b>Spielerform</b> ist davon unabhängig: „Gesamtform“ (CW + CWL) und „CWL-Form“ (nur CWL), jeweils 30/90/180 Tage. Im Formtab zählen vergleichbare Angriffe derselben Rathausstufe; andere RH findest du in Angriffsdetails. Sortierung nach Formwert ist nicht dasselbe wie Sortierung nach 3★-Quote. Ein Listenplatz ist keine garantierte Spielstärke.</div></div>
+    <div class="help-item"><b>Spielerstatistik &amp; Spielerform</b><div>In <b>Spielerstatistik</b> wählst du CW/CWL sowie Gesamt/30/90/180/365 Tage direkt; unter „Erweiterte Auswahl“ alternativ die letzten X CWs oder CWL-Durchgänge. Zeitraum und Anzahl begrenzen nicht heimlich gleichzeitig. <b>Spielerform</b> ist davon unabhängig: „Gesamtform“ (CW + CWL) und „CWL-Form“ (nur CWL), jeweils 30/90/180 Tage. Im Formtab zählen vergleichbare Angriffe derselben Rathausstufe; andere RH findest du in Angriffsdetails. Sortierung nach Formwert ist nicht dasselbe wie Sortierung nach 3★-Quote. Bei gleichem Formwert werden Ø Sterne und danach Ø Zerstörung als zusätzliche Entscheidung verwendet, sofern die Zerstörungsprozente bei beiden Spielern vollständig belegt sind. Fehlen Prozentwerte, gelten sie als unbekannt und nicht als 0 %. Ein Listenplatz ist keine garantierte Spielstärke.</div></div>
     <div class="help-item"><b>Nachweise &amp; andere Clans</b><div>Unbekannte Angriffe werden nicht als verpasst angenommen. Importierte und über Clash erfasste Angriffe bleiben mit ihrer Herkunft und Datenabdeckung nachvollziehbar. Bei berechtigtem Zugriff kannst du in „Angriffsdetails“ auch dokumentierte Angriffe eines Spielers aus anderen eigenen Clans gezielt anzeigen; sie werden nicht ungeprüft addiert. Das <b>aktuelle öffentliche Clash-Profil</b> kann mit Prüfzeitpunkt gesondert abgerufen werden und verändert historische Angriffe nicht.</div></div>
     <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gespeicherte Aufstellungen und Einsätze sichtbar. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
@@ -4607,11 +4608,11 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.23.3"></script>
-<script src="./cwl-deployment-filters.js?v=1.23.3"></script>
-<script src="./cwl-planning-core.js?v=1.23.3"></script>
+<script src="./clan-management-core.js?v=1.24.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.24.0"></script>
+<script src="./cwl-planning-core.js?v=1.24.0"></script>
 <script>
-const APP_VERSION="v1.23.3";
+const APP_VERSION="v1.24.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6265,7 +6266,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.23.3");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.24.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6655,6 +6656,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.23.3"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.24.0"></script>
 </body>
 </html>

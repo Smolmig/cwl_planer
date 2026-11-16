@@ -252,6 +252,8 @@ export function computePlayerFormWindows(wars,attacks,{
       profiles.set(key,{tag:key,name:String(name||key),
         windows:Object.fromEntries(windows.map(days=>[days,{
           days,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null,
+          destructionTotal:0,destructionSamples:0,averageDestruction:null,
+          destructionComplete:false,
           normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null,
           performed:0,missedKnown:0,reliability:null,reliabilityComplete:false,
           reliabilityProvisional:false,formProvisional:false,
@@ -282,6 +284,11 @@ export function computePlayerFormWindows(wars,attacks,{
       if(!thA||!thD){b.excludedUnknownRH++;continue}
       if(a.attacker_th!==a.defender_th){b.excludedDifferentRH++;continue}
       b.attacks++;b.triples+=(a.stars===3?1:0);b.stars+=a.stars;
+      // ClashPerk Attack Log and Clash API both provide destruction.
+      // Old/incomplete rows may not: never treat unknown % as a 0% hit.
+      if(Number.isInteger(a.destruction)&&a.destruction>=0&&a.destruction<=100){
+        b.destructionTotal+=a.destruction;b.destructionSamples++;
+      }
       if(w.war_type==="normal")b.normal++;else b.cwl++;
       if(!b.newest||time>Date.parse(b.newest))b.newest=w.started_at;
     }
@@ -349,6 +356,9 @@ export function computePlayerFormWindows(wars,attacks,{
     for(const b of Object.values(p.windows)){
       b.hitRate=b.attacks?Math.round(100*b.triples/b.attacks):null;
       b.averageStars=b.attacks?Math.round(100*b.stars/b.attacks)/100:null;
+      b.averageDestruction=b.destructionSamples?
+        Math.round(100*b.destructionTotal/b.destructionSamples)/100:null;
+      b.destructionComplete=b.attacks>0&&b.destructionSamples===b.attacks;
       b.quality=b.attacks>=15?"umfangreicher":b.attacks>=6?"erste Tendenz":
         b.attacks?"wenige Angriffe":"keine Daten";
       const obligations=b.performed+b.missedKnown;
@@ -421,7 +431,8 @@ export function computeMemberFormSummary(wars,attacks,{
   const members=[...new Set([
     ...current,...(memberProfiles||[]).map(p=>cleanTag(p?.playerTag))
   ])].filter(tag=>validTag(tag)&&(!current.size||current.has(tag)));
-  const empty=()=>({attacks:0,triples:0,hitRate:null,
+  const empty=()=>({attacks:0,triples:0,hitRate:null,averageStars:null,
+    averageDestruction:null,destructionSamples:0,destructionComplete:false,
     performed:0,missedKnown:0,reliability:null,formIndex:null,
     performanceIndex:null,quality:"keine Daten"});
   return {
@@ -445,10 +456,11 @@ export function computeMemberFormSummary(wars,attacks,{
 }
 
 /**
- * Player-form list ordering is not a skill model. The evidence-first view
- * keeps tiny perfect samples behind documented, more substantive samples.
- * Quality buckets use the same boundaries as computePlayerFormWindows().
- * Within each bucket the raw 3-star percentage remains visible and sorts.
+ * Form remains driven by same-TH 3★ evidence and verified reliability.
+ * Destruction is only a tie-breaker AFTER the existing primary result and
+ * average stars; it is never an extra form-score weight.
+ * Compare destruction only when both players have documented % values for
+ * EVERY eligible same-TH attack; partial logs are not fictitious zeroes.
  */
 export function sortPlayerFormRows(players,windowDays,mode="evidence"){
   if(!["evidence","hitRate","attacks","reliability","name"].includes(mode))
@@ -459,21 +471,24 @@ export function sortPlayerFormRows(players,windowDays,mode="evidence"){
     if(!left||!right)throw Error("Formzeitraum ist nicht verfügbar.");
     const rateDelta=(right.hitRate??-1)-(left.hitRate??-1);
     const volumeDelta=right.attacks-left.attacks;
+    const starsDelta=(right.averageStars??-1)-(left.averageStars??-1);
+    const destructionDelta=left.destructionComplete&&right.destructionComplete?
+      (right.averageDestruction-left.averageDestruction):0;
     if(mode==="name")return nameSort(a,b);
-    if(mode==="attacks")return volumeDelta||rateDelta||nameSort(a,b);
-    if(mode==="hitRate")return rateDelta||volumeDelta||nameSort(a,b);
+    if(mode==="attacks")return volumeDelta||rateDelta||starsDelta||destructionDelta||nameSort(a,b);
+    if(mode==="hitRate")return rateDelta||starsDelta||destructionDelta||volumeDelta||nameSort(a,b);
     if(mode==="reliability")
       return (right.reliability??-1)-(left.reliability??-1)||
         Number(!!left.reliabilityProvisional)-Number(!!right.reliabilityProvisional)||
         (right.performed+right.missedKnown)-(left.performed+left.missedKnown)||
         nameSort(a,b);
-    // Missing coverage must not cause 0/12 to outrank 4/4. Compare the
-    // conservative scores directly; incomplete reliability is clearly
-    // identified in the row instead of made into a fictitious failure.
+    // Conservative score and verified-vs-provisional evidence remain primary.
+    // When those tie, compare Ø stars, then full-coverage Ø destruction.
+    // Missing percentages never become zero or outrank documented evidence.
     const rank=b=>b.formIndex??b.performanceIndex??-1;
     return (rank(right)-rank(left))||
       Number(!!left.formProvisional)-Number(!!right.formProvisional)||
-      volumeDelta||nameSort(a,b);
+      starsDelta||destructionDelta||volumeDelta||nameSort(a,b);
   });
 }
 /**

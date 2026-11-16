@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.24.0",
+    "releaseType": "minor",
+    "date": "2026-11-15",
+    "title": "Zerstörungsprozente in der Spielerform",
+    "description": "Bei gleichem Formwert und gleicher Ø-Sterne-Leistung entscheidet der vollständig belegte Ø-Zerstörungswert; die Formdetails zeigen die zugrunde liegenden Prozentdaten."
+  },
+
+  {
     "version": "v1.23.3",
     "releaseType": "patch",
     "date": "2026-11-15",

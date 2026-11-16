@@ -6,6 +6,16 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.24.0] - 2026-11-15
+
+### Neu
+- Spielerform / CWL-Form: Aus bestehenden verifizierten Angriffszeilen wird die **durchschnittliche Zerstörung in %** je Form-Zeitraum und nur für Angriffe gegen die gleiche Rathausstufe berechnet. Die Angriffsdetails nennen den Durchschnitt und die belegte Stichprobe.
+- Bei **gleichem Form-/Leistungswert** entscheidet zuerst der **Ø-Sterne-Wert**, danach die **Ø Zerstörung** – aber ausschließlich, wenn für beide verglichenen Spieler alle berücksichtigten Angriff-Prozentwerte vorliegen. Bei Sortierung nach reiner 3★-Quote gilt derselbe nachrangige Vergleich.
+- Fehlende Prozente sind **unbekannt**, nicht 0 %. Tatsächliche 0 % bleiben gültige Nachweise. CW-/CWL-Filter und Zeiträume respektieren die bestehende Quellen-/Clantrennung.
+- Die bisherige Formwertberechnung (65 % vorsichtig bewertete 3★-Leistung, 35 % belegte Zuverlässigkeit), Mitgliederübersicht und CWL-Planung bleiben **unverändert**; nur die Rangfolge bei Gleichstand und die aufklappbaren Form-Details werden erweitert.
+- Hilfe, neuer Releaseverlauf und gezielte Regressionstests sind Teil des Pakets. **MINOR** wegen funktionaler Erweiterung der Spielerform; kein Datenbank- oder Exportformatwechsel.
+
+
 ## [1.23.3] - 2026-11-15
 
 ### Behoben
