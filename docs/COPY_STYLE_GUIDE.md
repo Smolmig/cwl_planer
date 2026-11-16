@@ -101,3 +101,7 @@ Die Bestandserfassung basiert auf sichtbaren Titeln, Feldbeschriftungen, Statusm
 - [ ] **Leer-/Fehlerfall:** keine erfundenen 0, kein Schuldvorwurf?
 - [ ] **Hilfe / Info:** Methodik korrekt, vorhandene Hilfe aktualisiert?
 - [ ] **Mobile & A11y:** 320/390/430 px, Gold/Dunkel/Hell, Tastatur/Fokus, Beobachter; keine zusätzliche Kartenebene?
+
+## Clanverwaltung: Aufgabenorientierte Übersicht (v1.25.0, 16.11.2026)
+
+Zuerst nur **offene, tatsächlich aus belegten Rang-/Leistungs-/Treue-Regeln entstandene Hinweise**. Der zusätzliche Filter „Alle Spieler“ zeigt die Fälle ohne offenen Vorschlag und insbesondere Datenlücken, nicht fiktive Degradierungs-/Kick-Kandidaten. Standardzeile: Name, bestätigter Clash-Rang, kurzer Status und 1–2 belegte Gründe; alle Details und Review-Aktionen ausschließlich hinter klar beschriftetem Disclosure. Kein Durchgriff auf den CWL-Plan oder tatsächliche Clash-Ränge. Geöffnete Details und Filter innerhalb eines Clans bei Refresh behalten; bei Tenant-Wechsel zurücksetzen. Owner-only, keine neue fachliche Regelberechnung. Diese Etappe erfüllt **nicht** die vollständige, weiterhin offene Clanverwaltung-Logik aus #183.
