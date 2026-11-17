@@ -96,5 +96,5 @@ test("Plan rebuild immediately re-attaches live CWL war cards",()=>{
 });
 test("Desktop theme and version notes are stacked while mobile remains unchanged",()=>{
  assert.match(html,/@media \(min-width:700px\)\{[\s\S]*?#view-settings \.settings-row:has\(#themeSelect\)/);
- assert.match(html,/Neu in v1\.25\.0/);
+ assert.match(html,/Neu in v1\.26\.0/);
 });

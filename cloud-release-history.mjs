@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.26.0",
+    "releaseType": "minor",
+    "date": "2026-11-17",
+    "title": "Bestätigte CWL-Fehlangriffe prüfen",
+    "description": "Die Clanverwaltung zeigt belegte verpasste CWL-Angriffe, berücksichtigt Entschuldigungen und weist bei zwei aufeinanderfolgenden Fällen bei Ältesten auf eine manuelle Rangprüfung hin."
+  },
+
+  {
     "version": "v1.25.0",
     "releaseType": "minor",
     "date": "2026-11-16",
