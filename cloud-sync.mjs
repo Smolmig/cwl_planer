@@ -430,11 +430,42 @@ const cloud={
    .eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag));
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Der Clan oder die Sitzung hat während des Abrufs gewechselt. Bitte neu öffnen.");
+
+  // Preview only: no invented misses from absent attacks or missing war data.
+  // Normal CW 2-attack coverage is not collector-proven yet, so CWL only.
+  // All reads are constrained by the logged-in owner's tenant RLS.
+  let missedReview=null;
+  const cutoff=new Date(Date.now()-90*86400000).toISOString();
+  const {data:recentWars,error:warError}=await sb.from("cwl_stat_wars")
+   .select("war_key,war_type,started_at,team_size,roster_tags,source,finalized,missed_log_complete")
+   .eq("clan_id",expectedClan).eq("war_type","cwl").eq("source","api")
+   .eq("finalized",true).eq("missed_log_complete",true)
+   .gte("started_at",cutoff).order("started_at",{ascending:false}).limit(100);
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Clan oder Sitzung während der Fehlangriffsprüfung gewechselt.");
+  if(!warError&&Array.isArray(recentWars)&&recentWars.length<100){
+   if(recentWars.length===0)missedReview={wars:[],missed:[],decisions:[]};
+   else{
+    const keys=recentWars.map(w=>w.war_key);
+    const [mr,dr]=await Promise.all([
+     sb.from("cwl_stat_missed").select("war_key,player_tag,missed_count")
+      .eq("clan_id",expectedClan).in("war_key",keys),
+     sb.from("cwl_missed_owner_decisions").select("id,war_key,player_tag,decision")
+      .eq("clan_id",expectedClan).in("war_key",keys)
+      .order("id",{ascending:false}).limit(500)
+    ]);
+    if(!mr.error&&!dr.error&&Array.isArray(mr.data)&&
+       Array.isArray(dr.data)&&dr.data.length<500)
+     missedReview={wars:recentWars,missed:mr.data,decisions:dr.data};
+   }
+  }
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Clan oder Sitzung während der Fehlangriffsprüfung gewechselt.");
   return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
    evidence:evidenceError?null:(evidence||[]),loyalty,
-   reviewDecisions:reviewError?null:(reviewDecisions||[])};
+   reviewDecisions:reviewError?null:(reviewDecisions||[]),missedReview};
  },
  isEmergencyEditing:()=>manualRosterPending(),
  async saveManagementReview(playerTag,kind,disposition,fingerprint,expectedRevision){
