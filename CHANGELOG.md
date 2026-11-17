@@ -6,6 +6,17 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.26.0] - 2026-11-17
+
+### Neu
+- **Clanverwaltung → Verpasste CWL-Angriffe:** Aufklappbare, schreibgeschützte Auswertung der letzten 90 Tage, getrennt von Beförderungs- und Rückkehrhinweisen. Berücksichtigt nur endgültig abgeschlossene und vollständig dokumentierte **eigene CWL-Kriege aus dem API-Collector**; alte Imports, lückenhafte Kriege und nicht vorhandene Belege zählen nicht als Verstoß.
+- **Entschuldigte Fälle:** Die letzte vorhandene dokumentierte Owner-Entscheidung zum jeweiligen CWL-Krieg wird berücksichtigt. Ein als entschuldigt gespeicherter Fehlangriff ist kein offener Prüfhinweis. Kann ein privater Entscheidungsdatensatz oder die Kriegsaufstellung nicht zuverlässig gelesen werden, bleibt die Prüfung gesperrt statt als null zu zählen.
+- **Klarer Prüfstatus:** Bei einem aktuellen Ältesten und zwei *direkt aufeinanderfolgenden*, zeitlich plausiblen, vollständig erfassten CWL-Kriegen mit je einem belegten Fehlangriff erscheint „Degradierung prüfen“. Einzelne Fehlangriffe und Mitglieder werden nur neutral zur Prüfung angezeigt. Es gibt weder automatische Strafen noch neue Schreibaktionen.
+- **Bewusste Grenzen:** Normale CWs liefern im Collector derzeit keinen gesicherten vollständigen Zwei-Angriffs-Nachweis. Clash liefert keinen letzten Login; deshalb keine scheinbare Kick-/Offline-Empfehlung. Cross-Clan-Daten, CWL-Plan, RLS, Review-Tabellen, Ranking und Offline-App bleiben unverändert. Neue reine Owner-RLS-Reads auf bereits vorhandene Tabellen, keine Migration.
+- Hilfe, öffentlicher Update-Verlauf, Cache-Schutz, Regressionen und Versionsstand angepasst. **MINOR** für die neue separate schreibgeschützte Auswertungsfunktion.
+
+
+
 ## [1.25.0] - 2026-11-16
 
 ### Neu
