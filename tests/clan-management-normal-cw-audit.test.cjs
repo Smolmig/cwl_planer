@@ -25,8 +25,9 @@ const incident=(id,war,action,note="")=>({
  id,war_key:war.war_key,player_tag:"#2PYL",decision:action,note,
  created_at:"2026-11-16T12:00:00Z"
 });
-const sample=()=>({wars:[w1,w2],missed:[miss(w1.war_key,1),miss(w2.war_key,1)],
- decisions:[]});
+const sample=()=>({wars:[{...w1,roster_tags:[...w1.roster_tags]},
+ {...w2,roster_tags:[...w2.roster_tags]}],
+ missed:[miss(w1.war_key,1),miss(w2.war_key,1)],decisions:[]});
 const evaluate=(p=sample(),ms=members)=>core.evaluate(ms,p,"#2PYL",Date.parse("2026-11-18T12:00:00Z"));
 
 test("single missed attack is review only; 0/2 prompts elder manual degradation review",()=>{
