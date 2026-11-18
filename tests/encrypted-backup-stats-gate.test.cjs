@@ -12,7 +12,8 @@ const workflow=fs.readFileSync(path.join(root,".github/workflows/test-encrypted-
 const rows={
  cwl_stat_wars:"synthetic-clan\tcp:123\n",
  cwl_stat_attacks:"cp:123\t#8PYL\t3\n",
- cwl_stat_missed:"cp:123\t#QPYL\t1\n"
+ cwl_stat_missed:"cp:123\t#QPYL\t1\n",
+ cwl_clan_cw_missed_decisions:"tenant\tcp:123\tacknowledged\n"
 };
 const sqlDump=(records,omit="")=>Object.entries(records)
  .filter(([name])=>name!==omit)
@@ -28,7 +29,7 @@ if(query.includes("relrowsecurity")){
  process.stdout.write(process.env.MOCK_RLS==="off"?"f\n":"t\n");
  process.exit(0);
 }
-const table=/FROM public\.(cwl_stat_[a-z_]+)/.exec(query)?.[1];
+const table=/FROM public\.(cwl_(?:stat_[a-z_]+|clan_cw_missed_decisions))/.exec(query)?.[1];
 const rows=JSON.parse(process.env.MOCK_ROWS||"{}");
 if(!table||!Object.hasOwn(rows,table)) process.exit(2);
 process.stdout.write(rows[table]);
@@ -37,7 +38,7 @@ process.stdout.write(rows[table]);
  const dump=path.join(dir,"data-local.sql");
  const run=(data,values=rows,rls="on")=>{
   fs.writeFileSync(dump,data);
-  return spawnSync("python3",[verifier,dump],{
+  return spawnSync("python3",[verifier,"--require-owner-decisions",dump],{
    encoding:"utf8",
    env:{...process.env,PATH:dir+path.delimiter+process.env.PATH,
     MOCK_ROWS:JSON.stringify(values),MOCK_RLS:rls,
@@ -50,7 +51,7 @@ process.stdout.write(rows[table]);
 test("daily encrypted restore compares all historical stats tables after isolated restore",()=>{
  assert.match(workflow,/workflow_run:/);
  assert.match(workflow,/Verify exact restored historical CW\/CWL statistics and RLS/);
- assert.match(workflow,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
+ assert.match(workflow,/python3 scripts\/verify_clashperk_restore\.py --require-owner-decisions "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  for(const table of Object.keys(rows))assert.match(workflow,new RegExp("public\\."+table));
  assert.match(workflow,/PGHOST: 127\.0\.0\.1/);
  assert.match(workflow,/CWL_RESTORE_DB_PORT/);
@@ -68,7 +69,7 @@ test("encrypted COPY restore verifier rejects same-count data corruption and RLS
  const valid=sqlDump(rows);
  const pass=run(valid);
  assert.equal(pass.status,0,pass.stderr);
- assert.match(pass.stdout,/PASS: ClashPerk historical/);
+ assert.match(pass.stdout,/PASS: CW\/CWL wars, attacks, misses/);
  const altered={...rows,cwl_stat_attacks:"cp:123\t#8PYL\t2\n"};
  const bad=run(valid,altered);
  assert.notEqual(bad.status,0);
@@ -77,6 +78,14 @@ test("encrypted COPY restore verifier rejects same-count data corruption and RLS
  const missing=run(sqlDump(rows,"cwl_stat_missed"));
  assert.notEqual(missing.status,0);
  assert.match(missing.stderr,/Backup does not contain public\.cwl_stat_missed/);
+ const changedDecision={...rows,cwl_clan_cw_missed_decisions:"tenant\tcp:123\texcused\n"};
+ const badDecision=run(valid,changedDecision);
+ assert.notEqual(badDecision.status,0);
+ assert.match(badDecision.stderr,/public\.cwl_clan_cw_missed_decisions content differs/);
+ assert.doesNotMatch(badDecision.stderr,/tenant|cp:123|excused/);
+ const missingDecision=run(sqlDump(rows,"cwl_clan_cw_missed_decisions"));
+ assert.notEqual(missingDecision.status,0);
+ assert.match(missingDecision.stderr,/Backup does not contain public\.cwl_clan_cw_missed_decisions/);
  const noRls=run(valid,rows,"off");
  assert.notEqual(noRls.status,0);
  assert.match(noRls.stderr,/RLS not enabled after restore/);

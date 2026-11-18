@@ -1,5 +1,17 @@
 # CWL Planer – Backup- und Optimierungskonzept
-Historisches Grundkonzept ab 31.10.2026 · **letzter technischer Nachweis: 13.11.2026** · produktive Cloud **v1.18.1**
+Historisches Grundkonzept ab 31.10.2026 · **letzter technischer Restore-Fehler: 18.11.2026** · Cloud **v1.27.0**
+
+## 18.11.2026 – Restore-Drill: neue Supabase-Auth-Spalten und CW-Entscheidungen
+
+**Aktueller Fehlernachweis:** Das erfolgreich verschlüsselte produktive Backup [#44283214780](https://github.com/Smolmig/cwl_planer/actions/runs/44283214780) wurde im isolierten Restore [#44283531496](https://github.com/Smolmig/cwl_planer/actions/runs/44283531496) erfolgreich heruntergeladen, SHA-256-geprüft und entschlüsselt. Die Schemainstallation/Einspielung scheiterte dann in `auth-data.sql` beim COPY von `auth.one_time_tokens`, **SQLSTATE 42703** (undefinierte Spalte). **Der Restore-Test war ROT**, das verschlüsselte Backup selbst wurde dabei nicht widerlegt. Eine frühere grüne Abnahme vom 13.11. gilt nur für das damalige Datenbank-/Auth-Schema.
+
+**Bestätigte Ursache:** Die gehostete Supabase-Auth-Tabelle besitzt zusätzliche nullable Spalten `expires_at` (timestamptz) und `link_token_hash` (text), die in der fest gepinnten lokalen Supabase-Testumgebung noch fehlen können. Für die Wiederherstellungsprobe gibt es jetzt die eng begrenzte, idempotente lokale Kompatibilitätsdatei `scripts/restore_local_auth_compat.sql`. Sie ergänzt **ausschließlich diese beiden Spalten** auf der ephemeren lokalen Datenbank, prüft die Typen und fehlende NOT-NULL-Einschränkungen, und wird im **gleichen SQL-Transaktionskontext vor `auth-data.sql`** angewandt. Keine Auth-Zeile wird übersprungen oder verändert; bei anderer Abweichung bricht der Test weiterhin ab. Kein produktives Supabase-Schema und kein Userkonto wird angetastet. Dies ist **keine allgemeine Migration oder vollständige Auth-Disaster-Recovery**.
+
+**Zusätzliche Backup-Absicherung nach Cloud v1.27.0:** Der Test verlangt nun explizit `public.cwl_clan_cw_missed_decisions` (clanprivate Quittier-/Entschuldigungs-Historie) sowie die bisherigen CW/CWL-Kriegs-, Angriffs- und Missed-Tabellen und vergleicht **jeweils Zeilenanzahl, vollständigen COPY-Inhalt und aktiviertes RLS** in der lokalen Restore-Datenbank. Dadurch kann ein unverändert vorhandenes Backend-Backup nicht fälschlich als vollständig gelten, wenn die neue Owner-Entscheidungstabelle fehlt oder abweicht.
+
+**Erneuter echter, isolierter Drill:** Die Helper-Action ist nun für den *gleichen* erfolgreichen Backup-Lauf `44283214780` konfiguriert. Ihre Änderung auf `main` startet erneut automatisch den isolierten Restore, ohne eine Verbindung zur produktiven Datenbank. **Ergebnis erst nach grüner GitHub-Actions-Abnahme dokumentieren; bis dahin kein bestandener Wiederherstellungstest für 18.11.** Siehe Issue #178. Das manuelle vollständige App-Backup mit genau einer Cloud-Datei und kontrolliertem Restore ist weiterhin eine eigenständige offene Funktion.
+
+---
 
 ## Bestätigt 13.11.2026 – reales verschlüsseltes Backup vollständig isoliert geprüft
 

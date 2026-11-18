@@ -4,17 +4,25 @@ on:
     paths:
       - 'tests/sql/clashperk-restore-after-check.sql'
       - 'scripts/verify_clashperk_restore.py'
+      - 'scripts/restore_local_auth_compat.sql'
+      - 'tests/sql/restore-auth-compat-fixture.sql'
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
   push:
     branches: [main]
     paths:
       - 'tests/sql/clashperk-restore-after-check.sql'
       - 'scripts/verify_clashperk_restore.py'
+      - 'scripts/restore_local_auth_compat.sql'
+      - 'tests/sql/restore-auth-compat-fixture.sql'
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
 permissions:
   contents: read
 
@@ -51,7 +59,17 @@ jobs:
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
+          # The scenario calls the separately named verified RPC introduced
+          # on 14 Nov; the original migration alone no longer creates it.
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
+          # The second-generation canonical importer is also exercised by
+          # this fixture and must be installed after the verified RPC.
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
+      - name: Validate local Auth compatibility SQL on disposable PostgreSQL
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f tests/sql/restore-auth-compat-fixture.sql
       - name: Backup synthetic historical statistics to private temporary dump
         run: |
           set -euo pipefail

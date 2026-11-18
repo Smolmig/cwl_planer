@@ -4,6 +4,9 @@ name: Verify prior encrypted backup content (isolated drill)
 # The initial attempt hit a host-port collision at 54322; the reusable
 # restore now chooses a free local port before it starts Docker.
 # Follow-up retest: make the port available in its current shell as well.
+# The explicitly selected 18 Nov 2026 backup was previously decryptable,
+# but the restore failed at new auth.one_time_tokens columns. Re-test this
+# SAME ciphertext after the local-only Auth compatibility correction.
 # Later: operator may explicitly provide a different successful backup run.
 # No direct connection or writing to production Supabase is possible here.
 on:
@@ -17,7 +20,7 @@ on:
         description: 'Existing successful encrypted backup run ID (30-day artifact retention)'
         type: string
         required: true
-        default: '43402344939'
+        default: '44283214780'
 
 permissions:
   contents: read
@@ -28,8 +31,9 @@ jobs:
     if: ${{ github.repository == 'Smolmig/cwl_planer' && github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/test-encrypted-restore.yml
     with:
-      # The pre-existing 13 November encrypted artifact is still retained.
+      # 18 November successful encrypted backup includes new source-tagged CW
+      # incident decisions. Restore runs only against local temporary DB.
       # Workflow_dispatch allows choosing any newer successful run ID later.
-      backup_run_id: ${{ github.event_name == 'push' && '43402344939' || inputs.backup_run_id }}
+      backup_run_id: ${{ github.event_name == 'push' && '44283214780' || inputs.backup_run_id }}
     secrets:
       CWL_BACKUP_PASSPHRASE: ${{ secrets.CWL_BACKUP_PASSPHRASE }}

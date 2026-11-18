@@ -202,6 +202,7 @@ jobs:
           if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT" -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -v VERBOSITY=verbose --single-transaction \
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
+            -f scripts/restore_local_auth_compat.sql \
             -c 'SET session_replication_role = replica;' \
             -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
             -f "$WORK/unpacked/cwl-backup/data-local.sql" \
@@ -213,7 +214,7 @@ jobs:
           from pathlib import Path
           log = (Path(os.environ['WORK']) / 'restore.log').read_text(errors='replace')
           match = re.search(
-              r'psql:.*?/(roles-local|roles|schema|auth-data|data-local|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
+              r'psql:.*?/(roles-local|roles|schema|restore_local_auth_compat|auth-data|data-local|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
               log, re.I)
           if match:
               filename, error_line, sqlstate = match.group(1), int(match.group(2)), match.group(3)
@@ -280,7 +281,8 @@ jobs:
                     'public.cwl_cloud_profiles', 'public.cwl_change_events',
                     'public.cwl_profile_snapshots',
                     'public.cwl_stat_wars', 'public.cwl_stat_attacks',
-                    'public.cwl_stat_missed']
+                    'public.cwl_stat_missed',
+                    'public.cwl_clan_cw_missed_decisions']
           def sql(query):
               p = subprocess.run(['psql', '-X', '-qAt', '-h', '127.0.0.1', '-p', os.environ['CWL_RESTORE_DB_PORT'],
                                   '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
@@ -319,7 +321,7 @@ jobs:
         run: |
           set -euo pipefail
           export PGPORT="$CWL_RESTORE_DB_PORT"
-          python3 scripts/verify_clashperk_restore.py "$WORK/unpacked/cwl-backup/data-local.sql"
+          python3 scripts/verify_clashperk_restore.py --require-owner-decisions "$WORK/unpacked/cwl-backup/data-local.sql"
 
       - name: Remove disposable database and decrypted files
         if: always()

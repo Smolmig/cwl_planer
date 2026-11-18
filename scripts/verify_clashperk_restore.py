@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify all ClashPerk-related statistics survived a SQL COPY backup restore.
+"""Verify historical CW/CWL stats and clanprivate owner decisions after restore.
 
 This only connects to an ISOLATED, already-restored PostgreSQL instance.
 The script prints no player data, clan tags or hashes and never writes to DB.
@@ -14,7 +14,9 @@ import re
 import subprocess
 from pathlib import Path
 
-TABLES = ("cwl_stat_wars", "cwl_stat_attacks", "cwl_stat_missed")
+CORE_TABLES = ("cwl_stat_wars", "cwl_stat_attacks", "cwl_stat_missed")
+OWNER_AUDIT_TABLE = "cwl_clan_cw_missed_decisions"
+TABLES = (*CORE_TABLES, OWNER_AUDIT_TABLE)
 HEADER = re.compile(
     r'^COPY\s+(?:"?public"?\.)"?([A-Za-z_]\w*)"?'
     r'\s+\(([^)]*)\)\s+FROM\s+stdin;\s*$',
@@ -60,9 +62,10 @@ def fingerprint(lines: list[str]) -> str:
     return digest.hexdigest()
 
 
-def compare(source_dump: Path) -> None:
+def compare(source_dump: Path, require_owner_decisions: bool = False) -> None:
     blocks = extract_sections(source_dump)
-    for table in TABLES:
+    selected = TABLES if require_owner_decisions else CORE_TABLES
+    for table in selected:
         if table not in blocks:
             raise ValueError(f"Backup does not contain public.{table}")
         columns, raw_rows = blocks[table]
@@ -102,17 +105,22 @@ def compare(source_dump: Path) -> None:
         if rls.returncode or rls.stdout.strip() != "t":
             raise ValueError(f"RLS not enabled after restore for public.{table}")
         print(f"public.{table}: {len(raw_rows)} rows, exact COPY content and RLS verified")
-    print("PASS: ClashPerk historical wars, attacks and missed evidence restored exactly.")
+    if require_owner_decisions:
+        print("PASS: CW/CWL wars, attacks, misses and owner CW decisions restored exactly.")
+    else:
+        print("PASS: ClashPerk historical wars, attacks and missed evidence restored exactly.")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("data_dump", type=Path)
+    parser.add_argument("--require-owner-decisions", action="store_true",
+                        help="Also require exact owner-only normal-CW decision audit")
     args = parser.parse_args()
     if not args.data_dump.is_file():
         parser.error("Data dump not found")
     try:
-        compare(args.data_dump)
+        compare(args.data_dump, args.require_owner_decisions)
     except (OSError, RuntimeError, ValueError) as exc:
         parser.exit(1, f"::error::{exc}\n")
 
