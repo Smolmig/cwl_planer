@@ -38,7 +38,7 @@ test("original automatic restore remains active and callable replay verifies exa
  assert.match(restore,/gh run download "\$BACKUP_RUN_ID"/);
  assert.match(restore,/sha256sum --check cwl-backup\.tar\.gz\.gpg\.sha256/);
  assert.match(restore,/Verify exact restored historical CW\/CWL statistics and RLS/);
- assert.match(restore,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
+ assert.match(restore,/python3 scripts\/verify_clashperk_restore\.py --require-owner-decisions "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  assert.match(restore,/supabase db start/);
  assert.match(restore,/\-f scripts\/restore_local_auth_compat\.sql/);
  const schemaPos=restore.indexOf('-f "$WORK/unpacked/cwl-backup/schema.sql"');

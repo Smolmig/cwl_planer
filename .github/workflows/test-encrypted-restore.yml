@@ -321,7 +321,7 @@ jobs:
         run: |
           set -euo pipefail
           export PGPORT="$CWL_RESTORE_DB_PORT"
-          python3 scripts/verify_clashperk_restore.py "$WORK/unpacked/cwl-backup/data-local.sql"
+          python3 scripts/verify_clashperk_restore.py --require-owner-decisions "$WORK/unpacked/cwl-backup/data-local.sql"
 
       - name: Remove disposable database and decrypted files
         if: always()

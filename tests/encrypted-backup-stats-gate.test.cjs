@@ -38,7 +38,7 @@ process.stdout.write(rows[table]);
  const dump=path.join(dir,"data-local.sql");
  const run=(data,values=rows,rls="on")=>{
   fs.writeFileSync(dump,data);
-  return spawnSync("python3",[verifier,dump],{
+  return spawnSync("python3",[verifier,"--require-owner-decisions",dump],{
    encoding:"utf8",
    env:{...process.env,PATH:dir+path.delimiter+process.env.PATH,
     MOCK_ROWS:JSON.stringify(values),MOCK_RLS:rls,
@@ -51,7 +51,7 @@ process.stdout.write(rows[table]);
 test("daily encrypted restore compares all historical stats tables after isolated restore",()=>{
  assert.match(workflow,/workflow_run:/);
  assert.match(workflow,/Verify exact restored historical CW\/CWL statistics and RLS/);
- assert.match(workflow,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
+ assert.match(workflow,/python3 scripts\/verify_clashperk_restore\.py --require-owner-decisions "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  for(const table of Object.keys(rows))assert.match(workflow,new RegExp("public\\."+table));
  assert.match(workflow,/PGHOST: 127\.0\.0\.1/);
  assert.match(workflow,/CWL_RESTORE_DB_PORT/);
