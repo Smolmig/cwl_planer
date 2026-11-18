@@ -8,6 +8,7 @@ on:
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
   push:
     branches: [main]
     paths:
@@ -17,6 +18,7 @@ on:
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
       - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
+      - 'supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql'
 permissions:
   contents: read
 
@@ -56,6 +58,9 @@ jobs:
           # The scenario calls the separately named verified RPC introduced
           # on 14 Nov; the original migration alone no longer creates it.
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
+          # The second-generation canonical importer is also exercised by
+          # this fixture and must be installed after the verified RPC.
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114223000_cwl_clashperk_legacy_attack_order_reconcile.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
       - name: Backup synthetic historical statistics to private temporary dump
         run: |
