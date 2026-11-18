@@ -493,7 +493,7 @@ const cloud={
   }
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Clan oder Sitzung während der CW-Prüfung gewechselt.");
-  return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
+  return {clanId:expectedClan,clashTag:normalizeTag(expectedTag),members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
    evidence:evidenceError?null:(evidence||[]),loyalty,
