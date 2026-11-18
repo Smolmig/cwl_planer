@@ -1,5 +1,5 @@
 {
-  "version": "v1.26.0",
-  "released": "2026-11-17",
-  "summary": "Clanverwaltung: bestätigte CWL-Fehlangriffe auswerten, Entschuldigungen berücksichtigen und bei zwei aufeinanderfolgenden Fällen Ältestenrang manuell prüfen."
+  "version": "v1.27.0",
+  "released": "2026-11-18",
+  "summary": "Normale CWs: bestätigte fehlende Angriffe unterscheiden, clanprivate Entscheidungen mit Verlauf dokumentieren und manuelle Ranghinweise anzeigen."
 }

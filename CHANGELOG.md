@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.27.0] - 2026-11-18
+
+### Neu
+- **Normale CWs: 2-Angriffe-Nachweis.** Der serverseitige Collector unterscheidet bei abgeschlossenen, vollständig belegten normalen Clankriegen 0/2, 1/2 und 2/2 ausgeführte Angriffe. Eine gültige Clash-Mitgliederliste, passende Clan-Angriffsanzahl, endgültiges Ergebnis und überprüfte Kriegsgröße sind Voraussetzung. Keine Rückrechnung alter API-/Importkriege, keine erfundenen verpassten Angriffe bei Datenlücken, die bislang gesperrte CWL-1-Angriff-Regel bleibt erhalten.
+- **Quelle und Clanwechsel:** Neue API-Kriegszeilen dokumentieren den tatsächlichen verknüpften Clash-Clan-Tag. Normale CW-Verwaltungsentscheidungen können weder alte taglose Kriege noch Daten eines später anders verknüpften Clans berücksichtigen.
+- **Clanverwaltung → Normale CW:** Eine zusätzliche eingeklappte, kompakte Prüfansicht (90 Tage) zeigt belegte Fälle pro Spieler, mit ausklappbaren Kriegen/Entscheidungen und klaren Zuständen. Bei einem aktuellen Ältesten führt 0/2 in einem Krieg oder je ein offener Fehlangriff in zwei direkt aufeinanderfolgenden dokumentierten normalen CWs nur zum Hinweis **„Degradierung prüfen“**. Bei Mitgliedern kein unmöglicher Rangabstieg, stattdessen „Verwarnung prüfen“. Alle Entscheidungen weiterhin manuell.
+- **Entscheidungsverlauf:** Der Clanführer kann einen einzelnen bestätigten normalen CW-Fehlangriff **als geprüft markieren**, **entschuldigen** oder **erneut öffnen**, mit optionaler Notiz. Jede Entscheidung wird als separate unveränderbare Zeile nur im eigenen App-Clan/aktuell verknüpften Clash-Clan gespeichert. Historische Fakten werden nicht gelöscht oder nachträglich geändert; keine automatische Sanktion/Planänderung/externes Spiel-API-Write.
+- **Schutz bei Datenlücken:** Fehlen Belege, RLS-Daten, vollständige Kriegsauswertung oder eine nachvollziehbare Historie, zeigt die Seite keine neuen angeblichen Verstöße. Ein archivierter unvollständiger Krieg unterbricht eine nachweisbare Folge. Kein „Kick nach drei Tagen offline“: Die Clash-API liefert keinen letzten Login.
+- **Sicherheit:** Additives Source-Tag und eine RLS-geschützte append-only Owner-Entscheidungstabelle; kein Cross-Tenant-Sharing und keine Öffnung fremder Rohdaten. Hilfe, mobile Bedienung, öffentliche Update-History, Settings-Version und Regressionsszenarien gepflegt. **MINOR** für neue CW-Verifikation und neue eigene Owner-Entscheidungsfunktion. Bestehende komplette Backup-Export-Integration #178 bleibt separat zu erweitern.
+
+
+
 ## [1.26.0] - 2026-11-17
 
 ### Neu
