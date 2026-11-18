@@ -78,6 +78,14 @@ test("encrypted COPY restore verifier rejects same-count data corruption and RLS
  const missing=run(sqlDump(rows,"cwl_stat_missed"));
  assert.notEqual(missing.status,0);
  assert.match(missing.stderr,/Backup does not contain public\.cwl_stat_missed/);
+ const changedDecision={...rows,cwl_clan_cw_missed_decisions:"tenant\tcp:123\texcused\n"};
+ const badDecision=run(valid,changedDecision);
+ assert.notEqual(badDecision.status,0);
+ assert.match(badDecision.stderr,/public\.cwl_clan_cw_missed_decisions content differs/);
+ assert.doesNotMatch(badDecision.stderr,/tenant|cp:123|excused/);
+ const missingDecision=run(sqlDump(rows,"cwl_clan_cw_missed_decisions"));
+ assert.notEqual(missingDecision.status,0);
+ assert.match(missingDecision.stderr,/Backup does not contain public\.cwl_clan_cw_missed_decisions/);
  const noRls=run(valid,rows,"off");
  assert.notEqual(noRls.status,0);
  assert.match(noRls.stderr,/RLS not enabled after restore/);
