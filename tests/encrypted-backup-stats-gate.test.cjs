@@ -12,7 +12,8 @@ const workflow=fs.readFileSync(path.join(root,".github/workflows/test-encrypted-
 const rows={
  cwl_stat_wars:"synthetic-clan\tcp:123\n",
  cwl_stat_attacks:"cp:123\t#8PYL\t3\n",
- cwl_stat_missed:"cp:123\t#QPYL\t1\n"
+ cwl_stat_missed:"cp:123\t#QPYL\t1\n",
+ cwl_clan_cw_missed_decisions:"tenant\tcp:123\tacknowledged\n"
 };
 const sqlDump=(records,omit="")=>Object.entries(records)
  .filter(([name])=>name!==omit)
@@ -28,7 +29,7 @@ if(query.includes("relrowsecurity")){
  process.stdout.write(process.env.MOCK_RLS==="off"?"f\n":"t\n");
  process.exit(0);
 }
-const table=/FROM public\.(cwl_stat_[a-z_]+)/.exec(query)?.[1];
+const table=/FROM public\.(cwl_(?:stat_[a-z_]+|clan_cw_missed_decisions))/.exec(query)?.[1];
 const rows=JSON.parse(process.env.MOCK_ROWS||"{}");
 if(!table||!Object.hasOwn(rows,table)) process.exit(2);
 process.stdout.write(rows[table]);
@@ -68,7 +69,7 @@ test("encrypted COPY restore verifier rejects same-count data corruption and RLS
  const valid=sqlDump(rows);
  const pass=run(valid);
  assert.equal(pass.status,0,pass.stderr);
- assert.match(pass.stdout,/PASS: ClashPerk historical/);
+ assert.match(pass.stdout,/PASS: CW\/CWL wars, attacks, misses/);
  const altered={...rows,cwl_stat_attacks:"cp:123\t#8PYL\t2\n"};
  const bad=run(valid,altered);
  assert.notEqual(bad.status,0);

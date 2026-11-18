@@ -19,7 +19,7 @@ test("one-off encrypted backup replay is main-only, reuses isolated restore and 
  assert.match(replay,/github\.repository == 'Smolmig\/cwl_planer'/);
  assert.match(replay,/github\.ref == 'refs\/heads\/main'/);
  assert.match(replay,/uses: \.\/\.github\/workflows\/test-encrypted-restore\.yml/);
- assert.match(replay,/backup_run_id:.*'43402344939'/);
+ assert.match(replay,/backup_run_id:.*'44283214780'/);
  assert.match(replay,/CWL_BACKUP_PASSPHRASE: \$\{\{ secrets\.CWL_BACKUP_PASSPHRASE \}\}/);
  assert.doesNotMatch(replay,/secrets:\s*inherit/);
  assert.doesNotMatch(replay,/SUPABASE_DB_URL|service_role|SUPABASE_SERVICE_ROLE_KEY|supabase db dump|supabase db push|DELETE FROM/i);
@@ -40,6 +40,12 @@ test("original automatic restore remains active and callable replay verifies exa
  assert.match(restore,/Verify exact restored historical CW\/CWL statistics and RLS/);
  assert.match(restore,/python3 scripts\/verify_clashperk_restore\.py "\$WORK\/unpacked\/cwl-backup\/data-local\.sql"/);
  assert.match(restore,/supabase db start/);
+ assert.match(restore,/\-f scripts\/restore_local_auth_compat\.sql/);
+ const schemaPos=restore.indexOf('-f "$WORK/unpacked/cwl-backup/schema.sql"');
+ const compatPos=restore.indexOf('-f scripts/restore_local_auth_compat.sql');
+ const authPos=restore.indexOf('-f "$WORK/unpacked/cwl-backup/auth-data.sql"');
+ assert.ok(schemaPos>=0&&schemaPos<compatPos&&compatPos<authPos,
+  "local-only Auth compatibility must be atomic and run before private Auth data");
  assert.match(restore,/PGHOST: 127\.0\.0\.1/);
  assert.match(restore,/CWL_RESTORE_DB_PORT/);
  assert.match(restore,/export PGPORT="\$CWL_RESTORE_DB_PORT"/);
@@ -50,7 +56,8 @@ test("original automatic restore remains active and callable replay verifies exa
   "GITHUB_ENV is only available from the NEXT Actions step; first psql needs current-shell export");
  assert.match(restore,/supabase stop --no-backup/);
  assert.doesNotMatch(restore,/SUPABASE_DB_URL|service_role|supabase db push|actions\/upload-artifact/);
- for(const name of ["cwl_stat_wars","cwl_stat_attacks","cwl_stat_missed"])
+ for(const name of ["cwl_stat_wars","cwl_stat_attacks","cwl_stat_missed",
+  "cwl_clan_cw_missed_decisions"])
   assert.match(verifier,new RegExp(name));
  assert.match(verifier,/content differs from encrypted backup/);
 });
