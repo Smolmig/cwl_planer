@@ -7,6 +7,7 @@ on:
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
   push:
     branches: [main]
     paths:
@@ -15,6 +16,7 @@ on:
       - '.github/workflows/clashperk-stats-restore-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
       - 'supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql'
+      - 'supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql'
 permissions:
   contents: read
 
@@ -51,6 +53,9 @@ jobs:
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261113153000_cwl_clashperk_atomic_history_import.sql
+          # The scenario calls the separately named verified RPC introduced
+          # on 14 Nov; the original migration alone no longer creates it.
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114024500_cwl_clashperk_verified_api_war_alias.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/clashperk-atomic-import-check.sql
       - name: Backup synthetic historical statistics to private temporary dump
         run: |
