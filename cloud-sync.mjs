@@ -499,6 +499,7 @@ const cloud={
    evidence:evidenceError?null:(evidence||[]),loyalty,
    reviewDecisions:reviewError?null:(reviewDecisions||[]),missedReview,normalCwReview};
  },
+ isEmergencyEditing:()=>manualRosterPending(),
  // Per-event append-only human judgment; this cannot edit a Clash rank or plan.
  async saveManagementNormalCwDecision(warKey,playerTag,decision,note=""){
   const expectedClan=clanId,expectedEpoch=accountEpoch;
@@ -521,7 +522,6 @@ const cloud={
   if(error||!data)throw Error("Entscheidung nicht gespeichert. Bitte Clanstand neu laden.");
   return data;
  },
- isEmergencyEditing:()=>manualRosterPending(),
  async saveManagementReview(playerTag,kind,disposition,fingerprint,expectedRevision){
   const expectedClan=clanId,expectedEpoch=accountEpoch;
   const linked=clans.find(c=>c.id===expectedClan);
