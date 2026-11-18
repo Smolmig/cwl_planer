@@ -1,51 +1,31 @@
--- Local restore fixture compatibility ONLY. Never apply to production Supabase.
--- Hosted Auth (Nov 2026) added two nullable columns to auth.one_time_tokens;
--- the pinned local Supabase DB bootstrap can lag behind the hosted service.
--- Avoid dropping, rewriting, silently skipping, or synthesizing any Auth rows.
--- Execute within psql --single-transaction, after the app schema dump and
--- BEFORE auth-data.sql, exclusively against the disposable localhost database.
+-- READ-ONLY compatibility gate in disposable local Supabase PostgreSQL.
+-- Hosted Supabase Auth added expires_at and link_token_hash to one_time_tokens.
+-- CLI 3.2.0 bootstrap includes both; use the matching bootstrap instead
+-- of an unsupported ALTER on the Supabase-owned Auth table.
+-- Only catalog metadata is inspected. No user data, secrets, DDL, or grants.
+-- Runs in the same single transaction before auth-data.sql. Fail closed
+-- if the upstream Auth schema changes again.
 DO $restore_auth$
 BEGIN
   IF to_regclass('auth.one_time_tokens') IS NULL THEN
-    RAISE EXCEPTION 'Local Supabase auth.one_time_tokens missing; stop recovery drill';
+    RAISE EXCEPTION 'Local Supabase auth.one_time_tokens missing; restore blocked';
   END IF;
-END $restore_auth$;
-
-ALTER TABLE auth.one_time_tokens
-  ADD COLUMN IF NOT EXISTS expires_at timestamp with time zone,
-  ADD COLUMN IF NOT EXISTS link_token_hash text;
-
--- Fail closed if a future/bootstrap schema uses incompatible types or
--- constraints. Only these two specifically researched, additive columns
--- are allowed; other migrations must be investigated and documented.
-DO $restore_auth$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM pg_catalog.pg_attribute a
-    WHERE a.attrelid = 'auth.one_time_tokens'::regclass
-      AND a.attname = 'expires_at' AND NOT a.attisdropped
-      AND (format_type(a.atttypid, a.atttypmod) <> 'timestamp with time zone'
-           OR a.attnotnull)
-  ) OR NOT EXISTS (
-    SELECT 1 FROM pg_catalog.pg_attribute
-    WHERE attrelid = 'auth.one_time_tokens'::regclass
-      AND attname = 'expires_at' AND NOT attisdropped
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_attribute a
+    WHERE a.attrelid='auth.one_time_tokens'::regclass
+      AND a.attname='expires_at' AND NOT a.attisdropped
+      AND format_type(a.atttypid,a.atttypmod)='timestamp with time zone'
+      AND NOT a.attnotnull
   ) THEN
-    RAISE EXCEPTION 'Local expires_at column has an unexpected definition';
+    RAISE EXCEPTION 'Local Auth expires_at column incompatible with source';
   END IF;
-  IF EXISTS (
-    SELECT 1
-    FROM pg_catalog.pg_attribute a
-    WHERE a.attrelid = 'auth.one_time_tokens'::regclass
-      AND a.attname = 'link_token_hash' AND NOT a.attisdropped
-      AND (format_type(a.atttypid, a.atttypmod) <> 'text'
-           OR a.attnotnull)
-  ) OR NOT EXISTS (
-    SELECT 1 FROM pg_catalog.pg_attribute
-    WHERE attrelid = 'auth.one_time_tokens'::regclass
-      AND attname = 'link_token_hash' AND NOT attisdropped
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_attribute a
+    WHERE a.attrelid='auth.one_time_tokens'::regclass
+      AND a.attname='link_token_hash' AND NOT a.attisdropped
+      AND format_type(a.atttypid,a.atttypmod)='text'
+      AND NOT a.attnotnull
   ) THEN
-    RAISE EXCEPTION 'Local link_token_hash column has an unexpected definition';
+    RAISE EXCEPTION 'Local Auth link_token_hash column incompatible with source';
   END IF;
 END $restore_auth$;
