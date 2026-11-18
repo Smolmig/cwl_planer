@@ -1,11 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.26.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.26.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.26.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.26.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.26.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.26.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.26.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.27.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.27.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.27.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.27.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.27.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.27.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.27.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -461,13 +461,67 @@ const cloud={
   }
   if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
    throw Error("Clan oder Sitzung während der Fehlangriffsprüfung gewechselt.");
-  return {clanId:expectedClan,members:data.members,checkedAt:Date.now(),
+
+  // Normal CW: include all captured finished own-clan API wars as blockers
+  // for a possible streak; only complete logs can yield an incident.
+  // Newly source-tagged wars only; old and relinked-clan archives are unknown.
+  let normalCwReview=null;
+  const {data:normalWars,error:normalWarsError}=await sb.from("cwl_stat_wars")
+   .select("war_key,war_type,started_at,team_size,roster_tags,source,source_clash_tag,finalized,missed_log_complete")
+   .eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag))
+   .eq("war_type","normal").eq("source","api").eq("finalized",true)
+   .gte("started_at",cutoff).order("started_at",{ascending:false}).limit(100);
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Clan oder Sitzung während der CW-Prüfung gewechselt.");
+  if(!normalWarsError&&Array.isArray(normalWars)&&normalWars.length<100){
+   if(normalWars.length===0)normalCwReview={wars:[],missed:[],decisions:[]};
+   else{
+    const keys=normalWars.map(w=>w.war_key);
+    const [misses,decisions]=await Promise.all([
+     sb.from("cwl_stat_missed").select("war_key,player_tag,missed_count")
+      .eq("clan_id",expectedClan).in("war_key",keys).limit(500),
+     sb.from("cwl_clan_cw_missed_decisions")
+      .select("id,war_key,player_tag,decision,note,created_at")
+      .eq("clan_id",expectedClan).eq("source_clash_tag",normalizeTag(expectedTag))
+      .in("war_key",keys).order("id",{ascending:false}).limit(500)
+    ]);
+    if(!misses.error&&!decisions.error&&Array.isArray(misses.data)&&
+       Array.isArray(decisions.data)&&misses.data.length<500&&
+       decisions.data.length<500)
+     normalCwReview={wars:normalWars,missed:misses.data,decisions:decisions.data};
+   }
+  }
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner")
+   throw Error("Clan oder Sitzung während der CW-Prüfung gewechselt.");
+  return {clanId:expectedClan,clashTag:normalizeTag(expectedTag),members:data.members,checkedAt:Date.now(),
    tenure:tenureError?null:(tenure||[]),
    rules,ruleRevision:storedRules?.revision??null,
    evidence:evidenceError?null:(evidence||[]),loyalty,
-   reviewDecisions:reviewError?null:(reviewDecisions||[]),missedReview};
+   reviewDecisions:reviewError?null:(reviewDecisions||[]),missedReview,normalCwReview};
  },
  isEmergencyEditing:()=>manualRosterPending(),
+ // Per-event append-only human judgment; this cannot edit a Clash rank or plan.
+ async saveManagementNormalCwDecision(warKey,playerTag,decision,note=""){
+  const expectedClan=clanId,expectedEpoch=accountEpoch;
+  const current=clans.find(c=>c.id===expectedClan);
+  if(!this.active||role!=="owner"||!current?.clash_tag||!navigator.onLine)
+   throw Error("Nur der Clanführer kann verpasste CW-Angriffe prüfen.");
+  const linkedTag=normalizeTag(current.clash_tag),normalized=normalizeTag(playerTag);
+  if(!window.CWLClanManagement?.validTag(normalized)||
+     typeof warKey!=="string"||!/^normal:20\d{6}T\d{6}(?:\.\d+)?Z:#[0289PYLQGRJCUV]{3,15}$/.test(warKey)||
+     !["acknowledged","excused","reopened"].includes(decision)||
+     typeof note!=="string"||note.trim().length>280)
+   throw Error("Ungültige CW-Prüfentscheidung.");
+  const {data,error}=await sb.from("cwl_clan_cw_missed_decisions")
+   .insert({clan_id:expectedClan,source_clash_tag:linkedTag,
+    war_key:warKey,player_tag:normalized,decision,note:note.trim()})
+   .select("id,war_key,player_tag,decision,note,created_at").single();
+  if(expectedClan!==clanId||expectedEpoch!==accountEpoch||!this.active||role!=="owner"||
+     normalizeTag(clans.find(c=>c.id===expectedClan)?.clash_tag)!==linkedTag)
+   throw Error("Clan oder Sitzung während der Entscheidung gewechselt. Bitte neu öffnen.");
+  if(error||!data)throw Error("Entscheidung nicht gespeichert. Bitte Clanstand neu laden.");
+  return data;
+ },
  async saveManagementReview(playerTag,kind,disposition,fingerprint,expectedRevision){
   const expectedClan=clanId,expectedEpoch=accountEpoch;
   const linked=clans.find(c=>c.id===expectedClan);

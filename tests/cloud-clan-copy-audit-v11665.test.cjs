@@ -12,7 +12,7 @@ test("#226 clan management shows plain actions and keeps detailed evidence behin
  assert.ok(section.length>0);
  assert.match(section,/<h2 id="clanManagementTitle">Ränge prüfen<\/h2>/);
  assert.match(section,/im Spiel ändert sich nichts automatisch/);
- assert.match(section,/zwei aufeinanderfolgenden belegten CWL-Fehlangriffen.*manuellen Prüfhinweis/);
+ assert.match(section,/bestätigte schwere oder wiederholte Fehlangriffe/);
  assert.match(section,/data-management-filter="open"/);
  assert.match(section,/data-management-filter="all"/);
  assert.match(section,/Wann eine Beförderung prüfen\?/);
@@ -42,9 +42,9 @@ test("#226 review labels are clear, but permanent storage decisions and permissi
 });
 
 test("#226 copy release applies only to Cloud and preserves local PWA version",()=>{
- assert.match(html,/Neu in v1\.26\.0/);
- assert.match(html,/const APP_VERSION="v1\.26\.0"/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.26.0");
+ assert.match(html,/Neu in v1\.27\.0/);
+ assert.match(html,/const APP_VERSION="v1\.27\.0"/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.27.0");
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
- assert.match(read("CHANGELOG.md"),/\[1\.26\.0\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.27\.0\]/);
 });

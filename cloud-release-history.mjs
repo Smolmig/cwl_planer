@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.27.0",
+    "releaseType": "minor",
+    "date": "2026-11-18",
+    "title": "Verpasste Angriffe in normalen CWs prüfen",
+    "description": "Normale Clankriege können fehlende Angriffe jetzt eindeutig belegen. Die Clanführung kann einzelne Fälle prüfen, entschuldigen und Entscheidungen nachvollziehen."
+  },
+
+  {
     "version": "v1.26.0",
     "releaseType": "minor",
     "date": "2026-11-17",

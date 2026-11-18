@@ -76,9 +76,11 @@ test("missing, contradictory or partial official attack totals NEVER prove misse
  const ordinary=war();
  const {buildWarSnapshot}=await core();
  const normal=buildWarSnapshot(ordinary,"#2PYL",{now,warType:"normal"});
- assert.equal(normal.war.missed_log_complete,false,
-  "Normal CW has different allowed attacks per member");
- assert.deepEqual(normal.missed,[]);
+ assert.equal(normal.war.missed_log_complete,true,
+  "Final normal CW has two provable slots per member");
+ assert.equal(normal.missed.length,15);
+ assert.equal(normal.missed[0].missed_count,1);
+ assert.ok(normal.missed.slice(1).every(x=>x.missed_count===2));
  const tooEarly=buildWarSnapshot(war(),"#2PYL",{now:Date.parse("2026-11-06T19:00:30Z"),
    warType:"cwl",warTag:"#2PYQ"});
  assert.equal(tooEarly,null,"Do not finalize before API result is settled");
