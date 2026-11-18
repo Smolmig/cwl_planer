@@ -59,7 +59,7 @@ export function buildWarSnapshot(raw,clanTag,{warType="normal",warTag="",now=Dat
        (!Number.isInteger(member.townhallLevel)||member.townhallLevel<3||member.townhallLevel>30))
       throw Error("invalid_attacker_townhall");
     const rawAttacks=member.attacks||[];
-    if(!Array.isArray(rawAttacks)||rawAttacks.length>(warType==="cwl"?1:4))
+    if(!Array.isArray(rawAttacks)||rawAttacks.length>(warType==="cwl"?1:2))
       throw Error("invalid_attacks_count");
     for(let j=0;j<rawAttacks.length;j++){
       const attack=rawAttacks[j],enemyTag=tag(attack.defenderTag);
@@ -81,21 +81,29 @@ export function buildWarSnapshot(raw,clanTag,{warType="normal",warTag="",now=Dat
       });
     }
   }
-  // A complete, ended CWL war with a verified clan-wide attack counter
-  // is the only case in which "no attack on member" becomes a proven miss.
-  // A missing/mismatched counter leaves Missed coverage unknown, NOT zero.
-  // Normal CW has different attack limits and stays outside this rule.
-  const missedLogComplete=final&&warType==="cwl"&&
-    Number.isInteger(clan.attacks)&&clan.attacks>=0&&clan.attacks<=size&&
-    clan.attacks===rows.length;
-  const missed=missedLogComplete?roster.flatMap((member,i)=>
-    (member.attacks||[]).length===0?[{
-      war_key:key,player_tag:ownTags[i],player_name:string(member.name,80),missed_count:1
-    }]:[]):[];
+  // Official finished WAR snapshot + complete, consistent per-war member
+  // list + own-clan total is the ONLY proof of missed slots.
+  // Regular war grants 2 slots/member; CWL 1 (Supercell rules).
+  // A missing/contradictory counter or unexpected API limit is UNKNOWN,
+  // never a negative player verdict. No retroactive inference from war logs.
+  const slots=warType==="normal"?2:1;
+  const publishedSlots=raw.attacksPerMember;
+  const validPublishedSlots=publishedSlots===undefined||
+    (Number.isInteger(publishedSlots)&&publishedSlots===slots);
+  const missedLogComplete=final&&validPublishedSlots&&
+    Number.isInteger(clan.attacks)&&clan.attacks>=0&&
+    clan.attacks<=slots*size&&clan.attacks===rows.length;
+  const missed=missedLogComplete?roster.flatMap((member,i)=>{
+    const unspent=slots-(member.attacks||[]).length;
+    return unspent>0?[{
+      war_key:key,player_tag:ownTags[i],player_name:string(member.name,80),
+      missed_count:unspent
+    }]:[];
+  }):[];
   return {war:{
       war_key:key,war_type:warType,started_at:started,
       team_size:size,opponent_tag:tag(opponent.tag),opponent_name:string(opponent.name,80),
-      source:"api",roster_tags:ownTags,finalized:final,
+      source:"api",source_clash_tag:ownTag,roster_tags:ownTags,finalized:final,
       missed_log_complete:missedLogComplete
     },attacks:rows,missed,state:raw.state};
 }
