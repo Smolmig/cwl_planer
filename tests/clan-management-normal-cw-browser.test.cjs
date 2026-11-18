@@ -32,7 +32,8 @@ test("CW owner review: responsive, accessible and no horizontal clipping",{
     await page.addScriptTag({content:view});
     await page.addScriptTag({content:fake});
     for(const theme of ["arena","dark","light"]){
-     await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+     await page.evaluate(t=>{document.documentElement.dataset.theme=t;
+      document.getElementById("view-clan-management").classList.add("active");},theme);
      await page.evaluate(({members,war,missed})=>{
       window.CWLNormalCwUI.render(members,{wars:[war],missed:[missed],decisions:[]},"#2PYL");
       document.getElementById("clanManagementNormalPanel").open=true;
