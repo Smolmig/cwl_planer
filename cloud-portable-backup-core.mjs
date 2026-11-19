@@ -336,3 +336,74 @@ export async function previewOwnerCloudRestore({sb,file,mapping}){
   target_snapshot_sha256:target.sha256,
   mutationPermitted:false};
 }
+
+
+// #178 Phase 3a: fact-only Restore API. These helpers are deliberately NOT
+// wired to the Cloud UI. A complete app restore needs separate plan/archive/
+// audit/observation handling plus an independent checkpoint/recovery workflow.
+// Never send raw unverified file content or rely on checksum for authorization.
+function extractPortableFactSource(content,sourceClanId){
+ if(content.consistency!=="server-stable-statement")
+  reject("Nur aus konsistentem Server-Snapshot erstellte Cloud-Dateien können importiert werden.");
+ const clan=content.clans.find(c=>c.source_clan_id===sourceClanId);
+ if(!clan)reject("Quellclan fehlt in der verifizierten Datei.");
+ return clan;
+}
+function ensurePortableFactResult(result,{targetClanId,apply}){
+ if(result.error||!record(result.data))
+  reject("Der geschützte Fakten-Restore wurde vom Server abgelehnt.");
+ const value=result.data;
+ if(value.target_clan_id!==targetClanId||
+    value.scope!=="war-facts-only"||value.applied!==apply||
+    !["wars","attacks","missed"].every(k=>
+      record(value[k])&&["new","identical","conflict"].every(n=>
+        Number.isSafeInteger(value[k][n])&&value[k][n]>=0)))
+  reject("Ungültige oder unvollständige Server-Restore-Antwort.");
+ if(apply&&["wars","attacks","missed"].some(k=>value[k].conflict!==0))
+  reject("Server meldet einen nicht vollständig aufgelösten Restore-Konflikt.");
+ return value;
+}
+export async function previewPortableWarFactRestore({sb,file,sourceClanId,targetClanId}){
+ if(!sb?.rpc)reject("Supabase-Sitzung ist nicht bereit.");
+ const content=await verifyPortableCloudBackup(file);
+ const source=extractPortableFactSource(content,sourceClanId);
+ if(!uuidPattern.test(targetClanId||""))reject("ungültiger Zielclan.");
+ const snapshot=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const target=snapshot.clans[0];
+ if(!target||!target.clash_tag||target.clash_tag!==source.clash_tag)
+  reject("Quell- und Zielclan stimmen nicht überein.");
+ const revision=target.tables.cwl_cloud_profiles[0].revision;
+ if(!Number.isSafeInteger(revision)||revision<1)
+  reject("Cloud-Planrevision fehlt.");
+ const response=await sb.rpc("cwl_restore_portable_facts_atomic",{
+  p_target:targetClanId,p_source:source,p_expected_revision:revision,
+  p_apply:false,p_confirmation:null
+ });
+ const preview=ensurePortableFactResult(response,{targetClanId,apply:false});
+ return {...preview,mutationPermitted:false,
+  source_backup_sha256:file.sha256,
+  target_snapshot_sha256:snapshot.sha256,
+  expectedRevision:revision,
+  warning:"Nur CW-/CWL-Rohfakten. Kein Plan-, Archiv-, Regel- oder Entscheidungs-Restore. Neue API-Herkunft wird als unbestätigter Import gespeichert."};
+}
+export async function applyPortableWarFactRestore({
+ sb,file,sourceClanId,targetClanId,expectedRevision,confirmation
+}){
+ if(!sb?.rpc||confirmation!=="RESTORE_VERIFIED_WAR_FACTS"||
+    !Number.isSafeInteger(expectedRevision)||expectedRevision<1)
+  reject("Explizite Bestätigung und gültiger geprüfter Zielstand erforderlich.");
+ const content=await verifyPortableCloudBackup(file);
+ const source=extractPortableFactSource(content,sourceClanId);
+ if(!uuidPattern.test(targetClanId||""))reject("ungültiger Zielclan.");
+ // Checks source/target tag using freshly owner-authorized snapshot. Server
+ // still re-checks owner, membership, tag and CAS inside its own transaction.
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ if(!target.clans[0]||target.clans[0].clash_tag!==source.clash_tag||
+    target.clans[0].tables.cwl_cloud_profiles[0].revision!==expectedRevision)
+  reject("Zielclan oder Planrevision seit der Vorschau verändert.");
+ const result=await sb.rpc("cwl_restore_portable_facts_atomic",{
+  p_target:targetClanId,p_source:source,p_expected_revision:expectedRevision,
+  p_apply:true,p_confirmation:confirmation
+ });
+ return ensurePortableFactResult(result,{targetClanId,apply:true});
+}
