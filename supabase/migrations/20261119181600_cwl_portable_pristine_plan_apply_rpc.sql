@@ -30,7 +30,6 @@ DECLARE
  v_wars integer:=0;
  v_clean boolean:=false;
  v_current_same boolean:=false;
- v_current_guard boolean:=false;
  v_stage_same boolean:=false;
  v_has_changes boolean:=false;
  v_allowed boolean:=false;
@@ -170,7 +169,7 @@ BEGIN
    OR (v_source->'dayGoals') IS DISTINCT FROM (v_profile->'dayGoals')
    OR (v_source->'config') IS DISTINCT FROM (v_profile->'config');
 
- v_allowed:=v_clean AND v_current_same AND v_stage_same AND v_has_changes;
+ v_allowed:=COALESCE(v_clean AND v_current_same AND v_stage_same AND v_has_changes,false);
  v_after:=v_profile || pg_catalog.jsonb_build_object(
    'members',v_source->'members',
    'dayGoals',v_source->'dayGoals',
@@ -183,7 +182,7 @@ BEGIN
      USING ERRCODE='54000';
  END IF;
  IF p_apply THEN
-   IF NOT v_allowed THEN
+   IF v_allowed IS DISTINCT FROM true THEN
      RAISE EXCEPTION 'Target contains work, history, locks or a changed staging baseline; only empty target plans may be restored'
        USING ERRCODE='40001';
    END IF;
