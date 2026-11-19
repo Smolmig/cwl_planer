@@ -144,7 +144,7 @@ BEGIN
       v_rollback_candidate,5,false,NULL);
     RAISE EXCEPTION 'duplicate source member IDs accepted';
   EXCEPTION WHEN invalid_parameter_value THEN NULL;
-  END IF;
+  END;
 
   -- Create an independent clean target candidate with a deliberate trigger
   -- failure. It must happen after checkpoint creation and leave no trace.
