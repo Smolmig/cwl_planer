@@ -307,3 +307,32 @@ export async function exportOwnerCloudSnapshot({sb,clanIds}){
  return createPortableCloudBackup({clans:payload.clans,
   createdAt:payload.created_at,consistency:payload.consistency});
 }
+
+ // All target-clan facts are fetched through the same RLS-enforced STABLE RPC,
+ // not from arbitrary client-provided rows. This is READ ONLY: a future restore
+ // must recheck roles, locks, revisions and conflicts in its write transaction.
+export async function previewOwnerCloudRestore({sb,file,mapping}){
+ const source=await verifyPortableCloudBackup(file);
+ if(!record(mapping))reject("Zielzuordnung muss ein Objekt sein.");
+ const sourceIds=source.clans.map(c=>c.source_clan_id);
+ requireKeys(mapping,sourceIds,"Zielzuordnung");
+ if(Object.keys(mapping).length!==sourceIds.length)
+  reject("Nicht alle Quellclans sind einem Ziel zugeordnet.");
+ const targetIds=sourceIds.map(id=>mapping[id]);
+ if(targetIds.some(id=>!uuidPattern.test(id||""))||
+    new Set(targetIds).size!==targetIds.length)
+  reject("Ungültige oder doppelte Zielclans.");
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:targetIds});
+ const targets=target.clans.map(c=>({
+  id:c.source_clan_id,clash_tag:c.clash_tag,isOwner:true
+ }));
+ const existingByClan=Object.fromEntries(target.clans.map(c=>[c.source_clan_id,c.tables]));
+ const preview=await previewPortableCloudRestore(file,{targets,mapping,existingByClan});
+ return {...preview,
+  source_consistency:source.consistency,
+  target_snapshot_consistency:target.consistency,
+  target_snapshot_at:target.created_at,
+  // This is informational, NOT a compare-and-swap token or authorization.
+  target_snapshot_sha256:target.sha256,
+  mutationPermitted:false};
+}
