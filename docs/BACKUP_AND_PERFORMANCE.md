@@ -1,6 +1,18 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
 
+## 19.11.2026 – #178 Phase 3b: CWL-Plan-/Archiv-Restore nur als geschützte Vorschau und Kandidat (PR #325)
+
+Nach dem bereits gemergten Rohfakten-Restore #323 ist [PR #325](https://github.com/Smolmig/cwl_planer/pull/325) die erste abgesicherte Schicht für **Plan- und Archivwiederherstellung**. Die neue Owner-only-SQL-Funktion erlaubt eine **read-only-Vorschau** von Quell-/Ziel-Planprofilen (Version 9), **sieben** Tages-Slots, tatsächlichen Live-Planfreigaben, Gruppenarchiven und verifizierten eigenen Aufstellungen. Sie zeigt neue/identische/abweichende Archive und aktuell geschützte Tage. Ein gesperrter oder bereits gespielter Plan darf keinesfalls durch eine ältere Datei automatisch zurückgesetzt werden.
+
+Mit einer zweiten, **ausdrücklich bestätigten** Aktion kann derselbe Owner nur einen **unveränderlichen, privaten Wiederherstellungskandidaten** ablegen. Darin liegen Quellplan-/Archiv-Inhalte und der bei der Ablage abgelesene Ziel-Vorher-Stand; die technische Tabelle `cwl_portable_plan_recovery_candidates` besitzt Owner-RLS und keine allgemeinen Update-/Delete-Rechte. Erneutes Staging identischer Revisionen ist idempotent, widersprüchliche Inhalte werden abgewiesen. Es gibt jedoch **noch keinen Apply-/Undo-Pfad**: der vorher gelesene Archivstand ist *kein transaktional garantierter Komplett-Snapshot*, weil Collector-Archive bewusst unverändert über Collector-only-Schreibrechte verwaltet werden und sich beim Lesen weiterentwickeln können. Vor einem künftigen tatsächlichen Import ist deshalb ein erneuter, atomarer Datenabgleich zwingend.
+
+**Berechtigungsprüfung:** Live-Schema bestätigt `authenticated` nur SELECT auf `cwl_group_archives` und `cwl_own_lineup_archives`; Besitzer dürfen diese echten Clash-Archivdaten nicht über den normalen Client überschreiben. Der neue RPC bleibt `SECURITY INVOKER` und ändert diese Schutzschicht **nicht**. Projektbestand nach Migration: 25 öffentliche App-Tabellen (17 portable Datentabellen, 7 bewusst ausgeschlossene Sicherheits-/Betriebs-/Recovery-Tabellen und eine `cwl_clans`-Metadatenquelle). Backend-SQL-Migration und neuer PostgreSQL-17-UAT-Workflow werden **erst nach grünem PR-CI** als produktiv freigegeben; keine echte Nutzerdatenmigration oder Cloud-App-Version in diesem Schritt behaupten.
+
+**Nächste Gates:** Owner-only volltransaktionales Plan-Apply bei unverändertem Zielstand, geschützte gespielte Tage und Archive, Qualität/Authentizität verifizierter Collector-Daten, Wiederaufbau nach Datenbankverlust und sichere Autor-/Mitgliedschafts-Zuordnung, gemeinsame Restore-Rollbacks, danach genau zwei Cloud-Aktionen und DE/EN-Hilfe. [Details](CLOUD_PORTABLE_BACKUP_CONTRACT.md).
+
+---
+
 ## 19.11.2026 – #178 Phase 3a nach Merge: Live-RPC für additives Wiederherstellen von Kriegsfakten
 
 [PR #323](https://github.com/Smolmig/cwl_planer/pull/323) ist gemergt (Commit `03c6322baa5278e6058a8e8b488fabae68561293`), nach **851/851** Regressionstests und realen isolierten PostgreSQL-17-Tests für Vorschau, Owner/RLS, wiederholten Import, verifizierte API-Abgrenzung und SQL-Transaktionsrollback. Auf Live-Supabase wurden am 19.11.2026 **zwei additive Migrationen erfolgreich installiert:** Checkpoints `20261119154654 / cwl_portable_restore_checkpoints_v1_20261119`, lesender/vorbereitet schreibender Fakten-RPC `20261119154703 / cwl_portable_war_facts_restore_v1_20261119`. Keine vorhandene Nutzer-Datenzeile wurde im Rahmen der Migration oder Tests verändert.

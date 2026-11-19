@@ -35,7 +35,7 @@ export const PORTABLE_CLOUD_TABLES = Object.freeze(descriptors.map(([name,key,co
 export const PORTABLE_EXCLUDED_TABLES = Object.freeze([
  "cwl_clan_invites", "cwl_clan_memberships", "cwl_access_blocks",
  "cwl_clan_presence", "cwl_stat_collector_status",
- "cwl_portable_restore_checkpoints"
+ "cwl_portable_restore_checkpoints", "cwl_portable_plan_recovery_candidates"
 ]);
 const tablesByName = new Map(PORTABLE_CLOUD_TABLES.map(spec => [spec.name,spec]));
 const forbiddenKeys = new Set(["__proto__","prototype","constructor"]);
@@ -407,4 +407,62 @@ export async function applyPortableWarFactRestore({
   p_apply:true,p_confirmation:confirmation
  });
  return ensurePortableFactResult(result,{targetClanId,apply:true});
+}
+
+
+// #178 Phase 3b: plan/archives restore CANDIDATE preview + immutable staging.
+// Does NOT apply any plan, played day, approved lock, verified lineup or
+// collector-only group archive. Those require a separate reviewed recovery
+// procedure; a sender-supplied JSON hash is NOT sufficient authorization.
+const PORTABLE_PLAN_CANDIDATE_TABLES=Object.freeze([
+ "cwl_cloud_profiles","cwl_plan_review_state",
+ "cwl_group_archives","cwl_own_lineup_archives"
+]);
+function checkPlanStageReply(reply,{targetClanId,stage,expectedRevision}){
+ if(reply.error||!record(reply.data))
+  reject("Der geschützte Plan-/Archiv-Vergleich ist fehlgeschlagen.");
+ const x=reply.data;
+ if(x.scope!=="plan-archive-review-only"||x.target_clan_id!==targetClanId||
+    x.target_revision!==expectedRevision||x.staged!==stage||
+    x.mutation_permitted!==false||x.active_plan_modified!==false||
+    x.archives_modified!==false||!Number.isSafeInteger(x.target_protected_days)||
+    x.target_protected_days<0||!["group_archives","own_lineup_archives"].every(k=>
+      record(x[k])&&["new","identical","conflict"].every(n=>
+        Number.isSafeInteger(x[k][n])&&x[k][n]>=0))||
+    (stage&&!uuidPattern.test(x.candidate_id||"")))
+  reject("Unvollständige oder ungültige Antwort zur Plan-Wiederherstellung.");
+ return x;
+}
+export async function previewPortablePlanArchiveRecovery({
+ sb,file,sourceClanId,targetClanId,stage=false,confirmation=null
+}){
+ if(!sb?.rpc||!uuidPattern.test(targetClanId||"")||
+    (stage!==true&&stage!==false)||
+    (stage&&confirmation!=="STAGE_PLAN_FOR_MANUAL_REVIEW"))
+  reject("Ein gültiger Zielclan und eine ausdrückliche Bestätigung sind erforderlich.");
+ const verified=await verifyPortableCloudBackup(file);
+ const source=extractPortableFactSource(verified,sourceClanId);
+ // The target is fetched through the already-live owner+membership+RLS RPC.
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const selected=target.clans[0];
+ if(!selected||!selected.clash_tag||selected.clash_tag!==source.clash_tag)
+  reject("Quell- und Zielclan stimmen nicht überein.");
+ const revision=selected.tables.cwl_cloud_profiles[0].revision;
+ if(!Number.isSafeInteger(revision)||revision<1)
+  reject("Planrevision fehlt; neu laden.");
+ const proposal={
+  source_clan_id:source.source_clan_id,
+  clash_tag:source.clash_tag,
+  tables:Object.fromEntries(PORTABLE_PLAN_CANDIDATE_TABLES.map(k=>[k,source.tables[k]]))
+ };
+ const reply=await sb.rpc("cwl_stage_portable_plan_recovery",{
+  p_target:targetClanId,p_source:proposal,p_expected_revision:revision,
+  p_stage:stage,p_confirmation:stage?confirmation:null
+ });
+ const checked=checkPlanStageReply(reply,{targetClanId,stage,expectedRevision:revision});
+ return {...checked,mutationPermitted:false,
+  source_backup_sha256:file.sha256,
+  target_snapshot_sha256:target.sha256,
+  target_snapshot_consistency:target.consistency,
+  warning:"Nur geschützte Vorschau/Ablage. Der aktive CWL-Plan, gespielte Tage und Collector-Archive bleiben unverändert. Es gibt noch keinen vollständigen App-Restore."};
 }
