@@ -136,6 +136,14 @@ test("input size, invalid/tampered backup and missing owner target fail closed b
  await assert.rejects(()=>gate.inspectPortableOwnerRestoreFile({
   sb,fileText:JSON.stringify(foreign),mapping:{[ID]:ID}
  }),/Integritätsprüfung/);
+ // Even a checksum-valid legacy/client-paginated snapshot is insufficient
+ // to claim consistent recovery after concurrent collector writes.
+ const nonAtomic=await (await moduleInfo()).core.createPortableCloudBackup({
+  clans:file.clans,createdAt:DATE,consistency:"client-read-non-atomic"
+ });
+ await assert.rejects(()=>gate.inspectPortableOwnerRestoreFile({
+  sb,fileText:JSON.stringify(nonAtomic),mapping:{[ID]:ID}
+ }),/konsistente Server-Snapshots/);
  assert.equal(sb.calls.length,0);
 });
 test("preview routes only to server-authorized owner snapshot and surfaces missing audit",async()=>{
