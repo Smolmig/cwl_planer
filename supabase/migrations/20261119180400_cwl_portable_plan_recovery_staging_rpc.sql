@@ -186,20 +186,20 @@ BEGIN
    RAISE EXCEPTION 'Duplicate source archive identity'
      USING ERRCODE='22023';
  END IF;
- -- Acquire in same order as owner plan-lock and plan-suggestion workflows.
+ -- Approval/archive tables are intentionally SELECT-only to app owners.
+ -- An informational candidate cannot require collector write privileges.
+ -- Recheck all current rows in the FUTURE apply transaction.
  SELECT to_jsonb(s) INTO v_review_state FROM public.cwl_plan_review_state s
-  WHERE s.clan_id=p_target FOR SHARE;
+  WHERE s.clan_id=p_target;
  SELECT p.profile_json,p.revision
    INTO v_current_profile,v_current_revision
- FROM public.cwl_cloud_profiles p WHERE p.clan_id=p_target FOR SHARE;
+ FROM public.cwl_cloud_profiles p WHERE p.clan_id=p_target;
  IF NOT FOUND OR v_current_revision IS DISTINCT FROM p_expected_revision THEN
     RAISE EXCEPTION 'Plan changed; recheck the target before staging'
       USING ERRCODE='40001';
  END IF;
- PERFORM 1 FROM public.cwl_group_archives a
-   WHERE a.clan_id=p_target FOR SHARE;
- PERFORM 1 FROM public.cwl_own_lineup_archives a
-   WHERE a.clan_id=p_target FOR SHARE;
+ -- Immutable candidate staging does NOT lock official collector archives;
+ -- their state may advance, and a later real apply MUST recheck it.
  SELECT count(*) INTO v_protected_days
  FROM pg_catalog.jsonb_array_elements(v_current_profile->'locks') AS day_slot(row_data)
  WHERE day_slot.row_data->>'locked'='true'
@@ -281,7 +281,7 @@ BEGIN
       FROM public.cwl_portable_plan_recovery_candidates
       WHERE clan_id=p_target AND source_clan_id=v_source_id AND
         source_revision=v_source_revision AND target_revision=v_current_revision
-      FOR SHARE;
+      ;
     IF NOT FOUND OR
       v_existing.source_clash_tag IS DISTINCT FROM v_source_tag OR
       v_existing.source_profile_json IS DISTINCT FROM v_source_profile OR
