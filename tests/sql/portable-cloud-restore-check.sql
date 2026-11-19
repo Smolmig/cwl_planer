@@ -18,7 +18,9 @@ BEGIN
  v_original := public.cwl_export_owned_backup(
   ARRAY['11111111-1111-4111-8111-111111111111'::uuid]);
  v_backup:=v_original->'clans'->0;
- v_saved_war:=v_backup->'tables'->'cwl_stat_wars'->0;
+ SELECT value INTO v_saved_war
+ FROM pg_catalog.jsonb_array_elements(v_backup->'tables'->'cwl_stat_wars') AS w(value)
+ WHERE w.value->>'source'='api' AND w.value->>'war_key'='normal:war1';
  v_saved_attack:=v_backup->'tables'->'cwl_stat_attacks'->0;
  v_saved_missed:=v_backup->'tables'->'cwl_stat_missed'->0;
  -- Create an API-origin backup war; the server MUST downgrade its provenance.
