@@ -180,6 +180,15 @@ BEGIN
         SELECT 1 FROM pg_catalog.jsonb_array_elements(v_wars) AS w(row_data)
         WHERE w.row_data->>'war_key'=r.row_data->>'war_key'
       )
+    ) OR
+    EXISTS (
+      -- A missed attack is never factual before a finished war. More
+      -- importantly, unfinished imported wars may later be upgraded by the
+      -- API collector; a JSON-sourced miss must not become verified then.
+      SELECT 1 FROM pg_catalog.jsonb_array_elements(v_missed) AS m(row_data)
+      JOIN pg_catalog.jsonb_array_elements(v_wars) AS w(row_data)
+        ON w.row_data->>'war_key'=m.row_data->>'war_key'
+      WHERE w.row_data->>'finalized' IS DISTINCT FROM 'true'
     ) THEN
    RAISE EXCEPTION 'duplicate identity or orphaned portable war fact'
      USING ERRCODE='22023';
