@@ -52,8 +52,11 @@ jobs:
       PGPASSWORD: synthetic-only
     steps:
       - uses: actions/checkout@v4
-      - name: Install PostgreSQL 17 command line
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Verify preinstalled PostgreSQL client
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
+          psql --version
       - name: Write synthetic Clan A/B history using production RLS migrations and DRAFT RPC
         run: |
           set -euo pipefail
@@ -74,7 +77,7 @@ jobs:
         run: |
           set -euo pipefail
           umask 077
-          # The runner's apt pg_dump may be 16 whereas our server is 17.
+          # Runner pg_dump version can differ from the PostgreSQL 17 service.
           # Match client/server majors by using the same pinned PG17 image.
           docker run --rm --network host -e PGPASSWORD=synthetic-only \
             -v "${RUNNER_TEMP}:/work" postgres:17 \
