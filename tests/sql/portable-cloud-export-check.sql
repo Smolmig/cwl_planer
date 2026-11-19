@@ -6,6 +6,7 @@ DECLARE
  v jsonb;
  v_clan jsonb;
  v_table jsonb;
+ v_two jsonb;
 BEGIN
  v := public.cwl_export_owned_backup(
   ARRAY['11111111-1111-4111-8111-111111111111'::uuid]
@@ -45,6 +46,37 @@ BEGIN
  IF v::text LIKE '%secret%' OR v::text LIKE '%short_code_hash%' THEN
    RAISE EXCEPTION 'unexpected credentials exposed';
  END IF;
+ -- Two separately owned tenants must be exported in stable ID order
+ -- even when the caller sends them in reversed order.
+ v_two := public.cwl_export_owned_backup(ARRAY[
+   '55555555-5555-4555-8555-555555555555'::uuid,
+   '11111111-1111-4111-8111-111111111111'::uuid
+ ]);
+ IF jsonb_array_length(v_two->'clans')<>2 OR
+    v_two->'clans'->0->>'source_clan_id'<>'11111111-1111-4111-8111-111111111111' OR
+    v_two->'clans'->1->>'source_clan_id'<>'55555555-5555-4555-8555-555555555555' OR
+    v_two::text LIKE '%Foreign Club%' THEN
+   RAISE EXCEPTION 'multiple own clans exported incorrectly';
+ END IF;
+ -- User-ID ownership without an actual owner membership is insufficient.
+ BEGIN
+   PERFORM public.cwl_export_owned_backup(
+     ARRAY['66666666-6666-4666-8666-666666666666'::uuid]
+   );
+   RAISE EXCEPTION 'export incorrectly accepted orphaned owner membership';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;
+ END;
+ -- A sessionless request must not obtain data.
+ PERFORM set_config('request.jwt.claim.sub','',false);
+ BEGIN
+   PERFORM public.cwl_export_owned_backup(
+     ARRAY['11111111-1111-4111-8111-111111111111'::uuid]
+   );
+   RAISE EXCEPTION 'export incorrectly accepted absent user session';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;
+ END;
+ PERFORM set_config('request.jwt.claim.sub',
+  '33333333-3333-4333-8333-333333333333',false);
  -- Wrong owner on the same signed-in database role.
  PERFORM set_config('request.jwt.claim.sub',
   '44444444-4444-4444-8444-444444444444',false);
@@ -78,7 +110,7 @@ BEGIN
    RAISE EXCEPTION 'export incorrectly accepted null clan selection';
  EXCEPTION WHEN insufficient_privilege THEN NULL;
  END;
- RAISE NOTICE 'PASS: private stable snapshot returns exactly 17 tables, rejects foreign, mixed, duplicate, null';
+ RAISE NOTICE 'PASS: stable 17-table snapshot, two own clans, foreign/mixed/owner-gap/session/duplicates denied';
 END;
 $verify_export$;
 RESET ROLE;
