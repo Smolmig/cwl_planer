@@ -149,9 +149,11 @@ jobs:
           print(f'Unique COPY blocks retained from data.sql: {len(data) - len(duplicated)}.')
           PY
 
+      # New local bootstrap includes hosted Auth expires_at/link_token_hash.
+      # Keep pinned; never mutate the production Auth schema for restore tests.
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.122.0
+          version: 3.2.0
 
       - name: Start disposable local Supabase Postgres
         shell: bash

@@ -1,0 +1,86 @@
+name: Local Supabase Auth-schema compatibility UAT
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/restore-local-auth-schema-ci.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restore-local-auth-schema-ci.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth-schema-canary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      WORK: /tmp/cwl-auth-schema-canary
+    steps:
+      - uses: actions/checkout@v4
+      # A hosted Auth schema updated after 2.122.0; verify a local v3.x
+      # bootstrap BEFORE using it to restore an existing encrypted artifact.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0
+      - name: Start disposable local Supabase PostgreSQL and verify Auth columns
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK"
+          cd "$WORK"
+          supabase init --yes
+          restore_port="$(python3 - <<'PY'
+          from pathlib import Path
+          import re, socket
+          config=Path('supabase/config.toml')
+          lines=config.read_text().splitlines(keepends=True)
+          with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
+              sock.bind(('127.0.0.1',0))
+              port=sock.getsockname()[1]
+          in_db=False
+          matches=0
+          for i,line in enumerate(lines):
+              if line.lstrip().startswith('['):
+                  in_db=line.strip()=='[db]'
+              elif in_db and re.match(r'^\s*port\s*=\s*\d+',line):
+                  lines[i]=re.sub(r'(port\s*=\s*)\d+',lambda m:m.group(1)+str(port),line,count=1)
+                  matches+=1
+          if matches!=1: raise SystemExit('Unable to isolate disposable DB port')
+          config.write_text(''.join(lines))
+          print(port)
+          PY
+          )"
+          test -n "$restore_port"
+          supabase db start
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          check="$(PGPASSWORD=postgres psql -X -qAt -h 127.0.0.1 -p "$restore_port" -U postgres -d postgres -v ON_ERROR_STOP=1 -c "
+            SELECT count(*)
+              FROM pg_catalog.pg_attribute a
+             WHERE a.attrelid='auth.one_time_tokens'::regclass
+               AND NOT a.attisdropped AND NOT a.attnotnull
+               AND (
+                    (a.attname='expires_at' AND
+                     format_type(a.atttypid,a.atttypmod)='timestamp with time zone')
+                 OR (a.attname='link_token_hash' AND
+                     format_type(a.atttypid,a.atttypmod)='text')
+               );")"
+          if [[ "$check" != "2" ]]; then
+            echo "::error::Local Supabase Auth schema still lacks hosted nullable token columns"
+            exit 1
+          fi
+          echo "PASS: local auth.one_time_tokens has both required nullable hosted columns"
+      - name: Remove local DB and temporary test files
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d "$WORK/supabase" ]]; then
+            (cd "$WORK" && supabase stop --no-backup) || true
+          fi
+          rm -rf "$WORK"

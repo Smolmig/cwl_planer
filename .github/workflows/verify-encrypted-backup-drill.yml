@@ -5,8 +5,9 @@ name: Verify prior encrypted backup content (isolated drill)
 # restore now chooses a free local port before it starts Docker.
 # Follow-up retest: make the port available in its current shell as well.
 # The explicitly selected 18 Nov 2026 backup was previously decryptable,
-# but the restore failed at new auth.one_time_tokens columns. Re-test this
-# SAME ciphertext after the local-only Auth compatibility correction.
+# but the first restore lacked newer Auth columns and the DDL workaround
+# was blocked by Auth ownership. Re-test SAME ciphertext with CLI v3.2.0,
+# which was independently verified to provide both columns (read-only gate).
 # Later: operator may explicitly provide a different successful backup run.
 # No direct connection or writing to production Supabase is possible here.
 on:

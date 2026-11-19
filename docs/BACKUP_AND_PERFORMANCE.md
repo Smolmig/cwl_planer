@@ -1,6 +1,14 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter technischer Restore-Fehler: 18.11.2026** · Cloud **v1.27.0**
 
+## 18.11.2026 – Korrektur nach echtem Restore: keine ALTER-Rechte auf Auth, neues lokales Bootstrap
+
+Der erste Reparaturversuch [PR #314](https://github.com/Smolmig/cwl_planer/pull/314) installierte erfolgreich das SQL-/COPY-Regressionspaket und ergänzte den exakten Vergleich der clanprivaten CW-Entscheidungen. Der automatische echte [Restore #44325645661](https://github.com/Smolmig/cwl_planer/actions/runs/44325645661) scheiterte dann jedoch **bei der Auth-Spalten-Ergänzung selbst (SQLSTATE 42501)**. Der lokale `postgres` ist nicht Tabellenbesitzer von `auth.one_time_tokens`; diese Tabelle gehört Supabase Auth. Wir umgehen diese Schranke **nicht durch neue Owner-Grants oder unsichere Umkonfigurationen**.
+
+Stattdessen wurde die lokale Supabase-CLI-**v3.2.0** getestet: [Canary #44326509324](https://github.com/Smolmig/cwl_planer/actions/runs/44326509324) **erfolgreich** mit beiden bereits vorhandenen nullable `expires_at timestamptz` und `link_token_hash text`. Der neue Restore-Pfad pinnt diesen aktuellen lokalen Bootstrap und verwendet `scripts/restore_local_auth_compat.sql` **nur noch lesend** als Metadaten-Schema-Check innerhalb der SQL-Transaktion. Kein DDL/ALTER von Auth-Tabellen, keine stillschweigend übersprungenen Auth-Zeilen, keine Produktionsdatenbank-Verbindung. Bei künftig inkompatiblen Spalten stoppt der Restore erneut sichtbar. Das bestehende Backup #44283214780 wird erneut über den bewährten isolierten Workflow überprüft; **vor dessen erfolgreichem Ende bleibt der aktuelle Wiederherstellungsnachweis offen**.
+
+---
+
 ## 18.11.2026 – Restore-Drill: neue Supabase-Auth-Spalten und CW-Entscheidungen
 
 **Aktueller Fehlernachweis:** Das erfolgreich verschlüsselte produktive Backup [#44283214780](https://github.com/Smolmig/cwl_planer/actions/runs/44283214780) wurde im isolierten Restore [#44283531496](https://github.com/Smolmig/cwl_planer/actions/runs/44283531496) erfolgreich heruntergeladen, SHA-256-geprüft und entschlüsselt. Die Schemainstallation/Einspielung scheiterte dann in `auth-data.sql` beim COPY von `auth.one_time_tokens`, **SQLSTATE 42703** (undefinierte Spalte). **Der Restore-Test war ROT**, das verschlüsselte Backup selbst wurde dabei nicht widerlegt. Eine frühere grüne Abnahme vom 13.11. gilt nur für das damalige Datenbank-/Auth-Schema.
