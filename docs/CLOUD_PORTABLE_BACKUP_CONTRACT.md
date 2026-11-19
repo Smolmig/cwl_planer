@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 2, serverseitiger Read-only-Snapshot und sichere Vergleichsvorschau in Entwicklung; Cloud-Export/Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
+**Status: Phase 2 erfolgreich gemergt (PR #321), serverseitiger Read-only-RPC auf Supabase live und synthetisch geprüft; Cloud-Backup-Download und Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
