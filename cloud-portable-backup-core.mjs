@@ -133,8 +133,8 @@ function normalizedContent(body){
   reject("Dateiformat oder Version nicht unterstützt.");
  if(typeof body.created_at!=="string"||!Number.isFinite(Date.parse(body.created_at)))
   reject("ungültiger Exportzeitpunkt.");
- if(body.consistency!=="client-read-non-atomic")
-  reject("fehlende Kennzeichnung des nicht-atomaren Client-Exports.");
+ if(!["client-read-non-atomic","server-stable-statement"].includes(body.consistency))
+  reject("ungültige oder fehlende Export-Konsistenzangabe.");
  if(!Array.isArray(body.clans)||body.clans.length<1||body.clans.length>30)
   reject("ungültige Clananzahl.");
  const seen=new Set();
@@ -155,10 +155,10 @@ async function sha256(value){
  const digest=await crypto.subtle.digest("SHA-256",binary);
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
 }
-export async function createPortableCloudBackup({clans,createdAt=new Date().toISOString()}){
+export async function createPortableCloudBackup({clans,createdAt=new Date().toISOString(),consistency="client-read-non-atomic"}){
  const body=normalizedContent({kind:PORTABLE_CLOUD_BACKUP_KIND,
   format_version:PORTABLE_CLOUD_BACKUP_FORMAT,created_at:createdAt,
-  consistency:"client-read-non-atomic",clans});
+  consistency,clans});
  return {...body,sha256:await sha256(canonicalBackupJson(body))};
 }
 export async function verifyPortableCloudBackup(file){
@@ -271,4 +271,68 @@ export async function collectOwnerCloudBackup({sb,clanIds,pageSize=500}){
  // The export is explicitly marked non-atomic; concurrent collector changes
  // must be handled by the future server-side snapshot/restore workflow.
  return createPortableCloudBackup({clans});
+}
+
+// The ONLY consistent full-dataset export path. The SQL RPC is a STABLE,
+// SECURITY INVOKER, RLS-protected read, not a privileged server bypass.
+// It returns all 17 tables from one MVCC statement snapshot; PostgREST's
+// normal 1000-row truncation does NOT apply to nested SQL JSON aggregates.
+// Deliberately not connected to the Cloud backup UI until restore is safe.
+export async function exportOwnerCloudSnapshot({sb,clanIds}){
+ if(!sb?.rpc||!sb?.auth?.getUser||!Array.isArray(clanIds)||
+    clanIds.length<1||clanIds.length>30||
+    new Set(clanIds).size!==clanIds.length||
+    !clanIds.every(id=>uuidPattern.test(id||"")))
+  reject("ungültige Clanauswahl.");
+ const before=await sb.auth.getUser();
+ const user=before.data?.user?.id;
+ if(before.error||!uuidPattern.test(user||""))
+  reject("Bitte erneut anmelden.");
+ const result=await sb.rpc("cwl_export_owned_backup",{p_clan_ids:clanIds});
+ if(result.error||!record(result.data))
+  reject("Der vollständige Datenbank-Snapshot konnte nicht erstellt werden.");
+ const payload=result.data;
+ requireKeys(payload,["kind","format_version","created_at","consistency","clans"],"Server-Snapshot");
+ if(payload.kind!==PORTABLE_CLOUD_BACKUP_KIND||
+    payload.format_version!==PORTABLE_CLOUD_BACKUP_FORMAT||
+    payload.consistency!=="server-stable-statement"||
+    !Array.isArray(payload.clans)||payload.clans.length!==clanIds.length||
+    new Set(payload.clans.map(c=>c.source_clan_id)).size!==clanIds.length||
+    payload.clans.some(c=>!clanIds.includes(c.source_clan_id)))
+  reject("Unvollständiger oder ungültiger Server-Snapshot.");
+ const after=await sb.auth.getUser();
+ if(after.error||after.data?.user?.id!==user)
+  reject("Benutzersitzung hat sich während des Exports geändert.");
+ // Validates every projected column, table and relationship before checksum.
+ return createPortableCloudBackup({clans:payload.clans,
+  createdAt:payload.created_at,consistency:payload.consistency});
+}
+
+ // All target-clan facts are fetched through the same RLS-enforced STABLE RPC,
+ // not from arbitrary client-provided rows. This is READ ONLY: a future restore
+ // must recheck roles, locks, revisions and conflicts in its write transaction.
+export async function previewOwnerCloudRestore({sb,file,mapping}){
+ const source=await verifyPortableCloudBackup(file);
+ if(!record(mapping))reject("Zielzuordnung muss ein Objekt sein.");
+ const sourceIds=source.clans.map(c=>c.source_clan_id);
+ requireKeys(mapping,sourceIds,"Zielzuordnung");
+ if(Object.keys(mapping).length!==sourceIds.length)
+  reject("Nicht alle Quellclans sind einem Ziel zugeordnet.");
+ const targetIds=sourceIds.map(id=>mapping[id]);
+ if(targetIds.some(id=>!uuidPattern.test(id||""))||
+    new Set(targetIds).size!==targetIds.length)
+  reject("Ungültige oder doppelte Zielclans.");
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:targetIds});
+ const targets=target.clans.map(c=>({
+  id:c.source_clan_id,clash_tag:c.clash_tag,isOwner:true
+ }));
+ const existingByClan=Object.fromEntries(target.clans.map(c=>[c.source_clan_id,c.tables]));
+ const preview=await previewPortableCloudRestore(file,{targets,mapping,existingByClan});
+ return {...preview,
+  source_consistency:source.consistency,
+  target_snapshot_consistency:target.consistency,
+  target_snapshot_at:target.created_at,
+  // This is informational, NOT a compare-and-swap token or authorization.
+  target_snapshot_sha256:target.sha256,
+  mutationPermitted:false};
 }

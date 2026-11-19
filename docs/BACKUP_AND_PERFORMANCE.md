@@ -1,6 +1,16 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
 
+## 19.11.2026 – #178 Phase 2: MVCC-konsistenter, ownerberechtigter Cloud-Datensnapshot (PR #321)
+
+Die neue SQL-Migration `20261119144800_cwl_owned_portable_snapshot.sql` ergänzt **ausschließlich einen lesenden SQL-RPC**, ohne Änderung an bestehenden Tabellen, Policies, Rollen, CWL-Plänen, Archiven, Angriffen oder Auth-Daten. `STABLE SECURITY INVOKER` hält alle 17 Projektionen unter demselben PostgreSQL-Statement-Snapshot und unter bestehenden RLS-/SELECT-Regeln. **Explizite** Clan-Owner-ID **plus** aktuelle Owner-Mitgliedschaft müssen für jeden ausgewählten Clan stimmen; ein einzelner fremder/ungültiger Clan stoppt den kompletten Export. Die Datenmenge ist auf 100.000 Zeilen je Tabelle, 64 MiB je Clan **und 64 MiB insgesamt** begrenzt, jeweils Fail-Closed. `exportOwnerCloudSnapshot()` erzeugt die formatgeprüfte SHA-256-Datei; `previewOwnerCloudRestore()` prüft Ziel-Daten über denselben berechtigten Server-Snapshot, berechnet Konflikte und schreibt **niemals** in die DB.
+
+**Evidenz:** Echte isolierte PostgreSQL-17-Tests mit synthetischen Besitzern, zwei eigenen Clans, fremdem Clan, fehlender Mitgliedschaft und anonymer Rolle sowie JSON-Roundtrip durch die reale JS-Formatprüfung: [Run #44550085608](https://github.com/Smolmig/cwl_planer/actions/runs/44550085608) grün. Einzelne frühere CI-Abbrüche betrafen einen Katalogtest auf die gequotete Darstellung von `search_path=''`, nicht die SQL-Owner-Funktion, und wurden korrigiert. Die vollständige PR-Regression läuft separat.
+
+**Grenzen:** Der Export ist *nicht* als Nutzerbutton freigeschaltet und der transaktionale Restore fehlt weiterhin; `server-stable-statement` garantiert einen gemeinsamen DB-Zeitpunkt, **nicht** vollständige Clash-API-Erfassungsabdeckung oder hinter RLS unsichtbare, alte verlinkte Clan-Historien. Die Cloud-App bleibt v1.27.0. Produktive Migration, Merge, Owner-Sitzungstest und reale iPhone-/Android-UAT sind gesondert zu bestätigen. Technischer verschlüsselter DB-Restore [#44523450723](https://github.com/Smolmig/cwl_planer/actions/runs/44523450723) bleibt ein unabhängiger Notfallweg. Detaillierte Rechtetransparenz: [CLOUD_PORTABLE_BACKUP_CONTRACT.md](CLOUD_PORTABLE_BACKUP_CONTRACT.md).
+
+---
+
 ## 19.11.2026 – Cloud-App-Portabilität #178, erste sichere Daten-/Vorschau-Schicht (PR #319)
 
 Die Live-Datenstruktur umfasst **23 RLS-geschützte öffentliche App-Tabellen**. Das mit [PR #319](https://github.com/Smolmig/cwl_planer/pull/319) (838/838 PR-Tests; Main-Regression/Pages erfolgreich, Squash `5bab1517a8b28828c24caed37a95aaacef5a2a9f`) gemergte, noch **nicht UI-aktivierte** JavaScript-Modul deckt 17 explizit freigegebene Datentabellen ab und führt Clanstammdaten als Metadaten. Auth-, Einladungs-, Mitgliedschafts-, Sperr-, Presence- und Collector-Verwaltungsdaten werden bewusst nicht stillschweigend in eine appweite Benutzerdatei übertragen. Die exakten Tabellen/Spalten und die Rechte-/Clash-Tag-Grenzen stehen in [CLOUD_PORTABLE_BACKUP_CONTRACT.md](CLOUD_PORTABLE_BACKUP_CONTRACT.md).

@@ -1,0 +1,100 @@
+name: Portable Cloud owner snapshot SQL UAT
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'tests/sql/portable-cloud-export-fixture.sql'
+      - 'tests/sql/portable-cloud-export-check.sql'
+      - 'cloud-portable-backup-core.mjs'
+      - 'tests/cloud-atomic-export-contract.test.cjs'
+      - '.github/workflows/portable-cloud-export-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'tests/sql/portable-cloud-export-fixture.sql'
+      - 'tests/sql/portable-cloud-export-check.sql'
+      - 'cloud-portable-backup-core.mjs'
+      - 'tests/cloud-atomic-export-contract.test.cjs'
+      - '.github/workflows/portable-cloud-export-ci.yml'
+permissions:
+  contents: read
+jobs:
+  snapshot-sql-security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify preinstalled PostgreSQL client
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null 2>&1 || { echo '::error::psql missing'; exit 1; }
+          psql --version
+      - name: Create isolated RLS fixture and install read-only RPC
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+      - name: Exercise own/foreign/mixed/anonymous tenants, RLS and SQL function metadata
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "SET ROLE anon; SELECT public.cwl_export_owned_backup(ARRAY['11111111-1111-4111-8111-111111111111'::uuid]);" >/dev/null 2>&1; then
+            echo '::error::Anonymous role was able to execute the backup function'
+            exit 1
+          fi
+      - name: Verify raw PG JSON snapshot with actual JavaScript portable-backup validator
+        run: |
+          set -euo pipefail
+          umask 077
+          psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE authenticated;
+            SET request.jwt.claim.sub = '33333333-3333-4333-8333-333333333333';
+            SELECT public.cwl_export_owned_backup(
+              ARRAY['11111111-1111-4111-8111-111111111111'::uuid]
+            );" > "${RUNNER_TEMP}/synthetic-owned-snapshot.json"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {
+            createPortableCloudBackup,verifyPortableCloudBackup,
+            PORTABLE_CLOUD_TABLES
+          } from './cloud-portable-backup-core.mjs';
+          const raw=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/synthetic-owned-snapshot.json','utf8'));
+          assert.equal(raw.consistency,'server-stable-statement');
+          const file=await createPortableCloudBackup({
+            clans:raw.clans,createdAt:raw.created_at,consistency:raw.consistency
+          });
+          const verified=await verifyPortableCloudBackup(file);
+          assert.equal(Object.keys(verified.clans[0].tables).length,PORTABLE_CLOUD_TABLES.length);
+          assert.equal(verified.clans[0].tables.cwl_stat_attacks.length,2);
+          assert.equal(verified.clans[0].tables.cwl_stat_missed.length,1);
+          assert.equal(verified.clans[0].tables.cwl_clan_cw_missed_decisions.length,1);
+          console.log('PASS: postgres 17 snapshot -> canonical SHA-256 file -> validator (synthetic only)');
+          NODE
+      - name: Delete isolated snapshot artifact
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/synthetic-owned-snapshot.json"
