@@ -1,0 +1,77 @@
+name: Portable Cloud restore facts isolated SQL UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-cloud-restore-ci.yml'
+      - 'supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql'
+      - 'supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql'
+      - 'tests/sql/portable-cloud-restore-fixture.sql'
+      - 'tests/sql/portable-cloud-restore-check.sql'
+      - 'tests/sql/portable-cloud-export-fixture.sql'
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'tests/cloud-portable-restore-contract.test.cjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-cloud-restore-ci.yml'
+      - 'supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql'
+      - 'supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql'
+      - 'tests/sql/portable-cloud-restore-fixture.sql'
+      - 'tests/sql/portable-cloud-restore-check.sql'
+      - 'tests/sql/portable-cloud-export-fixture.sql'
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'tests/cloud-portable-restore-contract.test.cjs'
+permissions:
+  contents: read
+jobs:
+  restore-facts-sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify runner PostgreSQL CLI (no network apt)
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null 2>&1 || { echo '::error::psql unavailable'; exit 1; }
+          psql --version
+      - name: Prepare disposable synthetic owner/foreign schemas and write-RLS
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql
+      - name: Verify preview, immutable API facts, rollback, idempotence and role restrictions
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-restore-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_restore_portable_facts_atomic(
+              '11111111-1111-4111-8111-111111111111'::uuid,
+              '{}'::jsonb,1,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anonymous user could invoke restore RPC'
+            exit 1
+          fi
+          echo 'PASS: PG17 synthetic restore fixture and anon deny'

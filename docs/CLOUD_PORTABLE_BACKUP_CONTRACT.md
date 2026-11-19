@@ -5,7 +5,7 @@ Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-c
 
 ## 1. Tatsächliches Schema statt Annahmen
 
-Das verbundene Supabase-Projekt wurde am 19.11.2026 **nur lesend** über die Table-Introspection geprüft: 23 `public.cwl_*`-Tabellen, alle mit RLS aktiviert. Schema- und Spaltennamen wurden mit den migrierten SQL-Dateien verglichen. Es wurden keine Nutzerzeilen angefragt und keine Migration, RLS-Policy, Rolle, Datenzeile oder Plattformkonfiguration verändert.
+Das verbundene Supabase-Projekt wurde am 19.11.2026 **nur lesend** über die Table-Introspection geprüft: 23 `public.cwl_*`-Tabellen zum Zeitpunkt der Inventur, alle mit RLS aktiviert. Die zusätzliche operative Checkpoint-Tabelle wird erst mit dem Phase-3a-Migrationspaket eingeführt und ist bewusst nicht im 17-Tabellen-Backup enthalten. Schema- und Spaltennamen wurden mit den migrierten SQL-Dateien verglichen. Es wurden keine Nutzerzeilen angefragt und keine Migration, RLS-Policy, Rolle, Datenzeile oder Plattformkonfiguration verändert.
 
 Das neue portable Format enthält für einen **ausdrücklich vom angemeldeten Benutzer besessenen** App-Clan nur die im Quellcode versionierten, explizit benannten Spalten aus diesen 17 Tabellen:
 
@@ -42,6 +42,25 @@ Das neue portable Format enthält für einen **ausdrücklich vom angemeldeten Be
 **Echte SQL-UAT:** [GitHub Workflow `portable-cloud-export-ci.yml`](../.github/workflows/portable-cloud-export-ci.yml) startet eine **isolierte PostgreSQL-17-Datenbank** mit synthetischen Eigentümer-, Fremdclan- und fehlenden-Mitgliedschaft-Fällen. Der Test prüft Owner-only, anonyme Sperre, Zwei-Eigene-Clans, gemischte Zugriffe, Datenumfang, STABLE/INVOKER und validiert das erzeugte JSON mit dem **gleichen** JS-Validator wie die Cloud-Datei. Dieses Testsetup hat **keinen Zugriff auf die Produktionsdatenbank**.
 
 Auch 100 % API-/Historienabdeckung lässt sich nicht aus einem vollständigen Tabellenexport ableiten.
+
+## Phase 3a – transaktionaler Teil-Restore für CW-/CWL-Fakten (PR #323)
+
+Der neue serverseitige RPC public.cwl_restore_portable_facts_atomic ist ausdrücklich **kein vollständiger Cloud-App-Restore** und bleibt bis zur finalen Produktfreigabe aus der UI ausgeblendet. Seine Standardaktion ist eine **rein lesende Vorschau**. Nur bei explizitem Bestätigungstext, gültiger Owner-ID **und** aktueller Owner-Mitgliedschaft, passendem Clan-Tag und unveränderter Cloud-Planrevision darf er neue Fakten einspielen.
+
+**Genaue Importgrenze:** nur neue Schlüssel in cwl_stat_wars, cwl_stat_attacks und cwl_stat_missed. Bestehende Fakten werden weder gelöscht noch überschrieben. Bei abweichenden War-Identitäten, Sternen, Zerstörungswerten oder Missed-Angriffen gibt es einen Konflikt statt eines Upserts. Es werden niemals zusätzliche Attacken oder Misses in einen bestehenden API-Krieg eingefügt. Für dieselbe Datei entstehen beim zweiten Import keine Duplikate.
+
+**Herkunftsschutz:** Herkunftsangaben aus einer bearbeitbaren Backup-Datei sind kein Beweis für echte Collector-Beobachtung. Neue Kriege werden daher ausschließlich als Quelle 'import', mit source_clash_tag=NULL und missed_log_complete=false gespeichert. **Zusätzlich sind Missed-Einträge nur bei bereits beendeten Kriegen zulässig:** ein noch laufender importierter Krieg könnte später vom Collector mit API-Quelle vervollständigt werden; zuvor aus einer veränderbaren Datei stammende Missed-Einträge dürften dadurch keinesfalls als verifiziert gelten. Ein ursprüngliches API-Label in der Datei wird nicht als verifiziert übernommen. Vorhandene hochwertige API-Daten bleiben unverändert.
+
+**Vorher-Sicherungsstand:** Vor dem ersten INSERT erzeugt derselbe SQL-Transaktionsaufruf einen dauerhaften, append-only Datensatz in der neuen RLS-geschützten Tabelle cwl_portable_restore_checkpoints. Dieser enthält den Vorher-Stand der betroffenen War-Keys, Angriffe, Misses, die Zielrevision und den aktuellen Owner. Er wird bei Fehlern zusammen mit allen Inserts zurückgerollt; ein identischer Wiederholungsimport erzeugt keinen zweiten Checkpoint. Das ist ein nachprüfbarer Wiederherstellungsanker, **kein fertiger Undo-Button**. Die Checkpoint-Tabelle ist ein interner Betriebsdatensatz und ausdrücklich **nicht Bestandteil des portablen Backups**.
+
+**Getestete Sicherheitsfälle in isoliertem PostgreSQL 17:** Besitzer/Fremdclan/Clash-Tag, CAS-Revision, Vorschau ohne Schreibzugriff, tatsächliches Einspielen, zweites Einspielen ohne Duplikate, absichtlich fehlerhafter Angriff nach dem Einfügen eines Kriegs mit vollständigem Transaktions- und Checkpoint-Rollback, Schutz von vorhandenen API-Missed-Angriffen, fehlende Bestätigung und anonymer Zugriff. Ein erfolgreicher SQL-Test ersetzt nicht die Live-Owner- und Geräteabnahme.
+
+**Noch offen für Issue #178:** Plan-/Lock-/Archiv-/Regel-/Beobachtungs-/Audit-Historie, vollständiges Wiederaufbau-Mapping nach Datenverlust, Transaktionen/Checkpoint über sämtliche diese Daten, internationalisierte UI mit genau zwei Cloud-Aktionen sowie reale iOS-/Android-Tests. Der vorliegende Fakten-Restore darf deswegen niemals als 'komplettes Backup wiederhergestellt' angezeigt werden.
+
+**DE-Hilfe (später mit UI):** „Beim Wiederherstellen bleiben verifizierte Kriegsdaten erhalten. Neue Fakten aus Backup-Dateien gelten zunächst als unbestätigte Importe. Pläne und Archive werden gesondert und geschützt wiederhergestellt.“
+
+**EN help (for future UI):** “Restoring a backup never overwrites verified war evidence. Newly recovered facts are initially unverified imports. Plans and archives require a separate protected restore.”
+
 
 ## 3. Zugriffs- und Wiederherstellungsmatrix
 
