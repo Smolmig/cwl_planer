@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 3a erfolgreich gemergt (PR #323) und Backend-RPCs auf Supabase live: konsistenter Owner-Export und ausdrücklich nur Fakten-Restore mit Vorschau/Checkpoint. Vollständiger Cloud-Backup-Download und Full-App-Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
+**Status: Phase 3b in PR #325: sichere Plan-/Archiv-Vorschau und private Wiederherstellungskandidaten zusätzlich zum vorhandenen Fakten-Restore. Noch kein tatsächlicher Plan-/Archiv-Restore, kein vollständiger Cloud-Backup-Download oder Full-App-Restore in der Nutzeroberfläche.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
@@ -60,6 +60,27 @@ Der neue serverseitige RPC public.cwl_restore_portable_facts_atomic ist ausdrüc
 **DE-Hilfe (später mit UI):** „Beim Wiederherstellen bleiben verifizierte Kriegsdaten erhalten. Neue Fakten aus Backup-Dateien gelten zunächst als unbestätigte Importe. Pläne und Archive werden gesondert und geschützt wiederhergestellt.“
 
 **EN help (for future UI):** “Restoring a backup never overwrites verified war evidence. Newly recovered facts are initially unverified imports. Plans and archives require a separate protected restore.”
+
+
+## Phase 3b – CWL-Plan und verifizierte Archive sicher für die Wiederherstellung vorbereiten (PR #325)
+
+Die bisherigen Import-RPCs stellen **nur CW/CWL-Fakten** tatsächlich wieder her. CWL-Pläne, die sieben Tages-Slots sowie die beiden vom Collector geprüften Archivtabellen dürfen durch eine alte, beliebig bearbeitbare JSON-Datei nicht pauschal verändert werden.
+
+Die nächste Stufe trennt deshalb die Wiederherstellung in **(1) serverseitige Vorschau** und **(2) ausdrücklich bestätigte, private Ablage eines Wiederherstellungskandidaten**:
+
+- `public.cwl_stage_portable_plan_recovery` prüft die **aktuelle Owner-ID und tatsächliche Owner-Mitgliedschaft** für den Zielclan, die gleiche Clash-Clan-ID (Tag), einen exakten Ziel-Plan-Revisionsstand und ausschließlich vier benötigte Quelltabellen: `cwl_cloud_profiles`, `cwl_plan_review_state`, `cwl_group_archives`, `cwl_own_lineup_archives`. Der Quellplan muss Datenversion 9 und sieben sauber strukturierte Tages-Slots enthalten. Fremde Clan-Zeilen, fehlende Tabellendaten und doppelte Archivschlüssel werden abgewiesen.
+- Die Vorschau meldet **aktive geschützte Tage**, vorhandene Mitglieder und Planarchive, abweichende Planfreigabe sowie für Gruppenarchive und eigene Aufstellungen jeweils **neu / identisch / widersprüchlich**. Ein vorhandener `warEnded`-Datensatz und der verifizierte Tageskader werden **nicht zurückgesetzt**. Ein als `neu` gezähltes Archiv ist eine **Prüfposition**, kein automatisch als echt akzeptiertes Ergebnis.
+- `p_stage=false` bedeutet **keine Datenbankänderung**. Nur mit dem expliziten Text `STAGE_PLAN_FOR_MANUAL_REVIEW` wird ein Kandidat in der neuen **Owner-/RLS-beschränkten, append-only** Tabelle `cwl_portable_plan_recovery_candidates` abgelegt. Er enthält die eingehenden Plan-/Archivdaten sowie den **kompletten sichtbaren Ziel-Vorher-Stand** von Plan, Freigabestatus, Gruppenarchiven und eigenen Lineups. Dieser Stand ist **informativ und keine transaktional garantierte Live-Recovery-Sicherung**, weil die offiziellen Archivtabellen bewusst nur lesbar sind und während der Abfrage durch den Collector fortgeschrieben werden können. Ein künftiges wirkliches Einspielen muss daher unter frischen Schreibtransaktionsprüfungen erneut vergleichen.
+- Gleiche Source-Clan-ID, Source-Revision **und** Target-Revision erzeugen dieselbe Kandidaten-ID. Geänderte Inhalte bei derselben Identität werden nicht überschrieben, sondern abgewiesen. Actor-ID, Zeitstempel und Datensatz-ID können nicht durch den Client festgelegt werden; Owner dürfen Kandidaten nicht verändern oder löschen. Die Tabelle ist **operative Recovery-Metadaten**, gehört **nicht in das portable 17-Tabellen-Format** und erteilt keine neuen Besitzerrechte.
+- Besonders wichtig: `cwl_group_archives` und `cwl_own_lineup_archives` sind im aktuellen Supabase-Schema für `authenticated` ausdrücklich **SELECT-only**, während der Collector sie über eigene geprüfte Serverprozesse füllt. **Diese Berechtigung wird nicht aufgeweicht.** Der neue RPC nutzt `SECURITY INVOKER`, **keine** Service-Role-/Definer-Umgehung, keine UPDATE/DELETE/INSERT in aktive Plan- oder Archivtabellen. Die Staging-Tabelle darf niemand als verifizierte Clash-Quelle interpretieren.
+
+Der Clientadapter `previewPortablePlanArchiveRecovery` prüft zunächst die vollständige SHA-256-Datei und akzeptiert hier nur die konsistente `server-stable-statement`-Dateiform. Den aktuellen Zielclan lädt er erneut über den bestehenden Owner-/RLS-geprüften Snapshot. Die Serverfunktion prüft ihre Berechtigungen unabhängig davon noch einmal. Es gibt bewusst **keinen öffentlichen Download-/Restore-Button** zu dieser Stufe.
+
+**Was für den vollständigen #178-Restore weiter fehlt:** Transaktionale **tatsächliche Übernahme** des Plans inklusive gespielter Tage, Freigaben, Member-Einsätzen, Archivqualität und Einstellungen, belastbarer atomarer Vorher-Sicherungsstand und ggf. streng begrenzter vertrauenswürdiger Backend-Schreibpfad für Collector-Archive; Konfliktsperre mit Collector-Läufen, Auflösung historischer Nutzer-/Quell-ID-Bezüge, echte Owner-/iPhone-/Android-UAT, DE/EN-Hilfe und öffentliche Versionierung. Ein Kandidat darf erst nach erneuter serverseitiger Validierung und ausdrücklicher Owner-Bestätigung übernommen werden.
+
+**DE-Hilfe (erst zur späteren UI-Freigabe):** „Vor dem Wiederherstellen vergleichen wir deinen aktuellen CWL-Plan und das Archiv mit der Sicherungsdatei. Bereits gespielte oder gesperrte Tage und verifizierte Aufstellungen bleiben geschützt. Bei Widersprüchen wird nichts automatisch überschrieben.“
+
+**EN help (for the eventual UI):** “Before restoring, we compare your current CWL plan and archives with the backup. Played or locked days and verified lineups stay protected. Conflicting records are never silently overwritten.”
 
 
 ## 3. Zugriffs- und Wiederherstellungsmatrix
