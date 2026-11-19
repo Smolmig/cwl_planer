@@ -30,3 +30,7 @@ CREATE POLICY synthetic_owner_profile_lock ON public.cwl_cloud_profiles
     WHERE c.id=clan_id AND c.owner_user_id=auth.uid()));
 -- Fake existing API evidence with complete, verified misses. Restoring a new
 -- missed player row into this war must be rejected even by an authenticated owner.
+
+-- The real stat_wars schema uses NOT NULL DEFAULT '' for this display field.
+-- The shared synthetic export fixture intentionally omitted column defaults.
+UPDATE public.cwl_stat_wars SET opponent_name='' WHERE opponent_name IS NULL;
