@@ -5,11 +5,13 @@
 INSERT INTO public.cwl_clans(id,name,clash_tag,owner_user_id) VALUES
 ('88888888-8888-4888-8888-888888888888','Clean recovery target','#P8Y2','33333333-3333-4333-8333-333333333333'),
 ('99999999-9999-4999-8999-999999999999','Rollback recovery target','#P8Y2','33333333-3333-4333-8333-333333333333'),
-('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Protected recovery target','#P8Y2','33333333-3333-4333-8333-333333333333');
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Protected recovery target','#P8Y2','33333333-3333-4333-8333-333333333333'),
+('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','Duplicate-tag recovery target','#P8Y2','33333333-3333-4333-8333-333333333333');
 INSERT INTO public.cwl_clan_memberships(clan_id,user_id,role) VALUES
 ('88888888-8888-4888-8888-888888888888','33333333-3333-4333-8333-333333333333','owner'),
 ('99999999-9999-4999-8999-999999999999','33333333-3333-4333-8333-333333333333','owner'),
-('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','33333333-3333-4333-8333-333333333333','owner');
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','33333333-3333-4333-8333-333333333333','owner'),
+('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','33333333-3333-4333-8333-333333333333','owner');
 
 INSERT INTO public.cwl_cloud_profiles(clan_id,profile_json,data_version,revision)
 SELECT id,
@@ -35,13 +37,15 @@ FROM public.cwl_clans
 WHERE id IN (
  '88888888-8888-4888-8888-888888888888'::uuid,
  '99999999-9999-4999-8999-999999999999'::uuid,
- 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid
+ 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid,
+ 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'::uuid
 );
 INSERT INTO public.cwl_plan_review_state(clan_id,cycle_id,season,locked)
 VALUES
 ('88888888-8888-4888-8888-888888888888','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','2026-11',false),
 ('99999999-9999-4999-8999-999999999999','cccccccc-cccc-4ccc-8ccc-cccccccccccc','2026-11',false),
-('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','dddddddd-dddd-4ddd-8ddd-dddddddddddd','2026-11',false);
+('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','dddddddd-dddd-4ddd-8ddd-dddddddddddd','2026-11',false),
+('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','ffffffff-ffff-4fff-8fff-ffffffffffff','2026-11',false);
 
 -- Synthetic RLS UPDATE and the same profile revision increment contract
 -- as real CWL cloud profiles. Actual PostgreSQL source already has this.
