@@ -4,7 +4,7 @@
 // This contract has no writes and is safe to use for integration/UAT.
 import {
  PORTABLE_CLOUD_TABLES,
- PORTABLE_CLOUD_BACKUP_BYTE_LIMIT,
+ PORTABLE_BACKUP_BYTE_LIMIT,
  exportOwnerCloudSnapshot,
  verifyPortableCloudBackup,
  previewOwnerCloudRestore
@@ -103,7 +103,7 @@ export async function preparePortableOwnerBackupDownload({sb,clanIds}){
  const snapshot=await exportOwnerCloudSnapshot({sb,clanIds});
  const full=JSON.stringify(snapshot,null,2);
  const bytes=new TextEncoder().encode(full);
- if(!bytes.length||bytes.byteLength>PORTABLE_CLOUD_BACKUP_BYTE_LIMIT)
+ if(!bytes.length||bytes.byteLength>PORTABLE_BACKUP_BYTE_LIMIT)
   fail("Backup-Datei überschreitet die sichere Größenbegrenzung.");
  const verified=await verifyPortableCloudBackup(JSON.parse(full));
  if(verified.clans.length!==clanIds.length)
@@ -133,7 +133,7 @@ export async function preparePortableOwnerBackupDownload({sb,clanIds}){
  */
 export async function inspectPortableOwnerRestoreFile({sb,fileText,mapping}){
  if(typeof fileText!=="string"||!fileText||
-    new TextEncoder().encode(fileText).byteLength>PORTABLE_CLOUD_BACKUP_BYTE_LIMIT)
+    new TextEncoder().encode(fileText).byteLength>PORTABLE_BACKUP_BYTE_LIMIT)
   fail("Ungültige oder zu große Cloud-Datei.");
  let file;
  try{file=JSON.parse(fileText);}catch{fail("Die Datei enthält kein gültiges JSON.");}
