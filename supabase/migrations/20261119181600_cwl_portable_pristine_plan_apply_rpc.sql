@@ -113,6 +113,10 @@ BEGIN
  ) IS DISTINCT FROM (
    SELECT count(DISTINCT row_data->>'id')
    FROM pg_catalog.jsonb_array_elements(v_source->'members') AS m(row_data)
+ ) OR EXISTS(
+   SELECT 1 FROM pg_catalog.jsonb_array_elements(v_source->'members') AS m(row_data)
+   WHERE m.row_data->>'playerTag' IS NOT NULL
+   GROUP BY m.row_data->>'playerTag' HAVING count(*)>1
  ) THEN
    RAISE EXCEPTION 'Invalid or duplicate source plan-member identities'
      USING ERRCODE='22023';
