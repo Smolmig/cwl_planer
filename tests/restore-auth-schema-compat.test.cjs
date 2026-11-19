@@ -15,7 +15,9 @@ test("local hosted-Auth schema gate is read-only and rejects missing or incompat
  assert.match(sql,/format_type\(a\.atttypid,a\.atttypmod\)='timestamp with time zone'/);
  assert.match(sql,/format_type\(a\.atttypid,a\.atttypmod\)='text'/);
  assert.match(sql,/NOT a\.attnotnull/);
- assert.doesNotMatch(sql,/\b(?:ALTER|CREATE|DROP|TRUNCATE|DELETE|UPDATE|INSERT|COPY|GRANT|REVOKE)\s+(?:TABLE|COLUMN|FROM|INTO|ON|ROLE)\b/i);
+ // Comments may mention forbidden DDL for explanation; inspect executable SQL only.
+ const executableSql=sql.split("\n").filter(line=>!line.trimStart().startsWith("--")).join("\n");
+ assert.doesNotMatch(executableSql,/\b(?:ALTER|CREATE|DROP|TRUNCATE|DELETE|UPDATE|INSERT|COPY|GRANT|REVOKE)\s+(?:TABLE|COLUMN|FROM|INTO|ON|ROLE)\b/i);
  assert.doesNotMatch(sql,/postgresql?:\/\/|supabase\.co|session_replication_role|auth\.users\b/);
 });
 
