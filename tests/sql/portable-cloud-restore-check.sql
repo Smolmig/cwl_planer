@@ -201,6 +201,17 @@ BEGIN
    RAISE EXCEPTION 'duplicate war keys accepted';
  EXCEPTION WHEN invalid_parameter_value THEN NULL;
  END;
+ -- File-sourced missed events must NEVER attach to an unfinished war;
+ -- collectors can later upgrade unfinished imports into verified API wars.
+ v_new:=pg_catalog.jsonb_set(v_backup,'{tables,cwl_stat_wars}',
+   pg_catalog.jsonb_build_array(pg_catalog.jsonb_set(
+    v_backup->'tables'->'cwl_stat_wars'->0,'{finalized}','false'::jsonb)));
+ BEGIN
+   PERFORM public.cwl_restore_portable_facts_atomic(
+     '11111111-1111-4111-8111-111111111111'::uuid,v_new,4,false,NULL);
+   RAISE EXCEPTION 'unfinalized war missed fact accepted';
+ EXCEPTION WHEN invalid_parameter_value THEN NULL;
+ END;
  -- A novel attack on an existing unverified import war is permitted and the
  -- checkpoint MUST retain that war's actual prior row for later review.
  SELECT value INTO v_import_war
