@@ -1,6 +1,18 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
 
+## 19.11.2026 – #178 Phase 3b LIVE: unveränderliche private CWL-Plan-/Archiv-Wiederherstellungsvorlage
+
+[PR #325](https://github.com/Smolmig/cwl_planer/pull/325) als Squash `ccc7b7e0b7a77341a5c4ce66898f13ea49dd4ee1` gemergt. **857/857 PR-Regressionstests** und die echten isolierten PG17-Owner-/RLS-/gespielte-Tage-/Archiv-Konflikttests waren grün. Die zwei ausschließlich additiven Backend-Migrationen wurden auf dem verbundenen Supabase-Projekt installiert: `20261119162116 / cwl_portable_plan_recovery_candidates_20261119` und `20261119162141 / cwl_portable_plan_recovery_staging_rpc_20261119`. Es wurden **keine produktiven CWL-Tage, Planprofile, Archivzeilen, Statistiken oder Konten geändert**.
+
+Die Live-Berechtigungsanalyse bestätigt `VOLATILE SECURITY INVOKER`, leeren Suchpfad und gesperrte anonyme EXECUTE-Berechtigung für den neuen RPC. Die Kandidatentabelle hat RLS, genau zwei ownergebundene Policies, keinen anonymen Lese-/Schreibzugriff und keinerlei allgemeine Update-/Delete-Berechtigung. Besitzer können nur genau begrenzte Staging-Spalten befüllen; Actor-ID, ID und Zeitstempel bleiben serverseitig. Die **vom Collector verifizierten** CWL-Gruppen-/Tages-Aufstellungsarchive behalten ihre ursprünglichen SELECT-only-Rechte für App-Benutzer. Security Advisors unverändert: drei alte Kategorien, keine neue Funktionswarnung.
+
+**Wichtige Grenze:** Die neue Vorlage ist **kein aktiver Restore**. Sie prüft sieben CWL-Planungstage, vorhandene Sperren/gespielte Tage, Planfreigaben, Gruppenarchive und eigene Lineups und zählt neue/identische/widersprüchliche Archivdaten. Ein Besitzer kann den geprüften Quellplan mit dem bei Ablage gelesenen Ziel-Vorher-Stand **privat und unveränderlich ablegen**, mehr nicht. Dieser Ziel-Vorher-Stand ist mangels Collector-Schreib-/Sperrberechtigungen **keine atomar gesicherte Wiederherstellung eines kompletten laufenden Clans**. Ein echter Apply muss die aktuelle Collector-Historie unter eigener Transaktions-/CAS- und Besitzprüfung revalidieren und darf niemals gespielte/gesperrte Tage oder bessere API-Daten überschreiben.
+
+Main-Checks nach Merge: [Plan/Archiv-SQL #44565104547](https://github.com/Smolmig/cwl_planer/actions/runs/44565104547), [Owner-Export-SQL #44565104459](https://github.com/Smolmig/cwl_planer/actions/runs/44565104459), [historische CWL-SQL #44565104549](https://github.com/Smolmig/cwl_planer/actions/runs/44565104549), [Pages #44565102991](https://github.com/Smolmig/cwl_planer/actions/runs/44565102991) **erfolgreich**, [Main-Gesamtregression #44565104588](https://github.com/Smolmig/cwl_planer/actions/runs/44565104588) nach vollständigem Abschluss bewerten. Öffentliche App weiterhin v1.27.0; keine neue Nutzerfunktion, deshalb noch keine Versions-/Changelog-/sichtbare Hilfeänderung. DE/EN-Hilfetexte stehen vorbereitend im [Datenvertrag](CLOUD_PORTABLE_BACKUP_CONTRACT.md).
+
+---
+
 ## 19.11.2026 – #178 Phase 3b: CWL-Plan-/Archiv-Restore nur als geschützte Vorschau und Kandidat (PR #325)
 
 Nach dem bereits gemergten Rohfakten-Restore #323 ist [PR #325](https://github.com/Smolmig/cwl_planer/pull/325) die erste abgesicherte Schicht für **Plan- und Archivwiederherstellung**. Die neue Owner-only-SQL-Funktion erlaubt eine **read-only-Vorschau** von Quell-/Ziel-Planprofilen (Version 9), **sieben** Tages-Slots, tatsächlichen Live-Planfreigaben, Gruppenarchiven und verifizierten eigenen Aufstellungen. Sie zeigt neue/identische/abweichende Archive und aktuell geschützte Tage. Ein gesperrter oder bereits gespielter Plan darf keinesfalls durch eine ältere Datei automatisch zurückgesetzt werden.
