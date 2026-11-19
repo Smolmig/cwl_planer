@@ -1,0 +1,75 @@
+name: Portable Cloud plan archive recovery staging SQL UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-plan-recovery-ci.yml'
+      - 'supabase/migrations/20261119180200_cwl_portable_plan_recovery_candidates.sql'
+      - 'supabase/migrations/20261119180400_cwl_portable_plan_recovery_staging_rpc.sql'
+      - 'tests/sql/portable-plan-recovery-fixture.sql'
+      - 'tests/sql/portable-plan-recovery-check.sql'
+      - 'tests/cloud-portable-plan-recovery.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-plan-recovery-ci.yml'
+      - 'supabase/migrations/20261119180200_cwl_portable_plan_recovery_candidates.sql'
+      - 'supabase/migrations/20261119180400_cwl_portable_plan_recovery_staging_rpc.sql'
+      - 'tests/sql/portable-plan-recovery-fixture.sql'
+      - 'tests/sql/portable-plan-recovery-check.sql'
+      - 'tests/cloud-portable-plan-recovery.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+permissions:
+  contents: read
+jobs:
+  owner-staging:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports: 
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use preinstalled PostgreSQL client
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null
+          psql --version
+      - name: Set up synthetic owner, locked seven-day plan and collector-only archives
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-plan-recovery-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119180200_cwl_portable_plan_recovery_candidates.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119180400_cwl_portable_plan_recovery_staging_rpc.sql
+      - name: Prove no active plan/archive mutations and owner/RLS isolation
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-plan-recovery-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_stage_portable_plan_recovery(
+              '11111111-1111-4111-8111-111111111111'::uuid,
+              '{}'::jsonb,1,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anonymous user could invoke plan recovery function'
+            exit 1
+          fi
+          echo 'PASS: anonymous denied and active plans/archives unchanged'
