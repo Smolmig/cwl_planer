@@ -58,8 +58,9 @@ jobs:
           )"
           test -n "$restore_port"
           supabase db start
-          sudo apt-get update -qq >/dev/null
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
+          command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
+          psql --version
           check="$(PGPASSWORD=postgres psql -X -qAt -h 127.0.0.1 -p "$restore_port" -U postgres -d postgres -v ON_ERROR_STOP=1 -c "
             SELECT count(*)
               FROM pg_catalog.pg_attribute a
