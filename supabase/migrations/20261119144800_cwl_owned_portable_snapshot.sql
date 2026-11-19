@@ -251,6 +251,12 @@ BEGIN
       'clash_tag',v_clan.clash_tag,
       'tables',v_tables
     ));
+    -- Bound the total server response, not only each clan's dataset.
+    -- Aborts without returning even a partial multi-clan backup.
+    IF octet_length(v_clans::text) > 67108864 THEN
+      RAISE EXCEPTION 'cloud export exceeds 64 MiB overall'
+        USING ERRCODE = '54000';
+    END IF;
   END LOOP;
   -- No checksum yet: the browser verifies/serializes this same trusted RPC
   -- response into the portable format and computes its canonical SHA-256.
