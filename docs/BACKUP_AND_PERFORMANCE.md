@@ -1,5 +1,26 @@
 # CWL Planer – Backup- und Optimierungskonzept
-Historisches Grundkonzept ab 31.10.2026 · **letzter technischer Restore-Fehler: 19.11.2026** · Cloud **v1.27.0**
+Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
+
+## 19.11.2026 – Echter verschlüsselter Datenbank-Restore erfolgreich (eng definierter Nachweis)
+
+Nach [PR #315](https://github.com/Smolmig/cwl_planer/pull/315) (lokales Supabase-Auth-Bootstrap), [PR #316](https://github.com/Smolmig/cwl_planer/pull/316) (keine laufzeitigen APT-Paketdownloads in drei CI-Pfaden) und dem gezielten Replay-Trigger [PR #317](https://github.com/Smolmig/cwl_planer/pull/317) bestand der **echte isolierte Restore-Run #44523450723** am 19.11.2026 erstmals vollständig: <https://github.com/Smolmig/cwl_planer/actions/runs/44523450723>. Quelle ist die bestehende erfolgreiche verschlüsselte Sicherung **#44283214780**, kein synthetisches oder neu erfundenes Backup. Der Workflow hat SHA-256 und GPG geprüft, überlappende Auth-COPY-Abschnitte verlustfrei abgeglichen, das temporäre lokale PostgreSQL von Supabase CLI 3.2.0 gestartet und die SQL-Dateien `schema.sql`, `auth-data.sql`, `data-local.sql` in **einer einzigen psql-Transaktion** erfolgreich eingespielt. Danach waren Tabellenanzahlen, RLS und exakter Inhalt der vier Statistiktabellen korrekt, temporäre DB und Klartextdaten gelöscht.
+
+| Geprüfte Tabelle | Wiederhergestellte Zeilen | Nachweis |
+| --- | ---: | --- |
+| `auth.users` | 4 | Anzahl |
+| `public.cwl_clans` | 3 | Anzahl + RLS |
+| `public.cwl_clan_memberships` | 7 | Anzahl + RLS |
+| `public.cwl_cloud_profiles` | 3 | Anzahl + RLS |
+| `public.cwl_change_events` | 644 | Anzahl + RLS |
+| `public.cwl_profile_snapshots` | 12 | Anzahl + RLS |
+| `public.cwl_stat_wars` | 338 | Anzahl, exakter COPY-Inhalt + RLS |
+| `public.cwl_stat_attacks` | 6100 | Anzahl, exakter COPY-Inhalt + RLS |
+| `public.cwl_stat_missed` | 333 | Anzahl, exakter COPY-Inhalt + RLS |
+| `public.cwl_clan_cw_missed_decisions` | **0** | Tabelle/RLS/Leerinhalt, **kein nichtleerer Entscheidungs-Roundtrip** |
+
+**Grenzen klar:** Die Wiederherstellung testet den technischen Daten-Dump in einem **isolierten lokalen Supabase-DB-Bootstrap**. Sie stellt weder den vollständigen gehosteten Supabase-Betrieb noch die Plattform-Rollen aus `roles.sql`, API-/Edge-Secrets, Storage-Objekte, Anmeldesitzungen oder alle App-Beziehungen end-to-end wieder her. Die separate nutzerseitige **einheitliche Cloud-Backupdatei inkl. sicherem, berechtigtem, idempotentem App-Import (Issue #178)** ist nicht implementiert. Kein produktiver Datenbankzugriff, keine App-Versionsänderung. Nächster Feature-Schritt: #178 Dateninventur, Berechtigungsmatrix und sichere Export-/Import-Contracts, erst dann UI/Produkt-Restore.
+
+---
 
 ## 19.11.2026 – GitHub-Runner ohne APT-Abhängigkeit für echte Restore-Drills
 
