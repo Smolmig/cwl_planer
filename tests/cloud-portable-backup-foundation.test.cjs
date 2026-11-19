@@ -234,3 +234,31 @@ test("collector cannot export a second clan without matching signed-in ownership
   clanIds:[A,B]
  }),/nicht alle Clans/);
 });
+
+test("two owned clans are encoded deterministically regardless of selection order",async()=>{
+ const a=basicClan(A,TAG),b=basicClan(B,"#QL8P");
+ b.name="United Fighters 2";
+ const first=await backup([a,b]),second=await backup([b,a]);
+ assert.equal(first.sha256,second.sha256);
+ const m=await import("../cloud-portable-backup-core.mjs");
+ assert.equal((await m.verifyPortableCloudBackup(first)).clans.length,2);
+});
+test("restore preview refuses mapping two source clans onto one target",async()=>{
+ const m=await import("../cloud-portable-backup-core.mjs");
+ const file=await backup([basicClan(A,TAG),basicClan(B,"#QL8P")]);
+ await getError(()=>m.previewPortableCloudRestore(file,{
+  targets:[{id:FOREIGN,clash_tag:TAG,isOwner:true}],
+  mapping:{[A]:FOREIGN,[B]:FOREIGN},
+  existingByClan:{[FOREIGN]:emptyTables()}
+ }),/mehrere Quellclans/);
+});
+test("collector rejects a changed authenticated session before delivering data",async()=>{
+ const m=await import("../cloud-portable-backup-core.mjs");
+ const sb=mockSb({
+  clans:[{id:A,name:"UF",clash_tag:TAG,owner_user_id:OWNER}],
+  allRows:{cwl_cloud_profiles:[profile()]}
+ });
+ let calls=0;
+ sb.auth.getUser=async()=>({data:{user:{id:++calls===1?OWNER:FOREIGN}},error:null});
+ await getError(()=>m.collectOwnerCloudBackup({sb,clanIds:[A]}),/Benutzersitzung/);
+});
