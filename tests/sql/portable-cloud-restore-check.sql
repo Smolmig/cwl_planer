@@ -7,6 +7,8 @@ DECLARE
  v_new jsonb;
  v_backup jsonb;
  v_saved_war jsonb;
+ v_import_war jsonb;
+ v_import_payload jsonb;
  v_saved_attack jsonb;
  v_saved_missed jsonb;
  v_result jsonb;
@@ -199,6 +201,43 @@ BEGIN
    RAISE EXCEPTION 'duplicate war keys accepted';
  EXCEPTION WHEN invalid_parameter_value THEN NULL;
  END;
+ -- A novel attack on an existing unverified import war is permitted and the
+ -- checkpoint MUST retain that war's actual prior row for later review.
+ SELECT value INTO v_import_war
+ FROM pg_catalog.jsonb_array_elements(v_original->'clans'->0->'tables'->'cwl_stat_wars') AS w(value)
+ WHERE w.value->>'war_key'='cwl:war2' AND w.value->>'source'='import';
+ IF v_import_war IS NULL THEN RAISE EXCEPTION 'missing synthetic imported war'; END IF;
+ v_import_payload:=pg_catalog.jsonb_set(v_original->'clans'->0,'{tables,cwl_stat_wars}',
+   pg_catalog.jsonb_build_array(v_import_war));
+ v_import_payload:=pg_catalog.jsonb_set(v_import_payload,'{tables,cwl_stat_attacks}',
+   pg_catalog.jsonb_build_array(pg_catalog.jsonb_set(
+     v_saved_attack,'{war_key}','"cwl:war2"'::jsonb)));
+ v_import_payload:=pg_catalog.jsonb_set(v_import_payload,'{tables,cwl_stat_missed}',
+    '[]'::jsonb);
+ v_result:=public.cwl_restore_portable_facts_atomic(
+  '11111111-1111-4111-8111-111111111111'::uuid,v_import_payload,4,true,
+  'RESTORE_VERIFIED_WAR_FACTS');
+ IF v_result#>>'{attacks,new}'<>'1' OR
+   (SELECT count(*) FROM public.cwl_portable_restore_checkpoints
+    WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>2 OR
+   NOT EXISTS (
+    SELECT 1 FROM public.cwl_portable_restore_checkpoints
+    WHERE id=(v_result->>'checkpoint_id')::uuid
+      AND pg_catalog.jsonb_array_length(previous_wars)=1
+      AND previous_wars->0->>'war_key'='cwl:war2'
+      AND pg_catalog.jsonb_array_length(previous_attacks)=0
+      AND pg_catalog.jsonb_array_length(previous_missed)=0
+   ) THEN
+   RAISE EXCEPTION 'checkpoint did not save real preexisting imported war: %',v_result;
+ END IF;
+ -- Verify actual user-scoped SELECT cannot enumerate the other owner's
+ -- checkpoints, even when the same role is authenticated.
+ PERFORM set_config('request.jwt.claim.sub',
+  '44444444-4444-4444-8444-444444444444',false);
+ IF EXISTS (SELECT 1 FROM public.cwl_portable_restore_checkpoints)
+ THEN RAISE EXCEPTION 'foreign owner leaked checkpoint'; END IF;
+ PERFORM set_config('request.jwt.claim.sub',
+  '33333333-3333-4333-8333-333333333333',false);
  RAISE NOTICE 'PASS: owner-only preflight, atomic insert, repeat import idempotent, rollback and API provenance defenses';
 END;
 $restore_test$;
