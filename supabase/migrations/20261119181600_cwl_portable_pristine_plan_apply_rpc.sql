@@ -100,6 +100,17 @@ BEGIN
    RAISE EXCEPTION 'Invalid or unsupported source planning fields'
      USING ERRCODE='22023';
  END IF;
+ -- Day goals are the planner's v9 map of strength/townHall objectives.
+ -- Never write malformed scalars/arrays that could crash the live planner.
+ IF EXISTS(
+   SELECT 1 FROM pg_catalog.jsonb_array_elements(v_source->'dayGoals') AS g(row_data)
+   WHERE pg_catalog.jsonb_typeof(g.row_data) IS DISTINCT FROM 'object'
+      OR pg_catalog.jsonb_typeof(g.row_data->'strength') IS DISTINCT FROM 'object'
+      OR pg_catalog.jsonb_typeof(g.row_data->'townHall') IS DISTINCT FROM 'object'
+ ) THEN
+   RAISE EXCEPTION 'Invalid planning-day goal structure'
+     USING ERRCODE='22023';
+ END IF;
  IF EXISTS (
    SELECT 1 FROM pg_catalog.jsonb_array_elements(v_source->'members') AS m(row_data)
    WHERE pg_catalog.jsonb_typeof(m.row_data) IS DISTINCT FROM 'object'
