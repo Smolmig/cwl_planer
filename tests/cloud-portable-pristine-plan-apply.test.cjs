@@ -74,6 +74,9 @@ test("DB plan apply is security invoker + owner/CAS and writes ONLY private chec
  assert.match(rpc,/APPLY_TO_EMPTY_CWL_PLAN/);
  assert.match(rpc,/target_before->'profile_json'/);
  assert.match(rpc,/source_profile_json/);
+ assert.match(rpc,/Invalid planning-day goal structure/);
+ assert.match(rpc,/g\.row_data->'strength'/);
+ assert.match(rpc,/g\.row_data->'townHall'/);
  assert.match(rpc,/GROUP BY m\.row_data->>'playerTag' HAVING count\(\*\)>1/);
  assert.match(rpc,/jsonb_build_object\(\s*'members',v_source->'members',\s*'dayGoals',v_source->'dayGoals',\s*'config',v_source->'config'/);
  assert.match(rpc,/v_after_db->'locks'/);
