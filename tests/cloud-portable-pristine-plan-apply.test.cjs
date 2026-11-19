@@ -74,6 +74,7 @@ test("DB plan apply is security invoker + owner/CAS and writes ONLY private chec
  assert.match(rpc,/APPLY_TO_EMPTY_CWL_PLAN/);
  assert.match(rpc,/target_before->'profile_json'/);
  assert.match(rpc,/source_profile_json/);
+ assert.match(rpc,/GROUP BY m\.row_data->>'playerTag' HAVING count\(\*\)>1/);
  assert.match(rpc,/jsonb_build_object\(\s*'members',v_source->'members',\s*'dayGoals',v_source->'dayGoals',\s*'config',v_source->'config'/);
  assert.match(rpc,/v_after_db->'locks'/);
  assert.match(rpc,/v_after_db->'archives'/);
@@ -167,7 +168,7 @@ test("PG17 SQL fixture covers real trigger rollback, repeated apply, protected d
  const sql=fs.readFileSync(path.join(root,"tests/sql/portable-pristine-plan-apply-check.sql"),"utf8");
  for(const word of ["APPLY_TO_EMPTY_CWL_PLAN","FAIL_AFTER_CHECKPOINT",
   "blocked protected target","protected day","repeated restore",
-  "checkpoint","foreign owner","synthetic trigger failure"])
+  "checkpoint","foreign owner","synthetic trigger failure","duplicate Clash player tags accepted"])
   assert.ok(sql.includes(word),word);
  assert.match(workflow,/SET ROLE anon/);
 });
