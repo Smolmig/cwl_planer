@@ -8,6 +8,8 @@ DECLARE
   v_target uuid:='88888888-8888-4888-8888-888888888888'::uuid;
   v_rollback uuid:='99999999-9999-4999-8999-999999999999'::uuid;
   v_locked uuid:='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
+  v_dup_tag uuid:='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'::uuid;
+  v_dup_tag_candidate uuid;
   v_candidate uuid;
   v_rollback_candidate uuid;
   v_locked_candidate uuid;
@@ -145,6 +147,25 @@ BEGIN
     RAISE EXCEPTION 'duplicate source member IDs accepted';
   EXCEPTION WHEN invalid_parameter_value THEN NULL;
   END;
+
+  -- A forged roster with unique local IDs but DUPLICATE Clash-player tags
+  -- must also be rejected; it could otherwise double-count a real player.
+  v_modified:=pg_catalog.jsonb_set(v_source,
+    '{tables,cwl_cloud_profiles,0,profile_json,members}',
+    '[{"id":"ONE","playerTag":"#P8Y2"},{"id":"TWO","playerTag":"#P8Y2"}]'::jsonb);
+  v_reply:=public.cwl_stage_portable_plan_recovery(
+    v_dup_tag,v_modified,5,true,'STAGE_PLAN_FOR_MANUAL_REVIEW');
+  v_dup_tag_candidate:=(v_reply->>'candidate_id')::uuid;
+  BEGIN
+    PERFORM public.cwl_apply_portable_pristine_plan(
+      v_dup_tag_candidate,5,false,NULL);
+    RAISE EXCEPTION 'duplicate Clash player tags accepted';
+  EXCEPTION WHEN invalid_parameter_value THEN NULL;
+  END;
+  IF EXISTS(SELECT 1 FROM private.cwl_portable_plan_apply_checkpoints
+    WHERE clan_id=v_dup_tag) THEN
+    RAISE EXCEPTION 'invalid duplicate player tags inserted a checkpoint';
+  END IF;
 
   -- Create an independent clean target candidate with a deliberate trigger
   -- failure. It must happen after checkpoint creation and leave no trace.
