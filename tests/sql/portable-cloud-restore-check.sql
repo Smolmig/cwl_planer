@@ -51,7 +51,11 @@ BEGIN
     v_result->>'api_wars_imported_as_unverified'<>'1' THEN
     RAISE EXCEPTION 'incorrect read-only preview: %',v_result;
  END IF;
- IF (SELECT count(*) FROM public.cwl_stat_wars
+ IF EXISTS (SELECT 1 FROM public.cwl_portable_restore_checkpoints
+  WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid) THEN
+   RAISE EXCEPTION 'dry-run must not create a checkpoint';
+ END IF;
+  IF (SELECT count(*) FROM public.cwl_stat_wars
      WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>v_wars_before THEN
     RAISE EXCEPTION 'preview unexpectedly mutated DB';
  END IF;
@@ -64,7 +68,21 @@ BEGIN
  v_result:=public.cwl_restore_portable_facts_atomic(
   '11111111-1111-4111-8111-111111111111'::uuid,v_backup,v_revision,true,
   'RESTORE_VERIFIED_WAR_FACTS');
- IF v_result->>'applied'<>'true' OR
+ IF v_result->>'checkpoint_id' IS NULL OR
+    v_result->>'checkpoint_id'='null' OR
+    (SELECT count(*) FROM public.cwl_portable_restore_checkpoints
+       WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>1 OR
+    (SELECT count(*) FROM public.cwl_portable_restore_checkpoints
+       WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid
+         AND actor_user_id='33333333-3333-4333-8333-333333333333'::uuid
+         AND profile_revision=4
+         AND source_clan_id='11111111-1111-4111-8111-111111111111'::uuid
+         AND previous_wars='[]'::jsonb AND previous_attacks='[]'::jsonb
+         AND previous_missed='[]'::jsonb
+         AND war_keys='["normal:restored3"]'::jsonb)<>1 THEN
+   RAISE EXCEPTION 'missing or invalid pre-mutation checkpoint: %',v_result;
+ END IF;
+  IF v_result->>'applied'<>'true' OR
     (SELECT count(*) FROM public.cwl_stat_wars
        WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>v_wars_before+1 OR
     (SELECT count(*) FROM public.cwl_stat_attacks
@@ -84,7 +102,11 @@ BEGIN
  v_result:=public.cwl_restore_portable_facts_atomic(
   '11111111-1111-4111-8111-111111111111'::uuid,v_backup,v_revision,true,
   'RESTORE_VERIFIED_WAR_FACTS');
- IF v_result#>>'{wars,new}'<>'0' OR
+ IF (SELECT count(*) FROM public.cwl_portable_restore_checkpoints
+       WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>1 THEN
+   RAISE EXCEPTION 'idempotent re-import created duplicate checkpoint';
+ END IF;
+  IF v_result#>>'{wars,new}'<>'0' OR
     v_result#>>'{attacks,new}'<>'0' OR
     v_result#>>'{missed,new}'<>'0' OR
     v_result#>>'{wars,identical}'<>'1' OR
@@ -109,7 +131,11 @@ BEGIN
    RAISE EXCEPTION 'bad stars wrongly committed';
  EXCEPTION WHEN invalid_parameter_value THEN NULL;
  END;
- IF EXISTS (
+ IF (SELECT count(*) FROM public.cwl_portable_restore_checkpoints
+       WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid)<>1 THEN
+   RAISE EXCEPTION 'failed transaction kept an invalid checkpoint';
+ END IF;
+  IF EXISTS (
    SELECT 1 FROM public.cwl_stat_wars
    WHERE clan_id='11111111-1111-4111-8111-111111111111'::uuid
      AND war_key='normal:rollback4'
@@ -187,7 +213,15 @@ BEGIN
    SELECT 1 FROM unnest(v.proconfig) AS s(value)
    WHERE replace(s.value,'"','')='search_path='
  ) THEN RAISE EXCEPTION 'restore RPC not VOLATILE SECURITY INVOKER / safe search_path';END IF;
- IF has_function_privilege('anon',
+ IF NOT (SELECT c.relrowsecurity FROM pg_catalog.pg_class c
+     WHERE c.oid='public.cwl_portable_restore_checkpoints'::regclass)
+    OR has_table_privilege('anon','public.cwl_portable_restore_checkpoints','SELECT')
+    OR has_table_privilege('anon','public.cwl_portable_restore_checkpoints','INSERT')
+    OR has_table_privilege('authenticated','public.cwl_portable_restore_checkpoints','UPDATE')
+    OR has_table_privilege('authenticated','public.cwl_portable_restore_checkpoints','DELETE') THEN
+   RAISE EXCEPTION 'restore checkpoint grants/RLS invalid';
+ END IF;
+  IF has_function_privilege('anon',
       'public.cwl_restore_portable_facts_atomic(uuid,jsonb,bigint,boolean,text)',
       'EXECUTE') OR
     NOT has_function_privilege('authenticated',
