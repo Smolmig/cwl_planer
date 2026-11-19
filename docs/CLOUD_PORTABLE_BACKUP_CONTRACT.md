@@ -1,11 +1,11 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 2 erfolgreich gemergt (PR #321), serverseitiger Read-only-RPC auf Supabase live und synthetisch geprüft; Cloud-Backup-Download und Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
+**Status: Phase 3a erfolgreich gemergt (PR #323) und Backend-RPCs auf Supabase live: konsistenter Owner-Export und ausdrücklich nur Fakten-Restore mit Vorschau/Checkpoint. Vollständiger Cloud-Backup-Download und Full-App-Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
 
-Das verbundene Supabase-Projekt wurde am 19.11.2026 **nur lesend** über die Table-Introspection geprüft: 23 `public.cwl_*`-Tabellen zum Zeitpunkt der Inventur, alle mit RLS aktiviert. Die zusätzliche operative Checkpoint-Tabelle wird erst mit dem Phase-3a-Migrationspaket eingeführt und ist bewusst nicht im 17-Tabellen-Backup enthalten. Schema- und Spaltennamen wurden mit den migrierten SQL-Dateien verglichen. Es wurden keine Nutzerzeilen angefragt und keine Migration, RLS-Policy, Rolle, Datenzeile oder Plattformkonfiguration verändert.
+Das verbundene Supabase-Projekt wurde am 19.11.2026 **nur lesend** über die Table-Introspection geprüft: 23 `public.cwl_*`-Tabellen zum Zeitpunkt der Inventur (24 seit 19.11.2026 mit neuer operativer, Owner-RLS-geschützter Checkpoint-Tabelle). Weiterhin genau 17 portable Datentabellen, 6 ausdrücklich ausgeschlossene Sicherheits-/Betriebstabellen und `cwl_clans` als Clan-Metadaten. Schema- und Spaltennamen wurden mit den migrierten SQL-Dateien verglichen. Es wurden keine Nutzerzeilen angefragt und keine Migration, RLS-Policy, Rolle, Datenzeile oder Plattformkonfiguration verändert.
 
 Das neue portable Format enthält für einen **ausdrücklich vom angemeldeten Benutzer besessenen** App-Clan nur die im Quellcode versionierten, explizit benannten Spalten aus diesen 17 Tabellen:
 
