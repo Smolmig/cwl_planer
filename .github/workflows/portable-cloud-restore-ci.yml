@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/portable-cloud-restore-ci.yml'
+      - 'supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql'
       - 'supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql'
       - 'tests/sql/portable-cloud-restore-fixture.sql'
       - 'tests/sql/portable-cloud-restore-check.sql'
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/portable-cloud-restore-ci.yml'
+      - 'supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql'
       - 'supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql'
       - 'tests/sql/portable-cloud-restore-fixture.sql'
       - 'tests/sql/portable-cloud-restore-check.sql'
@@ -58,6 +60,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
           psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-restore-fixture.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119164900_cwl_portable_restore_checkpoints_v1.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119165000_cwl_portable_war_facts_restore_v1.sql
       - name: Verify preview, immutable API facts, rollback, idempotence and role restrictions
         run: |
