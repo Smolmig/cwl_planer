@@ -7,6 +7,7 @@ export const PORTABLE_BACKUP_ROW_LIMIT = 100000;
 export const PORTABLE_BACKUP_BYTE_LIMIT = 128 * 1024 * 1024;
 
 // Field-level allowlist based on the 19 Nov 2026 live public schema.
+// Private-schema apply checkpoints never enter the public table inventory.
 // Security configuration and generated authentication credentials are excluded.
 // audit/observed rows are evidence, NOT unconditional SQL upserts.
 const descriptors = [
@@ -35,8 +36,7 @@ export const PORTABLE_CLOUD_TABLES = Object.freeze(descriptors.map(([name,key,co
 export const PORTABLE_EXCLUDED_TABLES = Object.freeze([
  "cwl_clan_invites", "cwl_clan_memberships", "cwl_access_blocks",
  "cwl_clan_presence", "cwl_stat_collector_status",
- "cwl_portable_restore_checkpoints", "cwl_portable_plan_recovery_candidates",
- "cwl_portable_plan_apply_checkpoints"
+ "cwl_portable_restore_checkpoints", "cwl_portable_plan_recovery_candidates"
 ]);
 const tablesByName = new Map(PORTABLE_CLOUD_TABLES.map(spec => [spec.name,spec]));
 const forbiddenKeys = new Set(["__proto__","prototype","constructor"]);
