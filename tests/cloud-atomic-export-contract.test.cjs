@@ -112,3 +112,58 @@ test("legacy client backup is still explicitly non-atomic and verifiable",async(
  assert.equal(file.consistency,"client-read-non-atomic");
  assert.equal((await core.verifyPortableCloudBackup(file)).consistency,"client-read-non-atomic");
 });
+
+test("owner-only preview compares imported file against one consistent server target snapshot",async()=>{
+ const core=await import("../cloud-portable-backup-core.mjs");
+ const sourceTables=rowsFor(core.PORTABLE_CLOUD_TABLES);
+ const file=await core.createPortableCloudBackup({
+  clans:[{source_clan_id:A,name:"UF",clash_tag:"#P8Y2",tables:sourceTables}],
+  createdAt:"2026-11-19T14:48:00Z",consistency:"server-stable-statement"
+ });
+ const targetTables=rowsFor(core.PORTABLE_CLOUD_TABLES);
+ targetTables.cwl_cloud_profiles[0].clan_id=B;
+ targetTables.cwl_cloud_profiles[0].revision=5;
+ const payload={kind:core.PORTABLE_CLOUD_BACKUP_KIND,format_version:1,
+  created_at:"2026-11-19T14:49:00Z",consistency:"server-stable-statement",
+  clans:[{source_clan_id:B,name:"UF",clash_tag:"#P8Y2",tables:targetTables}]
+ };
+ const called=[];
+ const preview=await core.previewOwnerCloudRestore({
+  sb:rpcMock(payload,{called}),file,mapping:{[A]:B}
+ });
+ assert.equal(called.length,1);
+ assert.deepEqual(called[0].args.p_clan_ids,[B]);
+ assert.equal(preview.mutationPermitted,false);
+ assert.equal(preview.target_snapshot_consistency,"server-stable-statement");
+ assert.match(preview.target_snapshot_sha256,/^[0-9a-f]{64}$/);
+ assert.equal(preview.clans[0].tables.cwl_cloud_profiles.conflict,1);
+ assert.equal(sourceTables.cwl_cloud_profiles[0].revision,3);
+ assert.equal(targetTables.cwl_cloud_profiles[0].revision,5);
+});
+test("preview does not authorize a cross-tag or target RLS-denied restore",async()=>{
+ const core=await import("../cloud-portable-backup-core.mjs");
+ const file=await core.createPortableCloudBackup({
+  clans:[{source_clan_id:A,name:"UF",clash_tag:"#P8Y2",
+   tables:rowsFor(core.PORTABLE_CLOUD_TABLES)}],
+  createdAt:"2026-11-19T14:48:00Z"
+ });
+ const targetTables=rowsFor(core.PORTABLE_CLOUD_TABLES);
+ targetTables.cwl_cloud_profiles[0].clan_id=B;
+ const wrongTag={kind:core.PORTABLE_CLOUD_BACKUP_KIND,format_version:1,
+  created_at:"2026-11-19T14:49:00Z",consistency:"server-stable-statement",
+  clans:[{source_clan_id:B,name:"UF",clash_tag:"#QL8P",tables:targetTables}]
+ };
+ await assert.rejects(()=>core.previewOwnerCloudRestore({
+  sb:rpcMock(wrongTag),file,mapping:{[A]:B}
+ }),/stimmt nicht überein/);
+ const blocked={
+  auth:{getUser:async()=>({data:{user:{id:OWNER}},error:null})},
+  rpc:async()=>({data:null,error:{code:"42501"}})
+ };
+ await assert.rejects(()=>core.previewOwnerCloudRestore({
+  sb:blocked,file,mapping:{[A]:B}
+ }),/Snapshot konnte nicht erstellt/);
+ await assert.rejects(()=>core.previewOwnerCloudRestore({
+  sb:rpcMock(wrongTag),file,mapping:{[A]:"not-a-uuid"}
+ }),/Ungültige oder doppelte Zielclans/);
+});
