@@ -8,6 +8,7 @@ const sql=fs.readFileSync(path.join(root,"scripts/restore_local_auth_compat.sql"
 const workflow=fs.readFileSync(path.join(root,".github/workflows/test-encrypted-restore.yml"),"utf8");
 const drill=fs.readFileSync(path.join(root,".github/workflows/verify-encrypted-backup-drill.yml"),"utf8");
 const authCanary=fs.readFileSync(path.join(root,".github/workflows/restore-local-auth-schema-ci.yml"),"utf8");
+const statsRestore=fs.readFileSync(path.join(root,".github/workflows/clashperk-stats-restore-ci.yml"),"utf8");
 
 test("local hosted-Auth schema gate is read-only and rejects missing or incompatible columns",()=>{
  assert.match(sql,/to_regclass\('auth\.one_time_tokens'\)/);
@@ -43,7 +44,7 @@ test("replay targets the same successful encrypted 18 November backup without pr
 });
 
 test("restore and Auth canary require preinstalled psql without Ubuntu package downloads",()=>{
- for(const source of [workflow,authCanary]){
+ for(const source of [workflow,authCanary,statsRestore]){
   assert.match(source,/command -v psql/);
   assert.match(source,/psql --version/);
   assert.doesNotMatch(source,/\bapt-get\b|\bapt\s+install\b/i);
