@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 3b in PR #325: sichere Plan-/Archiv-Vorschau und private Wiederherstellungskandidaten zusätzlich zum vorhandenen Fakten-Restore. Noch kein tatsächlicher Plan-/Archiv-Restore, kein vollständiger Cloud-Backup-Download oder Full-App-Restore in der Nutzeroberfläche.**
+**Status: Phase 3b erfolgreich in PR #325 gemergt und als nur-lesend-vorschauender/privat-stagender Owner-RPC auf Supabase LIVE. Noch kein tatsächlicher Plan-/Archiv-Restore, kein vollständiger Cloud-Backup-Download oder Full-App-Restore in der Nutzeroberfläche.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
