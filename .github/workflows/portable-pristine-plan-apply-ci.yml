@@ -1,0 +1,78 @@
+name: Portable Cloud pristine-plan apply SQL UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-pristine-plan-apply-ci.yml'
+      - 'supabase/migrations/20261119181500_cwl_portable_plan_apply_checkpoints.sql'
+      - 'supabase/migrations/20261119181600_cwl_portable_pristine_plan_apply_rpc.sql'
+      - 'tests/sql/portable-pristine-plan-apply-fixture.sql'
+      - 'tests/sql/portable-pristine-plan-apply-check.sql'
+      - 'tests/cloud-portable-pristine-plan-apply.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-pristine-plan-apply-ci.yml'
+      - 'supabase/migrations/20261119181500_cwl_portable_plan_apply_checkpoints.sql'
+      - 'supabase/migrations/20261119181600_cwl_portable_pristine_plan_apply_rpc.sql'
+      - 'tests/sql/portable-pristine-plan-apply-fixture.sql'
+      - 'tests/sql/portable-pristine-plan-apply-check.sql'
+      - 'tests/cloud-portable-pristine-plan-apply.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+permissions:
+  contents: read
+jobs:
+  owner-clean-plan-apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify PostgreSQL client
+        run: |
+          set -euo pipefail
+          command -v psql
+          psql --version
+      - name: Prepare disposable owner/source/clean/dirty/rollback PostgreSQL 17 fixtures
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-plan-recovery-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-pristine-plan-apply-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119180200_cwl_portable_plan_recovery_candidates.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119180400_cwl_portable_plan_recovery_staging_rpc.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119181500_cwl_portable_plan_apply_checkpoints.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119181600_cwl_portable_pristine_plan_apply_rpc.sql
+      - name: Verify actual owner plan apply, protected history and checkpoint rollback
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-pristine-plan-apply-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_apply_portable_pristine_plan(
+              '77777777-7777-4777-8777-777777777777'::uuid,
+              5,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anon could execute protected planning restore'
+            exit 1
+          fi
+          echo 'PASS: real PG17 owner plan apply, clean-only restrictions, rollback and anonymous denial'

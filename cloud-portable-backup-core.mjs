@@ -1,12 +1,13 @@
 // #178 – Portable Cloud-App backup foundation.
-// This module has deliberately NO write/restore API and is NOT wired to the UI.
-// Production restore requires an owner-authorized, transactional server RPC.
+// This module is deliberately NOT wired to the public Cloud UI.
+// Restricted, owner-authorized transactional restore adapters below remain gated.
 export const PORTABLE_CLOUD_BACKUP_KIND = "cwl-cloud-app-backup";
 export const PORTABLE_CLOUD_BACKUP_FORMAT = 1;
 export const PORTABLE_BACKUP_ROW_LIMIT = 100000;
 export const PORTABLE_BACKUP_BYTE_LIMIT = 128 * 1024 * 1024;
 
 // Field-level allowlist based on the 19 Nov 2026 live public schema.
+// Private-schema apply checkpoints never enter the public table inventory.
 // Security configuration and generated authentication credentials are excluded.
 // audit/observed rows are evidence, NOT unconditional SQL upserts.
 const descriptors = [
@@ -465,4 +466,74 @@ export async function previewPortablePlanArchiveRecovery({
   target_snapshot_sha256:target.sha256,
   target_snapshot_consistency:target.consistency,
   warning:"Nur geschützte Vorschau/Ablage. Der aktive CWL-Plan, gespielte Tage und Collector-Archive bleiben unverändert. Es gibt noch keinen vollständigen App-Restore."};
+}
+
+
+// #178 Phase 3c. An owner may restore ONLY members, day goals and config to a
+// pristine, unused target. All locks, histories, audit and collector archives
+// remain untouched. Not a full-plan or full-app import; UI intentionally off.
+// The SQL RPC enforces ownership, candidate/source identity, CAS and same-TXN
+// before/after checkpoint independently of these browser checks.
+function validatePristineApplyResult(reply,{candidateId,targetClanId,expectedRevision,apply}){
+ if(reply.error||!record(reply.data))
+   reject("Der geschützte Plan-Import wurde vom Server abgelehnt.");
+ const x=reply.data;
+ if(x.scope!=="pristine-plan-planning-only"||
+   x.target_clan_id!==targetClanId||x.candidate_id!==candidateId||
+   x.expected_revision!==expectedRevision||x.applied!==apply||
+   x.locks_preserved!==true||x.archives_preserved!==true||
+   x.plan_approval_preserved!==true||
+   !Number.isSafeInteger(x.protected_days)||x.protected_days<0||
+   !Number.isSafeInteger(x.existing_archive_rows)||x.existing_archive_rows<0||
+   !Number.isSafeInteger(x.existing_wars)||x.existing_wars<0||
+   !Number.isSafeInteger(x.pending_editor_suggestions)||
+   x.pending_editor_suggestions<0||
+   !Number.isSafeInteger(x.member_count)||x.member_count<0||
+   typeof x.eligible_for_empty_target_apply!=="boolean"||
+   typeof x.target_is_empty!=="boolean"||
+   typeof x.has_changes!=="boolean"||
+   typeof x.matches_staging_baseline!=="boolean"||
+   JSON.stringify(x.restored_fields)!==JSON.stringify(["members","dayGoals","config"])||
+   !Number.isSafeInteger(x.result_revision)||
+   x.result_revision!==expectedRevision+(apply?1:0)||
+   (apply&&(!x.eligible_for_empty_target_apply||
+     !uuidPattern.test(x.checkpoint_id||""))))
+   reject("Der Server hat einen unvollständigen Plan-Import gemeldet.");
+ return x;
+}
+export async function previewPortablePristinePlanApply({sb,candidateId,targetClanId}){
+ if(!sb?.rpc||!uuidPattern.test(candidateId||"")||
+   !uuidPattern.test(targetClanId||""))
+   reject("Ungültiger Plan-Kandidat oder Zielclan.");
+ const snapshot=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const revision=snapshot.clans[0]?.tables?.cwl_cloud_profiles?.[0]?.revision;
+ if(!Number.isSafeInteger(revision)||revision<1)reject("Aktuelle Planrevision fehlt.");
+ const reply=await sb.rpc("cwl_apply_portable_pristine_plan",{
+   p_candidate:candidateId,p_expected_revision:revision,p_apply:false,p_confirmation:null
+ });
+ const x=validatePristineApplyResult(reply,{
+   candidateId,targetClanId,expectedRevision:revision,apply:false
+ });
+ return {...x,expectedRevision:revision,mutationPermitted:false,
+   target_snapshot_consistency:snapshot.consistency,
+   warning:"Nur Mitglieder, Einsatzziele und Planungseinstellungen in einen noch unbenutzten Clan. Gespielte Tage, Aufstellungen und Archivdaten werden nicht importiert."};
+}
+export async function applyPortablePristinePlan({
+ sb,candidateId,targetClanId,expectedRevision,confirmation
+}){
+ if(!sb?.rpc||!uuidPattern.test(candidateId||"")||
+   !uuidPattern.test(targetClanId||"")||
+   !Number.isSafeInteger(expectedRevision)||expectedRevision<1||
+   confirmation!=="APPLY_TO_EMPTY_CWL_PLAN")
+   reject("Gültiger Zielstand und ausdrückliche Plan-Import-Bestätigung erforderlich.");
+ const snapshot=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ if(snapshot.clans[0]?.tables?.cwl_cloud_profiles?.[0]?.revision!==expectedRevision)
+   reject("Zielplan hat sich seit der Vorschau geändert.");
+ const reply=await sb.rpc("cwl_apply_portable_pristine_plan",{
+   p_candidate:candidateId,p_expected_revision:expectedRevision,
+   p_apply:true,p_confirmation:confirmation
+ });
+ return validatePristineApplyResult(reply,{
+   candidateId,targetClanId,expectedRevision,apply:true
+ });
 }
