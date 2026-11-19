@@ -93,7 +93,7 @@ function normalizedRows(raw,spec,clanId){
   keys.add(id);
   return {id,row:copy};
  });
- sorted.sort((a,b)=>a.id.localeCompare(b.id));
+ sorted.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  return sorted.map(x=>x.row);
 }
 function normalizedClan(source){
@@ -144,7 +144,7 @@ function normalizedContent(body){
   seen.add(clan.source_clan_id);
   checkRelations(clan);return clan;
  });
- clans.sort((a,b)=>a.source_clan_id.localeCompare(b.source_clan_id));
+ clans.sort((a,b)=>a.source_clan_id<b.source_clan_id?-1:a.source_clan_id>b.source_clan_id?1:0);
  return {kind:body.kind,format_version:body.format_version,
   created_at:body.created_at,consistency:body.consistency,clans};
 }
@@ -266,7 +266,7 @@ export async function collectOwnerCloudBackup({sb,clanIds,pageSize=500}){
  const after=await sb.auth.getUser();
  if(after.error||after.data?.user?.id!==user.id)reject("Benutzersitzung hat sich geändert.");
  const final=await owned();
- if(original.some(c=>!final.some(x=>x.id===c.id&&x.clash_tag===c.clash_tag)))
+ if(original.some(c=>!final.some(x=>x.id===c.id&&x.clash_tag===c.clash_tag&&x.name===c.name)))
   reject("Clan-Zuordnung hat sich während des Exports geändert.");
  // The export is explicitly marked non-atomic; concurrent collector changes
  // must be handled by the future server-side snapshot/restore workflow.
