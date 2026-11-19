@@ -52,7 +52,7 @@ BEGIN
      v_reply->>'locks_preserved'<>'true' THEN
      RAISE EXCEPTION 'wrong read-only clean-target preview %',v_reply;
   END IF;
-  IF EXISTS(SELECT 1 FROM public.cwl_portable_plan_apply_checkpoints) THEN
+  IF EXISTS(SELECT 1 FROM private.cwl_portable_plan_apply_checkpoints) THEN
     RAISE EXCEPTION 'preview unexpectedly wrote checkpoint';
   END IF;
   IF (SELECT profile_json FROM public.cwl_cloud_profiles WHERE clan_id=v_target)
@@ -87,8 +87,8 @@ BEGIN
       OR v_after->'name' IS DISTINCT FROM v_before->'name' THEN
     RAISE EXCEPTION 'source overwrote protected plan identity/locks/archives';
   END IF;
-  IF (SELECT count(*) FROM public.cwl_portable_plan_apply_checkpoints WHERE clan_id=v_target)<>1
-    OR (SELECT count(*) FROM public.cwl_portable_plan_apply_checkpoints
+  IF (SELECT count(*) FROM private.cwl_portable_plan_apply_checkpoints WHERE clan_id=v_target)<>1
+    OR (SELECT count(*) FROM private.cwl_portable_plan_apply_checkpoints
      WHERE clan_id=v_target AND candidate_id=v_candidate AND
        before_profile_json=v_before AND applied_profile_json=v_after AND
        before_revision=5 AND applied_revision=6 AND
@@ -106,7 +106,7 @@ BEGIN
     RAISE EXCEPTION 'repeated restore incorrectly succeeded';
   EXCEPTION WHEN serialization_failure THEN NULL;
   END;
-  IF (SELECT count(*) FROM public.cwl_portable_plan_apply_checkpoints WHERE clan_id=v_target)<>1 THEN
+  IF (SELECT count(*) FROM private.cwl_portable_plan_apply_checkpoints WHERE clan_id=v_target)<>1 THEN
     RAISE EXCEPTION 'repeated restore duplicated checkpoint';
   END IF;
 
@@ -126,7 +126,7 @@ BEGIN
     RAISE EXCEPTION 'protected played day incorrectly overwritten';
   EXCEPTION WHEN serialization_failure THEN NULL;
   END;
-  IF EXISTS (SELECT 1 FROM public.cwl_portable_plan_apply_checkpoints
+  IF EXISTS (SELECT 1 FROM private.cwl_portable_plan_apply_checkpoints
      WHERE clan_id=v_locked) THEN
     RAISE EXCEPTION 'blocked protected target received a checkpoint';
   END IF;
@@ -200,7 +200,7 @@ BEGIN
    RAISE EXCEPTION 'synthetic trigger failure was ignored';
  EXCEPTION WHEN invalid_parameter_value THEN NULL;
  END;
- IF EXISTS(SELECT 1 FROM public.cwl_portable_plan_apply_checkpoints
+ IF EXISTS(SELECT 1 FROM private.cwl_portable_plan_apply_checkpoints
     WHERE clan_id='99999999-9999-4999-8999-999999999999'::uuid) OR
     (SELECT profile_json FROM public.cwl_cloud_profiles
      WHERE clan_id='99999999-9999-4999-8999-999999999999'::uuid)
@@ -212,7 +212,7 @@ BEGIN
  -- RLS isolates the checkpoint from the OTHER signed-in owner.
  PERFORM pg_catalog.set_config('request.jwt.claim.sub',
    '44444444-4444-4444-8444-444444444444',false);
- IF EXISTS(SELECT 1 FROM public.cwl_portable_plan_apply_checkpoints) THEN
+ IF EXISTS(SELECT 1 FROM private.cwl_portable_plan_apply_checkpoints) THEN
    RAISE EXCEPTION 'foreign owner can read private plan-apply checkpoint';
  END IF;
  RAISE NOTICE 'PASS: late trigger failure atomically rolls back profile and checkpoint; foreign owner denied';
@@ -234,14 +234,14 @@ BEGIN
  OR NOT has_function_privilege('authenticated',
    'public.cwl_apply_portable_pristine_plan(uuid,bigint,boolean,text)','EXECUTE')
  OR NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
-   WHERE oid='public.cwl_portable_plan_apply_checkpoints'::regclass)
- OR has_table_privilege('anon','public.cwl_portable_plan_apply_checkpoints','SELECT')
- OR has_table_privilege('authenticated','public.cwl_portable_plan_apply_checkpoints','UPDATE')
- OR has_table_privilege('authenticated','public.cwl_portable_plan_apply_checkpoints','DELETE')
+   WHERE oid='private.cwl_portable_plan_apply_checkpoints'::regclass)
+ OR has_table_privilege('anon','private.cwl_portable_plan_apply_checkpoints','SELECT')
+ OR has_table_privilege('authenticated','private.cwl_portable_plan_apply_checkpoints','UPDATE')
+ OR has_table_privilege('authenticated','private.cwl_portable_plan_apply_checkpoints','DELETE')
  OR has_column_privilege('authenticated',
-     'public.cwl_portable_plan_apply_checkpoints','actor_user_id','INSERT')
+     'private.cwl_portable_plan_apply_checkpoints','actor_user_id','INSERT')
  OR has_column_privilege('authenticated',
-     'public.cwl_portable_plan_apply_checkpoints','id','INSERT')
+     'private.cwl_portable_plan_apply_checkpoints','id','INSERT')
  OR has_table_privilege('authenticated','public.cwl_group_archives','INSERT')
  OR has_table_privilege('authenticated','public.cwl_own_lineup_archives','INSERT')
  THEN RAISE EXCEPTION 'plan checkpoint/RLS/collector archive grants are unsafe';END IF;
