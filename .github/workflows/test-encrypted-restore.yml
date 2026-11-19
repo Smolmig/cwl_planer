@@ -192,8 +192,9 @@ jobs:
           export CWL_RESTORE_DB_PORT="$restore_port"
           echo "CWL_RESTORE_DB_PORT=$restore_port" >> "$GITHUB_ENV"
           supabase db start
-          sudo apt-get update -qq >/dev/null
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
+          command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
+          psql --version
           PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT" -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -qAt -c 'SELECT 1' | grep -qx 1
 
