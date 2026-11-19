@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 3b erfolgreich in PR #325 gemergt und als nur-lesend-vorschauender/privat-stagender Owner-RPC auf Supabase LIVE. Noch kein tatsächlicher Plan-/Archiv-Restore, kein vollständiger Cloud-Backup-Download oder Full-App-Restore in der Nutzeroberfläche.**
+**Status: Phase 3c in PR #327: erster echter, nur für leere Owner-Clans zugelassener Planungsfeld-Apply mit atomarem Vorher-/Nachher-Checkpoint in privatem Schema. Keine vollständige Plan-/Archiv-/Cloud-App-Wiederherstellung und weiterhin kein öffentlicher Backup-/Restore-Dialog.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
@@ -81,6 +81,27 @@ Der Clientadapter `previewPortablePlanArchiveRecovery` prüft zunächst die voll
 **DE-Hilfe (erst zur späteren UI-Freigabe):** „Vor dem Wiederherstellen vergleichen wir deinen aktuellen CWL-Plan und das Archiv mit der Sicherungsdatei. Bereits gespielte oder gesperrte Tage und verifizierte Aufstellungen bleiben geschützt. Bei Widersprüchen wird nichts automatisch überschrieben.“
 
 **EN help (for the eventual UI):** “Before restoring, we compare your current CWL plan and archives with the backup. Played or locked days and verified lineups stay protected. Conflicting records are never silently overwritten.”
+
+
+## Phase 3c – Erster tatsächlicher Plan-Import, nur in **unbenutzte** Zielclans (PR #327)
+
+In [PR #327](https://github.com/Smolmig/cwl_planer/pull/327) wird nach der privaten Phase-3b-Kandidatenablage erstmals ein **tatsächlich schreibender** Restore vorbereitet. Seine absichtlich sehr enge Grenze schützt historische CWL-Daten: Ein **aktiver Clan mit Spielern, Kriegsdaten, gesperrten/gespielten Tagen, Clanarchiven oder anstehenden Vorschlägen ist ausdrücklich NICHT für diesen Import zulässig**.
+
+### Exakter Umfang
+
+- Aus dem geprüften, unveränderlichen Recovery-Kandidaten werden **nur** die drei planungsbezogenen Felder `members` (Spielerliste inkl. Fixstatus, Einsatzwunsch und Planungshinweisen), `dayGoals` (Tagesziele) und `config` (Planungseinstellungen) in ein noch unbenutztes, ownerautorisiertes Cloud-Profil übernommen.
+- **Ausdrücklich unverändert:** Ziel-Profil-ID und -Clan-Identität, `locks` mit allen sieben Tagen, gespielte Tage, `archives`, `archivedMembers`, `cwlLive`, Planfreigabestatus und Freigabe-Autor, bestehende verifizierte Gruppenarchive und Aufstellungsarchive, Rohangriffe, Misses, Rollen, Auth, Clan-/Owner-Entscheidungen und Collector-Beobachtungen. Selbst wenn die Quell-JSON verifizierte historische Aufstellungen behauptet, werden diese **nicht** als echte API-Beweise in das Ziel übernommen.
+- **Streng sauberer Zielbestand:** keine aktiven Mitglieder, keine archivierten Spieler/Saisons, keine CW- oder CWL-Kriegszeilen, keine verifizierten Archivzeilen, keine pending Vorschläge, kein gesperrter Plan; sieben vorhandene, aber **ungeplante** Tages-Slots ohne Lock, War-Tag, Endzeit, Teilnehmer oder Tages-Snapshots. Ein Ziel mit einem einzigen gespielten Tag scheitert. Die sieben Slots im leeren Ziel sind normal und dürfen nicht mit sieben gespeicherten Kampftagen verwechselt werden. 
+- `public.cwl_apply_portable_pristine_plan` prüft den Kandidaten erneut unter `SECURITY INVOKER` mit echtem `auth.uid()`, Clan-`owner_user_id`, aktueller `owner`-Mitgliedschaft, identischem Clash-Tag, exakt passender Kandidaten-/Zielrevision (**CAS**), identischem Ziel-Vorher-Profil, Planfreigabe, Quellprofil-Struktur und eindeutigen Mitglieds-IDs/`playerTag`s. **`p_apply=false`** liefert nur den Prüfbericht; **`p_apply=true`** verlangt ausdrücklich `APPLY_TO_EMPTY_CWL_PLAN` und wird bei jedem Konflikt abgebrochen.
+- **Transaktionaler Schutz:** Direkt vor dem einzigen `UPDATE public.cwl_cloud_profiles SET profile_json=...` entsteht ein unveränderlicher, RLS-geschützter **Vorher-/Nachher-Sicherungspunkt** in der **nicht öffentlich exponierten** Tabelle `private.cwl_portable_plan_apply_checkpoints`. Der vorhandene Profiltrigger erhöht die Revision. Passt sie nicht genau um +1, verändert ein Trigger geschützte Felder oder schlägt die Aktualisierung fehl, **rollen sowohl die Planänderung als auch der Sicherungspunkt zurück**. Ein identischer Wiederholungsversuch mit alter Revision wird zurückgewiesen; die Quell-Kandidaten und Archivdaten bleiben unberührt.
+- Im Gegensatz zu den vorangehenden öffentlichen Betriebs-Tabellen ist dieser neue Checkpoint bewusst im schon vorhandenen `private`-Schema. Er ist nicht Teil der 17 exportierbaren App-Datentabellen und auch nicht direkt per öffentlicher Data API anlegbar. Nur der aktuell berechtigte Owner darf seine eigenen Checkpoints nach RLS sehen; keine regulären Update-/Delete-Berechtigungen.
+- Der neue JS-Adapter `previewPortablePristinePlanApply` / `applyPortablePristinePlan` liest vor jedem RPC eine aktuelle ownerautorisierte Quelle, überprüft die Zielrevision und bestätigt die Rückgabe- und Checkpoint-Semantik. Er ist **absichtlich nicht an das öffentliche Cloud-Menü angeschlossen**.
+
+**Keine vollständige Restore-Garantie:** Dieser Weg ist für einen **bereits als leer bestätigten und nicht aktiven Clan** vorgesehen. Er stellt **nicht** alle Archive, historischen Daten, Planlocks oder Konten wieder her und ist **kein** allgemeiner Merge in laufende Clans. Planfreigabestatus ist weiterhin eine eigene SELECT-only-Ressource für normale Benutzer; der RPC prüft ihn vor und nach dem Profilupdate, sperrt aber dessen Zeile nicht. Deshalb ist ein späterer, umfassender Recovery-Weg mit vollständiger Sperrkoordination zum Live-Plan/Collector und unabhängiger Autor-/Datenqualitätsprüfung weiter zwingend. Die öffentlichen Backup- und Restore-Aktionen von #178 bleiben deaktiviert, bis ein kompletter atomarer Roundtrip einschließlich Archive/Regeln/Audit mit realer Owner- und iOS-/Android-UAT vorliegt.
+
+**DE (Hilfe zur späteren Produktfreigabe):** „Eine Wiederherstellung in einem neuen, leeren Clan kann Mitglieder und Planungsziele übernehmen. Bestehende CWL-Tage, Angriffe und verifizierte Archive werden dabei niemals ersetzt. Für bereits aktive Clans ist eine eigene Konfliktprüfung nötig.“
+
+**EN (for later product help):** “A new, empty clan can recover its member list and planning goals. Existing CWL days, attacks, and verified archives are never replaced. Active clans require a separate conflict-aware restore.”
 
 
 ## 3. Zugriffs- und Wiederherstellungsmatrix
