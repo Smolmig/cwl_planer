@@ -9,6 +9,9 @@ name: Verify prior encrypted backup content (isolated drill)
 # was blocked by Auth ownership. Re-test SAME ciphertext with CLI v3.2.0,
 # which was independently verified to provide both columns (read-only gate).
 # Later: operator may explicitly provide a different successful backup run.
+# 19 Nov retry after PR #316: the runner now uses its preinstalled psql
+# instead of depending on the Ubuntu package mirror. Replay the unchanged
+# 18 Nov encrypted artifact in localhost only; require full SQL/CWL/Audit checks.
 # No direct connection or writing to production Supabase is possible here.
 on:
   push:
