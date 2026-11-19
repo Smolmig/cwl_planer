@@ -1,17 +1,13 @@
 "use strict";
-const {test}=require("node:test");
+const {test,before}=require("node:test");
 const assert=require("node:assert/strict");
 
-const {
- PORTABLE_CLOUD_BACKUP_KIND,PORTABLE_CLOUD_BACKUP_FORMAT,PORTABLE_CLOUD_TABLES,
- PORTABLE_EXCLUDED_TABLES,createPortableCloudBackup,verifyPortableCloudBackup,
- previewPortableCloudRestore,collectOwnerCloudBackup,canonicalBackupJson
-}=awaitImport();
-
-function awaitImport(){
- // Node 22's test runner supports dynamic ESM loading from a CJS test file.
- return new Proxy({}, {get(_target,key){return (...args)=>import("../cloud-portable-backup-core.mjs").then(m=>m[key](...args))}});
-}
+let PORTABLE_CLOUD_TABLES,PORTABLE_EXCLUDED_TABLES;
+before(async()=>{
+ const module=await import("../cloud-portable-backup-core.mjs");
+ PORTABLE_CLOUD_TABLES=module.PORTABLE_CLOUD_TABLES;
+ PORTABLE_EXCLUDED_TABLES=module.PORTABLE_EXCLUDED_TABLES;
+});
 const A="11111111-1111-4111-8111-111111111111";
 const B="22222222-2222-4222-8222-222222222222";
 const OWNER="33333333-3333-4333-8333-333333333333";
