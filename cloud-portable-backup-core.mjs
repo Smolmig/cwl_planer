@@ -34,7 +34,8 @@ export const PORTABLE_CLOUD_TABLES = Object.freeze(descriptors.map(([name,key,co
 ));
 export const PORTABLE_EXCLUDED_TABLES = Object.freeze([
  "cwl_clan_invites", "cwl_clan_memberships", "cwl_access_blocks",
- "cwl_clan_presence", "cwl_stat_collector_status"
+ "cwl_clan_presence", "cwl_stat_collector_status",
+ "cwl_portable_restore_checkpoints"
 ]);
 const tablesByName = new Map(PORTABLE_CLOUD_TABLES.map(spec => [spec.name,spec]));
 const forbiddenKeys = new Set(["__proto__","prototype","constructor"]);
