@@ -2,6 +2,10 @@
 -- The checkpoint is inserted in the SAME SQL transaction BEFORE the profile
 -- changes. Failing the profile UPDATE also rolls back this before-state row.
 -- This is operational data, excluded from the 17-table portable file.
+-- Keep the evidence outside the publicly exposed Data API schema.
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC;
+GRANT USAGE ON SCHEMA private TO authenticated;
 CREATE TABLE private.cwl_portable_plan_apply_checkpoints (
   id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   clan_id uuid NOT NULL REFERENCES public.cwl_clans(id) ON DELETE CASCADE,
