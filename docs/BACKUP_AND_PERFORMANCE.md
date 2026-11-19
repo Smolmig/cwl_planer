@@ -1,6 +1,16 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
 
+## 19.11.2026 – #178 Phase 3c: erster streng begrenzter Plan-Apply nur bei leerem Clan (PR #327)
+
+[PR #327](https://github.com/Smolmig/cwl_planer/pull/327) implementiert erstmals einen **wirklich schreibenden, aber bewusst eng begrenzten** Cloud-Plan-Recovery-Pfad. `cwl_apply_portable_pristine_plan` darf ausschließlich im **komplett unbenutzten Owner-Zielclan** die drei Planungsfelder `members`, `dayGoals` und `config` aus einem bereits separat geprüften Phase-3b-Kandidaten einspielen. Der Server prüft `auth.uid()`, echten Clan-Owner und Mitgliedschaft, Clash-Tag, aktuelle Revision, exakten Staging-Vorher-Stand, sieben leere Tages-Slots und fehlende bereits gespielte oder archivierte Kriege/Clanmitglieder/Vorschläge. Identitäten, freigegebene/gesperrte Tagesstände, Clanarchiv, API-Rohdaten und Benutzerrechte werden niemals aus der Datei übernommen.
+
+Ein RLS-geschützter, append-only **Vorher-/Nachher-Checkpoint** wird **in derselben Transaktion unmittelbar vor dem einzigen Profil-UPDATE** unter `private.cwl_portable_plan_apply_checkpoints` abgelegt. Er ist außerhalb des öffentlich exponierten Datenschemas und nicht Teil des portablen 17-Tabellen-Exports. Der Profil-Revisions-Trigger muss exakt +1 ergeben; Trigger-/Konfliktfehler rollen sowohl UPDATE als auch Checkpoint zurück. Der importierte Kader muss eindeutige Mitglieds-IDs und Clash-Tags aufweisen. Synthetische PG17-UAT testet Clean-Apply, Played-Day-Sperre, Replay, absichtlich fehlschlagenden Trigger und andere Owner. Die Browseradapter bleiben absichtlich ohne Cloud-UI; **kein** vollständiger App-Restore und **kein** neuer offizieller Cloud-Release.
+
+**Weitere Gates:** vollständig transaktionale Konfliktbehandlung für bereits aktive Clans einschließlich Planfreigabe-/Collector-Locks, verified CWL-Archive, Rules/Observed/Audit-Import, Backup-Roundtrip/rollenübergreifende Wiederherstellung, Benutzersitzung/Devices und Help DE/EN. Details: [CLOUD_PORTABLE_BACKUP_CONTRACT.md](CLOUD_PORTABLE_BACKUP_CONTRACT.md).
+
+---
+
 ## 19.11.2026 – #178 Phase 3b LIVE: unveränderliche private CWL-Plan-/Archiv-Wiederherstellungsvorlage
 
 [PR #325](https://github.com/Smolmig/cwl_planer/pull/325) als Squash `ccc7b7e0b7a77341a5c4ce66898f13ea49dd4ee1` gemergt. **857/857 PR-Regressionstests** und die echten isolierten PG17-Owner-/RLS-/gespielte-Tage-/Archiv-Konflikttests waren grün. Die zwei ausschließlich additiven Backend-Migrationen wurden auf dem verbundenen Supabase-Projekt installiert: `20261119162116 / cwl_portable_plan_recovery_candidates_20261119` und `20261119162141 / cwl_portable_plan_recovery_staging_rpc_20261119`. Es wurden **keine produktiven CWL-Tage, Planprofile, Archivzeilen, Statistiken oder Konten geändert**.
