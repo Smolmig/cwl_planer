@@ -156,7 +156,7 @@ test("tampered/non-atomic files and cross-Clash mapping fail closed before stagi
  });
  await assert.rejects(()=>core.previewPortablePlanArchiveRecovery({
   sb,file:clientFile,sourceClanId:A,targetClanId:B
- }),/konsistenten Server-Snapshot/);
+ }),/konsistentem Server-Snapshot/);
  target.clans[0].clash_tag="#QL8P";
  await assert.rejects(()=>core.previewPortablePlanArchiveRecovery({
   sb,file,sourceClanId:A,targetClanId:B
