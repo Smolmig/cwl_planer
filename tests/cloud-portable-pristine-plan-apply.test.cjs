@@ -97,8 +97,8 @@ test("private-schema before/after checkpoint is owner-RLS, append-only and not e
  assert.match(checkpoints,/m\.role='owner'/);
  assert.match(checkpoints,/actor_user_id=\(select auth\.uid\(\)\)/);
  assert.doesNotMatch(checkpoints,/\bGRANT UPDATE\b|\bGRANT DELETE\b/);
- assert.doesNotMatch(core.PORTABLE_CLOUD_TABLES.map(t=>t.name).join(" "),"cwl_portable_plan_apply_checkpoints");
- assert.doesNotMatch(core.PORTABLE_EXCLUDED_TABLES.join(" "),"cwl_portable_plan_apply_checkpoints");
+ assert.doesNotMatch(core.PORTABLE_CLOUD_TABLES.map(t=>t.name).join(" "),/cwl_portable_plan_apply_checkpoints/);
+ assert.doesNotMatch(core.PORTABLE_EXCLUDED_TABLES.join(" "),/cwl_portable_plan_apply_checkpoints/);
  assert.match(workflow,/postgres:17/);
  assert.match(workflow,/portable-pristine-plan-apply-check\.sql/);
  assert.doesNotMatch(workflow,/secrets\.|service_role|SUPABASE_DB_URL/);
