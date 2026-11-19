@@ -70,7 +70,8 @@ test("plan staging SQL stays SECURITY INVOKER and never touches active plans or 
  assert.match(migration,/m\.role='owner'/);
  assert.match(migration,/c\.owner_user_id=v_owner/);
  assert.match(migration,/p_expected_revision/);
- assert.match(migration,/FOR SHARE/);
+ assert.doesNotMatch(migration,/WHERE s\.clan_id=p_target FOR SHARE|WHERE a\.clan_id=p_target FOR SHARE/);
+ assert.match(migration,/Recheck all current rows in the FUTURE apply transaction/);
  assert.match(migration,/STAGE_PLAN_FOR_MANUAL_REVIEW/);
  assert.match(migration,/active_plan_modified',false/);
  assert.match(migration,/archives_modified',false/);
