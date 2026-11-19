@@ -137,7 +137,9 @@ export async function inspectPortableOwnerRestoreFile({sb,fileText,mapping}){
   fail("Ungültige oder zu große Cloud-Datei.");
  let file;
  try{file=JSON.parse(fileText);}catch{fail("Die Datei enthält kein gültiges JSON.");}
- await verifyPortableCloudBackup(file);
+ const verified=await verifyPortableCloudBackup(file);
+ if(verified.consistency!=="server-stable-statement")
+  fail("Nur vollständige, konsistente Server-Snapshots sind für die Cloud-Wiederherstellung zulässig.");
  const preview=await previewOwnerCloudRestore({sb,file,mapping});
  return summarizePortableRestoreCoverage(preview);
 }
