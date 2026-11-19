@@ -63,6 +63,9 @@ test("restore SQL has invoker + owner/membership + CAS + explicit human confirm"
  assert.match(sql,/pg_advisory_xact_lock/);
  assert.match(sql,/hashtextextended\(p_target::text,424242\)/);
  assert.match(sql,/ON CONFLICT \(clan_id,war_key\) DO NOTHING/);
+ assert.match(sql,/INSERT INTO public\.cwl_portable_restore_checkpoints/);
+ assert.match(sql,/v_preflight:=public\.cwl_restore_portable_facts_atomic/);
+ assert.match(sql,/checkpoint_id/);
  assert.match(sql,/ON CONFLICT \(clan_id,war_key,attacker_tag,attack_order\) DO NOTHING/);
  assert.match(sql,/ON CONFLICT \(clan_id,war_key,player_tag\) DO NOTHING/);
  assert.match(sql,/v_conflict_wars\+v_conflict_attacks\+v_conflict_missed/);
@@ -81,19 +84,20 @@ test("no API masquerade and no changes to plans, archives or audit",()=>{
  assert.doesNotMatch(executable,/\bDELETE\s+FROM\s+public\.cwl_/i);
  assert.doesNotMatch(executable,/\bTRUNCATE\s+public\.cwl_/i);
  const inserted=[...executable.matchAll(/\bINSERT INTO public\.(cwl_[a-z_]+)/gi)].map(m=>m[1]);
- assert.deepEqual([...new Set(inserted)].sort(),["cwl_stat_attacks","cwl_stat_missed","cwl_stat_wars"]);
+ assert.deepEqual([...new Set(inserted)].sort(),["cwl_portable_restore_checkpoints","cwl_stat_attacks","cwl_stat_missed","cwl_stat_wars"]);
  for(const name of ["cwl_cloud_profiles","cwl_plan_review_state","cwl_group_archives","cwl_own_lineup_archives","cwl_clan_review_decisions"])
   assert.ok(!inserted.includes(name));
 });
 test("SQL CI uses synthetic PG17 and tests preview, rollback, API origin, anon",()=>{
  assert.match(workflow,/image: postgres:17/);
  assert.match(workflow,/portable-cloud-restore-check\.sql/);
+ assert.match(workflow,/20261119164900_cwl_portable_restore_checkpoints_v1\.sql/);
  assert.match(workflow,/SET ROLE anon/);
  assert.doesNotMatch(workflow,/SUPABASE_DB_URL|service_role|secrets\./i);
  const testSql=fs.readFileSync(path.join(root,"tests/sql/portable-cloud-restore-check.sql"),"utf8");
  for(const token of ["rollback4","restored3","missing confirmation accepted",
   "second restore duplicated data","API-missed injection incorrectly allowed",
-  "foreign clan accepted","stale plan revision accepted","duplicate war keys accepted"])
+  "foreign clan accepted","stale plan revision accepted","duplicate war keys accepted","checkpoint","failed transaction kept an invalid checkpoint"])
   assert.ok(testSql.includes(token),token);
 });
 test("client preview verifies signed-file structure, target role and never enables mutation",async()=>{
