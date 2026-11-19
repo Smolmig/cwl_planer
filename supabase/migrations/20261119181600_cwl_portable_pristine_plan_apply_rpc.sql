@@ -188,7 +188,7 @@ BEGIN
    END IF;
    -- No UPDATE or DELETE occurs on existing candidates, archives or audit.
    -- If the upcoming profile UPDATE fails, this checkpoint is rolled back.
-   INSERT INTO public.cwl_portable_plan_apply_checkpoints(
+   INSERT INTO private.cwl_portable_plan_apply_checkpoints(
      clan_id,candidate_id,source_clan_id,before_revision,applied_revision,
      before_profile_json,applied_profile_json,before_review_state
    ) VALUES(
