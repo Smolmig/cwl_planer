@@ -1,6 +1,14 @@
 # CWL Planer – Backup- und Optimierungskonzept
 Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
 
+## 19.11.2026 – Cloud-App-Portabilität #178, erste sichere Daten-/Vorschau-Schicht (PR #319)
+
+Die Live-Datenstruktur umfasst **23 RLS-geschützte öffentliche App-Tabellen**. Ein neues, noch **nicht UI-aktiviertes** JavaScript-Modul deckt 17 explizit freigegebene Datentabellen ab und führt Clanstammdaten als Metadaten. Auth-, Einladungs-, Mitgliedschafts-, Sperr-, Presence- und Collector-Verwaltungsdaten werden bewusst nicht stillschweigend in eine appweite Benutzerdatei übertragen. Die exakten Tabellen/Spalten und die Rechte-/Clash-Tag-Grenzen stehen in [CLOUD_PORTABLE_BACKUP_CONTRACT.md](CLOUD_PORTABLE_BACKUP_CONTRACT.md).
+
+Vorbereitete Funktionen: SHA-256-Inhaltsprüfung des versionierten Dateiformats, konsequente Quell-Clan-/War-/Primärschlüsselprüfung, Owner-gebundener RLS-Read-only-Sammler über paginierte Abfragen und eine ebenfalls rein lesende Zielvergleichsvorschau (`new`/`identical`/`conflict`/`reviewOnly`). Ein gefährdeter oder unvollständiger Export bricht ab; der Client-Read ist **nicht atomar** und wird ausdrücklich so gekennzeichnet. **Kein produktiver Cloud-Restore, keine Daten- oder RLS-Änderung und keine vollständige Datensicherungszusage.** Die bisherige verifizierte technische DB-Disaster-Recovery aus #44523450723 bleibt unabhängig davon erhalten. Nächster Schritt: serverseitige konsistente, berechtigte Export-Snapshot-Strategie und transaktionaler idempotenter Restore mit Konflikt-/CAS-/RLS-Gates und realer UAT vor UI-Freigabe.
+
+---
+
 ## 19.11.2026 – Echter verschlüsselter Datenbank-Restore erfolgreich (eng definierter Nachweis)
 
 Nach [PR #315](https://github.com/Smolmig/cwl_planer/pull/315) (lokales Supabase-Auth-Bootstrap), [PR #316](https://github.com/Smolmig/cwl_planer/pull/316) (keine laufzeitigen APT-Paketdownloads in drei CI-Pfaden) und dem gezielten Replay-Trigger [PR #317](https://github.com/Smolmig/cwl_planer/pull/317) bestand der **echte isolierte Restore-Run #44523450723** am 19.11.2026 erstmals vollständig: <https://github.com/Smolmig/cwl_planer/actions/runs/44523450723>. Quelle ist die bestehende erfolgreiche verschlüsselte Sicherung **#44283214780**, kein synthetisches oder neu erfundenes Backup. Der Workflow hat SHA-256 und GPG geprüft, überlappende Auth-COPY-Abschnitte verlustfrei abgeglichen, das temporäre lokale PostgreSQL von Supabase CLI 3.2.0 gestartet und die SQL-Dateien `schema.sql`, `auth-data.sql`, `data-local.sql` in **einer einzigen psql-Transaktion** erfolgreich eingespielt. Danach waren Tabellenanzahlen, RLS und exakter Inhalt der vier Statistiktabellen korrekt, temporäre DB und Klartextdaten gelöscht.
