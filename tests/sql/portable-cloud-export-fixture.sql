@@ -335,13 +335,17 @@ GRANT SELECT ON public.cwl_clan_cw_missed_decisions TO authenticated;
 -- Fake owner, fake foreign clan: these identifiers are not real user data.
 INSERT INTO public.cwl_clans VALUES
  ('11111111-1111-4111-8111-111111111111','United Fighters','#P8Y2','33333333-3333-4333-8333-333333333333'),
- ('22222222-2222-4222-8222-222222222222','Foreign Club','#QL8P','44444444-4444-4444-8444-444444444444');
+ ('22222222-2222-4222-8222-222222222222','Foreign Club','#QL8P','44444444-4444-4444-8444-444444444444'),
+ ('55555555-5555-4555-8555-555555555555','United Fighters 2','#QL8P','33333333-3333-4333-8333-333333333333'),
+ ('66666666-6666-4666-8666-666666666666','Orphaned Owner Membership','#8PYL','33333333-3333-4333-8333-333333333333');
 INSERT INTO public.cwl_clan_memberships VALUES
  ('11111111-1111-4111-8111-111111111111','33333333-3333-4333-8333-333333333333','owner'),
- ('22222222-2222-4222-8222-222222222222','44444444-4444-4444-8444-444444444444','owner');
+ ('22222222-2222-4222-8222-222222222222','44444444-4444-4444-8444-444444444444','owner'),
+ ('55555555-5555-4555-8555-555555555555','33333333-3333-4333-8333-333333333333','owner');
 INSERT INTO public.cwl_cloud_profiles(clan_id,profile_json,data_version,revision) VALUES
  ('11111111-1111-4111-8111-111111111111','{"name":"United Fighters","members":[{"id":"a","playerTag":"#P8Y2"}],"locks":[{"locked":false,"lineup":[]}],"archives":[]}'::jsonb,9,4),
- ('22222222-2222-4222-8222-222222222222','{"name":"Foreign","members":[],"locks":[],"archives":[]}'::jsonb,9,1);
+ ('22222222-2222-4222-8222-222222222222','{"name":"Foreign","members":[],"locks":[],"archives":[]}'::jsonb,9,1),
+ ('55555555-5555-4555-8555-555555555555','{"name":"United Fighters 2","members":[],"locks":[],"archives":[]}'::jsonb,9,3);
 INSERT INTO public.cwl_stat_wars(clan_id,war_key,war_type,started_at,team_size,source,finalized,missed_log_complete,source_clash_tag) VALUES
  ('11111111-1111-4111-8111-111111111111','normal:war1','normal','2026-11-17T12:00:00Z',15,'api',true,true,'#P8Y2'),
  ('11111111-1111-4111-8111-111111111111','cwl:war2','cwl','2026-11-03T12:00:00Z',15,'import',true,false,'#P8Y2'),
