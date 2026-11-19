@@ -57,6 +57,12 @@ DECLARE
  v_conflict_missed integer := 0;
  v_downgraded_api integer := 0;
  v_review_only integer := 0;
+ v_preflight jsonb;
+ v_keys text[];
+ v_prev_wars jsonb;
+ v_prev_attacks jsonb;
+ v_prev_missed jsonb;
+ v_checkpoint_id uuid;
 BEGIN
  -- Both auth identity and actual current owner membership are mandatory.
  IF p_target IS NULL OR v_owner IS NULL OR
@@ -179,13 +185,61 @@ BEGIN
      USING ERRCODE='22023';
  END IF;
 
+ -- Every insert path must first pass this same function in pure preview mode.
+ -- This enforces conflicts BEFORE creating an immutable recovery checkpoint.
+ -- Any remaining race during insertion still raises and rolls back both.
+ IF p_apply THEN
+   v_preflight:=public.cwl_restore_portable_facts_atomic(
+     p_target,p_source,p_expected_revision,false,NULL);
+   IF (v_preflight#>>'{wars,conflict}')::integer+
+      (v_preflight#>>'{attacks,conflict}')::integer+
+      (v_preflight#>>'{missed,conflict}')::integer<>0 THEN
+      RAISE EXCEPTION 'existing evidence conflicts with portable restore'
+        USING ERRCODE='40001';
+   END IF;
+   IF (v_preflight#>>'{wars,new}')::integer+
+      (v_preflight#>>'{attacks,new}')::integer+
+      (v_preflight#>>'{missed,new}')::integer>0 THEN
+     SELECT pg_catalog.array_agg(w.row_data->>'war_key')
+       INTO v_keys
+       FROM pg_catalog.jsonb_array_elements(v_wars) AS w(row_data);
+     SELECT coalesce(pg_catalog.jsonb_agg(to_jsonb(x)),'[]'::jsonb)
+       INTO v_prev_wars
+       FROM (SELECT * FROM public.cwl_stat_wars
+             WHERE clan_id=p_target AND war_key=ANY(v_keys)
+             ORDER BY war_key) AS x;
+     SELECT coalesce(pg_catalog.jsonb_agg(to_jsonb(x)),'[]'::jsonb)
+       INTO v_prev_attacks
+       FROM (SELECT * FROM public.cwl_stat_attacks
+             WHERE clan_id=p_target AND war_key=ANY(v_keys)
+             ORDER BY war_key,attacker_tag,attack_order) AS x;
+     SELECT coalesce(pg_catalog.jsonb_agg(to_jsonb(x)),'[]'::jsonb)
+       INTO v_prev_missed
+       FROM (SELECT * FROM public.cwl_stat_missed
+             WHERE clan_id=p_target AND war_key=ANY(v_keys)
+             ORDER BY war_key,player_tag) AS x;
+     IF pg_catalog.octet_length(
+         (v_prev_wars||v_prev_attacks||v_prev_missed)::text)>6291456 THEN
+       RAISE EXCEPTION 'restore checkpoint exceeds limit'
+         USING ERRCODE='54000';
+     END IF;
+     INSERT INTO public.cwl_portable_restore_checkpoints (
+       clan_id,source_clan_id,profile_revision,war_keys,
+       previous_wars,previous_attacks,previous_missed
+     ) VALUES (
+       p_target,v_source_id::uuid,v_revision,to_jsonb(v_keys),
+       v_prev_wars,v_prev_attacks,v_prev_missed
+     ) RETURNING id INTO v_checkpoint_id;
+   END IF;
+ END IF;
+
  FOR v_war IN SELECT value FROM pg_catalog.jsonb_array_elements(v_wars) AS x(value)
  LOOP
    v_war_key:=v_war->>'war_key';
    v_type:=v_war->>'war_type';
    IF v_war_key IS NULL OR length(v_war_key) NOT BETWEEN 4 AND 100 OR
       v_type NOT IN ('normal','cwl') OR
-      v_war->>'source' NOT IN ('import','api') OR
+      coalesce(v_war->>'source','') NOT IN ('import','api') OR
       pg_catalog.jsonb_typeof(v_war->'roster_tags') NOT IN ('null','array') OR
       v_war->>'started_at' IS NULL OR
       v_war->>'team_size' IS NULL THEN
@@ -355,6 +409,7 @@ BEGIN
    'target_clash_tag',v_tag,
    'target_revision',v_revision,
    'scope','war-facts-only',
+   'checkpoint_id',v_checkpoint_id,
    'applied',p_apply,
    'mutation_permitted',p_apply AND
      v_conflict_wars+v_conflict_attacks+v_conflict_missed=0,
