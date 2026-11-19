@@ -89,8 +89,11 @@ DECLARE v record;
 BEGIN
  SELECT provolatile,prosecdef,proconfig INTO v
  FROM pg_proc WHERE oid='public.cwl_export_owned_backup(uuid[])'::regprocedure;
- IF v.provolatile<>'s' OR v.prosecdef OR NOT
-   (v.proconfig @> ARRAY['search_path=']::text[]) THEN
+ IF v.provolatile<>'s' OR v.prosecdef OR NOT EXISTS (
+   SELECT 1 FROM unnest(v.proconfig) AS setting(value)
+   -- PostgreSQL represents an empty search_path as either empty or "".
+   WHERE replace(setting.value,'"','') = 'search_path='
+ ) THEN
    RAISE EXCEPTION 'RPC volatility / SECURITY INVOKER / search_path guard broken';
  END IF;
  IF has_function_privilege('anon','public.cwl_export_owned_backup(uuid[])','EXECUTE') OR
