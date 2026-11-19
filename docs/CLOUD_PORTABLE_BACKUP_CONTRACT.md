@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 3c in PR #327: erster echter, nur für leere Owner-Clans zugelassener Planungsfeld-Apply mit atomarem Vorher-/Nachher-Checkpoint in privatem Schema. Keine vollständige Plan-/Archiv-/Cloud-App-Wiederherstellung und weiterhin kein öffentlicher Backup-/Restore-Dialog.**
+**Status: Phase 3c in PR #327 erfolgreich gemergt und auf Supabase live installiert: tatsächlich schreibender Planungsfeld-Apply ausschließlich für unbenutzte Owner-Zielclans, atomarer privater Vorher-/Nachher-Checkpoint. Noch keine vollständige Plan-/Archiv-/Cloud-App-Wiederherstellung und weiterhin kein öffentlicher Backup-/Restore-Dialog.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
