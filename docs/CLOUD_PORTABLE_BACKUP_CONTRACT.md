@@ -1,6 +1,6 @@
 # #178 – Portable Cloud-App-Backup: Datenvertrag und Sicherheitsgrenzen (19.11.2026)
 
-**Status: Phase 1, technischer Grundbaustein, NICHT als nutzbarer Cloud-Export/Restore freigeschaltet.**
+**Status: Phase 2, serverseitiger Read-only-Snapshot und sichere Vergleichsvorschau in Entwicklung; Cloud-Export/Restore weiterhin NICHT in der Nutzeroberfläche freigeschaltet.**
 Produktive Cloud v1.27.0 bleibt unverändert. Die Datei `cloud-portable-backup-core.mjs` wird von keiner UI importiert. Die alten Cloud-Profil-Snapshots und Offline-Backups bleiben vorerst funktional, dürfen jedoch **nicht** als vollständiger Cloud-App-Roundtrip bezeichnet werden.
 
 ## 1. Tatsächliches Schema statt Annahmen
@@ -31,9 +31,17 @@ Das neue portable Format enthält für einen **ausdrücklich vom angemeldeten Be
 4. War-/Attack-/Missed-Referenzen, Profil-Datenversion 9 und Grundstruktur des Profile-JSON werden geprüft. Ein fehlender Angriff wird nicht als 0 Sterne umgedeutet.
 5. Restore-Vorschau `previewPortableCloudRestore` arbeitet ausschließlich mit **extern vertrauenswürdig ermittelten**, eigenen Ziel-Clans und explizitem Source→Target-Mapping. Aktueller Clash-Tag muss exakt stimmen. Ohne alle Zieldatentabellen kein positives Ergebnis. Erst dann werden nach Primärschlüsseln `new`, `identical`, `conflict` oder `reviewOnly` gezählt. Die Vorschau liefert immer `mutationPermitted:false`. Keine Schreibfunktion existiert.
 
-### Wichtige Konsistenzgrenze
+### Zwei explizit getrennte Konsistenzstufen (Phase 2)
 
-**Clientabfragen über 17 Tabellen sind keine Datenbanktransaktion.** Ein Collector oder Vize kann während des Lesens einen Krieg/Plan ändern. Deshalb trägt die Hülle bewusst `consistency:"client-read-non-atomic"`. Dieses Modul ist ein **sicherer Datenformat-/Lese-/Vorschau-Grundbaustein**, noch kein atomarer, belastbarer vollständiger Datensicherungsknopf. Für einen produktiven Export wird vor der Freigabe eine konsistente serverseitige Snapshot-/Revisionsstrategie benötigt, bei der jeder relevante Schreibstrom (Plan, Archive, Statistik, Audit) berücksichtigt wird. Auch 100 % API-/Historienabdeckung lässt sich nicht aus einem vollständigen Tabellenexport ableiten.
+- **Legacy-Clientsammler** `collectOwnerCloudBackup`: unverändert `consistency:"client-read-non-atomic"`. Viele `range`-Abfragen können unterschiedliche Datenbankzeitpunkte sehen, daher **niemals als garantiert vollständige Datensicherung bewerben**.
+- **Neuer SQL-RPC** `public.cwl_export_owned_backup(p_clan_ids uuid[])`: `LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path=''`. Alle 17 expliziten Tabellenprojektionen eines bzw. mehrerer berechtigter Owner-Clans liegen in **einem PostgreSQL-Statement-MVCC-Snapshot**; Rückgabe `consistency:"server-stable-statement"`. Die PostgreSQL-17-Dokumentation bestätigt diese STABLE-Snapshot-Semantik. Es gibt **keinen privilegierten Zugriff**: authentifizierter Benutzer + Clan-Owner-ID + tatsächliche Owner-Mitgliedschaft **für jeden angefragten Clan** und bestehende RLS-/SELECT-Policies für jede Tabelle sind zwingend. Ein Fehler bricht die gesamte JSON-Antwort ab.
+- Der RPC begrenzt 1–30 eindeutige Clan-IDs, maximal **100.000 Zeilen pro Tabelle und Clan** (100.001 als Fehler-Sentinel), maximal **64 MiB pro Clan und insgesamt**. Es wird keine unvollständig paginierte/gekappte Tabelle zurückgegeben; Datenbank-/Response-Limits dürfen den Download nur **abbrechen**, nie als erfolgreich erscheinen lassen.
+- `exportOwnerCloudSnapshot` prüft lokale Sitzung vor/nach RPC, vollständige Quellclanliste, die Konsistenzkennung, alle Tabellen/Datenspalten/Beziehungen und bildet erst anschließend den SHA-256-Fingerprint. Keine fremde `clan_id`, keine Wildcard-SELECTs. `previewOwnerCloudRestore` vergleicht die Datei mit einem ebenso **ownerautorisiert und atomar** gelesenen Ziel-Snapshot, bei Bedarf für mehrere Clans. Die Vorschau zeigt nur `new`/`identical`/`conflict`/`reviewOnly`, immer `mutationPermitted:false`.
+- **Wichtig:** Ein MVCC-konsistenter Snapshot heißt *nur*: alle enthaltenen Daten entsprechen einem Datenbankzeitpunkt. Er beweist **nicht** vollständige API-Beobachtung, nicht die Existenz älterer unter RLS ausgeblendeter Quell-Clash-Tag-Historien und nicht die Wiederherstellbarkeit von Konten, Rechten oder Einladungen. Nach Verlust des gehosteten Projekts müssen Accounts und autorisierte Zielclans vor einem Import separat wiederhergestellt sein. Die Restore-Transaktion muss **alle Berechtigungen und Konflikte erneut prüfen**, unabhängig vom JSON-Hash oder der Vorschau.
+
+**Echte SQL-UAT:** [GitHub Workflow `portable-cloud-export-ci.yml`](../.github/workflows/portable-cloud-export-ci.yml) startet eine **isolierte PostgreSQL-17-Datenbank** mit synthetischen Eigentümer-, Fremdclan- und fehlenden-Mitgliedschaft-Fällen. Der Test prüft Owner-only, anonyme Sperre, Zwei-Eigene-Clans, gemischte Zugriffe, Datenumfang, STABLE/INVOKER und validiert das erzeugte JSON mit dem **gleichen** JS-Validator wie die Cloud-Datei. Dieses Testsetup hat **keinen Zugriff auf die Produktionsdatenbank**.
+
+Auch 100 % API-/Historienabdeckung lässt sich nicht aus einem vollständigen Tabellenexport ableiten.
 
 ## 3. Zugriffs- und Wiederherstellungsmatrix
 
@@ -48,7 +56,7 @@ Das neue portable Format enthält für einen **ausdrücklich vom angemeldeten Be
 
 ## 4. Nächste zwingende Implementierungsgates (nicht erledigt)
 
-- **Serverseitiger konsistenter Export-Snapshot:** sichere Eigeneigentümer-/Tenant-Prüfung und transaktionaler Snapshot oder belastbare globale Revision. Read-only UI erst dann als **„Backup herunterladen“** bezeichnen.
+- **Export-Snapshot integrieren und Live-UAT:** Der neue `STABLE SECURITY INVOKER`-RPC plus JS-Adapter ist implementiert, muss vor Nutzerfreischaltung im echten angemeldeten Owner-Kontext und mit Datenabdeckungs-/Responsegrößen geprüft werden. Erst **gemeinsam mit sicherem Restore** zwei Cloud-Backup-Aktionen aktivieren.
 - **Serverseitiger Restore-Preflight:** Dateiformat/Inhalt/Tabellenbeziehungen/FK, Zielmapping, Rollen, neue/verifizierte Konflikte, Speicherlimits; bevorzugte neuere API-Belege nicht mit älteren Importdaten ersetzen. Spätestens hier Integrity/Version mit denselben Verträgen noch einmal prüfen.
 - **Transaktionales Wiederherstellen:** nur von autorisierter Backend-Funktion, vor jeder Mutation frischer Sicherungspunkt, CAS auf laufende Pläne/Locks, idempotente Kriegs-/Angriffs-/Missed-Schlüssel, strikte Belegqualität, referenzierte Archiv-/Review-Zyklen, `append-only`-Decision-Audit sicher; Rollback bei jeder Teilabweichung.
 - **UI-Ersetzung nach UAT:** Im Cloud-Modus unter **Mehr → Backup & Wiederherstellung** genau **„Backup herunterladen“** und **„Backup wiederherstellen“** plus nichtdestruktive Vorschau, bewusstes Zielmapping und zweite Bestätigung. Legacy-Plan-Snapshots bleiben **intern** erreichbar, sind aber keine konkurrenzierenden Cloud-Backup-Downloads; noch nicht voreilig entfernen. Offline-PWA behält ihre Einzel-/Alle-Profile-Funktionen.
