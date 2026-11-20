@@ -1,0 +1,66 @@
+name: Witnessed 17-table missing-history atomic restore PG17 UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-witnessed-missing-history-ci.yml'
+      - 'supabase/migrations/20261120142000_cwl_witnessed_atomic_missing_history_recovery.sql'
+      - 'tests/sql/portable-witnessed-missing-history-check.sql'
+      - 'supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql'
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'tests/sql/portable-cloud-export-fixture.sql'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-witnessed-missing-history-ci.yml'
+      - 'supabase/migrations/20261120142000_cwl_witnessed_atomic_missing_history_recovery.sql'
+      - 'tests/sql/portable-witnessed-missing-history-check.sql'
+permissions:
+  contents: read
+jobs:
+  witnessed-atomic-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap disposable isolated PG17 with synthetic owner and 17 RLS datasets
+        run: |
+          set -euo pipefail
+          command -v psql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120142000_cwl_witnessed_atomic_missing_history_recovery.sql
+      - name: Prove original witness, all 17 rows, idempotence, CAS, rollback and anon denial
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-witnessed-missing-history-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_restore_witnessed_missing_history(
+              '00000000-0000-4000-8000-000000000001'::uuid,
+              '{}'::jsonb,'11111111-1111-4111-8111-111111111111'::uuid,
+              4,NULL,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anonymous restore RPC unexpectedly executable'
+            exit 1
+          fi
+          echo 'PASS: no public full restore release, isolated scoped missing-history transaction verified'

@@ -633,3 +633,91 @@ export async function verifyWitnessedOwnerCloudBackup({sb,file,mapping}){
    // Valid provenance does not grant full-write permissions.
    fullRestoreAvailable:false,mutationPermitted:false};
 }
+
+
+// #178: genuine, single-transaction recovery for missing ORIGINAL historical
+// rows only. This is intentionally NOT the public full-app Restore action.
+// The current owner clan ID, full live plan and its revision MUST be intact.
+// Every write is authorized and origin-verified again inside PostgreSQL.
+const WITNESSED_HISTORY_CONFIRMATION="RESTORE_WITNESSED_MISSING_HISTORY";
+function witnessedHistorySource(verified,targetClanId){
+ if(!uuidPattern.test(targetClanId||"")||
+    verified.consistency!=="server-stable-statement"||
+    !verified.server_receipt||verified.clans.length!==1||
+    verified.clans[0].source_clan_id!==targetClanId)
+  reject("Dieser sichere Historien-Restore setzt den unveränderten ursprünglichen Clan und einen Server-Herkunftsbeleg voraus.");
+ return verified.clans[0];
+}
+function checkedHistoryReply(reply,{targetClanId,apply}){
+ const value=reply?.data;
+ if(reply.error||!record(value)||
+    value.scope!=="witnessed-same-clan-missing-history"||
+    value.clan_id!==targetClanId||
+    value.full_app_restore!==false||
+    !Number.isSafeInteger(value.new)||value.new<0||
+    !Number.isSafeInteger(value.conflict)||value.conflict<0)
+  reject("Server konnte den geschützten Historien-Restore nicht bestätigen.");
+ if(!apply){
+  if(value.applied!==false||value.mutation_permitted!==false||
+     !/^[a-f0-9]{64}$/.test(value.target_fingerprint||"")||
+     !Number.isSafeInteger(value.expected_revision)||value.expected_revision<1||
+     !record(value.tables))
+   reject("Ungültige schreibgeschützte Historien-Vorschau.");
+ }else if(value.applied!==true&&
+    !(value.applied===false&&value.already_complete===true&&value.new===0)){
+   reject("Der Server hat die angeforderte Wiederherstellung nicht bestätigt.");
+ }else if(value.applied===true&&
+    (!uuidPattern.test(value.checkpoint_id||"")||value.conflict!==0)){
+   reject("Der unveränderliche Vorher-Sicherungspunkt fehlt.");
+ }
+ return value;
+}
+function witnessedPayload(verified){
+ const body={...verified};delete body.server_receipt;return body;
+}
+export async function previewWitnessedMissingHistoryRestore({sb,file,targetClanId}){
+ if(!sb?.rpc)reject("Supabase-Sitzung ist nicht bereit.");
+ const verified=await verifyPortableCloudBackup(file);
+ const source=witnessedHistorySource(verified,targetClanId);
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const current=target.clans[0];
+ if(!current||current.clash_tag!==source.clash_tag)
+  reject("Originaler Clan-Tag stimmt nicht mit dem aktuellen Besitzer-Clan überein.");
+ const revision=current.tables.cwl_cloud_profiles[0].revision;
+ if(!Number.isSafeInteger(revision)||revision<1)
+  reject("Aktuelle Planrevision ist ungültig.");
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping:{[targetClanId]:targetClanId}});
+ const reply=await sb.rpc("cwl_restore_witnessed_missing_history",{
+  p_receipt_id:verified.server_receipt.id,
+  p_payload:witnessedPayload(verified),
+  p_clan_id:targetClanId,p_expected_revision:revision,
+  p_expected_target_fingerprint:null,p_apply:false,p_confirmation:null
+ });
+ return {...checkedHistoryReply(reply,{targetClanId,apply:false}),
+  backupSha256:file.sha256,fullRestoreAvailable:false,mutationPermitted:false};
+}
+export async function applyWitnessedMissingHistoryRestore({
+ sb,file,targetClanId,expectedRevision,expectedTargetFingerprint,confirmation
+}){
+ if(!sb?.rpc||confirmation!==WITNESSED_HISTORY_CONFIRMATION||
+    !Number.isSafeInteger(expectedRevision)||expectedRevision<1||
+    !/^[a-f0-9]{64}$/.test(expectedTargetFingerprint||""))
+  reject("Ausdrückliche Historien-Restore-Bestätigung und aktuelle Vorschau erforderlich.");
+ const verified=await verifyPortableCloudBackup(file);
+ const source=witnessedHistorySource(verified,targetClanId);
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const current=target.clans[0];
+ if(!current||current.clash_tag!==source.clash_tag||
+    current.tables.cwl_cloud_profiles[0].revision!==expectedRevision)
+  reject("Zielclan oder Planrevision hat sich seit der Vorschau verändert.");
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping:{[targetClanId]:targetClanId}});
+ const reply=await sb.rpc("cwl_restore_witnessed_missing_history",{
+  p_receipt_id:verified.server_receipt.id,
+  p_payload:witnessedPayload(verified),
+  p_clan_id:targetClanId,p_expected_revision:expectedRevision,
+  p_expected_target_fingerprint:expectedTargetFingerprint,
+  p_apply:true,p_confirmation:WITNESSED_HISTORY_CONFIRMATION
+ });
+ return {...checkedHistoryReply(reply,{targetClanId,apply:true}),
+  fullRestoreAvailable:false,mutationPermitted:false};
+}
