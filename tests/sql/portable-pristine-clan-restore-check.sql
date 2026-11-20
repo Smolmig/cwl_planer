@@ -166,6 +166,59 @@ RESET ROLE;
 DROP TRIGGER synthetic_late_restore_failure ON public.cwl_clan_review_decisions;
 DROP FUNCTION public.synthetic_late_restore_failure();
 
+-- Realistic disaster: original source clan is REMOVED after the signed
+-- receipt has been securely minted. The private independent receipt persists,
+-- and the surviving signed file must still restore all 17 datasets to a new
+-- owner-linked target. No code is allowed to read from the deleted source.
+DO $simulate_deleted_clan$
+DECLARE t text;
+BEGIN
+ FOREACH t IN ARRAY ARRAY[
+  'cwl_clan_review_decisions','cwl_clan_donation_observations',
+  'cwl_clan_absence_observations','cwl_clan_member_tenure',
+  'cwl_clan_cw_missed_decisions','cwl_missed_owner_decisions',
+  'cwl_profile_snapshots','cwl_change_events','cwl_plan_suggestions',
+  'cwl_own_lineup_archives','cwl_group_archives',
+  'cwl_clan_management_rules','cwl_plan_review_state',
+  'cwl_stat_attacks','cwl_stat_missed','cwl_stat_wars','cwl_cloud_profiles'
+ ] LOOP
+  EXECUTE pg_catalog.format('DELETE FROM public.%I WHERE clan_id=%L::uuid',
+    t,'11111111-1111-4111-8111-111111111111');
+ END LOOP;
+ DELETE FROM public.cwl_clan_memberships
+   WHERE clan_id='11111111-1111-4111-8111-111111111111';
+ DELETE FROM public.cwl_clans
+   WHERE id='11111111-1111-4111-8111-111111111111';
+END $simulate_deleted_clan$;
+SET ROLE authenticated;
+SET request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
+DO $restore_after_source_deleted$
+DECLARE v_original jsonb;v_receipt uuid;v_pre jsonb;v_restored jsonb;
+ v_target uuid:='99999999-9999-4999-8999-999999999999';
+BEGIN
+ SELECT payload,receipt INTO v_original,v_receipt FROM original_witness;
+ IF EXISTS(SELECT 1 FROM public.cwl_clans
+  WHERE id='11111111-1111-4111-8111-111111111111') THEN
+  RAISE EXCEPTION 'Disaster simulation failed: source still present';END IF;
+ v_pre:=public.cwl_restore_witnessed_pristine_clan(
+   v_receipt,v_original,v_target,1,NULL,false,NULL);
+ v_restored:=public.cwl_restore_witnessed_pristine_clan(
+   v_receipt,v_original,v_target,1,v_pre->>'target_fingerprint',
+   true,'RESTORE_ORIGINAL_TO_EMPTY_CLAN');
+ IF v_restored->>'applied'<>'true' OR
+   v_restored->>'source_clan_id'<>'11111111-1111-4111-8111-111111111111' OR
+   (SELECT count(*) FROM private.cwl_portable_fresh_clan_recovery_checkpoints)<>2 OR
+   NOT EXISTS(SELECT 1 FROM public.cwl_plan_review_state
+      WHERE clan_id=v_target AND locked) OR
+   (SELECT count(*) FROM public.cwl_stat_attacks WHERE clan_id=v_target)<>2 OR
+   NOT EXISTS(SELECT 1 FROM public.cwl_own_lineup_archives
+      WHERE clan_id=v_target AND state='warEnded') THEN
+   RAISE EXCEPTION 'Deleted original clan was not restored from independent witness';
+ END IF;
+ RAISE NOTICE 'PASS: original clan completely deleted, private receipt survived and the full 17-dataset/locked CWL history was reconstructed';
+END $restore_after_source_deleted$;
+RESET ROLE;
+
 SET ROLE authenticated;
 SET request.jwt.claim.sub='44444444-4444-4444-8444-444444444444';
 DO $foreign_owner$
