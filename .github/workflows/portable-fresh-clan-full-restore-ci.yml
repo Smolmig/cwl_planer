@@ -1,0 +1,69 @@
+name: Portable signed fresh-clan 17-table full restore PG17 UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-fresh-clan-full-restore-ci.yml'
+      - 'supabase/migrations/20261120160000_cwl_witnessed_pristine_new_clan_restore.sql'
+      - 'tests/sql/portable-pristine-clan-restore-fixture.sql'
+      - 'tests/sql/portable-pristine-clan-restore-check.sql'
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+      - 'supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql'
+      - 'cloud-portable-backup-core.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-fresh-clan-full-restore-ci.yml'
+      - 'supabase/migrations/20261120160000_cwl_witnessed_pristine_new_clan_restore.sql'
+      - 'tests/sql/portable-pristine-clan-restore-fixture.sql'
+      - 'tests/sql/portable-pristine-clan-restore-check.sql'
+permissions:
+  contents: read
+jobs:
+  pristine-replacement-clan-atomic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap owner RLS and disposable signed original 17-table backup
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-pristine-clan-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120160000_cwl_witnessed_pristine_new_clan_restore.sql
+      - name: Replay LOCKED 7-day CWL, verified attacks, 17 datasets; prove rollback, no overwrite, owner revoke
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-pristine-clan-restore-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_restore_witnessed_pristine_clan(
+              '00000000-0000-4000-8000-000000000001'::uuid,
+              '{}'::jsonb,'88888888-8888-4888-8888-888888888888'::uuid,
+              1,NULL,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anonymous user invoked full replacement restore RPC'
+            exit 1
+          fi
+          echo 'PASS: genuine original owner receipt restores 17 full datasets on fresh target only'

@@ -721,3 +721,95 @@ export async function applyWitnessedMissingHistoryRestore({
  return {...checkedHistoryReply(reply,{targetClanId,apply:true}),
   fullRestoreAvailable:false,mutationPermitted:false};
 }
+
+
+// #178 – Complete original 17-dataset replay onto a fresh, owner-linked
+// replacement clan UUID. NOT exposed in the public app while the full
+// multi-clan/device/disaster-recovery release gates remain unfinished.
+// All authorization, pristine-state and immutable source proofs are checked
+// again under one transaction by PostgreSQL; client checks are only UX.
+const PRISTINE_REPLACEMENT_CONFIRMATION="RESTORE_ORIGINAL_TO_EMPTY_CLAN";
+function validatedReplacementSource(verified,sourceClanId,targetClanId){
+ if(verified.consistency!=="server-stable-statement"||
+    !verified.server_receipt||verified.clans.length!==1||
+    !uuidPattern.test(sourceClanId||"")||!uuidPattern.test(targetClanId||"")||
+    sourceClanId===targetClanId||
+    verified.clans[0]?.source_clan_id!==sourceClanId)
+  reject("Ein neuer, leerer Zielclan und die originale 17-Bereiche-Datei mit Serverbeleg sind erforderlich.");
+ return verified.clans[0];
+}
+function assertPristineReplacementResult(reply,{sourceClanId,targetClanId,apply}){
+ const v=reply?.data;
+ if(reply.error||!record(v)||
+    v.scope!=="verified-pristine-new-clan-17-datasets"||
+    v.source_clan_id!==sourceClanId||
+    v.target_clan_id!==targetClanId||
+    v.restored_table_count!==17||
+    v.public_full_restore_available!==false||
+    v.mutation_permitted!==false||
+    !Number.isSafeInteger(v.source_rows)||v.source_rows<0||
+    !Number.isSafeInteger(v.source_locked_days)||
+    v.source_locked_days<0||v.source_locked_days>7)
+  reject("Der geprüfte Neuaufbau von 17 Datengruppen wurde serverseitig nicht bestätigt.");
+ if(!apply){
+  if(v.applied!==false||!/^[a-f0-9]{64}$/.test(v.target_fingerprint||"")||
+    !Number.isSafeInteger(v.expected_revision)||v.expected_revision<1||
+    !Number.isSafeInteger(v.source_archive_rows)||v.source_archive_rows<0)
+   reject("Keine vollständige schreibgeschützte Neuaufbau-Vorschau.");
+ }else if(v.applied!==true||!uuidPattern.test(v.checkpoint_id||"")||
+     !Number.isSafeInteger(v.applied_revision)||v.applied_revision<2)
+  reject("Es wurde kein atomarer, durch Checkpoint belegter Neuaufbau bestätigt.");
+ return v;
+}
+export async function previewWitnessedPristineClanRestore({
+ sb,file,sourceClanId,targetClanId
+}){
+ if(!sb?.rpc)reject("Keine Cloud-Verbindung für die Original-Wiederherstellung.");
+ const verified=await verifyPortableCloudBackup(file);
+ const source=validatedReplacementSource(verified,sourceClanId,targetClanId);
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const destination=target.clans?.[0];
+ if(!destination||destination.clash_tag!==source.clash_tag||
+    destination.source_clan_id!==targetClanId)
+  reject("Der Ersatzclan muss denselben Clash-Tag haben und dem Besitzer gehören.");
+ const revision=destination.tables?.cwl_cloud_profiles?.[0]?.revision;
+ if(!Number.isSafeInteger(revision)||revision<1)
+  reject("Ungültige Revision des neuen Clanprofils.");
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping:{[sourceClanId]:targetClanId}});
+ const payload={...verified};delete payload.server_receipt;
+ const reply=await sb.rpc("cwl_restore_witnessed_pristine_clan",{
+  p_receipt_id:verified.server_receipt.id,
+  p_payload:payload,p_target_clan_id:targetClanId,
+  p_expected_revision:revision,p_expected_target_fingerprint:null,
+  p_apply:false,p_confirmation:null
+ });
+ return {...assertPristineReplacementResult(reply,{sourceClanId,targetClanId,apply:false}),
+   backupSha256:file.sha256,fullRestoreAvailable:false,mutationPermitted:false};
+}
+export async function applyWitnessedPristineClanRestore({
+ sb,file,sourceClanId,targetClanId,expectedRevision,
+ expectedTargetFingerprint,confirmation
+}){
+ if(!sb?.rpc||confirmation!==PRISTINE_REPLACEMENT_CONFIRMATION||
+   !Number.isSafeInteger(expectedRevision)||expectedRevision<1||
+   !/^[a-f0-9]{64}$/.test(expectedTargetFingerprint||""))
+  reject("Für den vollständigen Neuaufbau sind die aktuelle Vorschau und die ausdrückliche Bestätigung notwendig.");
+ const verified=await verifyPortableCloudBackup(file);
+ const source=validatedReplacementSource(verified,sourceClanId,targetClanId);
+ const target=await exportOwnerCloudSnapshot({sb,clanIds:[targetClanId]});
+ const destination=target.clans?.[0];
+ if(!destination||destination.clash_tag!==source.clash_tag||
+    destination.source_clan_id!==targetClanId||
+    destination.tables?.cwl_cloud_profiles?.[0]?.revision!==expectedRevision)
+  reject("Der Ersatzclan oder seine Planrevision hat sich seit der Vorschau geändert.");
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping:{[sourceClanId]:targetClanId}});
+ const payload={...verified};delete payload.server_receipt;
+ const reply=await sb.rpc("cwl_restore_witnessed_pristine_clan",{
+  p_receipt_id:verified.server_receipt.id,p_payload:payload,
+  p_target_clan_id:targetClanId,p_expected_revision:expectedRevision,
+  p_expected_target_fingerprint:expectedTargetFingerprint,
+  p_apply:true,p_confirmation:PRISTINE_REPLACEMENT_CONFIRMATION
+ });
+ return {...assertPristineReplacementResult(reply,{sourceClanId,targetClanId,apply:true}),
+   fullRestoreAvailable:false,mutationPermitted:false};
+}
