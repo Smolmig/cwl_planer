@@ -29,6 +29,9 @@ function requireRowCounts(item){
  for(const spec of PORTABLE_CLOUD_TABLES){
   const x=item[spec.name];
   if(!x||typeof x!=="object"||Array.isArray(x))fail("Fehlender Datensatzbereich: "+spec.name);
+  const allowed=["new","identical","conflict","reviewOnly","targetOnly"];
+  if(Object.keys(x).some(field=>!allowed.includes(field)))
+   fail("Unerlaubtes Vergleichsfeld: "+spec.name);
   for(const field of ["new","identical","conflict","reviewOnly"]){
    if(!Number.isSafeInteger(x[field])||x[field]<0)fail("Ungültiger Zähler: "+spec.name);
   }
@@ -42,15 +45,22 @@ function requireRowCounts(item){
  * surfaced instead of silently skipped. Never returns permission to apply.
  */
 export function summarizePortableRestoreCoverage(preview){
- if(!preview||!Array.isArray(preview.clans)||preview.clans.length<1||
-    preview.mutationPermitted!==false)fail("Ungültige Read-only-Vorschau.");
- const seen=new Set(),clans=[],overall={
+ if(!preview||preview.format_version!==1||
+    typeof preview.created_at!=="string"||
+    !Number.isFinite(Date.parse(preview.created_at))||
+    !Array.isArray(preview.clans)||preview.clans.length<1||
+    preview.clans.length>30||preview.mutationPermitted!==false)
+   fail("Ungültige Read-only-Vorschau.");
+ const seen=new Set(),targets=new Set(),clans=[],overall={
   total:0,new:0,identical:0,conflict:0,reviewOnly:0,targetOnly:0
  };
  for(const clan of preview.clans){
   if(!safeId(clan?.source_clan_id)||!safeId(clan?.target_clan_id)||
-     seen.has(clan.source_clan_id))fail("Ungültige Quell-/Zielzuordnung.");
+     seen.has(clan.source_clan_id)||
+     targets.has(clan.target_clan_id))
+    fail("Ungültige Quell-/Zielzuordnung.");
   seen.add(clan.source_clan_id);
+  targets.add(clan.target_clan_id);
   requireRowCounts(clan.tables);
   const rows=[],counts={total:0,new:0,identical:0,conflict:0,reviewOnly:0,targetOnly:0};
   for(const spec of PORTABLE_CLOUD_TABLES){
