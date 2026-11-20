@@ -29,7 +29,14 @@ DROP POLICY IF EXISTS cwl_history_recovery_actor_read
  ON private.cwl_portable_history_recovery_checkpoints;
 CREATE POLICY cwl_history_recovery_actor_read
  ON private.cwl_portable_history_recovery_checkpoints
- FOR SELECT TO authenticated USING (actor_user_id=(SELECT auth.uid()));
+ FOR SELECT TO authenticated USING (
+  actor_user_id=(SELECT auth.uid()) AND EXISTS(
+   SELECT 1 FROM public.cwl_clans c
+   JOIN public.cwl_clan_memberships m
+     ON m.clan_id=c.id AND m.user_id=actor_user_id AND m.role='owner'
+   WHERE c.id=clan_id AND c.owner_user_id=actor_user_id
+  )
+ );
 COMMENT ON TABLE private.cwl_portable_history_recovery_checkpoints IS
  'Append-only atomic before-snapshot checkpoint for strictly witnessed missing history. No direct client INSERT/UPDATE/DELETE.';
 
