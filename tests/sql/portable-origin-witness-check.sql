@@ -18,6 +18,7 @@ DECLARE
  v_proven jsonb;
  v_repeat jsonb;
  v_tampered jsonb;
+ v_reordered jsonb;
  v_wrong_actor jsonb;
  v_original_rows integer;
 BEGIN
@@ -46,6 +47,19 @@ BEGIN
   ARRAY['11111111-1111-4111-8111-111111111111'::uuid]);
  IF v_repeat->'server_receipt'->>'id'<>v_receipt->>'id' THEN
    RAISE EXCEPTION 'Same transaction created duplicate export witness';
+ END IF;
+ -- The JS serializer may order numeric IDs differently from PostgreSQL.
+ -- The server witness proves exact row contents, NOT array presentation order.
+ v_reordered:=pg_catalog.jsonb_set(v_snapshot,
+  '{clans,0,tables,cwl_stat_attacks}',
+  pg_catalog.jsonb_build_array(
+   v_snapshot#>'{clans,0,tables,cwl_stat_attacks,1}',
+   v_snapshot#>'{clans,0,tables,cwl_stat_attacks,0}'));
+ v_proven:=public.cwl_verify_owned_backup_witness(
+  (v_receipt->>'id')::uuid,v_reordered,
+  ARRAY['88888888-8888-4888-8888-888888888888'::uuid]);
+ IF v_proven->>'verified'<>'true' THEN
+   RAISE EXCEPTION 'A harmless JSON row reorder invalidated server witness';
  END IF;
  -- A legitimate JSON edit, with a fully recalculated browser SHA, still
  -- cannot change the protected server witness for the original SQL data.
