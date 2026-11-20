@@ -112,7 +112,7 @@ test("authentication change, malformed receipt and mismatched source/target are 
  assert.equal(forged,false);
  await assert.rejects(()=>core.verifyWitnessedOwnerCloudBackup({
   sb,file,mapping:{[SOURCE]:SOURCE,[TARGET]:TARGET}
- }),/Nicht alle Quellclans/);
+ }),/Zielzuordnung enthält ein unerlaubtes Feld/);
  const denied=await fixture();
  denied.sb.rpc=async()=>({data:null,error:{code:"42501"}});
  await assert.rejects(()=>core.verifyWitnessedOwnerCloudBackup({
