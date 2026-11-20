@@ -205,3 +205,19 @@ BEGIN
  END IF;
  RAISE NOTICE 'PASS: only a valid owner may invoke protected atomic history recovery';
 END $security$;
+
+
+-- Once owner membership is revoked the old actor must no longer read their
+-- full before-snapshot, even though the checkpoint was written by that actor.
+UPDATE public.cwl_clan_memberships SET role='viewer'
+ WHERE clan_id='11111111-1111-4111-8111-111111111111'
+   AND user_id='33333333-3333-4333-8333-333333333333';
+SET ROLE authenticated;
+SET request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
+DO $revoked_owner$
+BEGIN
+ IF (SELECT count(*) FROM private.cwl_portable_history_recovery_checkpoints)<>0
+ THEN RAISE EXCEPTION 'Revoked owner can read private recovery data';END IF;
+ RAISE NOTICE 'PASS: previous owner loses private checkpoint access immediately';
+END $revoked_owner$;
+RESET ROLE;
