@@ -209,17 +209,24 @@ export async function previewPortableCloudRestore(file,{targets,mapping,existing
    if(!Object.hasOwn(current,spec.name))reject("Ziel-Datentabelle fehlt: "+spec.name);
    const existing=normalizeTargetRows(current[spec.name],spec,targetId);
    const byKey=new Map(existing.map(row=>[stableRowKey(row,spec),canonicalBackupJson(row)]));
-   const counts={new:0,identical:0,conflict:0,reviewOnly:0};
+   const counts={new:0,identical:0,conflict:0,reviewOnly:0,targetOnly:0};
+   const sourceKeys=new Set();
    for(const original of source.tables[spec.name]){
-    // Preview only. Never pass remapped rows to a database write.
+    // Read-only preview: remapping a clan ID never grants write authority.
     const row={...original,clan_id:targetId};
-    const key=stableRowKey(row,spec);
-    if(["audit","observed"].includes(spec.category)){counts.reviewOnly++;continue;}
-    const previous=byKey.get(key);
-    if(previous===undefined)counts.new++;
-    else if(previous===canonicalBackupJson(row))counts.identical++;
+    const key=stableRowKey(row,spec),previous=byKey.get(key);
+    sourceKeys.add(key);
+    // Historical audit and collector observations must NEVER be automatically
+    // replayed. If the exact row already exists, however, it needs no review.
+    if(previous===canonicalBackupJson(row))counts.identical++;
+    else if(["audit","observed"].includes(spec.category))counts.reviewOnly++;
+    else if(previous===undefined)counts.new++;
     else counts.conflict++;
    }
+   // A destination may contain older or newer wars, audit events and plans
+   // absent from the file. These target-only rows are NOT recoverable gaps
+   // and must never be removed or overwritten by a backup import.
+   counts.targetOnly=existing.filter(row=>!sourceKeys.has(stableRowKey(row,spec))).length;
    tableStats[spec.name]=counts;
   }
   clans.push({source_clan_id:source.source_clan_id,target_clan_id:targetId,tables:tableStats});

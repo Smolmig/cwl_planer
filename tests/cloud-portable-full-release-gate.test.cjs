@@ -155,7 +155,7 @@ test("input size, invalid/tampered backup and missing owner target fail closed b
  }),/konsistente Server-Snapshots/);
  assert.equal(sb.calls.length,0);
 });
-test("preview routes only to server-authorized owner snapshot and surfaces missing audit",async()=>{
+test("preview routes only to server-authorized owner snapshot and detects identical audit",async()=>{
  const {gate,file,sb}=await sample();
  const report=await gate.inspectPortableOwnerRestoreFile({
   sb,fileText:JSON.stringify(file),mapping:{[ID]:ID}
@@ -163,9 +163,11 @@ test("preview routes only to server-authorized owner snapshot and surfaces missi
  assert.equal(sb.calls.length,1);
  assert.equal(report.counts.new,0);
  assert.equal(report.counts.conflict,0);
- assert.equal(report.counts.reviewOnly,1);
+ assert.equal(report.counts.reviewOnly,0);
+ assert.equal(report.counts.identical,4);
+ assert.equal(report.alreadyIdentical,true);
  assert.equal(report.fullRestoreAvailable,false);
- assert.deepEqual(report.clans[0].incompleteAreas,["cwl_change_events"]);
+ assert.deepEqual(report.clans[0].incompleteAreas,[]);
 });
 test("forged preview reports are rejected even if marked mutationPermitted",async()=>{
  const {core,gate}=await sample();
