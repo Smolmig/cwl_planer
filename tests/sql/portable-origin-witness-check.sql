@@ -100,6 +100,19 @@ BEGIN
    RAISE EXCEPTION 'Duplicate tenant allowed';
  EXCEPTION WHEN insufficient_privilege THEN NULL;
  END;
+ -- Even if a user can reach the private schema through a SQL client,
+ -- RLS validates the submitted digest against an independently queried
+ -- complete server snapshot, so a fabricated origin is impossible.
+ BEGIN
+   INSERT INTO private.cwl_portable_backup_witnesses(
+     owner_user_id,source_clan_ids,source_clash_tags,payload_sha256,snapshot_at)
+   VALUES (
+     '33333333-3333-4333-8333-333333333333'::uuid,
+     ARRAY['11111111-1111-4111-8111-111111111111'::uuid],
+     '["#P8Y2"]'::jsonb,repeat('0',64),v_snapshot->>'created_at');
+   RAISE EXCEPTION 'Forged witness accepted by the RLS INSERT policy';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;
+ END;
  -- Private schema privileges are asserted below as the test superuser.
  -- Note: no profile, archive, owner decision or historical fact is altered.
  RAISE NOTICE 'PASS: owner 17-table origin receipt and tag-bound verification; forged stars/foreign owner/duplicate clans denied';
@@ -133,12 +146,17 @@ RESET ROLE;
 DO $security_contract$
 DECLARE v integer;
 BEGIN
- IF has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','INSERT')
+ IF NOT has_column_privilege('authenticated','private.cwl_portable_backup_witnesses','payload_sha256','INSERT')
+    OR NOT has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','SELECT')
+    OR NOT has_schema_privilege('authenticated','private','USAGE')
     OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','UPDATE')
     OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','DELETE')
-    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','SELECT')
-    OR has_schema_privilege('authenticated','private','USAGE')
- THEN RAISE EXCEPTION 'Private witness gained unsafe authenticated grants'; END IF;
+    OR has_column_privilege('authenticated','private.cwl_portable_backup_witnesses','id','INSERT')
+    OR has_column_privilege('authenticated','private.cwl_portable_backup_witnesses','created_at','INSERT')
+    OR has_column_privilege('authenticated','private.cwl_portable_backup_witnesses','created_at','UPDATE')
+    OR has_table_privilege('anon','private.cwl_portable_backup_witnesses','INSERT')
+    OR has_table_privilege('anon','private.cwl_portable_backup_witnesses','SELECT')
+ THEN RAISE EXCEPTION 'Private witness column grants or RLS are unsafe'; END IF;
  IF has_function_privilege('anon',
    'public.cwl_issue_owned_backup_witness(uuid[])','EXECUTE') OR
     has_function_privilege('anon',
@@ -151,12 +169,12 @@ BEGIN
      WHERE oid='private.cwl_portable_backup_witnesses'::regclass) OR
     NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc
       WHERE oid='public.cwl_issue_owned_backup_witness(uuid[])'::regprocedure
-        AND prosecdef AND provolatile='v'
+        AND NOT prosecdef AND provolatile='v'
         AND EXISTS(SELECT 1 FROM pg_catalog.unnest(proconfig) sp(v)
           WHERE pg_catalog.replace(sp.v,'"','')='search_path=')) OR
     NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc
       WHERE oid='public.cwl_verify_owned_backup_witness(uuid,jsonb,uuid[])'::regprocedure
-        AND prosecdef AND provolatile='s'
+        AND NOT prosecdef AND provolatile='s'
         AND EXISTS(SELECT 1 FROM pg_catalog.unnest(proconfig) sp(v)
           WHERE pg_catalog.replace(sp.v,'"','')='search_path='))
  THEN RAISE EXCEPTION 'Source-witness RPC/table privileges or search_path unsafe';END IF;
