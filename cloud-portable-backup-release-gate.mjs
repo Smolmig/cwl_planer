@@ -65,7 +65,7 @@ export function summarizePortableRestoreCoverage(preview){
     ...Object.fromEntries(["new","identical","conflict","reviewOnly"].map(k=>[k,x[k]])),
     count:total,
     targetOnly:x.targetOnly??0,
-    keepsNewerTarget:(x.targetOnly??0)>0,
+    keepsExistingTarget:(x.targetOnly??0)>0,
     requiresRecovery:x.new>0||x.conflict>0||x.reviewOnly>0,
     note:spec.category==="archive"?"Offizielles Collector-Archiv: fehlende Daten sind kein verifizierter API-Beleg.":
       spec.category==="audit"?"Historischer Entscheidungs-/Änderungsnachweis: nicht als neuer Autor importieren.":
@@ -99,7 +99,7 @@ export function summarizePortableRestoreCoverage(preview){
   mutationPermitted:false,
   explanation:nothingToImport?
    (overall.targetOnly>0?
-    "Alle Datensätze der Sicherung sind bereits vorhanden. Im Zielclan liegen zusätzlich neuere Daten, die erhalten bleiben müssen. Ein Import ist nicht erforderlich.":
+    "Alle Datensätze der Sicherung sind bereits vorhanden. Im Zielclan liegen zusätzliche Daten, die erhalten bleiben müssen. Ein Import ist nicht erforderlich.":
     "Alle geprüften Nutzdaten sind bereits vorhanden. Es ist kein Import erforderlich."):
    "Die Datei ist lesbar, aber nicht vollständig transaktional rückspielbar. Eine Wiederherstellung würde sonst Pläne, verifizierte Archive, Regeln, Entscheidungen oder Beobachtungen auslassen. Es wurden keine Daten geändert.",
   canDownloadCompleteBackup:true
