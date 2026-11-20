@@ -1,0 +1,70 @@
+name: Portable Cloud full-backup origin witness PostgreSQL UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-full-origin-witness-ci.yml'
+      - 'supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql'
+      - 'tests/sql/portable-origin-witness-check.sql'
+      - 'tests/cloud-portable-origin-witness.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+      - 'cloud-portable-backup-release-gate.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-full-origin-witness-ci.yml'
+      - 'supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql'
+      - 'tests/sql/portable-origin-witness-check.sql'
+      - 'tests/cloud-portable-origin-witness.test.cjs'
+      - 'cloud-portable-backup-core.mjs'
+      - 'cloud-portable-backup-release-gate.mjs'
+permissions:
+  contents: read
+jobs:
+  server-origin-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify local PostgreSQL client
+        run: |
+          set -euo pipefail
+          command -v psql
+          psql --version
+      - name: Bootstrap isolated PG17 all-17-table RLS owner/foreign fixture
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql
+      - name: Prove genuine origin, owner target, tamper rejection and private receipt
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-origin-witness-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_issue_owned_backup_witness(
+              ARRAY['11111111-1111-4111-8111-111111111111'::uuid]);" >/dev/null 2>&1; then
+            echo '::error::anonymous user issued server backup receipt'
+            exit 1
+          fi
+          echo 'PASS: protected origin witnesses never expose per-clan payloads or privileged archive writes'
