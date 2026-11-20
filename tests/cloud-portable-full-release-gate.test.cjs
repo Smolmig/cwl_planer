@@ -164,7 +164,7 @@ test("preview routes only to server-authorized owner snapshot and detects identi
  assert.equal(report.counts.new,0);
  assert.equal(report.counts.conflict,0);
  assert.equal(report.counts.reviewOnly,0);
- assert.equal(report.counts.identical,3);
+ assert.equal(report.counts.identical,4);
  assert.equal(report.alreadyIdentical,true);
  assert.equal(report.fullRestoreAvailable,false);
  assert.deepEqual(report.clans[0].incompleteAreas,[]);
