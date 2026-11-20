@@ -32,6 +32,9 @@ function requireRowCounts(item){
   for(const field of ["new","identical","conflict","reviewOnly"]){
    if(!Number.isSafeInteger(x[field])||x[field]<0)fail("Ungültiger Zähler: "+spec.name);
   }
+  // Older previews did not include this reverse-diff field.
+  if(x.targetOnly!==undefined&&(!Number.isSafeInteger(x.targetOnly)||
+     x.targetOnly<0||x.targetOnly>100000))fail("Ungültige neuere Zieldaten: "+spec.name);
  }
 }
 /**
@@ -42,24 +45,27 @@ export function summarizePortableRestoreCoverage(preview){
  if(!preview||!Array.isArray(preview.clans)||preview.clans.length<1||
     preview.mutationPermitted!==false)fail("Ungültige Read-only-Vorschau.");
  const seen=new Set(),clans=[],overall={
-  total:0,new:0,identical:0,conflict:0,reviewOnly:0
+  total:0,new:0,identical:0,conflict:0,reviewOnly:0,targetOnly:0
  };
  for(const clan of preview.clans){
   if(!safeId(clan?.source_clan_id)||!safeId(clan?.target_clan_id)||
      seen.has(clan.source_clan_id))fail("Ungültige Quell-/Zielzuordnung.");
   seen.add(clan.source_clan_id);
   requireRowCounts(clan.tables);
-  const rows=[],counts={total:0,new:0,identical:0,conflict:0,reviewOnly:0};
+  const rows=[],counts={total:0,new:0,identical:0,conflict:0,reviewOnly:0,targetOnly:0};
   for(const spec of PORTABLE_CLOUD_TABLES){
    const x=clan.tables[spec.name];
    const total=x.new+x.identical+x.conflict+x.reviewOnly;
    if(!Number.isSafeInteger(total)||total>100000)fail("Zähler außerhalb des Datenvertrags.");
    for(const k of ["new","identical","conflict","reviewOnly"])counts[k]+=x[k];
    counts.total+=total;
+   counts.targetOnly+=x.targetOnly??0;
    rows.push({
     table:spec.name,category:spec.category,
     ...Object.fromEntries(["new","identical","conflict","reviewOnly"].map(k=>[k,x[k]])),
     count:total,
+    targetOnly:x.targetOnly??0,
+    keepsNewerTarget:(x.targetOnly??0)>0,
     requiresRecovery:x.new>0||x.conflict>0||x.reviewOnly>0,
     note:spec.category==="archive"?"Offizielles Collector-Archiv: fehlende Daten sind kein verifizierter API-Beleg.":
       spec.category==="audit"?"Historischer Entscheidungs-/Änderungsnachweis: nicht als neuer Autor importieren.":
@@ -75,7 +81,8 @@ export function summarizePortableRestoreCoverage(preview){
    incompleteAreas:rows.filter(x=>x.requiresRecovery).map(x=>x.table)
   });
  }
- const noChanges=overall.new===0&&overall.conflict===0&&overall.reviewOnly===0;
+ const nothingToImport=overall.new===0&&overall.conflict===0&&overall.reviewOnly===0;
+ const noChanges=nothingToImport&&overall.targetOnly===0;
  return {
   formatVersion:preview.format_version,
   createdAt:preview.created_at,
@@ -84,12 +91,16 @@ export function summarizePortableRestoreCoverage(preview){
   counts:overall,
   clans,
   alreadyIdentical:noChanges,
+  nothingToImport,
+  targetHasAdditionalData:overall.targetOnly>0,
   // A full restore is not a sequence of the existing per-table RPCs.
   // Never claim a successful atomic full-app roundtrip here.
   fullRestoreAvailable:false,
   mutationPermitted:false,
-  explanation:noChanges?
-   "Alle geprüften Nutzdaten sind bereits vorhanden. Es ist kein Import erforderlich.":
+  explanation:nothingToImport?
+   (overall.targetOnly>0?
+    "Alle Datensätze der Sicherung sind bereits vorhanden. Im Zielclan liegen zusätzlich neuere Daten, die erhalten bleiben müssen. Ein Import ist nicht erforderlich.":
+    "Alle geprüften Nutzdaten sind bereits vorhanden. Es ist kein Import erforderlich."):
    "Die Datei ist lesbar, aber nicht vollständig transaktional rückspielbar. Eine Wiederherstellung würde sonst Pläne, verifizierte Archive, Regeln, Entscheidungen oder Beobachtungen auslassen. Es wurden keine Daten geändert.",
   canDownloadCompleteBackup:true
  };
