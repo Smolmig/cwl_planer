@@ -112,3 +112,23 @@ test("invalid reverse diff counts fail closed and legacy previews remain readabl
  assert.equal(report.counts.targetOnly,0);
  assert.equal(report.alreadyIdentical,true);
 });
+
+
+test("duplicate destination, forged counter fields and malformed envelope are rejected",async()=>{
+ const {gate,inspect}=await fixture();
+ const preview=await inspect();
+ const doubleTarget=structuredClone(preview);
+ doubleTarget.clans.push({
+  ...structuredClone(doubleTarget.clans[0]),
+  source_clan_id:"22222222-2222-4222-8222-222222222222"
+ });
+ assert.throws(()=>gate.summarizePortableRestoreCoverage(doubleTarget),/Ungültige Quell-\/Zielzuordnung/);
+ const extraField=structuredClone(preview);
+ extraField.clans[0].tables.cwl_change_events.systemPrivilege=true;
+ assert.throws(()=>gate.summarizePortableRestoreCoverage(extraField),/Unerlaubtes Vergleichsfeld/);
+ for(const bad of [
+  {...preview,format_version:99},
+  {...preview,created_at:"not-a-date"},
+  {...preview,mutationPermitted:true}
+ ]) assert.throws(()=>gate.summarizePortableRestoreCoverage(bad),/Ungültige Read-only-Vorschau/);
+});
