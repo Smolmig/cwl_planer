@@ -100,12 +100,7 @@ BEGIN
    RAISE EXCEPTION 'Duplicate tenant allowed';
  EXCEPTION WHEN insufficient_privilege THEN NULL;
  END;
- -- The private receipt row is not exposed to the authenticated Data API.
- IF has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','INSERT')
-    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','UPDATE')
-    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','DELETE')
-    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','SELECT')
- THEN RAISE EXCEPTION 'Private witness gained unsafe public grants'; END IF;
+ -- Private schema privileges are asserted below as the test superuser.
  -- Note: no profile, archive, owner decision or historical fact is altered.
  RAISE NOTICE 'PASS: owner 17-table origin receipt and tag-bound verification; forged stars/foreign owner/duplicate clans denied';
 END
@@ -138,6 +133,12 @@ RESET ROLE;
 DO $security_contract$
 DECLARE v integer;
 BEGIN
+ IF has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','INSERT')
+    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','UPDATE')
+    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','DELETE')
+    OR has_table_privilege('authenticated','private.cwl_portable_backup_witnesses','SELECT')
+    OR has_schema_privilege('authenticated','private','USAGE')
+ THEN RAISE EXCEPTION 'Private witness gained unsafe authenticated grants'; END IF;
  IF has_function_privilege('anon',
    'public.cwl_issue_owned_backup_witness(uuid[])','EXECUTE') OR
     has_function_privilege('anon',
