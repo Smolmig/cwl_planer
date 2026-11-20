@@ -578,12 +578,10 @@ export async function exportWitnessedOwnerCloudSnapshot({sb,clanIds}){
    payload.clans.some(c=>!clanIds.includes(c.source_clan_id))||
    receipt.owner_user_id!==actor||receipt.snapshot_at!==payload.created_at)
   reject("Der Server-Snapshot gehört nicht vollständig zu den eigenen Clans.");
- const expectedDigest=await sha256(JSON.stringify(safeJson(payload)));
- // Postgres JSONB hashes its own canonical text representation, which is
- // NOT the same as JSON.stringify. Its digest cannot be compared in JS.
- // We only validate its syntax here; the SQL verification RPC owns trust.
+ // PostgreSQL hashes the canonical JSONB text. The browser never
+ // guesses that digest; the server must verify it on subsequent import.
  if(!/^[a-f0-9]{64}$/.test(receipt.payload_sha256||"")||
-    !uuidPattern.test(receipt.id||"")||!expectedDigest)
+    !uuidPattern.test(receipt.id||""))
   reject("Ungültiger Server-Herkunftsbeleg.");
  const after=await sb.auth.getUser();
  if(after.error||after.data?.user?.id!==actor)
