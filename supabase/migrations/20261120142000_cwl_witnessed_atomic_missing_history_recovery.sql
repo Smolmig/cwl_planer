@@ -202,7 +202,7 @@ BEGIN
      RAISE EXCEPTION 'Incomplete 17-table recovery payload'
        USING ERRCODE='22023';
    END IF;
-   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+   SELECT COALESCE(pg_catalog.jsonb_object_agg(
       private.cwl_witnessed_restore_row_key(existing.value,v_keys),
       existing.value),'{}'::jsonb)
      INTO v_target_index
@@ -310,7 +310,7 @@ BEGIN
    v_insert_sql:=pg_catalog.format(
      'INSERT INTO public.%I (%s) OVERRIDING SYSTEM VALUE SELECT %s FROM pg_catalog.jsonb_populate_record(NULL::public.%I, $1) AS data',
      v_spec.table_name,v_spec.insert_columns,v_spec.insert_columns,v_spec.table_name);
-   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+   SELECT COALESCE(pg_catalog.jsonb_object_agg(
       private.cwl_witnessed_restore_row_key(existing.value,v_spec.key_columns),
       existing.value),'{}'::jsonb)
       INTO v_target_index
@@ -346,7 +346,7 @@ BEGIN
   ('cwl_clan_cw_missed_decisions', ARRAY['id']::text[], 'id,clan_id,source_clash_tag,war_key,player_tag,decision,note,actor_id,created_at')
  ) AS contract(table_name,key_columns,insert_columns)
  LOOP
-   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+   SELECT COALESCE(pg_catalog.jsonb_object_agg(
       private.cwl_witnessed_restore_row_key(existing.value,v_spec.key_columns),
       existing.value),'{}'::jsonb)
       INTO v_target_index
