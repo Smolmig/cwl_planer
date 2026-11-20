@@ -74,7 +74,7 @@ test("additional destination war and newer audit history are preserved as target
  assert.equal(report.alreadyIdentical,false);
  assert.equal(report.targetHasAdditionalData,true);
  assert.equal(report.clans[0].rows.find(x=>x.table==="cwl_stat_wars").targetOnly,1);
- assert.match(report.explanation,/zusätzlich neuere Daten/);
+ assert.match(report.explanation,/zusätzliche Daten/);
  assert.equal(JSON.stringify(target),original,"preview cannot mutate newer destination");
 });
 test("missing and altered immutable audit rows still require review and must never become writable",async()=>{
