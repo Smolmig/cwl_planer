@@ -223,9 +223,9 @@ export async function previewPortableCloudRestore(file,{targets,mapping,existing
     else if(previous===undefined)counts.new++;
     else counts.conflict++;
    }
-   // A newer target can contain wars, audit events or approved plans absent
-   // from an old backup. Those rows are not "missing from the restore" and
-   // must never be removed or overwritten by a one-way backup import.
+   // A destination may contain older or newer wars, audit events and plans
+   // absent from the file. These target-only rows are NOT recoverable gaps
+   // and must never be removed or overwritten by a backup import.
    counts.targetOnly=existing.filter(row=>!sourceKeys.has(stableRowKey(row,spec))).length;
    tableStats[spec.name]=counts;
   }
