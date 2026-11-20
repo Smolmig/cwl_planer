@@ -126,8 +126,6 @@ BEGIN
  END IF;
  IF p_apply THEN
    PERFORM 1 FROM public.cwl_clans WHERE id=p_clan_id FOR UPDATE;
-   PERFORM 1 FROM public.cwl_plan_review_state
-     WHERE clan_id=p_clan_id FOR UPDATE;
  END IF;
  -- This is the crucial provenance boundary. A user-editable SHA256 is NEVER
  -- sufficient for collector archives, author audit or past decisions.
@@ -148,6 +146,12 @@ BEGIN
  IF NOT FOUND OR v_actual_revision IS DISTINCT FROM p_expected_revision THEN
    RAISE EXCEPTION 'Plan revision changed; original plan cannot be overwritten'
      USING ERRCODE='40001';
+ END IF;
+ -- Match normal planning writes: lock profile BEFORE review state to avoid
+ -- inversion with the plan guard, which checks review state after profile.
+ IF p_apply THEN
+   PERFORM 1 FROM public.cwl_plan_review_state
+     WHERE clan_id=p_clan_id FOR UPDATE;
  END IF;
  v_target:=public.cwl_export_owned_backup(ARRAY[p_clan_id]);
  v_fingerprint:=pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(
