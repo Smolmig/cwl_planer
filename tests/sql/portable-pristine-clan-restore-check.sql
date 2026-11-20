@@ -166,6 +166,42 @@ RESET ROLE;
 DROP TRIGGER synthetic_late_restore_failure ON public.cwl_clan_review_decisions;
 DROP FUNCTION public.synthetic_late_restore_failure();
 
+-- More subtle than a thrown constraint: an unexpected trigger that
+-- silently changes a signed API attack MUST be caught by the complete
+-- post-write 17-table comparison and also roll back plan+checkpoint.
+CREATE OR REPLACE FUNCTION public.synthetic_corrupt_attack_stars() RETURNS trigger
+LANGUAGE plpgsql AS $corrupt$
+BEGIN NEW.stars:=0;RETURN NEW;END$corrupt$;
+CREATE TRIGGER synthetic_corrupt_attack_stars BEFORE INSERT
+ ON public.cwl_stat_attacks FOR EACH ROW
+ EXECUTE FUNCTION public.synthetic_corrupt_attack_stars();
+SET ROLE authenticated;
+SET request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
+DO $postcondition_rollback$
+DECLARE v_original jsonb;v_receipt uuid;v_pre jsonb;
+ v_target uuid:='99999999-9999-4999-8999-999999999999';
+BEGIN
+ SELECT payload,receipt INTO v_original,v_receipt FROM original_witness;
+ v_pre:=public.cwl_restore_witnessed_pristine_clan(
+   v_receipt,v_original,v_target,1,NULL,false,NULL);
+ BEGIN
+  PERFORM public.cwl_restore_witnessed_pristine_clan(
+   v_receipt,v_original,v_target,1,v_pre->>'target_fingerprint',
+   true,'RESTORE_ORIGINAL_TO_EMPTY_CLAN');
+  RAISE EXCEPTION 'Silently corrupted API stars were accepted';
+ EXCEPTION WHEN serialization_failure THEN NULL;END;
+ IF (SELECT count(*) FROM public.cwl_stat_wars WHERE clan_id=v_target)<>0
+ OR (SELECT count(*) FROM public.cwl_stat_attacks WHERE clan_id=v_target)<>0
+ OR (SELECT revision FROM public.cwl_cloud_profiles WHERE clan_id=v_target)<>1
+ OR (SELECT count(*) FROM private.cwl_portable_fresh_clan_recovery_checkpoints)<>1 THEN
+   RAISE EXCEPTION 'Silent corrupted attack did not cause full transaction rollback';
+ END IF;
+ RAISE NOTICE 'PASS: silent API stars mutation caught by 17-area postcondition and rolled back';
+END $postcondition_rollback$;
+RESET ROLE;
+DROP TRIGGER synthetic_corrupt_attack_stars ON public.cwl_stat_attacks;
+DROP FUNCTION public.synthetic_corrupt_attack_stars();
+
 -- Realistic disaster: original source clan is REMOVED after the signed
 -- receipt has been securely minted. The private independent receipt persists,
 -- and the surviving signed file must still restore all 17 datasets to a new
