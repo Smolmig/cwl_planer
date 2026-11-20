@@ -125,7 +125,10 @@ test("SQL receipts require fixed empty search_path, authentic owner, and no dire
   /CREATE TABLE private\.cwl_portable_backup_witnesses/,
   /ENABLE ROW LEVEL SECURITY/,
   /REVOKE ALL ON private\.cwl_portable_backup_witnesses/,
-  /SECURITY DEFINER\s+SET search_path=''/,
+  /SECURITY INVOKER\s+SET search_path=''/,
+  /CREATE POLICY cwl_portable_backup_witness_trusted_insert/,
+  /cwl_witness_matches_current_snapshot/,
+  /WITH CHECK\(/,
   /c\.owner_user_id=v_actor/,
   /m\.role='owner'/,
   /cwl_export_owned_backup\(v_ids\)/,
@@ -137,6 +140,7 @@ test("SQL receipts require fixed empty search_path, authentic owner, and no dire
   /scope','server-origin-17-table-snapshot'/,
   /REVOKE ALL ON FUNCTION public\.cwl_issue_owned_backup_witness/,
  ])assert.match(sql,pattern);
- assert.doesNotMatch(sql,/\bGRANT\s+(INSERT|UPDATE|DELETE)\b/i);
+ assert.match(sql,/GRANT INSERT \(/);
+ assert.doesNotMatch(sql,/\bGRANT\s+(UPDATE|DELETE)\b/i);
  assert.doesNotMatch(sql,/\bUPDATE public\.cwl_|\bDELETE FROM public\.cwl_/i);
 });
