@@ -33,6 +33,19 @@ CREATE POLICY cwl_history_recovery_actor_read
 COMMENT ON TABLE private.cwl_portable_history_recovery_checkpoints IS
  'Append-only atomic before-snapshot checkpoint for strictly witnessed missing history. No direct client INSERT/UPDATE/DELETE.';
 
+-- Stable composite-key encoding avoids quadratic scanning of multi-thousand-row
+-- attack histories. Numeric IDs remain JSON numbers (not lossy JS doubles).
+CREATE OR REPLACE FUNCTION private.cwl_witnessed_restore_row_key(
+ p_row jsonb,p_keys text[]
+) RETURNS text
+LANGUAGE sql IMMUTABLE STRICT SECURITY INVOKER SET search_path=''
+AS $key$
+ SELECT pg_catalog.jsonb_agg(p_row->k.col ORDER BY k.ord)::text
+ FROM pg_catalog.unnest(p_keys) WITH ORDINALITY AS k(col,ord);
+$key$;
+REVOKE ALL ON FUNCTION private.cwl_witnessed_restore_row_key(jsonb,text[])
+ FROM PUBLIC,anon,authenticated;
+
 CREATE OR REPLACE FUNCTION private.cwl_restore_witnessed_missing_history_worker(
  p_receipt_id uuid,p_payload jsonb,p_clan_id uuid,
  p_expected_revision bigint,p_expected_target_fingerprint text,
@@ -56,7 +69,8 @@ DECLARE
  v_keys text[];
  v_existing_rows jsonb;
  v_key text;
- v_key_matches boolean;
+ v_target_index jsonb;
+ v_row_key text;
  v_missing integer:=0;
  v_identical integer:=0;
  v_conflicts integer:=0;
@@ -188,19 +202,15 @@ BEGIN
      RAISE EXCEPTION 'Incomplete 17-table recovery payload'
        USING ERRCODE='22023';
    END IF;
+   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+      private.cwl_witnessed_restore_row_key(existing.value,v_keys),
+      existing.value),'{}'::jsonb)
+     INTO v_target_index
+     FROM pg_catalog.jsonb_array_elements(v_existing_rows) existing;
    FOR v_row IN SELECT value FROM pg_catalog.jsonb_array_elements(v_rows)
    LOOP
-     v_prior:=NULL;
-     FOR v_found IN SELECT value FROM pg_catalog.jsonb_array_elements(v_existing_rows)
-     LOOP
-       v_key_matches:=true;
-       FOREACH v_key IN ARRAY v_keys LOOP
-         IF v_found->v_key IS DISTINCT FROM v_row->v_key THEN
-           v_key_matches:=false; EXIT;
-         END IF;
-       END LOOP;
-       IF v_key_matches THEN v_prior:=v_found; EXIT; END IF;
-     END LOOP;
+     v_row_key:=private.cwl_witnessed_restore_row_key(v_row,v_keys);
+     v_prior:=v_target_index->v_row_key;
      IF v_prior IS NULL THEN
        v_table_missing:=v_table_missing+1;
      ELSIF v_prior=v_row THEN
@@ -300,20 +310,17 @@ BEGIN
    v_insert_sql:=pg_catalog.format(
      'INSERT INTO public.%I (%s) OVERRIDING SYSTEM VALUE SELECT %s FROM pg_catalog.jsonb_populate_record(NULL::public.%I, $1) AS data',
      v_spec.table_name,v_spec.insert_columns,v_spec.insert_columns,v_spec.table_name);
+   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+      private.cwl_witnessed_restore_row_key(existing.value,v_spec.key_columns),
+      existing.value),'{}'::jsonb)
+      INTO v_target_index
+      FROM pg_catalog.jsonb_array_elements(v_existing_rows) existing;
    FOR v_row IN SELECT value FROM pg_catalog.jsonb_array_elements(v_rows)
    LOOP
-     v_prior:=NULL;
-     FOR v_found IN SELECT value FROM pg_catalog.jsonb_array_elements(v_existing_rows)
-     LOOP
-       v_key_matches:=true;
-       FOREACH v_key IN ARRAY v_spec.key_columns LOOP
-         IF v_found->v_key IS DISTINCT FROM v_row->v_key THEN
-           v_key_matches:=false; EXIT;
-         END IF;
-       END LOOP;
-       IF v_key_matches THEN v_prior:=v_found; EXIT; END IF;
-     END LOOP;
-     IF v_prior IS NULL THEN EXECUTE v_insert_sql USING v_row; END IF;
+     v_row_key:=private.cwl_witnessed_restore_row_key(v_row,v_spec.key_columns);
+     IF v_target_index->v_row_key IS NULL THEN
+       EXECUTE v_insert_sql USING v_row;
+     END IF;
    END LOOP;
  END LOOP;
  -- Reread every table: no source entry may have become a different value.
@@ -339,21 +346,17 @@ BEGIN
   ('cwl_clan_cw_missed_decisions', ARRAY['id']::text[], 'id,clan_id,source_clash_tag,war_key,player_tag,decision,note,actor_id,created_at')
  ) AS contract(table_name,key_columns,insert_columns)
  LOOP
+   SELECT pg_catalog.coalesce(pg_catalog.jsonb_object_agg(
+      private.cwl_witnessed_restore_row_key(existing.value,v_spec.key_columns),
+      existing.value),'{}'::jsonb)
+      INTO v_target_index
+      FROM pg_catalog.jsonb_array_elements(
+        v_after_tables->v_spec.table_name) existing;
    FOR v_row IN SELECT value FROM pg_catalog.jsonb_array_elements(
      v_src_tables->v_spec.table_name)
    LOOP
-     v_prior:=NULL;
-     FOR v_found IN SELECT value FROM pg_catalog.jsonb_array_elements(
-       v_after_tables->v_spec.table_name)
-     LOOP
-       v_key_matches:=true;
-       FOREACH v_key IN ARRAY v_spec.key_columns LOOP
-         IF v_found->v_key IS DISTINCT FROM v_row->v_key THEN
-           v_key_matches:=false;EXIT;
-         END IF;
-       END LOOP;
-       IF v_key_matches THEN v_prior:=v_found;EXIT;END IF;
-     END LOOP;
+     v_row_key:=private.cwl_witnessed_restore_row_key(v_row,v_spec.key_columns);
+     v_prior:=v_target_index->v_row_key;
      IF v_prior IS DISTINCT FROM v_row THEN
        RAISE EXCEPTION 'Restore postcondition mismatch; all writes and checkpoint rolled back'
          USING ERRCODE='40001';
