@@ -4,6 +4,13 @@
 
 Dieses Dokument ersetzt **keine** der bestehenden Datenverträge, sondern stellt die abschließende technische und fachliche Abnahme **an einer Stelle** zusammen. Weitere unsichtbare Einzel-RPCs ohne Nachweis eines vollständigen, nutzerseitigen Roundtrips sind **nicht** das Ziel. Insbesondere darf ein teilweise erfolgreicher Restore nie als „Komplettes Backup wiederhergestellt“ angezeigt werden.
 
+
+## 20.11.2026 – Korrektur der 17-Bereiche-Restore-Vorschau (separates Qualitätsgate)
+
+Ein tatsächlicher Export und eine anschließende Vorschau auf denselben unveränderten Clan dürfen nicht wegen bereits vorhandener Audit-/Beobachtungszeilen als noch ausstehende Wiederherstellung erscheinen. Der Vergleich unterscheidet deshalb jetzt auch für `audit` und `observed` **identische, bereits vorhandene** Zeilen (`identical`) von **fehlenden oder widersprüchlichen historischen Belegen** (`reviewOnly`). Letztere bleiben ausdrücklich nicht automatisch rückspielbar. Zudem zählt der Reverse-Diff `targetOnly` bereits im Ziel vorhandene Datensätze, die in der älteren Quelldatei nicht vorkommen; sie dürfen weder gelöscht noch als fehlende Backup-Zeilen gezählt werden. Ein Ziel kann dadurch mehr Daten enthalten als die Sicherung, ohne dass überhaupt ein Import erforderlich ist.
+
+Das Summenprotokoll trennt `alreadyIdentical` (auch keine Ziel-Extras) von `nothingToImport` (alle Quellzeilen bereits vorhanden, Ziel-Extras erlaubt) und stellt zusätzliche Zielzeilen separat dar. Bestehende Read-only-Gates `fullRestoreAvailable:false`, `mutationPermitted:false` bleiben zwingend. Die beiden Funktionen aus #330 sind seit Migration **20261120084903** nachgewiesen in der Live-DB installiert (beide SECURITY INVOKER, kein anon EXECUTE). Dieses Qualitätsgate verändert keine Live-Daten und ist **nicht** die Freigabe eines Full-Restores.
+
 ## 20.11.2026 – Originalherkunft für 17-Tabellen-Dateien (PR #330; vor Full-Apply)
 
 Der SHA-256-Wert in einer frei bearbeitbaren JSON-Datei weist nur Beschädigungen nach: Der Dateibesitzer kann ihn nach jeder Bearbeitung neu berechnen. Für eine **spätere Rückübernahme von offiziell vom Clash-Collector geschützten Archiven** ist das nicht ausreichend.
