@@ -140,7 +140,7 @@ BEGIN
  IF pg_catalog.jsonb_array_length(v_tags)<>pg_catalog.cardinality(v_ids)
   OR EXISTS(
    SELECT 1 FROM pg_catalog.jsonb_array_elements_text(v_tags) tags(tag)
-   WHERE tags.tag IS NULL OR tags.tag !~ '^#[0289PYLQGRJCUV]{3,15}
+   WHERE tags.tag IS NULL OR tags.tag !~ '^#[0289PYLQGRJCUV]{3,15}$'
   ) THEN
    RAISE EXCEPTION 'Missing or invalid original Clash clan tags'
     USING ERRCODE='22023';
