@@ -152,11 +152,13 @@ BEGIN
     NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc
       WHERE oid='public.cwl_issue_owned_backup_witness(uuid[])'::regprocedure
         AND prosecdef AND provolatile='v'
-        AND 'search_path='=ANY(proconfig)) OR
+        AND EXISTS(SELECT 1 FROM pg_catalog.unnest(proconfig) sp(v)
+          WHERE pg_catalog.replace(sp.v,'"','')='search_path=')) OR
     NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc
       WHERE oid='public.cwl_verify_owned_backup_witness(uuid,jsonb,uuid[])'::regprocedure
         AND prosecdef AND provolatile='s'
-        AND 'search_path='=ANY(proconfig))
+        AND EXISTS(SELECT 1 FROM pg_catalog.unnest(proconfig) sp(v)
+          WHERE pg_catalog.replace(sp.v,'"','')='search_path='))
  THEN RAISE EXCEPTION 'Source-witness RPC/table privileges or search_path unsafe';END IF;
  SELECT count(*) INTO v FROM private.cwl_portable_backup_witnesses;
  IF v<>1 THEN RAISE EXCEPTION 'Repeat export minted unexpected receipt rows %',v;END IF;
