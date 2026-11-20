@@ -27,7 +27,8 @@ BEGIN
  v_receipt:=v_export->'server_receipt';
  IF v_snapshot->>'consistency'<>'server-stable-statement' OR
     v_snapshot->>'kind'<>'cwl-cloud-app-backup' OR
-    pg_catalog.jsonb_object_length(v_snapshot->'clans'->0->'tables')<>17 OR
+    (SELECT count(*) FROM pg_catalog.jsonb_object_keys(
+      v_snapshot->'clans'->0->'tables'))<>17 OR
     v_snapshot->'clans'->0->'tables'->'cwl_stat_attacks'->0->>'stars'<>'3' OR
     v_receipt->>'owner_user_id'<>'33333333-3333-4333-8333-333333333333' OR
     length(v_receipt->>'payload_sha256')<>64 THEN
