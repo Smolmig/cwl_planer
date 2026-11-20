@@ -130,7 +130,7 @@ function checkRelations(clan){
  if(profile.data_version!==9)reject("nicht unterstützte Cloud-Profil-Datenversion.");
 }
 function normalizedContent(body){
- requireKeys(body,["kind","format_version","created_at","consistency","clans"],"Datei");
+ requireKeys(body,["kind","format_version","created_at","consistency","clans","server_receipt"],"Datei");
  if(body.kind!==PORTABLE_CLOUD_BACKUP_KIND||body.format_version!==PORTABLE_CLOUD_BACKUP_FORMAT)
   reject("Dateiformat oder Version nicht unterstützt.");
  if(typeof body.created_at!=="string"||!Number.isFinite(Date.parse(body.created_at)))
@@ -147,8 +147,19 @@ function normalizedContent(body){
   checkRelations(clan);return clan;
  });
  clans.sort((a,b)=>a.source_clan_id<b.source_clan_id?-1:a.source_clan_id>b.source_clan_id?1:0);
+ let receipt=null;
+ if(Object.hasOwn(body,"server_receipt")){
+  receipt=body.server_receipt;
+  requireKeys(receipt,["id","payload_sha256","owner_user_id","snapshot_at"],"Server-Beleg");
+  if(!uuidPattern.test(receipt.id||"")||
+     !uuidPattern.test(receipt.owner_user_id||"")||
+     !/^[a-f0-9]{64}$/.test(receipt.payload_sha256||"")||
+     receipt.snapshot_at!==body.created_at)
+   reject("Ungültiger oder nicht zu dieser Datei passender Server-Beleg.");
+ }
  return {kind:body.kind,format_version:body.format_version,
-  created_at:body.created_at,consistency:body.consistency,clans};
+  created_at:body.created_at,consistency:body.consistency,clans,
+  ...(receipt?{server_receipt:safeJson(receipt)}:{})};
 }
 async function sha256(value){
  if(!globalThis.crypto?.subtle)reject("SHA-256 ist auf diesem Gerät nicht verfügbar.");
@@ -157,15 +168,15 @@ async function sha256(value){
  const digest=await crypto.subtle.digest("SHA-256",binary);
  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
 }
-export async function createPortableCloudBackup({clans,createdAt=new Date().toISOString(),consistency="client-read-non-atomic"}){
+export async function createPortableCloudBackup({clans,createdAt=new Date().toISOString(),consistency="client-read-non-atomic",serverReceipt=null}){
  const body=normalizedContent({kind:PORTABLE_CLOUD_BACKUP_KIND,
   format_version:PORTABLE_CLOUD_BACKUP_FORMAT,created_at:createdAt,
-  consistency,clans});
+  consistency,clans,...(serverReceipt?{server_receipt:serverReceipt}:{})});
  return {...body,sha256:await sha256(canonicalBackupJson(body))};
 }
 export async function verifyPortableCloudBackup(file){
  // Parse before accepting; never trust a sender-supplied checksum or clan ID.
- requireKeys(file,["kind","format_version","created_at","consistency","clans","sha256"],"Backup");
+ requireKeys(file,["kind","format_version","created_at","consistency","clans","sha256","server_receipt"],"Backup");
  if(!/^[a-f0-9]{64}$/.test(file.sha256||""))reject("ungültige SHA-256-Prüfsumme.");
  const {sha256:checksum,...body}=file;
  const checked=normalizedContent(body);
@@ -536,4 +547,82 @@ export async function applyPortablePristinePlan({
  return validatePristineApplyResult(reply,{
    candidateId,targetClanId,expectedRevision,apply:true
  });
+}
+
+
+// Proof-of-origin is a separate server authorization step. A client SHA
+// alone is not a signature, and this optional receipt MUST be looked up
+// again on the server prior to any future high-trust archive recovery.
+// This is deliberately not a generic full-restore/write API.
+export async function exportWitnessedOwnerCloudSnapshot({sb,clanIds}){
+ if(!sb?.rpc||!sb?.auth?.getUser||!Array.isArray(clanIds)||
+    clanIds.length<1||clanIds.length>30||
+    new Set(clanIds).size!==clanIds.length||
+    !clanIds.every(id=>uuidPattern.test(id||"")))
+  reject("Ungültige eigene Clanauswahl.");
+ const before=await sb.auth.getUser();
+ const actor=before.data?.user?.id;
+ if(before.error||!uuidPattern.test(actor||""))
+  reject("Anmeldung konnte nicht geprüft werden.");
+ const response=await sb.rpc("cwl_issue_owned_backup_witness",{p_clan_ids:clanIds});
+ if(response.error||!record(response.data)||
+    !record(response.data.snapshot)||!record(response.data.server_receipt))
+  reject("Der sichere Cloud-Export konnte nicht bestätigt werden.");
+ const payload=response.data.snapshot,receipt=response.data.server_receipt;
+ requireKeys(payload,["kind","format_version","created_at","consistency","clans"],"Server-Snapshot");
+ if(payload.kind!==PORTABLE_CLOUD_BACKUP_KIND||
+   payload.format_version!==PORTABLE_CLOUD_BACKUP_FORMAT||
+   payload.consistency!=="server-stable-statement"||
+   !Array.isArray(payload.clans)||payload.clans.length!==clanIds.length||
+   new Set(payload.clans.map(c=>c.source_clan_id)).size!==clanIds.length||
+   payload.clans.some(c=>!clanIds.includes(c.source_clan_id))||
+   receipt.owner_user_id!==actor||receipt.snapshot_at!==payload.created_at)
+  reject("Der Server-Snapshot gehört nicht vollständig zu den eigenen Clans.");
+ // PostgreSQL hashes the canonical JSONB text. The browser never
+ // guesses that digest; the server must verify it on subsequent import.
+ if(!/^[a-f0-9]{64}$/.test(receipt.payload_sha256||"")||
+    !uuidPattern.test(receipt.id||""))
+  reject("Ungültiger Server-Herkunftsbeleg.");
+ const after=await sb.auth.getUser();
+ if(after.error||after.data?.user?.id!==actor)
+  reject("Benutzersitzung hat sich während des Exports geändert.");
+ return createPortableCloudBackup({
+  clans:payload.clans,createdAt:payload.created_at,
+  consistency:payload.consistency,serverReceipt:receipt
+ });
+}
+
+export async function verifyWitnessedOwnerCloudBackup({sb,file,mapping}){
+ if(!sb?.rpc)reject("Keine Cloud-Verbindung für die Herkunftsprüfung.");
+ const verified=await verifyPortableCloudBackup(file);
+ const receipt=verified.server_receipt;
+ if(!receipt)reject("Diese ältere Sicherung enthält keinen serverseitigen Herkunftsbeleg.");
+ if(verified.consistency!=="server-stable-statement")
+  reject("Nicht-atomare Quelldaten dürfen nicht als vollständiger Restore gelten.");
+ if(!record(mapping))reject("Die Zielclans müssen ausdrücklich zugeordnet werden.");
+ const sources=verified.clans.map(c=>c.source_clan_id);
+ requireKeys(mapping,sources,"Zielzuordnung");
+ if(Object.keys(mapping).length!==sources.length)
+  reject("Nicht alle Quellclans wurden zugeordnet.");
+ const targets=sources.map(s=>mapping[s]);
+ if(targets.some(t=>!uuidPattern.test(t||""))||
+   new Set(targets).size!==targets.length)
+  reject("Ungültige oder doppelte Wiederherstellungsziele.");
+ const body={...verified};delete body.server_receipt;
+ const reply=await sb.rpc("cwl_verify_owned_backup_witness",{
+  p_receipt_id:receipt.id,p_payload:body,p_target_clan_ids:targets
+ });
+ if(reply.error||!record(reply.data)||
+    reply.data.verified!==true||
+    reply.data.scope!=="server-origin-17-table-snapshot"||
+    reply.data.receipt_id!==receipt.id||
+    reply.data.payload_sha256!==receipt.payload_sha256||
+    reply.data.source_clan_count!==sources.length||
+    !Array.isArray(reply.data.target_clan_ids)||
+    targets.some((id,i)=>reply.data.target_clan_ids[i]!==id))
+  reject("Die Datenbank konnte die Originalherkunft der Sicherung nicht bestätigen.");
+ return {verified:true,sourceClans:sources.length,targetClans:targets,
+   verifiedSnapshotDigest:receipt.payload_sha256,
+   // Valid provenance does not grant full-write permissions.
+   fullRestoreAvailable:false,mutationPermitted:false};
 }

@@ -5,7 +5,8 @@
 import {
  PORTABLE_CLOUD_TABLES,
  PORTABLE_BACKUP_BYTE_LIMIT,
- exportOwnerCloudSnapshot,
+ exportWitnessedOwnerCloudSnapshot,
+ verifyWitnessedOwnerCloudBackup,
  verifyPortableCloudBackup,
  previewOwnerCloudRestore
 } from "./cloud-portable-backup-core.mjs";
@@ -100,7 +101,7 @@ export function summarizePortableRestoreCoverage(preview){
  * 17-table field-level allowlists. The serializer is verified again.
  */
 export async function preparePortableOwnerBackupDownload({sb,clanIds}){
- const snapshot=await exportOwnerCloudSnapshot({sb,clanIds});
+ const snapshot=await exportWitnessedOwnerCloudSnapshot({sb,clanIds});
  const full=JSON.stringify(snapshot,null,2);
  const bytes=new TextEncoder().encode(full);
  if(!bytes.length||bytes.byteLength>PORTABLE_BACKUP_BYTE_LIMIT)
@@ -124,7 +125,8 @@ export async function preparePortableOwnerBackupDownload({sb,clanIds}){
   dataTables:PORTABLE_CLOUD_TABLES.length,
   // Important: do not allow a download success toast to imply restore ready.
   completeExport:true,
-  fullRestoreAvailable:false
+  fullRestoreAvailable:false,
+  originReceiptId:snapshot.server_receipt?.id??null
  };
 }
 /**
@@ -140,7 +142,13 @@ export async function inspectPortableOwnerRestoreFile({sb,fileText,mapping}){
  const verified=await verifyPortableCloudBackup(file);
  if(verified.consistency!=="server-stable-statement")
   fail("Nur vollständige, konsistente Server-Snapshots sind für die Cloud-Wiederherstellung zulässig.");
+ const origin=file.server_receipt?
+  await verifyWitnessedOwnerCloudBackup({sb,file,mapping}):null;
  const preview=await previewOwnerCloudRestore({sb,file,mapping});
- return summarizePortableRestoreCoverage(preview);
+ return {...summarizePortableRestoreCoverage(preview),
+  sourceOriginVerified:origin?.verified===true,
+  sourceOriginWarning:origin?.verified===true?
+   null:"Ältere Datei ohne überprüfbaren Originalbeleg. Keine Wiederherstellung verifizierter Clash-Ergebnisse.",
+  fullRestoreAvailable:false,mutationPermitted:false};
 }
 export const PORTABLE_RESTORE_STATUS_LABELS=statusLabels;

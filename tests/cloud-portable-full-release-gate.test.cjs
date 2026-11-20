@@ -53,8 +53,14 @@ async function sample(){
   auth:{getUser:async()=>({data:{user:{id:OWNER}},error:null})},
   rpc:async(name,params)=>{
    sb.calls.push({name,params});
-   assert.equal(name,"cwl_export_owned_backup");
-   return{data:snapshot,error:null};
+   if(name==="cwl_issue_owned_backup_witness")
+    return{data:{snapshot,server_receipt:{
+     id:"99999999-9999-4999-8999-999999999999",
+     payload_sha256:"a".repeat(64),owner_user_id:OWNER,snapshot_at:DATE
+    }},error:null};
+   if(name==="cwl_export_owned_backup")
+    return{data:snapshot,error:null};
+   throw Error("Unexpected RPC "+name);
   }
  };
  return{core,gate,file,snapshot,sb};
@@ -67,16 +73,19 @@ test("complete backup download is one self-contained 17-table server-MVCC/sha256
  assert.equal(f.clanCount,1);
  assert.equal(f.dataTables,17);
  assert.equal(f.completeExport,true);
+ assert.match(f.originReceiptId,/^[0-9a-f-]{36}$/);
  assert.equal(f.fullRestoreAvailable,false);
  const parsed=JSON.parse(f.json);
  const valid=await core.verifyPortableCloudBackup(parsed);
  assert.equal(valid.consistency,"server-stable-statement");
+ assert.equal(valid.server_receipt.payload_sha256,"a".repeat(64));
  assert.equal(valid.clans[0].tables.cwl_stat_wars.length,1);
  assert.equal(valid.clans[0].tables.cwl_stat_attacks.length,1);
  assert.equal(valid.clans[0].tables.cwl_change_events.length,1);
  assert.equal(Object.keys(valid.clans[0].tables).length,17);
  assert.equal(sb.calls.length,1);
  assert.deepEqual(sb.calls[0].params.p_clan_ids,[ID]);
+ assert.equal(sb.calls[0].name,"cwl_issue_owned_backup_witness");
 });
 test("full restore summary flags audit+observations and every non-atomic conflict; never grants apply",async()=>{
  const {gate}=await sample();
