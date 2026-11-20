@@ -29,6 +29,60 @@ REVOKE ALL ON private.cwl_portable_backup_witnesses FROM PUBLIC,anon,authenticat
 COMMENT ON TABLE private.cwl_portable_backup_witnesses IS
  'Server-produced SHA256 witness of 17-table owner backup snapshot; not a session credential or a public signature; no client INSERT/UPDATE/DELETE.';
 
+-- JSONB preserves object key semantics, but the client sorts rows by their
+-- composite keys while the SQL exporter orders some rows numerically.
+-- A genuine file must not fail proof merely because row array order differs.
+-- Hash a canonicalized bag of COMPLETE rows for every dataset, preserving
+-- multiplicity, all fields, timestamps, owner metadata and 17 table names.
+CREATE OR REPLACE FUNCTION private.cwl_canonical_backup_payload(p_payload jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER SET search_path=''
+AS $canonical_backup$
+DECLARE
+ v_clan jsonb;
+ v_key text;
+ v_raw jsonb;
+ v_arr jsonb;
+ v_tables jsonb;
+ v_clans jsonb:='[]'::jsonb;
+BEGIN
+ IF pg_catalog.jsonb_typeof(p_payload) IS DISTINCT FROM 'object' OR
+    pg_catalog.jsonb_typeof(p_payload->'clans') IS DISTINCT FROM 'array' OR
+    pg_catalog.jsonb_array_length(p_payload->'clans') NOT BETWEEN 1 AND 30 THEN
+    RAISE EXCEPTION 'Invalid canonical backup envelope'
+      USING ERRCODE='22023';
+ END IF;
+ FOR v_clan IN
+    SELECT c.value FROM pg_catalog.jsonb_array_elements(p_payload->'clans') c(value)
+      ORDER BY c.value->>'source_clan_id'
+ LOOP
+   IF pg_catalog.jsonb_typeof(v_clan->'tables') IS DISTINCT FROM 'object' OR
+      (SELECT count(*) FROM pg_catalog.jsonb_object_keys(v_clan->'tables'))<>17 THEN
+      RAISE EXCEPTION 'A witnessed source requires exactly 17 datasets'
+        USING ERRCODE='22023';
+   END IF;
+   v_tables:='{}'::jsonb;
+   FOR v_key,v_raw IN SELECT key,value FROM pg_catalog.jsonb_each(v_clan->'tables')
+   LOOP
+     IF pg_catalog.jsonb_typeof(v_raw) IS DISTINCT FROM 'array' OR
+        pg_catalog.jsonb_array_length(v_raw)>100000 THEN
+       RAISE EXCEPTION 'Witness dataset is missing, malformed or too large'
+         USING ERRCODE='22023';
+     END IF;
+     SELECT coalesce(pg_catalog.jsonb_agg(row_data ORDER BY row_data::text),'[]'::jsonb)
+       INTO v_arr
+     FROM pg_catalog.jsonb_array_elements(v_raw) r(row_data);
+     v_tables:=v_tables||pg_catalog.jsonb_build_object(v_key,v_arr);
+   END LOOP;
+   v_clans:=v_clans||pg_catalog.jsonb_build_array(
+     pg_catalog.jsonb_set(v_clan,'{tables}',v_tables));
+ END LOOP;
+ RETURN pg_catalog.jsonb_set(p_payload,'{clans}',v_clans);
+END;
+$canonical_backup$;
+REVOKE ALL ON FUNCTION private.cwl_canonical_backup_payload(jsonb)
+ FROM PUBLIC,anon,authenticated;
+
 CREATE OR REPLACE FUNCTION public.cwl_issue_owned_backup_witness(
  p_clan_ids uuid[]
 ) RETURNS jsonb
@@ -95,7 +149,7 @@ BEGIN
  -- We do not call this a cryptographic SIGNATURE: the protected database
  -- receipt makes it verifiable only while this receipt exists.
  v_digest:=pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(
-   v_snapshot::text,'UTF8')),'hex');
+   private.cwl_canonical_backup_payload(v_snapshot)::text,'UTF8')),'hex');
  INSERT INTO private.cwl_portable_backup_witnesses(
    owner_user_id,source_clan_ids,source_clash_tags,payload_sha256,snapshot_at)
  VALUES (v_actor,v_ids,v_tags,v_digest,v_snapshot->>'created_at')
@@ -150,7 +204,7 @@ BEGIN
     USING ERRCODE='42501';
  END IF;
  v_digest:=pg_catalog.encode(pg_catalog.sha256(
-   pg_catalog.convert_to(p_payload::text,'UTF8')),'hex');
+   pg_catalog.convert_to(private.cwl_canonical_backup_payload(p_payload)::text,'UTF8')),'hex');
  v_clans:=p_payload->'clans';
  v_count:=pg_catalog.jsonb_array_length(v_row.source_clash_tags);
  IF v_digest IS DISTINCT FROM v_row.payload_sha256 OR
