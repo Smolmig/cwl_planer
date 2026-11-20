@@ -242,8 +242,10 @@ SET ROLE authenticated;
 SET request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
 DO $revoked$
 BEGIN
- IF (SELECT count(*) FROM private.cwl_portable_fresh_clan_recovery_checkpoints)<>0
- THEN RAISE EXCEPTION 'Former owner retained private original before-state access';END IF;
+ IF (SELECT count(*) FROM private.cwl_portable_fresh_clan_recovery_checkpoints
+   WHERE target_clan_id='88888888-8888-4888-8888-888888888888')<>0 OR
+   (SELECT count(*) FROM private.cwl_portable_fresh_clan_recovery_checkpoints)<>1
+ THEN RAISE EXCEPTION 'Former owner retained revoked target snapshot or lost authorized snapshot access';END IF;
  RAISE NOTICE 'PASS: owner role revoked, before-state RLS deny enforced';
 END $revoked$;
 RESET ROLE;
