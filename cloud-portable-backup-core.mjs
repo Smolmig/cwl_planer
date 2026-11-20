@@ -176,7 +176,7 @@ export async function createPortableCloudBackup({clans,createdAt=new Date().toIS
 }
 export async function verifyPortableCloudBackup(file){
  // Parse before accepting; never trust a sender-supplied checksum or clan ID.
- requireKeys(file,["kind","format_version","created_at","consistency","clans","sha256"],"Backup");
+ requireKeys(file,["kind","format_version","created_at","consistency","clans","sha256","server_receipt"],"Backup");
  if(!/^[a-f0-9]{64}$/.test(file.sha256||""))reject("ungültige SHA-256-Prüfsumme.");
  const {sha256:checksum,...body}=file;
  const checked=normalizedContent(body);
