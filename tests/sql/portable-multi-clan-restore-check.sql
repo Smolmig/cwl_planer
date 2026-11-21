@@ -177,7 +177,9 @@ BEGIN
    'RESTORE_ALL_VERIFIED_EMPTY_CLANS');
   RAISE EXCEPTION 'Synthetic late target failure did not abort';
  EXCEPTION WHEN raise_exception THEN
-  IF SQLERRM='Synthetic late target failure did not abort' THEN RAISE;END IF;
+  -- Only the trigger firing in the SECOND target proves mid-replay rollback.
+  IF SQLERRM IS DISTINCT FROM 'synthetic second clan late-archive error'
+   THEN RAISE;END IF;
  END;
  IF (SELECT revision FROM public.cwl_cloud_profiles WHERE clan_id=targets[1])<>1
    OR (SELECT revision FROM public.cwl_cloud_profiles WHERE clan_id=targets[2])<>1
@@ -230,7 +232,12 @@ BEGIN
    w,p,targets,ARRAY[1,1]::bigint[],sha,true,
    'RESTORE_ALL_VERIFIED_EMPTY_CLANS');
   RAISE EXCEPTION 'Silent second tenant stars mutation was accepted';
- EXCEPTION WHEN serialization_failure THEN NULL;END;
+ EXCEPTION WHEN serialization_failure THEN
+  -- Only an AFTER-WRITE 17-table integrity check counts as a successful
+  -- silent-corruption rollback test; a stale revision/preflight is inadequate.
+  IF SQLERRM NOT LIKE '17-table restored dataset cwl_stat_attacks differs%'
+    THEN RAISE;END IF;
+ END;
  IF (SELECT revision FROM public.cwl_cloud_profiles WHERE clan_id=targets[1])<>1
    OR (SELECT revision FROM public.cwl_cloud_profiles WHERE clan_id=targets[2])<>1
    OR (SELECT count(*) FROM public.cwl_stat_wars
