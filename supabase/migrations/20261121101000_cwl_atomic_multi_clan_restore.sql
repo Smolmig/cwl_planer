@@ -523,6 +523,7 @@ DECLARE
  v_session_id uuid;
  v_target_tag text;
  v_current_revision bigint;
+ v_source_id_text text;
 BEGIN
  IF v_actor IS NULL OR p_receipt_id IS NULL
     OR p_apply IS NULL OR
@@ -559,14 +560,166 @@ BEGIN
  -- legal owner role, never from tenant names, JWT-editable metadata or backup.
  FOR v_i IN 1..v_count LOOP
    v_target:=p_target_clan_ids[v_i];
-   IF v_target IS NULL OR
-      (p_payload->'clans'->(v_i-1)->>'source_clan_id') !~
-        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
-     RAISE EXCEPTION 'Invalid source/target clan identity'
+   v_source_id_text:=p_payload#>>ARRAY['clans',(v_i-1)::text,'source_clan_id'];
+   IF v_target IS NULL OR v_source_id_text IS NULL OR
+      v_source_id_text !~
+        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+   IF v_src_ids[v_i]=v_target THEN
+      RAISE EXCEPTION 'Existing original clan is not a pristine replacement'
+        USING ERRCODE='22023';
+   END IF;
+   SELECT c.clash_tag INTO v_target_tag
+   FROM public.cwl_clans c
+   JOIN public.cwl_clan_memberships m
+     ON m.clan_id=c.id AND m.user_id=v_actor AND m.role='owner'
+   WHERE c.id=v_target AND c.owner_user_id=v_actor;
+   IF NOT FOUND OR v_target_tag IS DISTINCT FROM
+       p_payload->'clans'->(v_i-1)->>'clash_tag' THEN
+     RAISE EXCEPTION 'All replacement clans must be currently owned with matching Clash tags'
+       USING ERRCODE='42501';
+   END IF;
+ END LOOP;
+ IF (SELECT count(DISTINCT x.id) FROM pg_catalog.unnest(v_src_ids) x(id))
+    <>v_count THEN
+   RAISE EXCEPTION 'Duplicate original clan in multi-clan recovery'
+      USING ERRCODE='22023';
+ END IF;
+ -- Verify the COMPLETE single signed backup against a single private
+ -- server-origin witness. Partial inputs or malicious per-clan splicing fail.
+ v_proof:=public.cwl_verify_owned_backup_witness(
+   p_receipt_id,p_payload,p_target_clan_ids);
+ IF v_proof->>'verified' IS DISTINCT FROM 'true'
+    OR v_proof->>'owner_user_id' IS DISTINCT FROM v_actor::text
+    OR (v_proof->>'source_clan_count')::integer<>v_count THEN
+   RAISE EXCEPTION 'Incomplete or modified multi-clan server-origin witness'
+     USING ERRCODE='42501';
+ END IF;
+ IF p_apply THEN
+   -- Avoid inverted lock ordering between two simultaneous multi-clan
+   -- transactions that supply the same targets in different source orders.
+   -- Profile-before-review order agrees with the existing plan-write guard.
+   FOR v_target IN SELECT x.id FROM pg_catalog.unnest(p_target_clan_ids) x(id)
+     ORDER BY x.id
+   LOOP
+     PERFORM pg_catalog.pg_advisory_xact_lock(
+       pg_catalog.hashtextextended(v_target::text,424242));
+     PERFORM 1 FROM public.cwl_clans WHERE id=v_target FOR UPDATE;
+     PERFORM 1 FROM public.cwl_cloud_profiles WHERE clan_id=v_target FOR UPDATE;
+     PERFORM 1 FROM public.cwl_plan_review_state
+       WHERE clan_id=v_target FOR UPDATE;
+   END LOOP;
+ END IF;
+ -- Execute ALL DRY RUNS first. Nothing is written if ANY target contains
+ -- wars/old CWL, a different source tag, missing authors or a stale revision.
+ FOR v_i IN 1..v_count LOOP
+   v_preview:=private.cwl_restore_witnessed_multi_member_worker(
+     p_receipt_id,p_payload,v_i-1,p_target_clan_ids,
+     p_target_clan_ids[v_i],p_expected_revisions[v_i],
+     NULL,false,NULL);
+   IF v_preview->>'applied' IS DISTINCT FROM 'false'
+      OR v_preview->>'scope' IS DISTINCT FROM 'verified-pristine-new-clan-17-datasets'
+      OR (v_preview->>'restored_table_count')::integer<>17 OR
+      v_preview->>'target_clan_id' IS DISTINCT FROM p_target_clan_ids[v_i]::text THEN
+     RAISE EXCEPTION 'One of the full 17-area previews could not be validated'
+       USING ERRCODE='40001';
+   END IF;
+   IF p_apply AND v_preview->>'target_fingerprint'
+         IS DISTINCT FROM p_expected_target_fingerprints[v_i] THEN
+     RAISE EXCEPTION 'One replacement changed after multi-clan preview; abort ALL clans'
+       USING ERRCODE='40001';
+   END IF;
+   v_previews:=v_previews||pg_catalog.jsonb_build_array(v_preview);
+   v_total_rows:=v_total_rows+(v_preview->>'source_rows')::bigint;
+ END LOOP;
+ IF NOT p_apply THEN
+   RETURN pg_catalog.jsonb_build_object(
+     'scope','verified-multi-pristine-clan-17-datasets',
+     'source_clan_count',v_count,'target_clan_count',v_count,
+     'source_clan_ids',pg_catalog.to_jsonb(v_src_ids),
+     'target_clan_ids',pg_catalog.to_jsonb(p_target_clan_ids),
+     'original_receipt_id',p_receipt_id,
+     'original_digest',v_proof->>'payload_sha256',
+     'expected_revisions',pg_catalog.to_jsonb(p_expected_revisions),
+     'source_rows',v_total_rows,
+     'previews',v_previews,'applied',false,
+     'mutation_permitted',false,'public_full_restore_available',false,
+     'warning','All-or-nothing only on original-witnessed owned pristine replacement clans. Original user accounts and server receipt must still exist.'
+   );
+ END IF;
+ -- All N replays happen without independent exception handlers in this
+ -- one RPC transaction. Any failure anywhere in any target rolls back all.
+ FOR v_i IN 1..v_count LOOP
+   v_applied:=private.cwl_restore_witnessed_multi_member_worker(
+     p_receipt_id,p_payload,v_i-1,p_target_clan_ids,
+     p_target_clan_ids[v_i],p_expected_revisions[v_i],
+     p_expected_target_fingerprints[v_i],true,
+     'RESTORE_ORIGINAL_TO_EMPTY_CLAN');
+   IF v_applied->>'applied' IS DISTINCT FROM 'true'
+      OR v_applied->>'scope' IS DISTINCT FROM 'verified-pristine-new-clan-17-datasets'
+      OR (v_applied->>'restored_table_count')::integer<>17
+      OR v_applied->>'source_clan_id' IS DISTINCT FROM v_src_ids[v_i]::text
+      OR v_applied->>'target_clan_id' IS DISTINCT FROM p_target_clan_ids[v_i]::text
+      OR v_applied->>'checkpoint_id' IS NULL THEN
+     RAISE EXCEPTION 'A verified full restore member failed; rollback ALL targets'
+       USING ERRCODE='40001';
+   END IF;
+   v_checkpoints:=pg_catalog.array_append(
+     v_checkpoints,(v_applied->>'checkpoint_id')::uuid);
+   v_result_rows:=v_result_rows||pg_catalog.jsonb_build_array(v_applied);
+ END LOOP;
+ INSERT INTO private.cwl_portable_multi_clan_recovery_sessions(
+   actor_user_id,source_receipt_id,source_digest,source_clan_ids,
+   target_clan_ids,checkpoint_ids,source_rows
+ ) VALUES(
+   v_actor,p_receipt_id,v_proof->>'payload_sha256',v_src_ids,
+   p_target_clan_ids,v_checkpoints,v_total_rows
+ ) RETURNING id INTO v_session_id;
+ RETURN pg_catalog.jsonb_build_object(
+    'scope','verified-multi-pristine-clan-17-datasets',
+    'applied',true,'mutation_permitted',false,'public_full_restore_available',false,
+    'source_clan_count',v_count,'target_clan_count',v_count,
+    'source_clan_ids',pg_catalog.to_jsonb(v_src_ids),
+    'target_clan_ids',pg_catalog.to_jsonb(p_target_clan_ids),
+    'original_receipt_id',p_receipt_id,
+    'original_digest',v_proof->>'payload_sha256',
+    'recovery_session_id',v_session_id,
+    'checkpoints',pg_catalog.to_jsonb(v_checkpoints),
+    'source_rows',v_total_rows,'restores',v_result_rows
+ );
+END;
+$multi_atomic$;
+REVOKE ALL ON FUNCTION private.cwl_restore_witnessed_multi_clans_worker(
+ uuid,jsonb,uuid[],bigint[],text[],boolean,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION private.cwl_restore_witnessed_multi_clans_worker(
+ uuid,jsonb,uuid[],bigint[],text[],boolean,text)
+ TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.cwl_restore_witnessed_multi_clans(
+ p_receipt_id uuid,p_payload jsonb,p_target_clan_ids uuid[],
+ p_expected_revisions bigint[],p_expected_target_fingerprints text[] DEFAULT NULL,
+ p_apply boolean DEFAULT false,p_confirmation text DEFAULT NULL
+) RETURNS jsonb
+LANGUAGE sql VOLATILE SECURITY INVOKER SET search_path=''
+AS $public_multi$
+ SELECT private.cwl_restore_witnessed_multi_clans_worker(
+   p_receipt_id,p_payload,p_target_clan_ids,p_expected_revisions,
+   p_expected_target_fingerprints,p_apply,p_confirmation);
+$public_multi$;
+REVOKE ALL ON FUNCTION public.cwl_restore_witnessed_multi_clans(
+ uuid,jsonb,uuid[],bigint[],text[],boolean,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.cwl_restore_witnessed_multi_clans(
+ uuid,jsonb,uuid[],bigint[],text[],boolean,text) TO authenticated;
+COMMENT ON FUNCTION public.cwl_restore_witnessed_multi_clans(
+ uuid,jsonb,uuid[],bigint[],text[],boolean,text) IS
+ 'One verified original multi-clan witness; one all-or-nothing PostgreSQL-17 17-area restore for 2..10 distinct, unused, newly owned same-Clash-tag replacement targets. No public UI, auth recreation or merge of active plans.';
+ THEN
+     RAISE EXCEPTION 'Invalid source/target clan identity at position % (source %, target %)',v_i,v_source_id_text,v_target
        USING ERRCODE='22023';
    END IF;
    v_src_ids:=pg_catalog.array_append(
-     v_src_ids,(p_payload->'clans'->(v_i-1)->>'source_clan_id')::uuid);
+     v_src_ids,v_source_id_text::uuid);
    IF v_src_ids[v_i]=v_target THEN
       RAISE EXCEPTION 'Existing original clan is not a pristine replacement'
         USING ERRCODE='22023';
