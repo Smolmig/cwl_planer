@@ -624,9 +624,8 @@ BEGIN
        USING ERRCODE='40001';
    END IF;
    IF p_apply THEN
-     IF (v_preview->>'target_fingerprint') IS DISTINCT FROM
-         p_expected_target_fingerprints[v_i] THEN
-       RAISE EXCEPTION 'One replacement changed after multi-clan preview; abort ALL clans'
+     IF (v_preview->>'target_fingerprint') <> p_expected_target_fingerprints[v_i] THEN
+       RAISE EXCEPTION 'Multi clan target changed after preview'
          USING ERRCODE='40001';
      END IF;
    END IF;
