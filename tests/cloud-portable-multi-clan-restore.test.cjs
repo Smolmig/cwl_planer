@@ -204,6 +204,6 @@ test("SQL public invoker, private helper non-executable and checkpoint owner RLS
  assert.match(migration,/SECURITY DEFINER SET search_path=''/);
  assert.match(migration,/SECURITY INVOKER SET search_path=''/);
  assert.match(migration,/RESTORE_ALL_VERIFIED_EMPTY_CLANS/);
- assert.match(migration,/RAISE EXCEPTION 'A verified full restore member failed/);
+ assert.match(migration,/RAISE EXCEPTION 'Incomplete verified restore member/);
  assert.match(migration,/NOT EXISTS\(/);
 });
