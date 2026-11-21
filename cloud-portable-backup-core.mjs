@@ -813,3 +813,134 @@ export async function applyWitnessedPristineClanRestore({
  return {...assertPristineReplacementResult(reply,{sourceClanId,targetClanId,apply:true}),
    fullRestoreAvailable:false,mutationPermitted:false};
 }
+
+
+// #178 – internal multi-clan 17-area recovery. The public Cloud app does
+// NOT call these adapters until the complete backup UI/device release gate.
+// A single witnessed 2–10-clan source maps to exactly N different, owner
+// controlled, unused replacement clans in the same original source order.
+// PostgreSQL performs ALL writes in ONE transaction and owns final authority.
+const MULTI_CLAN_RESTORE_CONFIRMATION="RESTORE_ALL_VERIFIED_EMPTY_CLANS";
+function witnessedMultiMapping(verified,mapping){
+ if(!verified.server_receipt||
+    verified.consistency!=="server-stable-statement"||
+    verified.clans.length<2||verified.clans.length>10||
+    !record(mapping))
+   reject("Mehrclan-Restore benötigt 2 bis 10 original belegte Clans aus EINER Datei.");
+ const sources=verified.clans.map(c=>c.source_clan_id);
+ requireKeys(mapping,sources,"Mehrclan-Zielzuordnung");
+ if(Object.keys(mapping).length!==sources.length)
+  reject("Alle Quellclans müssen vollständig und genau einmal zugeordnet werden.");
+ const targets=sources.map(s=>mapping[s]);
+ if(targets.some((t,i)=>!uuidPattern.test(t||"")||t===sources[i])||
+    new Set(targets).size!==targets.length)
+  reject("Jeder Quellclan benötigt einen anderen, eindeutigen neuen Zielclan.");
+ return {sources,targets};
+}
+function verifiedMultiPreviewResponse(reply,{sources,targets}){
+ const v=reply?.data;
+ if(reply?.error||!record(v)||
+    v.scope!=="verified-multi-pristine-clan-17-datasets"||
+    v.applied!==false||v.mutation_permitted!==false||
+    v.public_full_restore_available!==false||
+    v.source_clan_count!==sources.length||
+    v.target_clan_count!==targets.length||
+    !Array.isArray(v.previews)||v.previews.length!==sources.length||
+    !Array.isArray(v.source_clan_ids)||!Array.isArray(v.target_clan_ids)||
+    v.source_clan_ids.some((id,i)=>id!==sources[i])||
+    v.target_clan_ids.some((id,i)=>id!==targets[i])||
+    !Number.isSafeInteger(v.source_rows)||v.source_rows<0)
+  reject("Die atomare schreibgeschützte Mehrclan-Vorschau ist ungültig.");
+ v.previews.forEach((row,i)=>{
+  if(!record(row)||row.scope!=="verified-pristine-new-clan-17-datasets"||
+     row.source_clan_id!==sources[i]||row.target_clan_id!==targets[i]||
+     row.applied!==false||row.restored_table_count!==17||
+     !Number.isSafeInteger(row.expected_revision)||row.expected_revision<1||
+     !/^[0-9a-f]{64}$/.test(row.target_fingerprint||""))
+   reject("Nicht alle Clan-Vorschauen wurden serverseitig bestätigt.");
+ });
+ return v;
+}
+function verifiedMultiApplyResponse(reply,{sources,targets}){
+ const v=reply?.data;
+ if(reply?.error||!record(v)||
+    v.scope!=="verified-multi-pristine-clan-17-datasets"||
+    v.applied!==true||v.mutation_permitted!==false||
+    v.public_full_restore_available!==false||
+    v.source_clan_count!==sources.length||
+    v.target_clan_count!==targets.length||
+    !uuidPattern.test(v.recovery_session_id||"")||
+    !Array.isArray(v.checkpoints)||v.checkpoints.length!==targets.length||
+    !Array.isArray(v.restores)||v.restores.length!==targets.length||
+    v.checkpoints.some(x=>!uuidPattern.test(x||""))||
+    !Array.isArray(v.source_clan_ids)||!Array.isArray(v.target_clan_ids)||
+    v.source_clan_ids.some((id,i)=>id!==sources[i])||
+    v.target_clan_ids.some((id,i)=>id!==targets[i]))
+  reject("Der gemeinsame Wiederherstellungs-Checkpoint aller Clans fehlt.");
+ v.restores.forEach((row,i)=>{
+  if(!record(row)||row.scope!=="verified-pristine-new-clan-17-datasets"||
+    row.applied!==true||row.restored_table_count!==17||
+    row.source_clan_id!==sources[i]||row.target_clan_id!==targets[i]||
+    row.checkpoint_id!==v.checkpoints[i]||
+    !Number.isSafeInteger(row.applied_revision)||row.applied_revision<2)
+   reject("Der Server hat nicht alle Clan-Restores atomar bestätigt.");
+ });
+ return v;
+}
+export async function previewWitnessedMultiClanRestore({sb,file,mapping}){
+ if(!sb?.rpc)reject("Keine Cloud-Sitzung für vollständigen Mehrclan-Restore.");
+ const verified=await verifyPortableCloudBackup(file);
+ const {sources,targets}=witnessedMultiMapping(verified,mapping);
+ const dest=await exportOwnerCloudSnapshot({sb,clanIds:targets});
+ const targetById=new Map(dest.clans.map(c=>[c.source_clan_id,c]));
+ const revisions=sources.map((id,i)=>{
+  const d=targetById.get(targets[i]);
+  if(!d||d.clash_tag!==verified.clans[i].clash_tag)
+   reject("Mindestens ein Ersatzclan ist nicht identisch mit seinem Clash-Clan.");
+  const rev=d.tables?.cwl_cloud_profiles?.[0]?.revision;
+  if(!Number.isSafeInteger(rev)||rev<1)
+   reject("Ungültige Ziel-Planrevision eines Ersatzclans.");
+  return rev;
+ });
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping});
+ const body={...verified};delete body.server_receipt;
+ const reply=await sb.rpc("cwl_restore_witnessed_multi_clans",{
+  p_receipt_id:verified.server_receipt.id,p_payload:body,
+  p_target_clan_ids:targets,p_expected_revisions:revisions,
+  p_expected_target_fingerprints:null,p_apply:false,p_confirmation:null
+ });
+ return {...verifiedMultiPreviewResponse(reply,{sources,targets}),
+  backupSha256:file.sha256,fullRestoreAvailable:false,mutationPermitted:false};
+}
+export async function applyWitnessedMultiClanRestore({
+ sb,file,mapping,expectedRevisions,expectedTargetFingerprints,confirmation
+}){
+ if(!sb?.rpc||confirmation!==MULTI_CLAN_RESTORE_CONFIRMATION)
+  reject("Für ALLE Clans ist eine ausdrückliche Mehrclan-Restore-Bestätigung erforderlich.");
+ const verified=await verifyPortableCloudBackup(file);
+ const {sources,targets}=witnessedMultiMapping(verified,mapping);
+ if(!Array.isArray(expectedRevisions)||expectedRevisions.length!==sources.length||
+    expectedRevisions.some(x=>!Number.isSafeInteger(x)||x<1)||
+    !Array.isArray(expectedTargetFingerprints)||
+    expectedTargetFingerprints.length!==sources.length||
+    expectedTargetFingerprints.some(x=>!/^[0-9a-f]{64}$/.test(x||"")))
+  reject("Es fehlt eine frische vollständige Vorschau für jeden Ersatzclan.");
+ const dest=await exportOwnerCloudSnapshot({sb,clanIds:targets});
+ const targetById=new Map(dest.clans.map(c=>[c.source_clan_id,c]));
+ sources.forEach((id,i)=>{
+  const d=targetById.get(targets[i]);
+  if(!d||d.clash_tag!==verified.clans[i].clash_tag||
+    d.tables?.cwl_cloud_profiles?.[0]?.revision!==expectedRevisions[i])
+   reject("Ein Zielclan oder seine Planrevision hat sich seit der Vorschau geändert.");
+ });
+ await verifyWitnessedOwnerCloudBackup({sb,file,mapping});
+ const body={...verified};delete body.server_receipt;
+ const reply=await sb.rpc("cwl_restore_witnessed_multi_clans",{
+  p_receipt_id:verified.server_receipt.id,p_payload:body,
+  p_target_clan_ids:targets,p_expected_revisions:expectedRevisions,
+  p_expected_target_fingerprints:expectedTargetFingerprints,
+  p_apply:true,p_confirmation:MULTI_CLAN_RESTORE_CONFIRMATION
+ });
+ return {...verifiedMultiApplyResponse(reply,{sources,targets}),
+  fullRestoreAvailable:false,mutationPermitted:false};
+}

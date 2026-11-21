@@ -1,0 +1,71 @@
+name: Portable atomic multi-clan restore PostgreSQL 17 UAT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-atomic-multi-clan-restore-ci.yml'
+      - 'supabase/migrations/20261121101000_cwl_atomic_multi_clan_restore.sql'
+      - 'tests/sql/portable-multi-clan-restore-fixture.sql'
+      - 'tests/sql/portable-multi-clan-restore-check.sql'
+      - 'supabase/migrations/20261120160000_cwl_witnessed_pristine_new_clan_restore.sql'
+      - 'supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql'
+      - 'supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-atomic-multi-clan-restore-ci.yml'
+      - 'supabase/migrations/20261121101000_cwl_atomic_multi_clan_restore.sql'
+      - 'tests/sql/portable-multi-clan-restore-fixture.sql'
+      - 'tests/sql/portable-multi-clan-restore-check.sql'
+permissions:
+  contents: read
+jobs:
+  multi-owner-restore:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 17
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated PostgreSQL 17 RLS and real two-clan 17-area source
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-export-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-cloud-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261119144800_cwl_owned_portable_snapshot.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120103000_cwl_owner_backup_origin_witness.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-pristine-clan-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261120160000_cwl_witnessed_pristine_new_clan_restore.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-multi-clan-restore-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261121101000_cwl_atomic_multi_clan_restore.sql
+      - name: Prove atomic both-or-neither across 34 datasets and two original clan losses
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/sql/portable-multi-clan-restore-check.sql
+          if psql -X -qAt -v ON_ERROR_STOP=1 -c "
+            SET ROLE anon;
+            SELECT public.cwl_restore_witnessed_multi_clans(
+              '00000000-0000-4000-8000-000000000001'::uuid,
+              '{}'::jsonb,ARRAY['88888888-8888-4888-8888-888888888888'::uuid],
+              ARRAY[1]::bigint[],NULL,false,NULL);" >/dev/null 2>&1; then
+            echo '::error::anonymous session could execute multi-clan restore'
+            exit 1
+          fi
+          echo 'PASS: signed two-clan all-or-nothing 34-dataset replay, rollback, tamper rejection, owner revocation and anon denial'
