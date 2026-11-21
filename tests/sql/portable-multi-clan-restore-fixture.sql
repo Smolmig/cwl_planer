@@ -50,6 +50,11 @@ INSERT INTO public.cwl_clan_member_tenure(
 VALUES ('55555555-5555-4555-8555-555555555555','#QL8P','#QL8P',
  '2026-10-01T10:00Z','2026-11-12T10:00Z','2026-11-12T10:00Z',
  '2026-10-01T10:00Z',true,7200,3);
+INSERT INTO public.cwl_clan_review_decisions(
+ clan_id,source_clash_tag,player_tag,review_kind,disposition,
+ evidence_fingerprint,revision,updated_at)
+VALUES ('55555555-5555-4555-8555-555555555555','#QL8P','#QL8P',
+ 'performance','acknowledged','verified-uf2-evidence',2,'2026-11-12T10:00Z');
 INSERT INTO public.cwl_clan_cw_missed_decisions(id,clan_id,source_clash_tag,
  war_key,player_tag,decision,note,actor_id)
 OVERRIDING SYSTEM VALUE VALUES(501,
