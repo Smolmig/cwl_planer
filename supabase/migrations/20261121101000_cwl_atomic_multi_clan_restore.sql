@@ -655,13 +655,13 @@ BEGIN
      p_target_clan_ids[v_i],p_expected_revisions[v_i],
      p_expected_target_fingerprints[v_i],true,
      'RESTORE_ORIGINAL_TO_EMPTY_CLAN');
-   IF v_applied->>'applied' IS DISTINCT FROM 'true'
-      OR v_applied->>'scope' IS DISTINCT FROM 'verified-pristine-new-clan-17-datasets'
-      OR (v_applied->>'restored_table_count')::integer<>17
-      OR v_applied->>'source_clan_id' IS DISTINCT FROM v_src_ids[v_i]::text
-      OR v_applied->>'target_clan_id' IS DISTINCT FROM p_target_clan_ids[v_i]::text
-      OR v_applied->>'checkpoint_id' IS NULL THEN
-     RAISE EXCEPTION 'A verified full restore member failed; rollback ALL targets'
+   IF (v_applied->>'applied') <> 'true'
+      OR (v_applied->>'scope') <> 'verified-pristine-new-clan-17-datasets'
+      OR ((v_applied->>'restored_table_count')::integer) <> 17
+      OR (v_applied->>'source_clan_id') <> v_src_ids[v_i]::text
+      OR (v_applied->>'target_clan_id') <> p_target_clan_ids[v_i]::text
+      OR (v_applied->>'checkpoint_id') IS NULL THEN
+     RAISE EXCEPTION 'Incomplete verified restore member'
        USING ERRCODE='40001';
    END IF;
    v_checkpoints:=pg_catalog.array_append(
