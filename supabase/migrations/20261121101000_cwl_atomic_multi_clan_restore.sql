@@ -623,10 +623,12 @@ BEGIN
      RAISE EXCEPTION 'One of the full 17-area previews could not be validated'
        USING ERRCODE='40001';
    END IF;
-   IF p_apply AND v_preview->>'target_fingerprint'
-         IS DISTINCT FROM p_expected_target_fingerprints[v_i] THEN
-     RAISE EXCEPTION 'One replacement changed after multi-clan preview; abort ALL clans'
-       USING ERRCODE='40001';
+   IF p_apply THEN
+     IF (v_preview->>'target_fingerprint') IS DISTINCT FROM
+         p_expected_target_fingerprints[v_i] THEN
+       RAISE EXCEPTION 'One replacement changed after multi-clan preview; abort ALL clans'
+         USING ERRCODE='40001';
+     END IF;
    END IF;
    v_previews:=v_previews||pg_catalog.jsonb_build_array(v_preview);
    v_total_rows:=v_total_rows+(v_preview->>'source_rows')::bigint;
