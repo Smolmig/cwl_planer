@@ -561,9 +561,13 @@ BEGIN
  FOR v_i IN 1..v_count LOOP
    v_target:=p_target_clan_ids[v_i];
    v_source_id_text:=p_payload#>>ARRAY['clans',(v_i-1)::text,'source_clan_id'];
-   IF v_target IS NULL OR v_source_id_text IS NULL OR
-      v_source_id_text !~
-        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
+   IF v_target IS NULL OR v_source_id_text IS NULL THEN
+     RAISE EXCEPTION 'Missing original or replacement clan identity'
+       USING ERRCODE='22023';
+   END IF;
+   -- Postgres UUID input casting validates syntax; the receipt validates
+   -- this precise original source ID and Clash tag before any mutation.
+   v_src_ids:=pg_catalog.array_append(v_src_ids,v_source_id_text::uuid);
    IF v_src_ids[v_i]=v_target THEN
       RAISE EXCEPTION 'Existing original clan is not a pristine replacement'
         USING ERRCODE='22023';
