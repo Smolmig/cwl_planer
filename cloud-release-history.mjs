@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.28.1",
+    "releaseType": "patch",
+    "date": "2026-11-22",
+    "title": "Neue Cloud-Konten klarer und sicherer",
+    "description": "Noch nicht verbundene Konten zeigen keine alten Clan-Zugänge oder Änderungsverläufe. Beim Wechsel werden zuvor geladene Angaben entfernt; die Clan-Eingaben enthalten neutrale Beispiele."
+  },
+
+  {
     "version": "v1.28.0",
     "releaseType": "minor",
     "date": "2026-11-22",
