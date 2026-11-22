@@ -3716,6 +3716,43 @@ html.cloud-startup-pending .cloud-startup-splash{
  #view-members .member-form-sub{gap:3px 10px}
 }
 
+
+/* #178 – one quiet Cloud backup surface in Mehr → Backup & Import. */
+.cloud-portable-backup{margin-top:3px}
+.cloud-portable-backup[hidden],.cloud-portable-file-info[hidden],
+.cloud-portable-targets[hidden],.cloud-portable-preview-result[hidden],
+#cloudPortablePreview[hidden],#cloudPortableApply[hidden]{display:none!important}
+.cloud-mode #localBackupActions,.cloud-mode #localBackupLast{display:none!important}
+.cloud-portable-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+.cloud-portable-heading>div{min-width:0;flex:1 1 250px}
+.cloud-portable-heading h5{font-size:17px;margin:4px 0 6px}
+.cloud-portable-heading p{font-size:13px;line-height:1.55;margin:0 0 14px;color:var(--muted)}
+.cloud-portable-language-label{display:grid;gap:4px;font-size:11px;color:var(--muted);font-weight:650}
+.cloud-portable-language-label select{width:auto;min-width:112px}
+.cloud-portable-scope-label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px;font-weight:700}
+.cloud-portable-backup select{max-width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);
+ background:var(--card);border-radius:10px;color:var(--text);font:inherit}
+.cloud-portable-main-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 11px}
+.cloud-portable-main-actions>.btn{min-height:44px;flex:1 1 180px}
+.cloud-portable-note{font-size:12px;line-height:1.5;color:var(--muted);margin:9px 0}
+.cloud-portable-status{margin:10px 0;font-size:12px;line-height:1.55;color:var(--muted);overflow-wrap:anywhere}
+.cloud-portable-status:empty{display:none}
+.cloud-portable-status[data-state="error"]{color:var(--red)}
+.cloud-portable-file-info{border-top:1px solid var(--line);padding-top:15px;margin:15px 0 9px;font-size:13px;overflow-wrap:anywhere}
+.cloud-portable-file-info>p{margin:7px 0;color:var(--muted);line-height:1.5}
+.cloud-portable-targets{margin:8px 0 15px}
+.cloud-portable-target-row{border-bottom:1px solid var(--line);padding:12px 0;display:grid;gap:7px}
+.cloud-portable-target-row>label{font-size:12px;line-height:1.5;font-weight:700;overflow-wrap:anywhere}
+.cloud-portable-target-row>select{width:100%;max-width:520px}
+.cloud-portable-target-row>p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.cloud-portable-preview-result{margin:12px 0;padding:10px 0;border-top:1px solid var(--line);font-size:12px}
+.cloud-portable-preview-result>p{margin:7px 0;line-height:1.5;overflow-wrap:anywhere}
+#cloudPortableApply{margin:10px 0;min-height:44px}
+@media(max-width:520px){.cloud-portable-heading{display:block}
+ .cloud-portable-language-label{max-width:150px;margin:7px 0 12px}
+ .cloud-portable-main-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+ .cloud-portable-main-actions>.btn{min-height:44px;width:100%}
+ #cloudPortablePreview,#cloudPortableApply{width:100%}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4082,7 +4119,33 @@ html.cloud-startup-pending .cloud-startup-splash{
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
-    <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
+    <div class="settings-subcard" id="settingsBackupSection">
+      <h4>Backup & Wiederherstellung</h4>
+      <div class="actions" id="localBackupActions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div>
+      <div class="last-backup" id="localBackupLast">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div>
+      <section id="cloudPortableBackupSection" class="cloud-portable-backup" aria-labelledby="cloudPortableTitle" hidden>
+        <div class="cloud-portable-heading">
+          <div><h5 id="cloudPortableTitle">Vollständiges Cloud-Backup</h5><p id="cloudPortableIntro">Plan, Kriegsstatistiken und CWL-Archive als JSON-Datei sichern.</p></div>
+          <label class="cloud-portable-language-label" for="cloudPortableLanguage"><span id="cloudPortableLanguageLabel">Sprache / Language</span>
+            <select id="cloudPortableLanguage"><option value="de" selected>Deutsch</option><option value="en">English</option></select>
+          </label>
+        </div>
+        <label class="cloud-portable-scope-label" for="cloudPortableScope" id="cloudPortableScopeLabel">Was sichern?</label>
+        <select id="cloudPortableScope"><option value="all" id="cloudPortableScopeAll">Alle eigenen Clans</option><option value="current" id="cloudPortableScopeCurrent">Nur aktuellen Clan</option></select>
+        <div class="cloud-portable-main-actions">
+          <button type="button" class="btn primary" id="cloudPortableDownload">Backup herunterladen</button>
+          <button type="button" class="btn" id="cloudPortableRestore">Backup wiederherstellen</button>
+        </div>
+        <input type="file" id="cloudPortableFile" accept=".json,application/json" hidden>
+        <p id="cloudPortableDisclaimer" class="cloud-portable-note">17 Datenbereiche pro Clan, ohne Passwörter und Zugriffsrechte.</p>
+        <p id="cloudPortableStatus" class="cloud-portable-status" role="status" aria-live="polite"></p>
+        <div id="cloudPortableFileInfo" class="cloud-portable-file-info" hidden></div>
+        <div id="cloudPortableTargets" class="cloud-portable-targets" hidden></div>
+        <button type="button" class="btn small" id="cloudPortablePreview" hidden>Wiederherstellung sicher prüfen</button>
+        <div id="cloudPortablePreviewResult" class="cloud-portable-preview-result" hidden></div>
+        <button type="button" class="btn danger" id="cloudPortableApply" hidden>Geprüfte Sicherung wiederherstellen</button>
+      </section>
+    </div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
     <p class="footer-note"><span class="settings-local-note">Im lokalen Planer werden Änderungen auf diesem Gerät gespeichert. Für einen Gerätewechsel empfiehlt sich ein Backup.</span><span class="settings-cloud-note">Im gemeinsamen Clan werden Änderungen online gespeichert. Erstelle bei Bedarf zusätzlich eine eigene Sicherung.</span></p>
