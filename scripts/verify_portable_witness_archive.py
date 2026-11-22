@@ -146,12 +146,13 @@ def inventory(root):
     if present and present != private_schema:
         fail("Partial private schema in default dump cannot be safely merged")
     schema_source = "default" if present else "explicit"
-    selected = {table: primary.get(table, section) for table, section in extra.items()}
+    # The dedicated private dump is the authoritative source of latest
+    # protected receipts, even if the broad default dump contains older rows.
+    selected = dict(extra)
     table_details = {}
     for table, section in sorted(selected.items()):
-        source = "default" if table in primary else "explicit"
         table_details[table] = {
-            "source": source,
+            "source": "explicit",
             "columns": section["columns"],
             "rows": len(section["rows"]),
             "sha256": fingerprint(section["columns"], section["rows"]),
@@ -200,6 +201,28 @@ def validated_manifest(root):
     return files, primary_schema, private_schema, primary, extra, selected, sealed
 
 
+def strip_private_copy_blocks(sql):
+    """Remove earlier private COPY blocks before the sealed private replay."""
+    lines = sql.splitlines(keepends=True)
+    kept = []
+    index = 0
+    removed = 0
+    while index < len(lines):
+        match = COPY_RE.match(lines[index].rstrip("\r\n"))
+        if match and table_name(match.group(1)).startswith("private."):
+            removed += 1
+            index += 1
+            while index < len(lines) and lines[index].rstrip("\r\n") != r"\.":
+                index += 1
+            if index == len(lines):
+                fail("Primary SQL COPY block is truncated; refusing restore")
+            index += 1
+            continue
+        kept.append(lines[index])
+        index += 1
+    return "".join(kept), removed
+
+
 def prepare(root):
     files, primary_schema, private_schema, primary, extra, selected, manifest = validated_manifest(root)
     if manifest["schema_source"] == "default":
@@ -209,13 +232,21 @@ def prepare(root):
         # A different schema could have created private without its tables.
         schema_sql = re.sub(r"(?m)^CREATE SCHEMA private;",
                             "CREATE SCHEMA IF NOT EXISTS private;", schema_sql)
-    missing_data = [x["sql"] for name, x in sorted(extra.items()) if name not in primary]
-    data_sql = "".join(missing_data) or "-- private rows already exist in the primary SQL archive\n"
+    # The preceding Auth deduplication step writes data-local.sql. Synthetic
+    # tests may use data.sql as their primary stream.
+    default_local = root / "data-local.sql"
+    if not default_local.is_file():
+        default_local.write_text(files["data.sql"].read_text(encoding="utf-8"),
+                                 encoding="utf-8")
+    primary_clean, removed = strip_private_copy_blocks(
+        default_local.read_text(encoding="utf-8"))
+    default_local.write_text(primary_clean, encoding="utf-8")
+    # Restore from the explicitly sealed, later private snapshot, exactly once.
+    data_sql = "".join(x["sql"] for name, x in sorted(extra.items()))
     files["private-schema-local.sql"].write_text(schema_sql, encoding="utf-8")
     files["private-data-local.sql"].write_text(data_sql, encoding="utf-8")
-    print("OFFSITE-ORIGIN PREPARE: sealed manifest verified; fallback private data "
-          "sections: " + str(len(missing_data)))
-
+    print("OFFSITE-ORIGIN PREPARE: authoritative explicit private tables; "
+          "older private COPY blocks removed: " + str(removed))
 
 def read_restored_rows(table, columns):
     if not table.startswith("private.") or not all(SAFE_IDENT.fullmatch(c) for c in columns):
