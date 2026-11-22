@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.28.0",
+    "releaseType": "minor",
+    "date": "2026-11-22",
+    "title": "Vollständige Clan-Backups als Datei",
+    "description": "Clanbesitzer können Planung, Kriegsstatistiken und Archive zusammen sichern. Nach einer sicheren Prüfung ist die Wiederherstellung nur in neue, unbenutzte Ersatzclans mit passendem Clash-Tag möglich."
+  },
+
+  {
     "version": "v1.27.0",
     "releaseType": "minor",
     "date": "2026-11-18",
