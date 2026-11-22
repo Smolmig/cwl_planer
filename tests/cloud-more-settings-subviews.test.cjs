@@ -77,8 +77,9 @@ test("backup becomes a true page, while Cloud profiles route to existing Clan & 
   assert.equal(getMoved(),0);
   openMoreSettings("backup");
   assert.equal(getRoute(),"more-settings");
-  assert.equal(d.getElementById("moreSettingsNotice").hidden,false);
-  assert.equal(d.getElementById("moreSettingsCloudBackup").hidden,false);
+  assert.equal(d.getElementById("moreSettingsNotice").hidden,true);
+  assert.equal(d.getElementById("moreSettingsCloudBackup").hidden,true);
+  assert.match(d.getElementById("moreSettingsDescription").textContent,/Vollständige Clan-Daten/);
   assert.equal(d.getElementById("moreSettingsContent").firstElementChild.id,"settingsBackupSection");
   dom.window.CWLCloud.active=false;
   openMoreSettings("profiles");

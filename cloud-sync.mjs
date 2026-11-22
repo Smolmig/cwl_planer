@@ -1,11 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.27.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.27.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.27.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.27.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.27.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.27.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.27.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.28.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.28.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.28.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.28.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.28.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.28.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.28.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.28.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -49,6 +50,21 @@ const backups=createCloudBackups({
  confirmAction:(message,options)=>storage.confirmAction(message,options),
  askAction:options=>storage.askAction(options)
 });
+
+const portableBackupUI=createCloudPortableBackupUI({
+ sb,
+ context:()=>({
+  active:cloud.active,clanId,role,revision,clans,
+  userId:user?.id||null,epoch:accountEpoch,
+  ownerClanIds:clans.filter(c=>clanRoles.get(c.id)==="owner").map(c=>c.id)
+ }),
+ ensureSaved:()=>ensureSaved(),
+ loadProfile:()=>loadCloudProfile(true),
+ toast:message=>storage.toast(message),
+ confirmAction:(message,options)=>storage.confirmAction(message,options),
+ askAction:options=>storage.askAction(options)
+});
+window.CWLPortableBackupUI=portableBackupUI;
 
 let planReview=null,planSuggestions=[],rawSavedProfile=null,rosterApiFailed=false;
 let planReviewPeople=new Map();
@@ -678,6 +694,7 @@ const cloud={
  }
 };
 window.CWLCloud=cloud;
+portableBackupUI.init();
 const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
@@ -1015,10 +1032,12 @@ async function leaveCloud(){
  document.querySelector('.navbtn[data-view="plan"]')?.click();
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
+ window.CWLPortableBackupUI?.reset?.();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
+ window.CWLPortableBackupUI?.render?.();
  window.CWLGroupArchive?.invalidate?.();
  planReview=null;planSuggestions=[];rawSavedProfile=null;
  blocked=false;hydrating=false;resetRoster();
@@ -1026,6 +1045,7 @@ async function leaveCloud(){
  msg("Lokaler Modus. Deine bisherigen lokalen Daten bleiben auf diesem Gerät.");
 }
 async function listClans(epoch=accountEpoch,selected){
+ window.CWLPortableBackupUI?.reset?.();
  if(!user||epoch!==accountEpoch)return;
  const [{data,error:err},{data:links,error:membershipError}]=await Promise.all([
   sb.from("cwl_clans").select("id,name,clash_tag").order("name"),
@@ -1035,6 +1055,7 @@ async function listClans(epoch=accountEpoch,selected){
  clanRoles=new Map((links||[]).map(m=>[m.clan_id,m.role]));
  if(epoch!==accountEpoch)return;
  clans=data||[];
+ window.CWLPortableBackupUI?.render?.();
  const s=$("cloudClanSelect");s.replaceChildren(new Option(clans.length?"Clan wählen":"Noch kein Clan",""));
  clans.forEach(c=>{
    const kind=clanRoles.get(c.id)==="owner"?"Mein Clan":clanRoles.get(c.id)==="editor"?"Gemeinsam · Vize":"Gemeinsam · Beobachter";
@@ -1058,6 +1079,7 @@ async function chooseClan(epoch=accountEpoch){
  const previousChannel=channel;channel=null;
  if(previousChannel)await sb.removeChannel(previousChannel);
  if(epoch!==accountEpoch)return;
+ window.CWLPortableBackupUI?.reset?.();
  clanId=nextClan;revision=null;role=null;
  window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
@@ -1080,6 +1102,7 @@ async function chooseClan(epoch=accountEpoch){
  $("cloudNewClanDetails").open=false;
  await loadAccessList(clanId);
  toggle("cloudBackupPanel",true);
+ window.CWLPortableBackupUI?.render?.();
  toggle("cloudRestoreSnapshot",role==="owner");
  backups.reset();
  toggle("cloudImportProfile",role!=="viewer");

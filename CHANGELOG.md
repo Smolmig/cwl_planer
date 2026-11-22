@@ -6,6 +6,19 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.28.0] - 2026-11-22
+
+### Neu
+- **Vollständige Cloud-Sicherung:** Unter **Mehr → Backup & Import** stehen Clanbesitzern genau zwei Hauptaktionen zur Verfügung: **„Backup herunterladen“** und **„Backup wiederherstellen“**. Eine einzelne JSON-Datei bewahrt alle 17 portablen Datenbereiche des aktuellen oder aller eigenen Clans, darunter gespielte CWL-Tage, Archive, Kriegsergebnisse, Angriffe, Clanverwaltung und Entscheidungen. Kontopasswörter, Tokens und Berechtigungen werden nicht in einer Datei übertragen.
+- **Sicherer Import mit Vorschau:** Dateien werden zuerst auf Aufbau und Unverändertheit geprüft. Besitzer wählen für jeden Clan einen **neu angelegten, noch unbenutzten Ersatzclan mit gleichem Clash-Tag**. Der Server prüft ursprüngliche Belege, aktuelle Eigentümerrechte und den exakten Zielstand. Vor dem Schreiben gibt es eine lesbare Vorschau, eine Sicherheitsabfrage und ein Bestätigungswort.
+- **Gemeinsame Rücknahme bei mehreren Clans:** Eine komplette Mehrclan-Wiederherstellung ist eine einzige Datenbanktransaktion. Schlägt ein Clan fehl, bleibt auch bei den anderen kein teilweise eingespielter Stand zurück. Bestehende aktive Clans und bisherige Clan-IDs werden nicht überschrieben.
+- **Bedienung und Hilfe:** Die neuen Aktionen passen sich Desktop und Smartphone sowie Gold-/Dark-/Light-Themes an. Für diesen Backup-Bereich stehen deutsche und englische Texte einschließlich der ausführlichen Hilfe bereit.
+
+### Sicherheit / Einschränkung
+- Die Sicherung bleibt an den echten ursprünglichen Serverbeleg gebunden. Nach vollständigem Datenbankverlust muss dieser aus einem später erstellten verschlüsselten Betreiber-Backup wiederherstellbar sein. Die JSON-Datei allein belegt nicht die historische Herkunft von API-Angriffen. Verlorene Nutzerkonten und Zugriffsrechte können aus der Datei nicht neu erstellt werden.
+- Ein Import in einen bereits aktiven Clan ist bewusst **nicht** möglich; er wird auch nicht stillschweigend durch einen scheinbar „vollständigen“ Restore ersetzt. Der eigene Gerätedurchlauf auf Desktop, Android und iOS (#213) bleibt eine gesonderte Abnahme.
+
+
 ## [1.27.0] - 2026-11-18
 
 ### Neu

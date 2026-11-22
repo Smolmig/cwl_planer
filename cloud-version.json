@@ -1,5 +1,5 @@
 {
-  "version": "v1.27.0",
-  "released": "2026-11-18",
-  "summary": "Clanverwaltung: normale CW-Fehlangriffe sicher belegen, Entscheidungen mit Verlauf dokumentieren und manuelle Ranghinweise anzeigen."
+  "version": "v1.28.0",
+  "released": "2026-11-22",
+  "summary": "Vollständige Cloud-Sicherungen herunterladen und nach Sicherheitsprüfung in neue, leere Ersatzclans wiederherstellen."
 }

@@ -3716,6 +3716,43 @@ html.cloud-startup-pending .cloud-startup-splash{
  #view-members .member-form-sub{gap:3px 10px}
 }
 
+
+/* #178 – one quiet Cloud backup surface in Mehr → Backup & Import. */
+.cloud-portable-backup{margin-top:3px}
+.cloud-portable-backup[hidden],.cloud-portable-file-info[hidden],
+.cloud-portable-targets[hidden],.cloud-portable-preview-result[hidden],
+#cloudPortablePreview[hidden],#cloudPortableApply[hidden]{display:none!important}
+.cloud-mode #localBackupActions,.cloud-mode #localBackupLast{display:none!important}
+.cloud-portable-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+.cloud-portable-heading>div{min-width:0;flex:1 1 250px}
+.cloud-portable-heading h5{font-size:17px;margin:4px 0 6px}
+.cloud-portable-heading p{font-size:13px;line-height:1.55;margin:0 0 14px;color:var(--muted)}
+.cloud-portable-language-label{display:grid;gap:4px;font-size:11px;color:var(--muted);font-weight:650}
+.cloud-portable-language-label select{width:auto;min-width:112px}
+.cloud-portable-scope-label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px;font-weight:700}
+.cloud-portable-backup select{max-width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);
+ background:var(--card);border-radius:10px;color:var(--text);font:inherit}
+.cloud-portable-main-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 11px}
+.cloud-portable-main-actions>.btn{min-height:44px;flex:1 1 180px}
+.cloud-portable-note{font-size:12px;line-height:1.5;color:var(--muted);margin:9px 0}
+.cloud-portable-status{margin:10px 0;font-size:12px;line-height:1.55;color:var(--muted);overflow-wrap:anywhere}
+.cloud-portable-status:empty{display:none}
+.cloud-portable-status[data-state="error"]{color:var(--red)}
+.cloud-portable-file-info{border-top:1px solid var(--line);padding-top:15px;margin:15px 0 9px;font-size:13px;overflow-wrap:anywhere}
+.cloud-portable-file-info>p{margin:7px 0;color:var(--muted);line-height:1.5}
+.cloud-portable-targets{margin:8px 0 15px}
+.cloud-portable-target-row{border-bottom:1px solid var(--line);padding:12px 0;display:grid;gap:7px}
+.cloud-portable-target-row>label{font-size:12px;line-height:1.5;font-weight:700;overflow-wrap:anywhere}
+.cloud-portable-target-row>select{width:100%;max-width:520px}
+.cloud-portable-target-row>p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.cloud-portable-preview-result{margin:12px 0;padding:10px 0;border-top:1px solid var(--line);font-size:12px}
+.cloud-portable-preview-result>p{margin:7px 0;line-height:1.5;overflow-wrap:anywhere}
+#cloudPortableApply{margin:10px 0;min-height:44px}
+@media(max-width:520px){.cloud-portable-heading{display:block}
+ .cloud-portable-language-label{max-width:150px;margin:7px 0 12px}
+ .cloud-portable-main-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+ .cloud-portable-main-actions>.btn{min-height:44px;width:100%}
+ #cloudPortablePreview,#cloudPortableApply{width:100%}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4074,15 +4111,41 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.27.0</strong><span>Auch normale CW-Angriffe prüfen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.28.0</strong><span>Vollständige Cloud-Backups als Datei</span></div>
       <ul>
-       <li><b>Zwei Angriffe pro CW:</b> Vollständig erfasste normale Kriege unterscheiden 0/2 und 1/2 ausgeführte Angriffe.</li>
-       <li><b>Entscheidungen:</b> Clanführer können einzelne Fälle quittieren, entschuldigen oder erneut öffnen – mit nachvollziehbarem Verlauf.</li>
-       <li><b>Ranghinweise:</b> Bei 0/2 oder zwei aufeinanderfolgenden belegten Fehlangriffen eines Ältesten nur manuelle Degradierungsprüfung; keine automatische Strafe.</li>
+       <li><b>Alle Daten sichern:</b> Clanbesitzer können Pläne, Angriffe, Kriegsstatistiken, CWL-Archive und Entscheidungen als JSON herunterladen.</li>
+       <li><b>Sicher wiederherstellen:</b> Vor der Übernahme werden Datei, Herkunft und neue, leere Ersatzclans geprüft. Bestehende aktive Clans bleiben geschützt.</li>
+       <li><b>Mehrere Clans:</b> Die Sicherung lässt sich gemeinsam und ohne Teilimporte zurückspielen. Hilfe und Dialogtexte sind auf Deutsch und Englisch verfügbar.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
-    <div class="settings-subcard" id="settingsBackupSection"><h4>Backup & Wiederherstellung</h4><div class="actions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div><div class="last-backup">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div></div>
+    <div class="settings-subcard" id="settingsBackupSection">
+      <h4>Backup & Wiederherstellung</h4>
+      <div class="actions" id="localBackupActions"><button class="btn" id="exportProfileBtn">Aktuelles Profil exportieren</button><button class="btn" id="exportAllBtn">Komplettes Backup erstellen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input class="hidden" type="file" id="importFile" accept=".json,application/json"></div>
+      <div class="last-backup" id="localBackupLast">Letztes manuelles Backup: <b id="lastBackupText">noch nie</b></div>
+      <section id="cloudPortableBackupSection" class="cloud-portable-backup" aria-labelledby="cloudPortableTitle" hidden>
+        <div class="cloud-portable-heading">
+          <div><h5 id="cloudPortableTitle">Vollständiges Cloud-Backup</h5><p id="cloudPortableIntro">Plan, Kriegsstatistiken und CWL-Archive als JSON-Datei sichern.</p></div>
+          <label class="cloud-portable-language-label" for="cloudPortableLanguage"><span id="cloudPortableLanguageLabel">Sprache / Language</span>
+            <select id="cloudPortableLanguage"><option value="de" selected>Deutsch</option><option value="en">English</option></select>
+          </label>
+        </div>
+        <label class="cloud-portable-scope-label" for="cloudPortableScope" id="cloudPortableScopeLabel">Was sichern?</label>
+        <select id="cloudPortableScope"><option value="all" id="cloudPortableScopeAll">Alle eigenen Clans</option><option value="current" id="cloudPortableScopeCurrent">Nur aktuellen Clan</option></select>
+        <div class="cloud-portable-main-actions">
+          <button type="button" class="btn primary" id="cloudPortableDownload">Backup herunterladen</button>
+          <button type="button" class="btn" id="cloudPortableRestore">Backup wiederherstellen</button>
+        </div>
+        <input type="file" id="cloudPortableFile" accept=".json,application/json" hidden>
+        <p id="cloudPortableDisclaimer" class="cloud-portable-note">17 Datenbereiche pro Clan, ohne Passwörter und Zugriffsrechte.</p>
+        <p id="cloudPortableStatus" class="cloud-portable-status" role="status" aria-live="polite"></p>
+        <div id="cloudPortableFileInfo" class="cloud-portable-file-info" hidden></div>
+        <div id="cloudPortableTargets" class="cloud-portable-targets" hidden></div>
+        <button type="button" class="btn small" id="cloudPortablePreview" hidden>Wiederherstellung sicher prüfen</button>
+        <div id="cloudPortablePreviewResult" class="cloud-portable-preview-result" hidden></div>
+        <button type="button" class="btn danger" id="cloudPortableApply" hidden>Geprüfte Sicherung wiederherstellen</button>
+      </section>
+    </div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
     <p class="footer-note"><span class="settings-local-note">Im lokalen Planer werden Änderungen auf diesem Gerät gespeichert. Für einen Gerätewechsel empfiehlt sich ein Backup.</span><span class="settings-cloud-note">Im gemeinsamen Clan werden Änderungen online gespeichert. Erstelle bei Bedarf zusätzlich eine eigene Sicherung.</span></p>
@@ -4302,7 +4365,11 @@ html.cloud-startup-pending .cloud-startup-splash{
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
-    <div><b>Wiederherstellung</b><p>Die letzten fünf automatischen Sicherungen enthalten nur den gemeinsamen CWL-Plan, nicht die Angriffshistorie und Konten. Nur der Besitzer darf einen alten Stand zurückholen. Sichere wichtige Pläne zusätzlich als JSON-Datei.</p></div>
+    <div id="cloudPortableHelp"><b>Vollständiges Cloud-Backup / Full Cloud backup</b>
+     <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Die letzten fünf automatischen Sicherungen unter „Clan & Konto“ betreffen weiterhin nur den gemeinsamen CWL-Plan, nicht die komplette Angriffshistorie.</p>
+     <p lang="de"><strong>Bei Datenbank-Totalverlust:</strong> Die JSON-Datei allein ist kein fälschungssicherer Beleg für alte API-Angriffe. Der ursprüngliche Serverbeleg muss zusammen mit alten Auth-Konten aus einem nach Ausstellung erstellten, verschlüsselten Betreiber-Backup erhalten sein. Die App erfindet keine Konten, historischen Angriffe oder Herkunftsnachweise.</p>
+     <p lang="en"><strong>More → Backup & Import:</strong> Only a clan owner can download all 17 portable data areas per selected clan, including the plan, locked/played CWL days, verified attacks, archives and decisions, with an original server receipt. Passwords and access roles are excluded. Restore backup first checks the file, then requires a newly created, unused owner-controlled replacement clan with the same Clash tag for every source. It never overwrites an active clan or restores into the old clan UUID. Review the preview, confirm the mapping and type the confirmation word. Multiple clans restore together or not at all. Existing automatic snapshots under Clan & Account still protect only the plan.</p>
+     <p lang="en"><strong>Total database loss:</strong> A JSON file alone cannot establish historic API-attack provenance. An independently retained encrypted operator database backup created after the original receipt must preserve that receipt and the original Auth identities. Lost accounts, collector evidence and attack authors are never fabricated.</p></div>
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
@@ -4658,14 +4725,14 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.27.0"></script>
-<script src="./clan-management-missed-core.js?v=1.27.0"></script>
-<script src="./clan-management-cw-core.js?v=1.27.0"></script>
-<script src="./clan-management-cw-view.js?v=1.27.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.27.0"></script>
-<script src="./cwl-planning-core.js?v=1.27.0"></script>
+<script src="./clan-management-core.js?v=1.28.0"></script>
+<script src="./clan-management-missed-core.js?v=1.28.0"></script>
+<script src="./clan-management-cw-core.js?v=1.28.0"></script>
+<script src="./clan-management-cw-view.js?v=1.28.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.28.0"></script>
+<script src="./cwl-planning-core.js?v=1.28.0"></script>
 <script>
-const APP_VERSION="v1.27.0";
+const APP_VERSION="v1.28.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5908,10 +5975,15 @@ function openMoreSettings(action){
  const isCloud=!!window.CWLCloud?.active;
  const note=document.getElementById("moreSettingsNotice");
  const isViewer=isCloud&&!!window.CWLCloud?.isViewer?.();
- note.hidden=!((isCloud&&action==="backup")||(isViewer&&action==="rules"));
- note.textContent=isViewer&&action==="rules"?"Als Beobachter kannst du die CWL-Regeln ansehen, aber nicht bearbeiten.":isCloud?"Gemeinsame Plan-Sicherungen findest du unter „Clan & Konto“. Hier kannst du zusätzlich eine JSON-Datei auf deinem Gerät sichern.":"";
- document.getElementById("moreSettingsCloudBackup").hidden=!(isCloud&&action==="backup");
+ note.hidden=!(isViewer&&action==="rules");
+ note.textContent=isViewer&&action==="rules"?"Als Beobachter kannst du die CWL-Regeln ansehen, aber nicht bearbeiten.":"";
+ document.getElementById("moreSettingsCloudBackup").hidden=true;
+ if(isCloud&&action==="backup"){
+  document.getElementById("moreSettingsDescription").textContent=
+   "Vollständige Clan-Daten sichern und eine Datei erst nach Prüfung in neue Ersatzclans wiederherstellen.";
+ }
  showPlannerView("more-settings");
+ if(isCloud&&action==="backup")window.CWLPortableBackupUI?.render?.();
 }
 function showPlannerView(view){
  const wasSettingsOpen=document.getElementById("view-settings").classList.contains("active");
@@ -6481,7 +6553,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.27.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.28.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6871,6 +6943,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.27.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.28.0"></script>
 </body>
 </html>
