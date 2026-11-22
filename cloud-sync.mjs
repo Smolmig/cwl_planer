@@ -1043,7 +1043,7 @@ async function leaveCloud(){
  msg("Lokaler Modus. Deine bisherigen lokalen Daten bleiben auf diesem Gerät.");
 }
 async function listClans(epoch=accountEpoch,selected){
- portableBackupUI.reset();
+ window.CWLPortableBackupUI?.reset?.();
  if(!user||epoch!==accountEpoch)return;
  const [{data,error:err},{data:links,error:membershipError}]=await Promise.all([
   sb.from("cwl_clans").select("id,name,clash_tag").order("name"),
@@ -1053,7 +1053,7 @@ async function listClans(epoch=accountEpoch,selected){
  clanRoles=new Map((links||[]).map(m=>[m.clan_id,m.role]));
  if(epoch!==accountEpoch)return;
  clans=data||[];
- portableBackupUI.render();
+ window.CWLPortableBackupUI?.render?.();
  const s=$("cloudClanSelect");s.replaceChildren(new Option(clans.length?"Clan wählen":"Noch kein Clan",""));
  clans.forEach(c=>{
    const kind=clanRoles.get(c.id)==="owner"?"Mein Clan":clanRoles.get(c.id)==="editor"?"Gemeinsam · Vize":"Gemeinsam · Beobachter";
@@ -1077,7 +1077,7 @@ async function chooseClan(epoch=accountEpoch){
  const previousChannel=channel;channel=null;
  if(previousChannel)await sb.removeChannel(previousChannel);
  if(epoch!==accountEpoch)return;
- portableBackupUI.reset();
+ window.CWLPortableBackupUI?.reset?.();
  clanId=nextClan;revision=null;role=null;
  window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
@@ -1100,7 +1100,7 @@ async function chooseClan(epoch=accountEpoch){
  $("cloudNewClanDetails").open=false;
  await loadAccessList(clanId);
  toggle("cloudBackupPanel",true);
- portableBackupUI.render();
+ window.CWLPortableBackupUI?.render?.();
  toggle("cloudRestoreSnapshot",role==="owner");
  backups.reset();
  toggle("cloudImportProfile",role!=="viewer");
