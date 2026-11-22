@@ -112,6 +112,11 @@ jobs:
             '2026-11-22T01:00:00+00'::timestamptz);
           INSERT INTO private.cwl_portable_plan_apply_checkpoints
             VALUES('dddddddd-dddd-4ddd-8ddd-dddddddddddd');
+          ALTER TABLE private.cwl_portable_backup_witnesses ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_fresh_clan_recovery_checkpoints ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_history_recovery_checkpoints ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_multi_clan_recovery_sessions ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_plan_apply_checkpoints ENABLE ROW LEVEL SECURITY;
           SQL
       - name: Dump with genuine PostgreSQL 17 COPY serialization
         run: |
