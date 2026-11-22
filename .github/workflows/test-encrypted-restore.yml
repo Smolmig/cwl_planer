@@ -71,6 +71,15 @@ jobs:
             test -s "$WORK/unpacked/cwl-backup/$required" || { echo "::error::Missing $required"; exit 1; }
           done
           python3 scripts/verify_auth_dump.py "$WORK/unpacked/cwl-backup/auth-data.sql"
+          if [[ -f "$WORK/unpacked/cwl-backup/portable-origin-offsite-manifest.json" ]]; then
+            for required in private-schema.sql private-data.sql; do
+              test -s "$WORK/unpacked/cwl-backup/$required" || {
+                echo "::error::Encrypted artifact missing mandatory $required"; exit 1;
+              }
+            done
+          else
+            echo "::warning::Legacy archive has no independently audited private witness receipt. Full DB restore may be tested, but portable-origin disaster recovery is NOT certified."
+          fi
           echo 'Decryption and mandatory dump files verified.'
 
       - name: Confirm role dump is present (Supabase local roles are pre-provisioned)
@@ -149,6 +158,22 @@ jobs:
           print(f'Unique COPY blocks retained from data.sql: {len(data) - len(duplicated)}.')
           PY
 
+      - name: Verify sealed offsite origin receipts and reconcile private schema/data
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$WORK/unpacked/cwl-backup"
+          if [[ -f "$root/portable-origin-offsite-manifest.json" ]]; then
+            python3 scripts/verify_portable_witness_archive.py prepare "$root"
+            echo "Portable-origin offsite checkpoint manifest accepted."
+          else
+            # Older encrypted artifacts remain usable for their preexisting
+            # DB-recovery checks, but NEVER receive a new provenance claim.
+            printf '%s\\n' '-- legacy archive has no audited private schema' > "$root/private-schema-local.sql"
+            printf '%s\\n' '-- legacy archive has no audited private data' > "$root/private-data-local.sql"
+            echo "::warning::Skipping new portable-origin certification for pre-migration backup."
+          fi
+
       # New local bootstrap includes hosted Auth expires_at/link_token_hash.
       # Keep pinned; never mutate the production Auth schema for restore tests.
       - uses: supabase/setup-cli@v1
@@ -205,10 +230,12 @@ jobs:
           if ! PGPASSWORD=postgres psql -X -h 127.0.0.1 -p "$CWL_RESTORE_DB_PORT" -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -v VERBOSITY=verbose --single-transaction \
             -f "$WORK/unpacked/cwl-backup/schema.sql" \
+            -f "$WORK/unpacked/cwl-backup/private-schema-local.sql" \
             -f scripts/restore_local_auth_compat.sql \
             -c 'SET session_replication_role = replica;' \
             -f "$WORK/unpacked/cwl-backup/auth-data.sql" \
             -f "$WORK/unpacked/cwl-backup/data-local.sql" \
+            -f "$WORK/unpacked/cwl-backup/private-data-local.sql" \
             -c 'SET session_replication_role = origin;' \
             >"$WORK/restore.log" 2>&1; then
             # Emit a sanitized SQLSTATE and SQL file only; never print raw database errors.
@@ -217,7 +244,7 @@ jobs:
           from pathlib import Path
           log = (Path(os.environ['WORK']) / 'restore.log').read_text(errors='replace')
           match = re.search(
-              r'psql:.*?/(roles-local|roles|schema|restore_local_auth_compat|auth-data|data-local|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
+              r'psql:.*?/(roles-local|roles|private-schema-local|private-data-local|schema|restore_local_auth_compat|auth-data|data-local|data)\.sql:(\d+):\s*(?:ERROR|FATAL):\s*([A-Z0-9]{5})',
               log, re.I)
           if match:
               filename, error_line, sqlstate = match.group(1), int(match.group(2)), match.group(3)
@@ -227,7 +254,7 @@ jobs:
                   found = re.search(r'\b' + field + r':\s*([A-Za-z_][A-Za-z0-9_]*)', log)
                   if found:
                       print(f'{field}: {found.group(1)}')
-              if filename in ('data', 'data-local', 'auth-data'):
+              if filename in ('data', 'data-local', 'auth-data', 'private-data-local'):
                   sql_lines = (Path(os.environ['WORK']) / 'unpacked/cwl-backup' /
                                (filename + '.sql')).read_text(errors='replace').splitlines()
                   copy_header = re.compile(
@@ -325,6 +352,23 @@ jobs:
           set -euo pipefail
           export PGPORT="$CWL_RESTORE_DB_PORT"
           python3 scripts/verify_clashperk_restore.py --require-owner-decisions "$WORK/unpacked/cwl-backup/data-local.sql"
+
+      - name: Verify exact private-origin receipts from encrypted offsite disaster archive
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: postgres
+          PGDATABASE: postgres
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          root="$WORK/unpacked/cwl-backup"
+          if [[ -f "$root/portable-origin-offsite-manifest.json" ]]; then
+            export PGPORT="$CWL_RESTORE_DB_PORT"
+            python3 scripts/verify_portable_witness_archive.py verify-db "$root"
+          else
+            echo "::warning::No signed original-receipt escrow claim for legacy encrypted backup."
+          fi
 
       - name: Remove disposable database and decrypted files
         if: always()
