@@ -65,7 +65,6 @@ const portableBackupUI=createCloudPortableBackupUI({
  askAction:options=>storage.askAction(options)
 });
 window.CWLPortableBackupUI=portableBackupUI;
-portableBackupUI.init();
 
 let planReview=null,planSuggestions=[],rawSavedProfile=null,rosterApiFailed=false;
 let planReviewPeople=new Map();
@@ -695,6 +694,7 @@ const cloud={
  }
 };
 window.CWLCloud=cloud;
+portableBackupUI.init();
 const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
