@@ -20,9 +20,9 @@ test("More, account and one CWL archive entry explain their real scope",()=>{
  assert.match(html,/Gemeinsamen Stand prüfen/);
  assert.match(html,/Vom Cloud-Konto abmelden/);
  assert.match(html,/Mehr: Clan &amp; Konto, Archiv und Sicherungen/);
- assert.match(html,/Neu in v1\.27\.0/);
- assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.27.0");
- assert.match(read("cloud-release-history.mjs"),/"version": "v1\.27\.0"/);
+ assert.match(html,/Neu in v1\.28\.0/);
+ assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.28.0");
+ assert.match(read("cloud-release-history.mjs"),/"version": "v1\.28\.0"/);
  assert.match(read("cwl-group-archive.mjs"),/Noch keine CWL archiviert/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
 });
@@ -53,9 +53,9 @@ test("viewer sees read-only hint in moved CWL rules; backups remain a separate d
   assert.equal(d.getElementById("moreSettingsCloudBackup").hidden,true);
   assert.equal(d.getElementById("moreSettingsContent").children.length,2);
   nav.openMoreSettings("backup");
-  assert.equal(note.hidden,false);
-  assert.match(note.textContent,/Cloud-Sicherungen|Plan-Sicherungen/);
-  assert.equal(d.getElementById("moreSettingsCloudBackup").hidden,false);
+  assert.equal(note.hidden,true);
+  assert.match(d.getElementById("moreSettingsDescription").textContent,/Vollständige Clan-Daten/);
+  assert.equal(d.getElementById("moreSettingsCloudBackup").hidden,true);
   dom.window.CWLCloud.isViewer=()=>false;
   nav.openMoreSettings("rules");
   assert.equal(note.hidden,true,"Owner/Vize do not get misleading viewer note");
