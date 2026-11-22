@@ -273,11 +273,15 @@ def verify_private_rls(table):
         fail("Invalid relation in security check")
     result = subprocess.run(
         ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-c",
-         "SELECT relrowsecurity FROM pg_class WHERE oid='" + table + "'::regclass;"],
+         "SELECT relrowsecurity,"
+         "has_table_privilege('anon',oid,'SELECT'),"
+         "has_table_privilege('authenticated',oid,'UPDATE'),"
+         "has_table_privilege('authenticated',oid,'DELETE') "
+         "FROM pg_class WHERE oid='" + table + "'::regclass;"],
         capture_output=True, text=True, check=False, timeout=20,
     )
-    if result.returncode or result.stdout.strip() != "t":
-        fail("Private origin recovery relation lost row-level security: " + table)
+    if result.returncode or result.stdout.strip() != "t|f|f|f":
+        fail("Restored private origin relation has unsafe RLS or direct write/read privileges: " + table)
 
 
 def verify_db(root):
