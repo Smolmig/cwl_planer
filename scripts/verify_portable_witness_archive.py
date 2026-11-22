@@ -134,6 +134,8 @@ def inventory(root):
     primary = copy_sections(files["data.sql"])
     if not set(REQUIRED).issubset(extra):
         fail("Explicit private data dump is missing a required zero-or-more-row COPY table")
+    if not private_schema.issubset(extra):
+        fail("Explicit private dump silently omitted a private database table")
     if any(not k.startswith("private.") for k in extra):
         fail("Private-only data export contains other tenant schemas")
     if any(k.startswith("private.") and k not in extra for k in primary):
@@ -234,6 +236,19 @@ def read_restored_rows(table, columns):
     return result.stdout.splitlines()
 
 
+def verify_private_rls(table):
+    # A restored private witness must never become accessible with RLS off.
+    if not all(SAFE_IDENT.fullmatch(x) for x in table.split(".")):
+        fail("Invalid relation in security check")
+    result = subprocess.run(
+        ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-c",
+         "SELECT relrowsecurity FROM pg_class WHERE oid='" + table + "'::regclass;"],
+        capture_output=True, text=True, check=False, timeout=20,
+    )
+    if result.returncode or result.stdout.strip() != "t":
+        fail("Private origin recovery relation lost row-level security: " + table)
+
+
 def verify_db(root):
     files, _, _, _, _, _, manifest = validated_manifest(root)
     if not files["private-schema-local.sql"].is_file() or not files["private-data-local.sql"].is_file():
@@ -243,8 +258,7 @@ def verify_db(root):
         if len(rows) != expected["rows"] or fingerprint(expected["columns"], rows) != expected["sha256"]:
             fail("Recovered private table rows differ from sealed offsite copy: " + table)
     for table in REQUIRED:
-        if read_restored_rows(table, manifest["tables"][table]["columns"]) is None:
-            fail("Missing protected witness and recovery relation")
+        verify_private_rls(table)
     print("PASS: independent encrypted offsite artifact restored EVERY private "
           "table byte-for-byte (order-independent), including original receipt "
           "and multi-clan recovery checkpoints; witness rows: " +
