@@ -7,7 +7,7 @@ const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const sync=fs.readFileSync(path.join(root,"cloud-sync.mjs"),"utf8");
-const staticHtml=html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,"").replace(/<link\\b[^>]*>/gi,"");
+const staticHtml=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<link\b[^>]*>/gi,"");
 const start=sync.indexOf("function clearClanAccountDetails(){");
 const end=sync.indexOf("async function useSession(session){",start);
 assert.ok(start>=0&&end>start,"tenant-specific UI clearing helper must exist");
@@ -22,7 +22,7 @@ const lifecycle=[
 test("new account uses generic examples, not the original owner's clan identity",()=>{
  assert.doesNotMatch(html,/placeholder="United Fighters"/);
  assert.doesNotMatch(html,/placeholder="#99JP2RL2"/);
- assert.match(html,/id="cloudClanName" placeholder="z\\. B\\. Mein Clash-Clan"/);
+ assert.match(html,/id="cloudClanName" placeholder="z\. B\. Mein Clash-Clan"/);
  assert.match(html,/id="cloudAccessDetails" hidden open/);
  for(const id of ["cloudAliasControls","cloudAccountAuditSection","cloudAccountImportSection"]){
   assert.match(html,new RegExp('id="'+id+'" hidden'));
@@ -39,6 +39,7 @@ test("unlinked account hides tenant-only controls and clears stale membership an
     await page.addScriptTag({content:lifecycle});
     await page.evaluate(()=>{
      document.getElementById("cloudAccount").hidden=false;
+     document.getElementById("cloudNewClanDetails").open=true;
      for(const id of ["cloudAccessList","cloudPendingList","cloudBlockedList",
       "cloudAudit","cloudActiveMembers"])
        document.getElementById(id).textContent="ALTE DATEN AUS ANDEREM KONTO";
@@ -67,10 +68,10 @@ test("unlinked account hides tenant-only controls and clears stale membership an
 });
 
 test("auth changes, clan switches and delayed responses are guarded",()=>{
- assert.match(sync,/const previousUserId=user\\?\\.id\\|\\|null/);
- assert.match(sync,/user=session\\?\\.user\\|\\|null;\\s*clearClanAccountDetails\\(\\)/);
- assert.match(sync,/if\\(previousUserId&&previousUserId!==user\\?\\.id&&cloud\\.active\\)await leaveCloud\\(\\)/);
- assert.match(sync,/clanId=nextClan;revision=null;role=null;\\s*clearClanAccountDetails\\(\\)/);
- assert.match(sync,/expected!==clanId\\|\\|expectedEpoch!==accountEpoch\\|\\|expectedActor!==user\\?\\.id/);
- assert.match(sync,/await loadAccessList\\(clanId\\);\\s*if\\(epoch!==accountEpoch\\|\\|!user\\|\\|clanId!==nextClan\\)return;\\s*showClanAccountDetails\\(\\)/);
+ assert.match(sync,/const previousUserId=user\?\.id\|\|null/);
+ assert.match(sync,/user=session\?\.user\|\|null;\s*clearClanAccountDetails\(\)/);
+ assert.match(sync,/if\(previousUserId&&previousUserId!==user\?\.id&&cloud\.active\)await leaveCloud\(\)/);
+ assert.match(sync,/clanId=nextClan;revision=null;role=null;\s*clearClanAccountDetails\(\)/);
+ assert.match(sync,/expected!==clanId\|\|expectedEpoch!==accountEpoch\|\|expectedActor!==user\?\.id/);
+ assert.match(sync,/await loadAccessList\(clanId\);\s*if\(epoch!==accountEpoch\|\|!user\|\|clanId!==nextClan\)return;\s*showClanAccountDetails\(\)/);
 });
