@@ -1,6 +1,6 @@
 // #178 – Owner-only CLOUD FILE backup / guarded pristine replacement restore.
 // Exactly two primary user actions, under More -> Backup & Import.
-// No service key, no localStorage backup, no API provenance invention.
+// No privileged browser secrets, persistent backup copy or API provenance invention.
 // All source/target/actor/CAS checks are independently repeated in Postgres.
 import {
  PORTABLE_BACKUP_BYTE_LIMIT,
