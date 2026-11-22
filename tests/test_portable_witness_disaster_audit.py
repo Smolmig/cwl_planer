@@ -53,8 +53,18 @@ class OffsiteOriginSafety(unittest.TestCase):
         self.assertIn("COPY private.cwl_portable_backup_witnesses",
                       (self.root / "private-data-local.sql").read_text())
         self.assertEqual(audit.validated_manifest(self.root)[-1]["origin_witness_rows"], 0)
-        with mock.patch.object(audit, "read_restored_rows", return_value=[]):
+        with mock.patch.object(audit, "read_restored_rows", return_value=[]), \
+             mock.patch.object(audit, "verify_private_rls", return_value=None):
             audit.verify_db(self.root)
+
+    def test_restored_private_rlless_table_is_denied(self):
+        audit.capture(self.root)
+        audit.prepare(self.root)
+        with mock.patch.object(audit, "read_restored_rows", return_value=[]), \
+             mock.patch.object(audit, "verify_private_rls",
+                               side_effect=audit.AuditError("RLS disabled")):
+            with self.assertRaisesRegex(audit.AuditError, "RLS disabled"):
+                audit.verify_db(self.root)
 
     def test_primary_contains_private_tables_no_double_import(self):
         (self.root / "schema.sql").write_text(schema(self.required))
