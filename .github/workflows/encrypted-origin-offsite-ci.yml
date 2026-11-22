@@ -1,0 +1,56 @@
+name: Encrypted offsite CWL origin receipt disaster-safety regression
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/encrypted-origin-offsite-ci.yml'
+      - '.github/workflows/encrypted-backup.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/verify_portable_witness_archive.py'
+      - 'tests/test_portable_witness_disaster_audit.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/encrypted-origin-offsite-ci.yml'
+      - '.github/workflows/encrypted-backup.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/verify_portable_witness_archive.py'
+      - 'tests/test_portable_witness_disaster_audit.py'
+permissions:
+  contents: read
+jobs:
+  offsite-origin-safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test exact sealed receipts, duplicate avoidance and fail-closed corrupt archives
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests \
+            -p 'test_portable_witness_disaster_audit.py' -v
+          python3 -m py_compile scripts/verify_portable_witness_archive.py
+      - name: Gate both encrypted production export and isolated restore wiring
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          backup = Path('.github/workflows/encrypted-backup.yml').read_text()
+          restore = Path('.github/workflows/test-encrypted-restore.yml').read_text()
+          required_backup = (
+            '--schema private -f', '--schema private --data-only --use-copy',
+            'verify_portable_witness_archive.py capture', 'gpg --batch',
+            'upload-artifact@v4', 'retention-days: 30',
+          )
+          required_restore = (
+            'verify_portable_witness_archive.py prepare',
+            'verify_portable_witness_archive.py verify-db',
+            'private-schema-local.sql', 'private-data-local.sql',
+            '--single-transaction', 'session_replication_role = replica',
+          )
+          for s in required_backup:
+            assert s in backup, 'Encrypted private receipt export gate missing'
+          for s in required_restore:
+            assert s in restore, 'Isolated private receipt recovery gate missing'
+          assert 'CWL_BACKUP_PASSPHRASE' in backup and 'CWL_BACKUP_PASSPHRASE' in restore
+          print('PASS: origin receipts and recovery checkpoints are encrypted with the DB and verified in the one-transaction isolated restore')
+          PY
