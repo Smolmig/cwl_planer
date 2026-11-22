@@ -113,7 +113,7 @@ test("new Cloud owner file view has exactly two primary actions under Mehr, bili
  assert.match(app,/\.cloud-mode #localBackupActions/);
  assert.match(app,/if\(isCloud&&action==="backup"\)window\.CWLPortableBackupUI\?\.render\?\.\(\)/);
  assert.match(sync,/createCloudPortableBackupUI/);
- assert.match(sync,/portableBackupUI\.reset\(\)/);
+ assert.match(sync,/window\.CWLPortableBackupUI\?\.reset\?\.\(\)/);
  assert.match(sync,/ownerClanIds:clans\.filter\(c=>clanRoles\.get\(c\.id\)==="owner"\)/);
  assert.doesNotMatch(read("cloud-portable-backup-ui.mjs"),/service_role|localStorage|sessionStorage/);
 });
