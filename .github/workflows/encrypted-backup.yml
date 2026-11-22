@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/encrypted-backup.yml'
+      - 'scripts/verify_portable_witness_archive.py'
   schedule:
     - cron: '17 2 * * *'
 permissions:
@@ -49,13 +50,23 @@ jobs:
           supabase db dump --db-url "${SUPABASE_DB_URL}" --data-only --use-copy -f "${RUNNER_TEMP}/cwl-backup/data.sql"
           # Auth is excluded from the standard CLI dump; preserve it separately.
           supabase db dump --db-url "${SUPABASE_DB_URL}" --schema auth --data-only --use-copy -f "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
+          # Capture independently the private owner-origin receipts and
+          # recovery checkpoints, regardless of CLI default schema selection.
+          # Both files are packed ONLY inside the GPG-encrypted artifact.
+          supabase db dump --db-url "${SUPABASE_DB_URL}" --schema private -f "${RUNNER_TEMP}/cwl-backup/private-schema.sql"
+          supabase db dump --db-url "${SUPABASE_DB_URL}" --schema private --data-only --use-copy -f "${RUNNER_TEMP}/cwl-backup/private-data.sql"
           test -s "${RUNNER_TEMP}/cwl-backup/schema.sql"
           test -s "${RUNNER_TEMP}/cwl-backup/data.sql"
           test -s "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
+          test -s "${RUNNER_TEMP}/cwl-backup/private-schema.sql"
+          test -s "${RUNNER_TEMP}/cwl-backup/private-data.sql"
           # Verify actual auth.users data, not just an empty COPY header.
           # The separate script avoids shell-regex escaping errors and prints no private rows.
           python3 scripts/verify_auth_dump.py "${RUNNER_TEMP}/cwl-backup/auth-data.sql"
-          printf 'CWL encrypted daily backup; UTC: %s; source schema: public/private (CLI default), auth-data separate\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "${RUNNER_TEMP}/cwl-backup/README.txt"
+          # Fail closed if any private witness or recovery table was omitted;
+          # keep the row-level manifest INSIDE ciphertext only.
+          python3 scripts/verify_portable_witness_archive.py capture "${RUNNER_TEMP}/cwl-backup"
+          printf 'CWL encrypted daily backup; UTC: %s; source schemas: default + explicit private witness/checkpoints, auth-data separate; ciphertext retained 30 days\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "${RUNNER_TEMP}/cwl-backup/README.txt"
       - name: Encrypt, integrity-check and securely dispose of plaintext
         shell: bash
         run: |
