@@ -17,10 +17,11 @@ const nav=portion(html,"function showPlannerView(view){","// v1.5.1: reuse");
 const lifecycle=[
  portion(cloud,"function open(){","function inviteFeedback("),
  portion(cloud,"function showSignedIn(){","function cleanTag("),
- portion(cloud,"async function useSession(session){","async function leaveCloud(")
+ portion(cloud,"function clearClanAccountDetails(){","async function leaveCloud(")
 ].join("\n");
 const harness=[
  'let user=null,recoveryMode=false,forgotOpen=false,pendingRelease=null,accountEpoch=0,inviteCode="";',
+ 'let clans=[],clanRoles=new Map();const cloud={active:false};',
  'let clanLoads=0,invites=0,logoutCalls=0;',
  'const $=id=>document.getElementById(id);',
  'function toggle(id,enabled){const e=$(id);if(e)e.hidden=!enabled}',

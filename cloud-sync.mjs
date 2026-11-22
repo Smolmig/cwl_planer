@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.28.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.28.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.28.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.28.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.28.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.28.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.28.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.28.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.28.1";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.28.1";
+import { createCwlLive } from "./cwl-live.mjs?v=1.28.1";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.28.1";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.28.1";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.28.1";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.28.1";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.28.1";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -1006,10 +1006,35 @@ async function sign(kind){
  if(!out.data.session){if(!$("inviteWelcome").classList.contains("open"))msg("Registrierung angelegt. Bitte deine E-Mail bestätigen. Deine Einladung bleibt für die anschließende Anmeldung erhalten.");return}
  await useSession(out.data.session);
 }
+// Every account change clears tenant-specific UI before any async permissions query.
+// The server still enforces RLS; this protects against stale DOM/response flashes.
+function clearClanAccountDetails(){
+ for(const id of ["cloudAccessList","cloudPendingList","cloudBlockedList",
+  "cloudAudit","cloudActiveMembers"]){$(id)?.replaceChildren();}
+ for(const id of ["cloudAccessCount","cloudPendingCount","cloudBlockedCount"])text(id,"");
+ if($("cloudAlias"))$("cloudAlias").value="";
+ for(const id of ["cloudAccessDetails","cloudBlockedDetails","cloudPendingDetails",
+  "cloudAliasControls","cloudAccountAuditSection","cloudAccountImportSection",
+  "cloudDangerZone","cloudReload","cloudRoleExplanation","cloudSyncFeedback",
+  "cloudActiveMembers"])toggle(id,false);
+}
+function showClanAccountDetails(){
+ for(const id of ["cloudAccessDetails","cloudAliasControls","cloudAccountAuditSection",
+  "cloudAccountImportSection","cloudDangerZone","cloudReload",
+  "cloudRoleExplanation","cloudSyncFeedback","cloudActiveMembers"])toggle(id,true);
+}
 async function useSession(session){
  const epoch=++accountEpoch;
  const wasAuthDialogOpen=$("cloudOverlay").classList.contains("open");
- user=session?.user||null;showSignedIn();
+ const previousUserId=user?.id||null;
+ user=session?.user||null;
+ clearClanAccountDetails();
+ if(previousUserId!==user?.id){
+  clans=[];clanRoles=new Map();
+  $("cloudClanSelect")?.replaceChildren(new Option("Clans werden geladen …",""));
+ }
+ showSignedIn();
+ if(previousUserId&&previousUserId!==user?.id&&cloud.active)await leaveCloud();
  if(!user){
   await leaveCloud();
   return;
@@ -1026,6 +1051,7 @@ async function useSession(session){
  }
 }
 async function leaveCloud(){
+ clearClanAccountDetails();
  // Immediately leave the Cloud-only statistics view. Otherwise logging out
  // can strand the guest on a private screen with no visible navigation tab.
  toggle("statsNav",false);
@@ -1052,8 +1078,8 @@ async function listClans(epoch=accountEpoch,selected){
   sb.from("cwl_clan_memberships").select("clan_id,role").eq("user_id",user.id)
  ]);
  if(err)throw err;if(membershipError)throw membershipError;
- clanRoles=new Map((links||[]).map(m=>[m.clan_id,m.role]));
  if(epoch!==accountEpoch)return;
+ clanRoles=new Map((links||[]).map(m=>[m.clan_id,m.role]));
  clans=data||[];
  window.CWLPortableBackupUI?.render?.();
  const s=$("cloudClanSelect");s.replaceChildren(new Option(clans.length?"Clan wählen":"Noch kein Clan",""));
@@ -1081,6 +1107,7 @@ async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
  window.CWLPortableBackupUI?.reset?.();
  clanId=nextClan;revision=null;role=null;
+ clearClanAccountDetails();
  window.CWLGroupArchive?.invalidate?.();
  lastSerial=null;changedSerial=null;blocked=false;remotePending=false;lastNotifiedRevision=0;resetRoster();
  if(!clanId){toggle("cloudMembersTools",false);$("cloudNewClanDetails").open=true;cloud.active=true;role="viewer";hydrating=true;storage.switchToCloud(storage.blank("Clan verbinden"));hydrating=false;lastSerial=JSON.stringify(storage.getProfile());toggle("cloudInviteBox",false);toggle("cloudRosterBox",false);text("cloudRole","Noch kein Clan verbunden.");text("cloudActiveMembers","");
@@ -1101,6 +1128,8 @@ async function chooseClan(epoch=accountEpoch){
  toggle("cloudMembersTools",true);
  $("cloudNewClanDetails").open=false;
  await loadAccessList(clanId);
+ if(epoch!==accountEpoch||!user||clanId!==nextClan)return;
+ showClanAccountDetails();
  toggle("cloudBackupPanel",true);
  window.CWLPortableBackupUI?.render?.();
  toggle("cloudRestoreSnapshot",role==="owner");
@@ -1426,6 +1455,7 @@ async function saveAlias(){
 
 async function loadAccessList(expected=clanId){
  if(!expected||!user)return;
+ const expectedEpoch=accountEpoch,expectedActor=user.id;
  const canInvite=["owner","editor"].includes(role);
  const [{data:members,error:e1},{data:invites,error:e2},{data:blocks,error:e3}]=await Promise.all([
   sb.from("cwl_clan_memberships").select("user_id,role,display_name,joined_at").eq("clan_id",expected).order("joined_at"),
@@ -1437,7 +1467,8 @@ async function loadAccessList(expected=clanId){
    .eq("clan_id",expected).order("blocked_at",{ascending:false}).limit(100):
    Promise.resolve({data:[],error:null})
  ]);
- if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;if(expected!==clanId)return;
+ if(e1)throw e1;if(e2)throw e2;if(e3)throw e3;
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id)return;
  planReviewPeople=new Map((members||[]).map(m=>[m.user_id,m.display_name||"Vize"]));
  delete $("planReviewSuggestions")?.dataset.reviewSignature;
  renderPlanReview();
@@ -1977,13 +2008,15 @@ async function applyRoster(){
  msg("Mitgliederliste übernommen ✓");resetRoster();toggle("cloudRosterBox",false);
 }
 async function audit(){
- if(!clanId)return;
+ if(!clanId||!user)return;
+ const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id;
  const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
   sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at")
    .eq("clan_id",clanId).order("id",{ascending:false}).limit(150),
   sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",clanId)
  ]);
  if(err)throw err;if(e2)throw e2;
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id)return;
  const aliases=new Map((people||[]).map(x=>[x.user_id,x.display_name||"Clanmitglied "+x.user_id.slice(0,6)]));
  const root=$("cloudAudit");root.replaceChildren();
  if(!rows?.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
@@ -2018,13 +2051,14 @@ function stopPresence(){
 }
 async function refreshPresence(expected=clanId){
  if(!user||!expected||expected!==clanId)return;
+ const expectedEpoch=accountEpoch,expectedActor=user.id;
  const since=new Date(Date.now()-120000).toISOString();
  const [{data:recent,error:presenceError},{data:people,error:membersError}]=await Promise.all([
   sb.from("cwl_clan_presence").select("user_id,seen_at").eq("clan_id",expected).gte("seen_at",since),
   sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",expected)
  ]);
  if(presenceError)throw presenceError;if(membersError)throw membersError;
- if(expected!==clanId)return;
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id)return;
  const names=new Map((people||[]).map(x=>[x.user_id,x.display_name||({owner:"Besitzer",editor:"Vize",viewer:"Beobachter"}[x.role]||"Clanmitglied")]));
  const others=(recent||[]).filter(x=>x.user_id!==user.id);
  const count=(recent||[]).length;

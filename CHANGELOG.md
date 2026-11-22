@@ -6,6 +6,15 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.28.1] - 2026-11-22
+
+### Behoben
+- **Neues Konto ohne Clan:** „Planer-Zugänge“, Clan-Änderungsverlauf, Alias-/Import- und Verwaltungsaktionen sind bis zu einer erfolgreichen Clanverbindung nicht sichtbar. Anmeldung und eigener Clan/Einladung bleiben unverändert möglich.
+- **Kontowechsel:** Alte Client-Listen werden sofort geleert. Spät eintreffende Mitglieder-, Online- oder Auditantworten dürfen keinen inzwischen anderen Account oder Clan mehr befüllen. Die serverseitige RLS-Berechtigungsprüfung bleibt unabhängig davon bestehen.
+- **Beispieltexte:** „United Fighters“ und der zugehörige Tag waren allgemeine HTML-Platzhalter; beide wurden durch neutrale Beispiele ersetzt. Dadurch entsteht kein falscher Eindruck einer Clanempfehlung oder Berechtigung.
+- **Hilfe:** Verhalten des ersten Kontos und Unterschied zwischen Eingabebeispiel und tatsächlich verbundenem Clan erläutert.
+
+
 ## [1.28.0] - 2026-11-22
 
 ### Neu

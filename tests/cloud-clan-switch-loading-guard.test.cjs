@@ -101,7 +101,7 @@ test("a failed membership lookup does not remember an unverified clan",async()=>
   $:()=>select,sb:client,user:{id:"user-1"},
   clearTimeout(){},debounce:null,
   live:{stop(){}},currentWarOverview:{reset(){}},stats:{reset(){}},
-  stopPresence(){},stopRemoteChecks(){},hideChangeToast(){},resetRoster(){},
+  stopPresence(){},stopRemoteChecks(){},hideChangeToast(){},resetRoster(){},clearClanAccountDetails(){},
   rememberClan:()=>events.push(["remember"]),navigator:{onLine:true}
  };
  vm.createContext(ctx);
@@ -113,7 +113,7 @@ test("a failed membership lookup does not remember an unverified clan",async()=>
  assert.equal(ctx.channel,null);
 });
 test("patch does not touch offline PWA or data format",()=>{
- assert.match(html,/const APP_VERSION="v1\.28\.0"/);
+ assert.match(html,/const APP_VERSION="v1\.28\.1"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/Clan wechseln &amp; Laden/);
  assert.match(html,/id="cloudStartupRetry"/);
