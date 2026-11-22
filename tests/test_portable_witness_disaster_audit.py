@@ -73,8 +73,10 @@ class OffsiteOriginSafety(unittest.TestCase):
         audit.prepare(self.root)
         self.assertNotIn("CREATE TABLE private.",
                          (self.root / "private-schema-local.sql").read_text())
+        self.assertIn("COPY private.cwl_portable_backup_witnesses",
+                      (self.root / "private-data-local.sql").read_text())
         self.assertNotIn("COPY private.",
-                         (self.root / "private-data-local.sql").read_text())
+                         (self.root / "data-local.sql").read_text())
         self.assertEqual(audit.validated_manifest(self.root)[-1]["schema_source"], "default")
 
     def test_missing_explicit_witness_copy_fails_closed_even_with_zero_rows(self):
@@ -125,11 +127,28 @@ class OffsiteOriginSafety(unittest.TestCase):
         (self.root / "data.sql").write_text(copy(self.required[:2]))
         audit.capture(self.root)
         audit.prepare(self.root)
-        new_rows = (self.root / "private-data-local.sql").read_text()
-        self.assertNotIn("COPY " + self.required[0], new_rows)
-        self.assertNotIn("COPY " + self.required[1], new_rows)
-        for t in self.required[2:]:
-            self.assertIn("COPY " + t, new_rows)
+        # All five original/private rows are replayed from the later
+        # independently sealed explicit dump; the earlier copies are removed.
+        canonical = (self.root / "private-data-local.sql").read_text()
+        older = (self.root / "data-local.sql").read_text()
+        for table in self.required:
+            self.assertIn("COPY " + table, canonical)
+            self.assertNotIn("COPY " + table, older)
+
+    def test_later_private_receipt_wins_over_older_default_copy(self):
+        (self.root / "schema.sql").write_text(schema(self.required))
+        (self.root / "data.sql").write_text(copy(self.required))
+        (self.root / "private-data.sql").write_text(
+            copy(self.required, witness_rows=1))
+        audit.capture(self.root)
+        audit.prepare(self.root)
+        self.assertEqual(audit.validated_manifest(self.root)[-1]
+                         ["origin_witness_rows"], 1)
+        self.assertIn("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                      (self.root / "private-data-local.sql").read_text())
+        self.assertNotIn("COPY private.",
+                         (self.root / "data-local.sql").read_text())
+
 
 
 if __name__ == "__main__":
