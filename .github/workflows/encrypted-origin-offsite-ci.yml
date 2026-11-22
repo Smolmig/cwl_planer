@@ -84,6 +84,10 @@ jobs:
         run: |
           set -euo pipefail
           psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          -- Match the two Supabase API roles needed by the protected-RLS
+          -- audit. Synthetic CI database has none of these by default.
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
           CREATE SCHEMA private;
           CREATE TABLE private.cwl_portable_backup_witnesses(
             id uuid PRIMARY KEY,
