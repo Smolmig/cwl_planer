@@ -3717,6 +3717,8 @@ html.cloud-startup-pending .cloud-startup-splash{
 }
 
 
+/* An account with no clan must never show old tenant-specific controls. */
+#cloudAccount [hidden]{display:none!important}
 /* #178 – one quiet Cloud backup surface in Mehr → Backup & Import. */
 .cloud-portable-backup{margin-top:3px}
 .cloud-portable-backup[hidden],.cloud-portable-file-info[hidden],
@@ -4111,11 +4113,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.28.0</strong><span>Vollständige Cloud-Backups als Datei</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.28.1</strong><span>Neue Cloud-Konten klarer und sicherer</span></div>
       <ul>
-       <li><b>Alle Daten sichern:</b> Clanbesitzer können Pläne, Angriffe, Kriegsstatistiken, CWL-Archive und Entscheidungen als JSON herunterladen.</li>
-       <li><b>Sicher wiederherstellen:</b> Vor der Übernahme werden Datei, Herkunft und neue, leere Ersatzclans geprüft. Bestehende aktive Clans bleiben geschützt.</li>
-       <li><b>Mehrere Clans:</b> Die Sicherung lässt sich gemeinsam und ohne Teilimporte zurückspielen. Hilfe und Dialogtexte sind auf Deutsch und Englisch verfügbar.</li>
+       <li><b>Neues Konto:</b> Ohne zugeordneten Clan bleiben Planer-Zugänge, Änderungsverlauf und clanbezogene Aktionen verborgen.</li>
+       <li><b>Kontowechsel:</b> Alte Zugangslisten werden sofort geleert; verspätete Clan-Abfragen dürfen keine anderen Kontodaten mehr anzeigen.</li>
+       <li><b>Clan hinzufügen:</b> Statt eines fremden Clannamens stehen jetzt neutrale Eingabebeispiele.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4358,7 +4360,7 @@ html.cloud-startup-pending .cloud-startup-splash{
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
-    <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan.</p></div>
+    <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan. Ohne verbundenen Clan gibt es noch keine Planer-Zugänge; der Clanname und Clan-Tag beim Hinzufügen sind nur Eingabebeispiele und keine Kontoempfehlungen.</p></div>
     <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. „Offene Vorschläge“ zeigt nur belegte Beförderungs- und Rückkehrhinweise, die noch geprüft werden müssen. Unter „Gesamte Liste“ sind auch Mitglieder ohne Empfehlung und mit fehlenden Nachweisen sichtbar. „Details anzeigen“ öffnet die Clanzeit, die Angriffs- und Spendenbelege sowie die vorhandenen Prüfentscheidungen; beim Aktualisieren bleiben geöffnete Details erhalten, beim Clanwechsel werden sie zurückgesetzt. Eine Beförderung, Degradierung oder ein Kick wird niemals durch diese Seite automatisch durchgeführt. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Für künftig vollständig belegte normale CW-Fehlangriffe gibt es im getrennten CW-Prüfbereich jetzt eine eigene, nachvollziehbare Entschuldigung; alte unbekannte Kriege werden nicht nachträglich bewertet. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Normale CWs prüfen</b><p>Für vollständig belegte normale CWs werden zwei Angriffe pro Spieler gewertet. 0/2 oder zwei aufeinanderfolgende dokumentierte Kriege mit Fehlangriffen können beim Ältesten einen manuellen Ranghinweis auslösen. Einzelne Ereignisse lassen sich quittieren, entschuldigen, wieder öffnen und anhand der chronologischen Entscheidungen nachprüfen. Unvollständige Kriege und der letzte Login bleiben unbekannt; im Spiel ändert sich nichts automatisch.</p></div>
     <div><b>Verpasste CWL-Angriffe</b><p>Unter „Ränge prüfen“ gibt es jetzt eine eigene, zunächst eingeklappte Auswertung für bestätigte CWL-Fehlangriffe der letzten 90 Tage. Ein aktueller Ältester mit zwei aufeinanderfolgenden, vollständig belegten Fehlangriffen erhält den Hinweis „Degradierung prüfen“; eine in der App dokumentierte Entschuldigung wird berücksichtigt. Nicht bestätigte und importierte Kriege zählen ausdrücklich nicht. Ohne nachgewiesene vollständige normale CW-Angriffe und ohne letzten Login gibt es noch keine CW-Zwei-Angriffe- oder Kick-Regel. Hier kannst du nichts automatisch degradieren oder als schuldhaft markieren.</p></div>
@@ -4486,16 +4488,16 @@ html.cloud-startup-pending .cloud-startup-splash{
   <div id="cloudAccountMessage" class="cloud-msg" role="alert" hidden></div>
  <section id="cloudAccount" hidden>
   <div id="cloudIdentity" class="statusline"></div>
-  <div class="actions"><button class="btn" id="cloudLogout">Vom Cloud-Konto abmelden</button><button class="btn" id="cloudReload" title="Prüft die neuesten gespeicherten Clanänderungen. Offene eigene Bearbeitungen bleiben geschützt.">↻ Gemeinsamen Stand prüfen</button></div>
+  <div class="actions"><button class="btn" id="cloudLogout">Vom Cloud-Konto abmelden</button><button class="btn" id="cloudReload" hidden title="Prüft die neuesten gespeicherten Clanänderungen. Offene eigene Bearbeitungen bleiben geschützt.">↻ Gemeinsamen Stand prüfen</button></div>
   <p class="small">„Gemeinsamen Stand prüfen“ lädt neue gespeicherte Planänderungen, sofern keine eigene Bearbeitung offen ist. Clash-Spieler werden separat im Mitgliederbereich abgeglichen.</p>
   <div class="cloud-section">
     <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline" aria-live="polite"></div>
-    <p class="small" id="cloudRoleExplanation">Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge.</p>
-    <div id="cloudSyncFeedback" class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
-    <div id="cloudActiveMembers" class="cloud-active-members" aria-live="polite"></div>
-    <details class="cloud-minor" id="cloudAccessDetails" open>
+    <p class="small" id="cloudRoleExplanation" hidden>Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge.</p>
+    <div id="cloudSyncFeedback" hidden class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
+    <div id="cloudActiveMembers" hidden class="cloud-active-members" aria-live="polite"></div>
+    <details class="cloud-minor" id="cloudAccessDetails" hidden open>
       <summary>Planer-Zugänge <span id="cloudAccessCount"></span></summary>
       <p class="small">Diese Personen können euren CWL-Planer öffnen. Die hier vergebenen Rechte gelten nur für diese App, nicht für die Ränge in Clash of Clans.</p>
       <div id="cloudAccessList" class="cloud-access-list" aria-live="polite">Zugriffe werden geladen …</div>
@@ -4510,14 +4512,16 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p class="small">Zugänge und Berechtigungen werden beim Öffnen automatisch aktualisiert.</p>
     </details>
 
-    <label for="cloudAlias">Dein Anzeigename im Planer</label>
-    <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
+    <div id="cloudAliasControls" hidden>
+      <label for="cloudAlias">Dein Anzeigename im Planer</label>
+      <div class="actions"><input id="cloudAlias" maxlength="60" placeholder="z.B. Clanführer"><button class="btn" id="cloudSaveAlias">Speichern</button></div>
+    </div>
   </div>
   <div class="cloud-section">
     <h3>Mit einem Clan verbinden</h3><p>Für einen bestehenden Clan gibst du den Einladungscode ein. Für deinen eigenen Clan kannst du die Verbindung selbst erstellen.</p>
     <details id="cloudNewClanDetails" class="cloud-minor"><summary>Eigenen oder weiteren Clan hinzufügen</summary><p>Einmalig den Clash-Clan-Tag eingeben. Danach findest du den Clan oben unter „Meine Clans“.</p>
-    <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="United Fighters" maxlength="100">
-    <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="#99JP2RL2">
+    <label for="cloudClanName">Clanname</label><input id="cloudClanName" placeholder="z. B. Mein Clash-Clan" maxlength="100">
+    <label for="cloudClanTag">Clash-Clan-Tag</label><input id="cloudClanTag" placeholder="z. B. #2P8YQ9J">
     <div class="actions"><button class="btn" id="cloudCreateClan">Clan hinzufügen</button></div></details>
     <label for="cloudJoinCode">Einladungscode eingeben</label><input id="cloudJoinCode" maxlength="24" autocapitalize="off" autocomplete="off" placeholder="Code vom Clanführer">
     <label for="cloudJoinName">Dein Ingame-Name (für den Beitritt erforderlich)</label>
@@ -4546,11 +4550,11 @@ html.cloud-startup-pending .cloud-startup-splash{
     
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Neue Einladungslinks findest du später unter „Aktive Einladungslinks“. Ältere Links bleiben gültig, lassen sich aber nicht erneut anzeigen.</p>
   </div>
-  <div class="cloud-section">
+  <div class="cloud-section" id="cloudAccountAuditSection" hidden>
     <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
-  <div class="cloud-section">
+  <div class="cloud-section" id="cloudAccountImportSection" hidden>
     <h3>Lokalen Plan übernehmen</h3>
     <p>Bei Bedarf kannst du einen zuvor exportierten lokalen CWL-Plan in diesen Cloud-Clan übernehmen. Das ist etwas anderes als einen bestehenden Cloud-Sicherungsstand wiederherzustellen. Deine lokalen Daten bleiben auf diesem Gerät erhalten.</p>
     <input type="file" id="cloudImportFile" accept="application/json,.json">
@@ -4568,7 +4572,7 @@ html.cloud-startup-pending .cloud-startup-splash{
       <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
     </details>
   </div>
-  <details class="cloud-minor" id="cloudDangerZone">
+  <details class="cloud-minor" id="cloudDangerZone" hidden>
    <summary>Erweiterte Zugriffsverwaltung</summary>
    <p class="small">Hier kannst du den gemeinsam genutzten Planer verlassen oder als Besitzer endgültig löschen. Beim Löschen gehen alle gemeinsamen Planungsdaten und Zugänge verloren.</p>
    <div id="cloudClanActions" class="cloud-clan-actions" hidden>
@@ -4732,7 +4736,7 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
 <script src="./cwl-deployment-filters.js?v=1.28.0"></script>
 <script src="./cwl-planning-core.js?v=1.28.0"></script>
 <script>
-const APP_VERSION="v1.28.0";
+const APP_VERSION="v1.28.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
