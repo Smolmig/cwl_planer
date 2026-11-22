@@ -1,7 +1,11 @@
 # CWL Planer – Backup- und Optimierungskonzept
-Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter Restore: 19.11.2026** · Cloud **v1.27.0**
+Historisches Grundkonzept ab 31.10.2026 · **letzter verifizierter isolierter Restore: 22.11.2026** · Cloud **v1.27.0**
 
 ## 22.11.2026 – #178: verschlüsselter externer Herkunftsbeleg bei Supabase-Totalverlust (PR #337)
+
+**Echte Abnahme am 22.11.2026:** [PR #337](https://github.com/Smolmig/cwl_planer/pull/337) gemergt; 897/897 PR-App-Regressionen, elf Manipulations-/Archivtests und realer PostgreSQL-17-Originalbeleg-Roundtrip grün. Der automatisch durch den Merge gestartete **echte Live-DB-Backup-Lauf [#44973057179](https://github.com/Smolmig/cwl_planer/actions/runs/44973057179)** hat das verschlüsselte Artefakt `cwl-encrypted-db-44973057179` erzeugt (414.776 Bytes, GitHub-Artifact-ID 14735015244, bis **22.12.2026** abrufbar). Der dadurch automatisch gestartete **[isolierte GPG→DB-Restore #44973194367](https://github.com/Smolmig/cwl_planer/actions/runs/44973194367)** ist vollständig grün: echte Auth-/CWL-Daten erfolgreich rekonstruiert, sechs frühere doppelte private COPY-Abschnitte ausgelassen, späteren expliziten privaten Dump verwendet, **jede private Tabelle in identischem Inhalt** wiederhergestellt und ursprüngliche RLS-/Schreibrechte validiert. Zu diesem Zeitpunkt hatte die Live-Datenbank **0 ausgestellte Server-Origin-Receipts**. Der Test beweist somit die Wiederherstellung des tatsächlichen privaten Schemas und leerer Belegtabellen, während ein separater isolierter PostgreSQL-17-Test einen **belegten** Original-Receipt samt Manipulationsprüfung erfolgreich zurückspielt. Es wurde **kein produktiver Clan restauriert**; Sicherheitsberater-Hinweise unverändert.
+
+
 
 **Betreiber-Katastrophenpfad, kein Endnutzer-Restore:** Der tägliche [Encrypted Supabase backup-Workflow](../.github/workflows/encrypted-backup.yml) bewahrt mit GPG/AES-256 **auch die privaten Original-Herkunftsbelege und Recovery-Checkpoints** auf. Neben den bisherigen Rollen-, Schema-, Daten- und separat gesicherten Auth-Dumps erzeugt er ausdrücklich `private-schema.sql` und `private-data.sql` mittels `supabase db dump --schema private`. Ein vor dem Verschlüsseln berechnetes, zeilen- und tabellengenaues Offsite-Inventar `portable-origin-offsite-manifest.json` bleibt **ausschließlich im verschlüsselten Archiv**. Dateien oder Datenbank-Identitäten werden nicht in öffentliche Workflow-Logs oder Git eingecheckt.
 
