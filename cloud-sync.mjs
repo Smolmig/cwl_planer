@@ -1032,10 +1032,12 @@ async function leaveCloud(){
  document.querySelector('.navbtn[data-view="plan"]')?.click();
  clearTimeout(debounce);
  live.stop();currentWarOverview?.reset();stats.reset();stopPresence();stopRemoteChecks();hideChangeToast();backups.reset();
+ window.CWLPortableBackupUI?.reset?.();
  toggle("cloudMembersTools",false);
  toggle("guestMembersTools",true);
  if(channel){await sb.removeChannel(channel);channel=null}
  cloud.active=false;clanId=null;role=null;revision=null;lastSerial=null;changedSerial=null;
+ window.CWLPortableBackupUI?.render?.();
  window.CWLGroupArchive?.invalidate?.();
  planReview=null;planSuggestions=[];rawSavedProfile=null;
  blocked=false;hydrating=false;resetRoster();
