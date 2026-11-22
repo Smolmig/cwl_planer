@@ -38,6 +38,7 @@ test("unlinked account hides tenant-only controls and clears stale membership an
     await page.setContent(staticHtml,{waitUntil:"domcontentloaded"});
     await page.addScriptTag({content:lifecycle});
     await page.evaluate(()=>{
+     document.getElementById("view-account").classList.add("active");
      document.getElementById("cloudAccount").hidden=false;
      document.getElementById("cloudNewClanDetails").open=true;
      for(const id of ["cloudAccessList","cloudPendingList","cloudBlockedList",
