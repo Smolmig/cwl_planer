@@ -1,0 +1,154 @@
+name: Encrypted offsite CWL origin receipt disaster-safety regression
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/encrypted-origin-offsite-ci.yml'
+      - '.github/workflows/encrypted-backup.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/verify_portable_witness_archive.py'
+      - 'tests/test_portable_witness_disaster_audit.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/encrypted-origin-offsite-ci.yml'
+      - '.github/workflows/encrypted-backup.yml'
+      - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/verify_portable_witness_archive.py'
+      - 'tests/test_portable_witness_disaster_audit.py'
+permissions:
+  contents: read
+jobs:
+  offsite-origin-safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test exact sealed receipts, duplicate avoidance and fail-closed corrupt archives
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests \
+            -p 'test_portable_witness_disaster_audit.py' -v
+          python3 -m py_compile scripts/verify_portable_witness_archive.py
+      - name: Gate both encrypted production export and isolated restore wiring
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          backup = Path('.github/workflows/encrypted-backup.yml').read_text()
+          restore = Path('.github/workflows/test-encrypted-restore.yml').read_text()
+          required_backup = (
+            '--schema private -f', '--schema private --data-only --use-copy',
+            'verify_portable_witness_archive.py capture', 'gpg --batch',
+            'upload-artifact@v4', 'retention-days: 30',
+          )
+          required_restore = (
+            'verify_portable_witness_archive.py prepare',
+            'verify_portable_witness_archive.py verify-db',
+            'private-schema-local.sql', 'private-data-local.sql',
+            '--single-transaction', 'session_replication_role = replica',
+          )
+          for s in required_backup:
+            assert s in backup, 'Encrypted private receipt export gate missing'
+          for s in required_restore:
+            assert s in restore, 'Isolated private receipt recovery gate missing'
+          assert 'CWL_BACKUP_PASSPHRASE' in backup and 'CWL_BACKUP_PASSPHRASE' in restore
+          print('PASS: origin receipts and recovery checkpoints are encrypted with the DB and verified in the one-transaction isolated restore')
+          PY
+
+  postgres-17-private-origin-roundtrip:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 4s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: synthetic-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seed one authentic-shaped private origin witness in disposable PG17
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          -- Match the two Supabase API roles needed by the protected-RLS
+          -- audit. Synthetic CI database has none of these by default.
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
+          CREATE SCHEMA private;
+          CREATE TABLE private.cwl_portable_backup_witnesses(
+            id uuid PRIMARY KEY,
+            owner_user_id uuid NOT NULL,
+            source_clan_ids uuid[] NOT NULL,
+            source_clash_tags jsonb NOT NULL,
+            payload_sha256 text NOT NULL,
+            snapshot_at text NOT NULL,
+            created_at timestamptz NOT NULL DEFAULT now());
+          CREATE TABLE private.cwl_portable_fresh_clan_recovery_checkpoints(
+            id uuid PRIMARY KEY);
+          CREATE TABLE private.cwl_portable_history_recovery_checkpoints(
+            id uuid PRIMARY KEY);
+          CREATE TABLE private.cwl_portable_multi_clan_recovery_sessions(
+            id uuid PRIMARY KEY);
+          CREATE TABLE private.cwl_portable_plan_apply_checkpoints(
+            id uuid PRIMARY KEY);
+          INSERT INTO private.cwl_portable_backup_witnesses(
+            id,owner_user_id,source_clan_ids,source_clash_tags,
+            payload_sha256,snapshot_at,created_at
+          ) VALUES (
+            'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+            ARRAY['cccccccc-cccc-4ccc-8ccc-cccccccccccc'::uuid],
+            '["#P8Y2"]'::jsonb,repeat('a',64),'2026-11-22T01:00:00Z',
+            '2026-11-22T01:00:00+00'::timestamptz);
+          INSERT INTO private.cwl_portable_plan_apply_checkpoints
+            VALUES('dddddddd-dddd-4ddd-8ddd-dddddddddddd');
+          ALTER TABLE private.cwl_portable_backup_witnesses ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_fresh_clan_recovery_checkpoints ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_history_recovery_checkpoints ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_multi_clan_recovery_sessions ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE private.cwl_portable_plan_apply_checkpoints ENABLE ROW LEVEL SECURITY;
+          SQL
+      - name: Dump with genuine PostgreSQL 17 COPY serialization
+        run: |
+          set -euo pipefail
+          export CWL_AUDIT_TMP="$(mktemp -d)"
+          echo "CWL_AUDIT_TMP=$CWL_AUDIT_TMP" >> "$GITHUB_ENV"
+          printf 'CREATE TABLE public.synthetic_origin (id uuid);\n' > "$CWL_AUDIT_TMP/schema.sql"
+          printf 'COPY public.synthetic_origin (id) FROM stdin;\n\\.\n' > "$CWL_AUDIT_TMP/data.sql"
+          printf 'COPY auth.users (id) FROM stdin;\n123\n\\.\n' > "$CWL_AUDIT_TMP/auth-data.sql"
+          cid="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -n 1)"
+          test -n "$cid"
+          docker exec "$cid" pg_dump -U postgres --schema private --schema-only postgres > "$CWL_AUDIT_TMP/private-schema.sql"
+          docker exec "$cid" pg_dump -U postgres --schema private --data-only postgres > "$CWL_AUDIT_TMP/private-data.sql"
+          python3 scripts/verify_portable_witness_archive.py capture "$CWL_AUDIT_TMP"
+          python3 scripts/verify_portable_witness_archive.py prepare "$CWL_AUDIT_TMP"
+          createdb -h 127.0.0.1 -U postgres -T template0 recovered
+          PGPASSWORD=synthetic-only psql -X -v ON_ERROR_STOP=1 -d recovered \
+            -f "$CWL_AUDIT_TMP/private-schema-local.sql" \
+            -f "$CWL_AUDIT_TMP/private-data-local.sql" >/dev/null
+      - name: Confirm byte-exact SQL witness survived the real PG17 restore
+        run: |
+          set -euo pipefail
+          export PGDATABASE=recovered
+          python3 scripts/verify_portable_witness_archive.py verify-db "$CWL_AUDIT_TMP"
+          psql -X -v ON_ERROR_STOP=1 -c \
+            "UPDATE private.cwl_portable_backup_witnesses SET payload_sha256=repeat('f',64);" >/dev/null
+          if python3 scripts/verify_portable_witness_archive.py verify-db "$CWL_AUDIT_TMP" > /dev/null 2>&1; then
+            echo "::error::Altered genuine source witness passed the offsite restore gate"
+            exit 1
+          fi
+          echo 'PASS: real PostgreSQL 17 exact witness data restore, and manipulated source receipt rejected'
