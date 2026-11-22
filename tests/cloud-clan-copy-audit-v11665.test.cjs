@@ -46,5 +46,5 @@ test("#226 copy release applies only to Cloud and preserves local PWA version",(
  assert.match(html,/const APP_VERSION="v1\.28\.1"/);
  assert.equal(JSON.parse(read("cloud-version.json")).version,"v1.28.1");
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0"/);
- assert.match(read("CHANGELOG.md"),/\[1\.28\.0\]/);
+ assert.match(read("CHANGELOG.md"),/\[1\.28\.1\]/);
 });
