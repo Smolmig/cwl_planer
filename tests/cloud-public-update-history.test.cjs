@@ -45,7 +45,7 @@ test("history is discoverable in More and alongside the existing newest-update n
  assert.match(app,/Mehr → Update-Verlauf/,"help explains the new page");
  assert.match(app,/\["help","account","archive","more-settings","updates","install","clan-management"\]/);
  assert.match(app,/if\(action==="updates"\)\{openReleaseHistory\(\);return\}/);
- assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.28\.0"\)/);
+ assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.28\.1"\)/);
  assert.match(sw,/cloud-release-history\\\.mjs/,"offline service worker must not cache Cloud history");
 });
 
