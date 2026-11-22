@@ -4365,7 +4365,11 @@ html.cloud-startup-pending .cloud-startup-splash{
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
-    <div><b>Wiederherstellung</b><p>Die letzten fünf automatischen Sicherungen enthalten nur den gemeinsamen CWL-Plan, nicht die Angriffshistorie und Konten. Nur der Besitzer darf einen alten Stand zurückholen. Sichere wichtige Pläne zusätzlich als JSON-Datei.</p></div>
+    <div id="cloudPortableHelp"><b>Vollständiges Cloud-Backup / Full Cloud backup</b>
+     <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Automatische Plan-Sicherungen unter „Clan & Konto“ betreffen weiterhin nur den Plan.</p>
+     <p lang="de"><strong>Bei Datenbank-Totalverlust:</strong> Die JSON-Datei allein ist kein fälschungssicherer Beleg für alte API-Angriffe. Der ursprüngliche Serverbeleg muss zusammen mit alten Auth-Konten aus einem nach Ausstellung erstellten, verschlüsselten Betreiber-Backup erhalten sein. Die App erfindet keine Konten, historischen Angriffe oder Herkunftsnachweise.</p>
+     <p lang="en"><strong>More → Backup & Import:</strong> Only a clan owner can download all 17 portable data areas per selected clan, including the plan, locked/played CWL days, verified attacks, archives and decisions, with an original server receipt. Passwords and access roles are excluded. Restore backup first checks the file, then requires a newly created, unused owner-controlled replacement clan with the same Clash tag for every source. It never overwrites an active clan or restores into the old clan UUID. Review the preview, confirm the mapping and type the confirmation word. Multiple clans restore together or not at all. Existing automatic snapshots under Clan & Account still protect only the plan.</p>
+     <p lang="en"><strong>Total database loss:</strong> A JSON file alone cannot establish historic API-attack provenance. An independently retained encrypted operator database backup created after the original receipt must preserve that receipt and the original Auth identities. Lost accounts, collector evidence and attack authors are never fabricated.</p></div>
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
    </div>
@@ -5971,10 +5975,15 @@ function openMoreSettings(action){
  const isCloud=!!window.CWLCloud?.active;
  const note=document.getElementById("moreSettingsNotice");
  const isViewer=isCloud&&!!window.CWLCloud?.isViewer?.();
- note.hidden=!((isCloud&&action==="backup")||(isViewer&&action==="rules"));
- note.textContent=isViewer&&action==="rules"?"Als Beobachter kannst du die CWL-Regeln ansehen, aber nicht bearbeiten.":isCloud?"Gemeinsame Plan-Sicherungen findest du unter „Clan & Konto“. Hier kannst du zusätzlich eine JSON-Datei auf deinem Gerät sichern.":"";
- document.getElementById("moreSettingsCloudBackup").hidden=!(isCloud&&action==="backup");
+ note.hidden=!(isViewer&&action==="rules");
+ note.textContent=isViewer&&action==="rules"?"Als Beobachter kannst du die CWL-Regeln ansehen, aber nicht bearbeiten.":"";
+ document.getElementById("moreSettingsCloudBackup").hidden=true;
+ if(isCloud&&action==="backup"){
+  document.getElementById("moreSettingsDescription").textContent=
+   "Vollständige Clan-Daten sichern und eine Datei erst nach Prüfung in neue Ersatzclans wiederherstellen.";
+ }
  showPlannerView("more-settings");
+ if(isCloud&&action==="backup")window.CWLPortableBackupUI?.render?.();
 }
 function showPlannerView(view){
  const wasSettingsOpen=document.getElementById("view-settings").classList.contains("active");
