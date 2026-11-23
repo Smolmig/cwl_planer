@@ -213,8 +213,8 @@ test("historical evidence and day matrix stay within iPhone 320px to desktop wid
   fragment=host.innerHTML;
  }finally{if(before===undefined)delete global.document;else global.document=before;dom.window.close()}
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8")
-  .replace(/<script\b[^>]*>[\\s\\S]*?<\\/script>/gi,"")
-  .replace(/<link\\b[^>]*>/gi,"");
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"")
+  .replace(/<link\b[^>]*>/gi,"");
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  try{
   for(const width of [320,390,430,1366]){
