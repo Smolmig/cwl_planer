@@ -29,7 +29,7 @@ test("public update timeline covers every official Cloud release and correctly d
  }
  const groups=groupReleasesByDate();
  assert.equal(groups.flatMap(g=>g.items).length,releaseHistory.length);
- assert.equal(groups[0].date,"2026-11-22");
+ assert.equal(groups[0].date,"2026-11-23");
 });
 
 test("history is discoverable in More and alongside the existing newest-update note",()=>{
