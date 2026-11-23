@@ -4,7 +4,7 @@
 const validTag=value=>/^#[0289PYLQGRJCUV]{3,15}$/.test(String(value||"").trim().toUpperCase());
 const tag=value=>String(value||"").trim().toUpperCase();
 const seasonValid=value=>/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(value||""));
-const safeCount=(value,max=7)=>Number.isInteger(value)&&value>=0&&value<=max?value:null;
+const safeCount=(value,max=7)=>Number.isInteger(value)&&value>=1&&value<=max?value:null;
 const validAttack=value=>Number.isInteger(value?.stars)&&value.stars>=0&&value.stars<=3;
 const planList=value=>Array.isArray(value)?value:[];
 const rosterValid=(members,size)=>Number.isInteger(size)&&size>=1&&size<=50&&
@@ -61,8 +61,8 @@ function archiveMetadata(plan,id){
  const row=meta.players.find(m=>String(m?.id)===String(id));
  if(!row)return null;
  return {role:row.participating===false?"Nicht markiert":row.fixed===true?"Fix":row.fixed===false?"Rotation":null,
-  goal:Object.hasOwn(row,"targetDays")?
-   row.targetDays===null?"Automatisch":safeCount(row.targetDays)??null:null,
+  goal:Object.hasOwn(row,"targetDays")&&row.targetDays!==null?
+   safeCount(row.targetDays):null,
   knownGoal:Object.hasOwn(row,"targetDays")&&(row.targetDays===null||safeCount(row.targetDays)!==null)};
 }
 export function summarizeArchivedDeployments({plan=null,group=null,ownRows=[]}={}){
