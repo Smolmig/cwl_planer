@@ -141,6 +141,100 @@ test("archive detail UI displays historical evidence safely and no current membe
   dom.window.close();
  }
 });
+test("automatically assigned goals remain Automatisch rather than zero or a guessed day",async()=>{
+ const {summarizeArchivedDeployments}=await load("cwl-archived-deployments-core.mjs");
+ const archived=plan();archived.deploymentSnapshot.players[0].targetDays=null;
+ const result=summarizeArchivedDeployments({plan:archived,group:league(),ownRows:[]});
+ assert.equal(result.players[0].goal,null);
+ assert.equal(result.players[0].knownGoal,true);
+});
+test("six of seven finished wars cannot conclusively report fewer than eight stars",async()=>{
+ const {summarizeArchivedDeployments}=await load("cwl-archived-deployments-core.mjs");
+ const p=plan();p.days=7;
+ const extra=["#2PY8","#2PYP"];
+ p.cwlLive.rounds=[...warTags,...extra].map((warTag,i)=>({
+  day:i+1,available:true,state:"warEnded",warTag,teamSize:1,
+  clan:{tag:clan,members:[{tag:"#2PY9",name:"Alte Spielerin",attacks:[{stars:1}]}]}
+ }));
+ const data=summarizeArchivedDeployments({plan:p});
+ assert.equal(data.warCount,7);
+ assert.equal(data.endedDays,7);
+ assert.equal(data.completeHistory,true);
+ // A missing final round is a data gap even when six ended wars are saved.
+ p.cwlLive.rounds=p.cwlLive.rounds.slice(0,6);
+ const incomplete=summarizeArchivedDeployments({plan:p});
+ assert.equal(incomplete.endedDays,6);
+ assert.equal(incomplete.players[0].stars,6);
+ assert.equal(incomplete.players[0].goal8,"unknown");
+});
+test("deployment snapshot sanitizer retains old unknowns, does not fabricate invalid goals",()=>{
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const start=html.indexOf("function normalizeArchiveDeploymentSnapshot(");
+ const end=html.indexOf("function normalizeArchive(",start);
+ assert.ok(start>0&&end>start);
+ const normalize=new Function(html.slice(start,end)+"return normalizeArchiveDeploymentSnapshot;")();
+ assert.equal(normalize(null),null);
+ const snapshot=normalize({version:1,capturedAt:1794500000000,players:[
+  {id:"old",fixed:false,participating:true,targetDays:3},
+  {id:"bad",fixed:false,targetDays:9},
+  {id:"auto",fixed:true,targetDays:null},
+  {id:"old",targetDays:7}
+ ]});
+ assert.equal(snapshot.players.length,3);
+ assert.equal(snapshot.players[0].targetDays,3);
+ assert.equal(Object.hasOwn(snapshot.players[1],"targetDays"),false);
+ assert.equal(snapshot.players[2].targetDays,null);
+});
+test("historical evidence and day matrix stay within iPhone 320px to desktop widths",{
+ timeout:120000
+},async()=>{
+ const {chromium}=require("playwright");
+ const before=global.document,dom=new JSDOM('<section id="view-archive" class="active">'+
+  '<button id="cwlGroupArchiveRefresh"></button><div id="cwlGroupArchiveContent"></div></section>',
+  {url:"https://example.test"});
+ let fragment;
+ global.document=dom.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  const p=plan();
+  p.players=Array.from({length:30},(_,i)=>({
+   id:"p"+i,name:"Mitglied mit langem Namen "+i,playerTag:""
+  }));
+  p.lineups=[{day:1,lineup:p.players.map(x=>x.id),snapshots:{}}];
+  const view=createCwlGroupArchiveView({
+   sb:{from(){throw Error("offline should never fetch")}},
+   getClanId:()=>null,isConnected:()=>false,getProfile:()=>({archives:[p]})
+  });
+  await view.open();
+  const host=dom.window.document.getElementById("cwlGroupArchiveContent");
+  host.querySelector('[data-unified-archive-tab="deployments"]').click();
+  host.querySelector(".season-archive-item").open=true;
+  host.querySelector(".archive-evidence-day").open=true;
+  fragment=host.innerHTML;
+ }finally{if(before===undefined)delete global.document;else global.document=before;dom.window.close()}
+ const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8")
+  .replace(/<script\b[^>]*>[\\s\\S]*?<\\/script>/gi,"")
+  .replace(/<link\\b[^>]*>/gi,"");
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,430,1366]){
+   const page=await browser.newPage({viewport:{width,height:860}});
+   try{
+    await page.setContent(html,{waitUntil:"domcontentloaded"});
+    const m=await page.evaluate(content=>{
+     document.querySelectorAll(".view.active").forEach(e=>e.classList.remove("active"));
+     document.getElementById("view-archive").classList.add("active");
+     document.getElementById("cwlGroupArchiveContent").innerHTML=content;
+     return {viewport:innerWidth,body:document.documentElement.scrollWidth,
+       table:document.querySelector(".archive-evidence-table").scrollWidth,
+       wrapper:document.querySelector(".archive-evidence-scroll").clientWidth};
+    },fragment);
+    assert.ok(m.body<=width+3,JSON.stringify(m));
+    assert.ok(m.table>=m.wrapper,JSON.stringify(m));
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});
 test("archive capture and normalize paths retain metadata without modifying data version",()=>{
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  assert.match(html,/function normalizeArchiveDeploymentSnapshot\(value\)/);
