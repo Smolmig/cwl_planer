@@ -119,7 +119,9 @@ export function summarizeArchivedDeployments({plan=null,group=null,ownRows=[]}={
   const verified=betterRoster(local,server);
   if(!verified)continue;
   actualDays++;verifiedDays.add(day);
-  if(verified.state==="warEnded"){endedDays++;endedVerifiedDays.add(day)}
+  const fullFinal=verified.state==="warEnded"&&verified.members.every(m=>
+   Array.isArray(m.attacks)&&m.attacks.every(validAttack));
+  if(fullFinal){endedDays++;endedVerifiedDays.add(day)}
   for(const member of verified.members){
    const memberTag=tag(member.tag);
    let p=!ambiguousTags.has(memberTag)?tags.get(memberTag):null;
@@ -129,12 +131,12 @@ export function summarizeArchivedDeployments({plan=null,group=null,ownRows=[]}={
     people.set(k,p);if(!ambiguousTags.has(memberTag))tags.set(memberTag,p);
    }
    const cell=p.days[day-1];
-   cell.actual=true;cell.ended=verified.state==="warEnded";
+   cell.actual=true;cell.ended=fullFinal;
    const attacks=planList(member.attacks).filter(validAttack);
    cell.attacks=attacks.length;cell.stars=attacks.reduce((n,a)=>n+a.stars,0);
    p.actual++;
    if(cell.ended)p.completed++;
-   p.attacks+=cell.attacks;p.stars+=cell.stars;
+   if(cell.ended){p.attacks+=cell.attacks;p.stars+=cell.stars;}
   }
  }
  const completeHistory=endedDays===warCount;
