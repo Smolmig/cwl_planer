@@ -1,5 +1,6 @@
 // Durable, read-only CWL group histories. Separate from the planner's own
 // archived lineups. All queries use the logged-in Supabase session and RLS.
+import {summarizeArchivedDeployments} from "./cwl-archived-deployments-core.mjs?v=1.29.0";
 import {summarizeCwlGroup} from "./cwl-group-core.mjs?v=1.18.1";
 import {unifyCwlArchiveSeasons} from "./cwl-unified-archive-core.mjs?v=1.18.1";
 import {summarizeCwlSeason} from "./cwl-season-core.mjs?v=1.18.1";
@@ -204,37 +205,80 @@ function selectSeasonModel(item,ownRows){
   });
   return {...saved,rounds,ended:rounds.filter(r=>r.state==="warEnded").length};
 }
-function renderSavedPlan(plan,index,showDelete){
-  const lineups=(Array.isArray(plan.lineups)?plan.lineups:[])
-    .filter(x=>Number.isInteger(x?.day)&&Array.isArray(x.lineup))
-    .sort((a,b)=>a.day-b.day);
-  const players=Array.isArray(plan.players)?plan.players:[];
-  const names=new Map(players.map(p=>[String(p.id),String(p.name||"Unbekannt")]));
-  const counts=new Map();
-  for(const lineup of lineups)for(const id of lineup.lineup)
-    counts.set(String(id),(counts.get(String(id))||0)+1);
-  const people=[...counts.entries()].map(([id,count])=>({
-    id,name:names.get(id)||String(id),count
-  })).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"));
-  const roster=lineups.map(lineup=>'<details class="season-archive-lineup" data-archive-key="saved:'+esc(plan.id)+':'+lineup.day+'">'+
-    '<summary>Kriegstag '+lineup.day+' · '+lineup.lineup.length+' Spieler</summary>'+
-    '<div class="season-archive-roster">'+lineup.lineup.map(id=>{
-      const name=lineup.snapshots?.[id]?.name||names.get(String(id))||"Unbekannt";
-      return '<div class="season-archive-player"><strong>'+esc(name)+'</strong></div>';
-    }).join("")+'</div></details>').join("");
-  const details='<p class="statusline">'+Number(plan.playedCount||lineups.length)+
-    '/'+Number(plan.days||7)+' Tage gespielt · '+Number(plan.slots||15)+'vs'+
-    Number(plan.slots||15)+(plan.complete?' · Plan abgeschlossen':' · Planstand gespeichert')+'</p>'+
-    '<div class="season-group-archive-rounds">'+roster+'</div>'+
-    '<h4>Einsatzhäufigkeit</h4>'+
-    (people.length?'<div class="archive-deployment-list">'+people.map(p=>
-      '<div class="archive-count"><span>'+esc(p.name)+'</span><strong>'+p.count+'×</strong></div>'
-    ).join("")+'</div>':'<p class="season-empty">Keine Einsätze gespeichert.</p>')+
-    (showDelete?'<div class="archive-plan-danger"><button type="button" class="btn small danger" data-unified-delete-id="'+
-      esc(plan.id)+'">Diesen gespeicherten Plan löschen</button></div>':"");
-  return '<details class="archive-saved-plan" data-archive-key="plan:'+esc(plan.id)+'"'+
-    (index===0?' open':'')+'><summary>'+esc(plan.label||"Gespeicherter Plan")+
-    ' · '+lineups.length+' Einsatztage</summary>'+details+'</details>';
+function renderArchivedEvidence(plan,group,ownRows){
+ const history=summarizeArchivedDeployments({plan,group,ownRows});
+ const {players,warCount,plannedDays,actualDays,endedDays,completeHistory}=history;
+ const quality=endedDays+"/"+warCount+" Kriegstage mit vollständigem Clash-Endstand · "+
+   actualDays+" Tagesaufstellungen aus Clash gesichert"+
+   (plan?" · "+plannedDays+" Tage im damaligen Plan":"");
+ const role=p=>p.role||"–";
+ const target=p=>!p.knownGoal?"–":p.goal===null?"Automatisch":p.goal+" Tage";
+ const stars=p=>p.completed?p.stars+"★":"–";
+ const bonus=p=>p.goal8==="reached"?(completeHistory?"8★ erreicht":"mind. 8★ belegt"):
+   p.goal8==="below"?"unter 8★":"nicht sicher belegt";
+ const label=p=>'<strong>'+esc(p.name)+'</strong>'+
+   (p.tag?'<small>'+esc(p.tag)+'</small>':"");
+ const overview=players.map(p=>'<tr><td>'+label(p)+'</td>'+
+   '<td>'+esc(role(p))+'</td><td>'+esc(target(p))+'</td>'+
+   '<td>'+p.planned+'×</td><td>'+p.actual+'×</td><td>'+
+   (p.completed?p.attacks:'–')+'</td><td>'+stars(p)+'</td><td>'+esc(bonus(p))+'</td></tr>').join("");
+ const shownDay=(p,i)=>{
+   const cell=p.days[i];
+   if(cell?.actual&&cell.ended)return esc(String(cell.stars))+'★';
+   if(cell?.actual)return '✓';
+   if(cell?.planned)return 'P';
+   return history.verifiedDays.includes(i+1)?'–':'?';
+ };
+ const matrix=players.map(p=>'<tr><td>'+label(p)+'</td>'+
+   Array.from({length:warCount},(_,i)=>'<td>'+shownDay(p,i)+'</td>').join('')+'</tr>').join('');
+ const summary='<p class="archive-evidence-note">'+esc(quality)+
+   '. Geplant ist nicht gleich tatsächlich in Clash aufgestellt; ein bestätigter Kader ist noch kein ausgeführter Angriff.</p>';
+ const notes=plan?.deploymentSnapshot?.version===1?
+   'Fix-/Rotationsstatus und Einsatzziel: gespeicherter Stand bei Archivierung, nicht rückwirkend aus heutigen Mitgliedern berechnet.':
+   'Alte Einsatzziele und Fix-/Rotationsangaben sind hier nicht überliefert (–).';
+ const table=players.length?
+   '<div class="archive-evidence-scroll"><table class="archive-evidence-table" aria-label="Historische CWL-Einsatzhäufigkeit">'+
+   '<thead><tr><th>Spieler</th><th>Damals</th><th>Ziel</th><th>Plan</th>'+
+   '<th>In Clash</th><th>Angriffe</th><th>Sterne</th><th>8★</th></tr></thead>'+
+   '<tbody>'+overview+'</tbody></table></div>':
+   '<p class="season-empty">Keine historischen Einsatz- oder Aufstellungsdaten für diese Saison gespeichert.</p>';
+ const dayView=players.length?
+   '<details class="archive-evidence-day" data-archive-key="days:'+esc(plan?.id||group?.season||'only')+'">'+
+   '<summary>Tagesmatrix anzeigen · P = geplant, ✓ = Clash-Aufstellung, n★ = bestätigter Tages-Endstand</summary>'+
+   '<p class="archive-evidence-note">? = kein vollständiger Clash-Beleg; – = nicht in der bekannten Clash-Aufstellung. '+
+   'Ein P ohne Clash-Beleg beweist keinen tatsächlichen Einsatz.</p>'+
+   '<div class="archive-evidence-scroll"><table class="archive-evidence-table" aria-label="Historische CWL-Tagesmatrix">'+
+   '<thead><tr><th>Spieler</th>'+
+   Array.from({length:warCount},(_,i)=>'<th>Tag '+(i+1)+'</th>').join('')+
+   '</tr></thead><tbody>'+matrix+'</tbody></table></div></details>':"";
+ return '<div class="archive-evidence"><h4>Einsatzhäufigkeit · Plan und Clash</h4>'+summary+
+   '<p class="archive-evidence-note">'+esc(notes)+'</p>'+table+dayView+'</div>';
+}
+function renderSavedPlan(plan,index,showDelete,group,ownRows){
+ const lineups=(Array.isArray(plan.lineups)?plan.lineups:[])
+  .filter(x=>Number.isInteger(x?.day)&&Array.isArray(x.lineup))
+  .sort((a,b)=>a.day-b.day);
+ const names=new Map((Array.isArray(plan.players)?plan.players:[])
+  .map(p=>[String(p.id),String(p.name||"Unbekannt")]));
+ const roster=lineups.map(lineup=>'<details class="season-archive-lineup" data-archive-key="saved:'+esc(plan.id)+':'+lineup.day+'">'+
+   '<summary>Tag '+lineup.day+' · '+lineup.lineup.length+' im gespeicherten Plan</summary>'+
+   '<div class="season-archive-roster">'+lineup.lineup.map(id=>{
+     const name=lineup.snapshots?.[id]?.name||names.get(String(id))||"Unbekannt";
+     return '<div class="season-archive-player"><strong>'+esc(name)+'</strong></div>';
+   }).join("")+'</div></details>').join("");
+ const description='<p class="statusline">'+lineups.length+'/'+Number(plan.days||7)+
+   ' Tage als Plan gesichert · '+Number(plan.slots||15)+'vs'+Number(plan.slots||15)+
+   (plan.complete?' · Plan vollständig':' · Plan unvollständig')+'</p>';
+ return '<details class="archive-saved-plan" data-archive-key="plan:'+esc(plan.id)+'"'+
+   (index===0?' open':'')+'><summary>'+esc(plan.label||"Gespeicherter Plan")+
+   ' · '+lineups.length+' gesicherte Planaufstellungen</summary>'+description+
+   renderArchivedEvidence(plan,group,ownRows)+
+   (roster?'<details class="archive-evidence-day" data-archive-key="rosters:'+esc(plan.id)+'">'+
+     '<summary>Damals gesicherte Plan-Aufstellungen ansehen</summary>'+
+     '<div class="season-group-archive-rounds">'+roster+'</div></details>':"")+
+   (showDelete?'<div class="archive-plan-danger"><button type="button" class="btn small danger" data-unified-delete-id="'+
+     esc(plan.id)+'">Diesen gespeicherten Plan löschen</button></div>':"")+
+   '</details>';
 }
 function renderOwnLineups(item,ownRows,profile){
   if(!item.group)return '<p class="season-empty">Keine bestätigten Clash-Aufstellungen archiviert.</p>';
@@ -269,8 +313,8 @@ function seasonPane(item,tab,ownRows,profile,canDelete){
   }
   return item.plans.length?
     '<div class="archive-deployment-content">'+item.plans.map((p,i)=>
-      renderSavedPlan(p,i,canDelete)).join("")+'</div>':
-    renderOwnLineups(item,ownRows,profile);
+      renderSavedPlan(p,i,canDelete,group,ownRows)).join("")+'</div>':
+    renderArchivedEvidence(null,group,ownRows);
 }
 const archiveTabs=[["rounds","Kriegstage"],["group","Tabelle"],
   ["players","Spieler"],["deployments","Einsätze"]];
