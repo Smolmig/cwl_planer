@@ -1,5 +1,5 @@
 {
-  "version": "v1.28.1",
-  "released": "2026-11-22",
-  "summary": "Neue Konten zeigen keine fremden Planer-Zugänge mehr; Clanbeispiele sind neutral und Konto-/Clanwechsel leeren alte Ansichten."
+  "version": "v1.29.0",
+  "released": "2026-11-23",
+  "summary": "Im CWL-Archiv werden geplante Einsätze und bestätigte Clash-Aufstellungen getrennt. Historische Sterne, 8-Sterne-Ziel und beim Archivieren gesicherte Ziele bleiben nachvollziehbar."
 }

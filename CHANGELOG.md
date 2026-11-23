@@ -6,6 +6,18 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.29.0] - 2026-11-23
+
+### Neu
+- **CWL-Archiv → Einsätze:** Historische Planaufstellungen und tatsächlich von Clash bestätigte Aufstellungen werden je Spieler getrennt angezeigt. Eine kompakte Übersicht zeigt geplante Tage, bestätigte Aufstellungen, vollständig bestätigte Angriffe/Sterne sowie den nachweislichen 8★-Status; eine ausklappbare Tagesmatrix zeigt die Beleglage je Kriegstag.
+- **Wahrheitsgetreue Historie:** Fehlende Clash-Aufstellungen sind nicht gleich null Einsätze, „inWar“ ist noch kein endgültiger Sternbeleg, fehlende Runden werden nicht erfunden. Ein 8★-Erfolg ist bei schon bestätigten acht Sternen sicher; „unter 8★“ nur nach vollständiger belegter Saison. Die historischen Quellen müssen exakt nach Clan-Tag, Saison, Kriegstag und War-Tag übereinstimmen.
+- **Neue Planungssnapshots:** Wenn eine CWL archiviert wird, bleiben damals gültiger Fix-/Rotationsstatus und das eingestellte Einsatzziel als gesonderter schreibgeschützter Archiv-Snapshot erhalten. Für ältere Archive fehlen diese Werte weiterhin ausdrücklich; aktuelle Mitglieder-/Planwerte werden nicht rückwirkend eingemischt.
+- **Klare Sprache:** „Tage gespielt“ der alten Planarchiv-Ansicht wird dort als „gesicherter Planstand“ eingeordnet. Hilfe-Seite, Gold-Theme und mobile Darstellung angepasst.
+
+### Technische Grenzen
+- Bestehendes Cloud-Profilformat v9, RLS, Besitzer-/Vize-/Viewer-Rechte, CWL-Solver, Speicherziele und Backup-/Restore-Verhalten bleiben unverändert. Kein Massendatenabruf und keine produktive Datenmigration. Die Archivprüfung bleibt read-only; reale Dezember-CWL und iPhone-/Android-Praxistests sind weiterhin gesondert offen.
+
+
 ## [1.28.1] - 2026-11-22
 
 ### Behoben
