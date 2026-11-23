@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.29.0",
+    "releaseType": "minor",
+    "date": "2026-11-23",
+    "title": "Historische CWL-Einsätze getrennt nach Plan und Clash",
+    "description": "Der CWL-Rückblick zeigt geplante und bestätigte Einsatz-Tage getrennt, belegte Sterne und 8★-Ergebnisse mit Datenlücken. Neue Archive sichern damalige Ziele und Fix-/Rotation."
+  },
+
+  {
     "version": "v1.28.1",
     "releaseType": "patch",
     "date": "2026-11-22",
