@@ -20,8 +20,8 @@ const input=()=>({preview:preview(),reviewReadable:true,
  cwlRows:[{tag:"#2PYL",missedCount:1,severe:false},
   {tag:"#2PYQ",missedCount:2,severe:true},{tag:"#2PYJ",missedCount:2,severe:true},
   {tag:"#2PYV",missedCount:3,severe:true}],
- normalResult:{rows:[{tag:"#2PYL",openCount:2,severe:false},
-  {tag:"#2PYQ",openCount:1,severe:true},{tag:"#2PYR",openCount:0,severe:false}]}});
+ normalResult:{rows:[{tag:"#2PYL",openCount:2,severe:false,events:[{state:"open",missing:2},{state:"open",missing:1},{state:"excused",missing:2}]},
+  {tag:"#2PYQ",openCount:1,severe:true,events:[{state:"open",missing:2}]},{tag:"#2PYR",openCount:0,severe:false}]}});
 test("existing open review sources merge once per current player; severe and overlapping evidence first",()=>{
  const x=input(),before=JSON.stringify(x),v=core.buildActionOverview(x);
  assert.deepEqual(v.rows.map(p=>p.tag),["#2PYQ","#2PYL","#2PYG"]);
@@ -29,6 +29,9 @@ test("existing open review sources merge once per current player; severe and ove
  assert.equal(v.rows[0].severe,true);
  assert.deepEqual(v.rows[1].sources,["rank","cw","cwl"]);
  assert.equal(v.rows[1].conflicting,true);
+ assert.equal(v.rows[1].openMisses,4);
+ assert.equal(v.rows[0].openMisses,4);
+ assert.equal(v.rows[1].missCountComplete,true);
  assert.deepEqual(v.counts,{rank:2,cw:2,cwl:2});
  assert.equal(v.complete,true);
  assert.equal(JSON.stringify(x),before);
@@ -77,4 +80,17 @@ test("normal CW decision re-render preserves the overview callback and clan rese
  assert.match(source,/render\(members,payload,sourceTag,onResult\)/);
  assert.match(app,/clanManagementCwlRows=null;clanManagementNormalResult=null;\s*clearClanManagementActionOverview\(\)/);
  assert.match(app,/request!==clanManagementRequest\|\|clan!==cloud.getActiveClanId\(\)/);
+});
+
+test("cross-war totals count attacks rather than wars, exclude decisions, and retain lower bounds",()=>{
+ const x=input();x.cwlRows=null;
+ const row=core.buildActionOverview(x).rows.find(p=>p.tag==="#2PYL");
+ assert.equal(row.openMisses,3);
+ assert.equal(row.openCwlMisses,null);
+ assert.equal(row.missCountComplete,false);
+ x.cwlRows=input().cwlRows;x.normalResult.rows[0].events=[];
+ const unknown=core.buildActionOverview(x).rows.find(p=>p.tag==="#2PYL");
+ assert.equal(unknown.openMisses,1);
+ assert.equal(unknown.openCwMisses,null);
+ assert.equal(unknown.missCountComplete,false);
 });
