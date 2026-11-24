@@ -242,3 +242,71 @@ test("archive capture and normalize paths retain metadata without modifying data
  assert.match(html,/const deploymentSnapshot=\{version:1,capturedAt:Date.now\(\)/);
  assert.match(html,/const DATA_VERSION=9/);
 });
+
+
+test("offseason shortcut opens newest verified season and deployment panel; normal archive stays unchanged",async()=>{
+ const before=global.document;
+ const dom=new JSDOM('<section id="view-archive" class="active">'+
+  '<button id="cwlGroupArchiveRefresh"></button><div id="cwlGroupArchiveContent"></div></section>');
+ global.document=dom.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  const latest=plan(),older={...plan(),id:"old",sourceSeason:"2026-10",
+   cwlLive:{...plan().cwlLive,season:"2026-10"}};
+  const unverified={...plan(),id:"manual",sourceSeason:null,cwlLive:null,createdAt:Date.now()};
+  const view=createCwlGroupArchiveView({
+   sb:{from(){throw Error("offline should not fetch")}},
+   getClanId:()=>null,isConnected:()=>false,getClanTag:()=>clan,
+   getProfile:()=>({archives:[older,unverified,latest]}),isViewer:()=>true
+  });
+  const host=dom.window.document.getElementById("cwlGroupArchiveContent");
+  await view.open();
+  assert.equal(host.querySelector(".season-archive-item").open,false);
+  assert.equal(host.querySelector("[data-unified-panel]").dataset.unifiedPanel,"rounds");
+  await view.openLatestDeployments();
+  const boxes=[...host.querySelectorAll(".season-archive-item")];
+  assert.equal(boxes.length,3);
+  assert.equal(boxes[0].dataset.archiveKey,"season:"+season+"|"+clan);
+  assert.equal(boxes[0].open,true);
+  assert.equal(boxes[0].querySelector("[data-unified-panel]").dataset.unifiedPanel,"deployments");
+  assert.equal(boxes[0].querySelector('[data-unified-archive-tab="deployments"]').getAttribute("aria-selected"),"true");
+  assert.match(boxes[0].textContent,/Plan und Clash/);
+  assert.equal(boxes[1].open,false);
+  assert.equal(boxes[2].open,false);
+  assert.equal(host.querySelectorAll("[data-unified-delete-id]").length,0);
+ }finally{
+  if(before===undefined)delete global.document;else global.document=before;
+  dom.window.close();
+ }
+});
+test("latest deployment shortcut tolerates empty archive and discards late prior-clan response",async()=>{
+ const before=global.document;
+ const dom=new JSDOM('<section id="view-archive" class="active">'+
+  '<div id="cwlGroupArchiveContent"></div></section>');
+ global.document=dom.window.document;
+ try{
+  const {createCwlGroupArchiveView}=await load("cwl-group-archive.mjs");
+  let id=null,resolve;
+  const view=createCwlGroupArchiveView({
+   sb:{from(){return{select(){return this},eq(){return this},order(){return this},
+    limit(){return new Promise(r=>{resolve=r})}}}},
+   getClanId:()=>id,isConnected:()=>!!id,getClanTag:()=>clan,
+   getProfile:()=>({archives:[]})
+  });
+  const host=dom.window.document.getElementById("cwlGroupArchiveContent");
+  await view.openLatestDeployments();
+  assert.match(host.textContent,/Noch keine CWL archiviert/);
+  id="old-clan";
+  const pending=view.openLatestDeployments();
+  id="new-clan";
+  dom.window.document.getElementById("view-archive").classList.remove("active");
+  view.invalidate();
+  resolve({data:[{season,group_json:league()}],error:null});
+  await pending;
+  assert.equal(host.querySelector(".season-archive-item"),null);
+  assert.equal(host.querySelector('[data-unified-panel="deployments"]'),null);
+ }finally{
+  if(before===undefined)delete global.document;else global.document=before;
+  dom.window.close();
+ }
+});
