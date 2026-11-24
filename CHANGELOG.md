@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.31.0] - 2026-11-24
+
+### Neu
+- **Clanverwaltung:** Gemeinsame Übersicht offener Beförderungs-, Rückkehr- und Fehlangriffshinweise je Spieler, schwerwiegende Fälle zuerst. Direkter Sprung zu den vorhandenen Prüfungen.
+- **CW und CWL:** Anzahl offener belegter Fehlangriffe über beide Kriegsarten; entschuldigte und bereits erledigte Prüfungen bleiben entsprechend den bestehenden Regeln unberücksichtigt. Fehlende Quellen ergeben eine Untergrenze, keine neue Sanktions- oder Serienregel.
+
 ## [1.30.1] - 2026-11-24
 
 ### Behoben
