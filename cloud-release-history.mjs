@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.30.0",
+    "releaseType": "minor",
+    "date": "2026-11-24",
+    "title": "Tagesregeln unverbindlich durchrechnen",
+    "description": "Im Plan lassen sich AUTO, MUSS und RAUS als Was-wäre-wenn testen. Spielerwechsel, Einsatzzahlen und Konflikte werden gezeigt, ohne Änderungen zu speichern."
+  },
+
+  {
     "version": "v1.29.0",
     "releaseType": "minor",
     "date": "2026-11-23",
