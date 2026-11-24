@@ -348,7 +348,47 @@
    eligibleForRecommendation:promotionReviewChecks,
    observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Nur abgeschlossene API-Kriege dieses Clans und belegte Clanzeit zählen; fehlende Daten sind keine negativen Spielerwerte. Alle Rangentscheidungen bleiben manuell."};
  }
- const api={normalizeRank:rank,validTag,buildPreview,tenureLabel,donorLabel,returnRankLabel,
+ // Aggregate existing review results, not new disciplinary rules. Missing
+ // evidence is reported separately, never turned into a clean bill of health.
+ function buildActionOverview({preview,reviewReadable,cwlRows,normalResult}={}){
+  if(!preview?.ok||!Array.isArray(preview.rows))return null;
+  const available={
+   rank:reviewReadable===true,
+   cwl:Array.isArray(cwlRows),
+   cw:Array.isArray(normalResult?.rows)
+  };
+  const current=new Map(preview.rows.filter(p=>validTag(p.tag)&&
+   ["member","elder"].includes(p.rank)).map(p=>[tag(p.tag),p]));
+  const byTag=new Map();
+  function add(playerTag,kind,severe=false){
+   const key=tag(playerTag),person=current.get(key);
+   if(!person)return;
+   if(!byTag.has(key))byTag.set(key,{tag:key,name:person.name,rank:person.rank,
+    rankLabel:person.rankLabel,sources:[],severe:false,conflicting:false});
+   const item=byTag.get(key);
+   if(!item.sources.includes(kind))item.sources.push(kind);
+   if(severe&&person.rank==="elder")item.severe=true;
+  }
+  if(available.rank)for(const p of current.values()){
+   if((p.reviewCases||[]).some(item=>item.state==="open"))add(p.tag,"rank");
+  }
+  if(available.cw)for(const p of normalResult.rows){
+   if(Number.isInteger(p.openCount)&&p.openCount>0)add(p.tag,"cw",p.severe===true);
+  }
+  if(available.cwl)for(const p of cwlRows){
+   if(Number.isInteger(p.missedCount)&&p.missedCount>0)add(p.tag,"cwl",p.severe===true);
+  }
+  const rows=[...byTag.values()].map(p=>({...p,
+   conflicting:p.sources.includes("rank")&&(p.sources.includes("cw")||p.sources.includes("cwl"))}));
+  rows.sort((a,b)=>Number(b.severe)-Number(a.severe)||
+   Number(b.conflicting)-Number(a.conflicting)||
+   Number(b.sources.some(x=>x!=="rank"))-Number(a.sources.some(x=>x!=="rank"))||
+   a.name.localeCompare(b.name,"de",{sensitivity:"base"})||a.tag.localeCompare(b.tag));
+  return {rows,available,complete:Object.values(available).every(Boolean),
+   counts:Object.fromEntries(["rank","cw","cwl"].map(kind=>[kind,
+    available[kind]?rows.filter(p=>p.sources.includes(kind)).length:null]))};
+ }
+ const api={normalizeRank:rank,validTag,buildPreview,buildActionOverview,tenureLabel,donorLabel,returnRankLabel,
   DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty,
   reviewFingerprint,applyReviewDecisions};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
