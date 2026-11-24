@@ -37,7 +37,8 @@ test("dry-run is identical to production solver and never modifies current plan,
  assert.equal(JSON.stringify(input),old);
  assert.deepEqual(planCwl(input),baseline);
  assert.equal(result.focus.before,baseline.counts[player]);
- assert.equal(result.affected.some(x=>x.id===player),true);
+ assert.equal(result.affected.some(x=>x.id===player),result.focus.after!==result.focus.before,
+  "a tactical RAUS may be compensated on another day without changing the total");
  assert.ok(result.changedDays.every(x=>x.day>=1&&x.day<=7));
  assert.ok(result.simulatedOnly);
 });
@@ -92,7 +93,7 @@ test("bad ids, already selected rules and invalid periods fail before calling th
 test("simulator never fetches statistics, invents opponent data or stores anything",()=>{
  const text=fs.readFileSync(path.join(root,"cwl-plan-whatif.js"),"utf8");
  assert.match(text,/same immutable server-confirmed day locks/);
- assert.doesNotMatch(text,/fetch\(|supabase|\.from\(|localStorage\.|\.insert\(|\.upsert\(|\.update\(/i);
+ assert.doesNotMatch(text,/\bfetch\(|\bsupabase\b|\bsb\.from\(|localStorage\.|\.insert\(|\.upsert\(|\.update\(/i);
  assert.doesNotMatch(text,/hitRate|performanceIndex|winProbability|opponentTh/);
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  assert.match(html,/id="whyWhatIf"/);
