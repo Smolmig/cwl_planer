@@ -364,7 +364,7 @@
    const key=tag(playerTag),person=current.get(key);
    if(!person)return;
    if(!byTag.has(key))byTag.set(key,{tag:key,name:person.name,rank:person.rank,
-    rankLabel:person.rankLabel,sources:[],severe:false,conflicting:false});
+    rankLabel:person.rankLabel,sources:[],severe:false,conflicting:false,openCwMisses:available.cw?0:null,openCwlMisses:available.cwl?0:null});
    const item=byTag.get(key);
    if(!item.sources.includes(kind))item.sources.push(kind);
    if(severe&&person.rank==="elder")item.severe=true;
@@ -373,13 +373,26 @@
    if((p.reviewCases||[]).some(item=>item.state==="open"))add(p.tag,"rank");
   }
   if(available.cw)for(const p of normalResult.rows){
-   if(Number.isInteger(p.openCount)&&p.openCount>0)add(p.tag,"cw",p.severe===true);
+   if(Number.isInteger(p.openCount)&&p.openCount>0){
+    add(p.tag,"cw",p.severe===true);
+    const item=byTag.get(tag(p.tag));
+    if(item){
+     const events=Array.isArray(p.events)?p.events.filter(e=>e.state==="open"):null;
+     item.openCwMisses=events&&events.length===p.openCount&&events.every(e=>e.missing===1||e.missing===2)?
+      events.reduce((n,e)=>n+e.missing,0):null;
+    }
+   }
   }
   if(available.cwl)for(const p of cwlRows){
-   if(Number.isInteger(p.missedCount)&&p.missedCount>0)add(p.tag,"cwl",p.severe===true);
+   if(Number.isInteger(p.missedCount)&&p.missedCount>0){
+    add(p.tag,"cwl",p.severe===true);
+    const item=byTag.get(tag(p.tag));if(item)item.openCwlMisses=p.missedCount;
+   }
   }
   const rows=[...byTag.values()].map(p=>({...p,
-   conflicting:p.sources.includes("rank")&&(p.sources.includes("cw")||p.sources.includes("cwl"))}));
+   conflicting:p.sources.includes("rank")&&(p.sources.includes("cw")||p.sources.includes("cwl")),
+   openMisses:(p.openCwMisses??0)+(p.openCwlMisses??0),
+   missCountComplete:p.openCwMisses!==null&&p.openCwlMisses!==null}));
   rows.sort((a,b)=>Number(b.severe)-Number(a.severe)||
    Number(b.conflicting)-Number(a.conflicting)||
    Number(b.sources.some(x=>x!=="rank"))-Number(a.sources.some(x=>x!=="rank"))||
