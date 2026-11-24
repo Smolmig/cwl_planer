@@ -6,6 +6,11 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.30.1] - 2026-11-24
+
+### Behoben
+- **Einsätze zwischen den CWLs:** Der Archiv-Button öffnet die jüngste verfügbare Saison direkt im Untertab Einsätze. Leere Archive, ältere gecachte Module und verspätete Antworten nach Clanwechsel werden berücksichtigt. Die normale Archivnavigation sowie gespeicherte Plan- und Clash-Daten bleiben unverändert.
+
 ## [1.30.0] - 2026-11-24
 
 ### Neu

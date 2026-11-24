@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.30.1",
+    "releaseType": "patch",
+    "date": "2026-11-24",
+    "title": "Direkt zur letzten CWL-Einsatzübersicht",
+    "description": "Zwischen zwei CWLs führt der Archiv-Button direkt zum jüngsten verfügbaren Archiv-Eintrag und dessen Einsatzverteilung."
+  },
+
+  {
     "version": "v1.30.0",
     "releaseType": "minor",
     "date": "2026-11-24",

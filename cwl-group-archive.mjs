@@ -325,7 +325,7 @@ export function createCwlGroupArchiveView({
   let rows=[],ownRows=[],loadedId=null,requestSerial=0,busy=false,loadError=false;
   const selected=new Map();
   const host=$("cwlGroupArchiveContent"),refresh=$("cwlGroupArchiveRefresh");
-  if(!host)return {open(){},invalidate(){}};
+  if(!host)return {open(){},openLatestDeployments(){},invalidate(){}};
   const current=()=>isConnected()?getClanId():null;
   function replaceContent(html){
     const previous=new Map([...host.querySelectorAll('details[data-archive-key]')]
@@ -446,6 +446,28 @@ export function createCwlGroupArchiveView({
       loadedId=id;rows=[];ownRows=[];render();
     }
   }
+  // Only a deliberate shortcut selects and opens the newest archived CWL.
+  // Normal archive navigation retains its existing tab and accordion behavior.
+  async function openLatestDeployments(){
+    const id=current(),expectedSerial=requestSerial+1;
+    await open();
+    if(expectedSerial!==requestSerial||id!==current()||
+       !$("view-archive")?.classList.contains("active"))return;
+    // The shared archive join already orders official seasons first, newest
+    // first, and keeps unverified plans separate. Never use a month label
+    // as proof of an official season or reach across a clan boundary.
+    const entries=unifyCwlArchiveSeasons(rows,getProfile?.()?.archives,getClanTag?.());
+    const newest=entries[0];
+    if(!newest)return;
+    selected.set(newest.id,"deployments");
+    render();
+    const box=[...host.querySelectorAll("details.season-archive-item")]
+      .find(node=>node.dataset.archiveKey===newest.id);
+    if(!box)return;
+    box.open=true;
+    box.querySelector('[data-unified-archive-tab="deployments"]')?.focus({preventScroll:true});
+    box.scrollIntoView?.({block:"nearest"});
+  }
   refresh?.addEventListener("click",async()=>{
     if(refresh.disabled)return;
     refresh.disabled=true;
@@ -454,7 +476,7 @@ export function createCwlGroupArchiveView({
       await open(true);
     }finally{refresh.disabled=false}
   });
-  return {open,invalidate(){
+  return {open,openLatestDeployments,invalidate(){
     requestSerial++;
     const id=current(),changed=loadedId!==null&&loadedId!==id;
     if(changed){loadedId=null;rows=[];ownRows=[];busy=false;selected.clear()}
