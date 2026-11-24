@@ -462,6 +462,25 @@ html[data-theme="cyber"] .toast{border-radius:3px 12px 3px 12px;border-color:rgb
 .day-head-actions{display:flex;align-items:center;gap:6px}
 .day-head .why-day-btn{padding:4px 8px;min-height:29px}
 .why-roster-list{max-height:55dvh;overflow:auto}
+/* Unverbindliche Tagesregel-Simulation inside the existing "why" dialog. */
+#whyModal .modalbox{max-height:min(92dvh,930px);overflow-y:auto}
+#whyModal .why-whatif{border-top:1px solid var(--line);margin-top:12px;padding-top:7px;min-width:0}
+#whyModal .why-whatif[hidden]{display:none!important}
+#whyModal .why-whatif>summary{cursor:pointer;font-size:13px;font-weight:750;padding:10px 4px;min-height:44px}
+#whyModal .why-whatif>summary small{display:block;font-size:11px;color:var(--muted);font-weight:450;margin-top:2px}
+#whyModal .why-whatif-inner{display:grid;gap:10px;min-width:0;padding:0 2px 12px}
+#whyModal .why-whatif-inner>.statusline{margin:0;line-height:1.5}
+#whyModal .why-whatif-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#whyModal .why-whatif-controls label{display:grid;gap:5px;font-size:11px;font-weight:700;min-width:0}
+#whyModal .why-whatif-controls select{width:100%;min-width:0;min-height:42px;padding:8px}
+#whyModal .why-whatif-result{display:grid;gap:7px;min-width:0;font-size:12px;line-height:1.5}
+#whyModal .why-whatif-result:empty{display:none}
+#whyModal .why-whatif-result h4{font-size:12px;margin:7px 0 0}
+#whyModal .why-whatif-result .statusline{margin:0}
+#whyModal .why-whatif-result .why-whatif-line{padding:7px 9px;border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere}
+#whyModal .why-whatif-result .why-whatif-conflict{border-left:3px solid var(--red)}
+@media(max-width:480px){#whyModal .why-whatif-controls{grid-template-columns:minmax(0,1fr)}}
+
 .why-row{display:flex;align-items:center;justify-content:space-between;padding:9px 5px;gap:10px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .why-row:last-child{border-bottom:0}
 .why-row>div{min-width:0}
@@ -4128,11 +4147,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.29.0</strong><span>Historische CWL-Einsätze nachvollziehen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.30.0</strong><span>Tagesregeln vorab durchrechnen</span></div>
       <ul>
-       <li><b>Plan und Realität:</b> Das CWL-Archiv trennt gespeicherte Planaufstellungen von bestätigten Clash-Aufstellungen.</li>
-       <li><b>Sterne &amp; 8★:</b> Nur vollständige beendete Kriege zählen als belegte Endergebnisse; Lücken bleiben unbekannt.</li>
-       <li><b>Neue Archive:</b> Einsatzziele und Fix-/Rotationsstatus bleiben zum Zeitpunkt der Archivierung erhalten.</li>
+       <li><b>Was-wäre-wenn:</b> Im Plan über ⓘ eine Tagesregel AUTO/MUSS/RAUS unverbindlich testen.</li>
+       <li><b>Folgen über alle Tage:</b> Spielerwechsel, Gesamteinsätze und Rotationsspanne vor/nach der Änderung sehen.</li>
+       <li><b>Ohne Risiko:</b> Gespielte Tage, Einsatzziele und Rollen bleiben geschützt; die Vorschau speichert nichts.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4381,6 +4400,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div><b>Verpasste CWL-Angriffe</b><p>Unter „Ränge prüfen“ gibt es jetzt eine eigene, zunächst eingeklappte Auswertung für bestätigte CWL-Fehlangriffe der letzten 90 Tage. Ein aktueller Ältester mit zwei aufeinanderfolgenden, vollständig belegten Fehlangriffen erhält den Hinweis „Degradierung prüfen“; eine in der App dokumentierte Entschuldigung wird berücksichtigt. Nicht bestätigte und importierte Kriege zählen ausdrücklich nicht. Ohne nachgewiesene vollständige normale CW-Angriffe und ohne letzten Login gibt es noch keine CW-Zwei-Angriffe- oder Kick-Regel. Hier kannst du nichts automatisch degradieren oder als schuldhaft markieren.</p></div>
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
+    <div><b>Was-wäre-wenn für CWL-Tage</b><p>Im Tab „Plan“ öffnest du über das Info-Symbol (ⓘ) eines noch nicht fixierten Kriegstags „Auswahl erklärt“. Unter „Was wäre, wenn …?“ kannst du für einen Teilnehmer testweise AUTO, MUSS oder RAUS setzen. Die Vorschau berechnet mit demselben fairen Planer alle Tage erneut und zeigt Wechsel, Gesamteinsätze und Regelkonflikte. Sie verändert <strong>weder deine Tagesregeln noch den Cloud-Plan oder die Aufstellung in Clash</strong>. Tatsächlich ändern kannst du die Regel nur unter „Mitglieder → Tagesregeln“. Es ist keine gegner- oder statistikorientierte Leistungsprognose.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
     <div id="cloudPortableHelp"><b>Vollständiges Cloud-Backup / Full Cloud backup</b>
      <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Die letzten fünf automatischen Sicherungen unter „Clan & Konto“ betreffen weiterhin nur den gemeinsamen CWL-Plan, nicht die komplette Angriffshistorie.</p>
@@ -4426,6 +4446,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Clanverwaltung: verpasste CWL-Angriffe</b><div>Unter Mehr → Clanverwaltung → Ränge prüfen kann der Clanführer belegte verpasste CWL-Angriffe der letzten 90 Tage in einem eigenen aufklappbaren Bereich sehen. Nur abgeschlossene CWL-Kriege mit vollständig bestätigter Aufstellung und Angriffserfassung aus dem eigenen Clan zählen. Als entschuldigt dokumentierte Fälle sind keine offenen Hinweise. Bei zwei zeitlich aufeinanderfolgenden vollständig erfassten CWL-Kriegen mit bestätigtem Fehlangriff kann für einen aktuellen Ältesten „Degradierung prüfen“ erscheinen. Das ist <b>keine automatische Degradierung</b> und nicht der Nachweis eines schuldhaften Verhaltens. Ein einzelner Fehlangriff wird nur zur Prüfung gezeigt. Historische Importlücken und unvollständige Kriege bleiben unbekannt. Für normale CWs fehlen noch sichere Zwei-Angriffs-Nachweise; die Clash-API kennt auch keinen letzten Login, deshalb kein „Kick nach 3 Tagen offline“.</div></div>
     <div class="help-item"><b>Owner-Entscheidungen bei CWL-Misses</b><div>Ist ein verpasster Angriff sowohl im abgeschlossenen Clash-Krieg als auch im vollständigen Statistik-Collector nachgewiesen, kann der <b>Clanführer</b> den Fall mit einer optionalen Notiz als <b>Entschuldigt</b>, <b>Später prüfen</b> oder <b>Pause prüfen</b> dokumentieren. Die Entscheidungen sind für berechtigte Mitglieder des gemeinsamen Clans sichtbar, chronologisch nachvollziehbar und nachträglich nicht löschbar. Die neueste Entscheidung wird direkt am Spieler angezeigt; ein neuer Beschluss ergänzt den Verlauf statt den alten zu überschreiben. Diese Funktion <b>pausiert den Spieler nicht automatisch</b> und verändert weder Fix-/MUSS-Regeln noch bereits fixierte Aufstellungen. Wenn der Collector noch keinen vollständigen Miss bestätigt hat, ist keine verbindliche Dokumentation möglich. Für eine echte Umbesetzung muss der Owner den Plan separat prüfen und bearbeiten.</div></div>
     <div class="help-item"><b>Eine bestätigte CWL-Tagespause übernehmen</b><div>Nach einem <b>belegten</b> verpassten CWL-Angriff kann der Clanführer zunächst „Pause prüfen“ dokumentieren. Für einen späteren Kriegstag, der sich nach einem frischen Clash-Abgleich noch <b>in der Vorbereitung</b> befindet (mindestens 30 Minuten bis Kampfbeginn), erscheint gegebenenfalls die Schaltfläche „Pause im Plan übernehmen“. Vor der verbindlichen Bestätigung prüft der Planer die exakten Einsatzziele, Fix-/MUSS-Regeln, vollständig besetzte Aufstellungen, unveränderbare Clash-Tage und den rechnerischen 8★-Bonus. Nur wenn keine neuen Konflikte entstehen, wird für <b>diesen einen Tag</b> die bisherige AUTO-Regel auf RAUS gesetzt, zusammen mit einem gemeinsamen Audit-Eintrag. Die Änderung ist kein Clash-Wechsel: <b>Die Aufstellung im Spiel muss weiterhin manuell angepasst werden.</b> In der Bestätigung siehst du außerdem die geänderten Gesamteinsätze pro Spieler sowie die Rotationsspanne vor/nach dem Solver-Lauf. Diese Spannweite ist eine Orientierung, keine Fairnessgarantie. Weitere Tage sind nicht automatisch pausiert und müssen jeweils separat nachgeprüft werden. Bei Datenlücken oder Konflikten wird die Übernahme blockiert; der normale manuelle Plan bleibt unverändert.</div></div>
+    <div class="help-item"><b>Tagesregel unverbindlich durchrechnen</b><div>Unter <b>Plan → Tag → ⓘ Auswahl erklären</b> gibt es für noch offene Kriegstage die ausklappbare Was-wäre-wenn-Vorschau. Wähle Spieler und eine hypothetische Tagesregel (AUTO / MUSS / RAUS). Der Planer prüft alle CWL-Tage, behält gesperrte Aufstellungen und konkrete Einsatzziele bei und zeigt veränderte Aufstellungen sowie Einsatzzahlen. Bei Widersprüchen erscheint ein Konflikt statt eines vermeintlich gültigen Vorschlags. <b>Es wird nichts gespeichert oder übernommen.</b> Echte Änderungen erfolgen wie bisher unter Mitglieder → Tagesregeln; im Cloud-Plan gelten weiterhin die Freigabe- und Rollenrechte. Es gibt noch keinen automatischen Strategiemodus und keine Siegwahrscheinlichkeiten.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -4626,6 +4647,26 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
   <div class="section-title"><h3 id="whyTitle">Warum diese Aufstellung?</h3><button class="btn small" id="whyClose" type="button">Schließen</button></div>
   <div class="helpbox" id="whyExplanation"></div>
   <div class="modal-list why-roster-list" id="whyRoster"></div>
+  <details class="why-whatif" id="whyWhatIf">
+   <summary>Was wäre, wenn …? <small>Tagesregel unverbindlich testen</small></summary>
+   <div class="why-whatif-inner">
+    <p class="statusline">Die Vorschau rechnet den <b>gesamten CWL-Plan</b> mit dem bisherigen fairen Planer neu. Sie speichert nichts und ändert keine Clash-Aufstellung.</p>
+    <div class="why-whatif-controls">
+     <label for="whyWhatIfPlayer">Spieler
+      <select id="whyWhatIfPlayer" aria-label="Spieler für die Simulation"></select>
+     </label>
+     <label for="whyWhatIfStatus">Tagesregel
+      <select id="whyWhatIfStatus" aria-label="Testweise Tagesregel auswählen">
+       <option value="auto">AUTO · Planer entscheidet</option>
+       <option value="must">MUSS · einsetzen</option>
+       <option value="out">RAUS · aussetzen</option>
+      </select>
+     </label>
+    </div>
+    <button type="button" class="btn small" id="whyWhatIfRun">Auswirkungen berechnen</button>
+    <div id="whyWhatIfResult" class="why-whatif-result" role="status" aria-live="polite"></div>
+   </div>
+  </details>
 </div></div>
 
 <div class="modal" id="memberConfigHelpModal" role="dialog" aria-modal="true" aria-labelledby="memberConfigHelpTitle"><div class="modalbox">
@@ -4744,14 +4785,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.29.0"></script>
-<script src="./clan-management-missed-core.js?v=1.29.0"></script>
-<script src="./clan-management-cw-core.js?v=1.29.0"></script>
-<script src="./clan-management-cw-view.js?v=1.29.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.29.0"></script>
-<script src="./cwl-planning-core.js?v=1.29.0"></script>
+<script src="./clan-management-core.js?v=1.30.0"></script>
+<script src="./clan-management-missed-core.js?v=1.30.0"></script>
+<script src="./clan-management-cw-core.js?v=1.30.0"></script>
+<script src="./clan-management-cw-view.js?v=1.30.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.30.0"></script>
+<script src="./cwl-planning-core.js?v=1.30.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.30.0"></script>
 <script>
-const APP_VERSION="v1.29.0";
+const APP_VERSION="v1.30.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -5916,7 +5958,81 @@ function openWhyModal(day){
     return `<div class="why-row"><div><b>${esc(displayMemberName(m))}</b><div class="statusline">${esc(role)} · ${before} zuvor · ${soon} spätere mögliche Tage${m.townHall?` · RH${m.townHall}`:""} · ${esc(rotationWeightLabel(m))}</div></div><span class="badge ${isSelected?"ok":"warn"}">${isSelected?"Dabei":"Draußen"}</span></div>`;
   }).join("");
   document.getElementById("whyRoster").innerHTML=markup||'<div class="empty">Keine Spieler vorhanden.</div>';
+  const whatIf=document.getElementById("whyWhatIf");
+  whatIf.open=false;
+  whatIf.hidden=!!dp.locked;
+  const people=state.members.filter(m=>m?.participating&&m.cocSyncState!=="former"&&String(m.name||"").trim());
+  const playerSelect=document.getElementById("whyWhatIfPlayer");
+  const ruleSelect=document.getElementById("whyWhatIfStatus");
+  const result=document.getElementById("whyWhatIfResult");
+  const run=document.getElementById("whyWhatIfRun");
+  playerSelect.replaceChildren(...people.map(m=>new Option(displayMemberName(m),m.id)));
+  result.replaceChildren();
+  run.disabled=!people.length||!!dp.locked;
+  const suggestedRule=()=>{
+    const candidate=people.find(m=>m.id===playerSelect.value);
+    ruleSelect.value=candidate&&(dp.lineup.includes(candidate.id))?"out":"must";
+    result.replaceChildren();
+  };
+  suggestedRule();
+  playerSelect.onchange=suggestedRule;
+  ruleSelect.onchange=()=>result.replaceChildren();
+  run.onclick=()=>renderWhyWhatIf(day,playerSelect.value,ruleSelect.value);
   openModal("whyModal");
+}
+function renderWhyWhatIf(day,memberId,nextStatus){
+ const host=document.getElementById("whyWhatIfResult");
+ host.replaceChildren();
+ const createLine=(value,css="")=>{
+  const p=document.createElement("div");p.className="why-whatif-line"+(css?" "+css:"");
+  p.textContent=value;host.append(p);return p;
+ };
+ const pushHeading=value=>{
+  const h=document.createElement("h4");h.textContent=value;host.append(h);
+ };
+ const simulation=window.CWLPlanWhatIf?.previewCwlRuleChange?.({
+  members:state.members,archivedMembers:state.archivedMembers,
+  locks:confirmedCwlPlanningLocks(),slots:state.config.slots,days:state.config.days,
+  memberId,dayIndex:day,nextStatus,solver:window.CWLPlanningCore?.planCwl
+ });
+ if(!simulation?.ready){
+  createLine(simulation?.reason||"Simulation derzeit nicht verfügbar.","why-whatif-conflict");
+  for(const conflict of (simulation?.conflicts||[]).slice(0,5))createLine(conflict,"why-whatif-conflict");
+  return;
+ }
+ const names=new Map(allKnownMembers().map(m=>[m.id,displayMemberName(m)]));
+ const label=id=>names.get(id)||"Nicht mehr im Kader";
+ const focus=simulation.focus;
+ createLine(label(memberId)+": "+focus.before+" → "+focus.after+
+  " geplante Gesamteinsätze. "+(focus.after===focus.before?"Keine Änderung der Einsatzanzahl.":""));
+ if(simulation.fairnessBefore!==null&&simulation.fairnessAfter!==null)
+  createLine("Rotationsspanne (max. minus min. Einsätze): "+
+   simulation.fairnessBefore+" → "+simulation.fairnessAfter+". Das ist kein Leistungs- oder Siegeswert.");
+ if(!simulation.changed){
+  createLine("Die hypothetische Regel führt zu keiner Änderung der geplanten Aufstellungen.");
+ }else{
+  pushHeading("Änderungen an den Kriegstagen");
+  for(const d of simulation.changedDays){
+   const added=d.entering.map(label),removed=d.leaving.map(label);
+   createLine("Tag "+d.day+": rein "+(added.join(", ")||"–")+
+    " · raus "+(removed.join(", ")||"–"));
+  }
+ }
+ if(simulation.affected.length){
+  pushHeading("Geplante Einsätze anderer Betroffener");
+  for(const p of simulation.affected.filter(x=>x.id!==memberId).slice(0,9))
+   createLine(label(p.id)+": "+p.before+" → "+p.after);
+  const extra=simulation.affected.filter(x=>x.id!==memberId).length-9;
+  if(extra>0)createLine("… und "+extra+" weitere Spieler.");
+ }
+ if(simulation.previewNotices.length){
+  pushHeading("Hinweise des Planers");
+  for(const note of simulation.previewNotices.slice(0,4))createLine(note);
+ }
+ const foot=document.createElement("p");foot.className="statusline";
+ foot.textContent="Nur Simulation. Es wurde nichts geändert oder gespeichert. "+
+  "Für eine tatsächliche Regeländerung: Mitglieder → Spieler bearbeiten → Tagesregeln.";
+ host.append(foot);
 }
 function renderModalList(){const list=document.getElementById("modalList"),query=(document.getElementById("lineupSearch").value||"").trim().toLocaleLowerCase("de"),selectedArchived=state.archivedMembers,base=[...state.members,...selectedArchived.filter(a=>!state.members.some(m=>m.id===a.id))],candidates=base.filter(m=>m.name.trim()&&(!query||m.name.toLocaleLowerCase("de").includes(query)||(m.playerTag||"").toLocaleLowerCase("de").includes(query))).sort((a,b)=>Number(modalSelection.has(b.id))-Number(modalSelection.has(a.id))||a.name.localeCompare(b.name,"de"));list.innerHTML=candidates.map(m=>`<label class="pick"><input type="checkbox" data-id="${m.id}" ${modalSelection.has(m.id)?"checked":""}><span><b>${esc(displayMemberName(m))}${isDuplicateMember(m)&&!m.playerTag?` <span class="dup-inline">!</span>`:""}</b><br><small>${m.fixed?"Fixspieler · ":""}${state.members.some(x=>x.id===m.id)?(m.participating?"CWL dabei":"aktuell nicht dabei"):"nicht mehr im aktuellen Kader"}${m.townHall?` · RH${m.townHall}`:""} · ${esc(STRENGTH_SHORT[m.threeStar]||"3★ ?")}</small></span></label>`).join("")||'<div class="empty">Keine Spieler gefunden.</div>';list.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{cb.checked?modalSelection.add(cb.dataset.id):modalSelection.delete(cb.dataset.id);updateModalCount()});updateModalCount()}
 function updateModalCount(){const el=document.getElementById("modalCount"),save=document.getElementById("modalSave"),ok=modalSelection.size===state.config.slots;el.textContent=`${modalSelection.size}/${state.config.slots} Spieler gewählt`;el.style.color=ok?"var(--green)":"var(--red)";save.disabled=!ok}
@@ -6598,7 +6714,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.29.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.30.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6988,6 +7104,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.29.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.30.0"></script>
 </body>
 </html>

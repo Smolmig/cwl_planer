@@ -6,6 +6,20 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.30.0] - 2026-11-24
+
+### Neu
+- **Plan → Tag → ⓘ → Was wäre, wenn …?:** In einem bestehenden Kriegstag kann für einen beliebigen teilnehmenden Spieler eine hypothetische Tagesregel AUTO/MUSS/RAUS durchgerechnet werden. Die Vorschau berechnet den gesamten CWL-Plan mit dem **unveränderten offiziellen Fairness-Solver** neu.
+- **Klare Folgen:** Die Änderungen der Tagesaufstellungen (wer kommt hinzu / wer fällt heraus), Gesamteinsätze betroffener Spieler und die Rotationsspanne vor/nach der Regel werden übersichtlich gezeigt. Nur tatsächlich geänderte Tage erscheinen.
+- **Regeln bleiben hart:** Bestätigte Clash-Aufstellungen und gespeicherte Kriegstage werden nicht verändert; feste Einsatzziele, Fixspieler, Tagesregeln und Kapazitätsgrenzen werden unverändert geprüft. Konflikte werden angezeigt statt stillschweigend übergangen. Bereits gespielte Tage sind im Simulator nicht auswählbar.
+- **Read-only, für alle Rollen:** Es werden keine lokalen Profile oder Cloud-Daten gespeichert, keine Vorschläge eingereicht und keine Aufstellungen übernommen. Tatsächliche Änderungen passieren weiterhin bewusst unter Mitglieder → Tagesregeln mit den bestehenden Rollen- und Freigabe-Regeln.
+- **Hilfe und Smartphone:** Die Vorschau ist im bestehenden Erklärdialog eingebettet, mobil einspaltig und in der Hilfe erläutert.
+
+### Grenzen
+- Kein neuer automatischer Strategisch-/Wettkampf-Modus, keine durch Angriffsform ermittelten Siegwahrscheinlichkeiten und keine neue Gegnerbewertung. Vor solchen Änderungen bleiben Backtests und saubere Datenabdeckung erforderlich (Issue #44).
+- Cloud-/Offline-Format v9, Datenbank/RLS, Solver-Ergebnis ohne hypothetische Änderung, CWL-Archive und Backup-Verhalten unverändert.
+
+
 ## [1.29.0] - 2026-11-23
 
 ### Neu

@@ -1,5 +1,5 @@
 {
-  "version": "v1.29.0",
-  "released": "2026-11-23",
-  "summary": "Im CWL-Archiv werden geplante Einsätze und bestätigte Clash-Aufstellungen getrennt. Historische Sterne, 8-Sterne-Ziel und beim Archivieren gesicherte Ziele bleiben nachvollziehbar."
+  "version": "v1.30.0",
+  "released": "2026-11-24",
+  "summary": "Im CWL-Plan kannst du Tagesregeln für einzelne Spieler unverbindlich durchrechnen. Die Vorschau zeigt Änderungen an Einsätzen und Aufstellungen, ohne den gespeicherten Plan zu verändern."
 }
