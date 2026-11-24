@@ -4147,11 +4147,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.29.0</strong><span>Historische CWL-Einsätze nachvollziehen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.30.0</strong><span>Tagesregeln vorab durchrechnen</span></div>
       <ul>
-       <li><b>Plan und Realität:</b> Das CWL-Archiv trennt gespeicherte Planaufstellungen von bestätigten Clash-Aufstellungen.</li>
-       <li><b>Sterne &amp; 8★:</b> Nur vollständige beendete Kriege zählen als belegte Endergebnisse; Lücken bleiben unbekannt.</li>
-       <li><b>Neue Archive:</b> Einsatzziele und Fix-/Rotationsstatus bleiben zum Zeitpunkt der Archivierung erhalten.</li>
+       <li><b>Was-wäre-wenn:</b> Im Plan über ⓘ eine Tagesregel AUTO/MUSS/RAUS unverbindlich testen.</li>
+       <li><b>Folgen über alle Tage:</b> Spielerwechsel, Gesamteinsätze und Rotationsspanne vor/nach der Änderung sehen.</li>
+       <li><b>Ohne Risiko:</b> Gespielte Tage, Einsatzziele und Rollen bleiben geschützt; die Vorschau speichert nichts.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4400,6 +4400,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div><b>Verpasste CWL-Angriffe</b><p>Unter „Ränge prüfen“ gibt es jetzt eine eigene, zunächst eingeklappte Auswertung für bestätigte CWL-Fehlangriffe der letzten 90 Tage. Ein aktueller Ältester mit zwei aufeinanderfolgenden, vollständig belegten Fehlangriffen erhält den Hinweis „Degradierung prüfen“; eine in der App dokumentierte Entschuldigung wird berücksichtigt. Nicht bestätigte und importierte Kriege zählen ausdrücklich nicht. Ohne nachgewiesene vollständige normale CW-Angriffe und ohne letzten Login gibt es noch keine CW-Zwei-Angriffe- oder Kick-Regel. Hier kannst du nichts automatisch degradieren oder als schuldhaft markieren.</p></div>
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
+    <div><b>Was-wäre-wenn für CWL-Tage</b><p>Im Tab „Plan“ öffnest du über das Info-Symbol (ⓘ) eines noch nicht fixierten Kriegstags „Auswahl erklärt“. Unter „Was wäre, wenn …?“ kannst du für einen Teilnehmer testweise AUTO, MUSS oder RAUS setzen. Die Vorschau berechnet mit demselben fairen Planer alle Tage erneut und zeigt Wechsel, Gesamteinsätze und Regelkonflikte. Sie verändert <strong>weder deine Tagesregeln noch den Cloud-Plan oder die Aufstellung in Clash</strong>. Tatsächlich ändern kannst du die Regel nur unter „Mitglieder → Tagesregeln“. Es ist keine gegner- oder statistikorientierte Leistungsprognose.</p></div>
     <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
     <div id="cloudPortableHelp"><b>Vollständiges Cloud-Backup / Full Cloud backup</b>
      <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Die letzten fünf automatischen Sicherungen unter „Clan & Konto“ betreffen weiterhin nur den gemeinsamen CWL-Plan, nicht die komplette Angriffshistorie.</p>
@@ -4445,6 +4446,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Clanverwaltung: verpasste CWL-Angriffe</b><div>Unter Mehr → Clanverwaltung → Ränge prüfen kann der Clanführer belegte verpasste CWL-Angriffe der letzten 90 Tage in einem eigenen aufklappbaren Bereich sehen. Nur abgeschlossene CWL-Kriege mit vollständig bestätigter Aufstellung und Angriffserfassung aus dem eigenen Clan zählen. Als entschuldigt dokumentierte Fälle sind keine offenen Hinweise. Bei zwei zeitlich aufeinanderfolgenden vollständig erfassten CWL-Kriegen mit bestätigtem Fehlangriff kann für einen aktuellen Ältesten „Degradierung prüfen“ erscheinen. Das ist <b>keine automatische Degradierung</b> und nicht der Nachweis eines schuldhaften Verhaltens. Ein einzelner Fehlangriff wird nur zur Prüfung gezeigt. Historische Importlücken und unvollständige Kriege bleiben unbekannt. Für normale CWs fehlen noch sichere Zwei-Angriffs-Nachweise; die Clash-API kennt auch keinen letzten Login, deshalb kein „Kick nach 3 Tagen offline“.</div></div>
     <div class="help-item"><b>Owner-Entscheidungen bei CWL-Misses</b><div>Ist ein verpasster Angriff sowohl im abgeschlossenen Clash-Krieg als auch im vollständigen Statistik-Collector nachgewiesen, kann der <b>Clanführer</b> den Fall mit einer optionalen Notiz als <b>Entschuldigt</b>, <b>Später prüfen</b> oder <b>Pause prüfen</b> dokumentieren. Die Entscheidungen sind für berechtigte Mitglieder des gemeinsamen Clans sichtbar, chronologisch nachvollziehbar und nachträglich nicht löschbar. Die neueste Entscheidung wird direkt am Spieler angezeigt; ein neuer Beschluss ergänzt den Verlauf statt den alten zu überschreiben. Diese Funktion <b>pausiert den Spieler nicht automatisch</b> und verändert weder Fix-/MUSS-Regeln noch bereits fixierte Aufstellungen. Wenn der Collector noch keinen vollständigen Miss bestätigt hat, ist keine verbindliche Dokumentation möglich. Für eine echte Umbesetzung muss der Owner den Plan separat prüfen und bearbeiten.</div></div>
     <div class="help-item"><b>Eine bestätigte CWL-Tagespause übernehmen</b><div>Nach einem <b>belegten</b> verpassten CWL-Angriff kann der Clanführer zunächst „Pause prüfen“ dokumentieren. Für einen späteren Kriegstag, der sich nach einem frischen Clash-Abgleich noch <b>in der Vorbereitung</b> befindet (mindestens 30 Minuten bis Kampfbeginn), erscheint gegebenenfalls die Schaltfläche „Pause im Plan übernehmen“. Vor der verbindlichen Bestätigung prüft der Planer die exakten Einsatzziele, Fix-/MUSS-Regeln, vollständig besetzte Aufstellungen, unveränderbare Clash-Tage und den rechnerischen 8★-Bonus. Nur wenn keine neuen Konflikte entstehen, wird für <b>diesen einen Tag</b> die bisherige AUTO-Regel auf RAUS gesetzt, zusammen mit einem gemeinsamen Audit-Eintrag. Die Änderung ist kein Clash-Wechsel: <b>Die Aufstellung im Spiel muss weiterhin manuell angepasst werden.</b> In der Bestätigung siehst du außerdem die geänderten Gesamteinsätze pro Spieler sowie die Rotationsspanne vor/nach dem Solver-Lauf. Diese Spannweite ist eine Orientierung, keine Fairnessgarantie. Weitere Tage sind nicht automatisch pausiert und müssen jeweils separat nachgeprüft werden. Bei Datenlücken oder Konflikten wird die Übernahme blockiert; der normale manuelle Plan bleibt unverändert.</div></div>
+    <div class="help-item"><b>Tagesregel unverbindlich durchrechnen</b><div>Unter <b>Plan → Tag → ⓘ Auswahl erklären</b> gibt es für noch offene Kriegstage die ausklappbare Was-wäre-wenn-Vorschau. Wähle Spieler und eine hypothetische Tagesregel (AUTO / MUSS / RAUS). Der Planer prüft alle CWL-Tage, behält gesperrte Aufstellungen und konkrete Einsatzziele bei und zeigt veränderte Aufstellungen sowie Einsatzzahlen. Bei Widersprüchen erscheint ein Konflikt statt eines vermeintlich gültigen Vorschlags. <b>Es wird nichts gespeichert oder übernommen.</b> Echte Änderungen erfolgen wie bisher unter Mitglieder → Tagesregeln; im Cloud-Plan gelten weiterhin die Freigabe- und Rollenrechte. Es gibt noch keinen automatischen Strategiemodus und keine Siegwahrscheinlichkeiten.</div></div>
     <div class="help-item"><b>Fairness-Anzeige</b><div>Sie vergleicht die Anzahl der Einsätze von Rotationsspielern. Fixspieler und unterschiedliche Verfügbarkeiten können die Verteilung beeinflussen – die Anzeige ist eine Orientierung, keine Garantie.</div></div>
     <div class="help-item"><b>Gespielten Tag korrigieren</b><div>Wenn andere Spieler teilgenommen haben als geplant, kann die berechtigte Clanführung die gespeicherte Aufstellung korrigieren. Bereits bestätigte Tage bleiben geschützt; der Plan für kommende Tage wird neu berechnet.</div></div>
     <div class="help-item"><b>Neue CWL starten</b><div>Eine abgeschlossene oder begonnene CWL wird vorher im Archiv abgelegt. Die Mitglieder bleiben erhalten, die gespielten Tage und Tagesregeln beginnen neu.</div></div>
@@ -4783,15 +4785,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.29.0"></script>
-<script src="./clan-management-missed-core.js?v=1.29.0"></script>
-<script src="./clan-management-cw-core.js?v=1.29.0"></script>
-<script src="./clan-management-cw-view.js?v=1.29.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.29.0"></script>
-<script src="./cwl-planning-core.js?v=1.29.1"></script>
-<script src="./cwl-plan-whatif.js?v=1.29.1"></script>
+<script src="./clan-management-core.js?v=1.30.0"></script>
+<script src="./clan-management-missed-core.js?v=1.30.0"></script>
+<script src="./clan-management-cw-core.js?v=1.30.0"></script>
+<script src="./clan-management-cw-view.js?v=1.30.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.30.0"></script>
+<script src="./cwl-planning-core.js?v=1.30.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.30.0"></script>
 <script>
-const APP_VERSION="v1.29.0";
+const APP_VERSION="v1.30.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6712,7 +6714,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.29.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.30.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7102,6 +7104,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.29.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.30.0"></script>
 </body>
 </html>
