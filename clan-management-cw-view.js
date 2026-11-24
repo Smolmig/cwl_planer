@@ -15,14 +15,17 @@ function clear(){
  generation++;current=null;expanded.clear();
  const panel=get("clanManagementNormalPanel");
  if(panel)panel.open=false;
+ const heading=get("clanManagementNormalHeading");
+ if(heading)heading.textContent="Normale CW · Angriffe prüfen";
  get("clanManagementNormalList")?.replaceChildren();
 }
-function render(members,payload,sourceTag){
+function render(members,payload,sourceTag,onResult=null){
  generation++;
- current={members,payload,sourceTag};
+ current={members,payload,sourceTag,onResult};
  const list=get("clanManagementNormalList"),heading=get("clanManagementNormalHeading");
  if(!list||!heading)return;
  const result=root.CWLClanNormalMissedReview?.evaluate(members,payload,sourceTag)??null;
+ if(typeof onResult==="function")onResult(result);
  list.replaceChildren();
  if(!result){
   heading.textContent="Normale CW · Nachweise nicht verfügbar";
@@ -114,8 +117,8 @@ async function save(warKey,playerTag,choice,note,group){
      !cloud.active||!cloud.isOwner()||!group.isConnected||!current)return;
   current.payload.decisions.push(stored);
   expanded.add(playerTag);
-  const {members,payload,sourceTag}=current;
-  render(members,payload,sourceTag);
+  const {members,payload,sourceTag,onResult}=current;
+  render(members,payload,sourceTag,onResult);
   const target=[...get("clanManagementNormalList").querySelectorAll(".clan-management-person")]
    .find(row=>row.dataset.playerTag===playerTag);
   target?.querySelector("details > summary")?.focus({preventScroll:true});
