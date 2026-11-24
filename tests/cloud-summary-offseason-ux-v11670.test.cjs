@@ -55,7 +55,7 @@ test("Einsätze shows no old live bars after verified CWL end, yet remains avail
      assert.equal(state[key].empty,true,key+" archive link state visible: "+ctx);
      assert.equal(state[key].search,false,key+" old search must not be focusable: "+ctx);
      assert.match(state[key].text,/Aktuell keine CWL-Einsätze/);
-     assert.match(state[key].text,/CWL-Archiv ansehen/);
+     assert.match(state[key].text,/Letzte CWL im Archiv ansehen/);
     }
     for(const row of Object.values(state))assert.ok(row.pageOverflow<=3,ctx);
    }finally{await page.close()}
@@ -70,11 +70,15 @@ test("off-season archive button navigates to the real group and plan archives wi
  const dom=new JSDOM('<button id="summaryOpenArchive">CWL-Archiv ansehen</button>');
  try{
   const calls=[];
-  dom.window.CWLGroupArchive={open:()=>{calls.push("load-archive")}};
+  dom.window.CWLGroupArchive={openLatestDeployments:()=>{calls.push("latest-deployments")},open:()=>{calls.push("load-archive")}};
   new Function("document","window","showPlannerView",app.slice(start,end+2))(
    dom.window.document,dom.window,view=>calls.push("view:"+view));
   dom.window.document.getElementById("summaryOpenArchive").click();
-  assert.deepEqual(calls,["view:archive","load-archive"]);
+  assert.deepEqual(calls,["view:archive","latest-deployments"]);
+  calls.length=0;
+  delete dom.window.CWLGroupArchive.openLatestDeployments;
+  dom.window.document.getElementById("summaryOpenArchive").click();
+  assert.deepEqual(calls,["view:archive","load-archive"],"safe fallback for cached module");
   const live=read("cwl-live.mjs");
   assert.match(live,/const postseason=ctx\.active&&\(model\.mode==="postseason"\|\|transition\)/);
   assert.match(live,/const between=ctx\.active&&model\.mode==="idle"&&confirmedNoCwl/);
