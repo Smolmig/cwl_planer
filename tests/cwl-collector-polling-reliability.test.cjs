@@ -14,24 +14,25 @@ const normalize=value=>String(value||"").toUpperCase();
 const makeWar=(our=false,state="warEnded")=>({
  state,clan:{tag:our?own:"#2PYL"},opponent:{tag:"#QPYL"}
 });
-function harness(handler){
+async function harness(handler){
+ const {officialNewLeague}=await import("../supabase/functions/coc-stats-collector/collector-season-rollover.mjs");
  const calls=[];
  const env={
   Date,Set,Map,encodeURIComponent,MAX_TAGS:32,ERROR:{
    api:"clash_api_unavailable",invalid:"war_data_incomplete"
   },
   tag:normalize,validTag:v=>/^#[0289PYLQGRJCUV]{3,15}$/.test(v),
-  hasCapturedCwlRound:()=>false,
+  hasCapturedCwlRound:()=>false,officialNewLeague,
   buildWarSnapshot:(raw,clanTag,{warTag})=>raw.state==="preparation"?null:{
    war:{war_key:"cwl:"+warTag,war_type:"cwl",started_at:"2026-11-06T10:00:00Z"},attacks:[]
   },
   game:async (url,key)=>{calls.push(url);return handler(url,key)}
  };
  const run=vm.runInNewContext(diagnostic+scope+";retrieveGames",env);
- return {run:()=>run(own,"test-key",Date.now()+100000,new Set()),calls};
+ return {run:onLeague=>run(own,"test-key",Date.now()+100000,new Set(),onLeague),calls};
 }
 test("CWL polling stops after own match; unrelated games are not persisted",async()=>{
- const h=harness(async url=>{
+ const h=await harness(async url=>{
   if(url.includes("leaguegroup"))return {rounds:[{warTags:tags}]};
   if(url.includes("currentwar"))return null;
   if(url.endsWith(encodeURIComponent(tags[0])))return makeWar(false);
@@ -45,7 +46,7 @@ test("CWL polling stops after own match; unrelated games are not persisted",asyn
  assert.equal(h.calls.filter(x=>x.includes("/clanwarleagues/wars/")).length,2);
 });
 test("Unrelated inaccessible game does not cause collector failure after finding ours",async()=>{
- const h=harness(async url=>{
+ const h=await harness(async url=>{
   if(url.includes("leaguegroup"))return {rounds:[{warTags:tags}]};
   if(url.includes("currentwar"))return null;
   if(url.endsWith(encodeURIComponent(tags[0])))
@@ -58,7 +59,7 @@ test("Unrelated inaccessible game does not cause collector failure after finding
  assert.equal(data.notes.length,0,"Foreign failure is not a failed own round");
 });
 test("Unresolved own CWL round reports sanitized stage and upstream response class",async()=>{
- const h=harness(async url=>{
+ const h=await harness(async url=>{
   if(url.includes("leaguegroup"))return {rounds:[{warTags:tags}]};
   if(url.includes("currentwar"))return null;
   if(url.endsWith(encodeURIComponent(tags[0])))
@@ -71,7 +72,7 @@ test("Unresolved own CWL round reports sanitized stage and upstream response cla
  assert.equal(data.notes[0],"clash_api_unavailable:leaguewar:http_429");
 });
 test("Inaccessible current-war endpoint reports failure without dropping a valid league snapshot",async()=>{
- const h=harness(async url=>{
+ const h=await harness(async url=>{
   if(url.includes("leaguegroup"))return {rounds:[{warTags:[tags[0]]}]};
   if(url.includes("currentwar"))throw Error("clash_api_unavailable:timeout");
   return makeWar(true);
@@ -100,4 +101,22 @@ test("Upstream 429 retries and produces classified failure without exposing resp
  const run=vm.runInNewContext(code+";game",env);
  await assert.rejects(run("/clans/hidden/currentwar","secret"),/clash_api_unavailable:http_429/);
  assert.equal(count,2);
+});
+
+test("An official current group is handed to the collector before individual war details",async()=>{
+ const groupTags=[own,"#8PYL","#QPYL","#2PYL","#UPYL","#GPYL"];
+ const h=await harness(async url=>{
+  if(url.includes("leaguegroup"))return {season:new Date().toISOString().slice(0,7),state:"preparation",clans:groupTags.map(tag=>({tag})),rounds:Array.from({length:5},(_,i)=>({warTags:i===0?[tags[0]]:[]}))};
+  if(url.includes("currentwar"))return null;
+  return makeWar(true);
+ });
+ let calls=0;
+ const data=await h.run(proof=>{
+  calls++;
+  assert.equal(proof.warCount,5);
+  assert.equal(proof.clanTag,own);
+  assert.equal(h.calls.some(x=>x.includes("/clanwarleagues/wars/")),false);
+ });
+ assert.equal(calls,1);
+ assert.equal(data.snaps.length,1);
 });

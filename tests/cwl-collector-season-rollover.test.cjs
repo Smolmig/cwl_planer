@@ -53,7 +53,7 @@ test("Existing archives are immutable; incompatible old plan, roster or source b
  const proof=officialNewLeague(group(),tags[0],now),p=profile();
  const a=buildSeasonRollover(p,proof,now).profile.archives[0];
  p.archives.push(a);
- assert.deepEqual(buildSeasonRollover(p,proof,now).profile.archives,[a]);
+ assert.equal(JSON.stringify(buildSeasonRollover(p,proof,now).profile.archives),JSON.stringify([a]));
  const changed=profile();changed.archives.push({...a,playedCount:5});
  assert.equal(buildSeasonRollover(changed,proof,now).reason,"prior_archive_conflict");
  const bad=profile();bad.locks[5].warTag="#G9QL";

@@ -1,5 +1,5 @@
 // Secure scheduled collection for every explicitly linked Clash clan.
-// Runs without any browser sessions; writes only clan-scoped stat tables.
+// Runs without browser sessions; clan-scoped stats and service-only season rollover.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
 import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./collector-cron-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
