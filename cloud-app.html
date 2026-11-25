@@ -6989,8 +6989,8 @@ function goldpassContext(){
  return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.()}:null;
 }
 window.CWLGoldpassPreview={accessChanged(context){
- goldpassView?.accessChanged(context);
- if(!context&&document.getElementById("view-goldpass").classList.contains("active"))showPlannerView("more");
+ const same=goldpassView?goldpassView.accessChanged(context):!!context;
+ if(!same&&document.getElementById("view-goldpass").classList.contains("active"))showPlannerView("more");
 }};
 async function openGoldpassPreview(){
  const context=goldpassContext();if(!context?.clanTag)return;
