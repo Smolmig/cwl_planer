@@ -34,7 +34,8 @@ begin
   'clanTags',jsonb_build_array('#2PYL','#8PYL','#G9QL','#P9QL','#Q9QL','#R9QL'));
  nextp:=oldp||jsonb_build_object('cwlLive',jsonb_build_object('season',newseason,'clanTag','#2PYL','rounds','[]'::jsonb,'warCount',5),
   'cwlLiveIgnoredSeason',oldseason,'config',jsonb_build_object('days',5,'slots',15),
-  'archives',jsonb_build_array(jsonb_build_object('sourceSeason',oldseason,'cwlLive',oldp->'cwlLive','playedCount',0,'complete',false)));
+  'dayGoals',(select jsonb_agg('{"townHall":{},"strength":{"high":0,"medium":0,"low":0,"verylow":0}}'::jsonb) from generate_series(1,7)),
+  'archives',jsonb_build_array(jsonb_build_object('sourceSeason',oldseason,'cwlLive',oldp->'cwlLive','playedCount',0,'complete',false,'days',7,'slots',15,'lineups','[]'::jsonb)));
  if public.cwl_collector_rollover(cid,rev+1,oldseason,proof,nextp) then raise exception 'stale revision accepted';end if;
  if public.cwl_collector_rollover(cid,rev,oldseason,proof||'{"clanTag":"#8PYL"}'::jsonb,nextp) then raise exception 'wrong clan accepted';end if;
  if public.cwl_collector_rollover(cid,rev,oldseason,proof||'{"state":"ended"}'::jsonb,nextp) then raise exception 'old ended group accepted';end if;
