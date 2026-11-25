@@ -60,7 +60,8 @@ with bounds as (
 ), roster as (
  select t.player_tag as tag from public.cwl_clan_member_tenure t,bounds b
  where t.clan_id=p_clan and t.source_clash_tag=p_tag
- and t.first_observed_at<b.hi and t.last_present_at>=b.lo
+ and ((t.first_observed_at<b.hi and t.last_present_at>=b.lo)
+   or (p_end<p_start and t.is_present))
  union select tag from attacks union select tag from donations
 ), names as (
  select distinct on (m->>'playerTag') m->>'playerTag' as tag,left(m->>'name',80) as name

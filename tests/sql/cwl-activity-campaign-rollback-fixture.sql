@@ -43,6 +43,14 @@ begin
  if r->'official' is distinct from o->'official' then raise exception 'winner changed';end if;
  r:=public.cwl_activity_manage(cid,'create',id2,p_title=>'Scheduled fixture',p_start=>today,p_end=>today+6,p_rules=>'[{"metric":"donations","minimum":700}]',p_decisions=>'{}');
  if r->>'ready'<>'false' then raise exception 'early draw permitted';end if;
+ -- Future campaigns expose the currently observed roster for registration,
+ -- but do not attribute any past donations or attacks to that future window.
+ r:=public.cwl_activity_manage(cid,'create','f1390000-0000-4000-8000-000000000006',p_title=>'Future fixture',p_start=>today+1,p_end=>today+14,p_rules=>'[{"metric":"donations","minimum":700}]',p_decisions=>'{}');
+ if jsonb_array_length(r->'rows')<>2 or r->>'qualified'<>'0' or r->>'ready'<>'false'
+ then raise exception 'future roster or progress invalid %',r;end if;
+ if exists(select 1 from jsonb_array_elements(r->'rows') p where p->'evidence'->'donations'->>'value'<>'0')
+ then raise exception 'future campaign attributed past donations';end if;
+
  blocked:=false;
  begin perform public.cwl_activity_manage(cid,'save',id2,1,'Scheduled fixture',today,today+6,'[{"metric":"donations","minimum":1}]','{}');exception when others then blocked:=true;end;
  if not blocked then raise exception 'started goals editable';end if;
