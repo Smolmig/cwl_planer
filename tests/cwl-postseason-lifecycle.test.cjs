@@ -130,3 +130,27 @@ test("Original Cloud remains independently editable only through owner-gated int
  assert.match(cloud,/getCwlLifecycle:\(\)=>live\.getLifecycle\(\)/);
  assert.doesNotMatch(live,/automatically\s+promote|automatically\s+kick/i);
 });
+
+test("CW preparation stays below the latest CWL until an earlier post-CWL war is evidenced",async()=>{
+ const {assessCwlLifecycle,normalWarPreparationWindow,hasPriorNormalWar,normalWarAboveRecap}=await load();
+ const lifecycle=assessCwlLifecycle({profile:profile(),clanTag:"#2PYL",confirmedNoCwl:true,now});
+ const war={state:"preparation",startTime:"20261111T220000.000Z",clan:{tag:"#2PYL"}};
+ const window=normalWarPreparationWindow(lifecycle,war,"#2PYL");
+ assert.ok(window);
+ const prior={source:"api",war_type:"normal",source_clash_tag:"#2PYL",war_key:"normal:old",started_at:"2026-11-10T12:00:00Z"};
+ assert.equal(hasPriorNormalWar(window,[]),false);
+ assert.equal(normalWarAboveRecap(war,hasPriorNormalWar(window,[])),false);
+ assert.equal(normalWarAboveRecap({...war,state:"inWar"}),true);
+ assert.equal(normalWarAboveRecap({...war,state:"warEnded"}),true);
+ assert.equal(hasPriorNormalWar(window,[prior]),true);
+ assert.equal(normalWarAboveRecap(war,hasPriorNormalWar(window,[prior])),true);
+ for(const wrong of [
+  {...prior,source:"import"},{...prior,source_clash_tag:"#8PYL"},
+  {...prior,war_type:"cwl"},{...prior,started_at:"2026-11-08T22:00:00Z"},
+  {...prior,started_at:window.before},{...prior,war_key:"cwl:old"}
+ ]) assert.equal(hasPriorNormalWar(window,[wrong]),false);
+ assert.equal(normalWarPreparationWindow({...lifecycle,mode:"planning"},war,"#2PYL"),null);
+ assert.equal(normalWarPreparationWindow(lifecycle,war,"#8PYL"),null);
+ const incomplete={...lifecycle,snapshot:{...lifecycle.snapshot,rounds:lifecycle.snapshot.rounds.slice(0,6)}};
+ assert.equal(normalWarPreparationWindow(incomplete,war,"#2PYL"),null);
+});
