@@ -2544,7 +2544,16 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .clan-management-filter button{min-height:44px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);font-weight:700}
 .clan-management-filter button[aria-pressed="true"]{border-color:var(--primary);background:var(--bluebg)}
 .clan-management-filter button:focus-visible,.clan-management-evidence>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-.clan-management-empty{padding:18px 0 24px;color:var(--muted);font-size:13px;line-height:1.6}
+.clan-management-empty{padding:12px 0;color:var(--muted);font-size:13px;line-height:1.6}
+.clan-management-progress{border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 16px;min-width:0}
+.clan-management-progress h3{margin:0 0 4px;font-size:14px;line-height:1.4;color:var(--text)}
+.clan-management-progress p{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+.clan-management-progress dl{margin:8px 0 0}
+.clan-management-progress dl>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:baseline}
+.clan-management-progress dt{font-size:12px;color:var(--text);overflow-wrap:anywhere}
+.clan-management-progress dd{margin:0;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--text)}
+.clan-management-criteria>summary{flex-wrap:wrap}
+.clan-management-criteria>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 .clan-management-evidence{margin-top:5px;min-width:0}
 .clan-management-evidence>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;color:var(--text);font-size:12px;font-weight:720;list-style:none}
 .clan-management-evidence>summary::-webkit-details-marker{display:none}
@@ -6350,8 +6359,8 @@ function renderClanManagementActionOverview(){
   row.setAttribute("role","listitem");
   const name=document.createElement("strong");name.textContent=person.name;
   const status=document.createElement("div");status.className="clan-management-person-status";
-  status.textContent=person.conflicting?"Mehrere Hinweise gemeinsam prüfen":
-   person.severe?"Degradierung prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":"Beförderung / Rückkehr prüfen";
+  status.textContent=person.severe?(person.conflicting?"Degradierung und Ranghinweis gemeinsam prüfen":"Degradierung prüfen"):
+   person.conflicting?"Mehrere Hinweise gemeinsam prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":"Beförderung / Rückkehr prüfen";
   const missed=document.createElement("small");
   if(person.sources.some(x=>x!=="rank"))missed.textContent=person.openMisses>0?
    (person.missCountComplete?"":"Mindestens ")+person.openMisses+" offene belegte Fehlangriffe"+
@@ -6435,10 +6444,44 @@ function managementRowSummary(person,openCases){
  if(cases.length&&cases.every(x=>x.state==="acknowledged"||x.state==="exception"))
   return ["Bereits geprüft","Ein Hinweis wurde bereits quittiert oder ausgeblendet"];
  if(person.rank==="unknown")return ["Rang unklar","Der aktuelle Clash-Rang ist nicht bestätigt"];
+ const q=person.performanceQualification;
+ if(q&&person.promotionStatus==="Nachweise offen"){
+  const missing=[];
+  if(!q.timeOK)missing.push("Clanzeit");
+  if(!q.countOK)missing.push("Angriffsstichprobe");
+  else if(!q.quoteOK)missing.push("3★-Quote");
+  if(missing.length)return ["Kriterien noch nicht erreicht",missing.join(" · ")];
+ }
  if(["Nachweise offen","Daten prüfen"].includes(person.promotionStatus))
-  return [person.promotionStatus,"Für eine Empfehlung fehlen bestätigte Voraussetzungen"];
+  return ["Nachweise offen","Aktuelle Clanzeit oder Angriffsdaten nicht bestätigt"];
  if(person.rank==="elder")return ["Keine Empfehlung","Aktuell als Ältester im Clan geführt"];
  return ["Keine Empfehlung","Derzeit keine belegte Beförderungsempfehlung"];
+}
+function renderClanManagementProgress(progress){
+ const info=document.createElement("div");info.className="clan-management-progress";
+ info.setAttribute("role","listitem");
+ const heading=document.createElement("h3");heading.textContent="Leistungsbeförderung · Kriterien";
+ const sample=document.createElement("p");
+ sample.textContent=progress.known+" von "+progress.candidates+" Mitgliedern auswertbar · Angriffe der letzten "+progress.lookback+" Tage";
+ const metrics=document.createElement("dl");
+ for(const [label,value] of [
+  ["Mindestens "+progress.minDays+" Clantage",progress.timeOK],
+  ["Mindestens "+progress.minAttacks+" API-Angriffe",progress.attackCountOK],
+  ["Angriffszahl und "+progress.minQuote+" % 3★-Quote",progress.attackAndQuoteOK],
+  ["Alle Leistungskriterien erfüllt",progress.allOK]
+ ]){
+  const row=document.createElement("div"),term=document.createElement("dt"),count=document.createElement("dd");
+  term.textContent=label;
+  count.textContent=progress.known?value+" / "+progress.known:"–";
+  row.append(term,count);metrics.appendChild(row);
+ }
+ const note=document.createElement("p");
+ const days=progress.maxSeconds===null?null:Math.floor(progress.maxSeconds/864)/100;
+ note.textContent=(days===null?"":"Längste belegte Clanzeit der auswertbaren Mitglieder: "+
+  days.toLocaleString("de-AT",{maximumFractionDigits:2})+" Tage. ")+
+  (progress.unknown?"Bei "+progress.unknown+" Mitgliedern fehlen aktuelle Nachweise. ":"")+
+  "Treue und Rückkehr werden getrennt geprüft. Bereits geprüfte oder ausgeblendete Vorschläge erscheinen nicht erneut.";
+ info.append(heading,sample,metrics,note);return info;
 }
 function renderClanManagementRows(preserveViewport=true){
  const list=document.getElementById("clanManagementList");
@@ -6470,23 +6513,13 @@ function renderClanManagementRows(preserveViewport=true){
   const empty=document.createElement("p");
   empty.className="clan-management-empty";empty.setAttribute("role","listitem");
   empty.textContent=clanManagementFilter==="open"?
-   "Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen.":
+   (!clanManagementReviewsReadable?"Prüfentscheidungen nicht verfügbar. Vorschlagsstatus derzeit nicht bestätigt.":
+   "Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen."):
    "Keine Mitglieder oder Ältesten für diese Prüfung vorhanden. Vize und Clanführer sind ausgenommen.";
   list.appendChild(empty);
   const progress=clanManagementLastPreview.performanceProgress;
-  if(clanManagementFilter==="open"&&progress?.candidates>0){
-   const info=document.createElement("p");info.className="clan-management-empty";
-   info.textContent="Leistungsbeförderung: "+progress.known+" von "+progress.candidates+
-    " Mitgliedern auswertbar. "+progress.timeOK+" erfüllen die "+progress.minDays+
-    " Clantage, "+progress.attackCountOK+" die "+progress.minAttacks+
-    " API-Angriffe und "+progress.attackAndQuoteOK+" zusätzlich die "+progress.minQuote+
-    " % 3★-Quote (letzte "+progress.lookback+" Tage)."+
-    (progress.maxSeconds===null?"":" Längste belegte Clanzeit unter den auswertbaren Mitgliedern: "+
-     (progress.maxSeconds/86400).toLocaleString("de-AT",{maximumFractionDigits:2})+" Tage.")+
-    (progress.unknown?" Für "+progress.unknown+" fehlen aktuelle Nachweise.":"")+
-    " Bereits geprüfte Vorschläge werden hier nicht erneut angezeigt.";
-   list.appendChild(info);
-  }
+  if(clanManagementFilter==="open"&&progress?.candidates>0)
+   list.appendChild(renderClanManagementProgress(progress));
   return;
  }
  for(const {person,openCases} of filtered){
