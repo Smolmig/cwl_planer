@@ -1,5 +1,5 @@
 {
-  "version": "v1.31.2",
+  "version": "v1.32.0",
   "released": "2026-11-25",
-  "summary": "CWL-Wechsel: vorige Saison schützen und ab dem zweiten CW die Vorbereitung oben anzeigen."
+  "summary": "CWL: Goldpass-Vorschau mit einstellbaren Losregeln und automatischer serverseitiger Saisonwechsel."
 }

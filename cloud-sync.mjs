@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.31.2";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.31.2";
-import { createCwlLive } from "./cwl-live.mjs?v=1.31.2";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.31.2";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.31.2";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.31.2";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.31.2";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.31.2";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.32.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.32.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.32.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.32.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.32.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.32.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.32.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.32.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -386,6 +386,7 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  // Read-only management preview. Unlike getRoster()/applyRoster(), this must
  // NEVER mutate the current member profile, call ensureSaved or save a snapshot.
  async fetchManagementRoster(){
@@ -637,6 +638,9 @@ const cloud={
   const managementEntry=document.querySelector('[data-more-action="management"]');
   if(managementEntry)managementEntry.hidden=!managementAllowed;
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
+  const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
+  if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
+  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag}:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
