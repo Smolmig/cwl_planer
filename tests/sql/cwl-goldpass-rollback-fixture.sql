@@ -48,6 +48,13 @@ begin
   update public.cwl_goldpass_raffles set rules='{}' where clan_id=cid;
   raise exception 'direct update allowed';
  exception when insufficient_privilege then null;end;
+ -- Draft rules may exist before the first war; no draw from missing evidence.
+ r:=public.cwl_goldpass_manage(cid,'2026-12','save',0,rule,'{}',true);
+ if r->'evidence'->>'complete'<>'false' then raise exception 'missing group declared complete';end if;
+ begin
+  perform public.cwl_goldpass_manage(cid,'2026-12','draw',1,p_expected_witness=>r->>'witness');
+  raise exception 'incomplete draw accepted';
+ exception when invalid_parameter_value then null;end;
  result:=public.cwl_goldpass_manage(cid,'2026-11','draw',1,p_expected_witness=>s->>'witness');
  if result->'official'->>'winnerTag'<>'#G9QL' or result->>'revision'<>'2' then raise exception 'unexpected draw';end if;
  r:=public.cwl_goldpass_manage(cid,'2026-11','draw',1,p_expected_witness=>s->>'witness');
@@ -65,5 +72,20 @@ do $$begin
   raise exception 'outsider rpc accepted';
  exception when insufficient_privilege then null;end;
 end$$;
+reset role;
+-- A later official archive correction does not change an already drawn result.
+update public.cwl_group_archives set group_json=jsonb_set(group_json,'{rounds,0,matches,0,clan,attacks}','1')
+ where clan_id='f1380000-0000-4000-8000-000000000002' and season='2026-11';
+do $begin
+ if private.cwl_goldpass_evidence('f1380000-0000-4000-8000-000000000002','2026-11','#2PYL')->>'complete'<>'false'
+ then raise exception 'group and lineup mismatch accepted';end if;
+end$;
+set local role authenticated;
+select set_config('request.jwt.claims','{"role":"authenticated","sub":"f1380000-0000-4000-8000-000000000001"}',true);
+do $declare r jsonb;begin
+ r:=public.cwl_goldpass_manage('f1380000-0000-4000-8000-000000000002','2026-11','read');
+ if r->'official'->>'winnerTag'<>'#G9QL' or r->'official'->'evidence'->>'complete'<>'true'
+ then raise exception 'stored result changed with new evidence';end if;
+end$;
 reset role;
 select 'goldpass fixture passed' result;
