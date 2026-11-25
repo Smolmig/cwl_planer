@@ -1,3 +1,4 @@
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1";
 import {DEFAULT_RAFFLE_RULES,collectRaffleEvidence,rafflePreview} from "./cwl-goldpass-core.mjs?v=1.33.0";
 const pct=new Intl.NumberFormat("de-AT",{style:"percent",maximumFractionDigits:2});
 const month=new Intl.DateTimeFormat("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
@@ -26,11 +27,11 @@ export function raffleSeasons(profile,tag){
 }
 export function createGoldpassPreview({root,getProfile,getContext,api=null,listSeasons=null,confirmDraw=async()=>false}){
  let scope=null,season="",rules={...DEFAULT_RAFFLE_RULES},eligibility=Object.create(null),seasons=[];
- let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="";
+ let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="",animateNextDraw=false;
  const allowed=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const scopeOf=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
  const matches=(token,target,context)=>token===serial&&season===target&&scope===scopeOf(context)&&scope===scopeOf(allowed());
- const resetDraft=()=>{rules={...DEFAULT_RAFFLE_RULES};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
+ const resetDraft=()=>{animateNextDraw=false;rules={...DEFAULT_RAFFLE_RULES};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
  const reset=()=>{serial++;busy=false;season="";serverSeasons=[];seasons=[];resetDraft();root.replaceChildren()};
  function rebuildSeasons(){
   const c=allowed();if(!c)return;
@@ -89,28 +90,29 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
    else request.expectedWitness=server.witness;
    const result=await api(request);
    if(!matches(token,target,c))return;
-   adopt(result);message=action==="draw"?"Offizielles Ergebnis gespeichert.":"Regeln gespeichert.";
+   adopt(result);animateNextDraw=action==="draw"&&!!result.official;message=action==="draw"?"Offizielles Ergebnis gespeichert.":"Regeln gespeichert.";
   }catch(error){if(matches(token,target,c)){message=failure(error);server=null}}
   finally{if(matches(token,target,c)){busy=false;render()}}
  }
  function refresh(){const c=allowed();if(!c||scope!==scopeOf(c)){reset();return}rebuildSeasons();render()}
  function renderOfficial(result){
-  const o=result.official,header=el("div","","goldpass-result");
-  header.append(el("p","OFFIZIELLES ERGEBNIS","more-eyebrow"),el("h3",o.winnerName||o.winnerTag),
-   el("p",o.winnerTag+" · "+new Date(o.drawnAt).toLocaleString("de-AT"),"statusline"),
-   el("p","Die Ziehung ist gespeichert. Regeln und Teilnehmerstand bleiben unverändert.","statusline"));
-  root.append(header,el("h3","Angewandte Regeln"),el("p",formulaText(o.rules),"statusline"),
+  const o=result.official,animate=animateNextDraw,details=el("div");animateNextDraw=false;
+  root.append(renderDrawReveal({winnerName:o.winnerName,winnerTag:o.winnerTag,animate,weighted:true,
+   subtitle:new Date(o.drawnAt).toLocaleString("de-AT")+" · Einmalig gespeichert",
+   onReveal:()=>{details.hidden=false}}),details);
+  details.hidden=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  details.append(el("h3","Angewandte Regeln"),el("p",formulaText(o.rules),"statusline"),
     el("p","Mindestleistung: "+({none:"keine",triples:"Dreier",stars:"Gesamtsterne",attacks:"Angriffe"}[o.rules.minimumType])+
     (o.rules.minimumType==="none"?"":" · "+o.rules.minimum)+(o.rules.requireDiscord?" · Discord bestätigt erforderlich":""),"statusline"),
     el("h3","Teilnehmer zum Ziehungszeitpunkt"),el("p",o.preview.total+" Lose · "+o.preview.rows.filter(r=>r.tickets>0).length+" zugelassen","statusline"));
   for(const r of o.preview.rows){
    const wrap=el("article","","goldpass-player"),head=el("div","","goldpass-player-head");
    head.append(el("strong",r.name+(r.tag===o.winnerTag?" · Gewinner": "")),el("strong",pct.format(Number(r.probability)),"goldpass-chance"));
-   wrap.append(head,el("small",r.tag,"statusline"),el("p",metricsText(r),"statusline"),el("p",reasons[r.reason]||"Teilnahmeberechtigt","statusline"));root.append(wrap);
+   wrap.append(head,el("small",r.tag,"statusline"),el("p",metricsText(r),"statusline"),el("p",reasons[r.reason]||"Teilnahmeberechtigt","statusline"));details.append(wrap);
   }
   const audit=el("details"),summary=el("summary","Ziehungsnachweis");
   audit.append(summary,el("p","Regelversion "+o.version+" · Losindex "+(Number(o.ticket)+1)+" von "+o.preview.total+" · "+o.evidence.ended+" bestätigte Runden","statusline"),
-   el("p","Prüfsumme: "+o.witness,"goldpass-witness statusline"));root.append(audit);
+   el("p","Prüfsumme: "+o.witness,"goldpass-witness statusline"));details.append(audit);
  }
  function render(){
   root.replaceChildren();
