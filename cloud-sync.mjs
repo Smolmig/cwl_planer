@@ -386,6 +386,7 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  // Read-only management preview. Unlike getRoster()/applyRoster(), this must
  // NEVER mutate the current member profile, call ensureSaved or save a snapshot.
  async fetchManagementRoster(){
@@ -637,6 +638,9 @@ const cloud={
   const managementEntry=document.querySelector('[data-more-action="management"]');
   if(managementEntry)managementEntry.hidden=!managementAllowed;
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
+  const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
+  if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
+  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag}:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
