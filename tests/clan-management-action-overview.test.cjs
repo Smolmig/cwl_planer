@@ -116,3 +116,24 @@ test("qualification progress counts unknown separately and does not change recom
  const invalid=core.evaluatePromotion(person,entry,{attack_count:2,three_star_count:3},rules,now);
  assert.equal(invalid.qualification,undefined);
 });
+
+test("polished qualification summary exposes counts, unknowns and individual blockers without changing rules",()=>{
+ const app=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
+ const start=app.indexOf("function managementRowSummary("),end=app.indexOf("function renderClanManagementRows(",start);
+ assert.ok(start>=0&&end>start);
+ const dom=new JSDOM("<main></main>");
+ try{
+  const {renderClanManagementProgress,managementRowSummary}=new Function("document",app.slice(start,end)+";return {renderClanManagementProgress,managementRowSummary};")(dom.window.document);
+  const progress={candidates:4,known:3,unknown:1,timeOK:2,attackCountOK:1,attackAndQuoteOK:1,allOK:0,maxSeconds:13.6*86400,minDays:14,minAttacks:10,minQuote:80,lookback:14};
+  const card=renderClanManagementProgress(progress);
+  assert.deepEqual([...card.querySelectorAll("dd")].map(x=>x.textContent),["2 / 3","1 / 3","1 / 3","0 / 3"]);
+  assert.match(card.textContent,/3 von 4 Mitgliedern auswertbar/);
+  assert.match(card.textContent,/Bei 1 Mitgliedern fehlen/);
+  assert.match(card.textContent,/13,6 Tage/);
+  const unknown=renderClanManagementProgress({...progress,known:0,unknown:4,maxSeconds:null});
+  assert.deepEqual([...unknown.querySelectorAll("dd")].map(x=>x.textContent),["–","–","–","–"]);
+  const person={rank:"member",promotionStatus:"Nachweise offen",performanceQualification:{timeOK:false,countOK:false,quoteOK:false}};
+  assert.deepEqual(managementRowSummary(person,[]),["Kriterien noch nicht erreicht","Clanzeit · Angriffsstichprobe"]);
+  assert.deepEqual(managementRowSummary({...person,performanceQualification:null},[]),["Nachweise offen","Aktuelle Clanzeit oder Angriffsdaten nicht bestätigt"]);
+ }finally{dom.window.close()}
+});
