@@ -1,5 +1,5 @@
 {
-  "version": "v1.32.0",
+  "version": "v1.33.0",
   "released": "2026-11-25",
-  "summary": "CWL: Goldpass-Vorschau mit einstellbaren Losregeln und automatischer serverseitiger Saisonwechsel."
+  "summary": "Goldpass: Regeln je Saison speichern und Gewinner einmalig aus bestätigten CWL-Ergebnissen ziehen."
 }
