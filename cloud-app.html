@@ -2615,6 +2615,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 #view-goldpass .goldpass-chance{color:var(--primary);font-variant-numeric:tabular-nums;white-space:nowrap}
 #view-goldpass .goldpass-options{display:flex;gap:8px 14px;flex-wrap:wrap}
 #view-goldpass .goldpass-options .goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:6px}
+#view-goldpass .goldpass-actions{border-top:1px solid var(--line);padding:16px 0 0;margin-top:12px}
+#view-goldpass .goldpass-actions>.goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:10px;font-size:13px}
+#view-goldpass .goldpass-actions .actions{gap:8px;flex-wrap:wrap}
+#view-goldpass .goldpass-result{border:1px solid var(--primary);border-radius:12px;padding:14px;margin:12px 0 18px;overflow-wrap:anywhere}
+#view-goldpass .goldpass-result h3{margin:5px 0;color:var(--primary);font-size:22px}
+#view-goldpass .goldpass-witness{overflow-wrap:anywhere}
 /* Optional install guidance inside More, never a recurring overlay. */
 .install-suggestion{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:17px;padding:13px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .install-suggestion[hidden]{display:none!important}
@@ -4047,7 +4053,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Teilnahme und Gewinnchancen unverbindlich berechnen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Regeln speichern, Chancen prüfen und offiziell ziehen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
@@ -4127,11 +4133,11 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-goldpass" class="view more-subview" aria-labelledby="goldpassTitle">
  <div class="more-detail-header">
   <div><span class="more-eyebrow">CWL · OPTIONALES TOOL</span><h2 id="goldpassTitle">Goldpass-Verlosung</h2>
-  <p class="statusline">Unverbindliche Vorschau aus gespeicherten CWL-Angriffen. Regeln werden nicht gespeichert; die offizielle Ziehung ist noch nicht verfügbar.</p></div>
+  <p class="statusline">Regeln je CWL-Saison einstellen, Gewinnchancen prüfen und nach bestätigten Ergebnissen einmalig offiziell ziehen.</p></div>
   <button type="button" class="btn small more-detail-back" id="goldpassBack">Zurück zu Mehr</button>
  </div>
  <div id="goldpassContent" class="card"></div>
- <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Grundlose ermöglichen auch schwächeren Teilnehmern eine Chance. Bonuslose werden addiert; die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern.</p></details>
+ <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Grundlose ermöglichen auch schwächeren Teilnehmern eine Chance. Bonuslose werden addiert; die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern. Der Server bestätigt die vollständigen Rundenergebnisse und speichert die Regeln je Saison. Erst nach ausdrücklicher Bestätigung wird ein Gewinner zufällig und entsprechend den Losgewichten gezogen. Das offizielle Ergebnis bleibt unverändert. Kein automatischer Kauf oder Versand eines Goldpasses.</p></details>
 </section>
 <section id="view-archive" class="view more-subview" aria-labelledby="cwlArchiveTitle">
  <div class="card archive-page">
@@ -7002,7 +7008,13 @@ async function openGoldpassPreview(){
    const module=await import("./cwl-goldpass-view.mjs?v=1.32.0");
    const now=goldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||!document.getElementById("view-goldpass").classList.contains("active"))return;
-   goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext});
+   goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
+    api:request=>window.CWLCloud.goldpassRequest(request),
+    listSeasons:context=>window.CWLCloud.goldpassSeasons(context),
+    confirmDraw:({season,total,participants})=>confirmInline(
+     season+" · "+participants+" zugelassene Teilnehmer · "+total+" Lose. Der Server speichert den Gewinner und die Regeln dauerhaft. Eine zweite Ziehung dieser Saison ist nicht möglich.",
+     {title:"Goldpass offiziell verlosen?",confirmText:"Jetzt offiziell ziehen",danger:true})
+   });
   }
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
