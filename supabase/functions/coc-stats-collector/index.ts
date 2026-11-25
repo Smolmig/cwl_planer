@@ -135,7 +135,7 @@ async function loadFullyCapturedLeagueKeys(settings,clanIds){
   }
   return common||new Set();
 }
-async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set()){
+async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),onLeague=null){
   const snaps=[],seen=new Set(),notes=[];
   // /currentwar is ephemeral. Keep non-final snapshots until the API
   // actually confirms the war ended; do not invent a completed war.
@@ -150,6 +150,8 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set())
   try{group=await game("/clans/"+encodeURIComponent(gameTag)+
     "/currentwar/leaguegroup",key)}
   catch(e){notes.push(apiDiagnostic(e,"leaguegroup"))}
+  const league=officialNewLeague(group,gameTag);
+  if(league&&onLeague)await onLeague(league);
   if(group?.rounds&&Array.isArray(group.rounds)){
     const requested=new Set();
     let calls=0;
@@ -192,7 +194,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set())
   const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
     .map(x=>x.war.started_at));
   return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
-    !leagueStarts.has(x.war.started_at)),notes,league:officialNewLeague(group,gameTag)};
+    !leagueStarts.has(x.war.started_at)),notes};
 }
 async function rollSeasonForAppClan(settings,clanId,league){
  if(!league)return false;
@@ -318,15 +320,17 @@ export default {
       }
       let scan;
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
-      try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
-      catch{scan={snaps:[],notes:[ERROR.api]}}
-      for(const id of clanIds){
-        // No season change on a failed/unknown official group. Failure of
-        // this optional transaction never suppresses stats or roster tracking.
-        if(scan.league&&Date.now()<deadline-12000){
-          try{if(await rollSeasonForAppClan(settings,id,scan.league))seasonRollovers++}
+      try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys,async league=>{
+        // Handle a verified new group before potentially slow individual war
+        // details. No final-war inference; the prior profile is archived as-is.
+        for(const id of clanIds){
+          if(Date.now()>deadline-15000){seasonRolloverErrors++;continue}
+          try{if(await rollSeasonForAppClan(settings,id,league))seasonRollovers++}
           catch{seasonRolloverErrors++;console.warn("collector_rollover_failed")}
         }
+      })}
+      catch{scan={snaps:[],notes:[ERROR.api]}}
+      for(const id of clanIds){
         try{
           const result=await archiveForAppClan(settings,id,scan.snaps,checkedAt,
             scan.notes[0]||null);
@@ -351,12 +355,12 @@ export default {
     }
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
-      ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0,
+      ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0&&seasonRolloverErrors===0,
       tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
       rosterFailureClasses,seasonRollovers,seasonRolloverErrors,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
-    },errors||tenureWriteErrors||tenureSkippedProfiles?503:200);
+    },errors||tenureWriteErrors||tenureSkippedProfiles||seasonRolloverErrors?503:200);
   }
 };
