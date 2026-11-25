@@ -31,7 +31,7 @@ test("P0 guest/account fixes remain present with two-sided CWL opponent detail U
 });
 test("combined UI branch leaves auth storage, cloud format and original offline client unchanged",()=>{
  const version=JSON.parse(read("cloud-version.json"));
- assert.equal(version.version,"v1.31.1");
+ assert.equal(version.version,"v1.31.2");
  assert.match(html,/const DATA_VERSION=9;/);
  assert.match(html,/const STORAGE_KEY="cwl_planer_mobile_v9";/);
  assert.match(read("index.html"),/const APP_VERSION="v1\.1\.0";/);
@@ -40,7 +40,8 @@ test("combined UI branch leaves auth storage, cloud format and original offline 
  assert.match(api,/coc-cwl-status|withSupabase/);
  assert.doesNotMatch(live,/sb\.auth\.signOut\(|storage\.saveJson\(/);
  const auditTables=[...live.matchAll(/sb\.from\("([^"]+)"\)/g)].map(match=>match[1]);
- assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions","cwl_group_archives"],
-   "CWL live may only read the owner-decision audit and same-clan RLS season archive");
+ assert.deepEqual([...new Set(auditTables)],["cwl_missed_owner_decisions","cwl_group_archives","cwl_stat_wars"],
+   "CWL live may only read owner decisions and tenant-scoped war evidence");
  assert.match(live,/\.eq\("clan_id",id\)\.eq\("season",previous\.season\)/);
+ assert.match(live,/\.eq\("clan_id",id\)\.eq\("source_clash_tag",priorityWindow\.clanTag\)/);
 });

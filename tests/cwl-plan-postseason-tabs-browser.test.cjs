@@ -18,7 +18,9 @@ const begin=live.indexOf("  const getLifecycle=()=>{");
 const end=live.indexOf("\n  const effective=()=>{",begin);
 assert.ok(begin>0&&end>begin);
 const fragment=live.slice(begin,end);
+const priority=read("cwl-season-lifecycle.mjs").match(/export function normalWarAboveRecap\([\s\S]*?\n\}/)[0].replace("export ","");
 const fixture=[
+ priority,'let normalWarPriority=false;',
  'let activeClan="clan-a",confirmedNoCwl=true,lastKnownGroup=null;',
  'let current={active:false,currentWar:null};',
  'let model={mode:"postseason",season:"2026-11",verifiedSeven:false,',
@@ -33,7 +35,7 @@ const fixture=[
  '\'" aria-selected="\'+(selected===k)+\'" tabindex="\'+(selected===k?0:-1)+\'">\'+k+\'</button>\'}).join("")+',
  '\'</div><div role="tabpanel">\'+selected+\'</div></section>\';}',
  fragment,
- 'window.demo={refresh:renderPostseason,setWar:function(w){current.currentWar=w?{state:w}:null;renderPostseason()},',
+ 'window.demo={refresh:renderPostseason,setWar:function(w,prior=false){normalWarPriority=prior;current.currentWar=w?{state:w}:null;renderPostseason()},',
  'newSeason:function(){model.mode="planning";renderPostseason()},',
  'otherClan:function(){activeClan="clan-b";renderPostseason()},',
  'mode:function(){return model.mode}};'
@@ -69,6 +71,8 @@ test("After CWL: 3 tabs; on CW battle collapses recap only once; on preparation 
       "A manual open during battle must survive refresh");
     await page.evaluate(()=>window.demo.setWar("preparation"));
     assert.equal(await details.evaluate(e=>e.open),true);
+    await page.evaluate(()=>window.demo.setWar("preparation",true));
+    assert.equal(await details.evaluate(e=>e.open),false,"later preparation folds the recap");
     await page.evaluate(()=>window.demo.newSeason());
     assert.equal(await details.isVisible(),false,
       "The confirmed new CWL should restore the normal planner");

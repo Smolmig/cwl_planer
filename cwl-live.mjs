@@ -1,4 +1,4 @@
-import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.27.0";
+import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.31.2";
 import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.27.0";
 import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.27.0";
 import { assessCwlLifecycle, preservedCwlRound, normalWarPreparationWindow, hasPriorNormalWar, normalWarAboveRecap } from "./cwl-season-lifecycle.mjs?v=1.31.2";
