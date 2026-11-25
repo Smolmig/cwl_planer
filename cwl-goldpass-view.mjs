@@ -102,5 +102,5 @@ export function createGoldpassPreview({root,getProfile,getContext}){
   const next=c.clanId+"|"+c.clanTag;
   if(scope!==next){reset();scope=next}
   refresh();return true;
- },accessChanged(c){if(!c||scope!==c.clanId+"|"+c.clanTag){reset();scope=null}},refresh};
+ },accessChanged(c){if(!c||scope!==c.clanId+"|"+c.clanTag){reset();scope=null;return false}return true},refresh};
 }
