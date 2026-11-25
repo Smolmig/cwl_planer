@@ -1,3 +1,4 @@
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1";
 import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs";
 const metrics=[
  ["donations","Spenden",3500],["cwStars","Normale CW-Sterne",28],["cwAttacks","Normale CW-Angriffe",12],
@@ -13,11 +14,11 @@ const select=(options,value)=>{const e=n("select");for(const [v,t] of options){c
 const todayVienna=()=>{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Vienna",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());return ["year","month","day"].map(k=>p.find(x=>x.type===k).value).join("-")};
 const clone=x=>JSON.parse(JSON.stringify(x));
 export function createActivityCampaignView({root,getContext,api,confirmDraw=async()=>false,today=todayVienna}){
- let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",presetInfo="";
+ let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",presetInfo="",animateNextDraw=false;
  const context=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const key=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
- const reset=()=>{serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";presetInfo="";root.replaceChildren()};
- function adopt(result){current=result;draft={id:result.id,title:result.title,start:result.start,end:result.end,rules:clone(result.rules),decisions:clone(result.decisions||{})};dirty=false;presetInfo="";wars=""}
+ const reset=()=>{animateNextDraw=false;serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";presetInfo="";root.replaceChildren()};
+ function adopt(result){animateNextDraw=false;current=result;draft={id:result.id,title:result.title,start:result.start,end:result.end,rules:clone(result.rules),decisions:clone(result.decisions||{})};dirty=false;presetInfo="";wars=""}
  function fresh(){const start=today();current=null;draft={id:globalThis.crypto.randomUUID(),title:"Grind-Verlosung",start,end:new Date(Date.parse(start+"T00:00:00Z")+29*86400000).toISOString().slice(0,10),rules:[],decisions:{}};dirty=true;wars="";presetInfo="";applyPreset("active");render()}
  function applyPreset(id){
   try{
@@ -47,7 +48,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   const before=serial,old=current,c=context();
   let confirmed=false;try{confirmed=await confirmDraw(old)}catch{return}
   if(!confirmed||before!==serial||current!==old||key(c)!==key(context())||dirty||busy)return;
-  return request({action:"draw",id:old.id,revision:old.revision,witness:old.witness},adopt);
+  return request({action:"draw",id:old.id,revision:old.revision,witness:old.witness},result=>{adopt(result);animateNextDraw=!!result.official});
  }
  function decision(tag,patch){draft.decisions[tag]={...(draft.decisions[tag]||{}),...patch};for(const k of Object.keys(draft.decisions[tag]))if(draft.decisions[tag][k]===undefined)delete draft.decisions[tag][k];dirty=true;render()}
  function render(){
@@ -64,8 +65,13 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   const date=current?.today||today(),started=!!current&&date>=draft.start,locked=!!current?.official;
   if(locked){
    const o=current.official;
-   root.append(n("h3","Offizieller Gewinner"),n("strong",o.winner.name+" · "+o.winner.tag),n("p",o.pool.length+" qualifizierte Teilnehmer · einmalige Ziehung","statusline"));
-   const audit=n("details");audit.append(n("summary","Gespeicherter Teilnehmer- und Zielstand"),n("p","Prüfsumme: "+o.witness,"statusline"));
+   const animate=animateNextDraw;animateNextDraw=false;
+   const audit=n("details");
+   root.append(renderDrawReveal({winnerName:o.winner.name,winnerTag:o.winner.tag,animate,weighted:false,
+    subtitle:o.pool.length+" qualifizierte Teilnehmer · einmalige Ziehung",onReveal:()=>{audit.hidden=false}}));
+   audit.hidden=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+   audit.append(n("summary","Gespeicherter Teilnehmer- und Zielstand"),
+    n("p",(Number.isInteger(o.ticket)?"Losindex "+(o.ticket+1)+" von "+o.pool.length+" · ":"")+"Prüfsumme: "+o.witness,"statusline"));
    for(const p of o.rows)audit.append(n("p",p.name+" · "+p.status+" · "+p.checks.map(x=>names[x.metric]+": "+(x.value??x.status)).join(" / "),"statusline"));
    root.append(audit);return;
   }
