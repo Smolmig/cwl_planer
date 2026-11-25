@@ -9,7 +9,7 @@ export function drawRandomnessInfo(weighted=false){
  details.append(summary,el("p",text+" Der Server verwendet kryptografische Zufallsbytes und verwirft Werte, die eine ungleiche Verteilung verursachen würden. Die Ziehung speichert Gewinner und Teilnehmerstand einmalig; Wiederholen oder Neuladen erzeugt keinen neuen Gewinner. Die Animation zeigt nur das bereits gespeicherte Ergebnis. Der Nachweis dokumentiert die Ziehung, ist aber keine unabhängige externe Zufallsprüfung.","statusline"));
  return details;
 }
-export function renderDrawReveal({winnerName,winnerTag,animate=false,weighted=false,subtitle="",delay=1800}){
+export function renderDrawReveal({winnerName,winnerTag,animate=false,weighted=false,subtitle="",delay=1800,onReveal=()=>{}}){
  const wrap=el("section","","draw-reveal");
  const style=el("style",`
  .draw-reveal{position:relative;overflow:hidden;text-align:center;border:1px solid var(--primary,#c59b50);border-radius:16px;padding:20px;margin:12px 0 18px;isolation:isolate}
@@ -36,9 +36,10 @@ export function renderDrawReveal({winnerName,winnerTag,animate=false,weighted=fa
  result.append(top,el("div","♛","draw-ticket"),heading,el("p",String(winnerTag||""),"statusline"));
  if(subtitle)result.append(el("p",subtitle,"statusline"));
  wrap.append(style,el("div","","draw-sparks"),pending,result,drawRandomnessInfo(weighted));
+ result.dataset.raffleWinner="true";pending.dataset.raffleAnimation="true";
  const motion=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
  let timer=null;
- const reveal=()=>{if(timer!==null){clearTimeout(timer);timer=null}pending.hidden=true;result.hidden=false;};
+ const reveal=()=>{if(timer!==null){clearTimeout(timer);timer=null}pending.hidden=true;result.hidden=false;onReveal();};
  skip.onclick=reveal;
  if(motion){result.hidden=true;timer=setTimeout(()=>{if(wrap.isConnected)reveal()},Math.max(0,Math.min(2500,delay)))}
  else{result.classList.remove("draw-winner");reveal()}
