@@ -6479,7 +6479,7 @@ function renderClanManagementProgress(progress){
  const days=progress.maxSeconds===null?null:Math.floor(progress.maxSeconds/864)/100;
  note.textContent=(days===null?"":"Längste belegte Clanzeit der auswertbaren Mitglieder: "+
   days.toLocaleString("de-AT",{maximumFractionDigits:2})+" Tage. ")+
-  (progress.unknown?"Bei "+progress.unknown+" Mitgliedern fehlen aktuelle Nachweise. ":"")+
+  (progress.unknown===1?"Bei einem Mitglied fehlen aktuelle Nachweise. ":progress.unknown?"Bei "+progress.unknown+" Mitgliedern fehlen aktuelle Nachweise. ":"")+
   "Treue und Rückkehr werden getrennt geprüft. Bereits geprüfte oder ausgeblendete Vorschläge erscheinen nicht erneut.";
  info.append(heading,sample,metrics,note);return info;
 }
