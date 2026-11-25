@@ -29,7 +29,7 @@ export function collectRaffleEvidence(snapshot,expectedClan){
   if([...ownTags,...enemyTags].some(t=>!validTag(t))||new Set(ownTags).size!==r.teamSize||targets.size!==r.teamSize||
     ownTags.some(t=>targets.has(t))){invalidDays.push(r.day);continue}
   days.add(r.day);seen.add(war);observed++;
-  let complete=r.state==="warEnded",starSum=0;
+  let complete=r.state==="warEnded";
   for(const m of members){
    const t=tagOf(m.tag);
    let p=byTag.get(t);
