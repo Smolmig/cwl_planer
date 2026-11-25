@@ -40,7 +40,7 @@ declare
  v_review public.cwl_plan_review_state%rowtype;
  v_has_review boolean; v_old_archives jsonb; v_next_archives jsonb;
  v_old_n int; v_new_n int; v_old_season_n int; v_next_season_n int;
- v_revision bigint;
+ v_revision bigint; v_archive jsonb; v_locked int;
 begin
  if current_user<>'service_role' or auth.uid() is not null or
    coalesce(auth.jwt()->>'role','')<>'service_role' then
@@ -80,7 +80,12 @@ begin
     p_next->'config' is distinct from jsonb_set(v_profile.profile_json->'config','{days}',to_jsonb(v_count)) or
     p_next->'archivedMembers' is distinct from '[]'::jsonb or
     p_next->'locks' is distinct from (select jsonb_agg('{"locked":false,"lineup":[]}'::jsonb) from generate_series(1,7)) or
+    p_next->'dayGoals' is distinct from (select jsonb_agg('{"townHall":{},"strength":{"high":0,"medium":0,"low":0,"verylow":0}}'::jsonb) from generate_series(1,7)) or
     jsonb_typeof(p_next->'members') is distinct from 'array' then return false;end if;
+ if exists(select 1 from jsonb_array_elements(p_next->'members') m where
+    m->'statuses' is distinct from (select jsonb_agg('auto'::text) from generate_series(1,7)) or
+    m->'firstDay' is distinct from 'null'::jsonb or m->'outFromDay' is distinct from 'null'::jsonb or
+    m->'targetDays' is distinct from 'null'::jsonb) then return false;end if;
  -- All unrelated profile fields remain byte-for-byte identical as JSONB.
  if (p_next - array['cwlLive','cwlLiveIgnoredSeason','config','archivedMembers','locks','dayGoals','members','archives']) is distinct from
     (v_profile.profile_json - array['cwlLive','cwlLiveIgnoredSeason','config','archivedMembers','locks','dayGoals','members','archives'])
@@ -101,6 +106,18 @@ begin
  then return false;end if;
  if v_old_season_n=0 and v_next_archives->v_old_n->'cwlLive' is distinct from v_profile.profile_json->'cwlLive'
  then return false;end if;
+ select value into v_archive from jsonb_array_elements(v_next_archives) where value->>'sourceSeason'=p_old_season;
+ if jsonb_typeof(v_profile.profile_json->'locks') is distinct from 'array' or
+    jsonb_typeof(v_archive->'lineups') is distinct from 'array' then return false;end if;
+ select count(*) into v_locked from jsonb_array_elements(v_profile.profile_json->'locks') l where l->>'locked'='true';
+ if v_archive->>'days' is distinct from v_profile.profile_json->'config'->>'days' or
+    v_archive->>'slots' is distinct from v_profile.profile_json->'config'->>'slots' or
+    v_archive->>'playedCount' is distinct from v_locked::text or
+    v_archive->>'complete' is distinct from (v_locked::text=v_profile.profile_json->'config'->>'days')::text or
+    jsonb_array_length(v_archive->'lineups')<>v_locked or
+    exists(select 1 from jsonb_array_elements(v_profile.profile_json->'locks') with ordinality l(value,ord)
+     where l.value->>'locked'='true' and not exists(select 1 from jsonb_array_elements(v_archive->'lineups') a
+       where a->>'day'=l.ord::text and a->'lineup'=l.value->'lineup')) then return false;end if;
  -- Explicit recovery point, even when the regular 2h snapshot throttle
  -- would not have captured this exact revision.
  insert into public.cwl_profile_snapshots(clan_id,revision,profile_json)
