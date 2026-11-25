@@ -387,13 +387,14 @@ const cloud={
  active:false,
  getActiveClanId:()=>clanId,
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
+ getGoldpassSession:()=>accountEpoch,
  // Goldpass is deliberately separate from profile saves, suggestions and
  // the planner solver. Context is checked before and after each request.
  async goldpassRequest(request){
   const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
   const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&
     accountEpoch===epoch&&user?.id===actor&&this.getActiveClanTag()===tag&&
-    request?.context?.clanId===expected&&request?.context?.clanTag===tag;
+    request?.context?.clanId===expected&&request?.context?.clanTag===tag&&request?.context?.session===epoch;
   if(!valid()||!navigator.onLine)throw Error("goldpass_context_unavailable");
   if(!["read","save","draw"].includes(request.action)||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(request.season))throw Error("goldpass_invalid_request");
   const args={p_clan:expected,p_season:request.season,p_action:request.action};
@@ -408,7 +409,7 @@ const cloud={
  async goldpassSeasons(context){
   const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
   const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&accountEpoch===epoch&&
-   user?.id===actor&&this.getActiveClanTag()===tag&&context?.clanId===expected&&context?.clanTag===tag;
+   user?.id===actor&&this.getActiveClanTag()===tag&&context?.clanId===expected&&context?.clanTag===tag&&context?.session===epoch;
   if(!valid()||!navigator.onLine)throw Error("goldpass_context_unavailable");
   const [a,b]=await Promise.all([
    sb.from("cwl_group_archives").select("season").eq("clan_id",expected).eq("clan_tag",tag).order("season",{ascending:false}).limit(100),
@@ -671,7 +672,7 @@ const cloud={
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
-  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag}:null);
+  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";
