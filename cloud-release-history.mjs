@@ -4,6 +4,22 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.34.0",
+    "releaseType": "minor",
+    "date": "2026-11-25",
+    "title": "Grind-Verlosung",
+    "description": "Zeitraum und Ziele festlegen, drei anpassbare Vorlagen nutzen und Spenden sowie CW/CWL-Fortschritt verfolgen. Discord und Abstimmungen manuell markieren; nach Abschluss einmalig einen Gewinner ziehen. Beide Verlosungsarten zeigen eine kurze Gewinneranimation."
+  },
+
+  {
+    "version": "v1.33.0",
+    "releaseType": "minor",
+    "date": "2026-11-25",
+    "title": "Goldpass-Verlosung abschließen",
+    "description": "Regeln je Saison dauerhaft speichern, Gewinnchancen prüfen und nach bestätigten CWL-Ergebnissen einmalig offiziell ziehen. Das Ergebnis bleibt mit seinen Nachweisen erhalten."
+  },
+
+  {
     "version": "v1.32.0",
     "releaseType": "minor",
     "date": "2026-11-25",

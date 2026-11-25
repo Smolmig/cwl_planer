@@ -1,4 +1,4 @@
-import {evaluateActivityEligibility,evaluateActivityRequirement} from "./cwl-activity-raffle-core.mjs";
+import {evaluateActivityEligibility,evaluateActivityRequirement} from "./cwl-activity-raffle-core.mjs?v=1.34.0";
 const DAY=86400000;
 function dateMs(value){
  if(typeof value!=="string"||!/^20\d{2}-\d{2}-\d{2}$/.test(value))throw Error("invalid_date");

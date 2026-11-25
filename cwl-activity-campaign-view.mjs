@@ -1,5 +1,5 @@
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1";
-import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.34.0";
+import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.34.0";
 const metrics=[
  ["donations","Spenden",3500],["cwStars","Normale CW-Sterne",28],["cwAttacks","Normale CW-Angriffe",12],
  ["cwTriples","Normale CW-Dreier",8],["cwlStars","CWL-Sterne",15],["cwlAttacks","CWL-Angriffe",5],
