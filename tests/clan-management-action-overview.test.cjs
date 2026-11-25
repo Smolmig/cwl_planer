@@ -128,7 +128,7 @@ test("polished qualification summary exposes counts, unknowns and individual blo
   const card=renderClanManagementProgress(progress);
   assert.deepEqual([...card.querySelectorAll("dd")].map(x=>x.textContent),["2 / 3","1 / 3","1 / 3","0 / 3"]);
   assert.match(card.textContent,/3 von 4 Mitgliedern auswertbar/);
-  assert.match(card.textContent,/Bei 1 Mitgliedern fehlen/);
+  assert.match(card.textContent,/Bei einem Mitglied fehlen/);
   assert.match(card.textContent,/13,6 Tage/);
   const unknown=renderClanManagementProgress({...progress,known:0,unknown:4,maxSeconds:null});
   assert.deepEqual([...unknown.querySelectorAll("dd")].map(x=>x.textContent),["–","–","–","–"]);
