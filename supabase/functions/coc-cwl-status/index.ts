@@ -1,5 +1,6 @@
 // Authenticated, read-only CWL status proxy. Supercell key never reaches the browser.
 import { withSupabase } from "npm:@supabase/server@1";
+import { finalRoundRecoveryCandidate } from "./final-round-recovery.mjs";
 
 const CORS = {
   "Access-Control-Allow-Origin":"https://smolmig.github.io",
@@ -228,26 +229,22 @@ async function loadStatus(clanTag,key) {
     detailsStatus:failures?(success?"partial":"unavailable"):tags.length?"complete":"not_released"};
 }
 // After the official CWL leaguegroup drops to notInWar, safely revisit the
-// last *previously observed* day-seven official war tag for this app clan.
+// last *previously observed* official day-five or day-seven war tag for this app clan.
 // This can repair 6/7 only if Supercell STILL exposes a final real war.
 // No backfilling from import, guessed day, a different app clan or old months.
 async function recoverFinalRound(clanId,clanTag,key,ctx) {
   try{
-    const {data:record,error}=await ctx.supabase.from("cwl_own_lineup_archives")
-      .select("season,day,war_tag,team_size,state")
-      .eq("clan_id",clanId).eq("day",7)
-      .order("season",{ascending:false}).limit(1);
-    if(error||!Array.isArray(record)||!record.length)return null;
-    const prior=record[0],warTag=tag(prior.war_tag);
-    const date=/^(20[0-9]{2})-(0[1-9]|1[0-2])$/.exec(String(prior.season||""));
-    if(!date||!valid(warTag)||prior.day!==7||
-      !["inWar","warEnded"].includes(prior.state)||
-      !Number.isInteger(prior.team_size)||
-      prior.team_size<5||prior.team_size>50)return null;
-    const utc=new Date(),distance=
-      (utc.getUTCFullYear()-Number(date[1]))*12+
-      utc.getUTCMonth()+1-Number(date[2]);
-    if(distance<0||distance>1)return null;
+    const [{data:record,error},{data:groups,error:groupError}]=await Promise.all([
+      ctx.supabase.from("cwl_own_lineup_archives")
+        .select("season,day,war_tag,team_size,state").eq("clan_id",clanId)
+        .order("season",{ascending:false}).order("day",{ascending:false}).limit(1),
+      ctx.supabase.from("cwl_group_archives").select("season,clan_tag,group_json")
+        .eq("clan_id",clanId).order("season",{ascending:false}).limit(1)
+    ]);
+    if(error||groupError||!Array.isArray(record)||!Array.isArray(groups))return null;
+    const candidate=finalRoundRecoveryCandidate(record[0],groups[0]||null,clanTag);
+    if(!candidate)return null;
+    const prior=record[0],{warTag,day,warCount,group}=candidate;
     const war=await getWar(warTag,key);
     if(war?.state!=="warEnded"||war.teamSize!==prior.team_size)return null;
     const own=tag(war.clan?.tag)===clanTag?war.clan:
@@ -268,24 +265,14 @@ async function recoverFinalRound(clanId,clanTag,key,ctx) {
       Number(match[4]),Number(match[5]),Number(match[6]));
     if(!Number.isFinite(ended)||ended>Date.now()-60000||
        ended<Date.now()-45*86400000)return null;
-    const round={day:7,available:true,warTag,state:"warEnded",
+    const round={day,available:true,warTag,state:"warEnded",
       startTime:String(war.startTime||""),endTime:String(war.endTime||""),
       teamSize:prior.team_size,clan:safeSide(own),opponent:safeSide(enemy)};
-    // The group archive is an existing RLS-checked same-tenant read.
-    let group=null;
-    const {data:savedGroup,error:groupError}=await ctx.supabase
-      .from("cwl_group_archives").select("group_json")
-      .eq("clan_id",clanId).eq("season",prior.season).maybeSingle();
-    if(!groupError&&savedGroup?.group_json?.season===prior.season&&
-       tag(savedGroup.group_json.clanTag)===clanTag&&
-       Array.isArray(savedGroup.group_json.rounds)&&
-       Array.isArray(savedGroup.group_json.clans))
-      group=savedGroup.group_json;
     return {ok:true,active:true,recoveredFinalRound:true,
       groupState:"ended",season:prior.season,clanTag,
-      detailsStatus:"partial",group,
+      detailsStatus:"partial",group,warCount,
       rounds:Array.from({length:7},(_,i)=>
-       i===6?round:{day:i+1,available:false})};
+       i===day-1?round:{day:i+1,available:false})};
   }catch(e){
     console.warn("coc-cwl-status: final-round recovery unavailable",{
       code:String(e?.message||"unavailable").slice(0,80)
