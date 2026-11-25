@@ -154,3 +154,16 @@ test("CW preparation stays below the latest CWL until an earlier post-CWL war is
  const incomplete={...lifecycle,snapshot:{...lifecycle.snapshot,rounds:lifecycle.snapshot.rounds.slice(0,6)}};
  assert.equal(normalWarPreparationWindow(incomplete,war,"#2PYL"),null);
 });
+
+test("A new official season cannot overwrite an older zero-lock plan or resurrect a stale season",async()=>{
+ const {assessCwlLifecycle}=await load();
+ const {reconcileCwl}=await import("../cwl-live-core.mjs");
+ const p=profile("2026-11",0),before=JSON.stringify(p);
+ const next=snapshot("2026-12","preparation");
+ assert.equal(assessCwlLifecycle({profile:p,liveSnapshot:next,groupState:"preparation",clanTag:"#2PYL",now}).mode,"transition");
+ assert.equal(reconcileCwl(p,next,()=>({id:"new"}),now).reason,"previous_season_requires_archive");
+ assert.equal(JSON.stringify(p),before);
+ const older=snapshot("2026-10");
+ assert.equal(assessCwlLifecycle({profile:p,liveSnapshot:older,groupState:"ended",clanTag:"#2PYL",now}).snapshot.season,"2026-11");
+ assert.equal(reconcileCwl(p,older,()=>({id:"new"}),now).changed,false);
+});
