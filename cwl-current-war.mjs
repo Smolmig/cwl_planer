@@ -95,14 +95,14 @@ export function createCurrentWarOverview({context,refresh}){
   host.hidden=true;content.replaceChildren();host.dataset.warKey="";lastMarkup=null;
   positionForWar(false);
  }
- function update(payload){
+ function update(payload,{priorNormalWar=false}={}){
   const ctx=context(),war=payload?.currentWar;
   if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||!war||
      !["preparation","inWar","warEnded"].includes(war.state)){reset();return}
   const summary=summarizeCurrentWar(war);
   if(!summary){reset();return}
   const battle=war.state==="inWar"||war.state==="warEnded";
-  positionForWar(battle);
+  positionForWar(battle||(war.state==="preparation"&&priorNormalWar===true));
   const title=host.querySelector(".section-title h3");
   if(title)title.textContent=war.state==="inWar"?"Clankrieg live":
    war.state==="preparation"?"Nächster Clankrieg":"Letzter Clankrieg";
