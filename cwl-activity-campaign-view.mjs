@@ -31,12 +31,14 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
  async function request(args,apply){
   const c=context();if(!c||key(c)!==scope||busy)return;
   const token=++serial;busy=true;message="Wird geladen …";render();
-  try{const r=await api({...args,context:c});if(token!==serial||key(context())!==scope)return;apply(r);message=""}
+  try{let r=await api({...args,context:c});if(token!==serial||key(context())!==scope)return;
+   if(args.action==="discord"){r=await api({action:"read",id:args.refreshId,context:c});if(token!==serial||key(context())!==scope)return}
+   apply(r);message=""}
   catch(e){if(token===serial&&key(context())===scope)message=/revision|evidence_changed/.test(String(e?.message))?"Stand verändert. Bitte neu laden.":"Aktion nicht bestätigt. Bitte Serverstand prüfen."}
   finally{if(token===serial&&key(context())===scope){busy=false;render()}}
  }
  function listLoad(){return request({action:"list"},r=>{if(!Array.isArray(r))throw Error("bad list");list=r})}
- function read(id){return request({action:"read",id},adopt)}
+ function read(id){if(!dirty)return request({action:"read",id},adopt)}
  function save(){if(!draft||busy)return;try{activityPeriod(draft.start,draft.end);if(!draft.rules.length||draft.rules.some(r=>r.minimum!==true&&(!Number.isInteger(r.minimum)||r.minimum<0)))throw Error("invalid")}catch{message="Zeitraum und mindestens ein gültiges Ziel eingeben.";render();return}
   return request({action:current?"save":"create",...clone(draft),revision:current?.revision},r=>{adopt(r);list=[{id:r.id,title:r.title,start:r.start,end:r.end},...list.filter(x=>x.id!==r.id)]})
  }
@@ -69,7 +71,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   }
   const settings=n("div","","goldpass-controls");
   const title=input("text",draft.title),start=input("date",draft.start),end=input("date",draft.end);
-  title.maxLength=80;title.disabled=busy;title.oninput=()=>{draft.title=title.value;dirty=true;saveBtn.disabled=busy};
+  title.maxLength=80;title.disabled=busy;title.onchange=()=>{draft.title=title.value;dirty=true;render()};
   for(const [key,e] of [["start",start],["end",end]]){e.disabled=busy||started;e.onchange=()=>{draft[key]=e.value;dirty=true;presetInfo="";render()}}
   settings.append(field("Name",title),field("Start",start),field("Ende (einschließlich)",end));root.append(settings);
   try{const p=activityPeriod(draft.start,draft.end);root.append(n("p",p.days+" Kalendertage · Zeitzone Europe/Vienna","statusline"))}catch{root.append(n("p","Ungültiger Zeitraum.","statusline"))}
@@ -111,7 +113,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
     if(numeric){const r=draft.rules.find(x=>x.metric===check.metric);if(r)try{const pace=activityGoalPace(r,draft,date);card.append(n("small","Orientierung: "+Math.round(pace.perWeek)+"/Woche · bis heute etwa "+pace.expected,"statusline"))}catch{}}
    }
    const d=draft.decisions[p.tag]||{},discord=select([["","Unbekannt"],["yes","Ja"],["no","Nein"]],p.discord===true?"yes":p.discord===false?"no":"");
-   discord.disabled=busy||dirty;discord.onchange=()=>request({action:"discord",player:p.tag,discord:discord.value===""?null:discord.value==="yes"},()=>{message="Discord-Markierung gespeichert."});
+   discord.disabled=busy||dirty;discord.onchange=()=>request({action:"discord",player:p.tag,discord:discord.value===""?null:discord.value==="yes",refreshId:current.id},adopt);
    const voted=select([["","Unbekannt"],["yes","Ja"],["no","Nein"]],d.voted===true?"yes":d.voted===false?"no":"");
    voted.disabled=busy;voted.onchange=()=>decision(p.tag,{voted:voted.value===""?undefined:voted.value==="yes"});
    const excluded=input("checkbox",d.excluded===true),organizer=input("checkbox",d.organizer===true);
