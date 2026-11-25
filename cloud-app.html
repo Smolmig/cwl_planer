@@ -2544,7 +2544,16 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .clan-management-filter button{min-height:44px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);font-weight:700}
 .clan-management-filter button[aria-pressed="true"]{border-color:var(--primary);background:var(--bluebg)}
 .clan-management-filter button:focus-visible,.clan-management-evidence>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-.clan-management-empty{padding:18px 0 24px;color:var(--muted);font-size:13px;line-height:1.6}
+.clan-management-empty{padding:12px 0;color:var(--muted);font-size:13px;line-height:1.6}
+.clan-management-progress{border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 16px;min-width:0}
+.clan-management-progress h3{margin:0 0 4px;font-size:14px;line-height:1.4;color:var(--text)}
+.clan-management-progress p{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+.clan-management-progress dl{margin:8px 0 0}
+.clan-management-progress dl>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:baseline}
+.clan-management-progress dt{font-size:12px;color:var(--text);overflow-wrap:anywhere}
+.clan-management-progress dd{margin:0;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--text)}
+.clan-management-criteria>summary{flex-wrap:wrap}
+.clan-management-criteria>summary:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 .clan-management-evidence{margin-top:5px;min-width:0}
 .clan-management-evidence>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;color:var(--text);font-size:12px;font-weight:720;list-style:none}
 .clan-management-evidence>summary::-webkit-details-marker{display:none}
@@ -4147,10 +4156,10 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.31.0</strong><span>Offene Clan-Prüfungen im Überblick</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.31.1</strong><span>Beförderungskriterien besser verstehen</span></div>
       <ul>
-       <li><b>Clanverwaltung:</b> Offene Beförderungs-, Rückkehr- und Fehlangriffshinweise pro Spieler gebündelt ansehen.</li>
-       <li><b>Nachweise:</b> Offene belegte Fehlangriffe aus CW und CWL zusammenzählen, bei Datenlücken als Untergrenze.</li>
+       <li><b>Clanverwaltung:</b> Auch ohne offene Beförderungen siehst du, wie viele Mitglieder die Leistungskriterien erfüllen.</li>
+       <li><b>Nachweise:</b> Fehlende Daten und noch nicht erreichte Kriterien werden getrennt angezeigt.</li>
        <li><b>Prüfen:</b> Direkt zu den jeweiligen Nachweisen wechseln. Keine automatische Rangänderung.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
@@ -4468,7 +4477,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <details id="clanManagementCriteria" class="clan-management-criteria">
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
-   <p>Für Beförderungsvorschläge zählen bestätigte Clanzeit und Angriffe aus abgeschlossenen Kriegen dieses Clans. Im Spiel wird nichts automatisch geändert.</p>
+   <p>Für Leistungsbeförderungen zählen bestätigte Clanzeit und API-Angriffe aus abgeschlossenen Kriegen dieses Clans. Importierte ClashPerk-Angriffe zählen hierfür derzeit nicht. Im Spiel wird nichts automatisch geändert.</p>
    <label class="clan-rule-toggle"><input id="clanRuleEnabled" type="checkbox" checked> Angriffsleistung berücksichtigen</label>
    <div class="clan-rule-fields">
     <label>Mindestens bestätigte Clantage<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDays" value="14" required></label>
@@ -4790,15 +4799,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.31.0"></script>
-<script src="./clan-management-missed-core.js?v=1.31.0"></script>
-<script src="./clan-management-cw-core.js?v=1.31.0"></script>
-<script src="./clan-management-cw-view.js?v=1.31.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.31.0"></script>
-<script src="./cwl-planning-core.js?v=1.31.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.31.0"></script>
+<script src="./clan-management-core.js?v=1.31.1"></script>
+<script src="./clan-management-missed-core.js?v=1.31.1"></script>
+<script src="./clan-management-cw-core.js?v=1.31.1"></script>
+<script src="./clan-management-cw-view.js?v=1.31.1"></script>
+<script src="./cwl-deployment-filters.js?v=1.31.1"></script>
+<script src="./cwl-planning-core.js?v=1.31.1"></script>
+<script src="./cwl-plan-whatif.js?v=1.31.1"></script>
 <script>
-const APP_VERSION="v1.31.0";
+const APP_VERSION="v1.31.1";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6350,8 +6359,8 @@ function renderClanManagementActionOverview(){
   row.setAttribute("role","listitem");
   const name=document.createElement("strong");name.textContent=person.name;
   const status=document.createElement("div");status.className="clan-management-person-status";
-  status.textContent=person.conflicting?"Mehrere Hinweise gemeinsam prüfen":
-   person.severe?"Degradierung prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":"Beförderung / Rückkehr prüfen";
+  status.textContent=person.severe?(person.conflicting?"Degradierung und Ranghinweis gemeinsam prüfen":"Degradierung prüfen"):
+   person.conflicting?"Mehrere Hinweise gemeinsam prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":"Beförderung / Rückkehr prüfen";
   const missed=document.createElement("small");
   if(person.sources.some(x=>x!=="rank"))missed.textContent=person.openMisses>0?
    (person.missCountComplete?"":"Mindestens ")+person.openMisses+" offene belegte Fehlangriffe"+
@@ -6435,10 +6444,44 @@ function managementRowSummary(person,openCases){
  if(cases.length&&cases.every(x=>x.state==="acknowledged"||x.state==="exception"))
   return ["Bereits geprüft","Ein Hinweis wurde bereits quittiert oder ausgeblendet"];
  if(person.rank==="unknown")return ["Rang unklar","Der aktuelle Clash-Rang ist nicht bestätigt"];
+ const q=person.performanceQualification;
+ if(q&&person.promotionStatus==="Nachweise offen"){
+  const missing=[];
+  if(!q.timeOK)missing.push("Clanzeit");
+  if(!q.countOK)missing.push("Angriffsstichprobe");
+  else if(!q.quoteOK)missing.push("3★-Quote");
+  if(missing.length)return ["Kriterien noch nicht erreicht",missing.join(" · ")];
+ }
  if(["Nachweise offen","Daten prüfen"].includes(person.promotionStatus))
-  return [person.promotionStatus,"Für eine Empfehlung fehlen bestätigte Voraussetzungen"];
+  return ["Nachweise offen","Aktuelle Clanzeit oder Angriffsdaten nicht bestätigt"];
  if(person.rank==="elder")return ["Keine Empfehlung","Aktuell als Ältester im Clan geführt"];
  return ["Keine Empfehlung","Derzeit keine belegte Beförderungsempfehlung"];
+}
+function renderClanManagementProgress(progress){
+ const info=document.createElement("div");info.className="clan-management-progress";
+ info.setAttribute("role","listitem");
+ const heading=document.createElement("h3");heading.textContent="Leistungsbeförderung · Kriterien";
+ const sample=document.createElement("p");
+ sample.textContent=progress.known+" von "+progress.candidates+" Mitgliedern auswertbar · Angriffe der letzten "+progress.lookback+" Tage";
+ const metrics=document.createElement("dl");
+ for(const [label,value] of [
+  ["Mindestens "+progress.minDays+" Clantage",progress.timeOK],
+  ["Mindestens "+progress.minAttacks+" API-Angriffe",progress.attackCountOK],
+  ["Angriffszahl und "+progress.minQuote+" % 3★-Quote",progress.attackAndQuoteOK],
+  ["Alle Leistungskriterien erfüllt",progress.allOK]
+ ]){
+  const row=document.createElement("div"),term=document.createElement("dt"),count=document.createElement("dd");
+  term.textContent=label;
+  count.textContent=progress.known?value+" / "+progress.known:"–";
+  row.append(term,count);metrics.appendChild(row);
+ }
+ const note=document.createElement("p");
+ const days=progress.maxSeconds===null?null:Math.floor(progress.maxSeconds/864)/100;
+ note.textContent=(days===null?"":"Längste belegte Clanzeit der auswertbaren Mitglieder: "+
+  days.toLocaleString("de-AT",{maximumFractionDigits:2})+" Tage. ")+
+  (progress.unknown===1?"Bei einem Mitglied fehlen aktuelle Nachweise. ":progress.unknown?"Bei "+progress.unknown+" Mitgliedern fehlen aktuelle Nachweise. ":"")+
+  "Treue und Rückkehr werden getrennt geprüft. Bereits geprüfte oder ausgeblendete Vorschläge erscheinen nicht erneut.";
+ info.append(heading,sample,metrics,note);return info;
 }
 function renderClanManagementRows(preserveViewport=true){
  const list=document.getElementById("clanManagementList");
@@ -6470,9 +6513,14 @@ function renderClanManagementRows(preserveViewport=true){
   const empty=document.createElement("p");
   empty.className="clan-management-empty";empty.setAttribute("role","listitem");
   empty.textContent=clanManagementFilter==="open"?
-   "Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen.":
+   (!clanManagementReviewsReadable?"Prüfentscheidungen nicht verfügbar. Vorschlagsstatus derzeit nicht bestätigt.":
+   "Keine offenen Vorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen."):
    "Keine Mitglieder oder Ältesten für diese Prüfung vorhanden. Vize und Clanführer sind ausgenommen.";
-  list.appendChild(empty);return;
+  list.appendChild(empty);
+  const progress=clanManagementLastPreview.performanceProgress;
+  if(clanManagementFilter==="open"&&progress?.candidates>0)
+   list.appendChild(renderClanManagementProgress(progress));
+  return;
  }
  for(const {person,openCases} of filtered){
   const row=document.createElement("div");
@@ -6811,7 +6859,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.31.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.31.1");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7204,6 +7252,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.31.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.31.1"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 {
-  "version": "v1.31.0",
-  "released": "2026-11-24",
-  "summary": "Clanverwaltung: Offene Rang- und Fehlangriffsprüfungen je Spieler zusammengefasst, mit belegter Fehlangriffszahl aus CW und CWL."
+  "version": "v1.31.1",
+  "released": "2026-11-25",
+  "summary": "Clanverwaltung: Beförderungskriterien, fehlende Nachweise und Prüfhinweise übersichtlicher."
 }

@@ -127,6 +127,7 @@
   const timeOK=seconds>=rules.performance_min_days*86400;
   const countOK=attackCount>=rules.performance_min_attacks;
   const quoteOK=countOK&&threeStars*100>=rules.performance_three_star_percent*attackCount;
+  const qualification={timeOK,countOK,quoteOK,confirmedSeconds:seconds,attackCount,threeStars};
   const duration=Math.floor(seconds/86400);
   const sample=attackCount>0?threeStars+"/"+attackCount+" 3★":
     "keine API-Angriffe belegt";
@@ -136,10 +137,10 @@
   if(timeOK&&countOK&&quoteOK)return {
    status:"Beförderung prüfen",note:note+
     " · Kriterien rechnerisch erfüllt; Rang nur manuell im Spiel ändern.",
-   eligible:true
+   eligible:true,qualification
   };
   return {
-   status:"Nachweise offen",note:note+
+   qualification,status:"Nachweise offen",note:note+
    (attackCount===0?" · fehlende Belege sind keine 0★-Angriffe.":
     countOK&&!quoteOK?" · 3★-Schwelle noch nicht erreicht.":" · noch nicht alle Kriterien erfüllt.")
   };
@@ -203,6 +204,19 @@
     " · kein frischer belegter Spendenzuwachs; ungemessene Aktivität bleibt unbekannt."));
  }
 
+ // Diagnostic only: a missing/invalid source is unknown, never a failed criterion.
+ function buildPerformanceProgress(rows,rules){
+  if(!rules?.performance_enabled)return null;
+  const candidates=rows.filter(p=>p.rank==="member"&&!p.returnRankNote);
+  const known=candidates.map(p=>p.performanceQualification).filter(Boolean);
+  const maxSeconds=known.length?Math.max(...known.map(p=>p.confirmedSeconds)):null;
+  return {candidates:candidates.length,known:known.length,unknown:candidates.length-known.length,
+   timeOK:known.filter(p=>p.timeOK).length,attackCountOK:known.filter(p=>p.countOK).length,
+   attackAndQuoteOK:known.filter(p=>p.countOK&&p.quoteOK).length,
+   allOK:known.filter(p=>p.timeOK&&p.countOK&&p.quoteOK).length,
+   maxSeconds,minDays:rules.performance_min_days,minAttacks:rules.performance_min_attacks,
+   minQuote:rules.performance_three_star_percent,lookback:rules.performance_lookback_days};
+ }
  // The fingerprint represents material evidence + the rule threshold that
  // caused this *specific* review. The routine 30-minute roster timestamp is
  // intentionally excluded: a poll with identical evidence must not reopen it.
@@ -306,6 +320,7 @@
     if(check){
      player.promotionNote=check.note;
      player.promotionStatus=check.status;
+     player.performanceQualification=check.qualification||null;
      if(!player.returnRankNote){
       player.status=check.status;
       if(check.eligible){
@@ -344,6 +359,7 @@
     a.name.localeCompare(b.name,"de",{sensitivity:"base"}):
     (a.rank==="member"?-1:b.rank==="member"?1:a.rank==="elder"?-1:1)));
   return {ok:true,reason:null,total:members.length,counts,rows,restoreRankChecks,
+   performanceProgress:buildPerformanceProgress(rows,verifiedRules),
    promotionReviewChecks,loyaltyReviewChecks,
    eligibleForRecommendation:promotionReviewChecks,
    observation:"Die Clash-API liefert keinen historischen Eintritt und keinen letzten Login. Nur abgeschlossene API-Kriege dieses Clans und belegte Clanzeit zählen; fehlende Daten sind keine negativen Spielerwerte. Alle Rangentscheidungen bleiben manuell."};
@@ -402,7 +418,7 @@
     available[kind]?rows.filter(p=>p.sources.includes(kind)).length:null]))};
  }
  const api={normalizeRank:rank,validTag,buildPreview,buildActionOverview,tenureLabel,donorLabel,returnRankLabel,
-  DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty,
+  DEFAULT_RULES,normalizeRules,evaluatePromotion,evaluateLoyalty,buildPerformanceProgress,
   reviewFingerprint,applyReviewDecisions};
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  if(root)root.CWLClanManagement=api;
