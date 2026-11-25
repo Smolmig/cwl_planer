@@ -715,8 +715,8 @@ const live=createCwlLive({
  ensureCloudSaved:()=>ensureSaved(),
  applyVerifiedPause:args=>applyVerifiedPause(args),
  onInitialSettled:expectedClan=>{if(cloud.active&&clanId===expectedClan)finishStartup()},
- onStatus:data=>{
-  currentWarOverview?.update(data);
+ onStatus:(data,options)=>{
+  currentWarOverview?.update(data,options);
   window.CWLSeasonView?.render?.();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
