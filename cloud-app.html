@@ -2615,6 +2615,15 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 #view-goldpass .goldpass-chance{color:var(--primary);font-variant-numeric:tabular-nums;white-space:nowrap}
 #view-goldpass .goldpass-options{display:flex;gap:8px 14px;flex-wrap:wrap}
 #view-goldpass .goldpass-options .goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:6px}
+#view-activity-goldpass .goldpass-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;align-items:end;margin:12px 0}
+#view-activity-goldpass .goldpass-field{display:flex;flex-direction:column;gap:4px;font-size:12px;min-width:0}
+#view-activity-goldpass .goldpass-field input:not([type=checkbox]),#view-activity-goldpass .goldpass-field select{width:100%;min-width:0}
+#view-activity-goldpass .goldpass-player{padding:12px 0;border-top:1px solid var(--line);min-width:0}
+#view-activity-goldpass .goldpass-player-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;overflow-wrap:anywhere}
+#view-activity-goldpass .goldpass-chance{color:var(--primary);font-variant-numeric:tabular-nums;white-space:nowrap}
+#view-activity-goldpass .goldpass-options{display:flex;gap:8px 14px;flex-wrap:wrap}
+#view-activity-goldpass .goldpass-options .goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:6px}
+#view-activity-goldpass .goldpass-player-head{align-items:center;flex-wrap:wrap}
 /* Optional install guidance inside More, never a recurring overlay. */
 .install-suggestion{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:17px;padding:13px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .install-suggestion[hidden]{display:none!important}
@@ -4048,6 +4057,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Teilnahme und Gewinnchancen unverbindlich berechnen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="activity-goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Grind-Verlosung</strong><small>Zeitraum, Ziele und Fortschritt</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
@@ -4132,6 +4142,10 @@ html.cloud-startup-pending .cloud-startup-splash{
  </div>
  <div id="goldpassContent" class="card"></div>
  <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Grundlose ermöglichen auch schwächeren Teilnehmern eine Chance. Bonuslose werden addiert; die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern.</p></details>
+</section>
+<section id="view-activity-goldpass" class="view more-subview" aria-labelledby="activityGoldpassTitle">
+ <div class="more-detail-header"><div><span class="more-eyebrow">CLAN · OPTIONALES TOOL</span><h2 id="activityGoldpassTitle">Grind-Verlosung</h2><p class="statusline">Zeitraum und erreichbare Ziele festlegen, Fortschritt verfolgen und nach Abschluss einen Gewinner ziehen.</p></div><button type="button" class="btn small more-detail-back" id="activityGoldpassBack">Zurück zu Mehr</button></div>
+ <div id="activityGoldpassContent" class="card"></div>
 </section>
 <section id="view-archive" class="view more-subview" aria-labelledby="cwlArchiveTitle">
  <div class="card archive-page">
@@ -6188,7 +6202,7 @@ function showPlannerView(view){
  if(view!=="settings")window.__previousPlannerView=view;
  const visible=view==="settings"?(window.__previousPlannerView||"plan"):view;
  const navView=visible==="cwl-season"?"plan":
-   ["help","account","archive","goldpass","more-settings","updates","install","clan-management"].includes(visible)?"more":visible;
+   ["help","account","archive","goldpass","activity-goldpass","more-settings","updates","install","clan-management"].includes(visible)?"more":visible;
  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===navView));
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+visible||(view==="settings"&&v.id==="view-settings")));
  const gear=document.getElementById("settingsOpen");
@@ -6896,6 +6910,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
   if(action==="archive"){showPlannerView("archive");window.CWLGroupArchive?.open?.();return;}
   if(action==="goldpass"){openGoldpassPreview();return;}
+  if(action==="activity-goldpass"){openActivityGoldpass();return;}
   if(moreSettingsMeta[action]){openMoreSettings(action);return}
 });
 // Keep Android's native install UI; iOS Safari has no beforeinstallprompt API.
@@ -7007,6 +7022,32 @@ async function openGoldpassPreview(){
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
 }
+let activityGoldpassView=null;
+function activityGoldpassContext(){
+ const c=window.CWLCloud;
+ return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.(),session:c.getActivitySession?.()}:null;
+}
+window.CWLActivityGoldpass={accessChanged(context){
+ const same=activityGoldpassView?activityGoldpassView.accessChanged(context):!!context;
+ if(!same&&document.getElementById("view-activity-goldpass").classList.contains("active"))showPlannerView("more");
+}};
+async function openActivityGoldpass(){
+ const context=activityGoldpassContext();if(!context?.clanTag)return;
+ showPlannerView("activity-goldpass");
+ const root=document.getElementById("activityGoldpassContent");
+ try{
+  if(!activityGoldpassView){
+   root.textContent="Verlosungen werden geladen …";
+   const module=await import("./cwl-activity-campaign-view.mjs?v=1");
+   const now=activityGoldpassContext();
+   if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-activity-goldpass").classList.contains("active"))return;
+   activityGoldpassView=module.createActivityCampaignView({root,getContext:activityGoldpassContext,api:request=>window.CWLCloud.activityCampaignRequest(request),
+    confirmDraw:campaign=>confirmInline(campaign.title+" · "+campaign.qualified+" qualifizierte Teilnehmer. Der Gewinner wird einmalig und dauerhaft gespeichert.",{title:"Grind-Verlosung abschließen?",confirmText:"Gewinner ziehen",danger:true})});
+  }
+  activityGoldpassView.open();
+ }catch{root.textContent="Verlosung konnte nicht geladen werden. Bitte erneut öffnen."}
+}
+document.getElementById("activityGoldpassBack").onclick=()=>showPlannerView("more");
 document.getElementById("goldpassBack").onclick=()=>showPlannerView("more");
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");
 document.getElementById("summaryOpenArchive").onclick=()=>{
