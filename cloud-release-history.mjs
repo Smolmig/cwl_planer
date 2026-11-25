@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.34.0",
+    "releaseType": "minor",
+    "date": "2026-11-25",
+    "title": "Grind-Verlosung",
+    "description": "Grind-Ziele mit drei Vorlagen festlegen, Spenden und CW/CWL verfolgen, Discord und Abstimmungen markieren und nach Ende einmalig einen Gewinner ziehen; beide Verlosungsarten haben eine Ziehungsanimation."
+  },
+
+  {
     "version": "v1.33.0",
     "releaseType": "minor",
     "date": "2026-11-25",

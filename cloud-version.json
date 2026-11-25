@@ -1,5 +1,5 @@
 {
-  "version": "v1.33.0",
+  "version": "v1.34.0",
   "released": "2026-11-25",
-  "summary": "Goldpass: Regeln je Saison speichern und Gewinner einmalig aus bestätigten CWL-Ergebnissen ziehen."
+  "summary": "Grind-Verlosung mit Zeitraum, CW-Zielen, Spendenfortschritt und einmaliger Ziehung; CWL-Verlosung mit Gewinneranimation."
 }

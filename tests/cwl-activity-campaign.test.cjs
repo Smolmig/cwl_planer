@@ -1,0 +1,41 @@
+"use strict";
+const {test}=require("node:test");
+const assert=require("node:assert/strict");
+const load=()=>import("../cwl-activity-campaign.mjs");
+test("Inclusive calendar dates and leap days; invalid and reversed dates rejected",async()=>{
+ const {activityPeriod,campaignPhase}=await load();
+ assert.equal(activityPeriod("2026-12-01","2026-12-31").days,31);
+ assert.equal(activityPeriod("2028-02-28","2028-03-01").days,3);
+ assert.throws(()=>activityPeriod("2026-02-30","2026-03-01"));
+ assert.throws(()=>activityPeriod("2026-12-31","2026-12-01"));
+ const c={start:"2026-12-01",end:"2026-12-31"};
+ assert.equal(campaignPhase(c,"2026-11-30"),"scheduled");
+ assert.equal(campaignPhase(c,"2026-12-31"),"running");
+ assert.equal(campaignPhase(c,"2027-01-01"),"review");
+ assert.equal(campaignPhase({...c,official:{}},"2027-01-01"),"drawn");
+});
+test("Preset goals scale to period and planned CWs; ranked and raid opt in",async()=>{
+ const {presetTargets}=await load();
+ const b=presetTargets("balanced","2026-12-01","2026-12-31");
+ const a=presetTargets("active","2026-12-01","2026-12-31");
+ const c=presetTargets("challenge","2026-12-01","2026-12-31");
+ assert.equal(b.assumptions.normalWars,6);assert.equal(b.assumptions.maximumStars,36);
+ assert.deepEqual([b,a,c].map(x=>x.rules.find(r=>r.metric==="cwStars").minimum),[14,21,26]);
+ assert.deepEqual([b,a,c].map(x=>x.rules[0].minimum),[3100,4425,6650]);
+ assert.ok([b,a,c].every(x=>x.rules.find(r=>r.metric==="cwStars").minimum<x.assumptions.maximumStars));
+ const custom=presetTargets("active","2026-12-01","2026-12-31",{normalWars:12,ranked:true,raids:true});
+ assert.equal(custom.assumptions.maximumStars,72);
+ assert.equal(custom.rules.find(r=>r.metric==="cwStars").minimum,45);
+ assert.equal(custom.rules.find(r=>r.metric==="rankedParticipationPct").minimum,80);
+ assert.equal(custom.rules.find(r=>r.metric==="raidParticipationPct").minimum,90);
+ assert.equal(presetTargets("active","2026-12-01","2026-12-07",{normalWars:0}).rules.some(r=>r.metric==="cwStars"),false);
+});
+test("Pace is an orientation only and final-day draw is blocked",async()=>{
+ const {campaignPreview,activityGoalPace}=await load();
+ const c={start:"2026-12-01",end:"2026-12-14",rules:[{metric:"donations",minimum:1400}]};
+ const players=[{tag:"#2PYL",evidence:{donations:{value:1400,coverage:"lower_bound"}}}];
+ assert.equal(activityGoalPace(c.rules[0],c,"2026-12-07").expected,700);
+ assert.equal(campaignPreview(c,players,"2026-12-14").ready,false);
+ assert.equal(campaignPreview(c,players,"2026-12-15").ready,true);
+ assert.equal(campaignPreview(c,[...players,{tag:"#8PYL",evidence:{donations:{value:500,coverage:"lower_bound"}}}],"2026-12-15").ready,false);
+});
