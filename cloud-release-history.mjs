@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.31.0",
+    "releaseType": "minor",
+    "date": "2026-11-24",
+    "title": "Offene Clan-Prüfungen gebündelt",
+    "description": "Beförderungs-, Rückkehr- und Fehlangriffshinweise je Spieler gemeinsam prüfen, mit belegten offenen CW- und CWL-Fehlangriffen und direkten Nachweislinks."
+  },
+
+  {
     "version": "v1.30.1",
     "releaseType": "patch",
     "date": "2026-11-24",

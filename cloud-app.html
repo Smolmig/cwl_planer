@@ -4147,10 +4147,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.30.1</strong><span>Direkt zur letzten CWL</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.31.0</strong><span>Offene Clan-Prüfungen im Überblick</span></div>
       <ul>
-       <li><b>Einsätze:</b> Zwischen zwei CWLs direkt zur letzten historischen Einsatzübersicht springen.</li>
-       <li><b>Archiv:</b> Neueste verfügbare Saison und Einsätze werden geöffnet; gespeicherte Daten bleiben unverändert.</li>
+       <li><b>Clanverwaltung:</b> Offene Beförderungs-, Rückkehr- und Fehlangriffshinweise pro Spieler gebündelt ansehen.</li>
+       <li><b>Nachweise:</b> Offene belegte Fehlangriffe aus CW und CWL zusammenzählen, bei Datenlücken als Untergrenze.</li>
+       <li><b>Prüfen:</b> Direkt zu den jeweiligen Nachweisen wechseln. Keine automatische Rangänderung.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4394,7 +4395,7 @@ html.cloud-startup-pending .cloud-startup-splash{
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan. Ohne verbundenen Clan gibt es noch keine Planer-Zugänge; der Clanname und Clan-Tag beim Hinzufügen sind nur Eingabebeispiele und keine Kontoempfehlungen.</p></div>
-    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. „Offene Vorschläge“ zeigt nur belegte Beförderungs- und Rückkehrhinweise, die noch geprüft werden müssen. Unter „Gesamte Liste“ sind auch Mitglieder ohne Empfehlung und mit fehlenden Nachweisen sichtbar. „Details anzeigen“ öffnet die Clanzeit, die Angriffs- und Spendenbelege sowie die vorhandenen Prüfentscheidungen; beim Aktualisieren bleiben geöffnete Details erhalten, beim Clanwechsel werden sie zurückgesetzt. Eine Beförderung, Degradierung oder ein Kick wird niemals durch diese Seite automatisch durchgeführt. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Für künftig vollständig belegte normale CW-Fehlangriffe gibt es im getrennten CW-Prüfbereich jetzt eine eigene, nachvollziehbare Entschuldigung; alte unbekannte Kriege werden nicht nachträglich bewertet. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
+    <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Die Übersicht „Offene Prüfungen“ bündelt bestehende Beförderungs-, Rückkehr-, CW- und CWL-Hinweise nach Spieler, ohne neue Sanktionen abzuleiten. Die Zahl offener belegter Fehlangriffe zählt bei normalen CWs bis zu zwei Angriffe pro Krieg und in der CWL einen pro Krieg. Bei fehlenden Quellen ist sie nur eine Untergrenze; eine kriegsübergreifende Serie wird daraus nicht abgeleitet. Fehlende Quellen werden ausdrücklich genannt; die Schaltflächen führen zu den jeweiligen Nachweisen. „Offene Vorschläge“ zeigt nur belegte Beförderungs- und Rückkehrhinweise, die noch geprüft werden müssen. Unter „Gesamte Liste“ sind auch Mitglieder ohne Empfehlung und mit fehlenden Nachweisen sichtbar. „Details anzeigen“ öffnet die Clanzeit, die Angriffs- und Spendenbelege sowie die vorhandenen Prüfentscheidungen; beim Aktualisieren bleiben geöffnete Details erhalten, beim Clanwechsel werden sie zurückgesetzt. Eine Beförderung, Degradierung oder ein Kick wird niemals durch diese Seite automatisch durchgeführt. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Für künftig vollständig belegte normale CW-Fehlangriffe gibt es im getrennten CW-Prüfbereich jetzt eine eigene, nachvollziehbare Entschuldigung; alte unbekannte Kriege werden nicht nachträglich bewertet. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Normale CWs prüfen</b><p>Für vollständig belegte normale CWs werden zwei Angriffe pro Spieler gewertet. 0/2 oder zwei aufeinanderfolgende dokumentierte Kriege mit Fehlangriffen können beim Ältesten einen manuellen Ranghinweis auslösen. Einzelne Ereignisse lassen sich quittieren, entschuldigen, wieder öffnen und anhand der chronologischen Entscheidungen nachprüfen. Unvollständige Kriege und der letzte Login bleiben unbekannt; im Spiel ändert sich nichts automatisch.</p></div>
     <div><b>Verpasste CWL-Angriffe</b><p>Unter „Ränge prüfen“ gibt es jetzt eine eigene, zunächst eingeklappte Auswertung für bestätigte CWL-Fehlangriffe der letzten 90 Tage. Ein aktueller Ältester mit zwei aufeinanderfolgenden, vollständig belegten Fehlangriffen erhält den Hinweis „Degradierung prüfen“; eine in der App dokumentierte Entschuldigung wird berücksichtigt. Nicht bestätigte und importierte Kriege zählen ausdrücklich nicht. Ohne nachgewiesene vollständige normale CW-Angriffe und ohne letzten Login gibt es noch keine CW-Zwei-Angriffe- oder Kick-Regel. Hier kannst du nichts automatisch degradieren oder als schuldhaft markieren.</p></div>
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
@@ -4495,6 +4496,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   </form>
  </details>
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
+ <details id="clanManagementActionOverview" class="clan-management-criteria" open hidden>
+  <summary id="clanManagementActionHeading">Offene Prüfungen</summary>
+  <p id="clanManagementActionCoverage" class="statusline"></p>
+  <div id="clanManagementActionList" class="clan-management-list" role="list" aria-label="Spieler mit offenen Prüfungen"></div>
+ </details>
  <div id="clanManagementFilters" class="clan-management-filter" role="group" aria-label="Ranghinweise anzeigen" hidden>
   <button id="clanManagementFilterOpen" type="button" data-management-filter="open" aria-pressed="true">Offene Vorschläge <span id="clanManagementOpenCount">0</span></button>
   <button id="clanManagementFilterAll" type="button" data-management-filter="all" aria-pressed="false">Gesamte Liste</button>
@@ -4784,15 +4790,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.30.1"></script>
-<script src="./clan-management-missed-core.js?v=1.30.1"></script>
-<script src="./clan-management-cw-core.js?v=1.30.1"></script>
-<script src="./clan-management-cw-view.js?v=1.30.1"></script>
-<script src="./cwl-deployment-filters.js?v=1.30.1"></script>
-<script src="./cwl-planning-core.js?v=1.30.1"></script>
-<script src="./cwl-plan-whatif.js?v=1.30.1"></script>
+<script src="./clan-management-core.js?v=1.31.0"></script>
+<script src="./clan-management-missed-core.js?v=1.31.0"></script>
+<script src="./clan-management-cw-core.js?v=1.31.0"></script>
+<script src="./clan-management-cw-view.js?v=1.31.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.31.0"></script>
+<script src="./cwl-planning-core.js?v=1.31.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.31.0"></script>
 <script>
-const APP_VERSION="v1.30.1";
+const APP_VERSION="v1.31.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6252,6 +6258,7 @@ sidebarCollapse.onclick=()=>setSidebarCollapsed(!document.body.classList.contain
 let clanManagementContext=null,clanManagementRequest=0;
 let clanRulesLoaded=false,clanRulesRevision=null,clanRulesDirty=false;
 let clanManagementLastPreview=null,clanManagementReviewsReadable=false;
+let clanManagementCwlRows=null,clanManagementNormalResult=null;
 
 function renderClanManagementMisses(members,payload){
  const heading=document.getElementById("clanManagementMissedHeading");
@@ -6262,7 +6269,7 @@ function renderClanManagementMisses(members,payload){
   heading.textContent="Verpasste CWL-Angriffe · Prüfung nicht verfügbar";
   const warning=document.createElement("p");warning.className="clan-management-empty";
   warning.textContent="Die Nachweise oder Entscheidungen sind nicht vollständig abrufbar. Deshalb gibt es keine Degradierungsempfehlung.";
-  list.appendChild(warning);return;
+  list.appendChild(warning);return null;
  }
  const severe=rows.filter(item=>item.severe).length;
  heading.textContent="Verpasste CWL-Angriffe · "+
@@ -6271,7 +6278,7 @@ function renderClanManagementMisses(members,payload){
  if(!rows.length){
   const empty=document.createElement("p");empty.className="clan-management-empty";
   empty.textContent="In vollständig erfassten CWL-Kriegen der letzten 90 Tage sind keine offenen Fehlangriffe belegt. Nicht erfasste Kriege bleiben unbekannt.";
-  list.appendChild(empty);return;
+  list.appendChild(empty);return rows;
  }
  for(const item of rows){
   const node=document.createElement("div");node.className="clan-management-person";
@@ -6282,8 +6289,87 @@ function renderClanManagementMisses(members,payload){
   const note=document.createElement("small");note.textContent=item.note;
   node.append(title,status,note);list.appendChild(node);
  }
+ return rows;
 }
 
+function clearClanManagementActionOverview(){
+ const host=document.getElementById("clanManagementActionOverview");
+ if(!host)return;
+ host.hidden=true;host.open=true;
+ document.getElementById("clanManagementActionHeading").textContent="Offene Prüfungen";
+ document.getElementById("clanManagementActionCoverage").textContent="";
+ document.getElementById("clanManagementActionList").replaceChildren();
+}
+function jumpClanManagementAction(tag,source){
+ const listId={rank:"clanManagementList",cw:"clanManagementNormalList",cwl:"clanManagementMissedList"}[source];
+ if(!listId)return;
+ if(source==="rank"){
+  clanManagementFilter="open";
+  renderClanManagementRows(false);
+ }else{
+  const panel=document.getElementById(source==="cw"?"clanManagementNormalPanel":"clanManagementMissedPanel");
+  if(panel)panel.open=true;
+ }
+ const list=document.getElementById(listId);
+ const row=[...(list?.querySelectorAll("[data-player-tag]")||[])].find(x=>x.dataset.playerTag===tag);
+ if(!row)return;
+ const details=row.querySelector("details");
+ if(details){details.open=true;
+  if(source==="rank")clanManagementExpandedTags.add(tag);
+ }
+ const target=details?.querySelector("summary")||row;
+ if(target===row)target.tabIndex=-1;
+ target.focus({preventScroll:true});
+ row.scrollIntoView?.({block:"nearest"});
+}
+function renderClanManagementActionOverview(){
+ const host=document.getElementById("clanManagementActionOverview");
+ if(!host)return;
+ const model=window.CWLClanManagement?.buildActionOverview({
+  preview:clanManagementLastPreview,reviewReadable:clanManagementReviewsReadable,
+  cwlRows:clanManagementCwlRows,normalResult:clanManagementNormalResult});
+ if(!model){clearClanManagementActionOverview();return;}
+ const labels={rank:"Beförderung / Rückkehr",cw:"Normale CW",cwl:"CWL"};
+ const heading=document.getElementById("clanManagementActionHeading");
+ heading.textContent=model.rows.length+" Spieler zu prüfen"+
+  (model.complete?"":" · Daten teilweise verfügbar");
+ const coverage=document.getElementById("clanManagementActionCoverage");
+ coverage.textContent=Object.keys(labels).map(key=>labels[key]+": "+
+  (model.counts[key]===null?"nicht verfügbar":model.counts[key])).join(" · ")+
+  ". Spieler werden einmal gezählt; Fehlangriffe nur aus offenen, erfassten Fällen.";
+ const list=document.getElementById("clanManagementActionList");
+ list.replaceChildren();
+ if(!model.rows.length){
+  const p=document.createElement("p");p.className="clan-management-empty";
+  p.textContent=model.complete?"Keine offenen Hinweise in den erfassten Daten. Nicht beobachtete Kriege oder Aktivität bleiben unbekannt.":
+   "Keine offenen Hinweise in den verfügbaren Quellen. Nicht verfügbare Quellen sind nicht bewertet.";
+  list.append(p);
+ }
+ for(const person of model.rows){
+  const row=document.createElement("div");row.className="clan-management-person";
+  row.setAttribute("role","listitem");
+  const name=document.createElement("strong");name.textContent=person.name;
+  const status=document.createElement("div");status.className="clan-management-person-status";
+  status.textContent=person.conflicting?"Mehrere Hinweise gemeinsam prüfen":
+   person.severe?"Degradierung prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":"Beförderung / Rückkehr prüfen";
+  const missed=document.createElement("small");
+  if(person.sources.some(x=>x!=="rank"))missed.textContent=person.openMisses>0?
+   (person.missCountComplete?"":"Mindestens ")+person.openMisses+" offene belegte Fehlangriffe"+
+    (person.missCountComplete?"":" · weitere Nachweise unklar"):"Angriffszahl nicht vollständig verfügbar";
+  const actions=document.createElement("div");actions.className="clan-rule-actions";
+  for(const source of person.sources){
+   const button=document.createElement("button");button.type="button";button.className="btn small";
+   button.textContent=labels[source];
+   button.setAttribute("aria-label",labels[source]+" für "+person.name+" ansehen");
+   button.onclick=()=>jumpClanManagementAction(person.tag,source);
+   actions.append(button);
+  }
+  row.append(name,status);
+  if(missed.textContent)row.append(missed);
+  row.append(actions);list.append(row);
+ }
+ host.hidden=false;
+}
 function renderClanManagementReviewSummary(){
  const preview=clanManagementLastPreview;
  if(!preview)return;
@@ -6296,6 +6382,7 @@ function renderClanManagementReviewSummary(){
   (!clanManagementReviewsReadable?" · gespeicherte Prüfstände nicht abrufbar":"")+
   " · Änderungen am Rang nur in Clash";
  summary.hidden=false;
+ renderClanManagementActionOverview();
 }
 function renderClanManagementReviewAction(group,person,item){
  group.replaceChildren();
@@ -6491,9 +6578,12 @@ function clearClanManagement(){
  document.getElementById("clanManagementRefresh").disabled=false;
  clanRulesLoaded=false;clanRulesRevision=null;clanRulesDirty=false;
  clanManagementLastPreview=null;clanManagementReviewsReadable=false;
+ clanManagementCwlRows=null;clanManagementNormalResult=null;
+ clearClanManagementActionOverview();
  clanManagementExpandedTags.clear();clanManagementFilter="open";
  window.CWLNormalCwUI?.clear();
  document.getElementById("clanManagementMissedPanel").open=false;
+ document.getElementById("clanManagementMissedHeading").textContent="Verpasste CWL-Angriffe · Nachweise prüfen";
  document.getElementById("clanManagementMissedList").replaceChildren();
  document.getElementById("clanManagementFilters").hidden=true;
  displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
@@ -6543,16 +6633,24 @@ window.CWLClanManagementView={
    if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
    clanManagementLastPreview=preview;
    clanManagementReviewsReadable=Array.isArray(result.reviewDecisions);
-   renderClanManagementReviewSummary();
+   clanManagementNormalResult=null;
+   clanManagementCwlRows=renderClanManagementMisses(result.members,result.missedReview);
    renderClanManagementRows();
-   renderClanManagementMisses(result.members,result.missedReview);
-   window.CWLNormalCwUI?.render(result.members,result.normalCwReview,result.clashTag);
+   window.CWLNormalCwUI?.render(result.members,result.normalCwReview,result.clashTag,normalResult=>{
+    if(request!==clanManagementRequest||clan!==cloud.getActiveClanId()||
+       !cloud.active||!cloud.isOwner())return;
+    clanManagementNormalResult=normalResult;
+    renderClanManagementReviewSummary();
+   });
+   renderClanManagementReviewSummary();
    status.textContent="Clash zuletzt geprüft: "+new Date(result.checkedAt).toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"})+
     (result.tenure===null?" · Clanzeit derzeit nicht abrufbar.":" · Clanzeit zählt nur für bestätigte Zeiträume.")+
     (loadedRules?.loyalty_enabled&&result.loyalty===null?" · Treuenachweise derzeit nicht abrufbar.":"")+
     (!clanManagementReviewsReadable?" · gespeicherte Entscheidungen nicht verfügbar.":"");
   }catch(err){
    if(request!==clanManagementRequest)return;
+   clanManagementLastPreview=null;clanManagementCwlRows=null;clanManagementNormalResult=null;
+   clearClanManagementActionOverview();
    document.getElementById("clanManagementSummary").hidden=true;
    document.getElementById("clanManagementFilters").hidden=true;
    document.getElementById("clanManagementList").replaceChildren();
@@ -6713,7 +6811,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.30.1");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.31.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7106,6 +7204,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.30.1"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.31.0"></script>
 </body>
 </html>
