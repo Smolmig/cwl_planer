@@ -22,19 +22,20 @@ const war={state:"warEnded",teamSize:5,endTime:day,
 const group={season:currentMonth,clanTag:"#2PYL",clans:[],rounds:[]};
 const valid=tag=>/^#[0289PYLQGRJCUV]{3,15}$/.test(tag);
 const tag=x=>String(x||"").trim().toUpperCase();
-const build=(snapshot=war,archive=row)=> {
+const build=async(snapshot=war,archive=row)=> {
+ const {finalRoundRecoveryCandidate}=await import("../supabase/functions/coc-cwl-status/final-round-recovery.mjs");
  const calls=[];
  const from=table=>{
   const query={
    select(x){calls.push([table,"select",x]);return query},
    eq(k,v){calls.push([table,k,v]);return query},
    order(k,v){calls.push([table,"order",k]);return query},
-   limit:async()=>({data:archive?[archive]:[],error:null}),
+   limit:async()=>({data:table==="cwl_own_lineup_archives"?(archive?[archive]:[]):[],error:null}),
    maybeSingle:async()=>({data:{group_json:group},error:null})
   };
   return query;
  };
- const sandbox={tag,valid,
+ const sandbox={tag,valid,finalRoundRecoveryCandidate,
   getWar:async x=>{calls.push(["official_war",x]);return snapshot},
   safeSide:s=>({...s,badgeUrl:null}),
   Date,console};
@@ -42,7 +43,7 @@ const build=(snapshot=war,archive=row)=> {
  return {recover:sandbox.recover,calls,ctx:{supabase:{from}}};
 };
 test("Official warEnded and exact persisted clan tag recover only archived day seven",async()=>{
- const {recover,calls,ctx}=build();
+ const {recover,calls,ctx}=await build();
  const out=await recover("tenant-a","#2PYL","secret",ctx);
  assert.equal(out?.active,true);
  assert.equal(out.groupState,"ended");
@@ -52,7 +53,7 @@ test("Official warEnded and exact persisted clan tag recover only archived day s
  assert.equal(out.rounds[6].state,"warEnded");
  assert.equal(out.rounds[6].warTag,"#P9Q0");
  assert.ok(calls.some(x=>x[0]==="cwl_own_lineup_archives"&&x[1]==="clan_id"&&x[2]==="tenant-a"));
- assert.ok(calls.some(x=>x[0]==="cwl_own_lineup_archives"&&x[1]==="day"&&x[2]===7));
+ assert.ok(calls.some(x=>x[0]==="cwl_own_lineup_archives"&&x[1]==="order"&&x[2]==="day"));
  assert.ok(calls.some(x=>x[0]==="official_war"&&x[1]==="#P9Q0"));
 });
 test("No archived day7, unfinished official war, fake clan, roster gaps or old season: never infer finale",async()=>{
@@ -69,12 +70,12 @@ test("No archived day7, unfinished official war, fake clan, roster gaps or old s
   [duplicate,row],[incomplete,row],[wrongSize,row],
   [futureEnd,row],[war,tooOld]
  ]){
-  const {recover,ctx}=build(current,arch);
+  const {recover,ctx}=await build(current,arch);
   assert.equal(await recover("tenant-a","#2PYL","secret",ctx),null);
  }
 });
 test("Recovery never reads other tenants, does not edit plans, does not produce invented attack counts",()=>{
- assert.match(recoverySource,/\.eq\("clan_id",clanId\)\.eq\("day",7\)/);
+ assert.match(recoverySource,/\.eq\("clan_id",clanId\)[\s\S]*?\.order\("day",\{ascending:false\}\)/);
  assert.match(recoverySource,/war\?\.state!=="warEnded"/);
  assert.match(recoverySource,/!rosterOkay\(own\)\|\|!rosterOkay\(enemy\)/);
  assert.match(recoverySource,/ended>Date\.now\(\)-60000/);

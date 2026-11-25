@@ -49,7 +49,8 @@ test("During an actual CWL departing players in scheduled days still require a h
  assert.equal(planningCalled,1);
 });
 
-function recapFixture(){
+async function recapFixture(){
+ const {normalWarAboveRecap}=await import("../cwl-season-lifecycle.mjs");
  const start=live.indexOf("function renderPostseason(){");
  const end=live.indexOf("// One delegated handler",start);
  assert.ok(start>0&&end>start,"use production recap render source");
@@ -63,7 +64,7 @@ function recapFixture(){
   document:dom.window.document,context:()=>({active:true,clanId:"clan-a",profile}),
   getLifecycle:()=>model,
   current:{currentWar:{state:"preparation"}},
-  confirmedNoCwl:true,
+  confirmedNoCwl:true,normalWarAboveRecap,normalWarPriority:false,
   lastKnownGroup:null,postseasonTabByScope:new Map(),
   onPhaseApplied:()=>{},
   renderInlineCwlPostseason:()=>'<article id="fullCwlResults">CWL-Ergebnisse</article>'
@@ -73,8 +74,8 @@ function recapFixture(){
  const summary=dom.window.document.getElementById("planCwlPostseasonSummary");
  return {dom,ctx,model,render,host,summary};
 }
-test("With no normal CW / in CW preparation the last CWL occupies Plan and cannot be folded into emptiness",()=>{
- const f=recapFixture();
+test("With no normal CW / in CW preparation the last CWL occupies Plan and cannot be folded into emptiness",async()=>{
+ const f=await recapFixture();
  try{
   assert.equal(f.render(),true);
   assert.equal(f.host.open,true);
@@ -86,8 +87,8 @@ test("With no normal CW / in CW preparation the last CWL occupies Plan and canno
   assert.match(html,/#planCwlPostseason>summary\[hidden\]\{display:none!important\}/);
  }finally{f.dom.window.close()}
 });
-test("During normal CW battle/finished-war view the prior CWL becomes an optional disclosure",()=>{
- const f=recapFixture();
+test("During normal CW battle/finished-war view the prior CWL becomes an optional disclosure",async()=>{
+ const f=await recapFixture();
  try{
   f.render();
   f.ctx.current={currentWar:{state:"inWar"}};
@@ -99,14 +100,16 @@ test("During normal CW battle/finished-war view the prior CWL becomes an optiona
   f.ctx.current={currentWar:{state:"warEnded"}};
   f.render();
   assert.equal(f.summary.hidden,false);
+  f.ctx.current={currentWar:{state:"preparation"}};f.ctx.normalWarPriority=true;
+  f.render();assert.equal(f.summary.hidden,false);
   f.ctx.current={currentWar:null};
   f.render();
   assert.equal(f.summary.hidden,true);
   assert.equal(f.host.open,true,"when normal CW disappears, show substantive recap");
  }finally{f.dom.window.close()}
 });
-test("When CWL is idle with no saved postseason, even the pause information cannot vanish",()=>{
- const f=recapFixture();
+test("When CWL is idle with no saved postseason, even the pause information cannot vanish",async()=>{
+ const f=await recapFixture();
  try{
   f.ctx.getLifecycle=()=>({mode:"idle"});
   assert.equal(f.render(),true);

@@ -61,6 +61,14 @@ test("Normal CW belongs on Plan, not Einsätze, with both rosters and real attac
     assert.match(await page.locator("#currentWarContent").innerText(),/1\/4 Angriffe/);
     assert.equal(await page.evaluate(()=>document.getElementById("currentWarCard").nextElementSibling?.id),"planOverview",
       "Live battle card should appear above the CWL Plan summary");
+    await page.evaluate(data=>{
+      const prep={currentWar:{...data.currentWar,state:"preparation"}};
+      window.currentOverview.update(prep,{priorNormalWar:false});
+    },payload);
+    assert.equal(await page.evaluate(()=>document.getElementById("planCwlPostseason").nextElementSibling?.id),"currentWarCard");
+    await page.evaluate(data=>window.currentOverview.update({currentWar:{...data.currentWar,state:"preparation"}},{priorNormalWar:true}),payload);
+    assert.equal(await page.evaluate(()=>document.getElementById("currentWarCard").nextElementSibling?.id),"planOverview");
+    await page.evaluate(data=>window.currentOverview.update(data),payload);
     const own=page.locator('.cw-now-details[data-team="own"]');
     const enemy=page.locator('.cw-now-details[data-team="enemy"]');
     await own.locator("summary").click();

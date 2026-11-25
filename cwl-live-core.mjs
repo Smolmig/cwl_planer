@@ -326,8 +326,8 @@ export function reconcileCwl(profile,payload,createMember,now=Date.now()) {
   if (profile.cwlLiveIgnoredSeason===snapshot.season) return {changed:false,lockedDays:[],reason:"season_explicitly_reset"};
   const previous=profile.cwlLive;
   const played=profile.locks.some(l=>l?.locked);
-  if (previous?.season && previous.season!==snapshot.season && played)
-    return {changed:false,lockedDays:[],reason:"previous_season_locked"};
+  if (previous?.season && previous.season!==snapshot.season)
+    return {changed:false,lockedDays:[],reason:played?"previous_season_locked":"previous_season_requires_archive"};
   if (!previous?.season && played)
     return {changed:false,lockedDays:[],reason:"unlinked_manual_history"};
   let changed=false;

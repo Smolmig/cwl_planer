@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.31.2",
+    "releaseType": "patch",
+    "date": "2026-11-25",
+    "title": "CWL-Wechsel und normale Clankriege",
+    "description": "Der alte Saisonplan bleibt geschützt; ab dem zweiten normalen CW nach der CWL steht auch die Vorbereitung im Plan oben, sofern belegt."
+  },
+
+  {
     "version": "v1.31.1",
     "releaseType": "patch",
     "date": "2026-11-25",

@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.31.2] - 2026-11-25
+
+- Plan: Nach der ersten normalen CW-Vorbereitung rückt auch die Vorbereitung weiterer CWs vor den CWL-Rückblick, sofern frühere Kriege belegt sind.
+- CWL-Wechsel schützt auch alte Pläne ohne gesperrte Kriegstage; veraltete Saisonantworten können neuere Daten nicht ersetzen.
+- Finale Wiedererkennung für offiziell belegte 5- und 7-Kriege-Ligen im Status-Proxy vorbereitet (separates Edge-Deployment erforderlich).
+
 ## [1.31.1] - 2026-11-25
 
 - Clanverwaltung: kompakte Übersicht der Leistungskriterien bei leerer Vorschlagsliste, getrennte Darstellung fehlender Nachweise und nicht erfüllter Grenzwerte.

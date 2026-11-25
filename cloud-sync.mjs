@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.31.1";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.31.1";
-import { createCwlLive } from "./cwl-live.mjs?v=1.31.1";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.31.1";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.31.1";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.31.1";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.31.1";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.31.1";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.31.2";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.31.2";
+import { createCwlLive } from "./cwl-live.mjs?v=1.31.2";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.31.2";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.31.2";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.31.2";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.31.2";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.31.2";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -715,8 +715,8 @@ const live=createCwlLive({
  ensureCloudSaved:()=>ensureSaved(),
  applyVerifiedPause:args=>applyVerifiedPause(args),
  onInitialSettled:expectedClan=>{if(cloud.active&&clanId===expectedClan)finishStartup()},
- onStatus:data=>{
-  currentWarOverview?.update(data);
+ onStatus:(data,options)=>{
+  currentWarOverview?.update(data,options);
   window.CWLSeasonView?.render?.();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
