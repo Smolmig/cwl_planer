@@ -29,8 +29,8 @@ test("Twice-hourly off-peak schedule uses the same exact, signed OIDC workflow",
 test("Collector cannot report full success without complete member observations",()=>{
  const edge=read("supabase/functions/coc-stats-collector/index.ts");
  const wf=read(".github/workflows/collect-war-stats.yml");
- assert.match(edge,/ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0/);
- assert.match(edge,/errors\|\|tenureWriteErrors\|\|tenureSkippedProfiles\?503:200/);
+ assert.match(edge,/ok:errors===0&&tenureWriteErrors===0&&tenureSkippedProfiles===0&&seasonRolloverErrors===0/);
+ assert.match(edge,/errors\|\|tenureWriteErrors\|\|tenureSkippedProfiles\|\|seasonRolloverErrors\?503:200/);
  assert.match(edge,/tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,\s*\n\s+rosterFailureClasses/);
  assert.match(wf,/\.tenureSkippedProfiles == 0/);
  assert.match(wf,/\.tenureObservedProfiles == \.tenantProfiles/);
