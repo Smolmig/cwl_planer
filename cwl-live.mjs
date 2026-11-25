@@ -1,7 +1,7 @@
 import { reconcileCwl, sanitizeSnapshot, tagOf, safeBadgeUrl, cwlAttackRows, reviewPreparationLineup, formatClashSwapText, compareConsecutiveCwlLineups, cwlAttackReminder, cwlMissedRotationReview, recordedCwlAttackResults } from "./cwl-live-core.mjs?v=1.27.0";
 import { evaluateEightStarGoals, findReadOnlyMedalSwap } from "./cwl-medal-goals.mjs?v=1.27.0";
 import { previewVerifiedCwlPause } from "./cwl-verified-pause.mjs?v=1.27.0";
-import { assessCwlLifecycle, preservedCwlRound } from "./cwl-season-lifecycle.mjs?v=1.27.0";
+import { assessCwlLifecycle, preservedCwlRound, normalWarPreparationWindow, hasPriorNormalWar, normalWarAboveRecap } from "./cwl-season-lifecycle.mjs?v=1.31.2";
 import { renderInlineCwlPostseason } from "./cwl-season-view.mjs?v=1.27.0";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -74,6 +74,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
   let activeClan=null,interval=null,current=null,requestId=0,fetching=false,offlineReason="",confirmedNoCwl=false,lastSuccessfulAt=0;
   let staleRoundDays=new Set(),lastSuccessfulProfile=null; // A saved fallback is never a fresh API observation.
   let lastKnownGroup=null; // Last validated group from THIS linked clan only.
+  let normalWarPriority=false,normalWarPriorityScope="";
   const FRESH_WINDOW_MS=10*60*1000; // A recent browser fetch; upstream may still cache preparation data.
   const expandedDays=new Set(),expandedOpponentDays=new Set(),expandedMissReviews=new Set();
   let ownerDecisions=[],decisionScope="",decisionBusy=false,decisionError="";
@@ -313,8 +314,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     const scope=ctx.clanId+"|"+season;
     const group=lastKnownGroup?.season===season&&
       lastKnownGroup.clanTag===model.snapshot?.clanTag?lastKnownGroup:null;
-    const battleState=current?.currentWar?.state||"";
-    const battleOngoing=battleState==="inWar"||battleState==="warEnded";
+    const battleOngoing=normalWarAboveRecap(current?.currentWar,normalWarPriority);
     const warMode=battleOngoing?"battle":"preparation";
     summary.hidden=!battleOngoing;
     if(host.dataset.scope!==scope){
@@ -1004,6 +1004,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
     // Never carry fresh-state flags or round snapshots over from another clan.
     if(activeClan!==ctx.clanId){
       activeClan=ctx.clanId;current=null;lastSuccessfulAt=0;lastSuccessfulProfile=null;staleRoundDays.clear();
+      normalWarPriority=false;normalWarPriorityScope="";
     }
     const req=++requestId,id=ctx.clanId,profileAtRequest=ctx.profile,roleAtRequest=ctx.role;
     const stillCurrent=()=>{
@@ -1075,10 +1076,26 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       }
       current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
+      const window=normalWarPreparationWindow(getLifecycle(),data.currentWar,ctx.clanTag);
+      const scope=window?id+"|"+window.season+"|"+window.before:"";
+      if(scope!==normalWarPriorityScope){normalWarPriority=false;normalWarPriorityScope=scope}
+      if(window&&!normalWarPriority&&typeof sb.from==="function"){
+        // Existing tenant-RLS history: no additional endpoint, no browser-only counter.
+        try{
+          const {data:rows,error:historyError}=await sb.from("cwl_stat_wars")
+            .select("war_key,war_type,source,source_clash_tag,started_at")
+            .eq("clan_id",id).eq("source_clash_tag",window.clanTag)
+            .eq("war_type","normal").eq("source","api")
+            .gte("started_at",window.after).lt("started_at",window.before)
+            .order("started_at",{ascending:false}).limit(1);
+          if(!stillCurrent())return;
+          if(!historyError&&hasPriorNormalWar(window,rows))normalWarPriority=true;
+        }catch(e){if(!stillCurrent())return;console.warn("CW history priority:",String(e?.message||e))}
+      }
       // Live war placement and page panels must update on EVERY successful
       // API state, including new preparation rounds with incomplete group
       // details. Recording finalized statistics remains separately gated.
-      try{onStatus?.(data)}catch(e){console.warn(
+      try{onStatus?.(data,{priorNormalWar:normalWarPriority})}catch(e){console.warn(
        "Live-CW-Anzeige:",String(e?.message||e))}
       // Optional statistics sink only; a failed stats save must never break planning.
       if(onSnapshot && !data.pending && (!data.active || data.detailsStatus==="complete" || data.detailsStatus==="partial"))
@@ -1121,6 +1138,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
   function stop(){
     requestId++;if(interval!==null){clearInterval(interval);interval=null}
     activeClan=null;current=null;fetching=false;offlineReason="";confirmedNoCwl=false;lastSuccessfulAt=0;lastSuccessfulProfile=null;lastKnownGroup=null;
+    normalWarPriority=false;normalWarPriorityScope="";
     closeSwapPopover();openedOutgoing.clear();
     expandedDays.clear();expandedOpponentDays.clear();expandedMissReviews.clear();staleRoundDays.clear();
     ownerDecisions=[];decisionScope="";decisionBusy=false;decisionError="";
