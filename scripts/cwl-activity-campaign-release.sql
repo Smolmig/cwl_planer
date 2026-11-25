@@ -198,7 +198,7 @@ begin
   end loop;
   winner:=pool->((rnd%total)::int);
   update public.cwl_activity_campaigns set official=jsonb_build_object('winner',winner,'drawnAt',now(),'drawnBy',actor,'witness',witness,
-   'pool',pool,'rows',rows,'rules',c.rules,'decisions',c.decisions,'start',c.start_date,'end',c.end_date),
+   'pool',pool,'ticket',rnd%total,'rows',rows,'rules',c.rules,'decisions',c.decisions,'start',c.start_date,'end',c.end_date),
    revision=revision+1,updated_at=now() where id=c.id returning * into c;
  end if;
  return jsonb_build_object('id',c.id,'title',c.title,'start',c.start_date,'end',c.end_date,'revision',c.revision,'rules',c.rules,'decisions',c.decisions,
