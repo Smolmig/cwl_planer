@@ -1,6 +1,6 @@
 /* Safe Cloud CWL season lifecycle. Never infer a finished attack/war or
    mutate a historic plan just because the leaguegroup endpoint says notInWar. */
-import { sanitizeSnapshot, canFinalize } from "./cwl-live-core.mjs?v=1.18.1";
+import { sanitizeSnapshot, canFinalize, clashTime, tagOf } from "./cwl-live-core.mjs?v=1.18.1";
 
 const warCountOf=s=>s?.warCount===5?5:7;
 function monthDistance(season,now) {
@@ -76,6 +76,32 @@ export function assessCwlLifecycle({
   canAutoArchive:verifiedAll&&allPlayed,
   savedDays:savedDays.filter(l=>l?.locked).length,
   reason:verifiedAll?"all_finals_verified":"final_round_evidence_pending"};
+}
+// Only a previously observed normal CW in the same clan and after the
+// last actual CWL round can move the *next preparation* above the recap.
+// A missing final-round date or missing history is unknown, not "second CW".
+export function normalWarPreparationWindow(lifecycle,war,clanTag){
+ if(lifecycle?.mode!=="postseason"||war?.state!=="preparation")return null;
+ const snapshot=lifecycle.snapshot,own=tagOf(clanTag);
+ if(!own||snapshot?.clanTag!==own||tagOf(war.clan?.tag)!==own)return null;
+ const last=snapshot.rounds?.[warCountOf(snapshot)-1];
+ if(!last?.available||last.day!==warCountOf(snapshot))return null;
+ const after=clashTime(last.endTime),before=clashTime(war.startTime);
+ if(!Number.isFinite(after)||!Number.isFinite(before)||before<=after)return null;
+ return {clanTag:own,season:snapshot.season,after:new Date(after).toISOString(),
+  before:new Date(before).toISOString()};
+}
+export function hasPriorNormalWar(window,rows){
+ if(!window||!Array.isArray(rows))return false;
+ const after=Date.parse(window.after),before=Date.parse(window.before);
+ return rows.some(w=>w?.source==="api"&&w.war_type==="normal"&&
+  w.source_clash_tag===window.clanTag&&typeof w.war_key==="string"&&
+  w.war_key.startsWith("normal:")&&Number.isFinite(Date.parse(w.started_at))&&
+  Date.parse(w.started_at)>=after&&Date.parse(w.started_at)<before);
+}
+export function normalWarAboveRecap(war,priorNormalWar=false){
+ return war?.state==="inWar"||war?.state==="warEnded"||
+  (war?.state==="preparation"&&priorNormalWar===true);
 }
 export function preservedCwlRound(previous,next) {
  if(!next?.active||!previous?.season||previous.season!==next.season||
