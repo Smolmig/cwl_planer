@@ -20,7 +20,9 @@ export function finalRoundRecoveryCandidate(prior,groupRecord,clanTag,now=Date.n
      new Set(tags).size!==tags.length||!tags.includes(clanTag))return null;
   count=tags.length-1;
   if(g.rounds.length!==count||!g.rounds.every((r,i)=>r?.day===i+1))return null;
-  const own=(g.rounds[count-1].matches||[]).filter(m=>m?.available&&
+  const matches=g.rounds[count-1].matches;
+  if(!Array.isArray(matches))return null;
+  const own=matches.filter(m=>m?.available&&
     [m.clan?.tag,m.opponent?.tag].includes(clanTag));
   if(own.length>1||own.some(m=>m.warTag!==prior.war_tag))return null;
   group=g;
