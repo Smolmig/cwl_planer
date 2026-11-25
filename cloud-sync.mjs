@@ -387,6 +387,21 @@ const cloud={
  active:false,
  getActiveClanId:()=>clanId,
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
+ getActivitySession:()=>accountEpoch,
+ async activityCampaignRequest(request){
+  const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
+  const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&accountEpoch===epoch&&user?.id===actor&&this.getActiveClanTag()===tag&&request?.context?.clanId===expected&&request?.context?.clanTag===tag&&request?.context?.session===epoch;
+  if(!valid()||!navigator.onLine)throw Error("activity_context_unavailable");
+  if(!["list","read","create","save","discord","draw"].includes(request.action))throw Error("invalid_activity_action");
+  const args={p_clan:expected,p_action:request.action};
+  for(const [key,name] of Object.entries({id:"p_id",revision:"p_revision",title:"p_title",start:"p_start",end:"p_end",rules:"p_rules",decisions:"p_decisions",witness:"p_witness",player:"p_player",discord:"p_discord"})){
+   if(Object.hasOwn(request,key)&&request[key]!==undefined)args[name]=request[key];
+  }
+  const {data,error:err}=await sb.rpc("cwl_activity_manage",args);
+  if(!valid())throw Error("activity_context_changed");
+  if(err)throw Error(err.message||"activity_unavailable");
+  return data;
+ },
  // Read-only management preview. Unlike getRoster()/applyRoster(), this must
  // NEVER mutate the current member profile, call ensureSaved or save a snapshot.
  async fetchManagementRoster(){
@@ -640,6 +655,9 @@ const cloud={
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
+  const activityEntry=document.querySelector('[data-more-action="activity-goldpass"]');
+  if(activityEntry)activityEntry.hidden=!managementAllowed;
+  window.CWLActivityGoldpass?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag}:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
