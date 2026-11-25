@@ -8,7 +8,7 @@ export const releaseHistory = [
     "releaseType": "minor",
     "date": "2026-11-25",
     "title": "Grind-Verlosung",
-    "description": "Zeitraum und Ziele festlegen, drei anpassbare Vorlagen nutzen und Spenden sowie CW/CWL-Fortschritt verfolgen. Discord und Abstimmungen manuell markieren; nach Abschluss einmalig einen Gewinner ziehen. Beide Verlosungsarten zeigen eine kurze Gewinneranimation."
+    "description": "Grind-Ziele mit drei Vorlagen festlegen, Spenden und CW/CWL verfolgen, Discord und Abstimmungen markieren und nach Ende einmalig einen Gewinner ziehen; beide Verlosungsarten haben eine Ziehungsanimation."
   },
 
   {
