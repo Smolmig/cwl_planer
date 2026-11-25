@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.32.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.32.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.32.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.32.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.32.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.32.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.32.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.32.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.33.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.33.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.33.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.33.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.33.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.33.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.33.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.33.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -387,6 +387,38 @@ const cloud={
  active:false,
  getActiveClanId:()=>clanId,
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
+ getGoldpassSession:()=>accountEpoch,
+ // Goldpass is deliberately separate from profile saves, suggestions and
+ // the planner solver. Context is checked before and after each request.
+ async goldpassRequest(request){
+  const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
+  const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&
+    accountEpoch===epoch&&user?.id===actor&&this.getActiveClanTag()===tag&&
+    request?.context?.clanId===expected&&request?.context?.clanTag===tag&&request?.context?.session===epoch;
+  if(!valid()||!navigator.onLine)throw Error("goldpass_context_unavailable");
+  if(!["read","save","draw"].includes(request.action)||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(request.season))throw Error("goldpass_invalid_request");
+  const args={p_clan:expected,p_season:request.season,p_action:request.action};
+  if(request.action!=="read")args.p_expected_revision=request.expectedRevision;
+  if(request.action==="save")Object.assign(args,{p_rules:request.rules,p_eligibility:request.eligibility,p_organizer_confirmed:request.organizerConfirmed});
+  if(request.action==="draw")args.p_expected_witness=request.expectedWitness;
+  const {data,error:err}=await sb.rpc("cwl_goldpass_manage",args);
+  if(!valid())throw Error("goldpass_context_changed");
+  if(err)throw Error(err.message||"goldpass_unavailable");
+  return data;
+ },
+ async goldpassSeasons(context){
+  const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
+  const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&accountEpoch===epoch&&
+   user?.id===actor&&this.getActiveClanTag()===tag&&context?.clanId===expected&&context?.clanTag===tag&&context?.session===epoch;
+  if(!valid()||!navigator.onLine)throw Error("goldpass_context_unavailable");
+  const [a,b]=await Promise.all([
+   sb.from("cwl_group_archives").select("season").eq("clan_id",expected).eq("clan_tag",tag).order("season",{ascending:false}).limit(100),
+   sb.from("cwl_goldpass_raffles").select("season").eq("clan_id",expected).eq("clan_tag",tag).order("season",{ascending:false}).limit(100)
+  ]);
+  if(!valid())throw Error("goldpass_context_changed");
+  if(a.error||b.error)throw Error("goldpass_unavailable");
+  return [...new Set([...(a.data||[]),...(b.data||[])].map(r=>r.season))];
+ },
  // Read-only management preview. Unlike getRoster()/applyRoster(), this must
  // NEVER mutate the current member profile, call ensureSaved or save a snapshot.
  async fetchManagementRoster(){
@@ -640,7 +672,7 @@ const cloud={
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
-  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag}:null);
+  window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   const label=activeClan?.name||"Clan";
   const accountBtn=$("cloudOpen");
   accountBtn.querySelector(".cloud-toggle-icon").textContent=this.active?"☁️":"👤";

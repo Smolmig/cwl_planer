@@ -6,6 +6,11 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.33.0] - 2026-11-25
+
+- Goldpass-Verlosung: serverseitig gespeicherte Regeln und Teilnahmeentscheidungen je Clan/Saison, exakte Berechnung aus bestätigten CWL-Archivdaten, eindeutige Bestätigung und einmalige gewichtete Ziehung mit unveränderlichem Ergebnis, Teilnehmer- und Regelstand. Keine automatische Preisvergabe.
+- RLS, Revisions- und Nachweisprüfung, serverseitige kryptografische Zufallsquelle, neue SQL-/DOM-Regressionen. Datenbankmigration getrennt nach Abnahme erforderlich.
+
 ## [1.32.0] - 2026-11-25
 
 - Neue unverbindliche Goldpass-Vorschau für den verknüpften Clan: historische oder aktuelle CWL, frei einstellbare Mindestleistung und Lose, manuelle Teilnahmekriterien, unmittelbar berechnete Chancen. Noch keine offizielle Ziehung oder dauerhafte Konfiguration.

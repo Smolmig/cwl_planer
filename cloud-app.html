@@ -2615,6 +2615,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 #view-goldpass .goldpass-chance{color:var(--primary);font-variant-numeric:tabular-nums;white-space:nowrap}
 #view-goldpass .goldpass-options{display:flex;gap:8px 14px;flex-wrap:wrap}
 #view-goldpass .goldpass-options .goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:6px}
+#view-goldpass .goldpass-actions{border-top:1px solid var(--line);padding:16px 0 0;margin-top:12px}
+#view-goldpass .goldpass-actions>.goldpass-field{flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:10px;font-size:13px}
+#view-goldpass .goldpass-actions .actions{gap:8px;flex-wrap:wrap}
+#view-goldpass .goldpass-result{border:1px solid var(--primary);border-radius:12px;padding:14px;margin:12px 0 18px;overflow-wrap:anywhere}
+#view-goldpass .goldpass-result h3{margin:5px 0;color:var(--primary);font-size:22px}
+#view-goldpass .goldpass-witness{overflow-wrap:anywhere}
 /* Optional install guidance inside More, never a recurring overlay. */
 .install-suggestion{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:17px;padding:13px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .install-suggestion[hidden]{display:none!important}
@@ -4047,7 +4053,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Teilnahme und Gewinnchancen unverbindlich berechnen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Regeln speichern, Chancen prüfen und offiziell ziehen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
@@ -4127,11 +4133,11 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-goldpass" class="view more-subview" aria-labelledby="goldpassTitle">
  <div class="more-detail-header">
   <div><span class="more-eyebrow">CWL · OPTIONALES TOOL</span><h2 id="goldpassTitle">Goldpass-Verlosung</h2>
-  <p class="statusline">Unverbindliche Vorschau aus gespeicherten CWL-Angriffen. Regeln werden nicht gespeichert; die offizielle Ziehung ist noch nicht verfügbar.</p></div>
+  <p class="statusline">Regeln je CWL-Saison einstellen, Gewinnchancen prüfen und nach bestätigten Ergebnissen einmalig offiziell ziehen.</p></div>
   <button type="button" class="btn small more-detail-back" id="goldpassBack">Zurück zu Mehr</button>
  </div>
  <div id="goldpassContent" class="card"></div>
- <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Grundlose ermöglichen auch schwächeren Teilnehmern eine Chance. Bonuslose werden addiert; die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern.</p></details>
+ <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Grundlose ermöglichen auch schwächeren Teilnehmern eine Chance. Bonuslose werden addiert; die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern. Der Server bestätigt die vollständigen Rundenergebnisse und speichert die Regeln je Saison. Erst nach ausdrücklicher Bestätigung wird ein Gewinner zufällig und entsprechend den Losgewichten gezogen. Das offizielle Ergebnis bleibt unverändert. Kein automatischer Kauf oder Versand eines Goldpasses.</p></details>
 </section>
 <section id="view-archive" class="view more-subview" aria-labelledby="cwlArchiveTitle">
  <div class="card archive-page">
@@ -4174,11 +4180,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.32.0</strong><span>Goldpass-Gewinnchancen berechnen</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.33.0</strong><span>Goldpass-Verlosung abschließen</span></div>
       <ul>
-       <li><b>Goldpass:</b> Unverbindliche Vorschau der Gewinnchancen unter Mehr.</li>
-       <li><b>Regeln:</b> Mindestleistung, Grundlose und Bonuslose individuell einstellen.</li>
-       <li><b>Saisonwechsel:</b> Der Server archiviert die vorherige Saison und eröffnet den neuen Plan gemeinsam.</li>
+       <li><b>Goldpass:</b> Regeln je CWL-Saison speichern und auf anderen Geräten öffnen.</li>
+       <li><b>Ziehung:</b> Nach bestätigter CWL einen Gewinner entsprechend den Losen offiziell ziehen.</li>
+       <li><b>Nachweis:</b> Gewinner, Regeln, Ergebnisse und Chancen bleiben unverändert abrufbar.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4460,7 +4466,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Formwerte in Mitglieder</b><div>Die <b>letzte dokumentierte CWL</b> ist die erste Datenbasis. Hat ein Spieler darin keine belegten Angriffe, dienen die <b>letzten fünf abgeschlossenen normalen CWs</b> als gekennzeichneter Ersatz. Die sichtbare Anzahl meint <b>Angriffe gegen gleiches RH</b>, nicht CWL-Tage. <b>3★-Quote</b> bewertet nur diese vergleichbaren ausgeführten Angriffe. <b>Zuverlässigkeit</b> berücksichtigt dagegen alle belegten ausgeführten und sicher verpassten Pflichtangriffe. Der Formwert kombiniert 65 % vorsichtig bewertete Leistung und 35 % Zuverlässigkeit. Bei lückenhaften Daten mit belegten Fehlangriffen zeigen wir <b>≈ vorläufig</b>. Ohne ausreichende Nachweise zeigen wir nur den Leistungswert, keine erfundene 100-%-Zuverlässigkeit oder Nullsterne. Unter „Einstellungen erklärt“ steht die Datenbasis für den jeweiligen Spieler.</div></div>
     <div class="help-item"><b>Spielerstatistik &amp; Spielerform</b><div>In <b>Spielerstatistik</b> wählst du CW/CWL sowie Gesamt/30/90/180/365 Tage direkt; unter „Erweiterte Auswahl“ alternativ die letzten X CWs oder CWL-Durchgänge. Zeitraum und Anzahl begrenzen nicht heimlich gleichzeitig. <b>Spielerform</b> ist davon unabhängig: „Gesamtform“ (CW + CWL) und „CWL-Form“ (nur CWL), jeweils 30/90/180 Tage. Im Formtab zählen vergleichbare Angriffe derselben Rathausstufe; andere RH findest du in Angriffsdetails. Sortierung nach Formwert ist nicht dasselbe wie Sortierung nach 3★-Quote. Bei gleichem Formwert werden Ø Sterne und danach Ø Zerstörung als zusätzliche Entscheidung verwendet, sofern die Zerstörungsprozente bei beiden Spielern vollständig belegt sind. Fehlen Prozentwerte, gelten sie als unbekannt und nicht als 0 %. Ein Listenplatz ist keine garantierte Spielstärke.</div></div>
     <div class="help-item"><b>Nachweise &amp; andere Clans</b><div>Unbekannte Angriffe werden nicht als verpasst angenommen. Importierte und über Clash erfasste Angriffe bleiben mit ihrer Herkunft und Datenabdeckung nachvollziehbar. Bei berechtigtem Zugriff kannst du in „Angriffsdetails“ auch dokumentierte Angriffe eines Spielers aus anderen eigenen Clans gezielt anzeigen; sie werden nicht ungeprüft addiert. Das <b>aktuelle öffentliche Clash-Profil</b> kann mit Prüfzeitpunkt gesondert abgerufen werden und verändert historische Angriffe nicht.</div></div>
-    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gesicherte <b>Planaufstellungen</b> sichtbar, ohne als tatsächliche Einsätze zu gelten. Unter <b>Einsätze</b> gibt es eine Übersicht mit geplanter Aufstellung, bestätigter Clash-Aufstellung, Angriffs-/Sternbelegen und einer ausklappbaren Tagesmatrix. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
+    <div class="help-item"><b>Mehr: Goldpass-Verlosung</b><div>Der Clanbesitzer kann je CWL-Saison eine optionale Verlosung vorbereiten. Mindestleistung, Grund- und Bonuslose sowie Ausschlüsse sind frei einstellbar. Während der CWL ist die Vorschau vorläufig. Der Server bestätigt die vollständigen Aufstellungen und Angriffszahlen, bevor die offizielle Ziehung möglich ist. Speichere die Regeln und prüfe den Veranstalter. Erst die ausdrückliche Bestätigung zieht einen Gewinner entsprechend den Losen. Das Ergebnis ist einmalig und bleibt mit seinen Regeln und Teilnehmerdaten erhalten. Kein automatischer Kauf oder Versand.</div></div>\n    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gesicherte <b>Planaufstellungen</b> sichtbar, ohne als tatsächliche Einsätze zu gelten. Unter <b>Einsätze</b> gibt es eine Übersicht mit geplanter Aufstellung, bestätigter Clash-Aufstellung, Angriffs-/Sternbelegen und einer ausklappbaren Tagesmatrix. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen bevorzugt die Form aus der letzten belegten CWL, sonst ausdrücklich die letzten fünf normalen CWs; das ist eine andere Datenbasis als die aktuelle Einsatzverteilung. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Kriegsgröße und verkürzte CWL</b><div>Mit einem verknüpften Clash-Clan übernimmt die Cloud-Planung die offiziell gemeldete Größe der Tagesaufstellung (etwa 15 oder 30) und die Zahl der Kriege. Acht Clans spielen normalerweise sieben Kriege; bei sechs Clans sind es fünf. Während Clash noch keine verlässlichen Gruppendaten liefert, bleibt der bisherige Plan erhalten. Gespielte Tage werden bei einer Abweichung nicht automatisch umgeschrieben. Die Teilnehmerliste ist nicht dasselbe wie die Größe einer einzelnen Kriegsaufstellung. Für lokale Pläne ohne API kannst du Größe und Kriegstage weiterhin selbst wählen; alte 5-gegen-5-CWLs bleiben im Archiv nachvollziehbar.</div></div>
@@ -4817,15 +4823,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.32.0"></script>
-<script src="./clan-management-missed-core.js?v=1.32.0"></script>
-<script src="./clan-management-cw-core.js?v=1.32.0"></script>
-<script src="./clan-management-cw-view.js?v=1.32.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.32.0"></script>
-<script src="./cwl-planning-core.js?v=1.32.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.32.0"></script>
+<script src="./clan-management-core.js?v=1.33.0"></script>
+<script src="./clan-management-missed-core.js?v=1.33.0"></script>
+<script src="./clan-management-cw-core.js?v=1.33.0"></script>
+<script src="./clan-management-cw-view.js?v=1.33.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.33.0"></script>
+<script src="./cwl-planning-core.js?v=1.33.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.33.0"></script>
 <script>
-const APP_VERSION="v1.32.0";
+const APP_VERSION="v1.33.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6877,7 +6883,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.32.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.33.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -6986,7 +6992,7 @@ document.addEventListener("keydown",event=>{
 let goldpassView=null;
 function goldpassContext(){
  const c=window.CWLCloud;
- return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.()}:null;
+ return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.(),session:c.getGoldpassSession?.()}:null;
 }
 window.CWLGoldpassPreview={accessChanged(context){
  const same=goldpassView?goldpassView.accessChanged(context):!!context;
@@ -6999,10 +7005,16 @@ async function openGoldpassPreview(){
  try{
   if(!goldpassView){
    root.textContent="Vorschau wird geladen …";
-   const module=await import("./cwl-goldpass-view.mjs?v=1.32.0");
+   const module=await import("./cwl-goldpass-view.mjs?v=1.33.0");
    const now=goldpassContext();
-   if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||!document.getElementById("view-goldpass").classList.contains("active"))return;
-   goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext});
+   if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
+   goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
+    api:request=>window.CWLCloud.goldpassRequest(request),
+    listSeasons:context=>window.CWLCloud.goldpassSeasons(context),
+    confirmDraw:({season,total,participants})=>confirmInline(
+     season+" · "+participants+" zugelassene Teilnehmer · "+total+" Lose. Der Server speichert den Gewinner und die Regeln dauerhaft. Eine zweite Ziehung dieser Saison ist nicht möglich.",
+     {title:"Goldpass offiziell verlosen?",confirmText:"Jetzt offiziell ziehen",danger:true})
+   });
   }
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
@@ -7296,6 +7308,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.32.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.33.0"></script>
 </body>
 </html>
