@@ -6,6 +6,11 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.31.1] - 2026-11-25
+
+- Clanverwaltung: kompakte Übersicht der Leistungskriterien bei leerer Vorschlagsliste, getrennte Darstellung fehlender Nachweise und nicht erfüllter Grenzwerte.
+- Verständlichere Statusanzeigen, Abstände und Priorisierung von Rangprüfungen. Keine Änderung der Regeln oder produktiven Daten.
+
 ## [1.31.0] - 2026-11-24
 
 ### Neu

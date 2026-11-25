@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.31.1",
+    "releaseType": "patch",
+    "date": "2026-11-25",
+    "title": "Beförderungskriterien besser verstehen",
+    "description": "Die Clanverwaltung zeigt erfüllte Leistungskriterien und unterscheidet fehlende Daten von noch nicht erreichten Voraussetzungen."
+  },
+
+  {
     "version": "v1.31.0",
     "releaseType": "minor",
     "date": "2026-11-24",
