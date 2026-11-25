@@ -4,6 +4,7 @@ import {verifyCollectorIdentity} from "./collector-auth.mjs";
 import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./collector-cron-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
+import {officialNewLeague,buildSeasonRollover} from "./collector-season-rollover.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -62,7 +63,7 @@ function adminSettings(){
      !key||!gameKey)throw Error(ERROR.config);
   return {url,key,gameKey};
 }
-async function rest(settings,path,{method="GET",rows=null,conflict=""}={}){
+async function rest(settings,path,{method="GET",rows=null,conflict="",returnData=false}={}){
   const params=conflict?"?on_conflict="+encodeURIComponent(conflict):"";
   const headers={
     apikey:settings.key,Authorization:"Bearer "+settings.key,
@@ -70,7 +71,7 @@ async function rest(settings,path,{method="GET",rows=null,conflict=""}={}){
   };
   if(rows!==null){
     headers["Content-Type"]="application/json";
-    headers.Prefer="resolution=merge-duplicates,return=minimal";
+    headers.Prefer=returnData?"return=representation":"resolution=merge-duplicates,return=minimal";
   }
   let r;
   try{
@@ -80,7 +81,7 @@ async function rest(settings,path,{method="GET",rows=null,conflict=""}={}){
     });
   }catch{throw Error(ERROR.save)}
   if(!r.ok)throw Error(ERROR.save);
-  if(method!=="GET")return null;
+  if(method!=="GET"&&!returnData)return null;
   try{return await r.json()}catch{throw Error(ERROR.save)}
 }
 const upsert=(settings,table,rows,conflict)=>{
@@ -191,7 +192,25 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set())
   const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
     .map(x=>x.war.started_at));
   return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
-    !leagueStarts.has(x.war.started_at)),notes};
+    !leagueStarts.has(x.war.started_at)),notes,league:officialNewLeague(group,gameTag)};
+}
+async function rollSeasonForAppClan(settings,clanId,league){
+ if(!league)return false;
+ const rows=await rest(settings,"cwl_cloud_profiles?select=revision,profile_json&clan_id=eq."+
+   encodeURIComponent(clanId)+"&limit=1");
+ const saved=rows[0];
+ if(!saved||!Number.isSafeInteger(saved.revision))return false;
+ const draft=buildSeasonRollover(saved.profile_json,league);
+ if(!draft.ok){
+  if(draft.reason!=="no_prior_matching_season")console.warn("collector_rollover_blocked="+draft.reason);
+  return false;
+ }
+ // Only the already authenticated collector reaches this service-only RPC.
+ // The DB validates source clan, current season and saved revision again.
+ return await rest(settings,"rpc/cwl_collector_rollover",{
+  method:"POST",returnData:true,rows:{p_clan:clanId,p_expected_revision:saved.revision,
+   p_old_season:draft.oldSeason,p_group:league,p_next:draft.profile}
+ })===true;
 }
 async function archiveForAppClan(settings,clanId,snapshots,checkedAt,partialError=null){
   const unique=new Map(snapshots.map(s=>[s.war.war_key,s]));
@@ -278,6 +297,7 @@ export default {
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
+    let seasonRollovers=0,seasonRolloverErrors=0;
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
@@ -301,6 +321,12 @@ export default {
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys)}
       catch{scan={snaps:[],notes:[ERROR.api]}}
       for(const id of clanIds){
+        // No season change on a failed/unknown official group. Failure of
+        // this optional transaction never suppresses stats or roster tracking.
+        if(scan.league&&Date.now()<deadline-12000){
+          try{if(await rollSeasonForAppClan(settings,id,scan.league))seasonRollovers++}
+          catch{seasonRolloverErrors++;console.warn("collector_rollover_failed")}
+        }
         try{
           const result=await archiveForAppClan(settings,id,scan.snaps,checkedAt,
             scan.notes[0]||null);
@@ -329,7 +355,7 @@ export default {
       tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
-      rosterFailureClasses,
+      rosterFailureClasses,seasonRollovers,seasonRolloverErrors,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
     },errors||tenureWriteErrors||tenureSkippedProfiles?503:200);
   }
