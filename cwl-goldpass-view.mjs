@@ -28,7 +28,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
  let scope=null,season="",rules={...DEFAULT_RAFFLE_RULES},eligibility=Object.create(null),seasons=[];
  let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="";
  const allowed=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
- const scopeOf=c=>c?c.clanId+"|"+c.clanTag:null;
+ const scopeOf=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
  const matches=(token,target,context)=>token===serial&&season===target&&scope===scopeOf(context)&&scope===scopeOf(allowed());
  const resetDraft=()=>{rules={...DEFAULT_RAFFLE_RULES};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
  const reset=()=>{serial++;busy=false;season="";serverSeasons=[];seasons=[];resetDraft();root.replaceChildren()};
@@ -79,7 +79,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
    if(dirty||server.revision<1||!organizerConfirmed||server.evidence?.complete!==true||
       !server.preview?.total||!server.witness)return;
    const before=serial,revision=server.revision,witness=server.witness;
-   const ok=await confirmDraw({season:target,total:server.preview.total,participants:server.preview.rows.filter(r=>r.tickets>0).length});
+   let ok=false;try{ok=await confirmDraw({season:target,total:server.preview.total,participants:server.preview.rows.filter(r=>r.tickets>0).length})}catch{return}
    if(!ok||!matches(before,target,c)||dirty||busy||server?.revision!==revision||server?.witness!==witness)return;
   }
   const token=++serial;busy=true;message=action==="draw"?"Offizielle Ziehung läuft …":"Regeln werden gespeichert …";render();
@@ -124,7 +124,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
   select.value=season;select.disabled=busy;
   select.onchange=()=>{
    if(busy)return;
-   if(dirty){select.value=season;message="Bitte zuerst speichern oder den ungespeicherten Entwurf über Neu laden verwerfen.";render();return}
+   if(dirty&&api){select.value=season;message="Bitte zuerst speichern oder den ungespeicherten Entwurf über Neu laden verwerfen.";render();return}
    season=select.value;resetDraft();render();if(api)loadServer();
   };
   const local=seasons.find(s=>s.season===season);
