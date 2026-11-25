@@ -76,16 +76,16 @@ reset role;
 -- A later official archive correction does not change an already drawn result.
 update public.cwl_group_archives set group_json=jsonb_set(group_json,'{rounds,0,matches,0,clan,attacks}','1')
  where clan_id='f1380000-0000-4000-8000-000000000002' and season='2026-11';
-do $begin
+do $$begin
  if private.cwl_goldpass_evidence('f1380000-0000-4000-8000-000000000002','2026-11','#2PYL')->>'complete'<>'false'
  then raise exception 'group and lineup mismatch accepted';end if;
-end$;
+end$$;
 set local role authenticated;
 select set_config('request.jwt.claims','{"role":"authenticated","sub":"f1380000-0000-4000-8000-000000000001"}',true);
-do $declare r jsonb;begin
+do $$declare r jsonb;begin
  r:=public.cwl_goldpass_manage('f1380000-0000-4000-8000-000000000002','2026-11','read');
  if r->'official'->>'winnerTag'<>'#G9QL' or r->'official'->'evidence'->>'complete'<>'true'
  then raise exception 'stored result changed with new evidence';end if;
-end$;
+end$$;
 reset role;
 select 'goldpass fixture passed' result;
