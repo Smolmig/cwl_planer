@@ -6992,7 +6992,7 @@ document.addEventListener("keydown",event=>{
 let goldpassView=null;
 function goldpassContext(){
  const c=window.CWLCloud;
- return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.()}:null;
+ return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.(),session:c.getGoldpassSession?.()}:null;
 }
 window.CWLGoldpassPreview={accessChanged(context){
  const same=goldpassView?goldpassView.accessChanged(context):!!context;
@@ -7007,7 +7007,7 @@ async function openGoldpassPreview(){
    root.textContent="Vorschau wird geladen …";
    const module=await import("./cwl-goldpass-view.mjs?v=1.32.0");
    const now=goldpassContext();
-   if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||!document.getElementById("view-goldpass").classList.contains("active"))return;
+   if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
    goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
     api:request=>window.CWLCloud.goldpassRequest(request),
     listSeasons:context=>window.CWLCloud.goldpassSeasons(context),
