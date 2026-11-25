@@ -6,6 +6,11 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.32.0] - 2026-11-25
+
+- Neue unverbindliche Goldpass-Vorschau für den verknüpften Clan: historische oder aktuelle CWL, frei einstellbare Mindestleistung und Lose, manuelle Teilnahmekriterien, unmittelbar berechnete Chancen. Noch keine offizielle Ziehung oder dauerhafte Konfiguration.
+- Serverseitiger atomarer Saisonwechsel (Collector v11 und Datenbankmigration separat veröffentlicht).
+
 ## [1.31.2] - 2026-11-25
 
 - Plan: Nach der ersten normalen CW-Vorbereitung rückt auch die Vorbereitung weiterer CWs vor den CWL-Rückblick, sofern frühere Kriege belegt sind.

@@ -1,4 +1,4 @@
-import {DEFAULT_RAFFLE_RULES,collectRaffleEvidence,rafflePreview} from "./cwl-goldpass-core.mjs";
+import {DEFAULT_RAFFLE_RULES,collectRaffleEvidence,rafflePreview} from "./cwl-goldpass-core.mjs?v=1.32.0";
 const pct=new Intl.NumberFormat("de-AT",{style:"percent",maximumFractionDigits:2});
 const month=new Intl.DateTimeFormat("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
 const el=(tag,text="",className="")=>{const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n};
@@ -66,7 +66,8 @@ export function createGoldpassPreview({root,getProfile,getContext}){
   const rowNodes=new Map();
   function update(){
    let p;
-   try{p=rafflePreview(e,rules,eligibility)}catch{summary.textContent="Bitte gültige ganze Zahlen eingeben.";return}
+   try{p=rafflePreview(e,rules,eligibility)}catch{summary.textContent="Bitte gültige ganze Zahlen eingeben.";rows.hidden=true;return}
+   rows.hidden=false;
    formula.textContent="Lose = "+rules.base+" Grund + "+rules.one+" je 1★ + "+rules.two+" je 2★ + "+rules.three+" je 3★ + "+rules.perStar+" je Stern.";
    summary.textContent=p.rows.filter(r=>r.eligible).length+" zugelassen · "+p.total+" Lose insgesamt"+(p.total?"":" · Keine Gewinnchance");
    for(const r of p.rows){

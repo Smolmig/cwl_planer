@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+    "version": "v1.32.0",
+    "releaseType": "minor",
+    "date": "2026-11-25",
+    "title": "Goldpass-Gewinnchancen berechnen",
+    "description": "Unter Mehr kannst du die Goldpass-Teilnahme und Gewinnchancen unverbindlich berechnen. Regeln und Ziehung werden noch nicht dauerhaft gespeichert. Der Saisonwechsel läuft serverseitig."
+  },
+
+  {
     "version": "v1.31.2",
     "releaseType": "patch",
     "date": "2026-11-25",
