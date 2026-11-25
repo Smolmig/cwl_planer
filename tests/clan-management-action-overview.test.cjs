@@ -94,3 +94,25 @@ test("cross-war totals count attacks rather than wars, exclude decisions, and re
  assert.equal(unknown.openCwMisses,null);
  assert.equal(unknown.missCountComplete,false);
 });
+
+test("qualification progress counts unknown separately and does not change recommendation eligibility",()=>{
+ const rules=core.normalizeRules({});
+ const person={rank:"member",tag:"#2PYL"};
+ const now=Date.parse("2026-11-25T20:00:00Z");
+ const entry={is_present:true,confirmed_seconds:13*86400,last_observed_at:new Date(now).toISOString()};
+ const check=core.evaluatePromotion(person,entry,{attack_count:10,three_star_count:8},rules,now);
+ assert.equal(check.eligible,undefined);
+ const eligible=core.evaluatePromotion(person,{...entry,confirmed_seconds:14*86400},{attack_count:10,three_star_count:8},rules,now);
+ assert.equal(eligible.eligible,true);
+ const progress=core.buildPerformanceProgress([
+  {...person,performanceQualification:check.qualification},
+  {...person,performanceQualification:eligible.qualification},
+  {...person,performanceQualification:null},
+  {...person,returnRankNote:"Rückkehr"},
+  {rank:"elder"}
+ ],rules);
+ assert.deepEqual(progress,{candidates:3,known:2,unknown:1,timeOK:1,attackCountOK:2,attackAndQuoteOK:2,allOK:1,maxSeconds:14*86400,minDays:14,minAttacks:10,minQuote:80,lookback:14});
+ assert.equal(core.buildPerformanceProgress([], {...rules,performance_enabled:false}),null);
+ const invalid=core.evaluatePromotion(person,entry,{attack_count:2,three_star_count:3},rules,now);
+ assert.equal(invalid.qualification,undefined);
+});
