@@ -1076,20 +1076,20 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       }
       current=data;lastSuccessfulAt=Date.now();lastSuccessfulProfile=ctx.profile;offlineReason=data.pending?
         "CWL-Gruppendaten noch nicht vollständig verfügbar. Bitte später erneut prüfen.":"";confirmedNoCwl=!data.active&&!data.pending;
-      const window=normalWarPreparationWindow(getLifecycle(),data.currentWar,ctx.clanTag);
-      const scope=window?id+"|"+window.season+"|"+window.before:"";
+      const priorityWindow=normalWarPreparationWindow(getLifecycle(),data.currentWar,ctx.clanTag);
+      const scope=priorityWindow?id+"|"+priorityWindow.season+"|"+priorityWindow.before:"";
       if(scope!==normalWarPriorityScope){normalWarPriority=false;normalWarPriorityScope=scope}
-      if(window&&!normalWarPriority&&typeof sb.from==="function"){
+      if(priorityWindow&&!normalWarPriority&&typeof sb.from==="function"){
         // Existing tenant-RLS history: no additional endpoint, no browser-only counter.
         try{
           const {data:rows,error:historyError}=await sb.from("cwl_stat_wars")
             .select("war_key,war_type,source,source_clash_tag,started_at")
-            .eq("clan_id",id).eq("source_clash_tag",window.clanTag)
+            .eq("clan_id",id).eq("source_clash_tag",priorityWindow.clanTag)
             .eq("war_type","normal").eq("source","api")
-            .gte("started_at",window.after).lt("started_at",window.before)
+            .gte("started_at",priorityWindow.after).lt("started_at",priorityWindow.before)
             .order("started_at",{ascending:false}).limit(1);
           if(!stillCurrent())return;
-          if(!historyError&&hasPriorNormalWar(window,rows))normalWarPriority=true;
+          if(!historyError&&hasPriorNormalWar(priorityWindow,rows))normalWarPriority=true;
         }catch(e){if(!stillCurrent())return;console.warn("CW history priority:",String(e?.message||e))}
       }
       // Live war placement and page panels must update on EVERY successful
