@@ -98,7 +98,7 @@ declare
  actor uuid:=auth.uid(); own text; c public.cwl_activity_campaigns%rowtype;
  today date:=(now() at time zone 'Europe/Vienna')::date;
  rule jsonb; k text; v jsonb; players jsonb; player jsonb; decision jsonb; checks jsonb;
- rows jsonb:='[]'::jsonb; pool jsonb:='[]'::jsonb; state text; met boolean; value bigint;
+ rows jsonb:='[]'::jsonb; pool jsonb:='[]'::jsonb; state text; met boolean; metric_value bigint;
  unknown_count int:=0; witness text; total int; rnd bigint; lim bigint; bytes bytea; winner jsonb;
 begin
  select clash_tag into own from public.cwl_clans where id=p_clan and owner_user_id=actor for share;
@@ -168,13 +168,13 @@ begin
  for player in select value from jsonb_array_elements(players) loop
   decision:=coalesce(c.decisions->(player->>'tag'),'{}'::jsonb);checks:='[]'::jsonb;state:='qualified';
   for rule in select value from jsonb_array_elements(c.rules) loop
-   k:=rule->>'metric';value:=null;met:=null;
+   k:=rule->>'metric';metric_value:=null;met:=null;
    if k='discord' then met:=(player->>'discord')::boolean;
    elsif k='voted' then met:=(decision->>'voted')::boolean;
-   else value:=(player->'evidence'->k->>'value')::bigint;
-    if value>=(rule->>'minimum')::bigint then met:=true;end if;
+   else metric_value:=(player->'evidence'->k->>'value')::bigint;
+    if metric_value>=(rule->>'minimum')::bigint then met:=true;end if;
    end if;
-   checks:=checks||jsonb_build_array(jsonb_build_object('metric',k,'minimum',rule->'minimum','value',value,
+   checks:=checks||jsonb_build_array(jsonb_build_object('metric',k,'minimum',rule->'minimum','value',metric_value,
     'status',case when met then 'met' when met=false then 'unmet' else 'unknown' end));
    if met=false then state:='unmet';elsif met is null and state='qualified' then state:='unknown';end if;
   end loop;
