@@ -216,7 +216,7 @@ export function previewDailyStrategy({group,standings,evidence,members=[],regist
    return {day:w.day,ok:false,reason:"refresh_actual_preparation_roster"};
   return previewStrategicTargets({group,evidence,selectedClanTag:own,season,day:w.day,asOf});
  });
- return {ok:true,season,mode,role,calibrated:false,canApply:false,action:role==="owner"?"owner_review":role==="vice"?"proposal_only":"read_only",
+ return {ok:true,season,selectedClanTag:own,asOf,observedAt:group.observedAt,mode,role,calibrated:false,canApply:false,action:role==="owner"?"owner_review":role==="vice"?"proposal_only":"read_only",
   current:{plan:current,metrics:currentMetrics,changes:diff(current)},standard:{plan:base,metrics:metrics(base)},alternate,modeRecommendation,
   difficulty,held,editableDays:[...editable],frozenDays:base.filter(p=>!editable.has(p.day)).map(p=>p.day),
   targetPreviews,medalCoverageComplete:medalComplete,

@@ -55,7 +55,7 @@ function dailyData(mode,role){
  const profiles=ms.map((m,i)=>{const score=i<13?2.9:i===17?2.3:1.4;return {playerTag:m.playerTag,townHall:19,n:12,score,contexts:[{kind:"normal",attackerTh:19,defenderTh:19,n:12,smoothedStars:score}]}});
  ms[15].statuses[2]="must";ms[16].statuses[2]="must";
  return {group:{season,selectedClanTag:own,asOf:now,observedAt:now,upcoming,wars,profiles:[],ownMedals:{complete:true,stars:ms.slice(0,15).map(m=>({playerTag:m.playerTag,stars:6}))}},
- standings:{season,selectedClanTag:own,asOf:now,observedAt:now,teamSize:15,quality:"schedule_known",invalid:0,liveMatches:2,demotion:"open",promotion:"open",demotionFirst:5,currentLowerBoundRank:2,confirmedRank:5,teams:Array.from({length:6},()=>({completed:2})),bounds:{best:2,worst:6}},
+ standings:{season,selectedClanTag:own,asOf:now,observedAt:now,teamSize:15,quality:"schedule_known",invalid:0,liveMatches:2,demotion:"open",promotion:"open",demotionFirst:5,currentLowerBoundRank:2,confirmedRank:5,confirmedRankWorst:5,teams:Array.from({length:6},()=>({completed:2})),bounds:{best:2,worst:6}},
  evidence:{asOf:now,profiles},members:ms,registered:{verified:true,season,clanTag:own,observedAt:now,tags:ms.map(m=>m.playerTag)},currentPlan,manualLocks:[currentPlan[3],currentPlan[4]],mode,role,asOf:now,season,selectedClanTag:own,slots:15,days:5,declined};
 }
 function showDaily(mode,role){

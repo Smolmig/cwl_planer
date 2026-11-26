@@ -91,8 +91,9 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
  // Mode suggestions require more than a merely mathematically possible risk.
  const current=1+other.filter(t=>cmp(t.min,x.min)>0).length;
  const confirmedRank=1+other.filter(t=>cmp(t.confirmed,x.confirmed)>0).length;
+ const confirmedRankWorst=1+other.filter(t=>cmp(t.confirmed,x.confirmed)>=0).length;
  return {season,league,selectedClanTag:own,asOf,observedAt:snapshot.observedAt,teamSize,liveMatches,calibrated:false,
-  bounds:{best,worst},currentLowerBoundRank:current,confirmedRank,promotion,demotion,promotionLast,demotionFirst,
+  bounds:{best,worst},currentLowerBoundRank:current,confirmedRank,confirmedRankWorst,promotion,demotion,promotionLast,demotionFirst,
   complete,quality,invalid,missing,knownPairings:used.size,expectedPairings:n*(n-1)/2,
   teams:all.map(t=>({...t,confirmed:{stars:t.confirmed.stars,destruction:t.confirmed.destruction/100},min:{stars:t.min.stars,destruction:t.min.destruction/100},max:{stars:t.max.stars,destruction:t.max.destruction/100}})),
   limitations:["conservative_independent_bounds","no_probability","ties_unresolved","verified_league_rules_required"]};

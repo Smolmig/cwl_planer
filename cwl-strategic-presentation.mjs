@@ -21,23 +21,23 @@ export function presentRosterRows({scenario,members,filter="all"}={}){
   seen.add(x.id);
   const standard=int(x.standardAppearances,0,7)?x.standardAppearances:null,proposed=int(x.scenarioAppearances,0,7)?x.scenarioAppearances:null;
   const changed=standard!==proposed,review=x.participation==="unknown"||Object.hasOwn(reasons,x.recommendation);
-  const reason=x.participation==="unknown"?"Teilnahme offen":reasons[x.recommendation]||(m.fixed?"Fix":changed?"Einsatzverteilung geändert":"");
+  const reason=x.participation==="unknown"?"Teilnahme offen":(Object.hasOwn(reasons,x.recommendation)?reasons[x.recommendation]:null)||(m.fixed?"Fix":changed?"Einsatzverteilung geändert":"");
   return {id:x.id,name:label(m),townHall:m.townHall,n:e.n,standard,proposed,changed,review,reason};
  }).sort((a,b)=>Number(b.review)-Number(a.review)||Number(b.changed)-Number(a.changed)||(b.proposed??-1)-(a.proposed??-1)||a.id.localeCompare(b.id));
  return {rows,shown:rows.filter(x=>filter==="all"||filter==="changes"&&x.changed||filter==="review"&&x.review)};
 }
 export function presentDailyStrategy({preview,standings,group,members,role,asOf,season,selectedClanTag}={}){
  const map=memberMap(members),own=tag(selectedClanTag);
- if(!preview?.ok||preview.season!==season||preview.role!==role||!["owner","vice","viewer"].includes(role)||preview.canApply!==false||
+ if(!preview?.ok||preview.season!==season||tag(preview.selectedClanTag)!==own||preview.asOf!==asOf||preview.observedAt!==group?.observedAt||!/^#[0289PYLQGRJCUV]{3,15}$/.test(own)||preview.role!==role||!["owner","vice","viewer"].includes(role)||preview.canApply!==false||
  !group||!standings||group.season!==season||standings.season!==season||tag(group.selectedClanTag)!==own||
  tag(standings.selectedClanTag)!==own||group.asOf!==asOf||standings.asOf!==asOf||!Number.isFinite(asOf)||
  group.observedAt!==standings.observedAt||!Number.isFinite(group.observedAt)||group.observedAt>asOf||
  !Array.isArray(preview.players)||!Array.isArray(standings.teams))throw Error("invalid_daily_presentation_scope");
  const n=standings.teams.length,completeRank=standings.quality==="schedule_known"&&standings.invalid===0&&
- int(standings.confirmedRank,1,n)&&standings.teams.every(t=>int(t.completed,1,n-1)&&t.completed===standings.teams[0].completed);
+ int(standings.confirmedRank,1,n)&&int(standings.confirmedRankWorst,standings.confirmedRank,n)&&standings.teams.every(t=>int(t.completed,1,n-1)&&t.completed===standings.teams[0].completed);
  const b=standings.bounds,validBounds=int(b?.best,1,n)&&int(b?.worst,b.best,n);
  const demotion={impossible:"Klassenerhalt rechnerisch gesichert",not_applicable:"Keine Abstiegsplätze",guaranteed:"Abstieg rechnerisch feststehend",open:"Klassenerhalt offen",unknown_rules:"Abstiegsregeln nicht bestätigt"};
- const tableStatus=[completeRank?"Bestätigter Platz "+standings.confirmedRank+" / "+n:"Bestätigter Platz nicht verfügbar",
+ const tableStatus=[completeRank?"Bestätigter Platz "+standings.confirmedRank+(standings.confirmedRankWorst===standings.confirmedRank?"":"–"+standings.confirmedRankWorst)+" / "+n:"Bestätigter Platz nicht verfügbar",
  validBounds?"Rechnerischer Endplatz "+b.best+(b.best===b.worst?"":"–"+b.worst):"Endplatz noch nicht eingrenzbar",
  demotion[standings.demotion]||"Abstiegsregeln nicht bestätigt"].join(" · ");
  const stamp=new Intl.DateTimeFormat("de-AT",{dateStyle:"short",timeStyle:"short",timeZone:"Europe/Vienna"}).format(new Date(group.observedAt));
