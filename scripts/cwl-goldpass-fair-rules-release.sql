@@ -8,7 +8,7 @@ begin
  if jsonb_typeof(p_rules) is distinct from 'object' or jsonb_typeof(p_eligibility) is distinct from 'object' or
     octet_length(p_rules::text)>4096 or octet_length(p_eligibility::text)>65536 or
     not (p_rules ?& array['minimumType','minimum','base','one','two','three','perStar','requireDiscord']) or
-    exists(select 1 from jsonb_object_keys(p_rules) k where k not in ('minimumType','minimum','base','one','two','three','perStar','requireDiscord','perAttack','highBonus','perfectBonus')) or
+    exists(select 1 from jsonb_object_keys(p_rules) as keys(key) where keys.key not in ('minimumType','minimum','base','one','two','three','perStar','requireDiscord','perAttack','highBonus','perfectBonus')) or
     coalesce(p_rules->>'minimumType','') not in ('none','triples','stars','attacks') or
     jsonb_typeof(p_rules->'requireDiscord') is distinct from 'boolean'
  then raise exception 'invalid_goldpass_rules' using errcode='22023';end if;
