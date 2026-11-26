@@ -4197,11 +4197,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.34.0</strong><span>Zwei Goldpass-Verlosungsarten</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.35.0</strong><span>Faire CWL-Goldpass-Verlosung</span></div>
       <ul>
-       <li><b>Goldpass:</b> CWL-Verlosung: Regeln speichern und offiziell ziehen.</li>
-       <li><b>Ziehung:</b> Grind-Verlosung: Zeitraum, Ziele, Vorlagen und beobachteten Fortschritt festlegen.</li>
-       <li><b>Nachweis:</b> Gewinneranimation, einmalige serverseitige Ziehung und gespeicherter Nachweis.</li>
+       <li><b>Goldpass:</b> Drei faire Losvorlagen und nachvollziehbare Losberechnung.</li>
+       <li><b>Testziehung:</b> Unverbindlich ausprobieren, ohne eine Verlosung zu speichern.</li>
+       <li><b>Glücksrad:</b> Anteiliges Rad und einmalig gespeicherter offizieller Gewinner.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4840,15 +4840,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.34.0"></script>
-<script src="./clan-management-missed-core.js?v=1.34.0"></script>
-<script src="./clan-management-cw-core.js?v=1.34.0"></script>
-<script src="./clan-management-cw-view.js?v=1.34.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.34.0"></script>
-<script src="./cwl-planning-core.js?v=1.34.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.34.0"></script>
+<script src="./clan-management-core.js?v=1.35.0"></script>
+<script src="./clan-management-missed-core.js?v=1.35.0"></script>
+<script src="./clan-management-cw-core.js?v=1.35.0"></script>
+<script src="./clan-management-cw-view.js?v=1.35.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.35.0"></script>
+<script src="./cwl-planning-core.js?v=1.35.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.35.0"></script>
 <script>
-const APP_VERSION="v1.34.0";
+const APP_VERSION="v1.35.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6900,7 +6900,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.34.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.35.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7023,7 +7023,7 @@ async function openGoldpassPreview(){
  try{
   if(!goldpassView){
    root.textContent="Vorschau wird geladen …";
-   const module=await import("./cwl-goldpass-view.mjs?v=1.34.0");
+   const module=await import("./cwl-goldpass-view.mjs?v=1.35.0");
    const now=goldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
    goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
@@ -7053,7 +7053,7 @@ async function openActivityGoldpass(){
  try{
   if(!activityGoldpassView){
    root.textContent="Verlosungen werden geladen …";
-   const module=await import("./cwl-activity-campaign-view.mjs?v=1.34.0");
+   const module=await import("./cwl-activity-campaign-view.mjs?v=1.35.0");
    const now=activityGoldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-activity-goldpass").classList.contains("active"))return;
    activityGoldpassView=module.createActivityCampaignView({root,getContext:activityGoldpassContext,api:request=>window.CWLCloud.activityCampaignRequest(request),
@@ -7352,6 +7352,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.34.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.35.0"></script>
 </body>
 </html>
