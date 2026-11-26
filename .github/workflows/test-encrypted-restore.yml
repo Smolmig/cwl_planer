@@ -219,6 +219,13 @@ jobs:
           # GITHUB_ENV applies only to later steps; export for THIS step.
           export CWL_RESTORE_DB_PORT="$restore_port"
           echo "CWL_RESTORE_DB_PORT=$restore_port" >> "$GITHUB_ENV"
+          # CLI v3.4.0 defaults to GoTrue v2.198.0; v2.199.0 contains
+          # upstream migration 20261116120000 for client_auth_method/audience.
+          # The CLI's own legacy service-pin resolver reads this file before
+          # its official one-shot Auth bootstrap. No project link or local DDL.
+          export SUPABASE_EXPERIMENTAL_STACK=0
+          mkdir -p supabase/.temp
+          printf '%s\\n' 'v2.199.0' > supabase/.temp/gotrue-version
           supabase db start
           # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
           command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
@@ -377,6 +384,7 @@ jobs:
         if: always()
         shell: bash
         run: |
+          export SUPABASE_EXPERIMENTAL_STACK=0
           if [[ -d "$WORK/local/supabase" ]]; then
             (cd "$WORK/local" && supabase stop --no-backup) || true
           fi

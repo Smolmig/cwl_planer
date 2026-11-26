@@ -58,3 +58,21 @@ test("new OAuth schema gate is shared by isolated canary and restore, no skipped
  for(const source of [workflow,authCanary])assert.match(source,/supabase config convert --to toml/);
  assert.match(workflow,/-f "\$WORK\/unpacked\/cwl-backup\/auth-data\.sql"/);
 });
+
+
+test("restore and real canary pin official GoTrue migration release, never patch hosted Auth",()=>{
+ for(const source of [workflow,authCanary]){
+  const start=source.indexOf("          supabase db start");
+  const pin=source.indexOf(" > supabase/.temp/gotrue-version");
+  assert.ok(pin>=0&&pin<start);
+  assert.match(source,/v2\.199\.0/);
+  assert.match(source,/SUPABASE_EXPERIMENTAL_STACK=0/);
+  assert.doesNotMatch(source,/supabase link|ALTER TABLE auth\./i);
+ }
+ const fixture=fs.readFileSync(path.join(root,"tests/sql/restore-auth-compat-fixture.sql"),"utf8");
+ assert.match(fixture,/CREATE TABLE auth\.custom_oauth_providers/);
+ assert.match(fixture,/custom_claims_allowlist text\[\] NOT NULL/);
+ assert.match(fixture,/client_auth_method text NOT NULL/);
+ assert.match(fixture,/client_assertion_audience text NULL/);
+ assert.match(fixture,/ROLLBACK;/);
+});
