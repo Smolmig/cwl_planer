@@ -1,9 +1,9 @@
 // One entry in existing Plan. No storage, network, profile mutation or apply.
-export function createStrategicPilotView({anchor,getContext,load}){
+export function createStrategicPilotView({anchor,getContext,load,setMode}){
  const doc=anchor.ownerDocument,el=(tag,text="")=>{const n=doc.createElement(tag);n.textContent=text;return n};
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Beta");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
- const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select");subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
+ const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select"),modeNote=el("small");modeNote.className="statusline";subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
  const controls=el("div");controls.style.cssText="max-width:480px;min-width:0;display:grid;gap:6px";
  const draftFields=el("div"),format=el("select"),days=el("select"),formatLabel=el("label","CWL-Format"),daysLabel=el("label","Angenommene Kriegstage");
  format.id="strategicDraftFormat";days.id="strategicDraftDays";formatLabel.htmlFor=format.id;daysLabel.htmlFor=days.id;
@@ -23,7 +23,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
  status.id="strategicPilotStatus";results.id="strategicPilotResults";details.id="strategicPilotDetails";button.id="strategicPilotCalculate";
  button.setAttribute("aria-describedby",status.id);
  status.setAttribute("role","status");status.className="statusline";ds.style.cssText="min-height:44px;padding:10px 0";
- details.append(ds,rows);controls.append(label,mode,draftFields,button);inner.append(subtitle,controls,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
+ details.append(ds,rows);controls.append(label,mode,modeNote,draftFields,button);inner.append(subtitle,controls,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
  let scope=null,token=null,sequence=0,busy=false,stored=null,expiryTimer=null,candidates=[],candidateSignature="",answers=new Map();
  function summarize(){
   let yes=0,no=0;for(const a of answers.values()){if(a==="yes")yes++;else if(a==="no")no++}
@@ -57,7 +57,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
  format.addEventListener("change",invalidateDraft);days.addEventListener("change",invalidateDraft);
 
  const clock=()=>Date.now();
- function clear(message=""){if(expiryTimer!==null){clearTimeout(expiryTimer);expiryTimer=null}results.replaceChildren();rows.replaceChildren();details.hidden=true;stored=null;status.textContent=message}
+ function clear(message=""){status.classList.remove("strategic-notice","is-warning","is-positive");if(expiryTimer!==null){clearTimeout(expiryTimer);expiryTimer=null}results.replaceChildren();rows.replaceChildren();details.hidden=true;stored=null;status.textContent=message}
  function armExpiry(){
   if(!stored)return;
   expiryTimer=setTimeout(()=>{expiryTimer=null;sync()},Math.max(0,stored.expiresAt-clock()));
@@ -74,14 +74,20 @@ export function createStrategicPilotView({anchor,getContext,load}){
   format.disabled=days.disabled=search.disabled=!c.ready||busy;
   for(const select of answersHost.querySelectorAll("select"))select.disabled=!c.ready||busy;
   subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Anmeldung und Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
-  button.disabled=!c.ready||busy;mode.disabled=!c.ready||busy;root.setAttribute("aria-busy",String(busy));
+  if(c.sharedMode){mode.value=c.sharedMode;modeNote.textContent=c.modeDraft?"Dein Vorschlag · noch nicht gemeinsam gespeichert.":c.canSetMode?"Gemeinsame Clan-Einstellung · gilt bis zur nächsten Änderung.":"Gemeinsamer Modus · aktuell nicht bearbeitbar."}else modeNote.textContent="";
+  button.disabled=!c.ready||busy;mode.disabled=!c.ready||busy||!!c.sharedMode&&!c.canSetMode;root.setAttribute("aria-busy",String(busy));
   if(!c.ready&&!status.textContent)status.textContent="Vorschau derzeit nicht verfügbar. Bitte Planstand prüfen.";
  }
  function line(parent,a,b){const div=el("div");div.style.cssText="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere";div.append(el("span",a),el("strong",b));parent.append(div)}
+ function notice(parent,kind,title,message){
+  const block=el("div");block.className="strategic-notice is-"+kind;block.setAttribute("role","status");
+  const heading=el("strong"),mark=el("span",kind==="warning"?"⚠":"✓");mark.className="strategic-notice-icon";mark.setAttribute("aria-hidden","true");
+  heading.append(mark,doc.createTextNode(title));block.append(heading,el("p",message));parent.append(block);return block;
+ }
  function renderRoster(s){
   results.replaceChildren();rows.replaceChildren();details.hidden=true;
   const formatText="Annahme: "+s.format.slots+" gegen "+s.format.slots+" · "+s.format.days+" Kriegstage. Das tatsächliche Format steht noch nicht fest.";
-  if(s.issues?.length){results.append(el("h3","Entwurf noch nicht möglich"),el("p",formatText));const list=el("ul");for(const issue of s.issues)list.append(el("li",issue));results.append(list,el("p","Dein bestehender Plan bleibt unverändert."));return}
+  if(s.issues?.length){notice(results,"warning","Entwurf noch nicht möglich","Bitte die folgenden Vorgaben prüfen.");results.append(el("p",formatText));const list=el("ul");for(const issue of s.issues)list.append(el("li",issue));results.append(list,el("p","Dein bestehender Plan bleibt unverändert."));return}
   details.hidden=false;
   const choice=el("select"),overview=el("div");choice.setAttribute("aria-label","Kaderoption");choice.style.cssText=mode.style.cssText;
   const filter=el("select");filter.setAttribute("aria-label","Spieler filtern");filter.style.cssText=mode.style.cssText;
@@ -117,7 +123,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
   results.replaceChildren();rows.replaceChildren();details.hidden=false;const v=s.display;
   results.append(el("h3","Tagesstrategie"),el("p",v.tableStatus),el("p",v.dataStatus));
   if(v.recommendation){results.append(el("strong","Moduswechsel prüfen"),el("p",v.recommendation.reason));for(const c of v.recommendation.changes)line(results,"Tag "+c.day+" · Heraus: "+c.removed.join(", "),"Hinein: "+c.added.join(", "));results.append(el("p",v.recommendation.medals))}
-  if(!s.changes.length)results.append(el("p",s.editableDays.length?"Keine Wechsel im gewählten Modus.":"Kein bestätigter, bearbeitbarer Vorbereitungstag."));
+  if(!s.changes.length){if(s.editableDays.length)notice(results,"positive","Keine Wechsel empfohlen","Für die geprüften Tage ist im gewählten Modus keine Änderung vorgeschlagen.");else results.append(el("p","Kein bestätigter, bearbeitbarer Vorbereitungstag."))}
   for(const c of s.changes)line(results,"Tag "+c.day+" · Heraus: "+c.removed.join(", "),"Hinein: "+c.added.join(", "));
   rows.append(el("h4","8-Sterne-Ziele"));for(const m of v.medals)line(rows,m.name+" · "+m.detail,m.stars);
   rows.append(el("h4","Angriffsziele"));for(const t of s.targets){line(rows,"Tag "+t.day,t.ok?t.swaps.length+" Zieltausch-Vorschläge":"Keine Zielvorschau");for(const sw of t.swaps)line(rows,"Angreifer "+sw.from+" → Ziel "+sw.to,sw.n+" passende Angriffe")}
@@ -137,5 +143,12 @@ export function createStrategicPilotView({anchor,getContext,load}){
   }catch{if(ticket===sequence)clear("Vorschau nicht verfügbar. Bitte später erneut berechnen. Dein Plan bleibt unverändert.")}
   finally{if(ticket===sequence){busy=false;sync()}}
  }
- button.addEventListener("click",run);mode.addEventListener("change",()=>{sequence++;busy=false;clear("Gewählten Modus neu berechnen.");sync()});sync();return {sync};
+ button.addEventListener("click",run);mode.addEventListener("change",async()=>{
+  const c=getContext(),value=mode.value;sequence++;busy=false;clear("Gewählten Modus neu berechnen.");
+  if(!c?.sharedMode||!c.canSetMode||typeof setMode!=="function"){sync();return}
+  const ticket=++sequence;busy=true;mode.disabled=button.disabled=true;status.textContent="Leistungsmodus wird geändert …";
+  try{await setMode(value,c)}
+  catch{if(getContext()?.key===c.key){clear("Modus konnte nicht sicher gespeichert werden. Bitte Cloud-Stand prüfen.");status.classList.add("strategic-notice","is-warning")}}
+  finally{if(ticket===sequence){busy=false;sync()}}
+ });sync();return {sync};
 }

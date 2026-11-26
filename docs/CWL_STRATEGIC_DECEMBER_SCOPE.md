@@ -36,3 +36,6 @@ Nutzerpräzisierung 26.11.2026. **Freigabeziel geändert:** echte intelligente g
 ## Aktuelle CI
 
 edb1a4e: lokale Auth-UAT 45902661935, strategische Chromium/WebKit 45902661952 und Import-WebKit 45902661945 grün. Regression 45902661957: 1022/1030; acht alte VM-/Function-Tests konnten neuen `export async function loadStatus` nicht parsen. Named export hinter default export verschoben, Rechenkern unverändert; neue CI ausstehend. Kein Deploy, keine Aktivierung, kein Release. v1.37.0 bleibt live.
+
+## Integration – Paket 1
+7fb1b77 alle vier CI grün. Gemeinsamer Modus als persistente Clan-Präferenz in profile.config, gilt bis bewusst geändert; Default Ausgewogen. Bestehender CAS-/Vize-Vorschlagsweg; Vize-Beta im exakten Tenant mit aktueller Editor-Mitgliedschaft. Viewer-Modusanzeige noch offen. Bestehender Solver optional um begrenzte Tages- und marginale Einsatzkosten erweitert; Standard unverändert, keine kostenblinde Tag7-Permutation bei Objective. Noch keine Live-Evidenz-Anbindung oder Übernahme. Dezente Theme-Warn-/Positivhinweise, noch keine Fix-Leistungswarnung. 3 Solver-Tests, Auth-/Contract erweitert, CI offen. Keine Produktivänderung; alle drei Modi als zusammenhängende Beta vor Release voll integrieren.

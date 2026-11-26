@@ -16,14 +16,14 @@ export function createStrategicBetaHandler(grants=BETA_GRANTS){
   let body;try{body=await req.json()}catch{return response({ok:false,error:"invalid_body"},400)}
   const clanId=body?.clanId,actor=ctx.userClaims.id;
   if(!UUID.test(clanId||"")||!UUID.test(actor||"")||!["capability","preview"].includes(body?.action))return deny();
-  const candidates=grants.filter(g=>g.clanId===clanId&&g.userId===actor&&TAG.test(g.clanTag||""));
+  const candidates=grants.filter(g=>g.clanId===clanId&&UUID.test(g.userId||"")&&TAG.test(g.clanTag||""));
   if(candidates.length!==1)return deny();
   const expected=candidates[0].clanTag;
   async function allowed(){
    const {data:m,error:me}=await ctx.supabase.from("cwl_clan_memberships").select("role").eq("clan_id",clanId).eq("user_id",actor).maybeSingle();
-   if(me||m?.role!=="owner")return false;
+   if(me||!["owner","editor"].includes(m?.role))return false;
    const {data:c,error:ce}=await ctx.supabase.from("cwl_clans").select("clash_tag,owner_user_id").eq("id",clanId).single();
-   return !ce&&c?.clash_tag===expected&&c?.owner_user_id===actor;
+   return !ce&&c?.clash_tag===expected&&c?.owner_user_id===candidates[0].userId&&(m.role!=="owner"||actor===c.owner_user_id);
   }
   if(!await allowed())return deny();
   if(body.action==="capability")return response({ok:true,enabled:true,clanTag:expected});

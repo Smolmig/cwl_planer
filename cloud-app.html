@@ -3836,6 +3836,13 @@ html.cloud-startup-pending .cloud-startup-splash{
  .cloud-portable-main-actions{display:grid;grid-template-columns:minmax(0,1fr)}
  .cloud-portable-main-actions>.btn{min-height:44px;width:100%}
  #cloudPortablePreview,#cloudPortableApply{width:100%}}
+
+ /* Semantic notices: restrained theme tint, explicit icon and title. */
+ .strategic-notice{--notice-accent:var(--danger,#d65353);margin:8px 0;padding:10px 12px;border:1px solid color-mix(in srgb,var(--notice-accent) 36%,var(--line));border-radius:9px;background:color-mix(in srgb,var(--notice-accent) 8%,var(--card));color:var(--text);overflow-wrap:anywhere}
+ .strategic-notice.is-positive{--notice-accent:var(--ok,#43966b)}
+ .strategic-notice strong{display:flex;align-items:baseline;gap:7px;font-size:inherit}
+ .strategic-notice-icon{color:var(--notice-accent);flex:none;font-weight:800}
+ .strategic-notice p{margin:4px 0 0}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4964,6 +4971,7 @@ function normalizeArchive(a){
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
+  if(p.config.strategicMode!==undefined&&!["balanced","performance","development"].includes(p.config.strategicMode))delete p.config.strategicMode;
   p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","recent-stars","participating","coc-order"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
   p.members=Array.isArray(p.members)?p.members.map(normalizeMember):[];p.archivedMembers=Array.isArray(p.archivedMembers)?p.archivedMembers.map(normalizeMember):[];
   p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=3&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});

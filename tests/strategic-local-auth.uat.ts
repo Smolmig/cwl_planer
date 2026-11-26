@@ -106,10 +106,11 @@ async function invokeBeta(name,clan=a,action="capability",h=beta,extra={}){
 }
 const betaCalls=gameCalls;
 assert.equal((await invokeBeta("owner",a,"capability",disabledBeta)).status,403);
-for(const name of ["viewer","editor","outsider",null])assert.ok([401,403].includes((await invokeBeta(name)).status));
+for(const name of ["viewer","outsider",null])assert.ok([401,403].includes((await invokeBeta(name)).status));
 assert.equal((await invokeBeta("owner",b)).status,403);
 assert.equal((await invokeBeta("owner",a,"save")).status,403);
 assert.deepEqual(await (await invokeBeta("owner",a,"capability")).json(),{ok:true,enabled:true,clanTag:own});
+assert.deepEqual(await (await invokeBeta("editor",a,"capability")).json(),{ok:true,enabled:true,clanTag:own});
 assert.equal(gameCalls,betaCalls,"capability must never fetch game");
 const actual=await invokeBeta("owner",a,"preview",beta,{clanTag:other,userId:ids.outsider.id});
 assert.equal(actual.status,200);const bodyBeta=await actual.json();
@@ -130,6 +131,7 @@ let response=await invoke("editor");
 assert.equal(response.status,403,"revocation during fetch");
 assert.ok(!(await response.text()).includes("preview_data"));
 await denied("editor");
+assert.equal((await invokeBeta("editor")).status,403,"revoked beta editor");
 afterGame=()=>sql("update public.cwl_clans set clash_tag='#P0G' where id='"+a+"'");
 response=await invoke("owner");
 assert.equal(response.status,403,"link changed during fetch");

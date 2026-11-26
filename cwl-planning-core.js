@@ -1,8 +1,26 @@
 // Pure CWL multi-day assignment engine. Never mutates stored member, lock or profile data.
-function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, days = 7} = {}) {
+function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, days = 7, strategicObjective = null} = {}) {
   if (!Number.isInteger(days) || days < 1 || days > 7 || !Number.isInteger(slots) || slots < 1 || slots > 50)
     throw new RangeError('Ungültige Anzahl an CWL-Tagen oder Plätzen.');
+  // Optional bounded integer costs for the same global assignment solver.
+  const strategic = strategicObjective !== null;
+  if (strategic && (!["performance","balanced","development"].includes(strategicObjective?.mode) ||
+      !Array.isArray(strategicObjective.dayCosts) || !Array.isArray(strategicObjective.countCosts)))
+    throw new RangeError("Ungültige strategische Gewichtung.");
   const roster = members.filter(m => m && m.id);
+  const costMap=rows=>{
+    const map=new Map();
+    for(const row of rows){
+      if(!roster.some(m=>m.id===row?.id)||map.has(row.id)||!Array.isArray(row.costs)||
+        row.costs.length!==days||row.costs.some(x=>!Number.isSafeInteger(x)||x<0||x>10000))
+        throw new RangeError("Ungültige strategische Spielerkosten.");
+      map.set(row.id,row.costs);
+    }
+    return map;
+  };
+  const dayCosts=strategic?costMap(strategicObjective.dayCosts):new Map();
+  const countCosts=strategic?costMap(strategicObjective.countCosts):new Map();
+  if([...countCosts.values()].some(v=>v.some((x,i)=>i>0&&x<v[i-1])))throw new RangeError("Strategische Einsatzkosten müssen aufsteigend sein.");
   const all = new Map([...archivedMembers, ...roster].filter(m => m && m.id).map(m => [m.id, m]));
   const counts = Object.fromEntries([...all.keys()].map(id => [id, 0]));
   const playedCounts = {...counts};
@@ -103,13 +121,13 @@ function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, da
         const compensation = openOutDays === 1 && options.length ? -30 : 0;
         const legacy = m.rotationWeight == null ? Math.max(0, Math.min(5, Number(m.priority) || 0)) : 0;
         for (let n = 1; n <= options.length; n++)
-          addEdge(S, node, 1, 100 * (2 * (previously + n) - 1) + weight + compensation - 6 * legacy);
+          addEdge(S, node, 1, (countCosts.get(m.id)?.[previously+n-1] ?? (100 * (2 * (previously + n) - 1))) + weight + compensation - 6 * legacy + (strategic?105:0));
       }
       for (const d of options) {
         const day = dayNode.get(d);
         if (day == null) continue;
         const seed = [...String(m.id)].reduce((v, c) => (v * 31 + c.charCodeAt(0)) % 997, 0);
-        assignmentEdges.push({id: m.id, day: d, edge: addEdge(node, day, 1, (seed + d * 17) % 7)});
+        assignmentEdges.push({id: m.id, day: d, edge: addEdge(node, day, 1, (dayCosts.get(m.id)?.[d]??0)+(seed + d * 17) % 7)});
       }
     }
     for (const [d, node] of dayNode) addLower(node, T, slots - required[d].length, slots - required[d].length);
@@ -174,7 +192,7 @@ function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, da
   // rule is changed, and all exact target counts remain intact.
   // A 4-appearance donor is preferred for day 7, so leaders can manually
   // exchange that slot later if the three-appearance player still needs stars.
-  if (!conflicts.length && days === 7 && !locked[6]) {
+  if (!strategic && !conflicts.length && days === 7 && !locked[6]) {
     const plannedIds = d => new Set([...required[d], ...assigned[d]]);
     const totals = new Map(participants.map(m => [m.id, (lockedCount.get(m.id) || 0) +
       (forcedCount.get(m.id) || 0) +
