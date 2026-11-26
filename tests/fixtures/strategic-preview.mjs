@@ -1,5 +1,6 @@
 import {compareSeasonRosterSizes} from "../../cwl-strategic-experiment.mjs";
 import {previewDailyStrategy} from "../../cwl-strategic-daily.mjs";
+import {presentDailyStrategy,presentRosterRows} from "../../cwl-strategic-presentation.mjs";
 const $=id=>document.getElementById(id);
 const abc="0289PYLQGRJCUV",tag=i=>"#P"+abc[Math.floor(i/13)%13]+abc[i%13],now=Date.UTC(2026,10,26),season="2026-11",own=tag(0),opponent=tag(1);
 const member=(i,extra={})=>({id:"p"+i,name:"Spieler "+String(i+1).padStart(2,"0"),playerTag:tag(10+i),townHall:19,participating:true,participationIntent:"yes",statuses:[],...extra});
@@ -17,7 +18,7 @@ function showRoster(mode){
  if(!r.ok)throw Error("roster_conflict");
  $("size").replaceChildren(...r.scenarios.map(s=>{const o=el("option",s.size+" Spieler"+(s.excluded.length?" · Alternative":" · vollständiger Kader"));o.value=String(s.size);return o}));
  const selected=r.scenarios.find(s=>s.size===size)||r.scenarios[0];size=selected.size;$("size").value=String(size);
- const m=selected.metrics,baseline=r.scenarios[0].metrics;
+ const m=selected.metrics;
  $("rosterMetrics").replaceChildren();metric($("rosterMetrics"),"Einsätze pro Spieler",m.minAppearances+"–"+m.maxAppearances);metric($("rosterMetrics"),"Bestätigte Reserve je Tag (mind.)",m.minimumConfirmedReserve);metric($("rosterMetrics"),"Spieler mit 3+ Einsätzen",m.theoreticalMedalOpportunities);
  const open=m.conditional+" Spieler mit offener Teilnahme.";
  $("rosterWarning").textContent=selected.excluded.length?"Einzeln prüfen: "+selected.excluded.map(id=>names.get(id)).join(", ")+". Keine automatische Ausladung. "+open:"Vollständiger Kader. "+open;
@@ -29,26 +30,17 @@ function showRoster(mode){
 }
 function renderRosterRows(){
  if(!rosterState)return;
- const {selected}=rosterState,p=selected.plan,profiles=new Map(p.evidence.profiles.map(x=>[x.id,x])),filter=$("rowFilter").value;
- const rows=[...p.rows].map(x=>({...x,changed:x.standardAppearances!==x.scenarioAppearances,
- review:x.participation==="unknown"||["manual_review","limited_opportunity_review","capacity_or_availability_review"].includes(x.recommendation)}));
- // Explicitly prioritize decision-relevant players, then show all others.
- rows.sort((a,b)=>Number(b.review)-Number(a.review)||Number(b.changed)-Number(a.changed)||(b.scenarioAppearances??-1)-(a.scenarioAppearances??-1)||a.id.localeCompare(b.id));
- const shown=rows.filter(x=>filter==="all"||filter==="changes"&&x.changed||filter==="review"&&x.review);
+ const {selected}=rosterState,filter=$("rowFilter").value;
+ const {rows,shown}=presentRosterRows({scenario:selected,members,filter});
  $("rosterRows").replaceChildren();
  for(const x of shown){
- const profile=profiles.get(x.id),m=members.find(m=>m.id===x.id);
- const li=el("li","",x.changed?"changed":""),left=el("span",names.get(x.id));
- const desc="RH"+m.townHall+" · "+(profile.n?profile.n+" passende Angriffe":"Keine passenden Angriffe");
- left.append(el("small",desc));
- const reason=x.participation==="unknown"?"Teilnahme offen":x.recommendation==="manual_review"?"Form nicht ausreichend belegt":x.recommendation==="limited_opportunity_review"?"Wenige Einsätze – prüfen":x.recommendation==="capacity_or_availability_review"?"Kein Einsatz – prüfen":m.fixed?"Fix":x.changed?"Einsatzverteilung geändert":"";
- if(reason)left.append(el("small",reason,"reason"));
- const before=el("span",String(x.standardAppearances??"–")),after=el("span",String(x.scenarioAppearances??"–"));
- before.setAttribute("aria-label","Standard: "+(x.standardAppearances??"unbekannt")+" Einsätze");
- after.setAttribute("aria-label","Vorschau: "+(x.scenarioAppearances??"unbekannt")+" Einsätze");
- li.append(left,before,after);$("rosterRows").append(li);
+ const tr=el("tr","",x.changed?"changed":""),left=el("th",x.name);left.scope="row";
+ left.append(el("small","RH"+x.townHall+" · "+(x.n?x.n+" passende Angriffe":"Keine passenden Angriffe")));
+ if(x.reason)left.append(el("small",x.reason,"reason"));
+ const before=el("td",String(x.standard??"–")),after=el("td",String(x.proposed??"–"));
+ tr.append(left,before,after);$("rosterRows").append(tr);
  }
- if(!shown.length)$("rosterRows").append(el("li","Keine Spieler für diese Auswahl.","empty"));
+ if(!shown.length){const tr=el("tr",""),td=el("td","Keine Spieler für diese Auswahl.","empty");td.colSpan=3;tr.append(td);$("rosterRows").append(tr)}
  $("rowCount").textContent=shown.length+" von "+rows.length+" Spielern";
 }
 
@@ -67,19 +59,21 @@ function dailyData(mode,role){
  evidence:{asOf:now,profiles},members:ms,registered:{verified:true,season,clanTag:own,observedAt:now,tags:ms.map(m=>m.playerTag)},currentPlan,manualLocks:[currentPlan[3],currentPlan[4]],mode,role,asOf:now,season,selectedClanTag:own,slots:15,days:5,declined};
 }
 function showDaily(mode,role){
- const p=previewDailyStrategy(dailyData(mode,role));last=p;
+ const input=dailyData(mode,role),p=previewDailyStrategy(input);last=p;
  if(!p.ok)throw Error("daily_conflict");
  $("status").textContent=role==="viewer"?"Lesemodus · keine Änderungen möglich.":role==="vice"?"Vorschau für Vize · Entscheidung beim Clanführer.":"Vorschau für Clanführer · keine Übernahme möglich.";
- $("tableStatus").textContent="Bestätigter Platz 5 · rechnerischer Endplatz 2–6 · Klassenerhalt offen (fiktive Ligaregeln)";
+ const view=presentDailyStrategy({preview:p,standings:input.standings,group:input.group,members:input.members,role,asOf:input.asOf,season:input.season,selectedClanTag:input.selectedClanTag});
+ $("tableStatus").textContent=view.tableStatus+" (fiktive Ligaregeln)";
+ $("dataStatus").textContent=view.dataStatus;
  $("days").replaceChildren(...Array.from({length:5},(_,i)=>el("span","Tag "+(i+1)+(p.editableDays.includes(i+1)?" · Vorbereitung":i<2?" · gespielt":" · gesperrt"),p.editableDays.includes(i+1)?"active":"")));
  const m=p.modeRecommendation;
  $("recommendation").hidden=!m;$("dismiss").hidden=!m||role==="viewer";$("undo").hidden=!hiddenKey||role==="viewer"||!!m;
- if(m){$("recommendation").replaceChildren(el("strong","Moduswechsel prüfen: "+modeNames[m.to]),el("p","Der bestätigte Tabellenstand ist kritisch. Der alternative Plan verbessert den vergleichbaren Leistungswert. Keine sichere Siegprognose."));for(const c of p.alternate.changes)$("recommendation").append(el("p","Tag "+c.day+": "+c.removed.map(id=>names.get(id)).join(", ")+" → "+c.added.map(id=>names.get(id)).join(", ")));$("recommendation").append(el("small","Spieler mit rechnerischer Chance auf 8 Sterne: "+(m.medalOpportunitiesBefore??"unbekannt")+" → "+(m.medalOpportunitiesAfter??"unbekannt")))}
+ if(m){$("recommendation").replaceChildren(el("strong","Moduswechsel prüfen: "+modeNames[m.to]),el("p",view.recommendation.reason));for(const c of view.recommendation.changes){const line=el("p","Tag "+c.day+": ");line.append(el("span","Heraus: "+c.removed.join(", ")),el("span"," · Hinein: "+c.added.join(", ")));$("recommendation").append(line)}$("recommendation").append(el("small",view.recommendation.medals))}
  $("changes").replaceChildren();
  if(!p.current.changes.length)row($("changes"),"Keine Wechsel im gewählten Modus","Bestehender Plan bleibt erhalten.","");
  for(const c of p.current.changes)row($("changes"),"Tag "+c.day,c.removed.map(id=>names.get(id)).join(", ")+" → "+c.added.map(id=>names.get(id)).join(", "),"Vorschlag");
  $("medalRows").replaceChildren();
- for(const x of p.players)row($("medalRows"),names.get(x.id),x.confirmedPreparationAppearances+" bestätigte Vorbereitungseinsätze",x.medalStatus==="unknown"?"Unbekannt":x.observedStarsLowerBound+" / 8 ★");
+ for(const x of view.medals)row($("medalRows"),x.name,x.detail,x.stars);
  $("targetRows").replaceChildren();
  for(const t of p.targetPreviews){
  if(!t.ok)row($("targetRows"),"Tag "+t.day,p.frozenDays.includes(t.day)?"Geschützter Kriegstag – keine Zielvorschau.":"Tatsächlichen Kader nach Änderung erneut prüfen.","Kein Vorschlag");
