@@ -32,7 +32,7 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
  const blank=()=>({stars:0,destruction:0});
  const teams=new Map(clans.map(t=>[t,{tag:t,min:blank(),max:blank(),completed:0,unknown:0}]));
  const records=[],pairCounts=new Map(),dayCounts=new Map(),warCounts=new Map(),rounds=new Set();
- let invalid=0,missing=0;
+ let invalid=0,missing=0,liveMatches=0;
  for(const round of snapshot.rounds){
   if(!int(round?.day,1,n-1)||rounds.has(round.day)||!Array.isArray(round.matches)||round.matches.length>n/2)throw Error("invalid_group_rounds");
   rounds.add(round.day);
@@ -55,6 +55,7 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
   const sides=[w.clan,w.opponent],valid=sides.every(s=>int(s.stars,0,cap)&&pct(s.destructionPercentage));
   if(w.state==="warEnded"&&!valid){invalid++;continue}
   used.add(p);
+  if(w.state==="inWar")liveMatches++;
   if(w.state==="warEnded"){
    const ss=sides.map(s=>({stars:s.stars,destruction:Math.round(s.destructionPercentage*teamSize*100)}));
    // integer hundredths of cumulative destruction, identical war sizes.
@@ -89,7 +90,7 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
  // Range is deliberately conservative, not all extrema jointly attainable.
  // Mode suggestions require more than a merely mathematically possible risk.
  const current=1+other.filter(t=>cmp(t.min,x.min)>0).length;
- return {season,league,selectedClanTag:own,asOf,teamSize,calibrated:false,
+ return {season,league,selectedClanTag:own,asOf,observedAt:snapshot.observedAt,teamSize,liveMatches,calibrated:false,
   bounds:{best,worst},currentLowerBoundRank:current,promotion,demotion,promotionLast,demotionFirst,
   complete,quality,invalid,missing,knownPairings:used.size,expectedPairings:n*(n-1)/2,
   teams:all.map(t=>({...t,min:{stars:t.min.stars,destruction:t.min.destruction/100},max:{stars:t.max.stars,destruction:t.max.destruction/100}})),

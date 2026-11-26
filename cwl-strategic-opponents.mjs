@@ -60,7 +60,7 @@ export function analyzeCwlGroup({snapshot,selectedClanTag,season,asOf}={}){
    candidates.push({day:round.day,w,key});
   }
  }
- const players=new Map(),upcoming=[],wars=[],seenPairs=new Set(),usedByDay=new Map(),badDayClans=new Set();
+ const players=new Map(),upcoming=[],wars=[],ownStars=new Map();
  // Reject ambiguous repeated team/pair identity, not first-wins.
  const pairCounts=new Map(),dayClanCounts=new Map();
  for(const {day,w} of candidates){
@@ -119,6 +119,7 @@ export function analyzeCwlGroup({snapshot,selectedClanTag,season,asOf}={}){
    if(!first.has(e.defenderTag))first.set(e.defenderTag,e.order);
   }
   for(const e of observed){
+   if(e.attackerClan===own)ownStars.set(e.attackerTag,(ownStars.get(e.attackerTag)||0)+e.stars);
    e.firstHit=complete&&orderComplete?first.get(e.defenderTag)===e.order:null;
    for(const [clan,p,t,kind] of [[e.attackerClan,e.attackerTag,e.attackerTh,"attack"],[e.defenderClan,e.defenderTag,e.defenderTh,"defense"]]){
     const k=JSON.stringify([clan,p,t]);
@@ -127,7 +128,8 @@ export function analyzeCwlGroup({snapshot,selectedClanTag,season,asOf}={}){
    }
   }
   wars.push({day,warTag:key,state:w.state,teamSize:w.teamSize,clans:[a.tag,b.tag],
-    observedAttacks:observed.length,completeAttackLists:complete,firstHitKnown:complete&&orderComplete});
+    observedAttacks:observed.length,completeAttackLists:complete,firstHitKnown:complete&&orderComplete,
+    ...(our?{ownRoster:our.members.map(({tag,townHall,mapPosition})=>({tag,townHall,mapPosition})),opponentTag:enemy.tag}:{})});
  }
  const profiles=[...players.values()].map(p=>{
   const defense=p.defense,byWar=new Map();
@@ -142,5 +144,7 @@ export function analyzeCwlGroup({snapshot,selectedClanTag,season,asOf}={}){
  }).sort((a,b)=>cmp(a.clanTag,b.clanTag)||cmp(a.playerTag,b.playerTag)||a.townHall-b.townHall);
  return {season,selectedClanTag:own,asOf,observedAt:snapshot.observedAt,calibrated:false,
   profiles,upcoming:upcoming.sort((a,b)=>a.day-b.day),wars,audit,
+  ownMedals:{stars:[...ownStars].map(([playerTag,stars])=>({playerTag,stars})).sort((a,b)=>cmp(a.playerTag,b.playerTag)),
+   complete:upcoming.length+wars.filter(w=>w.ownRoster).length===days&&wars.filter(w=>w.ownRoster).every(w=>w.completeAttackLists)},
   limitations:["observed_attacks_only","no_exact_attack_timestamp","no_layout_identity","no_win_probability","no_automatic_assignment"]};
 }
