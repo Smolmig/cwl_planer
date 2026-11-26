@@ -118,6 +118,9 @@ export function previewSeasonCandidates({members=[],facts=[],obligations=[],asOf
  if(!Object.hasOwn(modeRules,mode)||![15,30].includes(slots)||![5,7].includes(days)||typeof planStandard!=="function")throw Error("invalid_scenario");
  const roster=rosterOf(members);
  const evidence=buildStrategicEvidence({members:roster,facts,obligations,asOf});
+ return previewWithEvidence({roster,evidence,mode,slots,days,planStandard});
+}
+function previewWithEvidence({roster,evidence,mode,slots,days,planStandard}){
  const profiles=new Map(evidence.profiles.map(p=>[p.id,p]));
  const active=roster.filter(m=>m.cocSyncState!=="former"&&m.participationIntent!=="no"&&m.participating!==false);
  const activeIds=active.map(m=>m.id),byId=new Map(active.map(m=>[m.id,m]));
@@ -184,4 +187,69 @@ export function previewSeasonCandidates({members=[],facts=[],obligations=[],asOf
  });
  return {ok:true,mode,calibrated:false,conditional,evidence,rows,changes,standard:base,preview:plans,
   limitations:["pre_registration_only","no_opponent_data","conditional_participation","no_star_forecast","no_automatic_exclusion"]};
+}
+
+// Conditional candidate-size comparison, not a registration or exclusion decision.
+// The full-roster evidence (including peer priors) stays fixed across scenarios.
+// Search is deliberately bounded and never removes unknown/limited form,
+// explicit participation rules, or changes the per-day TH composition.
+export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asOf,mode,slots=15,days=7,planStandard}={}){
+ const full=previewSeasonCandidates({members,facts,obligations,asOf,mode,slots,days,planStandard});
+ if(!full.ok)return {ok:false,calibrated:false,conflicts:full.conflicts,scenarios:[],recommendation:null};
+ const roster=rosterOf(members),profiles=new Map(full.evidence.profiles.map(p=>[p.id,p]));
+ const byId=new Map(roster.map(m=>[m.id,m]));
+ const active=roster.filter(m=>m.cocSyncState!=="former"&&m.participationIntent!=="no"&&m.participating!==false);
+ const available=(m,d)=>m.statuses[d]!=="out";
+ const composition=p=>p.preview.map(d=>d.lineup.map(id=>byId.get(id).townHall).sort((a,b)=>a-b).join(",")).join("|");
+ const fullTH=composition(full);
+ const metrics=(p,selected)=>{
+  const actual=p.rows.filter(x=>x.scenarioAppearances!==null);
+  const counts=actual.map(x=>x.scenarioAppearances);
+  const known=actual.filter(x=>profiles.get(x.id).n>=4);
+  return {size:selected.length,conditional:selected.filter(m=>m.participationIntent!=="yes").length,
+   minimumAvailableReserve:Math.min(...Array.from({length:days},(_,d)=>selected.filter(m=>available(m,d)).length-slots)),
+   minimumConfirmedReserve:Math.min(...Array.from({length:days},(_,d)=>selected.filter(m=>available(m,d)&&m.participationIntent==="yes").length-slots)),
+   minAppearances:Math.min(...counts),maxAppearances:Math.max(...counts),
+   theoreticalMedalOpportunities:counts.filter(n=>n>=3).length,
+   knownSlots:known.reduce((s,x)=>s+x.scenarioAppearances,0),
+   comparableStarIndex:known.reduce((s,x)=>s+profiles.get(x.id).score*x.scenarioAppearances,0),
+   unknownOrLimited:actual.filter(x=>profiles.get(x.id).n<4).length};
+ };
+ const original=metrics(full,active);
+ const scenarios=[{kind:"all_candidates",size:active.length,excluded:[],metrics:original,plan:full}];
+ let current=active,previous=full,removed=[];
+ const protectedMember=m=>m.fixed||m.targetDays!=null&&m.targetDays!==""||m.statuses.includes("must")||
+  m.rotationWeight==="preferred"||m.participationIntent!=="yes"||profiles.get(m.id).n<8;
+ // Keep at least one conditional reserve per day in a smaller scenario.
+ // This is a shadow safety heuristic, not a guaranteed actual substitute.
+ for(let step=0;step<3;step++){
+  const rowById=new Map(previous.rows.map(x=>[x.id,x]));
+  const options=current.filter(m=>{
+   const p=profiles.get(m.id),n=rowById.get(m.id)?.scenarioAppearances;
+   return !protectedMember(m)&&n>0&&n<=2&&current.some(other=>
+    other.id!==m.id&&other.townHall===m.townHall&&profiles.get(other.id).n>=8&&profiles.get(other.id).score-p.score>=.25);
+  }).sort((a,b)=>rowById.get(a.id).scenarioAppearances-rowById.get(b.id).scenarioAppearances||
+    profiles.get(a.id).score-profiles.get(b.id).score||cmp(a.id,b.id)).slice(0,4);
+  let best=null;
+  for(const candidate of options){
+   const selected=current.filter(m=>m.id!==candidate.id);
+   if(Array.from({length:days},(_,d)=>selected.filter(m=>available(m,d)).length).some(n=>n<slots+1))continue;
+   const p=previewWithEvidence({roster:selected,evidence:full.evidence,mode,slots,days,planStandard});
+   if(!p.ok||composition(p)!==fullTH||p.rows.some(x=>x.scenarioAppearances===0))continue;
+   const m=metrics(p,selected);
+   if(m.knownSlots!==original.knownSlots||m.unknownOrLimited!==original.unknownOrLimited)continue;
+   // Never prefer a weaker comparable performance index. This is an
+   // internal additive comparison on the same TH composition, NOT a score forecast.
+   if(m.comparableStarIndex+1e-9<original.comparableStarIndex)continue;
+   const candidateResult={candidate,selected,p,m};
+   if(!best||m.comparableStarIndex>best.m.comparableStarIndex+1e-9||
+      Math.abs(m.comparableStarIndex-best.m.comparableStarIndex)<1e-9&&m.theoreticalMedalOpportunities>best.m.theoreticalMedalOpportunities)best=candidateResult;
+  }
+  if(!best)break;
+  removed=[...removed,best.candidate.id];current=best.selected;previous=best.p;
+  scenarios.push({kind:"smaller_roster_review",size:current.length,excluded:[...removed],metrics:best.m,plan:best.p,
+   requiresIndividualReview:true,reason:"limited_opportunity_and_comparable_evidence"});
+ }
+ return {ok:true,calibrated:false,mode,scenarios,recommendation:null,
+  limitations:["bounded_search","conditional_availability","fixed_th_composition","no_opponent_data","no_automatic_exclusion","manual_roster_choice"]};
 }
