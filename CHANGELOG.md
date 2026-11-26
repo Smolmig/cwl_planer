@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.36.0] - 2026-11-26
+
+- Clanverwaltung: dauerhafte Discord-Markierungen und bewusste Haupt-/Zweitaccount-Zuordnungen mit Suche und Filtern.
+- Grind-Verlosung: optional ein Los pro Person, keine Addition von Accountleistungen; Veranstalter als Person ausgeschlossen. Testziehung und Glücksrad, kompakte Teilnahmeentscheidungen. Bestehende Regeln und offizielle Ziehungen bleiben unverändert.
+- Zwei additive SQL-Migrationen nach Abnahme. Ranked, Raid und Clanspiele bleiben bis zur tatsächlichen Proxy-/Tracking-Abnahme deaktiviert.
+
 ## [1.35.0] - 2026-11-26
 
 - CWL-Goldpass: ausgewogene, leistungsbetonte und teilnahmebetonte Losvorlagen. Startlose eindeutig benannt; durchgeführte Angriffe und Sternenboni je Rundenzahl. Individuelle Losaufschlüsselung, kompakte Teilnahmeentscheidungen und Hilfe.

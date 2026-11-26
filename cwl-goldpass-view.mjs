@@ -1,5 +1,5 @@
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.35.0";
-import {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,starThresholds,raffleTicketBreakdown,collectRaffleEvidence,rafflePreview,sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.35.0";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.36.0";
+import {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,starThresholds,raffleTicketBreakdown,collectRaffleEvidence,rafflePreview,sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.36.0";
 const pct=new Intl.NumberFormat("de-AT",{style:"percent",maximumFractionDigits:2});
 const month=new Intl.DateTimeFormat("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
 const el=(tag,text="",className="")=>{const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n};

@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.36.0",
+      "releaseType": "minor",
+      "date": "2026-11-26",
+      "title": "Mitgliedsmerkmale und faire Grind-Verlosung",
+      "description": "Discord zentral pflegen, Mehrfachaccounts zuordnen und optional je Person ein Los vergeben; Grind-Testziehung mit Glücksrad."
+  },
+
+  {
       "version": "v1.35.0",
       "releaseType": "minor",
       "date": "2026-11-26",
