@@ -12,7 +12,7 @@ const live=fs.readFileSync(path.join(root,"cwl-live.mjs"),"utf8");
 
 test("Member sort exposes explicit modes and personal preferences",()=>{
  for(const mode of ["form-cw","form-cwl","form-combined","recent-stars"])assert.ok(html.includes('value="'+mode+'"'));
- assert.match(html,/CW-Form · 30 Tage/);assert.match(html,/CWL-Form · letzte dokumentierte Liga/);
+ assert.match(html,/CW-Form · 30 Tage/);assert.match(html,/CWL-Form · letzte Liga/);
  assert.match(html,/Kombi-Form · 30 Tage/);assert.match(html,/member-form-summary/);
  assert.match(sync,/getMemberSortPreference/);assert.match(sync,/setMemberSortPreference/);
  assert.match(html,/setMemberSortPreference\?\.\(e\.target\.value\);renderMembers\(\);return/);
