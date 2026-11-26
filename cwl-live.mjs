@@ -1169,7 +1169,7 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
      const ctx=context(),model=getLifecycle(),now=Date.now();
      if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||activeClan!==ctx.clanId||
        lastSuccessfulProfile!==ctx.profile||!current?.ok||!lastSuccessfulAt||
-       now-lastSuccessfulAt>FRESH_WINDOW_MS||offlineReason||current.pending||fetching)return null;
+       now-lastSuccessfulAt>FRESH_WINDOW_MS||offlineReason||current.pending)return null;
      if(model.mode==="planning"&&model.reason==="league_active"&&current.active&&
         current.clanTag===ctx.clanTag&&model.season===current.season)
        return {phase:"daily",season:model.season,observedAt:lastSuccessfulAt};
