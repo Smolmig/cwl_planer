@@ -57,8 +57,10 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
    for(const theme of ["arena","dark","light","cyber","cyberlight"]){
     await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
     assert.ok(await entry.evaluate(n=>n.scrollWidth<=n.clientWidth+2),"pilot overflow "+width+" "+theme);
+    const contrast=await entry.locator("select").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>{const s=getComputedStyle(n);const lum=c=>{const rgb=c.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number);return rgb?.length===3?rgb.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0):null};const a=lum(s.color),b=lum(s.backgroundColor);return {appearance:s.appearance,ratio:a===null||b===null?0:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)}}));
+    assert.ok(contrast.length&&contrast.every(c=>c.appearance==="none"&&c.ratio>=4.5),"select appearance or contrast "+width+" "+theme+" "+JSON.stringify(contrast));
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),"app overflow "+width+" "+theme);
-    if(dir&&["arena","dark"].includes(theme))await entry.screenshot({path:path.join(dir,"strategic-integrated-"+theme+"-"+width+".png")});
+    if(dir&&["arena","dark"].includes(theme)){await entry.evaluate(n=>{const top=n.getBoundingClientRect().top+scrollY;const header=document.querySelector(".topbar")?.getBoundingClientRect().height||0;scrollTo(0,Math.max(0,top-header-8))});await page.screenshot({path:path.join(dir,"strategic-integrated-"+theme+"-"+width+".png")});}
    }
   }
   await entry.getByText("Teilnahme erfassen (optional)",{exact:true}).click();

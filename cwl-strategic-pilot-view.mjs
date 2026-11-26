@@ -4,19 +4,19 @@ export function createStrategicPilotView({anchor,getContext,load}){
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Vorschau");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
  const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select");subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
- const controls=el("div");controls.style.cssText="max-width:480px;min-width:0";
+ const controls=el("div");controls.style.cssText="max-width:480px;min-width:0;display:grid;gap:6px";
  const draftFields=el("div"),format=el("select"),days=el("select"),formatLabel=el("label","CWL-Format"),daysLabel=el("label","Angenommene Kriegstage");
  format.id="strategicDraftFormat";days.id="strategicDraftDays";formatLabel.htmlFor=format.id;daysLabel.htmlFor=days.id;
  for(const n of [15,30]){const o=el("option",n+" gegen "+n);o.value=String(n);format.append(o)}
  for(const n of [5,7]){const o=el("option",n+" Tage");o.value=String(n);days.append(o)}
  const participation=el("details"),ps=el("summary","Teilnahme erfassen (optional)"),counts=el("p"),search=el("input"),answersHost=el("div");
  ps.style.cssText="min-height:44px;padding:10px 0;font-weight:650";
- search.type="search";search.placeholder="Spieler suchen";search.setAttribute("aria-label","Teilnehmer suchen");search.style.cssText="width:100%;min-height:44px;max-width:100%";
+ search.type="search";search.placeholder="Spieler suchen";search.setAttribute("aria-label","Teilnehmer suchen");search.style.cssText="appearance:none;-webkit-appearance:none;width:100%;min-height:44px;max-width:100%;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px";
  counts.setAttribute("role","status");
  participation.append(ps,el("p","Übertrage bekannte Antworten aus eurer Abstimmung. Nicht beantwortete Spieler bleiben offen. Nur für diesen Entwurf."),counts,search,answersHost);
- draftFields.append(formatLabel,format,daysLabel,days,participation);
+ draftFields.style.cssText="display:grid;gap:6px";draftFields.append(formatLabel,format,daysLabel,days,participation);
  for(const [v,t] of [["balanced","Ausgewogen"],["performance","Leistung"],["development","Förderung"]]){const o=el("option",t);o.value=v;mode.append(o)}
- mode.style.cssText="display:block;min-height:44px;width:100%;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px";
+ mode.style.cssText="appearance:none;-webkit-appearance:none;display:block;min-height:44px;width:100%;color:var(--text);background-color:var(--card);background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;border:1px solid var(--line);border-radius:10px;padding:8px 28px 8px 10px";
  format.style.cssText=mode.style.cssText;days.style.cssText=mode.style.cssText;
  const button=el("button","Vorschau berechnen");button.type="button";button.className="btn";button.style.cssText="min-height:44px;margin:10px 0";
  const status=el("p"),results=el("div"),details=el("details"),ds=el("summary","Spielerdetails"),rows=el("div");
@@ -70,7 +70,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
   else if(nextToken!==token||!c?.ready&&(busy||stored)){sequence++;busy=false;token=nextToken;clear("Planstand geändert oder nicht verfügbar. Bitte neu berechnen.")}
   if(stored&&stored.expiresAt<=clock())clear("Die Vorschau ist nicht mehr aktuell. Bitte neu berechnen.");
   root.hidden=!c;if(!c)return;
-  draftFields.hidden=c.phase!=="roster";setCandidates(c.phase==="roster"?c.candidates:[]);
+  draftFields.hidden=c.phase!=="roster";draftFields.style.display=c.phase==="roster"?"grid":"none";setCandidates(c.phase==="roster"?c.candidates:[]);
   format.disabled=days.disabled=search.disabled=!c.ready||busy;
   for(const select of answersHost.querySelectorAll("select"))select.disabled=!c.ready||busy;
   subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Anmeldung und Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
@@ -86,7 +86,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
   const choice=el("select"),overview=el("div");choice.setAttribute("aria-label","Kaderoption");choice.style.cssText=mode.style.cssText;
   const filter=el("select");filter.setAttribute("aria-label","Spieler filtern");filter.style.cssText=mode.style.cssText;
   for(const [v,t] of [["all","Alle Spieler"],["changes","Nur Änderungen"],["review","Prüfbedarf"]]){const o=el("option",t);o.value=v;filter.append(o)}
-  for(const sc of s.scenarios){const o=el("option",sc.size+" Spieler"+(sc.excluded.length?" · prüfen":" · vollständiger Kader"));o.value=String(sc.size);choice.append(o)}
+  for(const sc of s.scenarios){const o=el("option",sc.size+" Spieler"+(sc.excluded.length?" · prüfen":" · alle"));o.value=String(sc.size);choice.append(o)}
   choice.style.maxWidth="480px";filter.style.maxWidth="480px";
   results.append(el("h3","Kadervergleich"),el("p",formatText),choice,overview);
   if(s.participation?.no)results.append(el("p",s.participation.no===1?"Eine Absage wurde nur für diesen Entwurf berücksichtigt.":s.participation.no+" Absagen wurden nur für diesen Entwurf berücksichtigt."));

@@ -40,3 +40,6 @@ Nachweis je Schritt: Datum, Commit, Gerät/Browser/Theme, Testrolle, Status OK/F
 - Allgemeine Freigabe: NO-GO bis Geräte-/Live-CWL-Abnahme, Rechte, Sprache, Modellgrenzen und Freigabe-/Rollback-Protokoll. Kein automatisches Apply vorhanden. Modell bleibt unkalibriert; prospektive Modellvalidierung benötigt gesonderte Datenherkunftsentscheidung.
 - Rollback: Testbuild entfernen, Staging-Flag/Allowlist deaktivieren, alte freigegebene App bleibt unverändert. Keine produktive Migration oder Secret-Änderung.
 
+
+## CI-Nachtrag
+f158efd: 1030/1030, Chromium/WebKit je 2/2, Auth und Import-WebKit grün. Portable Demo Artifact 15155212859. Visuelle Nachprüfung 15155976779 ergab WebKit-Dark-Select-Kontrast und gekürzte Kaderoption; Korrektur mit Kontrasttest und Viewport-Aufnahme in neuer CI, noch nicht manuell abgenommen. Keine Änderung des No-Go für Hosted/Produktion.
