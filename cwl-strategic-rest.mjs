@@ -77,14 +77,14 @@ export function planStrategicRest({group,evidence,registered,members,currentPlan
   const played=locks.filter(l=>l.locked&&l.lineup.includes(m.id)).length;
   // Protect an ordinary first appearance whenever feasible; increasing
   // marginal costs preserve the solver's ordered nth-assignment invariant.
-  return n===1?0:Math.round(1600+rules.rotation*(2*n-1)+(n>played+need?rules.medal:0)+(n>3?rules.development*development:0));
+  return n===1?0:Math.round(1600+rules.rotation*(2*n-1)+(n>played+need?rules.medal:0)-(n<=3?rules.development*development:0));
  })}));
  // Warn only on a clear comparable disadvantage; respect FIX/MUSS regardless.
  if(mode==="performance")for(const m of active)for(const [day] of known){
   if(locks[day-1].locked||m.statuses[day-1]==="out"||!m.fixed&&m.statuses[day-1]!=="must")continue;
   const a=match.get(m.id+"|"+day);
   if(!a.cell||a.cell.n<8)continue;
-  const b=active.filter(x=>x.id!==m.id&&x.townHall===m.townHall&&!x.fixed&&!exact(x)&&!["must","out"].includes(x.statuses[day-1]))
+  const b=active.filter(x=>x.id!==m.id&&x.townHall===m.townHall&&!base[day-1].lineup.includes(x.id)&&!x.fixed&&!exact(x)&&!["must","out"].includes(x.statuses[day-1]))
     .find(x=>{const c=match.get(x.id+"|"+day);return c.cell?.n>=8&&c.ref===a.ref&&c.cell.index-a.cell.index>=.25});
   if(b)warnings.push({day,id:m.id,alternative:b.id});
  }

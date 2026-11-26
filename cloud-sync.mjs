@@ -136,9 +136,10 @@ function suggestionChanges(suggestion){
  for(const m of prev.members||[])if(!(draft.members||[]).some(x=>x.id===m.id))
    result.push((m.name||"Mitglied")+" entfernt");
  if(JSON.stringify(prev.dayGoals)!==JSON.stringify(draft.dayGoals))result.push("Tagesziele geändert");
- if(sharedStrategicMode(prev)!==sharedStrategicMode(draft)){
+ {
  const names={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"};
- result.push("Leistungsmodus: "+names[sharedStrategicMode(prev)]+" → "+names[sharedStrategicMode(draft)]);
+ const mode=p=>Object.hasOwn(names,p.config?.strategicMode)?p.config.strategicMode:"balanced";
+ if(mode(prev)!==mode(draft))result.push("Leistungsmodus: "+names[mode(prev)]+" → "+names[mode(draft)]);
  }
  const {strategicMode:oldMode,...oldConfig}=prev.config||{}, {strategicMode:newMode,...newConfig}=draft.config||{};
  if(JSON.stringify(oldConfig)!==JSON.stringify(newConfig))result.push("CWL-Grunddaten geändert");

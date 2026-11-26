@@ -82,7 +82,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode}){
  function notice(parent,kind,title,message){
   const block=el("div");block.className="strategic-notice is-"+kind;block.setAttribute("role","status");
   const heading=el("strong"),mark=el("span",kind==="warning"?"⚠":"✓");mark.className="strategic-notice-icon";mark.setAttribute("aria-hidden","true");
-  heading.append(mark,doc.createTextNode(title));block.append(heading,el("p",message));parent.append(block);return block;
+  heading.append(mark,el("span",title));block.append(heading,el("p",message));parent.append(block);return block;
  }
  function renderRoster(s){
   results.replaceChildren();rows.replaceChildren();details.hidden=true;
