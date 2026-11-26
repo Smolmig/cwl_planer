@@ -2509,6 +2509,13 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* #183 phase 1: quiet, read-only clan-rank overview – no extra cards per player. */
 #view-clan-management{max-width:1040px;margin:0 auto}
+ .activity-member-toolbar,.activity-member-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,160px);gap:10px;align-items:center}
+ .activity-member-row{border-top:1px solid var(--line);padding:12px 0;min-width:0}
+ .activity-member-row strong,.activity-member-row small{display:block;overflow-wrap:anywhere}
+ .activity-member-row details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+ .activity-member-row select,.activity-member-toolbar input,.activity-member-toolbar select{max-width:100%;width:100%;min-height:44px}
+ .activity-member-row details button{margin-top:8px;min-height:44px}
+ #clanActivityMembers .goldpass-field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .clan-management-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
 .clan-management-criteria{margin:5px 0 18px;border-bottom:1px solid var(--line);padding-bottom:14px}
 .clan-management-criteria>summary{font-size:14px;font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px}
@@ -4515,6 +4522,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanliste aktualisieren</button>
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine Clanliste geprüft.</span>
  </div>
+ <details id="clanActivityMembers" class="clan-management-criteria"><summary>Mitgliedsmerkmale <span class="subtle">· Discord & Mehrfachaccounts</span></summary><div id="clanActivityMembersContent"></div></details>
  <details id="clanManagementCriteria" class="clan-management-criteria">
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
@@ -7037,7 +7045,32 @@ async function openGoldpassPreview(){
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
 }
-let activityGoldpassView=null;
+let activityMemberView=null,activityMemberImport=0;
+ const activityMemberPanel=document.getElementById("clanActivityMembers");
+ window.CWLActivityMembers={accessChanged(c){
+  if(!c||activityMemberView&&!activityMemberView.accessChanged(c)){
+   activityMemberImport++;
+   activityMemberPanel.open=false;
+   document.getElementById("clanActivityMembersContent").replaceChildren();
+  }
+ }};
+ activityMemberPanel.addEventListener("toggle",async()=>{
+  if(!activityMemberPanel.open)return;
+  const c=activityGoldpassContext(),token=++activityMemberImport;
+  if(!c){activityMemberPanel.open=false;return}
+  const root=document.getElementById("clanActivityMembersContent");
+  try{
+   if(!activityMemberView){
+    root.textContent="Mitgliedsmerkmale werden geladen …";
+    const m=await import("./cwl-activity-member-view.mjs?v=1.35.0");
+    const now=activityGoldpassContext();
+    if(token!==activityMemberImport||!activityMemberPanel.open||now?.clanId!==c.clanId||now?.clanTag!==c.clanTag||now?.session!==c.session)return;
+    activityMemberView=m.createActivityMemberView({root,getContext:activityGoldpassContext,api:r=>window.CWLCloud.activityMemberRequest(r)});
+   }
+   activityMemberView.open();
+  }catch{if(token===activityMemberImport)root.textContent="Mitgliedsmerkmale konnten nicht geladen werden. Bitte erneut öffnen."}
+ });
+ let activityGoldpassView=null;
 function activityGoldpassContext(){
  const c=window.CWLCloud;
  return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.(),session:c.getActivitySession?.()}:null;
