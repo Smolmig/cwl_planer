@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.37.0",
+      "releaseType": "minor",
+      "date": "2026-11-26",
+      "title": "Mitgliederform 2.0",
+      "description": "CW-, CWL- und Kombi-Form getrennt sortieren, aktuelle Rathausstufe bevorzugen und berechtigte Zweitclan-Daten berücksichtigen. RH19-Symbol und persönliche Sortierung."
+  },
+
+  {
       "version": "v1.36.0",
       "releaseType": "minor",
       "date": "2026-11-26",

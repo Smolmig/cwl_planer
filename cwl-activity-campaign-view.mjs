@@ -1,6 +1,6 @@
-import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.36.0";
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.36.0";
-import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.36.0";
+import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.37.0";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.37.0";
+import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.37.0";
 const metrics=[
  ["donations","Spenden",3500],["cwStars","Normale CW-Sterne",28],["cwAttacks","Normale CW-Angriffe",12],
  ["cwTriples","Normale CW-Dreier",8],["cwlStars","CWL-Sterne",15],["cwlAttacks","CWL-Angriffe",5],

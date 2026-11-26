@@ -1,4 +1,4 @@
-import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,computeMemberFormV2,compareMemberFormV2,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.27.0";
+import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,computeMemberFormV2,compareMemberFormV2,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.37.0";
 import {loadMemberFormClans,mergeMemberFormClans} from "./cwl-member-form-history.mjs?v=1.37.0";
 import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";

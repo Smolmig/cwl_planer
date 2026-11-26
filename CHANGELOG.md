@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.37.0] - 2026-11-26
+
+- Mitgliederform 2.0: getrennte CW-/CWL-/Kombi-Ansichten, 30-Tage-Fenster und letzte dokumentierte Liga; ausgewählter Formwert bestimmt Sortierung und Karte. Aktuelles RH, Stichprobe, belegte Zuverlässigkeit und ältere Ersatzdaten getrennt kenntlich.
+- Berechtigte verknüpfte Clans in der Mitgliederform read-only einbeziehen; Mehrfachprofile und unsicher abgleichbare Doppelimporte nicht addieren, Datenlücken anzeigen. Clanstatistik, Solver und Plan unverändert.
+- RH19-Symbol (ClashKingAssets), persönliche Sortierpräferenz je Nutzer/Clan; Browser-Regressionen und Screenshot-Artefakt.
+
 ## [1.36.0] - 2026-11-26
 
 - Clanverwaltung: dauerhafte Discord-Markierungen und bewusste Haupt-/Zweitaccount-Zuordnungen mit Suche und Filtern.
