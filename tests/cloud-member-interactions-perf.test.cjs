@@ -21,6 +21,7 @@ function updateBulkBar(){}
 function showToast(){}
 function manualRosterRestricted(){return false}
 function memberById(id){return state.members.find(m=>m.id===id)}
+function memberViewSort(){return state.config.memberSort}
 function getVisibleMembers(){return state.members}
 function effectiveStatus(m,d){return m.statuses[d]||"auto"}
 function duplicateNameKeys(){
