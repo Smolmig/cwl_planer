@@ -234,10 +234,39 @@ export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asO
   for(const candidate of options){
    const selected=current.filter(m=>m.id!==candidate.id);
    if(Array.from({length:days},(_,d)=>selected.filter(m=>available(m,d)).length).some(n=>n<slots+1))continue;
-   const p=previewWithEvidence({roster:selected,evidence:full.evidence,mode,slots,days,planStandard});
+   // A fresh standard solve can incidentally alter the protected unknown
+   // player's count. Seed the candidate by replacing ONLY the removed
+   // player's existing appearances; preserve every other day and hard rule.
+   const standard=planStandard({members:selected.map(m=>({...m,participating:true,statuses:[...m.statuses]})),slots,days});
+   if(!standard?.ok)continue;
+   const seeded=previous.preview.map(d=>({day:d.day,lineup:[...d.lineup]}));
+   const selectedIds=selected.map(m=>m.id),initialCounts=count(seeded,selectedIds);
+   let feasible=true;
+   for(let d=0;d<days;d++){
+    const lineup=seeded[d].lineup,at=lineup.indexOf(candidate.id);
+    if(at<0)continue;
+    const replacements=selected.filter(m=>m.townHall===candidate.townHall&&!lineup.includes(m.id)&&available(m,d)&&
+      !m.fixed&&!(m.targetDays!=null&&m.targetDays!=="")&&m.statuses[d]!=="must"&&profiles.get(m.id).n>=4)
+      .sort((a,b)=>profiles.get(b.id).score-profiles.get(a.id).score||
+        (initialCounts[a.id]||0)-(initialCounts[b.id]||0)||cmp(a.id,b.id));
+    if(!replacements.length){feasible=false;break}
+    const next=replacements[0].id;lineup[at]=next;initialCounts[next]=(initialCounts[next]||0)+1;
+   }
+   if(!feasible)continue;
+   const p=previewWithEvidence({roster:selected,evidence:full.evidence,mode,slots,days,
+    planStandard:()=>({ok:true,dayPlans:seeded})});
    if(!p.ok||composition(p)!==fullTH||p.rows.some(x=>x.scenarioAppearances===0))continue;
+   // Keep the real standard reference distinct from the internal seed.
+   p.standard=standard.dayPlans.map(d=>({day:d.day,lineup:[...d.lineup]}));
+   const standardCounts=count(p.standard,selectedIds);
+   for(const row of p.rows)row.standardAppearances=standardCounts[row.id]??null;
+   p.changes=p.preview.flatMap((d,i)=>{
+    const added=d.lineup.filter(id=>!p.standard[i].lineup.includes(id)),removed=p.standard[i].lineup.filter(id=>!d.lineup.includes(id));
+    return added.length||removed.length?[{day:d.day,added,removed}]:[];
+   });
    const m=metrics(p,selected);
    if(m.knownSlots!==original.knownSlots||m.unknownOrLimited!==original.unknownOrLimited)continue;
+   if(mode!=="performance"&&m.theoreticalMedalOpportunities<original.theoreticalMedalOpportunities)continue;
    // Never prefer a weaker comparable performance index. This is an
    // internal additive comparison on the same TH composition, NOT a score forecast.
    if(m.comparableStarIndex+1e-9<original.comparableStarIndex)continue;
