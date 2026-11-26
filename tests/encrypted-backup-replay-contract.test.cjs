@@ -19,7 +19,7 @@ test("one-off encrypted backup replay is main-only, reuses isolated restore and 
  assert.match(replay,/github\.repository == 'Smolmig\/cwl_planer'/);
  assert.match(replay,/github\.ref == 'refs\/heads\/main'/);
  assert.match(replay,/uses: \.\/\.github\/workflows\/test-encrypted-restore\.yml/);
- assert.match(replay,/backup_run_id:.*'44283214780'/);
+ assert.match(replay,/backup_run_id:.*'45805944787'/);
  assert.match(replay,/CWL_BACKUP_PASSPHRASE: \$\{\{ secrets\.CWL_BACKUP_PASSPHRASE \}\}/);
  assert.doesNotMatch(replay,/secrets:\s*inherit/);
  assert.doesNotMatch(replay,/SUPABASE_DB_URL|service_role|SUPABASE_SERVICE_ROLE_KEY|supabase db dump|supabase db push|DELETE FROM/i);

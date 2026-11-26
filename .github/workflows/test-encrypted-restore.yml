@@ -175,10 +175,10 @@ jobs:
           fi
 
       # New local bootstrap includes hosted Auth expires_at/link_token_hash.
-      # Keep pinned; never mutate the production Auth schema for restore tests.
+      # Pin stable candidate; the local Auth canary must pass before the replay is accepted.
       - uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: 3.4.0
 
       - name: Start disposable local Supabase Postgres
         shell: bash
@@ -186,6 +186,9 @@ jobs:
           set -euo pipefail
           cd "$WORK/local"
           supabase init --yes
+          # v3.4 creates JSONC by default; keep the existing isolated TOML port editor.
+          supabase config convert --to toml
+          test -f supabase/config.toml
           # GitHub runners can already have port 54322 occupied. Select an
           # available local port and use it consistently for this restore.
           restore_port="$(python3 - <<'PY'
@@ -216,6 +219,14 @@ jobs:
           # GITHUB_ENV applies only to later steps; export for THIS step.
           export CWL_RESTORE_DB_PORT="$restore_port"
           echo "CWL_RESTORE_DB_PORT=$restore_port" >> "$GITHUB_ENV"
+          # CLI v3.4.0 defaults to GoTrue v2.198.0; v2.199.0 contains
+          # upstream migration 20261116120000 for client_auth_method/audience.
+          # The CLI's own legacy service-pin resolver reads this file before
+          # its official one-shot Auth bootstrap. No project link or local DDL.
+          export SUPABASE_EXPERIMENTAL_STACK=0
+          mkdir -p supabase/.temp
+          printf '%s' 'v2.199.0' > supabase/.temp/gotrue-version
+          test "$(cat supabase/.temp/gotrue-version)" = 'v2.199.0'
           supabase db start
           # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
           command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
@@ -374,6 +385,7 @@ jobs:
         if: always()
         shell: bash
         run: |
+          export SUPABASE_EXPERIMENTAL_STACK=0
           if [[ -d "$WORK/local/supabase" ]]; then
             (cd "$WORK/local" && supabase stop --no-backup) || true
           fi

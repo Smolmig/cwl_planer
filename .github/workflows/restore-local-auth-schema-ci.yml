@@ -5,11 +5,13 @@ on:
     paths:
       - '.github/workflows/restore-local-auth-schema-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/restore_local_auth_compat.sql'
   push:
     branches: [main]
     paths:
       - '.github/workflows/restore-local-auth-schema-ci.yml'
       - '.github/workflows/test-encrypted-restore.yml'
+      - 'scripts/restore_local_auth_compat.sql'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +29,7 @@ jobs:
       # bootstrap BEFORE using it to restore an existing encrypted artifact.
       - uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: 3.4.0
       - name: Start disposable local Supabase PostgreSQL and verify Auth columns
         shell: bash
         run: |
@@ -35,6 +37,9 @@ jobs:
           mkdir -p "$WORK"
           cd "$WORK"
           supabase init --yes
+          # v3.4 creates JSONC by default; keep the existing isolated TOML port editor.
+          supabase config convert --to toml
+          test -f supabase/config.toml
           restore_port="$(python3 - <<'PY'
           from pathlib import Path
           import re, socket
@@ -57,30 +62,25 @@ jobs:
           PY
           )"
           test -n "$restore_port"
+          # CLI v3.4.0 defaults to GoTrue v2.198.0; v2.199.0 contains
+          # upstream migration 20261116120000 for client_auth_method/audience.
+          # The CLI's own legacy service-pin resolver reads this file before
+          # its official one-shot Auth bootstrap. No project link or local DDL.
+          export SUPABASE_EXPERIMENTAL_STACK=0
+          mkdir -p supabase/.temp
+          printf '%s' 'v2.199.0' > supabase/.temp/gotrue-version
+          test "$(cat supabase/.temp/gotrue-version)" = 'v2.199.0'
           supabase db start
           # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
           command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }
           psql --version
-          check="$(PGPASSWORD=postgres psql -X -qAt -h 127.0.0.1 -p "$restore_port" -U postgres -d postgres -v ON_ERROR_STOP=1 -c "
-            SELECT count(*)
-              FROM pg_catalog.pg_attribute a
-             WHERE a.attrelid='auth.one_time_tokens'::regclass
-               AND NOT a.attisdropped AND NOT a.attnotnull
-               AND (
-                    (a.attname='expires_at' AND
-                     format_type(a.atttypid,a.atttypmod)='timestamp with time zone')
-                 OR (a.attname='link_token_hash' AND
-                     format_type(a.atttypid,a.atttypmod)='text')
-               );")"
-          if [[ "$check" != "2" ]]; then
-            echo "::error::Local Supabase Auth schema still lacks hosted nullable token columns"
-            exit 1
-          fi
-          echo "PASS: local auth.one_time_tokens has both required nullable hosted columns"
+          PGPASSWORD=postgres psql -X -q -h 127.0.0.1 -p "$restore_port" -U postgres -d postgres -v ON_ERROR_STOP=1 -f "$GITHUB_WORKSPACE/scripts/restore_local_auth_compat.sql"
+          echo 'PASS: local Auth schema compatibility gate'
       - name: Remove local DB and temporary test files
         if: always()
         shell: bash
         run: |
+          export SUPABASE_EXPERIMENTAL_STACK=0
           if [[ -d "$WORK/supabase" ]]; then
             (cd "$WORK" && supabase stop --no-backup) || true
           fi
