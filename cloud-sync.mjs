@@ -386,6 +386,15 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ // Presentation only; never saved in a shared plan or change history.
+ getMemberSortPreference(){
+  if(!user?.id||!clanId)return null;
+  try{return localStorage.getItem("cwl-member-sort:"+user.id+":"+clanId)}catch{return null}
+ },
+ setMemberSortPreference(value){
+  if(!user?.id||!clanId)return;
+  try{localStorage.setItem("cwl-member-sort:"+user.id+":"+clanId,value)}catch{}
+ },
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  getActivitySession:()=>accountEpoch,
  async activityMemberRequest(request){
