@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.36.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.36.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.36.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.36.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.36.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.36.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.36.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.36.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.37.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.37.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.37.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.37.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.37.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.37.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.37.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.37.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -386,6 +386,15 @@ async function openNewPlanCycle(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ // Presentation only; never saved in a shared plan or change history.
+ getMemberSortPreference(){
+  if(!user?.id||!clanId)return null;
+  try{return localStorage.getItem("cwl-member-sort:"+user.id+":"+clanId)}catch{return null}
+ },
+ setMemberSortPreference(value){
+  if(!user?.id||!clanId)return;
+  try{localStorage.setItem("cwl-member-sort:"+user.id+":"+clanId,value)}catch{}
+ },
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  getActivitySession:()=>accountEpoch,
  async activityMemberRequest(request){
@@ -766,7 +775,7 @@ portableBackupUI.init();
 const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
- context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
+ context:()=>({active:cloud.active,clanId,role,clanName:clans.find(c=>c.id===clanId)?.name,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
   // Historical attacks remain in this clan's history even if their
   // players later left. Stored former/kept CWL guests are NOT current
   // roster members, so the statistics badge must not present them as such.

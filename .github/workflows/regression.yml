@@ -22,4 +22,13 @@ jobs:
       - name: Install Chromium for responsive browser tests
         run: npx playwright install chromium
       - name: Verify syntax and planner regressions
+        env:
+          CWL_UX_SCREENSHOTS: ux-screenshots
         run: node --test tests/*.test.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: member-form-ux-screenshots
+          path: ux-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7

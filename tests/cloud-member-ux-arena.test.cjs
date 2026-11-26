@@ -33,7 +33,7 @@ test("Players with actual statistics cannot override 3-star strength manually, o
  assert.match(html,/b\.triples/);
  assert.match(html,/b\.missedKnown/);
  assert.match(html,/getMemberForm/);
- assert.match(html,/Letzte 5 CWs · Ersatz für CWL/);
+ assert.match(html,/CW-Form · 30 Tage/);
 });
 test("Member participation and fixed day controls are unambiguous",()=>{
  assert.match(html,/m\.participating\?"Dabei":"Pause"/);
