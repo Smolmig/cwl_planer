@@ -87,8 +87,8 @@ export function previewDailyStrategy({group,standings,evidence,members=[],regist
  }
  const allIds=[...ids.keys()],original=counts(base,allIds);
  for(const m of ids.values())if(!m.fixed&&exact(m)&&(!Number.isInteger(Number(m.targetDays))||Number(m.targetDays)<0||Number(m.targetDays)>days||original.get(m.id)!==Number(m.targetDays)))return blocked("exact_target_conflict",[m.id]);
- const editable=new Set(preparation.keys()),futureDays=new Set(group.upcoming.map(w=>w.day));
- const medalStars=new Map(),medalComplete=group.ownMedals?.complete===true;
+ const editable=new Set(preparation.keys()),futureDays=new Set(group.upcoming.filter(w=>!held.some(h=>h.day===w.day)).map(w=>w.day));
+ const medalStars=new Map(),medalComplete=group.ownMedals?.complete===true&&dayStates.size===days;
  if(Array.isArray(group.ownMedals?.stars))for(const e of group.ownMedals.stars){
   const t=tag(e.playerTag);
   if(!TAG.test(t)||medalStars.has(t)||!Number.isInteger(e.stars)||e.stars<0||e.stars>days*3)return blocked("invalid_medal_evidence");
@@ -189,9 +189,9 @@ export function previewDailyStrategy({group,standings,evidence,members=[],regist
   });
  }
  const current=optimize(base,mode),currentMetrics=metrics(current);
- const sameRound=standings.quality==="schedule_known"&&standings.invalid===0&&standings.liveMatches===0&&
+ const sameRound=standings.quality==="schedule_known"&&standings.invalid===0&&
   Array.isArray(standings.teams)&&standings.teams.length===days+1&&standings.teams.every(t=>t.completed===standings.teams[0].completed)&&standings.teams[0].completed>=2;
- const risk=standings.demotion==="open"&&sameRound&&Number.isInteger(standings.demotionFirst)&&standings.currentLowerBoundRank>=standings.demotionFirst;
+ const risk=standings.demotion==="open"&&sameRound&&Number.isInteger(standings.demotionFirst)&&Number.isInteger(standings.confirmedRank)&&standings.confirmedRank>=standings.demotionFirst;
  const safe=["impossible","not_applicable"].includes(standings.demotion)&&["guaranteed","impossible","not_applicable"].includes(standings.promotion)&&standings.quality==="schedule_known"&&standings.invalid===0;
  let alternate=null,modeRecommendation=null;
  if(editable.size&&((mode!=="performance"&&risk)||(mode==="performance"&&safe))){

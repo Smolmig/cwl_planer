@@ -30,7 +30,7 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
   rules.fullGroupSize===8&&int(rules.promotionPlaces,0,8)&&int(rules.demotionPlaces,0,8)&&rules.promotionPlaces+rules.demotionPlaces<=8&&
   typeof rules.source==="string"&&rules.source.length>0;
  const blank=()=>({stars:0,destruction:0});
- const teams=new Map(clans.map(t=>[t,{tag:t,min:blank(),max:blank(),completed:0,unknown:0}]));
+ const teams=new Map(clans.map(t=>[t,{tag:t,min:blank(),max:blank(),confirmed:blank(),completed:0,unknown:0}]));
  const records=[],pairCounts=new Map(),dayCounts=new Map(),warCounts=new Map(),rounds=new Set();
  let invalid=0,missing=0,liveMatches=0;
  for(const round of snapshot.rounds){
@@ -61,7 +61,7 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
    // integer hundredths of cumulative destruction, identical war sizes.
    for(const [i,t] of [a,b].entries()){
     const x=teams.get(t),s=ss[i],bonus=cmp(s,ss[1-i])>0?10:0;
-    add(x.min,s.stars+bonus,s.destruction);add(x.max,s.stars+bonus,s.destruction);x.completed++;
+    add(x.min,s.stars+bonus,s.destruction);add(x.max,s.stars+bonus,s.destruction);add(x.confirmed,s.stars+bonus,s.destruction);x.completed++;
    }
   }else{
    for(const [i,t] of [a,b].entries()){
@@ -90,9 +90,10 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
  // Range is deliberately conservative, not all extrema jointly attainable.
  // Mode suggestions require more than a merely mathematically possible risk.
  const current=1+other.filter(t=>cmp(t.min,x.min)>0).length;
+ const confirmedRank=1+other.filter(t=>cmp(t.confirmed,x.confirmed)>0).length;
  return {season,league,selectedClanTag:own,asOf,observedAt:snapshot.observedAt,teamSize,liveMatches,calibrated:false,
-  bounds:{best,worst},currentLowerBoundRank:current,promotion,demotion,promotionLast,demotionFirst,
+  bounds:{best,worst},currentLowerBoundRank:current,confirmedRank,promotion,demotion,promotionLast,demotionFirst,
   complete,quality,invalid,missing,knownPairings:used.size,expectedPairings:n*(n-1)/2,
-  teams:all.map(t=>({...t,min:{stars:t.min.stars,destruction:t.min.destruction/100},max:{stars:t.max.stars,destruction:t.max.destruction/100}})),
+  teams:all.map(t=>({...t,confirmed:{stars:t.confirmed.stars,destruction:t.confirmed.destruction/100},min:{stars:t.min.stars,destruction:t.min.destruction/100},max:{stars:t.max.stars,destruction:t.max.destruction/100}})),
   limitations:["conservative_independent_bounds","no_probability","ties_unresolved","verified_league_rules_required"]};
 }
