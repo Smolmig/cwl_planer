@@ -25,7 +25,7 @@ export function createActivityMemberView({root,getContext,api}){
   root.replaceChildren();
   if(!scope||key(allowed())!==scope)return;
   const status=el("p",message||(!loaded?"Mitgliedsmerkmale laden.":""),"statusline");status.setAttribute("role","status");
-  root.append(el("p","Discord wird dauerhaft pro Clash-Account gespeichert und gilt auch in der Grind-Verlosung. Mehrfachaccounts ordnest du bewusst einem Hauptaccount zu. Das verändert aktuell noch keine Gewinnchancen.","statusline"),button("Mitgliedsmerkmale neu laden",()=>run({action:"list"}),busy),status);
+  root.append(el("p","Discord wird dauerhaft pro Clash-Account gespeichert und gilt auch in der Grind-Verlosung. Mehrfachaccounts ordnest du bewusst einem Hauptaccount zu. In neuen Grind-Verlosungen kannst du damit optional ein Los pro Person vergeben. Bestehende Regeln und gezogene Gewinner bleiben unverändert.","statusline"),button("Mitgliedsmerkmale neu laden",()=>run({action:"list"}),busy),status);
   if(!loaded)return;
   const counts=rows.filter(r=>r.present),search=el("input");search.type="search";search.placeholder="Name oder Spielertag";search.value=query;search.setAttribute("aria-label","Mitglied suchen");
   const mode=select([["current","Aktuelle Mitglieder"],["unknown","Discord unbekannt"],["yes","Discord: Ja"],["no","Discord: Nein"],["linked","Mehrfachaccounts"],["all","Alle gespeicherten"]],filter);
