@@ -1,6 +1,7 @@
 "use strict";
 const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),http=require("node:http");
-const {chromium}=require("playwright"),root=path.resolve(__dirname,"..");
+const {chromium,webkit}=require("playwright"),root=path.resolve(__dirname,"..");
+const engine=process.env.CWL_TEST_BROWSER==="webkit"?webkit:chromium;
 const app=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
 const allowed=new Set(["cloud-app.html","cwl-planning-core.js","cwl-strategic-pilot-view.mjs","cwl-strategic-pilot.mjs","cwl-strategic-experiment.mjs","cwl-strategic-daily.mjs","cwl-strategic-targets.mjs","cwl-strategic-presentation.mjs"]);
 test("integrated pilot in actual Cloud shell: real core, responsive themes, same-clan refresh, late-response isolation",{timeout:120000},async()=>{
@@ -12,7 +13,7 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
  });
  await new Promise(r=>server.listen(0,"127.0.0.1",r));let browser;
  try{
-  browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+  browser=await engine.launch({headless:true,...(engine===chromium?{args:["--no-sandbox"]}:{})});
   const page=await browser.newPage({viewport:{width:390,height:844}});page.setDefaultTimeout(12000);
   const errors=[],remote=[];page.on("pageerror",e=>errors.push(e.message));
   await page.route("**/*",r=>{if(!r.request().url().startsWith("http://127.0.0.1:")){remote.push(r.request().url());return r.abort()}return r.continue()});

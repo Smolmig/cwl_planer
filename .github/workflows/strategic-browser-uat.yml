@@ -1,0 +1,55 @@
+name: Strategic CWL browser pilot UAT
+on:
+  pull_request:
+    paths:
+      - 'cwl-strategic-*.mjs'
+      - 'cwl-planning-core.js'
+      - 'cloud-app.html'
+      - 'tests/cwl-strategic-*-browser.test.cjs'
+      - 'tests/fixtures/strategic-preview.*'
+      - 'scripts/build_strategic_demo.cjs'
+      - '.github/workflows/strategic-browser-uat.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: strategic-browser-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser and bundler
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1 esbuild@0.25.12
+          npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Build disconnected demonstration
+        run: node scripts/build_strategic_demo.cjs /tmp/strategic-demo.html
+      - name: Test actual app shell and portable demo
+        env:
+          CWL_TEST_BROWSER: ${{ matrix.engine }}
+          CWL_STRATEGIC_DEMO_FILE: /tmp/strategic-demo.html
+          CWL_UX_SCREENSHOTS: ux-strategic
+        run: node --test tests/cwl-strategic-integrated-browser.test.cjs tests/cwl-strategic-preview-browser.test.cjs
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: strategic-demo-${{ matrix.engine }}
+          path: /tmp/strategic-demo.html
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strategic-screenshots-${{ matrix.engine }}
+          path: ux-strategic/*.png
+          if-no-files-found: ignore
+          retention-days: 7

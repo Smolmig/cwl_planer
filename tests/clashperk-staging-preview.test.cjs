@@ -25,7 +25,7 @@ function fixture(t){
    encoding:"utf8",
    timeout:10000,
    env:{...process.env,CWL_STAGING_SUPABASE_URL:opts.url??stagingUrl,
-    CWL_STAGING_PUBLISHABLE_KEY:opts.key??stagingKey}
+    CWL_STAGING_PUBLISHABLE_KEY:opts.key??stagingKey,CWL_STAGING_STRATEGIC:opts.strategic??"false"}
   })};
  };
  return {dir,run};
@@ -42,6 +42,7 @@ test("staging preview uses only a different hosted Supabase project and shows an
  assert.match(sync,/const SUPABASE_URL="https:\/\/stagingprojectxyz123\.supabase\.co";/);
  assert.ok(sync.includes('const SUPABASE_PUBLISHABLE_KEY="'+stagingKey+'";'));
  assert.match(html,/TESTUMGEBUNG · Keine Echtdaten/);
+ assert.doesNotMatch(html,/globalThis\.CWLStrategicStaging=true/);
  assert.match(html,/CWL Planer · TEST/);
  assert.match(html,/<meta name="apple-mobile-web-app-title" content="CWL TEST">/);
  assert.doesNotMatch(html,/https:\/\/smolmig\.github\.io\/cwl_planer\//,
@@ -87,4 +88,14 @@ test("staging preview fails closed on live URL, live key, spoofed host and unsaf
   assert.doesNotMatch(res.stderr, /sb_secret_do_not_pass_here_9876543210/,
    "Sensitive provided values should not be printed in errors");
  }
+});
+
+test("strategic staging opt-in only changes isolated copy; production target still refused",t=>{
+ const {run,dir}=fixture(t);
+ const {out,res}=run({strategic:"true"});assert.equal(res.status,0,res.stderr);
+ const html=fs.readFileSync(path.join(out,"cloud-app.html"),"utf8");
+ assert.ok(html.indexOf("globalThis.CWLStrategicStaging=true")>=0&&html.indexOf("globalThis.CWLStrategicStaging=true")<html.indexOf('src="./cloud-sync.mjs'));
+ assert.ok(fs.existsSync(path.join(out,"cwl-strategic-pilot-view.mjs")));
+ assert.doesNotMatch(fs.readFileSync(path.join(root,"cloud-app.html"),"utf8"),/globalThis\.CWLStrategicStaging=true/);
+ const refused=run({out:path.join(dir,"refused"),url:productionUrl,strategic:"true"});assert.notEqual(refused.res.status,0);assert.equal(fs.existsSync(refused.out),false);
 });
