@@ -102,13 +102,14 @@ test("a failed membership lookup does not remember an unverified clan",async()=>
   clearTimeout(){},debounce:null,
   live:{stop(){}},currentWarOverview:{reset(){}},stats:{reset(){}},
   stopPresence(){},stopRemoteChecks(){},hideChangeToast(){},resetRoster(){},clearClanAccountDetails(){},
+  suspendStrategicPilot:()=>events.push(["suspend"]),
   rememberClan:()=>events.push(["remember"]),navigator:{onLine:true}
  };
  vm.createContext(ctx);
  vm.runInContext(src,ctx);
  await assert.rejects(()=>vm.runInContext("chooseClan()",ctx),/network denied/);
- assert.deepEqual(events.map(x=>x[0]),["begin","unsubscribed"]);
- assert.equal(events[0][2].strict,true);
+ assert.deepEqual(events.map(x=>x[0]),["suspend","begin","unsubscribed"]);
+ assert.equal(events[1][2].strict,true);
  assert.equal(ctx.clanId,"clan-B");
  assert.equal(ctx.channel,null);
 });

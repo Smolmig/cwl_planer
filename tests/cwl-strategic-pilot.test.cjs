@@ -37,3 +37,18 @@ test("pilot suspends immediately at clan switch/logout and expires observations 
  assert.match(s,/!strategicPilotEnabled\|\|strategicSuspended/);
  assert.match(fs.readFileSync(path.join(__dirname,"../cwl-strategic-pilot-view.mjs"),"utf8"),/stored\.expiresAt<=clock\(\)/);
 });
+
+test("next-season draft preserves previous plan, discards only previous day constraints and excludes departed players",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data();
+ s.context.previousSeason="2026-11";s.context.observedAt=at;
+ s.profile.cwlLive={season:"2026-11",clanTag:s.context.clanTag,rounds:[]};
+ s.profile.locks=[{locked:true,lineup:s.currentPlan[0].lineup}];
+ s.profile.members[0].fixed=true;s.profile.members[1].targetDays=1;s.profile.members[1].statuses=["out","must"];s.profile.members[1].participationIntent="yes";
+ s.profile.members.push({id:"old",name:"Former",playerTag:tag(100),townHall:19,cocSyncState:"kept",participating:true,statuses:[]});
+ const before=JSON.stringify(s),input=preparePilotInput(s);
+ assert.equal(input.oldSeason,true);assert.deepEqual(input.locks,[]);assert.deepEqual(input.plan,[]);assert.equal(input.members.length,18);
+ assert.equal(input.members[0].fixed,true);assert.equal(input.members[1].targetDays,null);assert.ok(input.members[1].statuses.every(x=>x==="auto"));assert.equal(input.members[1].participationIntent,"unknown");
+ const x=buildPilotPreview({input,history:{kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}},mode:"balanced",planStandard:planCwl,now:at});
+ assert.equal(x.oldSeason,true);assert.deepEqual(x.format,{slots:15,days:7});assert.equal(x.scenarios[0].metrics.conditional,18);assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>preparePilotInput({...s,context:{...s.context,previousSeason:"2026-10"}}),/pilot_existing_locks/);
+});

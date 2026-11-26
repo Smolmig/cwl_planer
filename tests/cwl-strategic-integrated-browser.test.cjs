@@ -40,6 +40,9 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
   await entry.locator(":scope > summary").click();await calculate.click();
   await page.getByText("Kadervergleich",{exact:true}).waitFor();
   assert.match(await entry.innerText(),/18 Spieler mit offener Teilnahme/);
+  assert.match(await entry.innerText(),/Noch benötigte Zusagen.*15/s);
+  assert.doesNotMatch(await entry.innerText(),/-15/);
+  assert.match(await entry.innerText(),/Annahme: 15 gegen 15 · 7 Kriegstage/);
   await page.locator("#strategicPilotDetails > summary").click();
   assert.equal(await entry.locator("tbody tr").count(),18);
   await entry.getByLabel("Spieler filtern").selectOption("review");

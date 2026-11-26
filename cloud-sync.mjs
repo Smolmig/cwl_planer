@@ -392,14 +392,13 @@ function strategicContext(){
  if(!strategicPilotEnabled||strategicSuspended||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
  const tag=clans.find(c=>c.id===clanId)?.clash_tag,profile=storage.getProfile();
  if(!tag||!profile)return null;
- const lifecycle=live.getLifecycle();
- const phase=lifecycle?.mode==="planning"&&lifecycle.reason==="league_active"?"daily":
-   lifecycle?.mode==="idle"&&!profile.locks?.some(l=>l?.locked)?"roster":null;
- if(!phase)return null;
- const plan=storage.getPlannedLineups(),ready=storage.getPlanningState()?.ok===true;
- return {key:JSON.stringify([accountEpoch,user.id,clanId,tag,role,phase,lifecycle.season||null]),
+ const lifecycle=live.getLifecycle(),observation=live.getStrategicPhase();
+ if(!observation)return null;
+ const {phase,season,previousSeason,observedAt}=observation;
+ const plan=storage.getPlannedLineups(),ready=phase==="roster"||storage.getPlanningState()?.ok===true;
+ return {key:JSON.stringify([accountEpoch,user.id,clanId,tag,role,phase,season,previousSeason||null]),
    token:JSON.stringify([revision,profile.id,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
-   phase,season:lifecycle.season||null,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
+   phase,season,previousSeason:previousSeason||null,observedAt,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
    ready:ready&&!blocked&&!hydrating&&!manualRosterPending()&&navigator.onLine};
 }
 async function loadStrategicPilot(mode,expected){

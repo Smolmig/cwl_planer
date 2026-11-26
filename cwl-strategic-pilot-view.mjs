@@ -4,6 +4,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Vorschau");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
  const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select");subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
+ const controls=el("div");controls.style.cssText="max-width:480px;min-width:0";
  for(const [v,t] of [["balanced","Ausgewogen"],["performance","Leistung"],["development","Förderung"]]){const o=el("option",t);o.value=v;mode.append(o)}
  mode.style.cssText="display:block;min-height:44px;width:100%;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px";
  const button=el("button","Vorschau berechnen");button.type="button";button.className="btn";button.style.cssText="min-height:44px;margin:10px 0";
@@ -11,7 +12,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
  status.id="strategicPilotStatus";results.id="strategicPilotResults";details.id="strategicPilotDetails";button.id="strategicPilotCalculate";
  button.setAttribute("aria-describedby",status.id);
  status.setAttribute("role","status");status.className="statusline";ds.style.cssText="min-height:44px;padding:10px 0";
- details.append(ds,rows);inner.append(subtitle,label,mode,button,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
+ details.append(ds,rows);controls.append(label,mode,button);inner.append(subtitle,controls,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
  let scope=null,token=null,sequence=0,busy=false,stored=null,expiryTimer=null;
  const clock=()=>Date.now();
  function clear(message=""){if(expiryTimer!==null){clearTimeout(expiryTimer);expiryTimer=null}results.replaceChildren();rows.replaceChildren();details.hidden=true;stored=null;status.textContent=message}
@@ -25,7 +26,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
   else if(nextToken!==token||!c?.ready&&(busy||stored)){sequence++;busy=false;token=nextToken;clear("Planstand geändert oder nicht verfügbar. Bitte neu berechnen.")}
   if(stored&&stored.expiresAt<=clock())clear("Die Vorschau ist nicht mehr aktuell. Bitte neu berechnen.");
   root.hidden=!c;if(!c)return;
-  subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
+  subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Anmeldung und Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
   button.disabled=!c.ready||busy;mode.disabled=!c.ready||busy;root.setAttribute("aria-busy",String(busy));
   if(!c.ready&&!status.textContent)status.textContent="Vorschau derzeit nicht verfügbar. Bitte Planstand prüfen.";
  }
@@ -36,23 +37,26 @@ export function createStrategicPilotView({anchor,getContext,load}){
   const filter=el("select");filter.setAttribute("aria-label","Spieler filtern");filter.style.cssText=mode.style.cssText;
   for(const [v,t] of [["all","Alle Spieler"],["changes","Nur Änderungen"],["review","Prüfbedarf"]]){const o=el("option",t);o.value=v;filter.append(o)}
   for(const sc of s.scenarios){const o=el("option",sc.size+" Spieler"+(sc.excluded.length?" · prüfen":" · vollständiger Kader"));o.value=String(sc.size);choice.append(o)}
-  results.append(el("h3","Kadervergleich"),choice,overview);
+  choice.style.maxWidth="480px";filter.style.maxWidth="480px";
+  results.append(el("h3","Kadervergleich"),el("p","Annahme: "+s.format.slots+" gegen "+s.format.slots+" · "+s.format.days+" Kriegstage. Das tatsächliche Format steht noch nicht fest."),choice,overview);
+  if(s.oldSeason)results.append(el("p","Der bisherige CWL-Plan bleibt unverändert. Tagesregeln und Einsatzziele der alten Saison gelten nicht für diesen Entwurf. Fix-Spieler und allgemeine Einstellungen bleiben berücksichtigt."));
   function selected(){
    const sc=s.scenarios.find(x=>String(x.size)===choice.value)||s.scenarios[0],m=sc.metrics;
    overview.replaceChildren();rows.replaceChildren();rows.append(filter);
    line(overview,"Geplante Einsätze pro Spieler",m.minAppearances+"–"+m.maxAppearances);
    line(overview,"Spieler mit 3+ Einsätzen",String(m.theoreticalMedalOpportunities));
-   line(overview,"Bestätigte Reserve je Tag (mind.)",String(m.minimumConfirmedReserve));
+   line(overview,"Bestätigte Ersatzspieler je Tag (mind.)",String(Math.max(0,m.minimumConfirmedReserve)));
+   if(m.minimumConfirmedReserve<0)line(overview,"Noch benötigte Zusagen (am knappsten Tag)",String(-m.minimumConfirmedReserve));
    if(m.conditional)overview.append(el("p",m.conditional+" Spieler mit offener Teilnahme."));
    if(sc.excluded.length)overview.append(el("p","Einzeln prüfen: "+sc.excluded.join(", ")+". Keine automatische Ausladung."));
    const table=el("table");table.setAttribute("aria-label","Geplante Einsätze vergleichen");table.style.cssText="width:100%;table-layout:fixed;border-collapse:collapse;font-size:inherit";
-   const cols=el("colgroup");for(const w of ["56%","22%","22%"]){const col=el("col");col.style.width=w;cols.append(col)}table.append(cols);
-   const head=el("thead"),hr=el("tr");for(const v of ["Spieler","Standard","Vorschau"]){const th=el("th",v);th.scope="col";th.style.cssText="text-align:left;overflow-wrap:anywhere;padding:6px 2px";hr.append(th)}head.append(hr);table.append(head);
+   const cols=el("colgroup");for(const w of ["48%","26%","26%"]){const col=el("col");col.style.width=w;cols.append(col)}table.append(cols);
+   const head=el("thead"),hr=el("tr");for(const v of ["Spieler","Standard","Vorschau"]){const th=el("th",v);th.scope="col";th.style.cssText="text-align:left;overflow-wrap:normal;hyphens:auto;padding:6px 2px;font-size:.78rem";hr.append(th)}head.append(hr);table.append(head);
    const body=el("tbody");
    const shown=sc.rows.filter(x=>filter.value==="all"||filter.value==="changes"&&x.changed||filter.value==="review"&&x.review);
-   for(const x of shown){const tr=el("tr"),th=el("th",x.name);th.scope="row";th.style.cssText="text-align:left;overflow-wrap:anywhere;padding:8px 2px;font-weight:600";
-    const small=el("small","RH"+x.townHall+" · "+(x.n?x.n+" passende Angriffe":"Keine passenden Angriffe")+(x.reason?" · "+x.reason:""));small.style.display="block";th.append(small);tr.append(th);
-    for(const n of [x.standard,x.proposed]){const td=el("td",String(n??"–"));td.style.cssText="padding:8px 2px;border-bottom:1px solid var(--line)";tr.append(td)}body.append(tr)}
+   for(const x of shown){const tr=el("tr"),th=el("th",x.name);th.scope="row";th.style.cssText="text-align:left;overflow-wrap:anywhere;padding:8px 2px;font-weight:600;border-bottom:1px solid var(--line)";
+    const small=el("small","RH"+x.townHall+" · "+(x.n?x.n+" passende Angriffe":"Keine passenden Angriffe")+(x.reason?" · "+x.reason:""));small.style.cssText="display:block;color:var(--muted);font-weight:400";th.append(small);tr.append(th);
+    for(const n of [x.standard,x.proposed]){const td=el("td",String(n??"–"));td.style.cssText="padding:8px 2px;border-bottom:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums";tr.append(td)}body.append(tr)}
    if(!shown.length){const tr=el("tr"),td=el("td","Keine Spieler für diese Auswahl.");td.colSpan=3;tr.append(td);body.append(tr)}
    table.append(body);rows.append(table);
   }
