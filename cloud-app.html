@@ -3901,6 +3901,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Gesamtplan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
+  <p id="strategicPublishedStatus" class="statusline" role="status" hidden></p>
   <div id="planCwlSeasonEntry" class="plan-cwl-season-shortcut" hidden>
     <div class="plan-season-shortcut-copy"><span class="plan-season-shortcut-kicker">CWL AKTUELL</span>
       <strong>Gruppenstand &amp; Runden</strong><small id="planCwlSeasonHint">Aktuelle Liga im Überblick</small>
@@ -5083,7 +5084,18 @@ function confirmedCwlPlanningLocks(){
 function calculatePlan(){
   // The browser uses the validated multi-day solver. Keep legacy code below only for isolated compatibility tests.
   if(typeof window!=="undefined"&&window.CWLPlanningCore?.planCwl){
-    const plan=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks:confirmedCwlPlanningLocks(),slots:state.config.slots,days:state.config.days});
+    const locks=confirmedCwlPlanningLocks();
+    const standard=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks,slots:state.config.slots,days:state.config.days});
+    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks,standard})||{status:"none",plan:standard};
+    const plan=resolved.plan;
+    const status=document.getElementById("strategicPublishedStatus");
+    if(status){const mode={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"}[state.config.strategicMode]||"Ausgewogen";
+      status.hidden=!window.CWLCloud?.active||(!state.strategicPlan&&!state.config.strategicMode);
+      status.className="statusline"+(resolved.status==="stale"?" strategic-notice is-warning":"");
+      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+" · Übernommene Aufstellung":
+       resolved.status==="stale"?"⚠ Strategische Aufstellung nicht mehr passend. Standardplan angezeigt – bitte neu berechnen.":
+       "Intelligenter Planer · "+mode+" · Noch keine strategische Aufstellung übernommen.";
+    }
     // The solver counts confirmed live rosters as fixed appearances. They are
     // NOT completed wars: the "Gespielt" KPI tracks only historical locks.
     plan.playedCounts=Object.fromEntries(allKnownMembers().map(m=>[m.id,
@@ -5848,7 +5860,7 @@ function openArchiveModal(id){
   openModal("archiveModal");
   void window.CWLArchivedRecap?.open?.(a);
 }
-function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
+function resetPlanningData(){delete state.strategicPlan;mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
  // Previous-CWL day rules/targets must not be resurrected when an absent player rejoins.
  if(m.cocBeforeDeparture){
   const snapshot=m.cocBeforeDeparture;
@@ -7364,6 +7376,7 @@ window.CWLLegacy={
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
+ getPlanningLocks:()=>confirmedCwlPlanningLocks(),
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
  toast:(message)=>showToast(message),

@@ -250,6 +250,61 @@ function planCwl({members = [], archivedMembers = [], locks = [], slots = 15, da
   return {ok: conflicts.length === 0, conflicts, notices, dayPlans: plans, counts, playedCounts};
 }
 
+
+// Explicitly accepted lineup, separate from true played-day locks.
+// Same pure validation in every browser, including viewer. Never change rules.
+function strategicRuleKey(profile) {
+ const mode=["balanced","performance","development"].includes(profile.config?.strategicMode)?profile.config.strategicMode:"balanced";
+ return JSON.stringify([profile.config?.slots,profile.config?.days,mode,(profile.members||[]).map(m=>[
+  m.id,m.playerTag,!!String(m.name||"").trim(),!!m.participating,!!m.fixed,m.cocSyncState??null,m.townHall??null,
+  m.targetDays??null,m.rotationWeight??null,m.priority??null,m.participationIntent??null,m.statuses||[]
+ ]).sort((a,b)=>String(a[0]).localeCompare(String(b[0])))]);
+}
+function resolvePublishedStrategicPlan({profile,clanId,locks,standard,live=profile?.cwlLive}={}){
+ const s=profile?.strategicPlan;
+ if(!s)return {status:"none",plan:standard};
+ const stale=()=>({status:"stale",plan:standard});
+ const days=profile.config?.days,slots=profile.config?.slots;
+ if(!standard?.ok||!clanId||s.version!==1||s.clanId!==clanId||s.ruleKey!==strategicRuleKey(profile)||
+  s.season!==live?.season||s.clanTag!==live?.clanTag||!/^#[0289PYLQGRJCUV]{3,15}$/.test(s.anchorWarTag||"")||
+  !Array.isArray(live?.rounds)||!live.rounds.some(w=>w.available===true&&w.warTag===s.anchorWarTag)||
+  profile.cwlLiveIgnoredSeason===s.season||!Array.isArray(s.plan)||s.plan.length!==days||
+  !Array.isArray(s.registeredTags)||s.registeredTags.length<slots||s.registeredTags.length>50||
+  new Set(s.registeredTags).size!==s.registeredTags.length||s.registeredTags.some(t=>typeof t!=="string"||!/^#[0289PYLQGRJCUV]{3,15}$/.test(t)))return stale();
+ const members=profile.members||[],all=[...(profile.archivedMembers||[]),...members],map=new Map(all.map(m=>[m.id,m]));
+ if(new Set(members.map(m=>m.id)).size!==members.length)return stale();
+ const active=members.filter(m=>m.participating&&m.cocSyncState!=="former"&&m.participationIntent!=="no"&&String(m.name||"").trim()&&s.registeredTags.includes(m.playerTag));
+ // An accepted unplayed day is not a hard lock. When the actual war
+ // starts, the actual lineup takes precedence. Recheck all remaining rules.
+ const counts=Object.fromEntries(all.map(m=>[m.id,0])),running={...counts},dayPlans=[];
+ const equal=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
+ for(let i=0;i<days;i++){
+  const d=s.plan[i],locked=!!locks?.[i]?.locked,actual=locks?.[i]?.lineup;
+  if(d?.day!==i+1||!Array.isArray(d.lineup)||d.lineup.length!==slots||new Set(d.lineup).size!==slots)return stale();
+  const lineup=locked?[...(actual||[])]:[...d.lineup];
+  if(lineup.length!==slots||new Set(lineup).size!==slots||lineup.some(id=>!map.has(id)))return stale();
+  const round=live.rounds[i];
+  // An observed started war with unresolved participant IDs must not be
+  // displayed as a strategic future assignment.
+  if(round?.available&&["inWar","warEnded"].includes(round.state)&&!locked)return stale();
+  if(!locked){
+   if(lineup.some(id=>!active.some(m=>m.id===id&&m.statuses?.[i]!=="out")))return stale();
+   if(active.some(m=>m.statuses?.[i]!=="out"&&(m.fixed||m.statuses?.[i]==="must")&&!lineup.includes(m.id)))return stale();
+  }
+  const previous=dayPlans.at(-1)?.lineup||[];
+  dayPlans.push({...standard.dayPlans[i],locked,lineup,startingCounts:{...running},
+   rein:i?lineup.filter(id=>!previous.includes(id)):[],raus:i?previous.filter(id=>!lineup.includes(id)):[]});
+  for(const id of lineup){counts[id]=(counts[id]||0)+1;running[id]=(running[id]||0)+1}
+ }
+ if(active.some(m=>!m.fixed&&m.targetDays!=null&&m.targetDays!==""&&counts[m.id]!==Number(m.targetDays)))return stale();
+ // No automatic statistical exclusion compared with ordinary rotation.
+ if(active.some(m=>standard.counts[m.id]>0&&!counts[m.id]))return stale();
+ // Unregistered FIX/MUSS must not disappear silently from a published plan.
+ if(members.some(m=>m.participating&&m.cocSyncState!=="former"&&!active.includes(m)&&
+  (m.fixed||m.targetDays!=null&&m.targetDays!==""||m.statuses?.some((v,i)=>i<days&&!locks?.[i]?.locked&&v==="must"))))return stale();
+ return {status:"published",plan:{...standard,dayPlans,counts,notices:["Strategische Aufstellung übernommen."]}};
+}
+
 // Browser is a classic script; Node's test runner imports the exact same implementation.
-if (typeof window !== "undefined") window.CWLPlanningCore = Object.freeze({planCwl});
-if (typeof module !== "undefined" && module.exports) module.exports = {planCwl};
+if (typeof window !== "undefined") window.CWLPlanningCore = Object.freeze({planCwl,strategicRuleKey,resolvePublishedStrategicPlan});
+if (typeof module !== "undefined" && module.exports) module.exports = {planCwl,strategicRuleKey,resolvePublishedStrategicPlan};

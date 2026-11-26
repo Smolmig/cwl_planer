@@ -1,5 +1,5 @@
 // One entry in existing Plan. No storage, network, profile mutation or apply.
-export function createStrategicPilotView({anchor,getContext,load,setMode}){
+export function createStrategicPilotView({anchor,getContext,load,setMode,publish}){
  const doc=anchor.ownerDocument,el=(tag,text="")=>{const n=doc.createElement(tag);n.textContent=text;return n};
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Beta");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
@@ -123,7 +123,18 @@ export function createStrategicPilotView({anchor,getContext,load,setMode}){
   results.replaceChildren();rows.replaceChildren();details.hidden=false;const v=s.display;
   results.append(el("h3","Tagesstrategie"),el("p",v.tableStatus),el("p",v.dataStatus));
   if(s.groupStrength?.length){const g=el("details"),summary=el("summary","Stärkeeinschätzung der CWL-Gruppe");summary.style.cssText="min-height:44px;padding:10px 0";g.append(summary,el("p","Registrierte Kader (stärkste Rathausstufen nach Kriegsgröße) und beobachtete gleich-RH-Angriffe. Keine bestätigte Tagesaufstellung oder Siegprognose."));for(const x of s.groupStrength)line(g,(x.rank??"–")+". "+x.name+(x.own?" · Eigener Clan":""),x.meanTopRh===null?"Kader unbekannt":"Ø RH "+x.meanTopRh.toFixed(1)+" · "+x.attack.n+" AG");results.append(g)}
-  if(s.rest?.ok){results.append(el("h4","Vorschlag für alle verbleibenden Tage"));if(s.rest.provisionalDays.length)results.append(el("p","Tag "+s.rest.provisionalDays.join(", ")+": Paarung noch unbekannt – vorläufig geplant."));for(const w of s.rest.warnings)notice(results,"warning","Einsatzvorgabe prüfen",w.name+" · Tag "+w.day+": "+w.alternative+" hat eine höhere vergleichbare Angriffsleistung. Fix/MUSS bleibt erhalten.");for(const d of s.rest.changes)line(results,"Tag "+d.day+" · Heraus: "+d.removed.join(", "),"Hinein: "+d.added.join(", "));if(!s.rest.changes.length)results.append(el("p","Keine Änderung gegenüber dem bisherigen Gesamtplan."))}
+  if(s.rest?.ok){results.append(el("h4","Vorschlag für alle verbleibenden Tage"));if(s.rest.provisionalDays.length)results.append(el("p","Tag "+s.rest.provisionalDays.join(", ")+": Paarung noch unbekannt – vorläufig geplant."));for(const w of s.rest.warnings)notice(results,"warning","Einsatzvorgabe prüfen",w.name+" · Tag "+w.day+": "+w.alternative+" hat eine höhere vergleichbare Angriffsleistung. Fix/MUSS bleibt erhalten.");for(const d of s.rest.changes)line(results,"Tag "+d.day+" · Heraus: "+d.removed.join(", "),"Hinein: "+d.added.join(", "));if(!s.rest.changes.length)results.append(el("p","Keine Änderung gegenüber dem bisherigen Gesamtplan."));
+   const c=getContext();
+   if(c?.canPublish&&typeof publish==="function"){
+    const apply=el("button",c.role==="vice"&&c.modeDraft?"In Entwurf übernehmen":"Aufstellung übernehmen");apply.type="button";apply.className="btn";apply.style.cssText="min-height:44px;margin:10px 0";apply.id="strategicPublish";
+    apply.addEventListener("click",async()=>{if(stored!==s||busy||s.expiresAt<=clock())return;
+     busy=true;apply.disabled=true;button.disabled=mode.disabled=true;
+     try{if(await publish(s,c)){clear("Strategische Aufstellung übernommen. Prüfe den gemeinsamen Plan.")}}
+     catch{if(getContext()?.key===c.key)clear("Aufstellung konnte nicht übernommen werden. Bitte neu berechnen und Cloud-Stand prüfen.")}
+     finally{busy=false;sync();if(apply.isConnected)apply.disabled=false}
+    });results.append(apply,el("p","Die Aufstellung wird in den normalen Plan übernommen. Änderungen im Spiel erfolgen weiterhin manuell."));
+   }
+  }
   if(v.recommendation){results.append(el("strong","Moduswechsel prüfen"),el("p",v.recommendation.reason));for(const c of v.recommendation.changes)line(results,"Tag "+c.day+" · Heraus: "+c.removed.join(", "),"Hinein: "+c.added.join(", "));results.append(el("p",v.recommendation.medals))}
   if(!s.changes.length){if(s.editableDays.length)notice(results,"positive","Keine Wechsel empfohlen","Für die geprüften Tage ist im gewählten Modus keine Änderung vorgeschlagen.");else results.append(el("p","Kein bestätigter, bearbeitbarer Vorbereitungstag."))}
   for(const c of s.changes)line(results,"Tag "+c.day+" · Heraus: "+c.removed.join(", "),"Hinein: "+c.added.join(", "));

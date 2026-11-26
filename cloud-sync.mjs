@@ -136,6 +136,12 @@ function suggestionChanges(suggestion){
  for(const m of prev.members||[])if(!(draft.members||[]).some(x=>x.id===m.id))
    result.push((m.name||"Mitglied")+" entfernt");
  if(JSON.stringify(prev.dayGoals)!==JSON.stringify(draft.dayGoals))result.push("Tagesziele geändert");
+ if(JSON.stringify(prev.strategicPlan??null)!==JSON.stringify(draft.strategicPlan??null)){
+  if(!draft.strategicPlan)result.push("Strategische Aufstellung zurückgesetzt");
+  else{const old=new Map((prev.strategicPlan?.plan||[]).map(d=>[d.day,d.lineup]));
+   for(const d of draft.strategicPlan.plan||[])if(JSON.stringify(old.get(d.day))!==JSON.stringify(d.lineup))result.push("Strategische Aufstellung · Tag "+d.day+" geändert");
+  }
+ }
  {
  const names={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"};
  const mode=p=>Object.hasOwn(names,p.config?.strategicMode)?p.config.strategicMode:"balanced";
@@ -360,6 +366,10 @@ async function decidePlanSuggestion(id,action){
      const proposed=planSuggestions.find(s=>String(s.id)===String(id));
      if(!proposed)throw Error("Vorschlag nicht mehr vorhanden. Bitte Vorschläge aktualisieren.");
      assertPlanningReady(proposed.suggested_profile);
+     if(JSON.stringify(proposed.suggested_profile?.strategicPlan??null)!==JSON.stringify(storage.getProfile()?.strategicPlan??null)&&proposed.suggested_profile?.strategicPlan){
+      const p=proposed.suggested_profile,core=window.CWLPlanningCore,locks=storage.getPlanningLocks(),standard=core.planCwl({members:p.members,archivedMembers:p.archivedMembers,locks,slots:p.config.slots,days:p.config.days});
+      if(core.resolvePublishedStrategicPlan({profile:p,clanId,locks,standard,live:storage.getProfile().cwlLive}).status!=="published")throw Error("Strategischer Vorschlag ist nicht mehr aktuell. Bitte neu berechnen.");
+     }
    }
    await ensureSaved();
    if(!await storage.confirmAction(action==="accept"?
@@ -432,6 +442,31 @@ async function setSharedStrategicMode(value,expected){
  if(role==="editor"&&planIsLocked())return;
  await ensureSaved();
 }
+async function publishStrategicPlan(result,expected){
+ const same=()=>{const c=strategicContext();return c?.key===expected.key&&c.token===expected.token&&c.ready&&c.canPublish};
+ if(!same()||!result?.rest?.ok||result.kind!=="daily"||result.mode!==expected.sharedMode||result.expiresAt<=Date.now()||saving||changedSerial&&!(role==="editor"&&planIsLocked()))throw Error("strategic_publish_stale");
+ const proposal=role==="editor"&&planIsLocked();
+ if(!await storage.confirmAction(proposal?"Strategische Aufstellung in deinen Vorschlag übernehmen? Der gemeinsame Plan ändert sich erst nach Freigabe.":"Strategische Aufstellung für den Clan übernehmen? Gespielte und gestartete Tage bleiben unverändert. In Clash musst du die Aufstellung selbst anpassen.",
+  {title:proposal?"In Entwurf übernehmen":"Aufstellung übernehmen",confirmText:proposal?"In Entwurf übernehmen":"Übernehmen"}))return false;
+ if(!same()||result.expiresAt<=Date.now()||saving)throw Error("strategic_publish_stale");
+ // Re-read the live group after confirmation. Require exactly the
+ // reviewed lineup; never silently apply a changed recommendation.
+ const fresh=await loadStrategicPilot(result.mode,expected,null);
+ if(!same()||!fresh.rest?.ok||fresh.expiresAt<=Date.now()||
+  JSON.stringify(fresh.rest.plan)!==JSON.stringify(result.rest.plan)||
+  JSON.stringify(fresh.publication)!==JSON.stringify(result.publication))throw Error("strategic_publish_stale");
+ const profile=storage.getProfile(),core=window.CWLPlanningCore,locks=storage.getPlanningLocks();
+ const accepted={version:1,clanId:expected.clanId,...fresh.publication,ruleKey:core.strategicRuleKey(profile),
+  plan:structuredClone(fresh.rest.plan)};
+ const standard=core.planCwl({members:profile.members,archivedMembers:profile.archivedMembers,locks,slots:profile.config.slots,days:profile.config.days});
+ if(core.resolvePublishedStrategicPlan({profile:{...profile,strategicPlan:accepted},clanId,locks,standard}).status!=="published")throw Error("strategic_publish_rules");
+ if(!same()||saving)throw Error("strategic_publish_stale");
+ profile.strategicPlan=accepted;
+ storage.rerender();cloud.onLocalChange();
+ if(proposal){storage.toast("Aufstellung im Entwurf · Vorschlag noch einreichen");return true}
+ await ensureSaved();
+ storage.toast("✓ Strategische Aufstellung übernommen");return true;
+}
 function strategicContext(){
  if((!strategicPilotEnabled&&!betaAllowed())||strategicSuspended||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
  const tag=clans.find(c=>c.id===clanId)?.clash_tag,profile=storage.getProfile();
@@ -441,9 +476,10 @@ function strategicContext(){
  const {phase,season,previousSeason,observedAt}=observation;
  const plan=storage.getPlannedLineups(),ready=phase==="roster"||storage.getPlanningState()?.ok===true;
  return {key:JSON.stringify([accountEpoch,user.id,clanId,tag,role,phase,season,previousSeason||null]),
-   token:JSON.stringify([revision,profile.id,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
+   token:JSON.stringify([revision,planReview?.cycle_id,planReview?.locked,profile.id,profile.strategicPlan,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
    phase,season,previousSeason:previousSeason||null,observedAt,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
    sharedMode:strategicPilotEnabled?null:sharedStrategicMode(profile),canSetMode:!strategicPilotEnabled&&!(role==="editor"&&planIsLocked()&&phase==="roster"),modeDraft:role==="editor"&&planIsLocked()&&!!changedSerial,
+   canPublish:!strategicPilotEnabled&&phase==="daily"&&!!planReview&&planReview.season===season&&!saving&&revision!=null&&(!changedSerial||role==="editor"&&planIsLocked()),
    candidates:phase==="roster"?profile.members.filter(m=>!["former","kept"].includes(m.cocSyncState)&&m.participating!==false).map(m=>({id:m.id,tag:m.playerTag,name:m.name,fixed:!!m.fixed})):[],
    ready:ready&&!blocked&&!hydrating&&!manualRosterPending()&&navigator.onLine};
 }
@@ -480,7 +516,7 @@ function syncStrategicPilot(){
  if(!strategicContext()||strategicPilotLoading)return;
  strategicPilotLoading=import("./cwl-strategic-pilot-view.mjs").then(({createStrategicPilotView})=>{
   const anchor=$("planCwlSeasonEntry");
-  if(anchor){strategicPilot=createStrategicPilotView({anchor,getContext:strategicContext,load:loadStrategicPilot,setMode:setSharedStrategicMode});strategicPilot.sync()}
+  if(anchor){strategicPilot=createStrategicPilotView({anchor,getContext:strategicContext,load:loadStrategicPilot,setMode:setSharedStrategicMode,publish:publishStrategicPlan});strategicPilot.sync()}
  }).catch(()=>{}).finally(()=>{strategicPilotLoading=null});
 }
 

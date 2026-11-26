@@ -3,7 +3,7 @@ const {test}=require("node:test"),assert=require("node:assert/strict"),fs=requir
 const {chromium,webkit}=require("playwright"),root=path.resolve(__dirname,"..");
 const engine=process.env.CWL_TEST_BROWSER==="webkit"?webkit:chromium;
 const app=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
-const allowed=new Set(["cloud-app.html","cwl-planning-core.js","cwl-strategic-pilot-view.mjs","cwl-strategic-pilot.mjs","cwl-strategic-experiment.mjs","cwl-strategic-daily.mjs","cwl-strategic-targets.mjs","cwl-strategic-presentation.mjs"]);
+const allowed=new Set(["cloud-app.html","cwl-planning-core.js","cwl-strategic-pilot-view.mjs","cwl-strategic-pilot.mjs","cwl-strategic-rest.mjs","cwl-strategic-experiment.mjs","cwl-strategic-daily.mjs","cwl-strategic-targets.mjs","cwl-strategic-presentation.mjs"]);
 test("integrated pilot in actual Cloud shell: real core, responsive themes, same-clan refresh, late-response isolation",{timeout:120000},async()=>{
  const server=http.createServer((req,res)=>{
   const name=new URL(req.url||"/","http://localhost").pathname.slice(1);
