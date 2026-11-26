@@ -383,6 +383,59 @@ async function openNewPlanCycle(){
  await loadPlanReview();
 }
 
+// Isolated staging-browser opt-in; never enabled by a URL or local storage.
+// Not an authorization mechanism. The ordinary app stays unchanged.
+const strategicPilotEnabled=globalThis.CWLStrategicStaging===true;
+let strategicPilot=null,strategicPilotLoading=null;
+function strategicContext(){
+ if(!strategicPilotEnabled||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
+ const tag=clans.find(c=>c.id===clanId)?.clash_tag,profile=storage.getProfile();
+ if(!tag||!profile)return null;
+ const lifecycle=live.getLifecycle();
+ const phase=lifecycle?.mode==="planning"&&lifecycle.reason==="league_active"?"daily":
+   lifecycle?.mode==="idle"&&!profile.locks?.some(l=>l?.locked)?"roster":null;
+ if(!phase)return null;
+ const plan=storage.getPlannedLineups(),ready=storage.getPlanningState()?.ok===true;
+ return {key:JSON.stringify([accountEpoch,user.id,clanId,tag,role,phase,lifecycle.season||null]),
+   token:JSON.stringify([revision,profile.id,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
+   phase,season:lifecycle.season||null,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
+   ready:ready&&!blocked&&!hydrating&&!manualRosterPending()&&navigator.onLine};
+}
+async function loadStrategicPilot(mode,expected){
+ const same=()=>{const c=strategicContext();return c?.key===expected.key&&c.token===expected.token&&c.ready};
+ const actor=user?.id,localRole=role;
+ if(!same()||!actor||!["owner","editor"].includes(localRole))throw Error("strategic_context_changed");
+ async function membership(){
+  const {data,error}=await sb.from("cwl_clan_memberships").select("role").eq("clan_id",expected.clanId).eq("user_id",actor).maybeSingle();
+  if(error||data?.role!==localRole||!same())throw Error("strategic_access");
+ }
+ await membership();
+ const {preparePilotInput,buildPilotPreview}=await import("./cwl-strategic-pilot.mjs");
+ if(!same())throw Error("strategic_context_changed");
+ const input=preparePilotInput({context:expected,profile:structuredClone(storage.getProfile()),currentPlan:structuredClone(storage.getPlannedLineups())});
+ const history=await stats.readStrategicHistory(input.members);
+ if(!same())throw Error("strategic_context_changed");
+ let projection=null;
+ if(expected.phase==="daily"){
+  const {data,error}=await sb.functions.invoke("coc-cwl-status",{body:{clanId:expected.clanId,strategic:true}});
+  if(error||!data?.ok||!data.active||data.clanTag!==expected.clanTag||data.season!==expected.season||!data.strategic)throw Error("strategic_live_unavailable");
+  projection=data.strategic;
+ }
+ await membership();
+ const result=buildPilotPreview({input,history,projection,mode,planStandard:window.CWLPlanningCore.planCwl,now:Date.now()});
+ if(!same())throw Error("strategic_context_changed");
+ return result;
+}
+function syncStrategicPilot(){
+ if(!strategicPilotEnabled)return;
+ if(strategicPilot){strategicPilot.sync();return}
+ if(!strategicContext()||strategicPilotLoading)return;
+ strategicPilotLoading=import("./cwl-strategic-pilot-view.mjs").then(({createStrategicPilotView})=>{
+  const anchor=$("planCwlSeasonEntry");
+  if(anchor){strategicPilot=createStrategicPilotView({anchor,getContext:strategicContext,load:loadStrategicPilot});strategicPilot.sync()}
+ }).catch(()=>{}).finally(()=>{strategicPilotLoading=null});
+}
+
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
@@ -733,6 +786,7 @@ const cloud={
   live.render();
   window.CWLSeasonView?.render?.();
   renderPlanReview();
+  syncStrategicPilot();
   if(!this.active)return;
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["planRefreshSuggestions","copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
@@ -795,10 +849,11 @@ const live=createCwlLive({
  onStatus:(data,options)=>{
   currentWarOverview?.update(data,options);
   window.CWLSeasonView?.render?.();
+  syncStrategicPilot();
   if(document.getElementById("view-archive")?.classList.contains("active"))
     window.CWLGroupArchive?.invalidate?.();
  },
- onPhaseApplied:()=>{if(cloud.active)renderPlanReview()},
+ onPhaseApplied:()=>{if(cloud.active)renderPlanReview();syncStrategicPilot()},
  onSnapshot:data=>stats.captureCwl(data),
  context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
    hasClanTag:!!clans.find(c=>c.id===clanId)?.clash_tag,profile:storage.getProfile(),

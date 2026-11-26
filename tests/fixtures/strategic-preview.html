@@ -30,6 +30,7 @@ main{max-width:1000px}.phase{max-width:480px;margin:16px 0 4px}.demo-settings{bo
 /* App theme variants for the isolated review, not new production tokens. */
 :root[data-theme=cyber]{color-scheme:dark;--bg:#080b15;--fg:#eefaff;--muted:#b0c3d6;--line:#35465b;--accent:#83e8ff;--surface:#131d2b}
 :root[data-theme=cyberlight]{color-scheme:light;--bg:#eaf8fb;--fg:#152d39;--muted:#45616e;--line:#aec9d2;--accent:#005c76;--surface:#dceff4}
+@media(max-width:350px){.modes{grid-template-columns:1fr 1fr}.modes label:has(input[value=balanced]){grid-column:1/-1;grid-row:1}.modes label{overflow-wrap:normal}}
 </style></head><body><main>
 <p class="eyebrow">TESTVORSCHAU · FIKTIVE DATEN</p><h1>Intelligenter CWL-Planer</h1><p class="muted">Vergleiche Strategien, ohne eine Aufstellung zu ändern. Keine Verbindung zu deinem Clan.</p>
 <div class="phase"><label for="phase">Planungsphase</label><select id="phase"><option value="roster">Vor der CWL-Anmeldung</option><option value="daily">Während der CWL</option></select></div>
