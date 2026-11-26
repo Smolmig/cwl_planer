@@ -2,7 +2,7 @@
 export function createStrategicPilotView({anchor,getContext,load}){
  const doc=anchor.ownerDocument,el=(tag,text="")=>{const n=doc.createElement(tag);n.textContent=text;return n};
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
- const summary=el("summary","Intelligenter Planer · Vorschau");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
+ const summary=el("summary","Intelligenter Planer · Beta");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
  const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select");subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
  const controls=el("div");controls.style.cssText="max-width:480px;min-width:0;display:grid;gap:6px";
  const draftFields=el("div"),format=el("select"),days=el("select"),formatLabel=el("label","CWL-Format"),daysLabel=el("label","Angenommene Kriegstage");
@@ -131,7 +131,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
    const result=await load(expectedMode,c,draft),latest=getContext();
    if(ticket!==sequence||latest?.key!==c.key||latest?.token!==c.token||!latest.ready)return;
    if(!result||result.canApply!==false||result.mode!==expectedMode||result.kind!==c.phase||!Number.isFinite(result.expiresAt)||result.expiresAt<=clock())throw Error("invalid_result");
-   stored=result;status.textContent=result.historyNote+" · Nur Vorschau, keine Übernahme.";
+   stored=result;status.textContent=result.historyNote+" · Beta: Empfehlungen manuell prüfen. Dein Plan bleibt unverändert.";
    if(result.kind==="roster")renderRoster(result);else renderDaily(result);
    armExpiry();
   }catch{if(ticket===sequence)clear("Vorschau nicht verfügbar. Bitte später erneut berechnen. Dein Plan bleibt unverändert.")}

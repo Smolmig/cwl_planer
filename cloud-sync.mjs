@@ -387,9 +387,32 @@ async function openNewPlanCycle(){
 // Not an authorization mechanism. The ordinary app stays unchanged.
 const strategicPilotEnabled=globalThis.CWLStrategicStaging===true;
 let strategicPilot=null,strategicPilotLoading=null,strategicSuspended=false;
-function suspendStrategicPilot(){strategicSuspended=true;strategicPilot?.sync()}
+let betaGrant=null,betaProbe=null;
+const betaScope=()=>!strategicSuspended&&cloud.active&&user?.id&&clanId&&role==="owner"&&clans.find(c=>c.id===clanId)?.clash_tag?
+ JSON.stringify([accountEpoch,user.id,clanId,clans.find(c=>c.id===clanId).clash_tag]):null;
+function betaAllowed(){const key=betaScope();return !!key&&betaGrant?.key===key&&betaGrant.ok&&Date.now()<betaGrant.until}
+function suspendStrategicPilot(){strategicSuspended=true;betaGrant=null;betaProbe=null;strategicPilot?.sync()}
+async function refreshBetaGrant(force=false){
+ const key=betaScope(),tag=clans.find(c=>c.id===clanId)?.clash_tag;
+ if(!key||!navigator.onLine)return false;
+ if(!force&&betaGrant?.key===key&&Date.now()<betaGrant.until)return betaGrant.ok;
+ if(betaProbe?.key===key)return betaProbe.promise;
+ const request={key,promise:null};betaProbe=request;
+ request.promise=(async()=>{
+  let ok=false;
+  try{const {data,error}=await sb.functions.invoke("coc-cwl-strategy-beta",{body:{clanId,action:"capability"}});
+   ok=!error&&data?.ok===true&&data.enabled===true&&data.clanTag===tag;
+  }catch{}
+  if(betaProbe!==request||betaScope()!==key)return false;
+  betaGrant={key,ok,until:Date.now()+120000};
+  betaProbe=null;
+  syncStrategicPilot();
+  return ok;
+ })();
+ return request.promise;
+}
 function strategicContext(){
- if(!strategicPilotEnabled||strategicSuspended||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
+ if((!strategicPilotEnabled&&!betaAllowed())||strategicSuspended||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
  const tag=clans.find(c=>c.id===clanId)?.clash_tag,profile=storage.getProfile();
  if(!tag||!profile)return null;
  const lifecycle=live.getLifecycle(),observation=live.getStrategicPhase();
@@ -411,6 +434,7 @@ async function loadStrategicPilot(mode,expected,draft){
   if(error||data?.role!==localRole||!same())throw Error("strategic_access");
  }
  await membership();
+ if(!strategicPilotEnabled&&!await refreshBetaGrant(true))throw Error("strategic_access");
  const {preparePilotInput,buildPilotPreview}=await import("./cwl-strategic-pilot.mjs");
  if(!same())throw Error("strategic_context_changed");
  const input=preparePilotInput({context:expected,profile:structuredClone(storage.getProfile()),currentPlan:structuredClone(storage.getPlannedLineups()),draft});
@@ -418,17 +442,18 @@ async function loadStrategicPilot(mode,expected,draft){
  if(!same())throw Error("strategic_context_changed");
  let projection=null;
  if(expected.phase==="daily"){
-  const {data,error}=await sb.functions.invoke("coc-cwl-status",{body:{clanId:expected.clanId,strategic:true}});
+  const {data,error}=strategicPilotEnabled?await sb.functions.invoke("coc-cwl-status",{body:{clanId:expected.clanId,strategic:true}}):await sb.functions.invoke("coc-cwl-strategy-beta",{body:{clanId:expected.clanId,action:"preview"}});
   if(error||!data?.ok||!data.active||data.clanTag!==expected.clanTag||data.season!==expected.season||!data.strategic)throw Error("strategic_live_unavailable");
   projection=data.strategic;
  }
  await membership();
+ if(!strategicPilotEnabled&&!await refreshBetaGrant(true))throw Error("strategic_access");
  const result=buildPilotPreview({input,history,projection,mode,planStandard:window.CWLPlanningCore.planCwl,now:Date.now()});
  if(!same())throw Error("strategic_context_changed");
  return result;
 }
 function syncStrategicPilot(){
- if(!strategicPilotEnabled)return;
+ if(!strategicPilotEnabled&&!betaAllowed()){strategicPilot?.sync();void refreshBetaGrant();return}
  if(strategicPilot){strategicPilot.sync();return}
  if(!strategicContext()||strategicPilotLoading)return;
  strategicPilotLoading=import("./cwl-strategic-pilot-view.mjs").then(({createStrategicPilotView})=>{

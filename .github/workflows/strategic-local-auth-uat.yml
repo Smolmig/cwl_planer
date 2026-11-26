@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'supabase/functions/coc-cwl-status/**'
+      - 'supabase/functions/coc-cwl-strategy-beta/**'
       - 'tests/strategic-local-auth.uat.ts'
       - '.github/workflows/strategic-local-auth-uat.yml'
       - 'supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql'

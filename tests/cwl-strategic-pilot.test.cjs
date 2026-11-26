@@ -26,7 +26,7 @@ test("pilot view ignores old-clan responses, preserves same-context disclosure, 
 });
 test("cloud pilot is default off and read only with existing membership verification",()=>{
  const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8"),begin=s.indexOf("const strategicPilotEnabled="),end=s.indexOf("const cloud={",begin),block=s.slice(begin,end);
- assert.match(block,/globalThis\.CWLStrategicStaging===true/);assert.match(block,/cwl_clan_memberships/);assert.match(block,/stats\.readStrategicHistory/);assert.match(block,/strategic:true/);
+ assert.match(block,/globalThis\.CWLStrategicStaging===true/);assert.match(block,/cwl_clan_memberships/);assert.match(block,/stats\.readStrategicHistory/);assert.match(block,/strategic:true/);assert.match(block,/coc-cwl-strategy-beta/);assert.match(block,/action:"capability"/);assert.match(block,/role==="owner"/);
  assert.doesNotMatch(block,/\.insert\(|\.update\(|\.upsert\(|\.delete\(|flushPendingChanges|onLocalChange\(/);
 });
 
@@ -34,7 +34,7 @@ test("pilot suspends immediately at clan switch/logout and expires observations 
  const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8");
  assert.match(s,/async function chooseClan\(epoch=accountEpoch\)\{\s*if\(epoch!==accountEpoch\)return;\s*suspendStrategicPilot\(\)/);
  assert.match(s,/async function leaveCloud\(\)\{\s*suspendStrategicPilot\(\)/);
- assert.match(s,/!strategicPilotEnabled\|\|strategicSuspended/);
+ assert.match(s,/!strategicPilotEnabled&&!betaAllowed\(\)/);
  assert.match(fs.readFileSync(path.join(__dirname,"../cwl-strategic-pilot-view.mjs"),"utf8"),/stored\.expiresAt<=clock\(\)/);
 });
 

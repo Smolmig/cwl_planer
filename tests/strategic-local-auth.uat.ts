@@ -96,6 +96,26 @@ for(const name of ["owner","editor"]){
  assert.ok(!JSON.stringify(body).includes("private A"));
 }
 assert.equal(warCalls,2,"mutable war must be read twice, no stale preparation cache");
+const {createStrategicBetaHandler,default:disabledBeta}=await import("../supabase/functions/coc-cwl-strategy-beta/index.ts");
+const beta=createStrategicBetaHandler([{clanId:a,clanTag:own,userId:ids.owner.id}]);
+async function invokeBeta(name,clan=a,action="capability",h=beta,extra={}){
+ const bearer=name?ids[name].access:null;
+ return h.fetch(new Request(api+"/functions/v1/coc-cwl-strategy-beta",{method:"POST",
+ headers:{apikey:anon,"Content-Type":"application/json",...(bearer?{Authorization:"Bearer "+bearer}:{})},
+ body:JSON.stringify({clanId:clan,action,...extra})}));
+}
+const betaCalls=gameCalls;
+assert.equal((await invokeBeta("owner",a,"capability",disabledBeta)).status,403);
+for(const name of ["viewer","editor","outsider",null])assert.ok([401,403].includes((await invokeBeta(name)).status));
+assert.equal((await invokeBeta("owner",b)).status,403);
+assert.equal((await invokeBeta("owner",a,"save")).status,403);
+assert.deepEqual(await (await invokeBeta("owner",a,"capability")).json(),{ok:true,enabled:true,clanTag:own});
+assert.equal(gameCalls,betaCalls,"capability must never fetch game");
+const actual=await invokeBeta("owner",a,"preview",beta,{clanTag:other,userId:ids.outsider.id});
+assert.equal(actual.status,200);const bodyBeta=await actual.json();
+assert.equal(bodyBeta.clanTag,own);assert.equal(bodyBeta.strategic.status,"preview_data");
+assert.equal(snapshot(),before);
+
 const record={clanId:a,clanTag:own,season,teamSize:15,anchorWarTag:warTag,league:"Master II",fullGroupSize:8,promotionPlaces:2,demotionPlaces:2,source:"in_game_current_group",verifiedAt:new Date().toISOString()};
 let review=await invoke("owner",a,undefined,{rules:record,ruleContext:{clanId:a,records:JSON.stringify([record])}});
 assert.equal(review.status,200);assert.equal((await review.json()).strategic.standings.demotion,"unknown_rules","client cannot inject rules");
@@ -114,5 +134,6 @@ afterGame=()=>sql("update public.cwl_clans set clash_tag='#P0G' where id='"+a+"'
 response=await invoke("owner");
 assert.equal(response.status,403,"link changed during fetch");
 assert.ok(!(await response.text()).includes("preview_data"));
+assert.equal((await invokeBeta("owner")).status,403,"beta link changed");
 assert.equal(snapshot(),before,"profile JSON/revision must stay untouched");
 console.log("PASS: real local JWT + caller RLS + owner/editor/viewer/outsider/default-off/allowlist/revocation/relink; synthetic Clash only; profile unchanged");

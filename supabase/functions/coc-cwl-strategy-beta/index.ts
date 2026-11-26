@@ -1,0 +1,40 @@
+// Isolated owner beta. No normal status handler call, no archive/profile write.
+// The existing live-status deployment is not replaced.
+import {withSupabase} from "npm:@supabase/server@1";
+import {loadStatus} from "../coc-cwl-status/index.ts";
+import {BETA_GRANTS} from "./beta-config.mjs";
+const CORS={"Access-Control-Allow-Origin":"https://smolmig.github.io",
+ "Access-Control-Allow-Headers":"authorization,x-client-info,apikey,content-type",
+ "Access-Control-Allow-Methods":"POST, OPTIONS","Cache-Control":"no-store","Vary":"Origin"};
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const TAG=/^#[0289PYLQGRJCUV]{3,15}$/;
+const response=(data,status=200)=>Response.json(data,{status,headers:CORS});
+const deny=()=>response({ok:false,error:"strategic_unavailable"},403);
+export function createStrategicBetaHandler(grants=BETA_GRANTS){
+ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
+  if(req.method!=="POST")return response({ok:false,error:"method_not_allowed"},405);
+  let body;try{body=await req.json()}catch{return response({ok:false,error:"invalid_body"},400)}
+  const clanId=body?.clanId,actor=ctx.userClaims.id;
+  if(!UUID.test(clanId||"")||!UUID.test(actor||"")||!["capability","preview"].includes(body?.action))return deny();
+  const candidates=grants.filter(g=>g.clanId===clanId&&g.userId===actor&&TAG.test(g.clanTag||""));
+  if(candidates.length!==1)return deny();
+  const expected=candidates[0].clanTag;
+  async function allowed(){
+   const {data:m,error:me}=await ctx.supabase.from("cwl_clan_memberships").select("role").eq("clan_id",clanId).eq("user_id",actor).maybeSingle();
+   if(me||m?.role!=="owner")return false;
+   const {data:c,error:ce}=await ctx.supabase.from("cwl_clans").select("clash_tag,owner_user_id").eq("id",clanId).single();
+   return !ce&&c?.clash_tag===expected&&c?.owner_user_id===actor;
+  }
+  if(!await allowed())return deny();
+  if(body.action==="capability")return response({ok:true,enabled:true,clanTag:expected});
+  const key=Deno.env.get("COC_API_KEY");
+  if(!key)return response({ok:false,error:"strategic_unavailable"},503);
+  try{
+   const result=await loadStatus(expected,key,true,{clanId,records:Deno.env.get("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES")});
+   if(!await allowed())return deny();
+   return response(result.active&&result.strategic?result:{ok:true,active:false,clanTag:expected,strategic:null});
+  }catch{return response({ok:false,error:"strategic_unavailable"},502)}
+ });
+ return {fetch:(req,...args)=>req.method==="OPTIONS"?new Response("ok",{headers:CORS}):handler(req,...args)};
+}
+export default createStrategicBetaHandler();
