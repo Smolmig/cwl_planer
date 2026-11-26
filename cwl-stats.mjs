@@ -961,7 +961,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
-    cachedMemberForms.clear();lastMemberFormVersion=-1;
+    cachedMemberForms.clear();cachedMemberFormsV2.clear();lastMemberFormVersion=-1;
     lastFormRowsVersion=-1;lastFormRowsClan=null;
     viewComparableProfiles.clear();viewComparableSummary=null;openStatsPlayers.clear();
     duelLeft="";duelRight="";duelSameTH=true;trendMetric="hitRate";trendGranularity="week";
@@ -1003,6 +1003,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       // real table render (seen in unrelated stats browser regressions).
       const hadOtherClan=scope!==null;
       scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
+      cachedMemberFormsV2.clear();lastMemberFormVersion=-1;
       cachedRecentStats=new Map();comparableProfiles=new Map();
       comparableSummary=null;cachedSummary=null;lastMetricSignature="";
       if(hadOtherClan){
