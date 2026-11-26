@@ -1,4 +1,5 @@
 import {validateHistoryFile,computeWarStats,selectStatWars,computeRecentAttackStats,computeThMatchupComparison,groupCwlRuns,computeStatsTimeline,computeTrendPlotGeometry,formatTrendPeriod,computePlayerDuel,describeWarSelection,selectWarDateScope,computePlayerFormWindows,computeMemberFormSummary,computeMemberFormV2,compareMemberFormV2,sortPlayerFormRows,cleanTag} from "./cwl-stats-core.mjs?v=1.27.0";
+import {loadMemberFormClans,mergeMemberFormClans} from "./cwl-member-form-history.mjs?v=1.37.0";
 import {loadAccessiblePlayerHistory} from "./cwl-player-linked-history.mjs?v=1.21.0";
 import {readClashPerkXlsx,parseClashPerkSheets,hasClashPerkAttackSheets,parseClashPerkMissedOnly} from "./cwl-clashperk-xlsx.mjs?v=1.19.1";
 import {readAllStatWars,planClashPerkMerge,commitClashPerkMerge} from "./cwl-clashperk-import-db.mjs?v=1.22.2";
@@ -45,6 +46,7 @@ export function statsLoadNotice(wars=[]){
   return "Historie geladen · "+finishedText+pendingText+".";
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
+  let memberFormHistory=null;
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,loadingClan=null,importing=false,version=0,lastCapture=new Set();
   let sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};
   let type="all",last="all",cwlSeasons="all",playerDays="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
@@ -767,8 +769,9 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       cachedMemberForms=new Map(model.players.map(p=>[p.tag,{
         ...p,latestCwl:model.latestCwl,cwCount:model.cwCount
       }]));
-      const v2=computeMemberFormV2(wars,attacks,{memberTags:ctx.memberTags||[],memberProfiles:ctx.memberProfiles||[],missedEvents});
-      cachedMemberFormsV2=new Map(v2.players.map(p=>[p.tag,p]));
+      const basis=memberFormHistory||{wars,attacks,missedEvents,partial:false};
+      const v2=computeMemberFormV2(basis.wars,basis.attacks,{memberTags:ctx.memberTags||[],memberProfiles:ctx.memberProfiles||[],missedEvents:basis.missedEvents});
+      cachedMemberFormsV2=new Map(v2.players.map(p=>[p.tag,{...p,historyPartial:basis.partial===true}]));
       lastMemberFormVersion=version;
     }
     // Membership performance badges depend on loaded attack data, not search/sort/filter state.
@@ -958,6 +961,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
   }
   function reset(){
+    memberFormHistory=null;
     scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
@@ -1002,6 +1006,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       // table too early would prime the row caches and suppress the first
       // real table render (seen in unrelated stats browser regressions).
       const hadOtherClan=scope!==null;
+      memberFormHistory=null;
       scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       cachedMemberFormsV2.clear();lastMemberFormVersion=-1;
       cachedRecentStats=new Map();comparableProfiles=new Map();
@@ -1065,6 +1070,12 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       // Collapse only verified duplicate API + ClashPerk wars within this clan.
       // Original source rows remain in the database for traceability.
       const reconciled=reconcileClashPerkApiHistory(ww,collected,missedRows);
+      let linked={sources:[],partial:false};
+      if(ctx.clanTag)try{linked=await loadMemberFormClans(sb,ctx)}catch{linked.partial=true}
+      if(epoch!==version||context().clanId!==id)return;
+      const local={clanTag:ctx.clanTag,clanName:ctx.clanName||ctx.clanTag,...reconciled};
+      const merged=ctx.clanTag?mergeMemberFormClans(local,linked.sources):reconciled;
+      memberFormHistory={...merged,partial:!!(merged.partial||linked.partial)};
       sourceReconciliation=reconciled;
       scope=id;wars=reconciled.wars;attacks=reconciled.attacks;
       missedEvents=reconciled.missedEvents;collectorHealth=latestHealth;
