@@ -27,11 +27,11 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
    window.__pilotProfile=profile;
    window.__pilotBefore=JSON.stringify(profile);
    window.__pilotStorage=localStorage.getItem("cwl_planer_mobile_v9");
-   window.__pilotContext={key:"clan-a",token:"rev1",phase:"roster",ready:true,role:"owner",clanTag:"#P02",slots:15,days:7};
+   window.__pilotContext={key:"clan-a",token:"rev1",phase:"roster",ready:true,role:"owner",clanTag:"#P02",slots:15,days:7,candidates:profile.members.map(m=>({id:m.id,tag:m.playerTag,name:m.name,fixed:false}))};
    window.__pilotDelay=false;
-   window.__pilot=createStrategicPilotView({anchor:document.getElementById("planCwlSeasonEntry"),getContext:()=>window.__pilotContext,load:async(mode,c)=>{
+   window.__pilot=createStrategicPilotView({anchor:document.getElementById("planCwlSeasonEntry"),getContext:()=>window.__pilotContext,load:async(mode,c,draft)=>{
     if(window.__pilotDelay)await new Promise(r=>window.__pilotResolve=r);
-    const now=Date.now(),input=preparePilotInput({context:c,profile,currentPlan});
+    const now=Date.now(),input=preparePilotInput({context:c,profile,currentPlan,draft});
     return buildPilotPreview({input,history:{kind:"current_snapshot_war_start_proxy",asOf:now,facts:[],obligations:[],audit:{}},mode,planStandard:window.CWLPlanningCore.planCwl,now});
    }});
    document.body.classList.add("cloud-mode");
@@ -60,6 +60,17 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
     if(dir&&["arena","dark"].includes(theme))await entry.screenshot({path:path.join(dir,"strategic-integrated-"+theme+"-"+width+".png")});
    }
   }
+  await entry.getByText("Teilnahme erfassen (optional)",{exact:true}).click();
+  const participant=entry.getByLabel("Teilnehmer suchen");
+  await participant.fill("Testspieler 2");await entry.getByLabel("Teilnahme Testspieler 2 "+profile.members[1].playerTag,{exact:true}).selectOption("yes");
+  await participant.fill("Testspieler 3");await entry.getByLabel("Teilnahme Testspieler 3 "+profile.members[2].playerTag,{exact:true}).selectOption("no");
+  await entry.getByLabel("Angenommene Kriegstage").selectOption("5");await calculate.click();
+  await page.getByText("Kadervergleich",{exact:true}).waitFor();assert.match(await entry.innerText(),/1 Absagen|1 Absage/);
+  assert.match(await entry.innerText(),/5 Kriegstage/);assert.match(await entry.innerText(),/16 Spieler mit offener Teilnahme/);
+  await entry.getByLabel("CWL-Format").selectOption("30");await calculate.click();
+  await page.getByText("Entwurf noch nicht möglich",{exact:true}).waitFor();
+  assert.match(await entry.innerText(),/30 Plätze.*17 mögliche Teilnehmer/);
+  await entry.getByLabel("CWL-Format").selectOption("15");
   await page.evaluate(()=>{window.__pilotDelay=true});await calculate.click();
   await page.getByText("Vorschau wird berechnet …",{exact:true}).waitFor();
   await page.evaluate(()=>{window.__pilotContext=null;window.__pilot.sync();window.__pilotResolve()});

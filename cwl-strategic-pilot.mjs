@@ -4,7 +4,7 @@ import {previewDailyStrategy} from "./cwl-strategic-daily.mjs";
 import {presentDailyStrategy,presentRosterRows} from "./cwl-strategic-presentation.mjs";
 const TAG=/^#[0289PYLQGRJCUV]{3,15}$/;
 const tag=x=>typeof x==="string"?x.trim().toUpperCase():"";
-export function preparePilotInput({context:c,profile,currentPlan}={}){
+export function preparePilotInput({context:c,profile,currentPlan,draft=null}={}){
  if(!c?.ready||!["roster","daily"].includes(c.phase)||!["owner","vice"].includes(c.role)||!TAG.test(tag(c.clanTag))||
  ![15,30].includes(c.slots)||![5,7].includes(c.days)||profile?.config?.slots!==c.slots||profile?.config?.days!==c.days||
  !Array.isArray(profile.members)||!Array.isArray(profile.locks)||!Array.isArray(currentPlan))throw Error("pilot_unavailable");
@@ -14,7 +14,19 @@ export function preparePilotInput({context:c,profile,currentPlan}={}){
  if(c.phase==="roster"&&c.previousSeason&&!oldSeason)throw Error("pilot_existing_locks");
  const roster=profile.members.filter(m=>c.phase==="daily"||!["former","kept"].includes(m.cocSyncState));
  if(c.phase==="daily")for(const m of profile.archivedMembers||[])if(!roster.some(p=>p.id===m.id)&&currentPlan.some(p=>p.lineup?.includes(m.id)))roster.push({...m,cocSyncState:"former",participating:false});
- const seen=new Set(),ids=new Set();
+ // Only current, eligible members may receive explicit draft answers.
+ const choices=new Map();
+ let slots=c.slots,days=c.days;
+ if(draft!==null){
+  if(c.phase!=="roster"||![15,30].includes(draft?.slots)||![5,7].includes(draft?.days)||!Array.isArray(draft.answers)||draft.answers.length>50)throw Error("pilot_invalid_draft");
+  slots=draft.slots;days=draft.days;
+  for(const a of draft.answers){
+   const m=roster.find(m=>m.id===a?.id&&tag(m.playerTag)===tag(a?.tag));
+   if(!m||m.participating===false||choices.has(m.id)||!["yes","no","unknown"].includes(a.intent))throw Error("pilot_invalid_draft_answer");
+   choices.set(m.id,a.intent);
+  }
+ }
+ const issues=[],seen=new Set(),ids=new Set();
  const members=roster.map(m=>{
   const t=tag(m.playerTag);
   if(!TAG.test(t)||!Number.isInteger(m.townHall)||m.townHall<3||m.townHall>30||typeof m.id!=="string"||!m.id||
@@ -24,10 +36,21 @@ export function preparePilotInput({context:c,profile,currentPlan}={}){
   // constraints belong to the previous cycle, fixed/global preferences stay.
   // The original profile, archives and prior war records are never changed.
   const member={...m,playerTag:t,statuses:Array.isArray(m.statuses)?[...m.statuses]:[],participationIntent:["yes","no"].includes(m.participationIntent)?m.participationIntent:"unknown"};
-  if(oldSeason)Object.assign(member,{statuses:Array(c.days).fill("auto"),targetDays:null,firstDay:null,outFromDay:null,participationIntent:"unknown"});
+  if(oldSeason)Object.assign(member,{statuses:Array(days).fill("auto"),targetDays:null,firstDay:null,outFromDay:null,participationIntent:"unknown"});
+  if(c.phase==="roster"){
+   // There is no persisted season-bound poll in this pilot. Never treat old
+   // unscoped participation flags as a confirmation for the next league.
+   member.participationIntent=choices.get(m.id)||"unknown";
+   const hard=member.fixed||member.targetDays!=null&&member.targetDays!==""||member.statuses.includes("must");
+   if(member.participating!==false&&member.participationIntent==="no"&&hard)
+    issues.push(member.name+": Absage widerspricht einer festen Einsatzvorgabe. Bitte Vorgabe prüfen oder Teilnahme offen lassen.");
+   if(!oldSeason&&member.participating!==false&&member.participationIntent!=="no"&&
+     (member.statuses.slice(days).some(s=>s==="must")||member.targetDays!=null&&member.targetDays!==""&&!member.fixed&&Number(member.targetDays)>=days))
+    issues.push(member.name+": Einsatzziel oder MUSS-Tag passt nicht zur gewählten Anzahl Kriegstage.");
+  }
   return member;
  });
- return {context:{...c},members,plan:c.phase==="roster"?[]:currentPlan.map(p=>({day:p.day,lineup:[...p.lineup]})),
+ return {context:{...c,slots,days},members,issues,plan:c.phase==="roster"?[]:currentPlan.map(p=>({day:p.day,lineup:[...p.lineup]})),
    locks:c.phase==="roster"?[]:profile.locks.slice(0,c.days).flatMap((l,i)=>l?.locked?[{day:i+1,lineup:[...l.lineup]}]:[]),oldSeason:!!oldSeason};
 }
 export function buildPilotPreview({input,history,projection,mode,planStandard,now}={}){
@@ -37,9 +60,15 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
  const {context:c,members,plan,locks}=input;
  const historyNote=history.audit?.sourcePartial?"Formdaten teilweise unvollständig.":"Formdaten: letzte 30 Tage, soweit erfasst.";
  if(c.phase==="roster"){
+  const active=members.filter(m=>m.participating!==false&&m.participationIntent!=="no"),declined=members.filter(m=>m.participating!==false&&m.participationIntent==="no");
+  const base={kind:"roster",mode,historyNote,oldSeason:input.oldSeason,format:{slots:c.slots,days:c.days},expiresAt:history.asOf+300000,
+    participation:{yes:active.filter(m=>m.participationIntent==="yes").length,unknown:active.filter(m=>m.participationIntent==="unknown").length,no:declined.length},canApply:false};
+  const issues=[...(input.issues||[])];
+  if(active.length<c.slots)issues.push("Für "+c.slots+" Plätze sind nur "+active.length+" mögliche Teilnehmer vorhanden.");
+  if(issues.length)return {...base,issues,scenarios:[]};
   const result=compareSeasonRosterSizes({members,facts:history.facts,obligations:history.obligations,asOf:history.asOf,mode,slots:c.slots,days:c.days,planStandard});
-  if(!result.ok)throw Error("pilot_plan_conflict");
-  return {kind:"roster",mode,historyNote,oldSeason:input.oldSeason,format:{slots:c.slots,days:c.days},expiresAt:history.asOf+300000,scenarios:result.scenarios.map(s=>({size:s.size,metrics:s.metrics,
+  if(!result.ok)return {...base,issues:result.conflicts?.length?result.conflicts:["Für diese Vorgaben ist keine vollständige Aufstellung möglich."],scenarios:[]};
+  return {...base,issues:[],scenarios:result.scenarios.map(s=>({size:s.size,metrics:s.metrics,
    excluded:s.excluded.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler"),rows:presentRosterRows({scenario:s,members}).rows})),canApply:false};
  }
  if(c.phase!=="daily"||projection?.status!=="preview_data"||projection.format?.attacksPerMemberReported!==true||!projection.group||!projection.standings||!projection.registered)throw Error("pilot_live_unavailable");

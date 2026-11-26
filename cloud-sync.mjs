@@ -399,9 +399,10 @@ function strategicContext(){
  return {key:JSON.stringify([accountEpoch,user.id,clanId,tag,role,phase,season,previousSeason||null]),
    token:JSON.stringify([revision,profile.id,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
    phase,season,previousSeason:previousSeason||null,observedAt,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
+   candidates:phase==="roster"?profile.members.filter(m=>!["former","kept"].includes(m.cocSyncState)&&m.participating!==false).map(m=>({id:m.id,tag:m.playerTag,name:m.name,fixed:!!m.fixed})):[],
    ready:ready&&!blocked&&!hydrating&&!manualRosterPending()&&navigator.onLine};
 }
-async function loadStrategicPilot(mode,expected){
+async function loadStrategicPilot(mode,expected,draft){
  const same=()=>{const c=strategicContext();return c?.key===expected.key&&c.token===expected.token&&c.ready};
  const actor=user?.id,localRole=role;
  if(!same()||!actor||!["owner","editor"].includes(localRole))throw Error("strategic_context_changed");
@@ -412,7 +413,7 @@ async function loadStrategicPilot(mode,expected){
  await membership();
  const {preparePilotInput,buildPilotPreview}=await import("./cwl-strategic-pilot.mjs");
  if(!same())throw Error("strategic_context_changed");
- const input=preparePilotInput({context:expected,profile:structuredClone(storage.getProfile()),currentPlan:structuredClone(storage.getPlannedLineups())});
+ const input=preparePilotInput({context:expected,profile:structuredClone(storage.getProfile()),currentPlan:structuredClone(storage.getPlannedLineups()),draft});
  const history=await stats.readStrategicHistory(input.members);
  if(!same())throw Error("strategic_context_changed");
  let projection=null;

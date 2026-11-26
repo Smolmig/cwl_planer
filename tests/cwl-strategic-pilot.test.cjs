@@ -52,3 +52,17 @@ test("next-season draft preserves previous plan, discards only previous day cons
  assert.equal(x.oldSeason,true);assert.deepEqual(x.format,{slots:15,days:7});assert.equal(x.scenarios[0].metrics.conditional,18);assert.equal(JSON.stringify(s),before);
  assert.throws(()=>preparePilotInput({...s,context:{...s.context,previousSeason:"2026-10"}}),/pilot_existing_locks/);
 });
+
+test("optional poll and format affect only the draft, reject foreign answers and preserve hard rules",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data(),before=JSON.stringify(s);
+ const answers=[{id:"p0",tag:s.profile.members[0].playerTag,intent:"yes"},{id:"p1",tag:s.profile.members[1].playerTag,intent:"no"}];
+ const history={kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}};
+ const compute=input=>buildPilotPreview({input,history,mode:"balanced",planStandard:planCwl,now:at});
+ const input=preparePilotInput({...s,draft:{slots:15,days:5,answers}}),x=compute(input);
+ assert.deepEqual(x.participation,{yes:1,no:1,unknown:16});assert.equal(x.scenarios[0].size,17);assert.equal(x.format.days,5);
+ assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").proposed,null);assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>preparePilotInput({...s,draft:{slots:15,days:5,answers:[{...answers[0],tag:"#P08"}]}}),/pilot_invalid_draft_answer/);
+ const short=compute(preparePilotInput({...s,draft:{slots:30,days:7,answers}}));assert.equal(short.scenarios.length,0);assert.match(short.issues[0],/30 Plätze.*17/);
+ s.profile.members[1].fixed=true;
+ const conflict=compute(preparePilotInput({...s,draft:{slots:15,days:7,answers}}));assert.equal(conflict.scenarios.length,0);assert.match(conflict.issues[0],/Absage widerspricht/);
+});
