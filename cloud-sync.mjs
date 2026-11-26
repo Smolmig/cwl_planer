@@ -386,9 +386,10 @@ async function openNewPlanCycle(){
 // Isolated staging-browser opt-in; never enabled by a URL or local storage.
 // Not an authorization mechanism. The ordinary app stays unchanged.
 const strategicPilotEnabled=globalThis.CWLStrategicStaging===true;
-let strategicPilot=null,strategicPilotLoading=null;
+let strategicPilot=null,strategicPilotLoading=null,strategicSuspended=false;
+function suspendStrategicPilot(){strategicSuspended=true;strategicPilot?.sync()}
 function strategicContext(){
- if(!strategicPilotEnabled||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
+ if(!strategicPilotEnabled||strategicSuspended||!cloud.active||!user?.id||!clanId||!["owner","editor"].includes(role))return null;
  const tag=clans.find(c=>c.id===clanId)?.clash_tag,profile=storage.getProfile();
  if(!tag||!profile)return null;
  const lifecycle=live.getLifecycle();
@@ -1183,6 +1184,7 @@ async function useSession(session){
  }
 }
 async function leaveCloud(){
+ suspendStrategicPilot();
  clearClanAccountDetails();
  // Immediately leave the Cloud-only statistics view. Otherwise logging out
  // can strand the guest on a private screen with no visible navigation tab.
@@ -1225,6 +1227,7 @@ async function listClans(epoch=accountEpoch,selected){
 }
 async function chooseClan(epoch=accountEpoch){
  if(epoch!==accountEpoch)return;
+ suspendStrategicPilot();
  // The old clan's screen should not be visible while another tenant's
  // profile, memberships, stats and first Clash snapshot are still loading.
  // The initial login has its own shield already; no flash for same-clan
@@ -1292,6 +1295,7 @@ async function chooseClan(epoch=accountEpoch){
    }
  });
  startRemoteChecks();
+ strategicSuspended=false;
  cloud.afterRender();
  await startPresence();
  live.start();

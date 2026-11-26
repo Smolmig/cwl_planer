@@ -30,7 +30,7 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
  if(c.phase==="roster"){
   const result=compareSeasonRosterSizes({members,facts:history.facts,obligations:history.obligations,asOf:history.asOf,mode,slots:c.slots,days:c.days,planStandard});
   if(!result.ok)throw Error("pilot_plan_conflict");
-  return {kind:"roster",mode,historyNote,scenarios:result.scenarios.map(s=>({size:s.size,metrics:s.metrics,
+  return {kind:"roster",mode,historyNote,expiresAt:history.asOf+300000,scenarios:result.scenarios.map(s=>({size:s.size,metrics:s.metrics,
    excluded:s.excluded.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler"),rows:presentRosterRows({scenario:s,members}).rows})),canApply:false};
  }
  if(c.phase!=="daily"||projection?.status!=="preview_data"||projection.format?.attacksPerMemberReported!==true||!projection.group||!projection.standings||!projection.registered)throw Error("pilot_live_unavailable");
@@ -42,6 +42,6 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
  if(!p.ok)throw Error("pilot_plan_conflict");
  const display=presentDailyStrategy({preview:p,standings:projection.standings,group,members,role:c.role,asOf,season:c.season,selectedClanTag:c.clanTag});
  const names=ids=>ids.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler");
- return {kind:"daily",mode,historyNote,display,editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
+ return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf,asOf)+300000,display,editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
   targets:p.targetPreviews.map(t=>({day:t.day,ok:t.ok,swaps:t.ok?t.proposal.filter(x=>x.attackerPosition!==x.targetPosition).map(x=>({from:x.attackerPosition,to:x.targetPosition,n:x.evidenceN})):[]})),canApply:false};
 }

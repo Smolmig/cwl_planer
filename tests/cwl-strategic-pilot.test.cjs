@@ -29,3 +29,11 @@ test("cloud pilot is default off and read only with existing membership verifica
  assert.match(block,/globalThis\.CWLStrategicStaging===true/);assert.match(block,/cwl_clan_memberships/);assert.match(block,/stats\.readStrategicHistory/);assert.match(block,/strategic:true/);
  assert.doesNotMatch(block,/\.insert\(|\.update\(|\.upsert\(|\.delete\(|flushPendingChanges|onLocalChange\(/);
 });
+
+test("pilot suspends immediately at clan switch/logout and expires observations before display",()=>{
+ const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8");
+ assert.match(s,/async function chooseClan\(epoch=accountEpoch\)\{\s*if\(epoch!==accountEpoch\)return;\s*suspendStrategicPilot\(\)/);
+ assert.match(s,/async function leaveCloud\(\)\{\s*suspendStrategicPilot\(\)/);
+ assert.match(s,/!strategicPilotEnabled\|\|strategicSuspended/);
+ assert.match(fs.readFileSync(path.join(__dirname,"../cwl-strategic-pilot-view.mjs"),"utf8"),/stored\.expiresAt<=clock\(\)/);
+});

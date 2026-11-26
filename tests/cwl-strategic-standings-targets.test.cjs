@@ -44,7 +44,7 @@ test("guaranteed relegation and unfinished partial score lower bounds",async()=>
  const {assessStrategicStandings}=await standings;const s=data(8,7,(a,b)=>a===0?0:45);
  const p=assessStrategicStandings(s);assert.equal(p.demotion,"guaranteed");assert.deepEqual(p.bounds,{best:8,worst:8});
  const q=data(8,0);const w=q.snapshot.rounds[0].matches.find(w=>w.clan.tag===t(0));w.state="inWar";w.clan.stars=20;w.clan.destructionPercentage=60;
- const x=assessStrategicStandings(q);assert.equal(x.teams.find(x=>x.tag===t(0)).min.stars,20);assert.equal(x.teams.find(x=>x.tag===t(0)).max.stars,385);
+ const x=assessStrategicStandings(q);assert.equal(x.teams.find(x=>x.tag===t(0)).min.stars,20);assert.equal(x.teams.find(x=>x.tag===t(0)).min.destruction,0);assert.equal(x.teams.find(x=>x.tag===t(0)).max.stars,385);
 });
 function targetData(){
  const roster=Array.from({length:15},(_,i)=>({tag:t(60+i),townHall:i===0?18:19,mapPosition:i+1}));

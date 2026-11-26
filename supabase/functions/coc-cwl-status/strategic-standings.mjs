@@ -66,8 +66,9 @@ export function assessStrategicStandings({snapshot,selectedClanTag,season,league
   }else{
    for(const [i,t] of [a,b].entries()){
     const x=teams.get(t),s=sides[i];
-    // Ignore prep scores; ongoing scores are monotonic lower bounds only.
-    if(w.state==="inWar"&&valid)add(x.min,s.stars,Math.round(s.destructionPercentage*teamSize*100));
+    // Stars cannot decrease, but a higher-star best attack can replace a
+    // higher-destruction lower-star attack. Never use live destruction as a lower bound.
+    if(w.state==="inWar"&&valid)add(x.min,s.stars,0);
     add(x.max,cap+10,maxD*100);
    }
   }
