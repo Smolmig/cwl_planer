@@ -13,7 +13,7 @@ test("Grind UI creates a dated campaign, updates member marks, confirms one serv
   let saved=null,discord=null,now="2026-11-25",confirm=false;
   const calls=[];
   const response=()=>({...saved,today:now,rows:[{tag,name:"Spieler A",discord,status:"qualified",checks:saved.rules.map(r=>({metric:r.metric,minimum:r.minimum,value:r.minimum,status:"met"}))}],
-   qualified:1,unknown:0,ready:now>saved.end,witness:"fixture-"+saved.revision});
+   qualified:1,unknown:0,pool:[{tag,name:"Spieler A"}],ready:now>saved.end,witness:"fixture-"+saved.revision});
   const api=async req=>{
    calls.push(req);
    if(req.action==="list")return saved?[saved]:[];
@@ -36,6 +36,10 @@ test("Grind UI creates a dated campaign, updates member marks, confirms one serv
   assert.equal(saved.start,"2026-12-01");assert.equal(saved.end,"2026-12-31");
   assert.equal(saved.rules.find(r=>r.metric==="cwStars").minimum,21);
   assert.equal(button("Gewinner offiziell ziehen").disabled,true);
+  const oldCrypto=global.crypto;if(!oldCrypto)global.crypto=require("node:crypto").webcrypto;
+  const beforeTest=calls.length;button("Testziehung starten").click();
+  assert.match(root.textContent,/TESTZIEHUNG – UNVERBINDLICH/);
+  assert.equal(calls.length,beforeTest);assert.equal(saved.revision,1);
   change(control("Discord (dauerhaft)"),"yes");await tick();
   assert.equal(control("Discord (dauerhaft)").value,"yes");
   change(control("Abgestimmt (diese Verlosung)"),"yes");button("Änderungen speichern").click();await tick();
