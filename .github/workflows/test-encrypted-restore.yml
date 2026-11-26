@@ -175,10 +175,10 @@ jobs:
           fi
 
       # New local bootstrap includes hosted Auth expires_at/link_token_hash.
-      # Keep pinned; never mutate the production Auth schema for restore tests.
+      # Pin stable candidate; the local Auth canary must pass before the replay is accepted.
       - uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: 3.4.0
 
       - name: Start disposable local Supabase Postgres
         shell: bash
@@ -186,6 +186,9 @@ jobs:
           set -euo pipefail
           cd "$WORK/local"
           supabase init --yes
+          # v3.4 creates JSONC by default; keep the existing isolated TOML port editor.
+          supabase config convert --to toml
+          test -f supabase/config.toml
           # GitHub runners can already have port 54322 occupied. Select an
           # available local port and use it consistently for this restore.
           restore_port="$(python3 - <<'PY'

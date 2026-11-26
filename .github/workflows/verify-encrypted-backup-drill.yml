@@ -9,6 +9,7 @@ name: Verify prior encrypted backup content (isolated drill)
 # was blocked by Auth ownership. Re-test SAME ciphertext with CLI v3.2.0,
 # which was independently verified to provide both columns (read-only gate).
 # Later: operator may explicitly provide a different successful backup run.
+# 26 Nov: replay the newest successful encrypted artifact, whose Auth COPY failed.
 # 19 Nov retry after PR #316: the runner now uses its preinstalled psql
 # instead of depending on the Ubuntu package mirror. Replay the unchanged
 # 18 Nov encrypted artifact in localhost only; require full SQL/CWL/Audit checks.
@@ -24,7 +25,7 @@ on:
         description: 'Existing successful encrypted backup run ID (30-day artifact retention)'
         type: string
         required: true
-        default: '44283214780'
+        default: '45805944787'
 
 permissions:
   contents: read
@@ -35,9 +36,9 @@ jobs:
     if: ${{ github.repository == 'Smolmig/cwl_planer' && github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/test-encrypted-restore.yml
     with:
-      # 18 November successful encrypted backup includes new source-tagged CW
-      # incident decisions. Restore runs only against local temporary DB.
+      # 26 November successful encrypted backup; same ciphertext as failed restore.
+      # Restore runs only against local temporary DB.
       # Workflow_dispatch allows choosing any newer successful run ID later.
-      backup_run_id: ${{ github.event_name == 'push' && '44283214780' || inputs.backup_run_id }}
+      backup_run_id: ${{ github.event_name == 'push' && '45805944787' || inputs.backup_run_id }}
     secrets:
       CWL_BACKUP_PASSPHRASE: ${{ secrets.CWL_BACKUP_PASSPHRASE }}
