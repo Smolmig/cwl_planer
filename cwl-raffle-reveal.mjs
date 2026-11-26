@@ -48,9 +48,9 @@ export function renderDrawReveal({winnerName,winnerTag,animate=false,weighted=fa
  @keyframes draw-winner-in{from{opacity:0;transform:scale(.88) translateY(8px)}to{opacity:1;transform:none}}
  @media(prefers-reduced-motion:reduce){.draw-reveal *{animation:none!important}}
  `);
- const pending=el("div"),ticket=el("div","✦","draw-ticket draw-spin"),status=el("p","Das Ergebnis wird enthüllt …","statusline");
- status.setAttribute("role","status");ticket.setAttribute("aria-hidden","true");
- const skip=el("button","Ergebnis anzeigen","btn small");skip.type="button";pending.append(ticket,status,skip);
+ const pending=el("div"),ticketIcon=el("div","✦","draw-ticket draw-spin"),status=el("p","Das Ergebnis wird enthüllt …","statusline");
+ status.setAttribute("role","status");ticketIcon.setAttribute("aria-hidden","true");
+ const skip=el("button","Ergebnis anzeigen","btn small");skip.type="button";pending.append(ticketIcon,status,skip);
  const result=el("div","","draw-winner");result.setAttribute("role","status");
  const top=el("p",test?"TESTZIEHUNG – UNVERBINDLICH":"OFFIZIELLES ERGEBNIS","more-eyebrow");
  const heading=el("h3",String(winnerName||winnerTag||""));
@@ -73,7 +73,7 @@ export function renderDrawReveal({winnerName,winnerTag,animate=false,weighted=fa
  result.dataset.raffleWinner="true";pending.dataset.raffleAnimation="true";
  const motion=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
  let timer=null;
- const reveal=()=>{if(timer!==null){clearTimeout(timer);timer=null}pending.hidden=true;result.hidden=false;onReveal();};
+ const reveal=()=>{if(timer!==null){clearTimeout(timer);timer=null}wrap.querySelector(".wheel-disc")?.classList.remove("spinning");pending.hidden=true;result.hidden=false;onReveal();};
  skip.onclick=reveal;
  if(motion){result.hidden=true;timer=setTimeout(()=>{if(wrap.isConnected)reveal()},Math.max(0,Math.min(2500,delay)))}
  else{result.classList.remove("draw-winner");reveal()}
