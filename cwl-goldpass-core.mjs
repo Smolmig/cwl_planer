@@ -3,13 +3,29 @@ import {tagOf} from "./cwl-live-core.mjs?v=1.31.2";
 const validTag=t=>/^#[0289PYLQGRJCUV]{3,15}$/.test(t);
 const integer=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
 export const DEFAULT_RAFFLE_RULES=Object.freeze({minimumType:"none",minimum:0,base:1,one:0,two:0,three:2,perStar:0,requireDiscord:false});
+export const RAFFLE_PRESETS=Object.freeze({
+ balanced:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:1,perAttack:1,highBonus:1,perfectBonus:1}),
+ performance:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:2,perAttack:1,highBonus:1,perfectBonus:1}),
+ participation:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:1,perAttack:2,highBonus:0,perfectBonus:0})
+});
+export function starThresholds(warCount){return warCount===5?{high:14,perfect:15}:{high:19,perfect:21}}
+export function raffleTicketBreakdown(p,r,warCount){
+ const {high,perfect}=starThresholds(warCount);
+ return [
+  ["Startlose",r.base||0],["Angriffe",(r.perAttack||0)*p.attacks],
+  ["1★",r.one*p.one],["2★",r.two*p.two],["3★",r.three*p.three],
+  ["Gesamtsterne",r.perStar*p.stars],
+  ["ab "+high+"★",p.stars>=high?(r.highBonus||0):0],
+  ["ab "+perfect+"★",p.stars>=perfect?(r.perfectBonus||0):0]
+ ].filter(([,n])=>n>0);
+}
 export function normalizeRaffleRules(input={}){
- const r={...DEFAULT_RAFFLE_RULES,...input};
+ const r={...DEFAULT_RAFFLE_RULES,...input,perAttack:input.perAttack??0,highBonus:input.highBonus??0,perfectBonus:input.perfectBonus??0};
  if(!["none","triples","stars","attacks"].includes(r.minimumType))throw Error("invalid_minimum");
  const limit=r.minimumType==="stars"?21:r.minimumType==="none"?0:7;
- if(!integer(r.minimum,0,limit)||!["base","one","two","three","perStar"].every(k=>integer(r[k],0,100))||
+ if(!integer(r.minimum,0,limit)||!["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].every(k=>integer(r[k],0,100))||
     typeof r.requireDiscord!=="boolean")throw Error("invalid_weights");
- return Object.fromEntries(Object.keys(DEFAULT_RAFFLE_RULES).map(k=>[k,r[k]]));
+ return Object.fromEntries([...Object.keys(DEFAULT_RAFFLE_RULES),"perAttack","highBonus","perfectBonus"].map(k=>[k,r[k]]));
 }
 export function collectRaffleEvidence(snapshot,expectedClan){
  const own=tagOf(expectedClan),season=snapshot?.season,rounds=snapshot?.rounds;
@@ -68,7 +84,7 @@ export function rafflePreview(evidence,input={},eligibility={}){
   else if(e.excluded===true)reason="Manuell ausgeschlossen";
   else if(rules.requireDiscord&&e.discord!==true)reason="Discord nicht bestätigt";
   else if(metric<rules.minimum&&e.override!==true)reason="Mindestleistung nicht erreicht";
-  const tickets=reason?0:rules.base+rules.one*p.one+rules.two*p.two+rules.three*p.three+rules.perStar*p.stars;
+  const tickets=reason?0:raffleTicketBreakdown(p,rules,evidence.warCount).reduce((sum,[,n])=>sum+n,0);
   if(!reason&&!tickets)reason="Keine Lose nach aktueller Regel";
   return {...p,eligible:!reason,reason,tickets,decision:{organizer:e.organizer===true,excluded:e.excluded===true,discord:e.discord===true,override:e.override===true}};
  });
