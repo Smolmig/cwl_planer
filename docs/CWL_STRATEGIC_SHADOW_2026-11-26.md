@@ -44,3 +44,5 @@ Status: Shadow-Prototyp, keine UI/Produktivfreigabe; #358 Recovery-Gate offen.
 
 ## Stufe 7 – isolierte interaktive UI-Testvorschau
 - Stufe 6 CI 1009/1009, 0 Fehler/skipped. Fixture unter tests/fixtures/strategic-preview.html, echte Rechenkerne für Kader und Tagesplanung mit fiktiven Daten, drei Modi, Kaderalternativen, geschützte Tage, Moduswechsel, 8★-Ziele, Angriffsziele, Rolle und Themes. Keine produktive Navigation, keine Speicher-/API-Zugriffe, keine Übernahme. Browser-Test prüft 320/390/430/1366/1440, Dark/Light/Gold, geöffnete Details, Rollen, Kaderwahl, keine Remote-Requests; Screenshot-Artefakte zur anschließenden visuellen Abnahme. Noch keine Live-Integration/DE-EN/UAT; #358 gemergt d948be8, echtes Replay 45892300592 läuft. Kein App-Release. Nächste Schritte: CI/Screenshots, authentifizierter Staging-Test, Liga-Regeln und Integrationsplanung.
+
+- Recovery-Abnahme: Run 45892300592 vollständig grün. Main-Abgleich ohne weitere Inhaltskonflikte; UI-CI neu starten. Vollständiger Hosted-Rehost separat.
