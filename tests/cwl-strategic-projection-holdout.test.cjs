@@ -99,3 +99,15 @@ test("reviewed rules bind exact tenant, clan, cycle, format and observation",asy
  }
  assert.equal(run([row],"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb").standings.demotion,"unknown_rules");
 });
+
+test("holdout uses only cutoff-visible corrections and treats repeated observations as one attack",async()=>{
+ const {evaluateStrategicHoldout}=await holdout,m={id:"p",playerTag:tag(10),townHall:19};
+ const f=(key,time,stars,kind="normal",observedAt=time)=>({playerTag:m.playerTag,warKey:key,attackOrder:1,kind,attackerTh:19,defenderTh:19,stars,destruction:stars===3?100:80,eventAt:time,observedAt});
+ const train=f("train",now-day,3),first=f("test",now+day,3),later=f("later",now+2*day,2);
+ const x=evaluateStrategicHoldout({members:[m],observations:[train,{...train,observedAt:now-1},first,later,{...train,stars:0,observedAt:now+2*day}],
+ cutoffs:[now,now+day,now+2*day],provenance:"immutable_observation"});
+ assert.equal(x.folds[0].trainingRows,1);assert.equal(x.folds[0].trainingConflicts,0);
+ assert.equal(x.folds[1].testConflicts,1);assert.equal(x.predictions,2);
+ assert.equal(x.distinctWars,2);assert.equal(x.distinctPlayers,1);assert.equal(x.byKind.normal.predictions,2);assert.equal(x.byKind.cwl.mae,null);
+ assert.equal(x.calibrated,false);
+});

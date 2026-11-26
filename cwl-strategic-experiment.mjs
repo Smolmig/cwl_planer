@@ -10,7 +10,7 @@ const modeRules=Object.freeze({
  balanced:Object.freeze({rotation:.12,medal:.32,development:.03}),
  development:Object.freeze({rotation:.19,medal:.42,development:.16})
 });
-export const EXPERIMENT_MODEL_VERSION="shadow-1";
+export const EXPERIMENT_MODEL_VERSION="shadow-2";
 const cmp=(a,b)=>a<b?-1:a>b?1:0;
 function rosterOf(members){
  if(!Array.isArray(members)||members.length>50)throw Error("invalid_roster");
@@ -41,7 +41,7 @@ export function buildStrategicEvidence({members=[],facts=[],obligations=[],asOf}
     !Number.isInteger(f.stars)||f.stars<0||f.stars>3||
     (f.destruction!=null&&(!Number.isFinite(f.destruction)||f.destruction<0||f.destruction>100))){audit.invalid++;continue}
   const key=JSON.stringify([f.warKey,p.playerTag,f.attackOrder]);
-  const row={playerTag:p.playerTag,kind:f.kind,attackerTh:f.attackerTh,defenderTh:f.defenderTh,
+  const row={warKey:f.warKey,playerTag:p.playerTag,kind:f.kind,attackerTh:f.attackerTh,defenderTh:f.defenderTh,
     stars:f.stars,destruction:f.destruction??null,eventAt:f.eventAt};
   const previous=unique.get(key);
   if(previous){
@@ -80,7 +80,7 @@ export function buildStrategicEvidence({members=[],facts=[],obligations=[],asOf}
   for(const [key,rs] of contexts){
    const [kind,attackerTh,defenderTh]=JSON.parse(key);
    if(attackerTh!==m.townHall)continue;
-   const local=summary(rs.filter(r=>r.playerTag===m.playerTag));
+   const localRows=rs.filter(r=>r.playerTag===m.playerTag),local=summary(localRows);
    if(!local.n)continue;
    const peers=rs.filter(r=>r.playerTag!==m.playerTag),peer=summary(peers);
    // Prior strength and fallback are explicitly uncalibrated shadow constants.
@@ -89,8 +89,15 @@ export function buildStrategicEvidence({members=[],facts=[],obligations=[],asOf}
    const priorStars=usePeer?peer.averageStars:2;
    const priorTriple=usePeer?peer.threeStarRate:.5;
    const priorN=8;
+   // Delete an entire observed war rather than one attack (CW can have two).
+   // Keep the peer prior fixed: this is an own-war sensitivity range,
+   // NOT a statistical confidence interval or a probability.
+   const byWar=new Map();
+   for(const row of localRows){const w=byWar.get(row.warKey)||{n:0,stars:0};w.n++;w.stars+=row.stars;byWar.set(row.warKey,w)}
+   const smoothedStars=(local.stars+priorN*priorStars)/(local.n+priorN);
+   const leaveOne=[smoothedStars,...[...byWar.values()].map(w=>(local.stars-w.stars+priorN*priorStars)/(local.n-w.n+priorN))];
    cells.push({kind,attackerTh,defenderTh,...local,peerN:peer.n,prior:usePeer?"peer":"neutral",
-    smoothedStars:(local.stars+priorN*priorStars)/(local.n+priorN),
+    sensitivity:{wars:byWar.size,low:Math.min(...leaveOne),high:Math.max(...leaveOne)},smoothedStars,
     smoothedTripleShare:(local.triples+priorN*priorTriple)/(local.n+priorN)});
   }
   cells.sort((a,b)=>cmp(a.kind,b.kind)||a.defenderTh-b.defenderTh);
@@ -98,9 +105,14 @@ export function buildStrategicEvidence({members=[],facts=[],obligations=[],asOf}
   const n=equal.reduce((s,c)=>s+c.n,0);
   const weight=equal.reduce((s,c)=>s+c.n*(c.kind==="cwl"?2:1),0);
   const score=weight?equal.reduce((s,c)=>s+c.smoothedStars*c.n*(c.kind==="cwl"?2:1),0)/weight:null;
+  // Fixed observed context weights, independent conservative extrema.
+  // No cross-context compensation for a high-stakes exclusion.
+  const sensitivity=weight?{wars:new Set(own.filter(f=>f.defenderTh===m.townHall).map(f=>f.warKey)).size,
+   low:equal.reduce((s,c)=>s+c.sensitivity.low*c.n*(c.kind==="cwl"?2:1),0)/weight,
+   high:equal.reduce((s,c)=>s+c.sensitivity.high*c.n*(c.kind==="cwl"?2:1),0)/weight}:null;
   const verified=[...slots.entries()].filter(([k,o])=>!badSlots.has(k)&&o.playerTag===m.playerTag).map(([,o])=>o);
   const performed=verified.filter(o=>o.result==="performed").length,missed=verified.length-performed;
-  return {id:m.id,playerTag:m.playerTag,townHall:m.townHall,n,score,
+  return {id:m.id,playerTag:m.playerTag,townHall:m.townHall,n,score,sensitivity,
    evidence:n===0?"unknown":n<4?"limited":n<8?"trend":"observed",
    contexts:cells,reliability:{performed,missed,verifiedSlots:verified.length,observedRate:verified.length?performed/verified.length:null}};
  });
@@ -218,6 +230,7 @@ export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asO
  const original=metrics(full,active);
  const scenarios=[{kind:"all_candidates",size:active.length,excluded:[],metrics:original,plan:full}];
  let current=active,previous=full,removed=[];
+ const robustAdvantage=(a,b)=>a?.sensitivity?.wars>=4&&b?.sensitivity?.wars>=4&&a.n>=8&&b.n>=8&&a.sensitivity.low-b.sensitivity.high>=.25;
  const protectedMember=m=>m.fixed||m.targetDays!=null&&m.targetDays!==""||m.statuses.includes("must")||
   m.rotationWeight==="preferred"||m.participationIntent!=="yes"||profiles.get(m.id).n<8;
  // Keep at least one conditional reserve per day in a smaller scenario.
@@ -227,7 +240,7 @@ export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asO
   const options=current.filter(m=>{
    const p=profiles.get(m.id),n=rowById.get(m.id)?.scenarioAppearances;
    return !protectedMember(m)&&n>0&&n<=2&&current.some(other=>
-    other.id!==m.id&&other.townHall===m.townHall&&profiles.get(other.id).n>=8&&profiles.get(other.id).score-p.score>=.25);
+    other.id!==m.id&&other.townHall===m.townHall&&robustAdvantage(profiles.get(other.id),p));
   }).sort((a,b)=>rowById.get(a.id).scenarioAppearances-rowById.get(b.id).scenarioAppearances||
     profiles.get(a.id).score-profiles.get(b.id).score||cmp(a.id,b.id)).slice(0,4);
   let best=null;
@@ -246,7 +259,7 @@ export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asO
     const lineup=seeded[d].lineup,at=lineup.indexOf(candidate.id);
     if(at<0)continue;
     const replacements=selected.filter(m=>m.townHall===candidate.townHall&&!lineup.includes(m.id)&&available(m,d)&&
-      !m.fixed&&!(m.targetDays!=null&&m.targetDays!=="")&&m.statuses[d]!=="must"&&profiles.get(m.id).n>=4)
+      !m.fixed&&!(m.targetDays!=null&&m.targetDays!=="")&&m.statuses[d]!=="must"&&robustAdvantage(profiles.get(m.id),profiles.get(candidate.id)))
       .sort((a,b)=>profiles.get(b.id).score-profiles.get(a.id).score||
         (initialCounts[a.id]||0)-(initialCounts[b.id]||0)||cmp(a.id,b.id));
     if(!replacements.length){feasible=false;break}
@@ -277,7 +290,7 @@ export function compareSeasonRosterSizes({members=[],facts=[],obligations=[],asO
   if(!best)break;
   removed=[...removed,best.candidate.id];current=best.selected;previous=best.p;
   scenarios.push({kind:"smaller_roster_review",size:current.length,excluded:[...removed],metrics:best.m,plan:best.p,
-   requiresIndividualReview:true,reason:"limited_opportunity_and_comparable_evidence"});
+   requiresIndividualReview:true,reason:"limited_opportunity_and_comparable_evidence",sensitivityChecked:true});
  }
  return {ok:true,calibrated:false,mode,scenarios,recommendation:null,
   limitations:["bounded_search","conditional_availability","fixed_th_composition","no_opponent_data","no_automatic_exclusion","manual_roster_choice"]};

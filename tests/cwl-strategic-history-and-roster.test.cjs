@@ -69,3 +69,13 @@ test("no forced candidate exclusion if everyone is needed, hard target, or confi
  const protectedRoster=s.members.map((m,i)=>i>=15&&i<21?{...m,targetDays:2}:m);
  const x=compareSeasonRosterSizes({...s,members:protectedRoster});assert.ok(x.ok);assert.equal(x.scenarios.length,1);
 });
+
+test("smaller roster review requires advantage surviving a whole-war removal",async()=>{
+ const {buildStrategicEvidence,compareSeasonRosterSizes}=await core;
+ const s=scenario(),p=buildStrategicEvidence(s).profiles.find(p=>p.id==="p15");
+ assert.equal(p.sensitivity.wars,22);assert.ok(p.sensitivity.high>=p.score&&p.sensitivity.low<=p.score);
+ const correlated=s.facts.map(f=>({...f,warKey:"one-war",attackOrder:Number(f.warKey.slice(1))}));
+ const x=compareSeasonRosterSizes({...s,facts:correlated});assert.equal(x.scenarios.length,1);
+ const steady=compareSeasonRosterSizes(s);assert.ok(steady.scenarios.length>1);
+ assert.ok(steady.scenarios.slice(1).every(s=>s.sensitivityChecked===true));
+});
