@@ -115,7 +115,7 @@ async function currentNormalWar(clanTag,key) {
       clan:safeSide(our),opponent:safeSide(enemy)};
   }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
 }
-export async function loadStatus(clanTag,key,strategic=false,ruleContext=null) {
+async function loadStatus(clanTag,key,strategic=false,ruleContext=null) {
   const readStartedAt=Date.now();
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
   if(!group || group.state==="notInWar")return {
@@ -494,3 +494,5 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
 });
 export default {fetch:(req,...args)=>req.method==="OPTIONS"
   ?new Response("ok",{headers:CORS}):handler(req,...args)};
+
+export {loadStatus};

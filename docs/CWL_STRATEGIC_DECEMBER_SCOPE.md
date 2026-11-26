@@ -1,0 +1,38 @@
+# #44 – Dezember-Abnahme: intelligenter Planer statt separater Vorschau
+
+Nutzerpräzisierung 26.11.2026. **Freigabeziel geändert:** echte intelligente gemeinsame Einsatzplanung, nicht bloß isolierte Empfehlungen; vor Dezember nutzbar, Praxisfeedback während der CWL. Pilot-Modellrisiken akzeptiert; Datenintegrität und App-Rechte nicht lockern. Bisherige harte Regeln und #44 bleiben verbindlich.
+
+## Soll / Ist
+
+| Bereich | Ist edb1a4e | Dezember-Muss |
+|---|---|---|
+| Modus | nur lokaler Preview-Select | gemeinsamer Clan-/Saisonmodus, Clanführer/Vize sehen und bearbeiten entsprechend Planrechten |
+| Vor Anmeldung | isolierter Kaderentwurf im Plan-Tab, Teilnahme temporär | Mitglieder-Tab: optionale, begründete Eignungsempfehlung im gewählten Modus; bestehende DABEI/FIX/RAUS-Aktionen nutzen; keine automatische Ausladung/Clanwechsel |
+| Kader gefunden | tatsächliche registrierte Tags geprüft | Abweichungen zu Mitgliederliste klar auflösen; tatsächliche Registrierung begrenzt die Aufstellung |
+| Regeln | Standard-Core und Preview-Hard-Constraints; exakte Ziele | vorhandene Regeln vollständig erhalten (Fix, MUSS/RAUS, Ausfälle, vorhandene Einsatzziele, Gewichtungen); Mindest- und exakte Ziele nicht vermischen; Mindestziele ggf. separat implementieren. Warnung bei leistungswidrigem Fix/MUSS oder Ziel, kein automatisches Überschreiben |
+| Gegner zu Beginn | einzelne bestätigte Vorbereitungskader, keine vollständige Gruppenstärke | alle 6/8 registrierten Gruppenkader als RH-Verteilung, ggf. belegte Clan-/Spielerprofile (Ranked, Kriegssterne, Siegeserie, aktuelle Ausbauindikatoren nur wenn abrufbar und sinnvoll). Kontext schwach, keine erfundenen Kriegsbasen/Prognosen. Ranking mit Evidenz/Unsicherheit, getrennt von offizieller Tabelle |
+| Alle Resttage | nur bestätigte Vorbereitungstage, same-TH-Tausch; zukünftige Tage eingefroren | gemeinsam über alle noch nicht gesperrten/begonnenen Tage optimieren, auch ohne bekanntes Tagesmatchup mit konservativem Fallback/Reservierung; Zuordnung zu konkretem Gegner erst bei veröffentlichtem Matchup. Unterschiedliche RH und legale mehrtägige Tauschketten prüfen, keine schwachen Spieler ausschließlich wegen RH/Ranking ausschließen. Leistung = marginaler Mehrwert, Ausgewogen = bisherige Rotation + intelligente Tageszuordnung/8★, Förderung = passende Entwicklungschancen |
+| Live | Angriff/Defense-Statistiken aus Gruppe, konservative Platzspanne, Druck nur bei ausreichender Evidenz | Gruppenranking unabhängig von Anzahl bisheriger AGs, vergleichbare RH-Kontexte, n/Abdeckung, Shrinkage; eigene laufende CWL belegt einfließen lassen; Gegnerdaten, Defense, 8★ und Restprogramm laufend neu bewerten; kein unberechtigtes externes Profiltracking. Nicht zu jedem Refresh Spielerplan umwerfen |
+| Ziele | nur begrenzte Mirror-Paarwechsel bei unverändertem bestätigtem Vorbereitungskader | mögliche konkrete Angriffsziele für bestätigten Tageskader, Mirror bevorzugen, ein Primärziel pro Spieler, Abweichungen als Vorschlag, in-game abstimmen |
+| Integration | read-only, keine Übernahme, separate Owner-Beta | normaler Plan-Workflow mit intelligentem Planentwurf und bewusster Übernahme/Publikation per bestehender Rechte-/Revisions-/Plansperrlogik; keine separate Parallel-Aufstellung. Vize nach bestehenden Planrechten; Beobachter sehen verbindliche Aufstellung und Statistiken, persönliche Sortierung weiterhin möglich, keine Plan-/Modusänderung |
+| Rechte | Beta-Endpunkt ausschließlich Owner, default deny | gleiche freigegebene Clan-ID, Vize per tatsächlicher aktueller Editor-Mitgliedschaft, kein globaler Zugang; kein Owner-only-Zwang für übliche Vize-Arbeit, keine fremden Rohdaten |
+| Fallback | bestehender Standardplan | bei Fehler/fehlender Evidenz Standardplan mit Status; veröffentlichter Plan bleibt stabil bis bewusster Übernahme, gespielte/gesperrte Tage immer unverändert |
+
+## API-Grenzen / Quellen
+
+- https://support.supercell.com/clash-of-clans/en/articles/cwl-week-of-wars.html – Gegner-Kriegsbasen erst am Kampftag sichtbar, Vorbereitung unmittelbar nach Matching.
+- https://clashygo.clashk.ing/en/latest/api/wars/ – zukünftige Runden können #0-Platzhalter haben; Gruppenroster nicht Tageskader.
+- https://clashofclans.js.org/docs/api/interfaces/APIClanWarLeagueGroup – veröffentlichte Gruppe/Runden. Separate Profilfelder und Clankennzahlen vor Verwendung an tatsächlichen API-Antworten verifizieren, keinen unbeschränkten Fan-out.
+- Ligaregeln nur mit saison-/gruppengeprüftem Nachweis, keine automatische Prognose aus Lebenszeitsternen oder Siegeserie.
+
+## Reihenfolge (Freigabeblocker)
+
+1. Gemeinsamer Modus, Standard-Regelparität und bewusste Übernahme mit CAS/Plansperre; vorhandene Daten kompatibel halten.
+2. Gruppenweite Ausgangsstärke + Resttage-Solver (bekannte vs unbekannte Paarungen, faire/leistungsbezogene Verteilung, harte Regeln, Warnungen).
+3. Live-Evidenz und 8★/Ziele integrieren; mindestens ein Einsatz sofern möglich, gesondert bestätigte statistische Null-Einsätze.
+4. Mitglieder-Tab Kaderhinweise als optionales Zuckerl; bestehende Bedienung erhalten.
+5. Owner/Vize/Beobachter echte UAT; keine Produktivfreigabe vor Tests. Modell empirisch unkalibriert; keine Sicherheit vorgaukeln. Keine zusätzliche Testinstanz ohne Kostenfreigabe.
+
+## Aktuelle CI
+
+edb1a4e: lokale Auth-UAT 45902661935, strategische Chromium/WebKit 45902661952 und Import-WebKit 45902661945 grün. Regression 45902661957: 1022/1030; acht alte VM-/Function-Tests konnten neuen `export async function loadStatus` nicht parsen. Named export hinter default export verschoben, Rechenkern unverändert; neue CI ausstehend. Kein Deploy, keine Aktivierung, kein Release. v1.37.0 bleibt live.
