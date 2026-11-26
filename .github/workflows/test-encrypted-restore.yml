@@ -225,7 +225,8 @@ jobs:
           # its official one-shot Auth bootstrap. No project link or local DDL.
           export SUPABASE_EXPERIMENTAL_STACK=0
           mkdir -p supabase/.temp
-          printf '%s\\n' 'v2.199.0' > supabase/.temp/gotrue-version
+          printf '%s' 'v2.199.0' > supabase/.temp/gotrue-version
+          test "$(cat supabase/.temp/gotrue-version)" = 'v2.199.0'
           supabase db start
           # ubuntu-24.04 GitHub runners already include psql; avoid network-dependent apt.
           command -v psql >/dev/null 2>&1 || { echo '::error::PostgreSQL client unavailable on runner'; exit 1; }

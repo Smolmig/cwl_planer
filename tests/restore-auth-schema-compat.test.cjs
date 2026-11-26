@@ -66,6 +66,7 @@ test("restore and real canary pin official GoTrue migration release, never patch
   const pin=source.indexOf(" > supabase/.temp/gotrue-version");
   assert.ok(pin>=0&&pin<start);
   assert.match(source,/v2\.199\.0/);
+  assert.ok(source.includes("printf '%s' 'v2.199.0' > supabase/.temp/gotrue-version"));
   assert.match(source,/SUPABASE_EXPERIMENTAL_STACK=0/);
   assert.doesNotMatch(source,/supabase link|ALTER TABLE auth\./i);
  }
