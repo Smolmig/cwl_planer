@@ -113,7 +113,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   root.append(n("p","Ranked, Raid und Clanspiele folgen nach tatsächlicher API-/Tracking-Prüfung. Spenden und CW/CWL nutzen die vorhandenen Beobachtungen.","statusline"));
   const saveBtn=button(current?"Änderungen speichern":"Verlosung anlegen",save,busy||!dirty);root.append(saveBtn);
   if(!current)return;
-  root.append(n("h3","Fortschritt"),n("p",current.qualified+(current.onePerPerson?" qualifizierte Personen":" qualifiziert")+" · "+current.unknown+" noch nicht eindeutig · "+(current.rows||[]).length+" beobachtete Teilnehmer","statusline"),
+  root.append(n("h3","Fortschritt"),n("p",current.qualified+(current.onePerPerson?" qualifizierte Personen":" qualifiziert")+" · "+current.unknown+" Accounts noch nicht eindeutig · "+(current.rows||[]).length+" beobachtete Teilnehmer","statusline"),
    n("p","Belegte Untergrenzen, nicht lückenlose Aktivität. CWs zählen nach gespeichertem Kriegsstart; nur abgeschlossene Kriege. Discord und Abstimmungen werden manuell gesetzt.","statusline"),
    button("Fortschritt neu laden",()=>read(current.id),busy||dirty));
   if(Array.isArray(current.pool)&&current.pool.length){
@@ -129,7 +129,12 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
    const card=n("article","","goldpass-player"),head=n("div","","goldpass-player-head");
    head.append(n("strong",p.name),n("span",({qualified:"Qualifiziert",unknown:"Offen / nicht belegt",unmet:"Nicht erfüllt",excluded:"Ausgeschlossen"})[p.status]||p.status));
    card.append(head,n("small",p.tag,"statusline"));
-   if(current.onePerPerson&&p.groupKey&&p.groupKey!==p.tag)card.append(n("p","Personengruppe: "+p.groupKey,"statusline"));
+   if(current.onePerPerson&&p.groupKey){
+    const groupName=(current.rows||[]).find(x=>x.tag===p.groupKey)?.name||p.groupKey;
+    const representative=(current.pool||[]).find(x=>x.groupKey===p.groupKey);
+    const description=p.groupKey!==p.tag?"Zweitaccount von "+groupName:"Eigenständiger oder Hauptaccount";
+    card.append(n("p",description+(p.status==="qualified"&&representative?(representative.tag===p.tag?" · 1 Los für diese Person":" · Los bereits über "+representative.name):""),"statusline"));
+   }
    for(const check of p.checks||[]){
     const numeric=typeof check.minimum==="number";
     card.append(n("p",names[check.metric]+": "+(numeric?(check.value??"–")+" / "+check.minimum:({met:"Ja",unmet:"Nein",unknown:"Unbekannt"})[check.status])+(numeric?" · "+(check.status==="met"?"Ziel belegt":"Ziel noch nicht belegt"):""),"statusline"));
