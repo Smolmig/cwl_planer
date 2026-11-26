@@ -71,12 +71,12 @@ export function mergeMemberFormClans(local,others=[]){
    const stamp=Date.parse(w.started_at);
    // Same documented player in both sides of the very same war is not
    // valid evidence. Do not merge guesses or sum conflicting misses.
-   const overlap=known.some(k=>k.type===w.war_type&&(
+   const overlap=known.some(k=>k.clanTag!==src.clanTag&&k.type===w.war_type&&(
      k.key===w.war_key||Number.isFinite(stamp)&&Math.abs(k.stamp-stamp)<=36*3600000&&
        norm(w.opponent_tag)===k.opponent&&validTag(k.opponent)
    )&&[...participants].some(t=>k.participants.has(t)));
    if(overlap){partial=true;excluded++;continue}
-   known.push({key:w.war_key,type:w.war_type,stamp,opponent:norm(w.opponent_tag),participants});
+   known.push({clanTag:src.clanTag,key:w.war_key,type:w.war_type,stamp,opponent:norm(w.opponent_tag),participants});
    const key=src.clanTag+"|"+w.war_key;
    wars.push({...w,war_key:key,formClanTag:src.clanTag,formClanName:String(src.clanName||src.clanTag).slice(0,80)});
    attacks.push(...aa.map(a=>({...a,war_key:key})));
