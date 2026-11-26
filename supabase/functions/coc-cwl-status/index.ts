@@ -1,4 +1,4 @@
-import {strategicAccess,projectStrategicGroup} from "./strategic-projection.mjs";
+import {strategicAccess,projectStrategicGroup,readStrategicWithRecheck} from "./strategic-projection.mjs";
 // Authenticated, read-only CWL status proxy. Supercell key never reaches the browser.
 import { withSupabase } from "npm:@supabase/server@1";
 import { finalRoundRecoveryCandidate } from "./final-round-recovery.mjs";
@@ -86,13 +86,17 @@ async function getGame(path,key) {
   }
   throw Error("upstream_unreachable");
 }
-async function getWar(tagValue,key){
+async function getWar(tagValue,key,strategic=false){
   const cached=WAR_CACHE.get(tagValue);
-  if(cached&&Date.now()<cached.expires)return cached.war;
+  // Completed wars are immutable for this short read. Never reuse a
+  // mutable preparation/inWar cache entry for actionable suggestions.
+  if(cached&&Date.now()<cached.expires&&(!strategic||cached.war?.state==="warEnded"))return cached.war;
   const war=await getGame("/clanwarleagues/wars/"+encodeURIComponent(tagValue),key);
   const ttl=war?.state==="warEnded"?12*3600000:war?.state==="preparation"?120000:war?60000:30000;
-  WAR_CACHE.set(tagValue,{war,expires:Date.now()+ttl});
-  if(WAR_CACHE.size>100)for(const [t,v] of WAR_CACHE)if(v.expires<Date.now())WAR_CACHE.delete(t);
+  if(!strategic){
+    WAR_CACHE.set(tagValue,{war,expires:Date.now()+ttl});
+    if(WAR_CACHE.size>100)for(const [t,v] of WAR_CACHE)if(v.expires<Date.now())WAR_CACHE.delete(t);
+  }
   return war;
 }
 async function currentNormalWar(clanTag,key) {
@@ -112,6 +116,7 @@ async function currentNormalWar(clanTag,key) {
   }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
 }
 async function loadStatus(clanTag,key,strategic=false) {
+  const readStartedAt=Date.now();
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
   if(!group || group.state==="notInWar")return {
     ok:true,active:false,groupState:"notInWar",clanTag,rounds:[],
@@ -158,7 +163,7 @@ async function loadStatus(clanTag,key,strategic=false) {
   // No missing round may ever be treated as a finished war by the planner.
   for(let i=0;i<tags.length;i+=4) {
     const batch=await Promise.all(tags.slice(i,i+4).map(async t=>{
-      try{return {tag:t,war:await getWar(t,key)}}
+      try{return {tag:t,war:await getWar(t,key,strategic)}}
       catch(error){return {tag:t,war:null,error:String(error?.message||"upstream_unreachable")}}
     }));
     for(const b of batch){
@@ -174,7 +179,7 @@ async function loadStatus(clanTag,key,strategic=false) {
   // Return only compact team summaries for other pairings: never player rosters,
   // raw API objects, or extra requests from the client.
   if(strategic)return {ok:true,active:true,season,clanTag,
-    strategic:projectStrategicGroup({group,results,clanTag,season,observedAt:Date.now()})};
+    strategic:projectStrategicGroup({group,results,clanTag,season,observedAt:Date.now(),readStartedAt})};
   const groupSummary={
     season,clanTag,
     clans:[...groupClans.entries()].slice(0,8).map(([t,clan])=>({
@@ -435,7 +440,19 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
       enabled:Deno.env.get("CWL_STRATEGIC_SHADOW_ENABLED"),
       allowlist:Deno.env.get("CWL_STRATEGIC_SHADOW_CLANS")}))return fail("strategic_unavailable",403);
     try{
-      const result=await loadStatus(clanTag,key,true);
+      const result=await readStrategicWithRecheck({
+        read:()=>loadStatus(clanTag,key,true),
+        verify:async()=>{
+          const {data:current,error:currentErr}=await ctx.supabase.from("cwl_clan_memberships")
+            .select("role").eq("clan_id",clanId).eq("user_id",ctx.userClaims.id).maybeSingle();
+          if(currentErr||current?.role!==membership.role||!strategicAccess({role:current.role,clanId,
+            enabled:Deno.env.get("CWL_STRATEGIC_SHADOW_ENABLED"),allowlist:Deno.env.get("CWL_STRATEGIC_SHADOW_CLANS")}))return false;
+          const {data:linked,error:linkedErr}=await ctx.supabase.from("cwl_clans")
+            .select("clash_tag").eq("id",clanId).single();
+          return !linkedErr&&tag(linked?.clash_tag)===clanTag;
+        }
+      });
+      if(!result)return fail("strategic_unavailable",403);
       return Response.json(result.active&&result.strategic?result:
         {ok:true,active:false,clanTag,strategic:null},{headers:CORS});
     }catch{return fail("strategic_unavailable",502)}

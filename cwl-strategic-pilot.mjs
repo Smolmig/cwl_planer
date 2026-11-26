@@ -72,14 +72,15 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
    excluded:s.excluded.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler"),rows:presentRosterRows({scenario:s,members}).rows})),canApply:false};
  }
  if(c.phase!=="daily"||projection?.status!=="preview_data"||projection.format?.attacksPerMemberReported!==true||!projection.group||!projection.standings||!projection.registered)throw Error("pilot_live_unavailable");
- const group=projection.group,asOf=group.observedAt;
- if(!Number.isFinite(asOf)||asOf<history.asOf||asOf>now||now-asOf>300000||group.season!==c.season||group.selectedClanTag!==c.clanTag)throw Error("pilot_live_scope");
+ const group=projection.group,asOf=group.observedAt,validUntil=projection.quality?.validUntil;
+ if(!Number.isFinite(asOf)||asOf<history.asOf||asOf>now||now-asOf>300000||group.season!==c.season||group.selectedClanTag!==c.clanTag||
+ !Number.isFinite(validUntil)||validUntil<=now||validUntil>asOf+300000)throw Error("pilot_live_scope");
  // No guessed league rules: unknown rules cannot trigger a table-based switch.
  const evidence=buildStrategicEvidence({members,facts:history.facts,obligations:history.obligations,asOf});
  const p=previewDailyStrategy({group,standings:projection.standings,evidence,members,registered:projection.registered,currentPlan:plan,manualLocks:locks,mode,role:c.role,asOf,season:c.season,selectedClanTag:c.clanTag,slots:c.slots,days:c.days});
  if(!p.ok)throw Error("pilot_plan_conflict");
  const display=presentDailyStrategy({preview:p,standings:projection.standings,group,members,role:c.role,asOf,season:c.season,selectedClanTag:c.clanTag});
  const names=ids=>ids.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler");
- return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf,asOf)+300000,display,editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
+ return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf+300000,validUntil),display,editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
   targets:p.targetPreviews.map(t=>({day:t.day,ok:t.ok,swaps:t.ok?t.proposal.filter(x=>x.attackerPosition!==x.targetPosition).map(x=>({from:x.attackerPosition,to:x.targetPosition,n:x.evidenceN})):[]})),canApply:false};
 }

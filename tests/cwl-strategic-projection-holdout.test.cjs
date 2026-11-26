@@ -8,7 +8,7 @@ const clans=Array.from({length:6},(_,i)=>({tag:tag(i),members:roster(i)}));
 function war(a,b,state="warEnded"){
  const clan={tag:tag(a),stars:3,destructionPercentage:100/15,attacks:1,members:roster(a)},opponent={tag:tag(b),stars:0,destructionPercentage:0,attacks:0,members:roster(b)};
  clan.members[0].attacks=[{attackerTag:clan.members[0].tag,defenderTag:opponent.members[0].tag,stars:3,destructionPercentage:100,order:1}];
- return {state,teamSize:15,attacksPerMember:1,clan,opponent};
+ return {state,teamSize:15,attacksPerMember:1,startTime:"20261126T010000.000Z",clan,opponent};
 }
 function data(){
  const keys=[tag(110),tag(111),tag(112)];
@@ -54,4 +54,34 @@ test("opt-in route after membership before regular cache and writes",()=>{
  assert.ok(s.indexOf("not_a_member")<s.indexOf("if(body?.strategic===true)"));
  assert.ok(s.indexOf("if(body?.strategic===true)")<s.indexOf("const prior=CACHE.get(clanId)"));
  assert.match(s,/CWL_STRATEGIC_SHADOW_ENABLED/);assert.match(s,/CWL_STRATEGIC_SHADOW_CLANS/);assert.match(s,/loadStatus\(clanTag,key,true\)/);
+});
+
+test("strategic read discards response after revocation or failed link check",async()=>{
+ const {readStrategicWithRecheck}=await projection;
+ let allowed=true,release;
+ const pending=readStrategicWithRecheck({read:()=>new Promise(r=>release=r),verify:async()=>allowed});
+ allowed=false;release({private:"never returned"});
+ assert.equal(await pending,null);
+ assert.deepEqual(await readStrategicWithRecheck({read:async()=>({ok:true}),verify:async()=>true}),{ok:true});
+});
+test("preparation must have a future valid start time, expires by actual start and read age",async()=>{
+ const {projectStrategicGroup}=await projection;
+ const s=data(),w=s.results.get(tag(112));w.startTime="20261126T000100.000Z";
+ const fresh=projectStrategicGroup({...s,readStartedAt:now-1000});assert.equal(fresh.group.upcoming.length,1);assert.equal(fresh.quality.validUntil,now+60000);
+ for(const invalid of [undefined,"20261126T000000.000Z","20261131T000100.000Z","20261125T235959.000Z"]){
+  w.startTime=invalid;const x=projectStrategicGroup(s);assert.equal(x.group.upcoming.length,0);assert.equal(x.quality.unverifiedPreparation,1);
+ }
+ assert.throws(()=>projectStrategicGroup({...s,readStartedAt:now-300000}),/invalid_projection_scope/);
+});
+test("API projection through real daily pilot: incomplete future days frozen and no guessed league rules",async()=>{
+ const {projectStrategicGroup}=await projection,{preparePilotInput,buildPilotPreview}=await import("../cwl-strategic-pilot.mjs");
+ const s=data(),members=roster(0).map((m,i)=>({id:"p"+i,name:"Player "+i,playerTag:m.tag,townHall:19,participating:true,statuses:[]}));
+ const currentPlan=Array.from({length:5},(_,i)=>({day:i+1,lineup:members.map(m=>m.id)}));
+ const context={ready:true,phase:"daily",role:"owner",clanTag:s.clanTag,season,slots:15,days:5};
+ const input=preparePilotInput({context,profile:{config:{slots:15,days:5},members,locks:[]},currentPlan});
+ const history={kind:"current_snapshot_war_start_proxy",asOf:now-1000,facts:[],obligations:[],audit:{}};
+ const raw=projectStrategicGroup(s),args={input,history,projection:raw,mode:"performance",planStandard:require("../cwl-planning-core.js").planCwl,now:now+1};
+ const x=buildPilotPreview(args);assert.equal(x.canApply,false);assert.deepEqual(x.editableDays,[2]);assert.deepEqual(x.changes,[]);assert.equal(x.display.recommendation,null);assert.match(x.display.tableStatus,/Abstiegsregeln nicht bestätigt/);
+ assert.equal(x.expiresAt,now+299000);
+ assert.throws(()=>buildPilotPreview({...args,projection:{...raw,quality:{...raw.quality,validUntil:now}}}),/pilot_live_scope/);
 });
