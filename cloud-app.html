@@ -7045,11 +7045,13 @@ async function openGoldpassPreview(){
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
 }
-let activityMemberView=null,activityMemberImport=0;
+let activityMemberView=null,activityMemberImport=0,activityMemberScope=null;
  const activityMemberPanel=document.getElementById("clanActivityMembers");
  window.CWLActivityMembers={accessChanged(c){
-  if(!c||activityMemberView&&!activityMemberView.accessChanged(c)){
-   activityMemberImport++;
+  const next=c?c.clanId+"|"+c.clanTag+"|"+c.session:null;
+  const retained=activityMemberView?.accessChanged(c);
+  if(!c||activityMemberScope!==null&&activityMemberScope!==next||activityMemberView&&retained===false){
+   activityMemberScope=null;activityMemberImport++;
    activityMemberPanel.open=false;
    document.getElementById("clanActivityMembersContent").replaceChildren();
   }
@@ -7058,6 +7060,7 @@ let activityMemberView=null,activityMemberImport=0;
   if(!activityMemberPanel.open)return;
   const c=activityGoldpassContext(),token=++activityMemberImport;
   if(!c){activityMemberPanel.open=false;return}
+  activityMemberScope=c.clanId+"|"+c.clanTag+"|"+c.session;
   const root=document.getElementById("clanActivityMembersContent");
   try{
    if(!activityMemberView){
