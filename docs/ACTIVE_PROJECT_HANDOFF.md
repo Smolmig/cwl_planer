@@ -1,3 +1,5 @@
+> **26.11.2026 – #44 Shadow-Stufe 15 / PR #359:** Stufe 14 1026/1026 + WebKit-Upload-UAT grün. Eigenständiger lokaler Auth-UAT-Workflow mit echten GoTrue-JWTs, original Basis-Clan-RLS und Deno-Handler inkl. @supabase/server; Clash synthetisch, kein Hosted-Edge-Gateway. Default-off, Rollen/Clans, Widerruf/Relink während Fetch, Cache und unverändertes Profil. CI-Ergebnis noch offen. Keine Produktivänderung. Nächste Aufgabe tatsächliche Abnahme dieses Gates, danach Hosted-/Live-UAT, Liga-Regeln/Modellvalidierung.
+
 > **26.11.2026 – #44 Shadow-Stufe 14 / PR #359:** Stufe 12 1022/1022, Stufe 13 CI beim Start offen, WebKit-Upload-UAT grün. Strategic-API um frischen Mutable-War-Read, keine normalen Cache-Writes, RLS-/Rollen-/Link-Recheck nach Abruf und Ablauf am offiziellen Vorbereitungsende/ab Read-Beginn gehärtet. 3 neue Tests inkl. API→Daily-Pilot mit unbekannten Regeln. Keine DB-Änderung oder Deployment; neue CI und echte Staging-/Edge-/Live-/UAT offen.
 
 > **Stufe 12 bestätigt:** 1022/1022, 0 Fehler/skipped (45896969580), WebKit-Upload-UAT grün. Stufe 13 Copy-Nachbesserung: Absage/Pause eindeutig pro Spieler, korrekter Singular. Neue CI ausstehend.
