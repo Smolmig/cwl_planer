@@ -1,3 +1,4 @@
+import {strategicAccess,projectStrategicGroup} from "./strategic-projection.mjs";
 // Authenticated, read-only CWL status proxy. Supercell key never reaches the browser.
 import { withSupabase } from "npm:@supabase/server@1";
 import { finalRoundRecoveryCandidate } from "./final-round-recovery.mjs";
@@ -110,7 +111,7 @@ async function currentNormalWar(clanTag,key) {
       clan:safeSide(our),opponent:safeSide(enemy)};
   }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
 }
-async function loadStatus(clanTag,key) {
+async function loadStatus(clanTag,key,strategic=false) {
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
   if(!group || group.state==="notInWar")return {
     ok:true,active:false,groupState:"notInWar",clanTag,rounds:[],
@@ -172,6 +173,8 @@ async function loadStatus(clanTag,key) {
   // Every group's war was already fetched above for our own-war discovery.
   // Return only compact team summaries for other pairings: never player rosters,
   // raw API objects, or extra requests from the client.
+  if(strategic)return {ok:true,active:true,season,clanTag,
+    strategic:projectStrategicGroup({group,results,clanTag,season,observedAt:Date.now()})};
   const groupSummary={
     season,clanTag,
     clans:[...groupClans.entries()].slice(0,8).map(([t,clan])=>({
@@ -426,6 +429,17 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
   if(clanErr||!valid(clanTag))return fail("missing_linked_clan_tag",400);
   const key=Deno.env.get("COC_API_KEY");
   if(!key)return fail("missing_server_configuration",503);
+  // Test-only, after caller-scoped membership and linked-clan verification.
+  if(body?.strategic===true){
+    if(!strategicAccess({role:membership.role,clanId,
+      enabled:Deno.env.get("CWL_STRATEGIC_SHADOW_ENABLED"),
+      allowlist:Deno.env.get("CWL_STRATEGIC_SHADOW_CLANS")}))return fail("strategic_unavailable",403);
+    try{
+      const result=await loadStatus(clanTag,key,true);
+      return Response.json(result.active&&result.strategic?result:
+        {ok:true,active:false,clanTag,strategic:null},{headers:CORS});
+    }catch{return fail("strategic_unavailable",502)}
+  }
   const prior=CACHE.get(clanId);
   if(prior&&prior.tag===clanTag&&Date.now()-prior.time<120000)
     return Response.json(prior.body,{headers:CORS});
