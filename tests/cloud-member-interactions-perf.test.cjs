@@ -218,8 +218,8 @@ test("Form 2.0 member cards use actual rendering and selected metric at desktop 
  const people=[m("#PYYY","Aktuell sehr gut",84,68,0,"United Fighters"),m("#PQLV","Zweitclan-Spieler",76,92,1,"UF 2"),m("#8PYL","Ältere Daten",98,82,3,"United Fighters"),m("#QPYL","Noch keine Daten",null,null,4,"")];
  for(const p of people){
   const v=(score,tier,season)=>({formIndex:score,performanceIndex:score,hitRate:score===null?null:90,attacks:tier===0?12:tier===1?4:tier===3?10:0,warCount:tier===0?6:tier===1?2:0,
-   currentReliability:score===null?null:100,currentMissedKnown:tier===1?1:0,tier,season,historical:tier===3,newest:"2026-09-10",sourceClans:p.clan?[p.clan]:[]});
-  models[p.tag]={cw:v(p.score,p.quality),cwl:v(p.cwl,p.cwl===null?4:0,"2026-11"),combined:v(p.score,p.quality)};
+   currentReliability:score===null||tier===3?null:tier===1?80:100,currentMissedKnown:tier===1?1:0,tier,season,historical:tier===3,newest:"2026-09-10",sourceClans:p.clan?[p.clan]:[]});
+  models[p.tag]={cw:v(p.score,p.quality),cwl:v(p.cwl,p.cwl===null?4:0,"2026-11"),combined:v(p.score,p.quality),historyPartial:p.quality===1};
  }
  state.members=people.map((p,i)=>({id:"id"+i,name:p.name,playerTag:p.tag,participating:true,fixed:i===0,priority:0,statuses:Array(7).fill("auto"),townHall:19,threeStar:"unknown",note:"",rotationWeight:"balanced",cocOrder:i,cocSyncState:"active"}));
  document.body.classList.add("cloud-mode","cloud-role-owner");
@@ -245,7 +245,10 @@ test("Form 2.0 member cards use actual rendering and selected metric at desktop 
      const combined=ids(),combinedValue=main();
      const cards=Array.from(document.querySelectorAll("#memberList .member"));
      const overflow=cards.some(x=>x.scrollWidth>x.clientWidth+2);
-     return {cw,cwValue,cwl,cwlValue,combined,combinedValue,overflow,shared:window.__getRenderAllCalls(),formText:document.getElementById("memberList").textContent};
+     const coverage=document.getElementById("memberFormCoverage");
+     const brief=cards[0].querySelector(".member-brief"),snapshot=cards[0].querySelector(".member-snapshot");
+     const sortWidth=select.getBoundingClientRect().width;
+     return {cw,cwValue,cwl,cwlValue,combined,combinedValue,overflow,coverageVisible:coverage.getBoundingClientRect().height>0,briefWidth:brief.getBoundingClientRect().width,snapshotWidth:snapshot.getBoundingClientRect().width,sortWidth,shared:window.__getRenderAllCalls(),formText:document.getElementById("memberList").textContent};
     });
     assert.deepEqual(result.cw,["id0","id1","id2","id3"]);
     assert.match(result.cwValue,/CW-Form 84\/100/);
@@ -254,6 +257,8 @@ test("Form 2.0 member cards use actual rendering and selected metric at desktop 
     assert.deepEqual(result.combined,result.cw);assert.match(result.combinedValue,/Kombi-Form 84\/100/);
     assert.equal(result.shared,0);assert.equal(result.overflow,false,"member card overflow at "+width);
     assert.match(result.formText,/UF 2/);assert.match(result.formText,/Ältere Daten/);
+    assert.equal(result.coverageVisible,true,"partial-source warning must be visible at "+width);
+    if(width<=430){assert.ok(result.briefWidth>=result.snapshotWidth-2,"form must use the full snapshot width");assert.ok(result.sortWidth>=width-60,"sort label needs sufficient width");}
     if(process.env.CWL_UX_SCREENSHOTS){
      const target=process.env.CWL_UX_SCREENSHOTS;fs.mkdirSync(target,{recursive:true});
      await page.locator("#view-members").screenshot({path:path.join(target,"members-"+width+".png"),animations:"disabled",timeout:10000});
