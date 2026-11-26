@@ -1,6 +1,6 @@
 import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.37.0";
 import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.37.0";
-import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.37.0";
+import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace,campaignPreview} from "./cwl-activity-campaign.mjs?v=1.37.0";
 const metrics=[
  ["donations","Spenden",3500],["cwStars","Normale CW-Sterne",28],["cwAttacks","Normale CW-Angriffe",12],
  ["cwTriples","Normale CW-Dreier",8],["cwlStars","CWL-Sterne",15],["cwlAttacks","CWL-Angriffe",5],
@@ -17,12 +17,12 @@ const select=(options,value)=>{const e=n("select");for(const [v,t] of options){c
 const todayVienna=()=>{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Vienna",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());return ["year","month","day"].map(k=>p.find(x=>x.type===k).value).join("-")};
 const clone=x=>JSON.parse(JSON.stringify(x));
 export function createActivityCampaignView({root,getContext,api,confirmDraw=async()=>false,today=todayVienna}){
- let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",presetInfo="",animateNextDraw=false;
+ let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",presetInfo="",animateNextDraw=false,testMode=false;
  const context=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const key=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
- const reset=()=>{animateNextDraw=false;serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";presetInfo="";root.replaceChildren()};
+ const reset=()=>{testMode=false;animateNextDraw=false;serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";presetInfo="";root.replaceChildren()};
  function adopt(result){animateNextDraw=false;current=result;draft={id:result.id,title:result.title,start:result.start,end:result.end,rules:clone(result.rules),decisions:clone(result.decisions||{})};dirty=false;presetInfo="";wars=""}
- function fresh(){const start=today();current=null;draft={id:globalThis.crypto.randomUUID(),title:"Grind-Verlosung",start,end:new Date(Date.parse(start+"T00:00:00Z")+29*86400000).toISOString().slice(0,10),rules:[],decisions:{}};dirty=true;wars="";presetInfo="";applyPreset("active");render()}
+ function fresh(sandbox=false){testMode=sandbox;const start=today();current=null;draft={id:globalThis.crypto.randomUUID(),title:"Grind-Verlosung",start,end:new Date(Date.parse(start+"T00:00:00Z")+29*86400000).toISOString().slice(0,10),rules:[],decisions:{}};dirty=true;wars="";presetInfo="";applyPreset("active");render()}
  function applyPreset(id){
   try{
    const opts=wars===""?{}:{normalWars:Number(wars)};
@@ -33,7 +33,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   }catch{message="Bitte gültigen Zeitraum und realistische CW-Anzahl wählen."}
  }
  async function request(args,apply){
-  const c=context();if(!c||key(c)!==scope||busy)return;
+  const c=context();if(!c||key(c)!==scope||busy||testMode)return;
   const token=++serial;busy=true;message="Wird geladen …";render();
   try{let r=await api({...args,context:c});if(token!==serial||key(context())!==scope)return;
    if(args.action==="discord"){r=await api({action:"read",id:args.refreshId,context:c});if(token!==serial||key(context())!==scope)return}
@@ -43,11 +43,11 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
  }
  function listLoad(){return request({action:"list"},r=>{if(!Array.isArray(r))throw Error("bad list");list=r})}
  function read(id){if(!dirty)return request({action:"read",id},adopt)}
- function save(){if(!draft||busy)return;try{activityPeriod(draft.start,draft.end);if(!draft.rules.some(r=>r.metric!=="onePerPerson")||draft.rules.some(r=>r.minimum!==true&&(!Number.isInteger(r.minimum)||r.minimum<0)))throw Error("invalid")}catch{message="Zeitraum und mindestens ein gültiges Ziel eingeben.";render();return}
+ function save(){if(!draft||busy||testMode)return;try{activityPeriod(draft.start,draft.end);if(!draft.rules.some(r=>r.metric!=="onePerPerson")||draft.rules.some(r=>r.minimum!==true&&(!Number.isInteger(r.minimum)||r.minimum<0)))throw Error("invalid")}catch{message="Zeitraum und mindestens ein gültiges Ziel eingeben.";render();return}
   return request({action:current?"save":"create",...clone(draft),revision:current?.revision},r=>{adopt(r);list=[{id:r.id,title:r.title,start:r.start,end:r.end},...list.filter(x=>x.id!==r.id)]})
  }
  async function draw(){
-  if(!current?.ready||dirty||busy||current.official)return;
+  if(testMode||!current?.ready||dirty||busy||current.official)return;
   const before=serial,old=current,c=context();
   let confirmed=false;try{confirmed=await confirmDraw(old)}catch{return}
   if(!confirmed||before!==serial||current!==old||key(c)!==key(context())||dirty||busy)return;
@@ -57,14 +57,17 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
  function render(){
   root.replaceChildren();
   const toolbar=n("div","","actions");
-  toolbar.append(button("Neue Verlosung",()=>{if(!dirty)fresh();else{message="Bitte Entwurf zuerst speichern oder verwerfen.";render()}},busy),
+  if(!testMode)toolbar.append(button("Neue Verlosung",()=>{if(!dirty)fresh();else{message="Bitte Entwurf zuerst speichern oder verwerfen.";render()}},busy),
+   button("Testen",()=>{if(!dirty)fresh(true)},busy||dirty),
    button("Kampagnen aktualisieren",()=>{if(!dirty)listLoad()},busy||dirty));
-  if(dirty)toolbar.append(button("Entwurf verwerfen",()=>{dirty=false;draft=null;current=null;message="";listLoad()},busy));
+  if(dirty)toolbar.append(button(testMode?"Test beenden":"Entwurf verwerfen",()=>{testMode=false;dirty=false;draft=null;current=null;message="";listLoad()},busy));
   root.append(toolbar);
+  if(testMode)root.append(n("h3","Testmodus · nur Beispieldaten"),n("p","Zeitraum und Ziele ausprobieren. Keine Kampagne, kein Tracking und kein offizieller Gewinner werden gespeichert.","statusline"));
+  if(list.length&&!testMode){
   const picker=select([["","Gespeicherte Verlosung wählen"],...list.map(x=>[x.id,x.title+" · "+x.start+" – "+x.end])],current?.id||"");
-  picker.disabled=busy||dirty;picker.onchange=()=>{if(picker.value)read(picker.value)};root.append(field("Verlosung",picker));
+  picker.disabled=busy||dirty;picker.onchange=()=>{if(picker.value)read(picker.value)};root.append(field("Verlosung",picker));}
   if(message){const m=n("p",message,"statusline");m.setAttribute("role","status");root.append(m)}
-  if(!draft){root.append(n("p","Zeitraum festlegen, Vorlage wählen oder eigene Ziele hinzufügen.","statusline"));return}
+  if(!draft){root.append(n("p",busy?"Verlosungen werden geladen …":list.length?"Wähle eine gespeicherte Verlosung oder erstelle eine neue.":"Noch keine Grind-Verlosung. Erstelle eine Verlosung oder probiere sie unverbindlich aus.","statusline"));return}
   const date=current?.today||today(),started=!!current&&date>=draft.start,locked=!!current?.official;
   if(locked){
    const o=current.official;
@@ -96,14 +99,14 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   }else root.append(n("p","Ziele und Zeitraum sind ab Start fixiert. Teilnahmeentscheidungen bleiben bearbeitbar.","statusline"));
   root.append(n("h3","Ziele"));
   for(const [metric,label,def] of metrics){
-   const rule=draft.rules.find(r=>r.metric===metric),line=n("div","","goldpass-player-head");
+   const rule=draft.rules.find(r=>r.metric===metric),line=n("div","","goldpass-goal");
    const enabled=input("checkbox",!!rule);enabled.disabled=busy||started;
    enabled.onchange=()=>{draft.rules=draft.rules.filter(r=>r.metric!==metric);if(enabled.checked)draft.rules.push({metric,minimum:def});dirty=true;render()};
-   line.append(field(label,enabled));
+   const toggle=n("label");toggle.append(enabled,n("span",label));line.append(toggle);
    if(rule&&def!==true){
     const val=input("number",rule.minimum);val.min="0";val.step="1";val.disabled=busy||started;
     val.onchange=()=>{rule.minimum=val.value===""?NaN:Number(val.value);dirty=true;render()};
-    line.append(field("Mindestziel",val));
+    val.setAttribute("aria-label","Mindestziel "+label);line.append(val);
    }
    root.append(line);
   }
@@ -111,6 +114,27 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   group.onchange=()=>{draft.rules=draft.rules.filter(r=>r.metric!=="onePerPerson");if(group.checked)draft.rules.push(personRule);dirty=true;render()};
   const extra=n("details");extra.append(n("summary","Weitere Teilnahmeoptionen"),field("Nur ein Los pro Person",group),n("p","Verknüpfe Mehrfachaccounts unter Mehr → Clanverwaltung → Mitgliedsmerkmale. Jeder Account muss die Ziele selbst erreichen. Pro Person zählt nur ein qualifizierter Account: der Hauptaccount, falls qualifiziert, sonst der erste qualifizierte Spielertag. Veranstalter werden als Person ausgeschlossen. Nicht zugeordnete Accounts gelten als eigenständige Personen.","statusline"));root.append(extra);
   root.append(n("p","Ranked, Raid und Clanspiele folgen nach tatsächlicher API-/Tracking-Prüfung. Spenden und CW/CWL nutzen die vorhandenen Beobachtungen.","statusline"));
+  if(testMode){
+   const rules=draft.rules.filter(r=>r.metric!=="onePerPerson");
+   const sample=[["#P02","Beispiel A",5200,42,18,10,18,7,4,true,true],["#P08","Beispiel B",4100,30,14,8,12,5,3,true,true],["#P09","Beispiel C",2500,24,12,6,9,4,2,true,false],["#P0Y","Beispiel D",800,9,5,2,6,3,1,false,true],["#P0P","Beispiel E",null,20,10,5,12,5,3,undefined,true]];
+   try{
+    if(!rules.length)throw Error("no_rules");
+    const rows=sample.map(([tag,name,...values])=>({tag,name,evidence:Object.fromEntries(metrics.slice(0,7).flatMap(([k],i)=>values[i]===null?[]:[[k,{value:values[i],coverage:"complete"}]])),marks:{discord:values[7],voted:values[8]}}));
+    const preview=campaignPreview({...draft,rules},rows,draft.end);
+    root.append(n("h3","Beispiel-Fortschritt"),n("p",preview.qualified+" qualifiziert · "+preview.unknown+" offen · fiktive, feste Werte, getrennte Personen","statusline"));
+    const pool=preview.rows.filter(x=>x.status==="qualified").map(x=>({tag:x.tag,name:x.name,tickets:1}));
+    for(const p of preview.rows){
+     const row=n("div","","goldpass-player"),head=n("div","","goldpass-player-head");
+     head.append(n("strong",p.name),n("span",({qualified:"Qualifiziert",unknown:"Offen",unmet:"Nicht erfüllt",excluded:"Ausgeschlossen"})[p.status]));row.append(head);
+     row.append(n("p",p.results.map(x=>names[x.metric]+": "+(x.value===null?"–":typeof x.value==="boolean"?(x.value?"Ja":"Nein"):x.value+" / "+x.minimum)).join(" · "),"statusline"));root.append(row);
+    }
+    const result=n("div");
+    root.append(button("Testziehung starten",()=>{if(!testMode||key(context())!==scope||!pool.length)return;
+     try{const pick=sampleRaffle({rows:pool,total:pool.length}),winner=pool.find(p=>p.tag===pick.winnerTag);result.replaceChildren(renderDrawReveal({winnerName:winner.name,winnerTag:winner.tag,rows:pool,ticket:pick.ticket,test:true,animate:true,subtitle:"Beispieldaten · nicht gespeichert"}))}catch{result.textContent="Testziehung nicht verfügbar."}
+    },!pool.length),result);
+   }catch{root.append(n("p","Bitte einen gültigen Zeitraum und mindestens ein gültiges Ziel wählen.","statusline"))}
+   return;
+  }
   const saveBtn=button(current?"Änderungen speichern":"Verlosung anlegen",save,busy||!dirty);root.append(saveBtn);
   if(!current)return;
   root.append(n("h3","Fortschritt"),n("p",current.qualified+(current.onePerPerson?" qualifizierte Personen":" qualifiziert")+" · "+current.unknown+" Accounts noch nicht eindeutig · "+(current.rows||[]).length+" beobachtete Teilnehmer","statusline"),

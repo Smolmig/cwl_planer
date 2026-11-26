@@ -55,3 +55,21 @@ test("Grind UI creates a dated campaign, updates member marks, confirms one serv
   assert.equal(view.accessChanged({...context,session:2}),false);assert.equal(root.textContent,"");
  }finally{if(old===undefined)delete global.document;else global.document=old;if(oldMedia===undefined)delete global.matchMedia;else global.matchMedia=oldMedia;dom.window.close()}
 });
+
+test("Grind sandbox works without a saved campaign and never calls a write or tracking API",async()=>{
+ const {createActivityCampaignView}=await import("../cwl-activity-campaign-view.mjs");
+ const dom=new JSDOM("<main id='root'></main>"),old=global.document,oldMedia=global.matchMedia;
+ global.document=dom.window.document;global.matchMedia=()=>({matches:true});
+ try{
+  const root=document.getElementById("root"),calls=[];
+  const c={owner:true,clanId:"A",clanTag:"#8PYL",session:1};
+  const view=createActivityCampaignView({root,getContext:()=>c,api:async req=>{calls.push(req.action);return []},today:()=>"2026-11-26"});
+  const button=text=>[...root.querySelectorAll("button")].find(b=>b.textContent===text);
+  view.open();await tick();assert.deepEqual(calls,["list"]);assert.equal(root.querySelector("select"),null);
+  button("Testen").click();assert.match(root.textContent,/nur Beispieldaten/);assert.equal(button("Verlosung anlegen"),undefined);assert.equal(button("Gewinner offiziell ziehen"),undefined);
+  button("Ausgewogener Grind").click();assert.match(root.textContent,/Beispiel-Fortschritt/);assert.equal(button("Testziehung starten").disabled,false);
+  button("Testziehung starten").click();assert.match(root.textContent,/TESTZIEHUNG – UNVERBINDLICH/);
+  view.open();await tick();assert.deepEqual(calls,["list"]);
+  button("Test beenden").click();await tick();assert.deepEqual(calls,["list","list"]);assert.doesNotMatch(root.textContent,/Beispiel-Fortschritt/);
+ }finally{if(old===undefined)delete global.document;else global.document=old;if(oldMedia===undefined)delete global.matchMedia;else global.matchMedia=oldMedia;dom.window.close()}
+});

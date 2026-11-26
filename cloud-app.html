@@ -2614,6 +2614,13 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* Cloud clan switching already lives in Clan & Konto; avoid a second, misleading profile entry. */
 .cloud-mode #view-more .more-tile[data-more-action="profiles"]{display:none}
+.goldpass-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-width:480px;margin:0 0 12px}
+.goldpass-nav .btn{min-height:44px;white-space:normal;line-height:1.25}
+.goldpass-nav .btn[aria-current="page"]{border-color:var(--primary);color:var(--primary);box-shadow:inset 0 -2px var(--primary);font-weight:750}
+#view-activity-goldpass .goldpass-goal{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,36%);gap:10px;align-items:center;min-height:48px;border-bottom:1px solid var(--line);padding:6px 0}
+#view-activity-goldpass .goldpass-goal>label:first-child{display:flex;align-items:center;gap:8px;min-width:0}
+#view-activity-goldpass .goldpass-goal input[type=checkbox]{width:22px;height:22px;flex:none}
+#view-activity-goldpass .goldpass-goal input[type=number]{min-width:0;width:100%;min-height:44px}
 #view-activity-goldpass .goldpass-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;align-items:end;margin:12px 0}
 #view-activity-goldpass .goldpass-field{display:flex;flex-direction:column;gap:4px;font-size:12px;min-width:0}
 #view-activity-goldpass .goldpass-field input:not([type=checkbox]),#view-activity-goldpass .goldpass-field select{width:100%;min-width:0}
@@ -4081,8 +4088,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>Regeln speichern, Chancen prüfen und offiziell ziehen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="activity-goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Grind-Verlosung</strong><small>Zeitraum, Ziele und Fortschritt</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
@@ -4165,11 +4171,13 @@ html.cloud-startup-pending .cloud-startup-splash{
   <p class="statusline">Regeln je CWL-Saison einstellen, Gewinnchancen prüfen und nach bestätigten Ergebnissen einmalig offiziell ziehen.</p></div>
   <button type="button" class="btn small more-detail-back" id="goldpassBack">Zurück zu Mehr</button>
  </div>
+ <nav class="goldpass-nav" aria-label="Verlosungsart"><button type="button" class="btn" data-goldpass-tab="cwl" aria-current="page">CWL-Verlosung</button><button type="button" class="btn" data-goldpass-tab="grind">Grind-Verlosung</button></nav>
  <div id="goldpassContent" class="card"></div>
  <details class="card"><summary>So werden die Chancen berechnet</summary><p class="statusline">Spieler werden anhand ihres Clash-Tags und tatsächlich belegter CWL-Einsätze berücksichtigt, nicht anhand geplanter Aufstellungen. Die ausgewogene Vorlage zählt jeden durchgeführten Angriff, jeden Dreier und zusätzliche Sternenboni. Startlose gelten, wenn aktiviert, nur einmal pro Teilnehmer. Die Chance entspricht den eigenen Losen geteilt durch alle gültigen Lose. Die Testziehung ist unverbindlich und speichert nichts; das Glücksrad zeigt die Anteile und das ermittelte Ergebnis. Veranstalter bitte ausdrücklich kennzeichnen; Discord-Mitgliedschaft ist nicht automatisch bekannt. Bei laufenden oder unvollständigen Runden kann sich die Vorschau ändern. Der Server bestätigt die vollständigen Rundenergebnisse und speichert die Regeln je Saison. Erst nach ausdrücklicher Bestätigung wird ein Gewinner zufällig und entsprechend den Losgewichten gezogen. Das offizielle Ergebnis bleibt unverändert. Kein automatischer Kauf oder Versand eines Goldpasses.</p></details>
 </section>
 <section id="view-activity-goldpass" class="view more-subview" aria-labelledby="activityGoldpassTitle">
- <div class="more-detail-header"><div><span class="more-eyebrow">CLAN · OPTIONALES TOOL</span><h2 id="activityGoldpassTitle">Grind-Verlosung</h2><p class="statusline">Zeitraum und erreichbare Ziele festlegen, Fortschritt verfolgen und nach Abschluss einen Gewinner ziehen.</p></div><button type="button" class="btn small more-detail-back" id="activityGoldpassBack">Zurück zu Mehr</button></div>
+ <div class="more-detail-header"><div><span class="more-eyebrow">CLAN · OPTIONALES TOOL</span><h2 id="activityGoldpassTitle">Goldpass-Verlosung</h2><p class="statusline">Zeitraum und erreichbare Ziele festlegen, Fortschritt verfolgen und nach Abschluss einen Gewinner ziehen.</p></div><button type="button" class="btn small more-detail-back" id="activityGoldpassBack">Zurück zu Mehr</button></div>
+ <nav class="goldpass-nav" aria-label="Verlosungsart"><button type="button" class="btn" data-goldpass-tab="cwl">CWL-Verlosung</button><button type="button" class="btn" data-goldpass-tab="grind" aria-current="page">Grind-Verlosung</button></nav>
  <div id="activityGoldpassContent" class="card"></div>
 </section>
 <section id="view-archive" class="view more-subview" aria-labelledby="cwlArchiveTitle">
@@ -7100,6 +7108,10 @@ async function openActivityGoldpass(){
   activityGoldpassView.open();
  }catch{root.textContent="Verlosung konnte nicht geladen werden. Bitte erneut öffnen."}
 }
+document.querySelectorAll("[data-goldpass-tab]").forEach(b=>b.addEventListener("click",()=>{
+ if(b.getAttribute("aria-current")==="page")return;
+ if(b.dataset.goldpassTab==="cwl")openGoldpassPreview();else openActivityGoldpass();
+}));
 document.getElementById("activityGoldpassBack").onclick=()=>showPlannerView("more");
 document.getElementById("goldpassBack").onclick=()=>showPlannerView("more");
 document.getElementById("cwlArchiveBack").onclick=()=>showPlannerView("more");

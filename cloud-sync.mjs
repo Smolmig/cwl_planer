@@ -709,8 +709,6 @@ const cloud={
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
-  const activityEntry=document.querySelector('[data-more-action="activity-goldpass"]');
-  if(activityEntry)activityEntry.hidden=!managementAllowed;
   window.CWLActivityMembers?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLActivityGoldpass?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
