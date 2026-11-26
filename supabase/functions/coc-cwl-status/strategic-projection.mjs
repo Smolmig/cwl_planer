@@ -3,6 +3,7 @@
 import {analyzeCwlGroup} from "./strategic-opponents.mjs";
 import {assessStrategicStandings} from "./strategic-standings.mjs";
 import {resolveReviewedLeagueRules} from "./strategic-league-rules.mjs";
+import {summarizeGroupStrength} from "./strategic-group-strength.mjs";
 const TAG=/^#[0289PYLQGRJCUV]{3,15}$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const tag=v=>typeof v==="string"?v.trim().toUpperCase():"";
@@ -77,7 +78,7 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  const ownWars=analyzed.wars.filter(w=>w.ownRoster);
  const counters=rounds.flatMap(r=>r.matches).filter(w=>w.available&&w.state!=="preparation"&&[w.clan.tag,w.opponent.tag].includes(own))
  .every(w=>w.clan.counter&&w.opponent.counter);
- const groupView={...analyzed,profiles:relevant,wars:ownWars,ownMedals:{...analyzed.ownMedals,complete:analyzed.ownMedals.complete&&counters}};
+ const groupView={...analyzed,clanStrength:summarizeGroupStrength({clans:group.clans,analyzed,teamSize,own}),profiles:relevant,wars:ownWars,ownMedals:{...analyzed.ownMedals,complete:analyzed.ownMedals.complete&&counters}};
  const consistent=registered&&registered.tags.length>=teamSize&&[...ownWars,...analyzed.upcoming].every(w=>w.ownRoster.every(p=>registered.tags.includes(p.tag)));
  const scores={...snapshot,rounds:rounds.map(r=>({day:r.day,matches:r.matches.map(w=>{
  if(!w.available)return {available:false};
