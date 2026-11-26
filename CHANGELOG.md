@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.35.0] - 2026-11-26
+
+- CWL-Goldpass: ausgewogene, leistungsbetonte und teilnahmebetonte Losvorlagen. Startlose eindeutig benannt; durchgeführte Angriffe und Sternenboni je Rundenzahl. Individuelle Losaufschlüsselung, kompakte Teilnahmeentscheidungen und Hilfe.
+- Unverbindliche lokale Testziehung und anteiliges Glücksrad mit serverseitig unveränderlicher offizieller Ziehung. Bestehende Regeln und Ergebnisse bleiben erhalten.
+- Separate SQL-Aktualisierung nach erfolgreicher Abnahme.
+
 ## [1.34.0] - 2026-11-25
 
 - Eigenständige Grind-Kampagnen mit Start/Ende, dynamischen Vorlagen, belegtem Spenden-/CW-/CWL-Fortschritt und manuellen Teilnahmeentscheidungen. Datenlücken explizit klären; Regeln nach Start fixiert.

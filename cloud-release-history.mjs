@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.35.0",
+      "releaseType": "minor",
+      "date": "2026-11-26",
+      "title": "Faire CWL-Goldpass-Verlosung",
+      "description": "Drei Losvorlagen, nachvollziehbare Lose je Angriff, unverbindliche Testziehung und ein Glücksrad mit proportionalen Gewinnchancen."
+  },
+
+  {
     "version": "v1.34.0",
     "releaseType": "minor",
     "date": "2026-11-25",

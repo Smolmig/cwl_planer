@@ -28,11 +28,13 @@ test("Owner preview recalculates without mutating profile and clears on loss of 
   const root=document.getElementById("root"),view=createGoldpassPreview({root,getProfile:()=>profile,getContext:()=>context});
   assert.equal(view.open(),true);
   assert.match(root.textContent,/Keine offizielle Ziehung möglich/);
-  assert.match(root.textContent,/3 Lose insgesamt/);
+  assert.match(root.textContent,/2 Lose insgesamt/);
   assert.equal(root.querySelector("img"),null);
+  assert.match(root.textContent,/2 Lose = 1 Angriffe \+ 1 3★/);
+  assert.equal(root.querySelector("details").open,false);
   const numberInputs=root.querySelectorAll('input[type="number"]');
   numberInputs[1].value="4";numberInputs[1].dispatchEvent(new dom.window.Event("input"));
-  assert.match(root.textContent,/6 Lose insgesamt/);
+  assert.match(root.textContent,/5 Lose insgesamt/);
   const organizer=[...root.querySelectorAll("label")].find(x=>x.textContent==="Veranstalter").querySelector("input");
   organizer.checked=true;organizer.dispatchEvent(new dom.window.Event("change"));
   assert.match(root.textContent,/Veranstalter ausgeschlossen/);
@@ -76,6 +78,12 @@ test("Saved server preview gates official draw; confirmation, reload and immutab
   assert.equal(view.open(),true);await tick();
   assert.equal(root.querySelector("select").options.length,2);
   assert.equal(button("Offiziell ziehen").disabled,true);
+  const oldCrypto=global.crypto; if(!oldCrypto)global.crypto=require("node:crypto").webcrypto;
+  const beforeTestCalls=calls.length;
+  button("Testziehung starten").click();
+  assert.match(root.textContent,/TESTZIEHUNG – UNVERBINDLICH/);
+  assert.equal(calls.length,beforeTestCalls);
+  assert.equal(saved.revision,0);
   const organizer=[...root.querySelectorAll("label")].find(x=>x.textContent.startsWith("Veranstalter geprüft")).querySelector("input");
   organizer.checked=true;organizer.dispatchEvent(new dom.window.Event("change"));
   assert.equal(button("Offiziell ziehen").disabled,true);

@@ -56,3 +56,15 @@ test("Test sampling rejects modulo bias and never chooses zero-ticket entries",a
  assert.equal(calls,2);
  assert.throws(()=>sampleRaffle({...preview,total:0},source),/invalid_draw/);
 });
+
+test("Balanced presets reward completed hits, respect rotation and scale to five rounds",async()=>{
+ const {rafflePreview,RAFFLE_PRESETS}=await load();
+ const p=(tag,appearances,attacks,stars,one,two,three)=>({tag,appearances,attacks,stars,one,two,three});
+ const players=[p(a,7,7,21,0,0,7),p(b,7,7,20,0,1,6),p(enemy,5,5,15,0,0,5),p("#J9QL",7,4,12,0,0,4),p("#R9QL",7,0,0,0,0,0)];
+ const e={complete:true,warCount:7,players};
+ assert.deepEqual(rafflePreview(e,RAFFLE_PRESETS.balanced).rows.map(x=>x.tickets),[16,14,10,8,0]);
+ assert.deepEqual(rafflePreview(e,RAFFLE_PRESETS.performance).rows.map(x=>x.tickets),[23,20,15,12,0]);
+ assert.deepEqual(rafflePreview(e,RAFFLE_PRESETS.participation).rows.map(x=>x.tickets),[21,20,15,12,0]);
+ assert.deepEqual(rafflePreview({...e,warCount:5,players:[players[2]]},RAFFLE_PRESETS.balanced).rows.map(x=>x.tickets),[12]);
+ assert.throws(()=>rafflePreview(e,{perAttack:-1}),/invalid_weights/);
+});

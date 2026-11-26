@@ -1,5 +1,5 @@
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.34.0";
-import {DEFAULT_RAFFLE_RULES,collectRaffleEvidence,rafflePreview} from "./cwl-goldpass-core.mjs?v=1.34.0";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.35.0";
+import {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,starThresholds,raffleTicketBreakdown,collectRaffleEvidence,rafflePreview,sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.35.0";
 const pct=new Intl.NumberFormat("de-AT",{style:"percent",maximumFractionDigits:2});
 const month=new Intl.DateTimeFormat("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
 const el=(tag,text="",className="")=>{const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n};
@@ -8,7 +8,13 @@ const option=(value,label)=>{const n=el("option",label);n.value=value;return n};
 function numberInput(value,max){const n=el("input");n.type="number";n.min="0";n.max=String(max);n.step="1";n.value=String(value);return n}
 const validSeason=s=>/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(s||""));
 const reasons={organizer:"Veranstalter ausgeschlossen",manual_exclusion:"Manuell ausgeschlossen",discord_unconfirmed:"Discord nicht bestätigt",minimum_not_met:"Mindestleistung nicht erreicht",no_tickets:"Keine Lose nach aktueller Regel"};
-const formulaText=r=>"Lose = "+r.base+" Grund + "+r.one+" je 1★ + "+r.two+" je 2★ + "+r.three+" je 3★ + "+r.perStar+" je Stern.";
+const formulaText=(r,warCount)=>{
+ const {high,perfect}=starThresholds(warCount);
+ const parts=[[r.base,"einmalig je Teilnehmer"],[r.perAttack,"je durchgeführtem Angriff"],[r.one,"je 1★-Angriff"],[r.two,"je 2★-Angriff"],[r.three,"je 3★-Angriff"],[r.perStar,"je Gesamtstern"],[r.highBonus,"ab "+high+" Gesamtsternen"],[r.perfectBonus,"ab "+perfect+" Gesamtsternen"]].filter(([n])=>n>0);
+ return parts.length?"Lose: "+parts.map(([n,label])=>n+" "+label).join(" + ")+".":"Keine Lose nach dieser Regel.";
+};
+const breakdownText=(p,r,warCount)=>p.tickets>0?p.tickets+" Lose = "+raffleTicketBreakdown(p,r,warCount).map(([label,n])=>n+" "+label).join(" + "):"0 Lose";
+const presetKey=r=>Object.entries(RAFFLE_PRESETS).find(([,p])=>["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].every(k=>(r[k]||0)===(p[k]||0)))?.[0]||"custom";
 const metricsText=r=>r.appearances+" Einsätze · "+r.attacks+" AG · "+r.stars+"★ · "+r.three+" Dreier · "+r.tickets+" Lose"+(r.unknown?" · "+r.unknown+" offen":"");
 export function raffleSeasons(profile,tag){
  const map=new Map();
@@ -26,12 +32,12 @@ export function raffleSeasons(profile,tag){
  return [...map.values()].sort((a,b)=>b.season.localeCompare(a.season));
 }
 export function createGoldpassPreview({root,getProfile,getContext,api=null,listSeasons=null,confirmDraw=async()=>false}){
- let scope=null,season="",rules={...DEFAULT_RAFFLE_RULES},eligibility=Object.create(null),seasons=[];
+ let scope=null,season="",rules={...RAFFLE_PRESETS.balanced},eligibility=Object.create(null),seasons=[];
  let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="",animateNextDraw=false;
  const allowed=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const scopeOf=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
  const matches=(token,target,context)=>token===serial&&season===target&&scope===scopeOf(context)&&scope===scopeOf(allowed());
- const resetDraft=()=>{animateNextDraw=false;rules={...DEFAULT_RAFFLE_RULES};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
+ const resetDraft=()=>{animateNextDraw=false;rules={...RAFFLE_PRESETS.balanced};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
  const reset=()=>{serial++;busy=false;season="";serverSeasons=[];seasons=[];resetDraft();root.replaceChildren()};
  function rebuildSeasons(){
   const c=allowed();if(!c)return;
@@ -98,17 +104,17 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
  function renderOfficial(result){
   const o=result.official,animate=animateNextDraw,details=el("div");animateNextDraw=false;
   root.append(renderDrawReveal({winnerName:o.winnerName,winnerTag:o.winnerTag,animate,weighted:true,
-   subtitle:new Date(o.drawnAt).toLocaleString("de-AT")+" · Einmalig gespeichert",
+   rows:o.preview.rows,ticket:o.ticket,subtitle:new Date(o.drawnAt).toLocaleString("de-AT")+" · Einmalig gespeichert",
    onReveal:()=>{details.hidden=false}}),details);
   details.hidden=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  details.append(el("h3","Angewandte Regeln"),el("p",formulaText(o.rules),"statusline"),
+  details.append(el("h3","Angewandte Regeln"),el("p",formulaText(o.rules,o.evidence.warCount),"statusline"),
     el("p","Mindestleistung: "+({none:"keine",triples:"Dreier",stars:"Gesamtsterne",attacks:"Angriffe"}[o.rules.minimumType])+
     (o.rules.minimumType==="none"?"":" · "+o.rules.minimum)+(o.rules.requireDiscord?" · Discord bestätigt erforderlich":""),"statusline"),
     el("h3","Teilnehmer zum Ziehungszeitpunkt"),el("p",o.preview.total+" Lose · "+o.preview.rows.filter(r=>r.tickets>0).length+" zugelassen","statusline"));
   for(const r of o.preview.rows){
    const wrap=el("article","","goldpass-player"),head=el("div","","goldpass-player-head");
    head.append(el("strong",r.name+(r.tag===o.winnerTag?" · Gewinner": "")),el("strong",pct.format(Number(r.probability)),"goldpass-chance"));
-   wrap.append(head,el("small",r.tag,"statusline"),el("p",metricsText(r),"statusline"),el("p",reasons[r.reason]||"Teilnahmeberechtigt","statusline"));details.append(wrap);
+   wrap.append(head,el("small",r.tag,"statusline"),el("p",metricsText(r),"statusline"),el("p",breakdownText(r,o.rules,o.evidence.warCount),"statusline"),el("p",reasons[r.reason]||"Teilnahmeberechtigt","statusline"));details.append(wrap);
   }
   const audit=el("details"),summary=el("summary","Ziehungsnachweis");
   audit.append(summary,el("p","Regelversion "+o.version+" · Losindex "+(Number(o.ticket)+1)+" von "+o.preview.total+" · "+o.evidence.ended+" bestätigte Runden","statusline"),
@@ -147,21 +153,38 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
     (verified?.complete?"Serverseitig vollständig bestätigt.":e.complete?"Gespeicherte Rundendaten strukturell vollständig, Serverbestätigung noch offen.":"Vorläufig: Fehlende oder laufende Runden können die Chancen verändern.")+
     (api?(verified?.complete?"":" Keine offizielle Ziehung möglich."):" Keine offizielle Ziehung möglich.");
   root.append(status);
-  const settings=el("div","","goldpass-controls");
+  const settings=el("div","","goldpass-controls"),advanced=el("details"),advancedSettings=el("div","","goldpass-controls");
+  const preset=el("select");
+  for(const [key,label] of [["balanced","Ausgewogen (empfohlen)"],["performance","Leistung stärker gewichten"],["participation","Teilnahme stärker gewichten"],["custom","Eigene / bisherige Regeln"]])preset.append(option(key,label));
+  preset.value=presetKey(rules);preset.disabled=busy;
+  root.append(el("h3","Los-System"),field("Vorlage",preset),el("p","Nur tatsächlich durchgeführte Angriffe zählen. Weniger geplante Einsätze bedeuten nicht automatisch einen Ausschluss.","statusline"));
+  preset.onchange=()=>{if(preset.value==="custom"){advanced.open=true;return}const p=RAFFLE_PRESETS[preset.value];rules={...rules,...Object.fromEntries(["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].map(k=>[k,p[k]||0]))};dirty=true;render()};
   const minType=el("select");
   for(const [v,label] of [["none","Keine Mindestleistung"],["triples","Dreisterneangriffe"],["stars","Gesamtsterne"],["attacks","Durchgeführte Angriffe"]])minType.append(option(v,label));
   minType.value=rules.minimumType;minType.disabled=busy;
   const min=numberInput(rules.minimum,rules.minimumType==="stars"?21:7);min.disabled=busy||rules.minimumType==="none";
   settings.append(field("Mindestleistung",minType),field("Mindestanzahl",min));
   const weightInputs={};
-  for(const [key,label] of [["base","Grundlose"],["one","Bonus je 1★"],["two","Bonus je 2★"],["three","Bonus je 3★"],["perStar","Bonus je Gesamtstern"]]){
-   const input=numberInput(rules[key],100);input.disabled=busy;weightInputs[key]=input;settings.append(field(label,input));
+  const thresholds=starThresholds(e.warCount);
+  for(const [key,label] of [["perAttack","Lose je Angriff"],["three","Bonus je 3★-Angriff"],["highBonus","Bonus ab "+thresholds.high+"★"],["perfectBonus","Bonus ab "+thresholds.perfect+"★"],["base","Startlose je Teilnehmer (einmalig)"],["one","Bonus je 1★-Angriff"],["two","Bonus je 2★-Angriff"],["perStar","Bonus je Gesamtstern"]]){
+   const input=numberInput(rules[key]||0,100);input.disabled=busy;weightInputs[key]=input;(["base","one","two","perStar"].includes(key)?advancedSettings:settings).append(field(label,input));
   }
   const discord=el("input");discord.type="checkbox";discord.checked=rules.requireDiscord;discord.disabled=busy;
-  settings.append(field("Discord manuell bestätigen",discord));
-  root.append(el("h3","Teilnahmeregeln"),settings);
+  advancedSettings.append(field("Discord-Bestätigung erforderlich",discord));advanced.append(el("summary","Erweiterte Regeln"),advancedSettings);
+  root.append(settings,advanced);
   const formula=el("p","","statusline"),summary=el("p","","statusline"),rows=el("div","","goldpass-rows");
-  summary.setAttribute("role","status");root.append(formula,el("h3","Teilnehmer & Gewinnchancen"),summary,rows);
+  summary.setAttribute("role","status");
+  const testButton=el("button","Testziehung starten","btn"),testResult=el("div");
+  testButton.type="button";testButton.disabled=true;
+  const testHint=el("p","Unverbindliche Vorschau, auch mit ungespeicherten Regeln. Es wird nichts gespeichert.","statusline");
+  root.append(formula,el("h3","Teilnehmer & Gewinnchancen"),summary,testButton,testHint,testResult,rows);
+  let currentPreview=null;
+  testButton.onclick=()=>{
+   if(!currentPreview?.total||busy||scope!==scopeOf(allowed()))return;
+   try{const draw=sampleRaffle(currentPreview);const winner=currentPreview.rows.find(x=>x.tag===draw.winnerTag);
+    testResult.replaceChildren(renderDrawReveal({winnerName:winner.name,winnerTag:winner.tag,rows:currentPreview.rows,ticket:draw.ticket,test:true,weighted:true,animate:true,subtitle:"Unverbindlich · nicht gespeichert"}));
+   }catch{testResult.replaceChildren(el("p","Testziehung nicht verfügbar. Bitte erneut versuchen.","statusline"))}
+  };
   const rowNodes=new Map();
   let saveButton,drawButton,organizer,saveStatus;
   if(api){
@@ -186,25 +209,26 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
     !server.preview.total?"Regeln gespeichert · keine gültigen Lose.":"Regeln gespeichert · offizielle Ziehung kann bewusst gestartet werden.";
   }
   function update(){
-   let p;
+   let p;currentPreview=null;testButton.disabled=true;testResult.replaceChildren();
    try{p=rafflePreview(e,rules,eligibility)}catch{summary.textContent="Bitte gültige ganze Zahlen eingeben.";rows.hidden=true;updateButtons(null);return}
    if(server?.evidence?.complete&&!dirty)p=server.preview;
-   rows.hidden=false;formula.textContent=formulaText(rules);
+   rows.hidden=false;formula.textContent=formulaText(rules,e.warCount);preset.value=presetKey(rules);currentPreview=p;testButton.disabled=busy||!p.total;
    summary.textContent=p.rows.filter(r=>r.eligible).length+" zugelassen · "+p.total+" Lose insgesamt"+(p.total?"":" · Keine Gewinnchance");
    for(const r of p.rows){
     let node=rowNodes.get(r.tag);
     if(!node){
-     const wrap=el("article","","goldpass-player"),head=el("div","","goldpass-player-head"),title=el("strong",r.name),chance=el("strong","","goldpass-chance"),metrics=el("p","","statusline"),reason=el("p","","statusline");
-     head.append(title,chance);wrap.append(head,el("small",r.tag,"statusline"),metrics,reason);
+     const wrap=el("article","","goldpass-player"),head=el("div","","goldpass-player-head"),title=el("strong",r.name),chance=el("strong","","goldpass-chance"),metrics=el("p","","statusline"),reason=el("p","","statusline"),breakdown=el("p","","statusline");
+     head.append(title,chance);wrap.append(head,el("small",r.tag,"statusline"),metrics,breakdown,reason);
      const options=el("div","","goldpass-options"),checks={};
      for(const [key,label] of [["organizer","Veranstalter"],["excluded","Ausschließen"],["discord","Discord bestätigt"],["override","Mindestleistung ausnahmsweise erfüllt"]]){
       const input=el("input");input.type="checkbox";input.checked=r.decision?.[key]===true;
       input.onchange=()=>{eligibility[r.tag]={...(eligibility[r.tag]||{}),[key]:input.checked};dirty=true;if(key==="organizer"){organizerConfirmed=false;if(organizer)organizer.checked=false}update()};
       checks[key]=input;options.append(field(label,input));
      }
-     wrap.append(options);rows.append(wrap);node={chance,metrics,reason,checks};rowNodes.set(r.tag,node);
+     const edit=el("details");edit.append(el("summary","Teilnahme bearbeiten"),options);wrap.append(edit);rows.append(wrap);node={chance,metrics,reason,breakdown,checks};rowNodes.set(r.tag,node);
     }
     node.chance.textContent=pct.format(Number(r.probability));node.metrics.textContent=metricsText(r);
+    node.breakdown.textContent=breakdownText(r,rules,e.warCount);
     node.reason.textContent=reasons[r.reason]||r.reason||"Teilnahmeberechtigt (Vorschau)";
     for(const input of Object.values(node.checks))input.disabled=busy;
     node.checks.discord.disabled=busy||!rules.requireDiscord;

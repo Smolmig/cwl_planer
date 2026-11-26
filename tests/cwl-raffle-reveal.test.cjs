@@ -30,3 +30,11 @@ test("The reveal shows only the supplied stored winner and explains unbiased ran
   dom.window.close();
  }
 });
+
+test("Wheel segments match tickets and target the selected ticket without bias",async()=>{
+ const {raffleWheel}=await import("../cwl-raffle-reveal.mjs");
+ const w=raffleWheel([{tag:"#A",name:"A",tickets:1},{tag:"#B",name:"B",tickets:3},{tag:"#C",tickets:0}],2);
+ assert.equal(w.total,4);assert.deepEqual(w.segments.map(s=>[s.from,s.to]),[[0,90],[90,360]]);
+ assert.equal((360-w.rotation%360)%360,225);
+ assert.equal(raffleWheel([],0),null);
+});
