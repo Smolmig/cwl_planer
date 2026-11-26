@@ -775,7 +775,7 @@ portableBackupUI.init();
 const stats=createCloudStats({
  sb,notify:message=>storage.toast(message),
  confirmAction:(message,options)=>storage.confirmAction(message,options),
- context:()=>({active:cloud.active,clanId,role,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
+ context:()=>({active:cloud.active,clanId,role,clanName:clans.find(c=>c.id===clanId)?.name,clanTag:clans.find(c=>c.id===clanId)?.clash_tag,
   // Historical attacks remain in this clan's history even if their
   // players later left. Stored former/kept CWL guests are NOT current
   // roster members, so the statistics badge must not present them as such.
