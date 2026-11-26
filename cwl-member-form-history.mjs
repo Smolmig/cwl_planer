@@ -17,17 +17,18 @@ async function paged(query,max=16000){
 }
 export async function loadMemberFormClans(sb,ctx,{asOf=Date.now()}={}){
  if(!ctx?.clanId||!validTag(ctx.clanTag))return {sources:[],partial:false};
- const {data,error}=await sb.from("cwl_clans").select("id,name,clash_tag,owner_user_id")
+ const {data,error}=await sb.from("cwl_clans").select("id,name,clash_tag")
    .order("id").limit(41);
  if(error||!Array.isArray(data))throw Error("form_clans_unavailable");
  const active=data.find(c=>c.id===ctx.clanId);
- if(!active?.owner_user_id)return {sources:[],partial:true};
- // Only same-owner linked clans already visible to this caller through RLS.
- // A shared foreign clan is not automatically considered part of this team.
+ if(!active||active.clash_tag!==ctx.clanTag)return {sources:[],partial:true};
+ // Only linked clans already visible to this caller through RLS. Each
+ // stats query is independently permission-scoped. Different owners are
+ // allowed when the signed-in user has explicit access to both clans.
  const seen=new Set([ctx.clanTag]),sources=[];
  let partial=data.length>=41;
  for(const c of data){
-  if(c.id===ctx.clanId||c.owner_user_id!==active.owner_user_id||!validTag(c.clash_tag))continue;
+  if(c.id===ctx.clanId||!validTag(c.clash_tag))continue;
   if(seen.has(c.clash_tag)){partial=true;continue}
   if(sources.length>=8){partial=true;break}
   seen.add(c.clash_tag);
