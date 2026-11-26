@@ -25,3 +25,24 @@ Pure JS-Normalisierung von Kampfprotokollen und Mindestanforderungen, Tests; kei
 - https://clashygo.clashk.ing/en/latest/api/clashy/
 - https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/battlelog.md
 - https://clashygo.clashk.ing/en/latest/api/raids/
+
+
+## Erweiterung 26.11.2026
+- Zentrale Mitgliedsmerkmale in Mehr → Clanverwaltung: beobachtete aktuelle Mitglieder und gespeicherte ehemalige Accounts, Discord (unbekannt/ja/nein), explizite Haupt-/Zweitaccount-Zuordnung. Kein automatischer Identitätsabgleich. Owner-only, clan-/taggebunden; eine flache Gruppe statt Ketten, CAS bei Zuordnungsänderungen.
+- Optionaler Kampagnenmodus `onePerPerson`: ein Los je Person mit mindestens einem **einzeln** qualifizierten Account. Qualifizierter Hauptaccount bevorzugt, sonst lexikografisch erster qualifizierter Tag. Veranstalter werden als Person ausgeschlossen. Unbekannte Fälle bleiben bis zur Prüfung offen. Pool, Accountliste, Gruppenstand und Ergebnis werden beim offiziellen Ziehen eingefroren; nachträgliche Zuordnungen verändern das Ergebnis nicht. Bereits gestartete Kampagnen behalten ihre Regeln. CWL-Saisonverlosung bleibt unberührt (dort Discord separat je Saison).
+- Testziehung aus dem beobachteten aktuellen qualifizierten Pool, nur lokal, keine Speicherung. Glücksrad stellt den Losindex dar. Das ist keine offizielle Ziehung und nicht die Prognose eines noch laufenden Events.
+
+## API-Prüfung für den nächsten Collector-Schritt (26.11.2026)
+Dokumentationsabgleich, **keine authentifizierte Live-Probe** und keine Änderung am bestehenden Collector:
+- Ranked: der Dokumentationsspiegel führt GET /players/{playerTag}/battlelog, /players/{playerTag}/leaguehistory und /leaguegroup/{leagueGroupTag}/{leagueSeasonId}?playerTag=... auf. Der Player-Endpunkt dokumentiert currentLeagueGroupTag. SDK-Dokumentation bestätigt BattleLogEntry/LeagueHistoryEntry. Mit dem im Projekt eingesetzten cocproxy.royaleapi.dev/v1 muss der tatsächliche Rückgabestatus und die Form erst geprüft werden. Keine Ranglistenwerte als angebliche Angriffsanzahl verwenden.
+- Raid: GET /clans/{clanTag}/capitalraidseasons; Member-Schema enthält attacks, attackLimit, bonusAttackLimit, capitalResourcesLooted. Ein abgeschlossener Raid kann direkt nachgewiesen werden, wenn Zeitraum und Spielertag passen. Fehlender Member-Eintrag ist ohne dokumentierte Anwesenheit/Abdeckung nicht automatisch null. Nur vollständig im Kampagnenfenster liegende Wochenenden für Wochenendquoten; Nenner individuell, nicht immer sechs.
+- Clanspiele: Profil-Achievement als accountweiter kumulativer Zähler. Vor Aktivierung den tatsächlichen Achievement-Namen und die Semantik per Live-Probe prüfen; kein direkter Eventscore aus Profil-Snapshots behaupten. Fehlende Start-/Endwerte, Reset und außerhalb des Clans erspielte Punkte sind nicht rückwirkend beweisbar.
+- Collector: vorhandenes Laufzeitbudget (105s, max. 32 Tags/5 Clans je Lauf) erhalten. Raid pro Clan vor playerweisen Ranked-Abfragen; diese nur für aktive Events mit passender Regel, Rotation und persistenten Beobachtungscursors, Zeit-/Requestbudget, kein Polling ohne aktive Kampagne. Abdeckung und Fehler separat speichern. Erst nach echter Probe und Rollback-Tests freischalten.
+
+Dokumentationsquellen:
+- https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/battlelog.md
+- https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/leagues/leaguegroup.md
+- https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/get-player.md
+- https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/clans/capitalraidseasons.md
+- https://clashofclans.js.org/docs/api/interfaces/APICapitalRaidSeasonMember
+- https://clashy.clashk.ing/en/stable/miscellaneous/changelog.html

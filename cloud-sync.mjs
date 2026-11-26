@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.35.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.35.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.35.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.35.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.35.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.35.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.35.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.35.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.36.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.36.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.36.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.36.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.36.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.36.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.36.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.36.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -388,6 +388,19 @@ const cloud={
  getActiveClanId:()=>clanId,
  getActiveClanTag:()=>clans.find(c=>c.id===clanId)?.clash_tag||null,
  getActivitySession:()=>accountEpoch,
+ async activityMemberRequest(request){
+  const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
+  const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&accountEpoch===epoch&&user?.id===actor&&this.getActiveClanTag()===tag&&request?.context?.clanId===expected&&request?.context?.clanTag===tag&&request?.context?.session===epoch;
+  if(!valid()||!navigator.onLine)throw Error("activity_context_unavailable");
+  if(!["list","discord","link"].includes(request.action))throw Error("invalid_member_action");
+  const args={p_clan:expected,p_action:request.action};
+  for(const [key,name] of Object.entries({player:"p_player",discord:"p_discord",primary:"p_primary",expectedPrimary:"p_expected_primary"}))
+   if(Object.hasOwn(request,key)&&request[key]!==undefined)args[name]=request[key];
+  const {data,error:err}=await sb.rpc("cwl_activity_member_manage",args);
+  if(!valid())throw Error("activity_context_changed");
+  if(err)throw Error(err.message||"activity_unavailable");
+  return data;
+ },
  async activityCampaignRequest(request){
   const expected=clanId,epoch=accountEpoch,actor=user?.id,tag=this.getActiveClanTag();
   const valid=()=>this.active&&role==="owner"&&!!actor&&!!expected&&clanId===expected&&accountEpoch===epoch&&user?.id===actor&&this.getActiveClanTag()===tag&&request?.context?.clanId===expected&&request?.context?.clanTag===tag&&request?.context?.session===epoch;
@@ -689,6 +702,7 @@ const cloud={
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
   const activityEntry=document.querySelector('[data-more-action="activity-goldpass"]');
   if(activityEntry)activityEntry.hidden=!managementAllowed;
+  window.CWLActivityMembers?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLActivityGoldpass?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   const label=activeClan?.name||"Clan";

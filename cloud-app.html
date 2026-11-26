@@ -2509,6 +2509,13 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 
 /* #183 phase 1: quiet, read-only clan-rank overview – no extra cards per player. */
 #view-clan-management{max-width:1040px;margin:0 auto}
+ .activity-member-toolbar,.activity-member-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,160px);gap:10px;align-items:center}
+ .activity-member-row{border-top:1px solid var(--line);padding:12px 0;min-width:0}
+ .activity-member-row strong,.activity-member-row small{display:block;overflow-wrap:anywhere}
+ .activity-member-row details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+ .activity-member-row select,.activity-member-toolbar input,.activity-member-toolbar select{max-width:100%;width:100%;min-height:44px}
+ .activity-member-row details button{margin-top:8px;min-height:44px}
+ #clanActivityMembers .goldpass-field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .clan-management-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
 .clan-management-criteria{margin:5px 0 18px;border-bottom:1px solid var(--line);padding-bottom:14px}
 .clan-management-criteria>summary{font-size:14px;font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px}
@@ -4197,11 +4204,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.35.0</strong><span>Faire CWL-Goldpass-Verlosung</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.36.0</strong><span>Mitgliedsmerkmale & Grind-Verlosung</span></div>
       <ul>
-       <li><b>Goldpass:</b> Drei faire Losvorlagen und nachvollziehbare Losberechnung.</li>
-       <li><b>Testziehung:</b> Unverbindlich ausprobieren, ohne eine Verlosung zu speichern.</li>
-       <li><b>Glücksrad:</b> Anteiliges Rad und einmalig gespeicherter offizieller Gewinner.</li>
+       <li><b>Clanverwaltung:</b> Discord und Mehrfachaccounts zentral pflegen.</li>
+       <li><b>Grind:</b> Optional ein Los pro Person statt pro Account.</li>
+       <li><b>Testziehung:</b> Auch Grind-Verlosungen unverbindlich mit Glücksrad ausprobieren.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4515,6 +4522,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanliste aktualisieren</button>
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine Clanliste geprüft.</span>
  </div>
+ <details id="clanActivityMembers" class="clan-management-criteria"><summary>Mitgliedsmerkmale <span class="subtle">· Discord & Mehrfachaccounts</span></summary><div id="clanActivityMembersContent"></div></details>
  <details id="clanManagementCriteria" class="clan-management-criteria">
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
@@ -4840,15 +4848,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.35.0"></script>
-<script src="./clan-management-missed-core.js?v=1.35.0"></script>
-<script src="./clan-management-cw-core.js?v=1.35.0"></script>
-<script src="./clan-management-cw-view.js?v=1.35.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.35.0"></script>
-<script src="./cwl-planning-core.js?v=1.35.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.35.0"></script>
+<script src="./clan-management-core.js?v=1.36.0"></script>
+<script src="./clan-management-missed-core.js?v=1.36.0"></script>
+<script src="./clan-management-cw-core.js?v=1.36.0"></script>
+<script src="./clan-management-cw-view.js?v=1.36.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.36.0"></script>
+<script src="./cwl-planning-core.js?v=1.36.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.36.0"></script>
 <script>
-const APP_VERSION="v1.35.0";
+const APP_VERSION="v1.36.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6900,7 +6908,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.35.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.36.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7023,7 +7031,7 @@ async function openGoldpassPreview(){
  try{
   if(!goldpassView){
    root.textContent="Vorschau wird geladen …";
-   const module=await import("./cwl-goldpass-view.mjs?v=1.35.0");
+   const module=await import("./cwl-goldpass-view.mjs?v=1.36.0");
    const now=goldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
    goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
@@ -7037,7 +7045,35 @@ async function openGoldpassPreview(){
   goldpassView.open();
  }catch{root.textContent="Goldpass-Vorschau konnte nicht geladen werden. Bitte erneut öffnen."}
 }
-let activityGoldpassView=null;
+let activityMemberView=null,activityMemberImport=0,activityMemberScope=null;
+ const activityMemberPanel=document.getElementById("clanActivityMembers");
+ window.CWLActivityMembers={accessChanged(c){
+  const next=c?c.clanId+"|"+c.clanTag+"|"+c.session:null;
+  const retained=activityMemberView?.accessChanged(c);
+  if(!c||activityMemberScope!==null&&activityMemberScope!==next||activityMemberView&&retained===false){
+   activityMemberScope=null;activityMemberImport++;
+   activityMemberPanel.open=false;
+   document.getElementById("clanActivityMembersContent").replaceChildren();
+  }
+ }};
+ activityMemberPanel.addEventListener("toggle",async()=>{
+  if(!activityMemberPanel.open)return;
+  const c=activityGoldpassContext(),token=++activityMemberImport;
+  if(!c){activityMemberPanel.open=false;return}
+  activityMemberScope=c.clanId+"|"+c.clanTag+"|"+c.session;
+  const root=document.getElementById("clanActivityMembersContent");
+  try{
+   if(!activityMemberView){
+    root.textContent="Mitgliedsmerkmale werden geladen …";
+    const m=await import("./cwl-activity-member-view.mjs?v=1.36.0");
+    const now=activityGoldpassContext();
+    if(token!==activityMemberImport||!activityMemberPanel.open||now?.clanId!==c.clanId||now?.clanTag!==c.clanTag||now?.session!==c.session)return;
+    activityMemberView=m.createActivityMemberView({root,getContext:activityGoldpassContext,api:r=>window.CWLCloud.activityMemberRequest(r)});
+   }
+   activityMemberView.open();
+  }catch{if(token===activityMemberImport)root.textContent="Mitgliedsmerkmale konnten nicht geladen werden. Bitte erneut öffnen."}
+ });
+ let activityGoldpassView=null;
 function activityGoldpassContext(){
  const c=window.CWLCloud;
  return c?.active&&c.isOwner?.()&&c.hasApiClan?.()?{owner:true,clanId:c.getActiveClanId(),clanTag:c.getActiveClanTag?.(),session:c.getActivitySession?.()}:null;
@@ -7053,7 +7089,7 @@ async function openActivityGoldpass(){
  try{
   if(!activityGoldpassView){
    root.textContent="Verlosungen werden geladen …";
-   const module=await import("./cwl-activity-campaign-view.mjs?v=1.35.0");
+   const module=await import("./cwl-activity-campaign-view.mjs?v=1.36.0");
    const now=activityGoldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-activity-goldpass").classList.contains("active"))return;
    activityGoldpassView=module.createActivityCampaignView({root,getContext:activityGoldpassContext,api:request=>window.CWLCloud.activityCampaignRequest(request),
@@ -7352,6 +7388,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.35.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.36.0"></script>
 </body>
 </html>

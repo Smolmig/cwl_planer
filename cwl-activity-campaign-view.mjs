@@ -1,11 +1,14 @@
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.35.0";
-import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.35.0";
+import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.36.0";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.36.0";
+import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace} from "./cwl-activity-campaign.mjs?v=1.36.0";
 const metrics=[
  ["donations","Spenden",3500],["cwStars","Normale CW-Sterne",28],["cwAttacks","Normale CW-Angriffe",12],
  ["cwTriples","Normale CW-Dreier",8],["cwlStars","CWL-Sterne",15],["cwlAttacks","CWL-Angriffe",5],
  ["cwlTriples","CWL-Dreier",4],["discord","Discord vertreten",true],["voted","Abgestimmt / reagiert",true]
 ];
 const names=Object.fromEntries(metrics.map(([key,label])=>[key,label]));
+const personRule={metric:"onePerPerson",minimum:true};
+const wheelRows=pool=>pool.map(p=>({...p,tickets:1}));
 const n=(tag,text="",cls="")=>{const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e};
 const field=(label,input)=>{const e=n("label","","goldpass-field");e.append(n("span",label),input);return e};
 const input=(type,value)=>{const e=n("input");e.type=type;if(type==="checkbox")e.checked=!!value;else e.value=String(value??"");return e};
@@ -24,7 +27,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   try{
    const opts=wars===""?{}:{normalWars:Number(wars)};
    const r=presetTargets(id,draft.start,draft.end,opts);
-   draft.rules=r.rules;
+   draft.rules=[...r.rules,...draft.rules.filter(x=>x.metric==="onePerPerson")];
    presetInfo=r.assumptions.normalWars+" normale CWs · maximal "+r.assumptions.maximumStars+" Sterne · "+r.assumptions.plannedAttacks+" erwartete Angriffe à "+r.assumptions.starsPerAttack+" Sterne · "+r.assumptions.donationsPerWeek+" Spenden/Woche. "+(r.assumptions.estimated?"Schätzung: 2 CWs/Woche, Tage 1–7 je Monat ausgenommen.":"Eigene CW-Anzahl.");
    dirty=true;message="";
   }catch{message="Bitte gültigen Zeitraum und realistische CW-Anzahl wählen."}
@@ -40,7 +43,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
  }
  function listLoad(){return request({action:"list"},r=>{if(!Array.isArray(r))throw Error("bad list");list=r})}
  function read(id){if(!dirty)return request({action:"read",id},adopt)}
- function save(){if(!draft||busy)return;try{activityPeriod(draft.start,draft.end);if(!draft.rules.length||draft.rules.some(r=>r.minimum!==true&&(!Number.isInteger(r.minimum)||r.minimum<0)))throw Error("invalid")}catch{message="Zeitraum und mindestens ein gültiges Ziel eingeben.";render();return}
+ function save(){if(!draft||busy)return;try{activityPeriod(draft.start,draft.end);if(!draft.rules.some(r=>r.metric!=="onePerPerson")||draft.rules.some(r=>r.minimum!==true&&(!Number.isInteger(r.minimum)||r.minimum<0)))throw Error("invalid")}catch{message="Zeitraum und mindestens ein gültiges Ziel eingeben.";render();return}
   return request({action:current?"save":"create",...clone(draft),revision:current?.revision},r=>{adopt(r);list=[{id:r.id,title:r.title,start:r.start,end:r.end},...list.filter(x=>x.id!==r.id)]})
  }
  async function draw(){
@@ -68,10 +71,11 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
    const animate=animateNextDraw;animateNextDraw=false;
    const audit=n("details");
    root.append(renderDrawReveal({winnerName:o.winner.name,winnerTag:o.winner.tag,animate,weighted:false,
-    subtitle:o.pool.length+" qualifizierte Teilnehmer · einmalige Ziehung",onReveal:()=>{audit.hidden=false}}));
+    rows:wheelRows(o.pool),ticket:o.ticket,subtitle:o.pool.length+" gültige Lose · einmalige Ziehung",onReveal:()=>{audit.hidden=false}}));
    audit.hidden=animate&&!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
    audit.append(n("summary","Gespeicherter Teilnehmer- und Zielstand"),
     n("p",(Number.isInteger(o.ticket)?"Losindex "+(o.ticket+1)+" von "+o.pool.length+" · ":"")+"Prüfsumme: "+o.witness,"statusline"));
+   if(o.rules?.some(r=>r.metric==="onePerPerson"))audit.append(n("p","Ein Los je zugeordneter Person. Gewinn-Account: qualifizierter Hauptaccount, sonst erster qualifizierter Spielertag. Keine Zusammenrechnung von Leistungen.","statusline"));
    for(const p of o.rows)audit.append(n("p",p.name+" · "+p.status+" · "+p.checks.map(x=>names[x.metric]+": "+(x.value??x.status)).join(" / "),"statusline"));
    root.append(audit);return;
   }
@@ -103,16 +107,34 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
    }
    root.append(line);
   }
+  const group=input("checkbox",draft.rules.some(r=>r.metric==="onePerPerson"));group.disabled=busy||started;
+  group.onchange=()=>{draft.rules=draft.rules.filter(r=>r.metric!=="onePerPerson");if(group.checked)draft.rules.push(personRule);dirty=true;render()};
+  const extra=n("details");extra.append(n("summary","Weitere Teilnahmeoptionen"),field("Nur ein Los pro Person",group),n("p","Verknüpfe Mehrfachaccounts unter Mehr → Clanverwaltung → Mitgliedsmerkmale. Jeder Account muss die Ziele selbst erreichen. Pro Person zählt nur ein qualifizierter Account: der Hauptaccount, falls qualifiziert, sonst der erste qualifizierte Spielertag. Veranstalter werden als Person ausgeschlossen. Nicht zugeordnete Accounts gelten als eigenständige Personen.","statusline"));root.append(extra);
   root.append(n("p","Ranked, Raid und Clanspiele folgen nach tatsächlicher API-/Tracking-Prüfung. Spenden und CW/CWL nutzen die vorhandenen Beobachtungen.","statusline"));
   const saveBtn=button(current?"Änderungen speichern":"Verlosung anlegen",save,busy||!dirty);root.append(saveBtn);
   if(!current)return;
-  root.append(n("h3","Fortschritt"),n("p",current.qualified+" qualifiziert · "+current.unknown+" noch nicht eindeutig · "+(current.rows||[]).length+" beobachtete Teilnehmer","statusline"),
+  root.append(n("h3","Fortschritt"),n("p",current.qualified+(current.onePerPerson?" qualifizierte Personen":" qualifiziert")+" · "+current.unknown+" Accounts noch nicht eindeutig · "+(current.rows||[]).length+" beobachtete Teilnehmer","statusline"),
    n("p","Belegte Untergrenzen, nicht lückenlose Aktivität. CWs zählen nach gespeichertem Kriegsstart; nur abgeschlossene Kriege. Discord und Abstimmungen werden manuell gesetzt.","statusline"),
    button("Fortschritt neu laden",()=>read(current.id),busy||dirty));
+  if(Array.isArray(current.pool)&&current.pool.length){
+   const testResult=n("div"),test=button("Testziehung starten",()=>{
+    if(dirty||busy||key(context())!==scope)return;
+    try{const rows=wheelRows(current.pool),pick=sampleRaffle({rows,total:rows.length}),winner=rows.find(p=>p.tag===pick.winnerTag);
+     testResult.replaceChildren(renderDrawReveal({winnerName:winner.name,winnerTag:winner.tag,rows,ticket:pick.ticket,test:true,animate:true,subtitle:"Unverbindlich · nicht gespeichert"}));
+    }catch{testResult.replaceChildren(n("p","Testziehung nicht verfügbar.","statusline"))}
+   },busy||dirty);
+   root.append(test,n("p","Testziehung aus dem aktuellen qualifizierten Los-Pool. Kein offizieller Gewinner.","statusline"),testResult);
+  }
   for(const p of current.rows||[]){
    const card=n("article","","goldpass-player"),head=n("div","","goldpass-player-head");
    head.append(n("strong",p.name),n("span",({qualified:"Qualifiziert",unknown:"Offen / nicht belegt",unmet:"Nicht erfüllt",excluded:"Ausgeschlossen"})[p.status]||p.status));
    card.append(head,n("small",p.tag,"statusline"));
+   if(current.onePerPerson&&p.groupKey){
+    const groupName=(current.rows||[]).find(x=>x.tag===p.groupKey)?.name||p.groupKey;
+    const representative=(current.pool||[]).find(x=>x.groupKey===p.groupKey);
+    const description=p.groupKey!==p.tag?"Zweitaccount von "+groupName:"Eigenständiger oder Hauptaccount";
+    card.append(n("p",description+(p.status==="qualified"&&representative?(representative.tag===p.tag?" · 1 Los für diese Person":" · Los bereits über "+representative.name):""),"statusline"));
+   }
    for(const check of p.checks||[]){
     const numeric=typeof check.minimum==="number";
     card.append(n("p",names[check.metric]+": "+(numeric?(check.value??"–")+" / "+check.minimum:({met:"Ja",unmet:"Nein",unknown:"Unbekannt"})[check.status])+(numeric?" · "+(check.status==="met"?"Ziel belegt":"Ziel noch nicht belegt"):""),"statusline"));
@@ -124,7 +146,7 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
    voted.disabled=busy;voted.onchange=()=>decision(p.tag,{voted:voted.value===""?undefined:voted.value==="yes"});
    const excluded=input("checkbox",d.excluded===true),organizer=input("checkbox",d.organizer===true);
    excluded.disabled=organizer.disabled=busy;excluded.onchange=()=>decision(p.tag,{excluded:excluded.checked});organizer.onchange=()=>decision(p.tag,{organizer:organizer.checked});
-   const opts=n("div","","goldpass-options");opts.append(field("Discord (dauerhaft)",discord),field("Abgestimmt (diese Verlosung)",voted),field("Ausschließen",excluded),field("Veranstalter",organizer));card.append(opts);
+   const opts=n("div","","goldpass-options");opts.append(field("Discord (dauerhaft)",discord),field("Abgestimmt (diese Verlosung)",voted),field("Ausschließen",excluded),field("Veranstalter",organizer));const edit=n("details");edit.append(n("summary","Teilnahme bearbeiten"),opts);card.append(edit);
    if(date>draft.end&&(p.status==="unknown"||d.resolution)){
     const resolution=select([["","Noch offen"],["qualify","Nach Prüfung zulassen"],["exclude","Nach Prüfung ausschließen"]],d.resolution||"");
     const note=input("text",d.note||"");note.maxLength=240;resolution.disabled=note.disabled=busy;
