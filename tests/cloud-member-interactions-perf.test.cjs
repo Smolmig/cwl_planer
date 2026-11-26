@@ -194,3 +194,71 @@ test("rapid member searches are batched into one redraw and filters flush a pend
   }finally{await page.close()}
  }finally{await browser.close()}
 });
+
+test("Form 2.0 member cards use actual rendering and selected metric at desktop and mobile widths",{timeout:120000},async()=>{
+ const fs=require("node:fs");
+ const path=require("node:path");
+ const core=await import("../cwl-stats-core.mjs");
+ const compare=core.compareMemberFormV2.toString();
+ const formHelpers=html.slice(html.indexOf("function memberViewSort(){"),html.indexOf("function availabilityLabel("));
+ const th=html.slice(html.indexOf("function memberTownHallMarkup("),html.indexOf("function rotationWeightLabel("));
+ const form=html.slice(html.indexOf("function memberPerformance(m){"),html.indexOf("window.CWLRefreshMembers="));
+ const binding=html.match(/document\.getElementById\("memberSortSelect"\)\.onchange=e=>[^\n]+/)[0];
+ const fixture=code
+   .replace('function memberViewSort(){return state.config.memberSort}','')
+   .replace('function getVisibleMembers(){return state.members}','function getVisibleMembers(){return getDisplayMembers()}')
+   .replace('function memberTownHallMarkup(m){return "RH "+(m.townHall||"–")}','')
+   .replace('function memberPerformance(){return "Noch keine Angriffe erfasst"}','')
+   +formHelpers+th+form+"\n"+binding+"\n"+`
+ let preference="form-cw";
+ const models={};
+ window.CWLCloud={active:true,getActiveClanId:()=>"fixture",hasApiClan:()=>true,isViewer:()=>false,getMemberSortPreference:()=>preference,setMemberSortPreference:v=>{preference=v}};
+ window.CWLCloudStats={getMemberFormV2:tag=>models[tag],compareMemberFormV2:`+compare+`};
+ const m=(tag,name,score,cwl,quality,clan)=>({tag,name,score,cwl,quality,clan});
+ const people=[m("#PYYY","Aktuell sehr gut",84,68,0,"United Fighters"),m("#PQLV","Zweitclan-Spieler",76,92,1,"UF 2"),m("#8PYL","Ältere Daten",98,82,3,"United Fighters"),m("#QPYL","Noch keine Daten",null,null,4,"")];
+ for(const p of people){
+  const v=(score,tier,season)=>({formIndex:score,performanceIndex:score,hitRate:score===null?null:90,attacks:tier===0?12:tier===1?4:tier===3?10:0,warCount:tier===0?6:tier===1?2:0,
+   currentReliability:score===null?null:100,currentMissedKnown:tier===1?1:0,tier,season,historical:tier===3,newest:"2026-09-10",sourceClans:p.clan?[p.clan]:[]});
+  models[p.tag]={cw:v(p.score,p.quality),cwl:v(p.cwl,p.cwl===null?4:0,"2026-11"),combined:v(p.score,p.quality)};
+ }
+ state.members=people.map((p,i)=>({id:"id"+i,name:p.name,playerTag:p.tag,participating:true,fixed:i===0,priority:0,statuses:Array(7).fill("auto"),townHall:19,threeStar:"unknown",note:"",rotationWeight:"balanced",cocOrder:i,cocSyncState:"active"}));
+ document.body.classList.add("cloud-mode","cloud-role-owner");
+ for(const node of document.querySelectorAll(".view"))node.classList.toggle("active",node.id==="view-members");
+ document.getElementById("view-members").classList.add("active");
+ renderMembers();
+ `;
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,430,1366,1440]){
+   const page=await browser.newPage({viewport:{width,height:900}});
+   try{
+    await page.route("https://assets.clashk.ing/**",route=>route.abort());
+    await page.setContent(cleanHtml,{waitUntil:"domcontentloaded"});
+    await page.addScriptTag({content:fixture});
+    const result=await page.evaluate(()=>{
+     const ids=()=>Array.from(document.querySelectorAll("#memberList .member"),x=>x.dataset.id);
+     const main=()=>document.querySelector("#memberList .member .member-form-main strong")?.textContent;
+     const cw=ids(),cwValue=main();
+     const select=document.getElementById("memberSortSelect");select.value="form-cwl";select.dispatchEvent(new Event("change",{bubbles:true}));
+     const cwl=ids(),cwlValue=main();
+     select.value="form-combined";select.dispatchEvent(new Event("change",{bubbles:true}));
+     const combined=ids(),combinedValue=main();
+     const cards=Array.from(document.querySelectorAll("#memberList .member"));
+     const overflow=cards.some(x=>x.scrollWidth>x.clientWidth+2);
+     return {cw,cwValue,cwl,cwlValue,combined,combinedValue,overflow,shared:window.__getRenderAllCalls(),formText:document.getElementById("memberList").textContent};
+    });
+    assert.deepEqual(result.cw,["id0","id1","id2","id3"]);
+    assert.match(result.cwValue,/CW-Form 84\/100/);
+    assert.deepEqual(result.cwl,["id1","id2","id0","id3"]);
+    assert.match(result.cwlValue,/CWL-Form 92\/100/);
+    assert.deepEqual(result.combined,result.cw);assert.match(result.combinedValue,/Kombi-Form 84\/100/);
+    assert.equal(result.shared,0);assert.equal(result.overflow,false,"member card overflow at "+width);
+    assert.match(result.formText,/UF 2/);assert.match(result.formText,/Ältere Daten/);
+    if(process.env.CWL_UX_SCREENSHOTS){
+     const target=process.env.CWL_UX_SCREENSHOTS;fs.mkdirSync(target,{recursive:true});
+     await page.locator("#view-members").screenshot({path:path.join(target,"members-"+width+".png"),animations:"disabled",timeout:10000});
+    }
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});
