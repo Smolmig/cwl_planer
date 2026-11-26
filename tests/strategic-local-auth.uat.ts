@@ -64,6 +64,7 @@ sql("insert into public.cwl_cloud_profiles(clan_id,profile_json,updated_by) valu
 const snapshot=()=>sql("select md5(coalesce(jsonb_agg(to_jsonb(p) order by clan_id)::text,'')) from public.cwl_cloud_profiles p");
 const before=snapshot();
 Deno.env.delete("CWL_STRATEGIC_SHADOW_ENABLED");
+Deno.env.delete("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES");
 Deno.env.set("CWL_STRATEGIC_SHADOW_CLANS",a);
 const {default:handler}=await import("../supabase/functions/coc-cwl-status/index.ts");
 async function invoke(name:string|null,clan=a,token?:string,extra:Record<string,unknown>={}){
@@ -90,10 +91,18 @@ for(const name of ["owner","editor"]){
  const body=await response.json();
  assert.equal(body.clanTag,own);assert.equal(body.strategic.status,"preview_data");
  assert.equal(body.strategic.group.upcoming.length,1);
+ assert.equal(body.strategic.standings.demotion,"unknown_rules");
  assert.ok(!JSON.stringify(body).includes("synthetic player private label"));
  assert.ok(!JSON.stringify(body).includes("private A"));
 }
 assert.equal(warCalls,2,"mutable war must be read twice, no stale preparation cache");
+const record={clanId:a,clanTag:own,season,teamSize:15,anchorWarTag:warTag,league:"Master II",fullGroupSize:8,promotionPlaces:2,demotionPlaces:2,source:"in_game_current_group",verifiedAt:new Date().toISOString()};
+let review=await invoke("owner",a,undefined,{rules:record,ruleContext:{clanId:a,records:JSON.stringify([record])}});
+assert.equal(review.status,200);assert.equal((await review.json()).strategic.standings.demotion,"unknown_rules","client cannot inject rules");
+Deno.env.set("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES",JSON.stringify([record]));
+review=await invoke("owner");assert.equal(review.status,200);
+assert.equal((await review.json()).strategic.standings.demotion,"not_applicable");
+Deno.env.delete("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES");
 // Revoke the editor after first membership check, while Clash response is
 // being assembled. Same still-valid JWT may no longer access that clan.
 afterGame=()=>sql("delete from public.cwl_clan_memberships where clan_id='"+a+"' and user_id='"+ids.editor.id+"'");

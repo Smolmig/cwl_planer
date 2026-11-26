@@ -2,6 +2,7 @@
 // No DB calls, arbitrary clan/war queries, writes or raw foreign attack output.
 import {analyzeCwlGroup} from "./strategic-opponents.mjs";
 import {assessStrategicStandings} from "./strategic-standings.mjs";
+import {resolveReviewedLeagueRules} from "./strategic-league-rules.mjs";
 const TAG=/^#[0289PYLQGRJCUV]{3,15}$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const tag=v=>typeof v==="string"?v.trim().toUpperCase():"";
@@ -36,7 +37,7 @@ function preparationStart(value){
  const ms=Date.parse(iso);
  return Number.isFinite(ms)&&new Date(ms).toISOString()===iso?ms:null;
 }
-export function projectStrategicGroup({group,results,clanTag,season,observedAt,readStartedAt=observedAt}={}){
+export function projectStrategicGroup({group,results,clanTag,season,observedAt,readStartedAt=observedAt,ruleContext=null}={}){
  const own=tag(clanTag),n=group?.clans?.length;
  if(!TAG.test(own)||!/^\d{4}-(0[1-9]|1[0-2])$/.test(season||"")||!Number.isFinite(observedAt)||!Number.isFinite(readStartedAt)||readStartedAt>observedAt||observedAt-readStartedAt>=300000||
  !["preparation","inWar","ended"].includes(group?.state)||!new RegExp("^"+season+"(?:-\\d{2})?$").test(String(group.season||""))||
@@ -83,9 +84,12 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  const trim=s=>({tag:s.tag,stars:s.stars,destructionPercentage:s.destructionPercentage});
  return {...w,clan:trim(w.clan),opponent:trim(w.opponent)};
  })}))};
- const standings=assessStrategicStandings({snapshot:scores,selectedClanTag:own,season,asOf:observedAt,teamSize});
+ const ownWarTags=[...ownWars,...analyzed.upcoming].map(w=>w.warTag);
+ const rules=resolveReviewedLeagueRules({records:ruleContext?.records,clanId:ruleContext?.clanId,clanTag:own,season,teamSize,observedAt,ownWarTags});
+ const standings=assessStrategicStandings({snapshot:scores,selectedClanTag:own,season,asOf:observedAt,teamSize,league:rules?.league,rules});
+ if(rules)standings.ruleEvidence={source:rules.source,verifiedAt:rules.verifiedAt,promotionPlaces:rules.promotionPlaces,demotionPlaces:rules.demotionPlaces};
  return {status:consistent?"preview_data":"unverified_registration",registered:consistent?registered:null,group:groupView,standings,scoreSnapshot:scores,
  format:{teamSize,attacksPerMemberReported:!formats.has("not_reported")},quality:{unverifiedCounters,unverifiedPreparation,observedAt,readStartedAt,
  validUntil:Math.min(readStartedAt+300000,...analyzed.upcoming.map(w=>preparationEnds.get(w.warTag))),serverReadTimeNotExactAttackTime:true},
- limitations:["shadow_only","league_rules_not_verified","not_a_historical_snapshot_store","no_automatic_apply"]};
+ limitations:["shadow_only",...(rules?[]:["league_rules_not_verified"]),"not_a_historical_snapshot_store","no_automatic_apply"]};
 }

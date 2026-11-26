@@ -115,7 +115,7 @@ async function currentNormalWar(clanTag,key) {
       clan:safeSide(our),opponent:safeSide(enemy)};
   }catch{return null} // Optional statistics endpoint: never prevent CWL planning.
 }
-async function loadStatus(clanTag,key,strategic=false) {
+async function loadStatus(clanTag,key,strategic=false,ruleContext=null) {
   const readStartedAt=Date.now();
   const group=await getGame("/clans/"+encodeURIComponent(clanTag)+"/currentwar/leaguegroup",key);
   if(!group || group.state==="notInWar")return {
@@ -179,7 +179,7 @@ async function loadStatus(clanTag,key,strategic=false) {
   // Return only compact team summaries for other pairings: never player rosters,
   // raw API objects, or extra requests from the client.
   if(strategic)return {ok:true,active:true,season,clanTag,
-    strategic:projectStrategicGroup({group,results,clanTag,season,observedAt:Date.now(),readStartedAt})};
+    strategic:projectStrategicGroup({group,results,clanTag,season,observedAt:Date.now(),readStartedAt,ruleContext})};
   const groupSummary={
     season,clanTag,
     clans:[...groupClans.entries()].slice(0,8).map(([t,clan])=>({
@@ -441,7 +441,7 @@ const handler=withSupabase({auth:"user"},async(req,ctx)=>{
       allowlist:Deno.env.get("CWL_STRATEGIC_SHADOW_CLANS")}))return fail("strategic_unavailable",403);
     try{
       const result=await readStrategicWithRecheck({
-        read:()=>loadStatus(clanTag,key,true),
+        read:()=>loadStatus(clanTag,key,true,{clanId,records:Deno.env.get("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES")}),
         verify:async()=>{
           const {data:current,error:currentErr}=await ctx.supabase.from("cwl_clan_memberships")
             .select("role").eq("clan_id",clanId).eq("user_id",ctx.userClaims.id).maybeSingle();

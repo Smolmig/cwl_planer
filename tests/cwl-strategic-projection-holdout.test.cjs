@@ -53,7 +53,7 @@ test("opt-in route after membership before regular cache and writes",()=>{
  const fs=require("node:fs"),path=require("node:path"),s=fs.readFileSync(path.join(__dirname,"../supabase/functions/coc-cwl-status/index.ts"),"utf8");
  assert.ok(s.indexOf("not_a_member")<s.indexOf("if(body?.strategic===true)"));
  assert.ok(s.indexOf("if(body?.strategic===true)")<s.indexOf("const prior=CACHE.get(clanId)"));
- assert.match(s,/CWL_STRATEGIC_SHADOW_ENABLED/);assert.match(s,/CWL_STRATEGIC_SHADOW_CLANS/);assert.match(s,/loadStatus\(clanTag,key,true\)/);
+ assert.match(s,/CWL_STRATEGIC_SHADOW_ENABLED/);assert.match(s,/CWL_STRATEGIC_SHADOW_CLANS/);assert.match(s,/loadStatus\(clanTag,key,true,\{/);assert.match(s,/Deno\.env\.get\("CWL_STRATEGIC_REVIEWED_LEAGUE_RULES"\)/);
 });
 
 test("strategic read discards response after revocation or failed link check",async()=>{
@@ -84,4 +84,18 @@ test("API projection through real daily pilot: incomplete future days frozen and
  const x=buildPilotPreview(args);assert.equal(x.canApply,false);assert.deepEqual(x.editableDays,[2]);assert.deepEqual(x.changes,[]);assert.equal(x.display.recommendation,null);assert.match(x.display.tableStatus,/Abstiegsregeln nicht bestätigt/);
  assert.equal(x.expiresAt,now+299000);
  assert.throws(()=>buildPilotPreview({...args,projection:{...raw,quality:{...raw.quality,validUntil:now}}}),/pilot_live_scope/);
+});
+
+test("reviewed rules bind exact tenant, clan, cycle, format and observation",async()=>{
+ const {projectStrategicGroup}=await projection,s=data();
+ const row={clanId,clanTag:s.clanTag,season,teamSize:15,anchorWarTag:tag(112),league:"Master II",fullGroupSize:8,promotionPlaces:2,demotionPlaces:2,source:"in_game_current_group",verifiedAt:new Date(now-1000).toISOString()};
+ const run=(records,id=clanId)=>projectStrategicGroup({...s,ruleContext:{clanId:id,records:JSON.stringify(records)}});
+ const ok=run([row]);assert.equal(ok.standings.league,"Master II");assert.equal(ok.standings.promotion,"open");assert.equal(ok.standings.demotion,"not_applicable");
+ assert.equal(ok.standings.ruleEvidence.verifiedAt,row.verifiedAt);
+ for(const rows of [[{...row,season:"2026-10"}],[{...row,anchorWarTag:tag(111)}],[{...row,teamSize:30}],[{...row,clanTag:tag(1)}],
+  [{...row,verifiedAt:new Date(now+1).toISOString()}],[{...row,source:"third_party"}],[{...row,league:"Master 2"}],[row,row],
+  [{...row,promotionPlaces:7,demotionPlaces:2}],[{...row,league:"Legend League"}]]){
+  assert.equal(run(rows).standings.demotion,"unknown_rules");
+ }
+ assert.equal(run([row],"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb").standings.demotion,"unknown_rules");
 });
