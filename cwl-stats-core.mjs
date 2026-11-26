@@ -258,7 +258,7 @@ export function computePlayerFormWindows(wars,attacks,{
           normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,excludedPreviousRH:0,newest:null,
           performed:0,missedKnown:0,reliability:null,reliabilityComplete:false,
           reliabilityProvisional:false,formProvisional:false,
-          formIndex:null,performanceIndex:null,_unverified:new Set()
+          formIndex:null,performanceIndex:null,_unverified:new Set(),_clans:new Set(),_wars:new Set()
         }]))});
     }
     const p=profiles.get(key);
@@ -286,6 +286,7 @@ export function computePlayerFormWindows(wars,attacks,{
       if(a.attacker_th!==a.defender_th){b.excludedDifferentRH++;continue}
       if(currentThOnly&&currentTh.has(p.tag)&&a.attacker_th!==currentTh.get(p.tag)){b.excludedPreviousRH++;continue}
       b.attacks++;b.triples+=(a.stars===3?1:0);b.stars+=a.stars;
+      b._wars.add(w.war_key);if(w.formClanName)b._clans.add(w.formClanName);
       // ClashPerk Attack Log and Clash API both provide destruction.
       // Old/incomplete rows may not: never treat unknown % as a 0% hit.
       if(Number.isInteger(a.destruction)&&a.destruction>=0&&a.destruction<=100){
@@ -388,7 +389,7 @@ export function computePlayerFormWindows(wars,attacks,{
       b.formIndex=b.performanceIndex!==null&&b.reliability!==null?
         Math.round(.65*b.performanceIndex+.35*b.reliability):null;
       b.formProvisional=b.formIndex!==null&&!b.reliabilityComplete;
-      delete b._unverified;
+      b.warCount=b._wars.size;b.sourceClans=[...b._clans].sort();delete b._wars;delete b._clans;delete b._unverified;
     }
     return {...p,former:current.size>0&&!current.has(p.tag)};
   }).sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -500,7 +501,7 @@ export function computeMemberFormV2(wars,attacks,{
    const chosen=usable(a)?a:usable(b)?b:usable(h)?h:a||b||h||null;
    const tier=usable(a)?(a.attacks>=6?0:1):usable(b)?2:usable(h)?3:4;
    return [tag,{...chosen,tier,scope:key,season:key==="cwl"?season:null,recentDays,
-     currentReliability:a?.reliability??null,currentMissedKnown:a?.missedKnown??0,
+     currentReliability:a?.reliability??null,currentMissedKnown:a?.missedKnown??0,currentReliabilityProvisional:!!a?.reliabilityProvisional,
      historical:tier===3,previousRh:tier===2,selectedWars:rows.length}];
   }));
  }
