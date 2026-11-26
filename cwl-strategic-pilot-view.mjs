@@ -89,7 +89,7 @@ export function createStrategicPilotView({anchor,getContext,load}){
   for(const sc of s.scenarios){const o=el("option",sc.size+" Spieler"+(sc.excluded.length?" · prüfen":" · vollständiger Kader"));o.value=String(sc.size);choice.append(o)}
   choice.style.maxWidth="480px";filter.style.maxWidth="480px";
   results.append(el("h3","Kadervergleich"),el("p",formatText),choice,overview);
-  if(s.participation?.no)results.append(el("p",s.participation.no+" Absagen wurden nur für diesen Entwurf berücksichtigt."));
+  if(s.participation?.no)results.append(el("p",s.participation.no===1?"Eine Absage wurde nur für diesen Entwurf berücksichtigt.":s.participation.no+" Absagen wurden nur für diesen Entwurf berücksichtigt."));
   if(s.oldSeason)results.append(el("p","Der bisherige CWL-Plan bleibt unverändert. Tagesregeln und Einsatzziele der alten Saison gelten nicht für diesen Entwurf. Fix-Spieler und allgemeine Einstellungen bleiben berücksichtigt."));
   function selected(){
    const sc=s.scenarios.find(x=>String(x.size)===choice.value)||s.scenarios[0],m=sc.metrics;

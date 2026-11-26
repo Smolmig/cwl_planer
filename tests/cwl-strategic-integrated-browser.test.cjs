@@ -65,7 +65,7 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
   await participant.fill("Testspieler 2");await entry.getByLabel("Teilnahme Testspieler 2 "+profile.members[1].playerTag,{exact:true}).selectOption("yes");
   await participant.fill("Testspieler 3");await entry.getByLabel("Teilnahme Testspieler 3 "+profile.members[2].playerTag,{exact:true}).selectOption("no");
   await entry.getByLabel("Angenommene Kriegstage").selectOption("5");await calculate.click();
-  await page.getByText("Kadervergleich",{exact:true}).waitFor();assert.match(await entry.innerText(),/1 Absagen|1 Absage/);
+  await page.getByText("Kadervergleich",{exact:true}).waitFor();assert.match(await entry.innerText(),/Eine Absage wurde nur für diesen Entwurf berücksichtigt/);
   assert.match(await entry.innerText(),/5 Kriegstage/);assert.match(await entry.innerText(),/16 Spieler mit offener Teilnahme/);
   await entry.getByLabel("CWL-Format").selectOption("30");await calculate.click();
   await page.getByText("Entwurf noch nicht möglich",{exact:true}).waitFor();

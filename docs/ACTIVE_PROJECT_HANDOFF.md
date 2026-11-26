@@ -1,3 +1,5 @@
+> **Stufe 12 bestätigt:** 1022/1022, 0 Fehler/skipped (45896969580), WebKit-Upload-UAT grün. Stufe 13 Copy-Nachbesserung: Absage/Pause eindeutig pro Spieler, korrekter Singular. Neue CI ausstehend.
+
 > **26.11.2026 – #44 Shadow-Stufe 13 / PR #359:** Optionale Teilnahmeabsichten pro aktuellem Clan-Entwurf (Offen/Zusage/Absage, Suche/Anzahl), 15/30 und 5/7 als Annahmen, Konflikte mit Fix/MUSS/exakten Zielen und fehlende Teilnehmer erklärt. Keine Speicherung/Übernahme/Transfer; Scopewechsel löscht Antworten. Neuer Unit-Test und erweiterter integrierter Browser-Test. Stufe 12 CI noch offen beim Start, WebKit-Upload-UAT grün. Neue CI/visuelle Abnahme ausstehend, kein Deploy. Danach Staging-Edge/Rechte, Liga-Regeln/Modellvalidierung.
 
 > **Phase-Refresh-Härtung:** laufende Routineabfrage verwirft eine noch frische bestätigte Phase nicht allein wegen `fetching`; ein neues Ergebnis, pending, Fehler, Stale/Clanwechsel invalidiert. Zusätzlicher isolierter Phase-Contract prüft Frische, alten Plan, Wechsel, Pending/Fehler und aktive Saison. CI offen.

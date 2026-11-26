@@ -60,7 +60,7 @@ test("optional poll and format affect only the draft, reject foreign answers and
  const compute=input=>buildPilotPreview({input,history,mode:"balanced",planStandard:planCwl,now:at});
  const input=preparePilotInput({...s,draft:{slots:15,days:5,answers}}),x=compute(input);
  assert.deepEqual(x.participation,{yes:1,no:1,unknown:16});assert.equal(x.scenarios[0].size,17);assert.equal(x.format.days,5);
- assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").proposed,null);assert.equal(JSON.stringify(s),before);
+ assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").proposed,null);assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").reason,"Absage für diesen Entwurf");assert.equal(JSON.stringify(s),before);
  assert.throws(()=>preparePilotInput({...s,draft:{slots:15,days:5,answers:[{...answers[0],tag:"#P08"}]}}),/pilot_invalid_draft_answer/);
  const short=compute(preparePilotInput({...s,draft:{slots:30,days:7,answers}}));assert.equal(short.scenarios.length,0);assert.match(short.issues[0],/30 Plätze.*17/);
  s.profile.members[1].fixed=true;

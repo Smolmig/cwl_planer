@@ -21,7 +21,7 @@ export function presentRosterRows({scenario,members,filter="all"}={}){
   seen.add(x.id);
   const standard=int(x.standardAppearances,0,7)?x.standardAppearances:null,proposed=int(x.scenarioAppearances,0,7)?x.scenarioAppearances:null;
   const changed=standard!==proposed,review=x.participation==="unknown"||Object.hasOwn(reasons,x.recommendation);
-  const reason=x.participation==="unknown"?"Teilnahme offen":(Object.hasOwn(reasons,x.recommendation)?reasons[x.recommendation]:null)||(m.fixed?"Fix":changed?"Einsatzverteilung geändert":"");
+  const reason=m.participationIntent==="no"?"Absage für diesen Entwurf":m.participating===false?"Teilnahme pausiert":x.participation==="unknown"?"Teilnahme offen":(Object.hasOwn(reasons,x.recommendation)?reasons[x.recommendation]:null)||(m.fixed?"Fix":changed?"Einsatzverteilung geändert":"");
   return {id:x.id,name:label(m),townHall:m.townHall,n:e.n,standard,proposed,changed,review,reason};
  }).sort((a,b)=>Number(b.review)-Number(a.review)||Number(b.changed)-Number(a.changed)||(b.proposed??-1)-(a.proposed??-1)||a.id.localeCompare(b.id));
  return {rows,shown:rows.filter(x=>filter==="all"||filter==="changes"&&x.changed||filter==="review"&&x.review)};
