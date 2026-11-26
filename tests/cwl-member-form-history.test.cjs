@@ -25,11 +25,11 @@ test("Duplicate clan profiles and ambiguous overlapping player-war evidence cann
  const r=mergeMemberFormClans(local,[duplicate,conflict]);
  assert.equal(r.attacks.length,1);assert.equal(r.wars.length,1);assert.equal(r.partial,true);assert.equal(r.excluded,2);
 });
-test("Cross-clan loader reads only authorized same-owner distinct linked clans",async()=>{
+test("Cross-clan loader reads only RLS-visible distinct linked clans, including shared clans",async()=>{
  const {loadMemberFormClans}=await load();
  const clans=[{id:"A",clash_tag:"#2PYL",owner_user_id:"u",name:"Main"},
   {id:"B",clash_tag:"#9PYL",owner_user_id:"u",name:"Second"},
-  {id:"C",clash_tag:"#8PYL",owner_user_id:"other",name:"Foreign"},
+  {id:"C",clash_tag:"#8PYL",owner_user_id:"other",name:"Shared"},
   {id:"D",clash_tag:"#2PYL",owner_user_id:"u",name:"Duplicate"}];
  const calls=[];
  const sb={from(table){
@@ -39,5 +39,5 @@ test("Cross-clan loader reads only authorized same-owner distinct linked clans",
   return q;
  }};
  const r=await loadMemberFormClans(sb,{clanId:"A",clanTag:"#2PYL"},{asOf:Date.parse("2026-11-26")});
- assert.deepEqual(r.sources.map(s=>s.clanId),["B"]);assert.ok(calls.every(([,id])=>id==="B"));assert.equal(r.partial,true);
+ assert.deepEqual(r.sources.map(s=>s.clanId),["B","C"]);assert.ok(calls.every(([,id])=>["B","C"].includes(id)));assert.equal(r.partial,true);
 });
