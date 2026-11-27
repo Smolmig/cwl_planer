@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.38.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.38.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.38.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.38.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.38.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.38.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.38.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.38.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.39.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.39.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.39.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.39.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.39.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.39.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.39.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.39.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -883,8 +883,6 @@ const cloud={
   window.CWLClanManagementView?.accessChanged?.(managementAllowed?clanId:null);
   const goldpassEntry=document.querySelector('[data-more-action="goldpass"]');
   if(goldpassEntry)goldpassEntry.hidden=!managementAllowed;
-  const activityEntry=document.querySelector('[data-more-action="activity-goldpass"]');
-  if(activityEntry)activityEntry.hidden=!managementAllowed;
   window.CWLActivityMembers?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLActivityGoldpass?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);
   window.CWLGoldpassPreview?.accessChanged?.(managementAllowed?{owner:true,clanId,clanTag:activeClan.clash_tag,session:accountEpoch}:null);

@@ -68,3 +68,16 @@ test("Balanced presets reward completed hits, respect rotation and scale to five
  assert.deepEqual(rafflePreview({...e,warCount:5,players:[players[2]]},RAFFLE_PRESETS.balanced).rows.map(x=>x.tickets),[12]);
  assert.throws(()=>rafflePreview(e,{perAttack:-1}),/invalid_weights/);
 });
+
+test("October template requires four triples and Discord, no starter tickets; legacy detection checks all fields",async()=>{
+ const {RAFFLE_PRESETS,rafflePresetKey,rafflePreview,DEFAULT_RAFFLE_RULES}=await load();
+ const p=(tag,n)=>({tag,appearances:7,attacks:n,stars:3*n,one:0,two:0,three:n});
+ const e={complete:true,warCount:7,players:[p(a,3),p(b,6),p(enemy,7)]};
+ const o=rafflePreview(e,RAFFLE_PRESETS.october,{[a]:{discord:true},[b]:{discord:true},[enemy]:{discord:true,organizer:true}});
+ assert.deepEqual(o.rows.map(x=>x.tickets),[0,6,0]);assert.equal(o.total,6);
+ assert.equal(rafflePresetKey(DEFAULT_RAFFLE_RULES),"custom");
+ for(const [k,r] of Object.entries(RAFFLE_PRESETS))assert.equal(rafflePresetKey(r),k);
+ assert.equal(rafflePresetKey({...RAFFLE_PRESETS.balanced,minimumType:"triples",minimum:3}),"custom");
+ assert.equal(rafflePresetKey({...RAFFLE_PRESETS.balanced,requireDiscord:true}),"custom");
+ assert.equal(rafflePreview(e,DEFAULT_RAFFLE_RULES).rows[1].tickets,13);
+});

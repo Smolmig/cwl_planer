@@ -6,7 +6,8 @@ export const DEFAULT_RAFFLE_RULES=Object.freeze({minimumType:"none",minimum:0,ba
 export const RAFFLE_PRESETS=Object.freeze({
  balanced:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:1,perAttack:1,highBonus:1,perfectBonus:1}),
  performance:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:2,perAttack:1,highBonus:1,perfectBonus:1}),
- participation:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:1,perAttack:2,highBonus:0,perfectBonus:0})
+ participation:Object.freeze({...DEFAULT_RAFFLE_RULES,base:0,three:1,perAttack:2,highBonus:0,perfectBonus:0}),
+ october:Object.freeze({...DEFAULT_RAFFLE_RULES,minimumType:"triples",minimum:4,base:0,three:1,requireDiscord:true,perAttack:0,highBonus:0,perfectBonus:0})
 });
 export function starThresholds(warCount){return warCount===5?{high:14,perfect:15}:{high:19,perfect:21}}
 export function raffleTicketBreakdown(p,r,warCount){
@@ -26,6 +27,13 @@ export function normalizeRaffleRules(input={}){
  if(!integer(r.minimum,0,limit)||!["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].every(k=>integer(r[k],0,100))||
     typeof r.requireDiscord!=="boolean")throw Error("invalid_weights");
  return Object.fromEntries([...Object.keys(DEFAULT_RAFFLE_RULES),"perAttack","highBonus","perfectBonus"].map(k=>[k,r[k]]));
+}
+// Compare all persisted rule fields, not just ticket weights. Missing
+// optional legacy fields normalize to zero, never to new preset values.
+export function rafflePresetKey(r){
+ try{const n=normalizeRaffleRules(r);return Object.entries(RAFFLE_PRESETS).find(([,p])=>{
+  const expected=normalizeRaffleRules(p);return Object.keys(expected).every(k=>expected[k]===n[k])
+ })?.[0]||"custom"}catch{return "custom"}
 }
 export function collectRaffleEvidence(snapshot,expectedClan){
  const own=tagOf(expectedClan),season=snapshot?.season,rounds=snapshot?.rounds;
