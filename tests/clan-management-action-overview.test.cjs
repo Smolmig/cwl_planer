@@ -72,6 +72,10 @@ test("DOM overview renders safe names and jumps to the player's existing normal-
   assert.equal(host.hidden,false);
   assert.match(d.getElementById("clanManagementActionHeading").textContent,/3 Spieler/);
   assert.equal(host.querySelector("img"),null);
+  const status=tag=>host.querySelector('[data-player-tag="'+tag+'"] .clan-management-person-status');
+  assert.equal(status("#2PYQ").dataset.review,"severe");
+  assert.equal(status("#2PYL").dataset.review,"warning");
+  assert.equal(status("#2PYG").dataset.review,"positive");
   const query=d.getElementById("managementActionQuery");
   query.value="#2pyq";api.renderClanManagementActionOverview();
   assert.equal(host.querySelectorAll(".clan-management-person").length,1);
