@@ -1162,7 +1162,27 @@ export function createCwlLive({sb,context,storage,notify,onStatus,onSnapshot,onI
       recordedCwlAttackResults(snapshot):{};
   };
   return {start,stop,render,refresh:()=>refreshNow(true),
-   getLifecycle,getPostseasonSnapshot:()=>getLifecycle().mode==="postseason"?getLifecycle().snapshot:null,
+   getLifecycle,
+   // A saved snapshot or a failed API call is not evidence that signup is open
+   // or that the old league has ended. Provide only a fresh phase observation.
+   getStrategicPhase:()=>{
+     const ctx=context(),model=getLifecycle(),now=Date.now();
+     if(!ctx.active||!ctx.clanId||!ctx.hasClanTag||activeClan!==ctx.clanId||
+       lastSuccessfulProfile!==ctx.profile||!current?.ok||!lastSuccessfulAt||
+       now-lastSuccessfulAt>FRESH_WINDOW_MS||offlineReason||current.pending)return null;
+     if(model.mode==="planning"&&model.reason==="league_active"&&current.active&&
+        current.clanTag===ctx.clanTag&&model.season===current.season)
+       return {phase:"daily",season:model.season,observedAt:lastSuccessfulAt};
+     if((model.mode==="idle"||model.mode==="postseason")&&
+       (confirmedNoCwl||current.active&&current.groupState==="ended"&&current.clanTag===ctx.clanTag)){
+       const previousSeason=model.mode==="postseason"?model.season:null;
+       if(previousSeason&&model.snapshot?.clanTag!==ctx.clanTag)return null;
+       if(ctx.profile?.locks?.some(l=>l?.locked)&&!previousSeason)return null;
+       return {phase:"roster",season:null,previousSeason,observedAt:lastSuccessfulAt};
+     }
+     return null;
+   },
+   getPostseasonSnapshot:()=>getLifecycle().mode==="postseason"?getLifecycle().snapshot:null,
    getPlayedAttackResults:()=>{
     // Backward-compatible completed-war contract for legacy statistics/viewers.
     // Live operational progress calls getObservedCwlAttackResults instead.

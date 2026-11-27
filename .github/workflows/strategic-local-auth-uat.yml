@@ -1,0 +1,77 @@
+name: Strategic CWL local Auth and server UAT
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/coc-cwl-status/**'
+      - 'supabase/functions/coc-cwl-strategy-beta/**'
+      - 'supabase/functions/coc-stats-collector/**'
+      - 'supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql'
+      - 'supabase/experimental/strategic-appwide-queue.sql'
+      - 'supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql'
+      - 'tests/strategic-local-auth.uat.ts'
+      - '.github/workflows/strategic-local-auth-uat.yml'
+      - 'supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql'
+      - 'supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: strategic-auth-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  local-auth:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      LOCAL_WORK: /tmp/cwl-strategic-auth-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - name: Start isolated Auth and PostgREST (never linked)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$LOCAL_WORK"
+          cd "$LOCAL_WORK"
+          supabase init --yes
+          supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          umask 077
+          supabase status -o env > local.env
+      - name: Apply actual base clan schema and owner SELECT policy locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "$LOCAL_WORK/local.env"
+          set +a
+          [[ "$API_URL" == http://127.0.0.1:* || "$API_URL" == http://localhost:* ]]
+          [[ "$DB_URL" == postgres*://*@127.0.0.1:* || "$DB_URL" == postgres*://*@localhost:* ]]
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
+          cmp supabase/experimental/strategic-appwide-queue.sql supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+          sleep 3
+      - name: Actual Deno handler with GoTrue JWT and caller-scoped RLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source "$LOCAL_WORK/local.env"
+          set +a
+          deno run --allow-env --allow-net=127.0.0.1:54321,localhost:54321 --allow-run=psql tests/strategic-local-auth.uat.ts
+      - name: Stop disposable services and remove credentials
+        if: always()
+        shell: bash
+        run: |
+          if [[ -d "$LOCAL_WORK/supabase" ]]; then
+            (cd "$LOCAL_WORK" && supabase stop --no-backup) || true
+          fi
+          rm -rf "$LOCAL_WORK"

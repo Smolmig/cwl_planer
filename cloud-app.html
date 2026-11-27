@@ -3836,6 +3836,13 @@ html.cloud-startup-pending .cloud-startup-splash{
  .cloud-portable-main-actions{display:grid;grid-template-columns:minmax(0,1fr)}
  .cloud-portable-main-actions>.btn{min-height:44px;width:100%}
  #cloudPortablePreview,#cloudPortableApply{width:100%}}
+
+ /* Semantic notices: restrained theme tint, explicit icon and title. */
+ .strategic-notice{--notice-accent:var(--danger,#d65353);margin:8px 0;padding:10px 12px;border:1px solid color-mix(in srgb,var(--notice-accent) 36%,var(--line));border-radius:9px;background:color-mix(in srgb,var(--notice-accent) 8%,var(--card));color:var(--text);overflow-wrap:anywhere}
+ .strategic-notice.is-positive{--notice-accent:var(--ok,#43966b)}
+ .strategic-notice strong{display:flex;align-items:baseline;gap:7px;font-size:inherit}
+ .strategic-notice-icon{color:var(--notice-accent);flex:none;font-weight:800}
+ .strategic-notice p{margin:4px 0 0}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -3894,6 +3901,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="cwl-status-row"><div class="statusline" id="cwlStatus">CWL vorbereitet</div><span class="badge warn offline-badge hidden" id="offlineBadge"></span></div>
     <div class="plan-actions"><button class="btn small" id="copyFullPlanBtn">Gesamtplan kopieren</button><button class="btn" id="manageCwlBtn">↻ Planung zurücksetzen</button><button class="btn hidden" id="nextDayBtn"></button></div>
   </div>
+  <p id="strategicPublishedStatus" class="statusline" role="status" hidden></p>
   <div id="planCwlSeasonEntry" class="plan-cwl-season-shortcut" hidden>
     <div class="plan-season-shortcut-copy"><span class="plan-season-shortcut-kicker">CWL AKTUELL</span>
       <strong>Gruppenstand &amp; Runden</strong><small id="planCwlSeasonHint">Aktuelle Liga im Überblick</small>
@@ -3985,6 +3993,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     </div>
     <div class="inline-member-add hidden" id="inlineMemberAdd"><input class="name-input" id="inlineMemberName" type="text" autocomplete="off" placeholder="Name des neuen Mitglieds"><button class="btn small primary" id="inlineMemberSave">Hinzufügen</button><button class="btn small" id="inlineMemberCancel">Abbrechen</button></div>
     
+    <div id="membersStrategicAnchor" hidden></div>
     <div class="list-management">
       <div class="list-management-head"><div><div class="list-management-title">Mitgliederübersicht</div><div class="list-management-sub">Reihenfolge festlegen oder mehrere Spieler gleichzeitig bearbeiten.</div></div></div>
       <div class="list-management-actions">
@@ -4213,11 +4222,11 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
 </div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.37.0</strong><span>Mitgliederform 2.0</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.38.0</strong><span>Intelligenter CWL-Planer · Beta</span></div>
       <ul>
-       <li><b>Mitglieder:</b> CW-, CWL- und Kombi-Form getrennt sortieren.</li>
-       <li><b>Form:</b> Aktuelle Rathausstufe und berechtigte Zweitclan-Daten berücksichtigen.</li>
-       <li><b>Übersicht:</b> RH19-Symbol, klare Datenbasis und persönliche Sortierung.</li>
+       <li><b>Strategie:</b> Leistung, Ausgewogen oder Förderung für die CWL auswählen.</li>
+       <li><b>Aufstellung:</b> Bei aktivierter Automatik verbleibende Tage anhand aktueller Kriegsdaten neu berechnen.</li>
+       <li><b>Empfehlungen:</b> Kader vor der Anmeldung und offene Angriffsziele im Krieg prüfen.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4460,6 +4469,7 @@ html.cloud-startup-pending .cloud-startup-splash{
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
    <div class="cloud-help-grid">
+    <div><b>Intelligenter CWL-Planer (Beta)</b><p>In allen mit Clash verbundenen Cloud-Clans findest du vor der CWL die Kaderempfehlungen unter Mitglieder, während der Liga die Strategie unter Plan. Wähle Leistung, Ausgewogen oder Förderung. Deine Mitgliedervorgaben (Dabei, Fix, Ausfälle und Einsatzziele) gelten weiterhin. Bei gesperrten Vorgaben kann der Vize Änderungen vorschlagen; erst der Clanführer gibt sie frei. Die aktivierte automatische Planung berechnet die gemeinsame Aufstellung serverseitig auch ohne geöffneten Browser. Neue gespeicherte Vorgaben können zeitnah, Kriegsdaten regelmäßig neu einfließen. Gestartete Kriege verwenden die bestätigte tatsächliche Aufstellung. Bei fehlenden oder widersprüchlichen Daten kann die strategische Berechnung ausstehen; der normale Plan bleibt verfügbar. Angriffsziele und Kaderempfehlungen sind unverbindliche Hinweise, keine automatischen Änderungen in Clash. Basislayout, Armeestrategie und individuelle Matchups bleiben eure Entscheidung. Die Bewertung ist noch nicht in einer echten Liga erprobt.</p></div>
     <div><b>Planer-Zugänge</b><p>Über das Wolkensymbol öffnest du „Clan & Konto“. Der Besitzer verwaltet alle Zugänge und Einladungen. Vizes dürfen eigene Links bearbeiten sowie Beobachter entfernen oder sperren. Die Rollen betreffen nur den Planer, nicht den Clash-Clan. Ohne verbundenen Clan gibt es noch keine Planer-Zugänge; der Clanname und Clan-Tag beim Hinzufügen sind nur Eingabebeispiele und keine Kontoempfehlungen.</p></div>
     <div><b>Clanverwaltung – Ränge prüfen</b><p>Nur der Besitzer des verknüpften Cloud-Clans öffnet unter Mehr → Clanverwaltung einen aktuellen, nur lesenden Clash-Rangabgleich. Die Übersicht „Offene Prüfungen“ bündelt bestehende Beförderungs-, Rückkehr-, CW- und CWL-Hinweise nach Spieler, ohne neue Sanktionen abzuleiten. Die Zahl offener belegter Fehlangriffe zählt bei normalen CWs bis zu zwei Angriffe pro Krieg und in der CWL einen pro Krieg. Bei fehlenden Quellen ist sie nur eine Untergrenze; eine kriegsübergreifende Serie wird daraus nicht abgeleitet. Fehlende Quellen werden ausdrücklich genannt; die Schaltflächen führen zu den jeweiligen Nachweisen. „Offene Vorschläge“ zeigt nur belegte Beförderungs- und Rückkehrhinweise, die noch geprüft werden müssen. Unter „Gesamte Liste“ sind auch Mitglieder ohne Empfehlung und mit fehlenden Nachweisen sichtbar. „Details anzeigen“ öffnet die Clanzeit, die Angriffs- und Spendenbelege sowie die vorhandenen Prüfentscheidungen; beim Aktualisieren bleiben geöffnete Details erhalten, beim Clanwechsel werden sie zurückgesetzt. Eine Beförderung, Degradierung oder ein Kick wird niemals durch diese Seite automatisch durchgeführt. Mitglied und Ältester sind mögliche Prüffälle. Vizes und Clanführer werden von Beförderungs-, Degradierungs- und Kick-Prüfungen ausgenommen. Die Clash-API liefert weder ein historisches Eintrittsdatum noch den letzten Login. Seit Aktivierung werden regelmäßige vollständige Clanlisten automatisch ausgewertet. Zeit wird nur zwischen zwei bestätigten Listen mit höchstens drei Stunden Abstand gutgeschrieben. Austritte pausieren den Zähler, Rückkehr setzt ihn nicht zurück; ältere und nicht beobachtete Zeit bleibt unbekannt. Der Owner sieht belegte Zeit, aktuelle API-Spenden und bestätigte Spendenzuwächse. Frühere Ingame-Ränge werden nur nach tatsächlich beobachtetem Austritt gespeichert und bei Rückkehr gegebenenfalls als manuelle Prüferinnerung angezeigt. Positive Spendenveränderungen sind ein Aktivitätssignal, aber weder letzter Login noch Beweis für Offline-Zeit. Vor dem ersten Snapshot und bei unbemerkten Kurzwechseln bleibt die Historie unbekannt. Unter „Kriterien für Beförderungen“ kannst du je Clan die Mindest-Clanzeit (Standard 14 Tage), Mindestangriffe (10), 3★-Quote (80 %) und den Zeitraum (14 Tage) ändern. Der Leistungspfad zeigt eine manuelle Beförderungsprüfung ausschließlich bei genügend belegter Clanzeit und dokumentierten Angriffen aus abgeschlossenen API-Kriegen dieses Clans. Fehlende Daten zählen nicht als 0★; 1/1 ist keine belastbare Quote. Der Treuepfad ist optional und standardmäßig aus: Nach Aktivierung können bestätigte Clanzeit, positive beobachtete Spendenzuwächse an mehreren Tagen sowie ein frisches Spendenereignis eine <b>manuelle Beförderungsprüfung</b> auslösen – auch ohne CW-Teilnahme. Die voreingestellten Werte sind 60 Clantage, 50 nachweislich hinzugekommene Spenden und 3 Spendentage in 30 Tagen. Bei einer beobachteten längeren Abwesenheitsserie (Standard 10 Tage) wird die Qualifikation nur zur Überprüfung markiert, niemals stillschweigend zurückgesetzt. Nicht beobachtete Spenden, lückenhafte API-Zeiten und tatsächliche Offline-Zeit bleiben unbekannt. Ob Pflichtangriffe versäumt wurden, kann der Treuepfad nicht beweisen. Einen belegten Vorschlag kann der Besitzer im Planer mit <b>„Als geprüft markieren“</b> abhaken: Er bleibt bei unveränderten relevanten Nachweisen abgehakt und wird bei neuen entscheidenden Belegen wieder offen. Mit <b>„Vorschlag ausblenden“</b> wird nur dieser Hinweis für diesen Clan und Spieler unterdrückt, bis er mit „Wieder anzeigen“ zurückgeholt wird. Diese Entscheidungen bleiben innerhalb des verknüpften Cloud-Clans und ändern nichts in Clash. „Prüfung wieder öffnen“ macht einen abgehakten Hinweis erneut sichtbar. Für künftig vollständig belegte normale CW-Fehlangriffe gibt es im getrennten CW-Prüfbereich jetzt eine eigene, nachvollziehbare Entschuldigung; alte unbekannte Kriege werden nicht nachträglich bewertet. Auswärtige Clanangriffe werden erst nach datenschutzsicherer Freigabe einbezogen. Es gibt keine automatische Degradierung, Kick- oder Ingame-Rangänderung; der Abruf ändert keine CWL-Pläne.</p></div>
     <div><b>Normale CWs prüfen</b><p>Für vollständig belegte normale CWs werden zwei Angriffe pro Spieler gewertet. 0/2 oder zwei aufeinanderfolgende dokumentierte Kriege mit Fehlangriffen können beim Ältesten einen manuellen Ranghinweis auslösen. Einzelne Ereignisse lassen sich quittieren, entschuldigen, wieder öffnen und anhand der chronologischen Entscheidungen nachprüfen. Unvollständige Kriege und der letzte Login bleiben unbekannt; im Spiel ändert sich nichts automatisch.</p></div>
@@ -4857,15 +4867,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.37.0"></script>
-<script src="./clan-management-missed-core.js?v=1.37.0"></script>
-<script src="./clan-management-cw-core.js?v=1.37.0"></script>
-<script src="./clan-management-cw-view.js?v=1.37.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.37.0"></script>
-<script src="./cwl-planning-core.js?v=1.37.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.37.0"></script>
+<script src="./clan-management-core.js?v=1.38.0"></script>
+<script src="./clan-management-missed-core.js?v=1.38.0"></script>
+<script src="./clan-management-cw-core.js?v=1.38.0"></script>
+<script src="./clan-management-cw-view.js?v=1.38.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.38.0"></script>
+<script src="./cwl-planning-core.js?v=1.38.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.38.0"></script>
 <script>
-const APP_VERSION="v1.37.0";
+const APP_VERSION="v1.38.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -4964,6 +4974,7 @@ function normalizeArchive(a){
 }
 function normalizeProfile(p){
   if(!p||typeof p!=="object")p=freshProfile();p.id||=uid("p");p.name=(p.name||"Neuer Clan").trim()||"Neuer Clan";p.config||={slots:15,days:7};
+  if(p.config.strategicMode!==undefined&&!["balanced","performance","development"].includes(p.config.strategicMode))delete p.config.strategicMode;
   p.config.slots=Math.max(1,Math.min(50,Number(p.config.slots)||15));p.config.days=Math.max(1,Math.min(7,Number(p.config.days)||7));const sorts=["manual","name","th-desc","th-asc","priority","strength","recent-stars","participating","coc-order"];p.config.memberSort=sorts.includes(p.config.memberSort)?p.config.memberSort:"manual";
   p.members=Array.isArray(p.members)?p.members.map(normalizeMember):[];p.archivedMembers=Array.isArray(p.archivedMembers)?p.archivedMembers.map(normalizeMember):[];
   p.dayGoals=Array.from({length:7},(_,i)=>{const g=p.dayGoals?.[i]||emptyDayGoal(),townHall={};if(g.townHall&&typeof g.townHall==="object")for(const [k,v] of Object.entries(g.townHall)){const th=Number(k),n=Math.max(0,Math.min(p.config.slots,Number(v)||0));if(th>=3&&th<=20&&n>0)townHall[String(th)]=n}const strength={high:0,medium:0,low:0,verylow:0};for(const key of Object.keys(strength))strength[key]=Math.max(0,Math.min(p.config.slots,Number(g.strength?.[key])||0));return{townHall,strength}});
@@ -5075,7 +5086,21 @@ function confirmedCwlPlanningLocks(){
 function calculatePlan(){
   // The browser uses the validated multi-day solver. Keep legacy code below only for isolated compatibility tests.
   if(typeof window!=="undefined"&&window.CWLPlanningCore?.planCwl){
-    const plan=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks:confirmedCwlPlanningLocks(),slots:state.config.slots,days:state.config.days});
+    const rawLocks=confirmedCwlPlanningLocks(),clanId=window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null;
+    const auto=window.CWLCloud?.getAutomaticStrategicPlan?.(),planningProfile=state.config.strategicAuto===true?{...state,strategicPlan:auto||null}:state;
+    const observed=window.CWLPlanningCore.strategicObservedContext?.({profile:planningProfile,clanId,locks:rawLocks})||{locks:rawLocks,live:state.cwlLive};
+    const locks=observed.locks;
+    const standard=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks,slots:state.config.slots,days:state.config.days});
+    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:planningProfile,clanId,locks,standard,live:observed.live})||{status:"none",plan:standard};
+    const plan=resolved.plan;
+    const status=typeof document!=="undefined"?document.getElementById("strategicPublishedStatus"):null;
+    if(status){const mode={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"}[state.config.strategicMode]||"Ausgewogen";
+      status.hidden=!window.CWLCloud?.active||(!planningProfile.strategicPlan&&!state.config.strategicMode&&!state.config.strategicAuto);
+      status.className="statusline"+(resolved.status==="stale"?" strategic-notice is-warning":"");
+      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+(planningProfile.strategicPlan?.source==="collector"?" · Automatisch berechnet "+new Date(planningProfile.strategicPlan.observedAt).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):" · Übernommene Aufstellung"):
+       resolved.status==="stale"?"⚠ Strategische Aufstellung nicht mehr passend. Standardplan angezeigt – bitte neu berechnen.":
+       "Intelligenter Planer · "+mode+(state.config.strategicAuto?" · Automatische Berechnung ausstehend – Standardplan":" · Noch keine strategische Aufstellung übernommen.");
+    }
     // The solver counts confirmed live rosters as fixed appearances. They are
     // NOT completed wars: the "Gespielt" KPI tracks only historical locks.
     plan.playedCounts=Object.fromEntries(allKnownMembers().map(m=>[m.id,
@@ -5840,7 +5865,7 @@ function openArchiveModal(id){
   openModal("archiveModal");
   void window.CWLArchivedRecap?.open?.(a);
 }
-function resetPlanningData(){mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
+function resetPlanningData(){delete state.strategicPlan;mobileSelectedDay=null;mobileLineupsExpanded=false;state.dayGoals=Array.from({length:7},()=>emptyDayGoal());state.locks=Array.from({length:7},()=>({locked:false,lineup:[]}));for(const m of state.members){m.statuses=Array(7).fill("auto");m.firstDay=null;m.outFromDay=null;m.targetDays=null;
  // Previous-CWL day rules/targets must not be resurrected when an absent player rejoins.
  if(m.cocBeforeDeparture){
   const snapshot=m.cocBeforeDeparture;
@@ -6910,7 +6935,7 @@ async function openReleaseHistory(){
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.37.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.38.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7033,7 +7058,7 @@ async function openGoldpassPreview(){
  try{
   if(!goldpassView){
    root.textContent="Vorschau wird geladen …";
-   const module=await import("./cwl-goldpass-view.mjs?v=1.37.0");
+   const module=await import("./cwl-goldpass-view.mjs?v=1.38.0");
    const now=goldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
    goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
@@ -7067,7 +7092,7 @@ let activityMemberView=null,activityMemberImport=0,activityMemberScope=null;
   try{
    if(!activityMemberView){
     root.textContent="Mitgliedsmerkmale werden geladen …";
-    const m=await import("./cwl-activity-member-view.mjs?v=1.37.0");
+    const m=await import("./cwl-activity-member-view.mjs?v=1.38.0");
     const now=activityGoldpassContext();
     if(token!==activityMemberImport||!activityMemberPanel.open||now?.clanId!==c.clanId||now?.clanTag!==c.clanTag||now?.session!==c.session)return;
     activityMemberView=m.createActivityMemberView({root,getContext:activityGoldpassContext,api:r=>window.CWLCloud.activityMemberRequest(r)});
@@ -7091,7 +7116,7 @@ async function openActivityGoldpass(){
  try{
   if(!activityGoldpassView){
    root.textContent="Verlosungen werden geladen …";
-   const module=await import("./cwl-activity-campaign-view.mjs?v=1.37.0");
+   const module=await import("./cwl-activity-campaign-view.mjs?v=1.38.0");
    const now=activityGoldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-activity-goldpass").classList.contains("active"))return;
    activityGoldpassView=module.createActivityCampaignView({root,getContext:activityGoldpassContext,api:request=>window.CWLCloud.activityCampaignRequest(request),
@@ -7356,6 +7381,7 @@ window.CWLLegacy={
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
+ getPlanningLocks:()=>window.CWLPlanningCore.strategicObservedContext({profile:state.config.strategicAuto===true?{...state,strategicPlan:window.CWLCloud?.getAutomaticStrategicPlan?.()||null}:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks:confirmedCwlPlanningLocks()}).locks,
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
  toast:(message)=>showToast(message),
@@ -7390,6 +7416,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.37.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.38.0"></script>
 </body>
 </html>
