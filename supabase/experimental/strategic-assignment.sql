@@ -58,33 +58,9 @@ create function public.cwl_publish_strategic_assignment(p_clan uuid,p_owner uuid
    jsonb_array_length(p_snapshot->'observedRounds') is distinct from (p.profile_json#>>'{config,days}')::integer then return false;end if;
   if jsonb_typeof(p.profile_json->'members') is distinct from 'array' or
    jsonb_typeof(coalesce(p.profile_json->'archivedMembers','[]'::jsonb)) is distinct from 'array' or
-   coalesce(p_snapshot->>'anchorWarTag','') !~ '^#[0289PYLQGRJCUV]{3,15}
-  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
-   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
-  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
-   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
-  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
-   and p_valid_until>clock_timestamp();
-  get diagnostics affected=row_count;
-  return affected=1;
- end;$fn$;
-revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
-grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
- or
+   coalesce(p_snapshot->>'anchorWarTag','') !~ '^#[0289PYLQGRJCUV]{3,15}$' or
    jsonb_array_length(p_snapshot->'registeredTags') not between slots and 50 or
-   exists(select 1 from jsonb_array_elements(p_snapshot->'registeredTags') t where jsonb_typeof(t)<>'string' or (t#>>'{}') !~ '^#[0289PYLQGRJCUV]{3,15}
-  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
-   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
-  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
-   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
-  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
-   and p_valid_until>clock_timestamp();
-  get diagnostics affected=row_count;
-  return affected=1;
- end;$fn$;
-revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
-grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
-) or
+   exists(select 1 from jsonb_array_elements(p_snapshot->'registeredTags') t where jsonb_typeof(t)<>'string' or (t#>>'{}') !~ '^#[0289PYLQGRJCUV]{3,15}$') or
    (select count(distinct t) from jsonb_array_elements(p_snapshot->'registeredTags') t)<>jsonb_array_length(p_snapshot->'registeredTags') then return false;end if;
   member_ids:=(select coalesce(jsonb_agg(m->'id'),'[]'::jsonb) from jsonb_array_elements((p.profile_json->'members')||coalesce(p.profile_json->'archivedMembers','[]'::jsonb)) m);
   for d in 0..days-1 loop
@@ -96,19 +72,7 @@ grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text
     (select count(distinct m) from jsonb_array_elements(day_row->'lineup') m)<>slots or
     exists(select 1 from jsonb_array_elements(day_row->'lineup') m where jsonb_typeof(m)<>'string' or not member_ids @> jsonb_build_array(m)) then return false;end if;
    if round_row->'available'='true'::jsonb then
-    if coalesce(round_row->>'warTag','') !~ '^#[0289PYLQGRJCUV]{3,15}
-  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
-   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
-  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
-   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
-  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
-   and p_valid_until>clock_timestamp();
-  get diagnostics affected=row_count;
-  return affected=1;
- end;$fn$;
-revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
-grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
- or coalesce(round_row->>'state','') not in ('preparation','inWar','warEnded') then return false;end if;
+    if coalesce(round_row->>'warTag','') !~ '^#[0289PYLQGRJCUV]{3,15}$' or coalesce(round_row->>'state','') not in ('preparation','inWar','warEnded') then return false;end if;
     if round_row->>'state'<>'preparation' then
      if jsonb_typeof(round_row->'lineup') is distinct from 'array' then return false;end if;
      if jsonb_array_length(round_row->'lineup')<>slots or not (day_row->'lineup' @> round_row->'lineup' and round_row->'lineup' @> day_row->'lineup') then return false;end if;
@@ -128,3 +92,50 @@ grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text
  end;$fn$;
 revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
 grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
+
+-- Separate retry lease; a user cannot queue arbitrary clans or set the clock.
+-- Only approved, persisted input revisions are considered. No profile trigger.
+create table public.cwl_strategic_recompute_claims (
+ clan_id uuid primary key references public.cwl_clans(id) on delete cascade,
+ cycle_id uuid not null, base_revision bigint not null,
+ claimed_at timestamptz not null
+);
+alter table public.cwl_strategic_recompute_claims enable row level security;
+revoke all on public.cwl_strategic_recompute_claims from public,anon,authenticated,service_role;
+grant select,insert,update on public.cwl_strategic_recompute_claims to service_role;
+create function public.cwl_claim_strategic_recompute(p_grants jsonb)
+ returns jsonb language plpgsql security invoker set search_path='' as $claim$
+ declare picked record; claimed integer;
+ begin
+  if current_user<>'service_role' or auth.uid() is not null then raise exception 'service_only' using errcode='42501';end if;
+  if jsonb_typeof(p_grants) is distinct from 'array' then return null;end if;
+  if jsonb_array_length(p_grants)>50 then return null;end if;
+  select c.id,c.clash_tag,r.cycle_id,p.revision into picked
+  from public.cwl_clans c join public.cwl_cloud_profiles p on p.clan_id=c.id
+  join public.cwl_plan_review_state r on r.clan_id=c.id
+  left join public.cwl_strategic_assignments a on a.clan_id=c.id
+  left join public.cwl_strategic_recompute_claims q on q.clan_id=c.id
+  where (select count(*) from jsonb_array_elements(p_grants) g where g->>'clanId'=c.id::text and g->>'clanTag'=c.clash_tag and g->>'ownerId'=c.owner_user_id::text)=1
+    and r.season=to_char(clock_timestamp() at time zone 'UTC','YYYY-MM')
+    and p.profile_json#>>'{cwlLive,season}'=r.season and p.profile_json#>>'{cwlLive,clanTag}'=c.clash_tag
+    and p.profile_json#>'{config,strategicAuto}'='true'::jsonb
+    and p.profile_json#>>'{config,strategicMode}' in ('balanced','performance','development')
+    and p.profile_json->>'cwlLiveIgnoredSeason' is distinct from r.season
+    and coalesce(p.profile_json#>'{cocManualEmergency,pending}','false'::jsonb)<>'true'::jsonb
+    and (a.clan_id is null or a.base_revision<>p.revision or a.cycle_id<>r.cycle_id)
+    and (q.clan_id is null or q.claimed_at<clock_timestamp()-interval '5 minutes'
+      or ((q.base_revision<>p.revision or q.cycle_id<>r.cycle_id) and q.claimed_at<clock_timestamp()-interval '1 minute'))
+  order by q.claimed_at nulls first,p.updated_at,c.id limit 1
+  for share of p,r,c skip locked;
+  if not found then return null;end if;
+  insert into public.cwl_strategic_recompute_claims as q(clan_id,cycle_id,base_revision,claimed_at)
+  values(picked.id,picked.cycle_id,picked.revision,clock_timestamp())
+  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,claimed_at=excluded.claimed_at
+  where q.claimed_at<clock_timestamp()-interval '5 minutes'
+   or ((q.base_revision<>excluded.base_revision or q.cycle_id<>excluded.cycle_id) and q.claimed_at<clock_timestamp()-interval '1 minute');
+  get diagnostics claimed=row_count;
+  if claimed<>1 then return null;end if;
+  return jsonb_build_object('clanId',picked.id,'clanTag',picked.clash_tag,'cycleId',picked.cycle_id,'revision',picked.revision);
+ end;$claim$;
+revoke all on function public.cwl_claim_strategic_recompute(jsonb) from public,anon,authenticated,service_role;
+grant execute on function public.cwl_claim_strategic_recompute(jsonb) to service_role;

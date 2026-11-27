@@ -18,6 +18,10 @@ set local role service_role;
 do $test$
 declare s jsonb; c uuid:='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'; o uuid:='11111111-1111-4111-8111-111111111111'; cy uuid:='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 begin
+ if public.cwl_claim_strategic_recompute('[]'::jsonb) is not null then raise exception 'empty grant claimed';end if;
+ if public.cwl_claim_strategic_recompute(jsonb_build_array(jsonb_build_object('clanId',c,'clanTag','#P08','ownerId',o))) is not null then raise exception 'wrong grant claimed';end if;
+ if (public.cwl_claim_strategic_recompute(jsonb_build_array(jsonb_build_object('clanId',c,'clanTag','#P02','ownerId',o)))->>'revision') is distinct from '1' then raise exception 'pending revision not claimed';end if;
+ if public.cwl_claim_strategic_recompute(jsonb_build_array(jsonb_build_object('clanId',c,'clanTag','#P02','ownerId',o))) is not null then raise exception 'duplicate claim';end if;
  s:=jsonb_build_object('source','collector','version',1,'clanId',c,'clanTag','#P02','season',to_char(now(),'YYYY-MM'),'observedAt',floor(extract(epoch from clock_timestamp())*1000),'plan',(select jsonb_agg(jsonb_build_object('day',d,'lineup',(select jsonb_agg('p'||i) from generate_series(1,15) i)) order by d) from generate_series(1,5) d),'observedRounds',(select jsonb_agg(case when d=1 then jsonb_build_object('day',d,'available',true,'warTag','#PQQ','state','preparation') else jsonb_build_object('day',d,'available',false) end order by d) from generate_series(1,5) d),'registeredTags',(select jsonb_agg('#P'||substr('0289PYLQGRJCUV',1+(i/13),1)||substr('0289PYLQGRJCUV',1+(i%13),1)) from generate_series(0,14) i),'anchorWarTag','#PQQ','ruleKey','fixture');
  if not public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',s) then raise exception 'locked inputs must not stop derived publication';end if;
  if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',s) then raise exception 'duplicate observation';end if;
@@ -33,7 +37,7 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333',true);
 do $test$ begin
  if (select count(*) from public.cwl_strategic_assignments)<>1 then raise exception 'viewer cannot read derived assignment';end if;
- if has_function_privilege(current_user,'public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb)','execute') or has_table_privilege(current_user,'public.cwl_strategic_assignments','update') then raise exception 'viewer can publish';end if;
+ if has_function_privilege(current_user,'public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb)','execute') or has_function_privilege(current_user,'public.cwl_claim_strategic_recompute(jsonb)','execute') or has_table_privilege(current_user,'public.cwl_strategic_recompute_claims','select') or has_table_privilege(current_user,'public.cwl_strategic_assignments','update') then raise exception 'viewer can publish';end if;
 end;$test$;
 select set_config('request.jwt.claim.sub','44444444-4444-4444-8444-444444444444',true);
 do $test$ begin if exists(select 1 from public.cwl_strategic_assignments) then raise exception 'cross tenant leak';end if;end;$test$;

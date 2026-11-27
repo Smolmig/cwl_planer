@@ -57,3 +57,9 @@ export async function publishAutomatic({rest,settings,context,result,deadline}){
  },returnData:true});
  return data===true;
 }
+
+export async function claimPendingStrategic({rest,settings,records}){
+ let grants;try{grants=JSON.parse(records)}catch{return null}
+ if(!Array.isArray(grants)||!grants.length||grants.length>50||records.length>12000)return null;
+ return await rest(settings,"rpc/cwl_claim_strategic_recompute",{method:"POST",rows:{p_grants:grants},returnData:true});
+}

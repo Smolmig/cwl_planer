@@ -135,12 +135,12 @@ async function loadFullyCapturedLeagueKeys(settings,clanIds){
   }
   return common||new Set();
 }
-async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),onLeague=null,strategic=false){
+async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),onLeague=null,strategic=false,strategicOnly=false){
   const strategicStartedAt=Date.now(),strategicResults=new Map();
   const snaps=[],seen=new Set(),notes=[];
   // /currentwar is ephemeral. Keep non-final snapshots until the API
   // actually confirms the war ended; do not invent a completed war.
-  try{
+  if(!strategicOnly)try{
     const current=await game("/clans/"+encodeURIComponent(gameTag)+"/currentwar",key);
     if(current&&current.type!=="cwl"&&current.type!=="league"){
       const snapshot=buildWarSnapshot(current,gameTag,{warType:"normal"});
@@ -269,6 +269,25 @@ async function markFailure(settings,clanId,checkedAt,code){
     });
   }catch{/* Best-effort monitoring cannot leak tenant data or block others. */}
 }
+// Only the verified internal Cron route can request the bounded fast lane.
+// It never accepts caller-supplied clan IDs or writes archive/profile rows.
+async function runPendingStrategic(settings){
+ const records=Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS")||"";
+ if(!records)return response({ok:true,strategicComputed:0});
+ const deadline=Date.now()+PER_RUN_BUDGET_MS;
+ try{
+  const runner=await import("./collector-strategic-runner.mjs");
+  const pending=await runner.claimPendingStrategic({rest,settings,records});
+  if(!pending)return response({ok:true,strategicComputed:0});
+  const context=await runner.loadAutomaticContext({rest,settings,clanId:pending.clanId,clanTag:pending.clanTag,records});
+  if(!context||context.saved.revision!==pending.revision||context.review.cycle_id!==pending.cycleId)return response({ok:true,strategicComputed:0,strategicSkipped:1});
+  const scan=await retrieveGames(context.clanTag,settings.gameKey,deadline,new Set(),null,true,true);
+  const result=await runner.calculateAutomatic({rest,settings,context,scan,deadline});
+  if(!result.ok)return response({ok:true,strategicComputed:0,strategicSkipped:1});
+  const changed=result.changed&&await runner.publishAutomatic({rest,settings,context,result,deadline});
+  return response({ok:true,strategicComputed:1,strategicChanged:changed?1:0,strategicSkipped:result.changed&&!changed?1:0});
+ }catch{return response({ok:false,error:"strategic_recompute_unavailable"},503)}
+}
 export default {
   fetch:async request=>{
     if(request.method!=="POST")return response({ok:false,error:"method_not_allowed"},405);
@@ -284,6 +303,8 @@ export default {
       if(!await verifyIndependentCron(request,settings))
         return response({ok:false,error:"unauthorized"},401);
       console.info("collector_verified_trigger=internal_cron");
+      let body;try{body=await request.json()}catch{return response({ok:false,error:"invalid_body"},400)}
+      if(body?.strategicPending===true)return runPendingStrategic(settings);
     }else{
       // GitHub's short-lived JWT is verified against its real issuer's JWKS
       // and exact immutable workflow/repository identity (unchanged).
@@ -362,7 +383,7 @@ export default {
               e?.message===ERROR.save?ERROR.save:ERROR.api);
         }
       }
-      // Optional compute-only phase, after the normal collection writes.
+      // Optional strategic publication, after the normal collection writes.
       // No profile updates, no new schedule, no client-controlled grants.
       for(const [id,context] of strategicContexts){
         try{
