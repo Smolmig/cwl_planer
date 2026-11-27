@@ -2516,6 +2516,20 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .activity-member-row select,.activity-member-toolbar input,.activity-member-toolbar select{max-width:100%;width:100%;min-height:44px}
  .activity-member-row details button{margin-top:8px;min-height:44px}
  #clanActivityMembers .goldpass-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+#clanActivityMembers :is(input[type="search"],select){padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;min-width:0}
+#clanActivityMembers select[data-discord="confirmed"]{color:var(--green);font-weight:700}
+#clanActivityMembers :is(input,select,button,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#clanActivityMembers .activity-member-toolbar{max-width:600px;margin-top:12px}
+#clanActivityMembers .activity-member-matches{margin:6px 0}
+#clanActivityMembers .activity-member-row details{max-width:460px}
+#clanActivityMembers .activity-member-row details>summary{list-style:none;font-size:12px;font-weight:700;gap:10px}
+#clanActivityMembers .activity-member-row details>summary::-webkit-details-marker{display:none}
+#clanActivityMembers .activity-member-row details>summary::after{content:"";width:8px;height:8px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+#clanActivityMembers .activity-member-row details[open]>summary::after{transform:rotate(225deg)}
+html:is([data-theme="arena"],[data-theme="dark"],[data-theme="cyber"]) #clanActivityMembers :is(input,select,option){color-scheme:dark}
+html:is([data-theme="light"],[data-theme="cyberlight"]) #clanActivityMembers :is(input,select,option){color-scheme:light}
+@media(max-width:360px){#clanActivityMembers .activity-member-toolbar{grid-template-columns:1fr}#clanActivityMembers .activity-member-head{grid-template-columns:minmax(0,1fr) minmax(95px,120px)}}
+
 /* Clan management: one visible task area, shared existing data and forms. */
 .management-workspace-nav,.management-source-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}
 .management-source-nav{grid-template-columns:repeat(4,minmax(0,1fr));margin:8px 0 16px}
