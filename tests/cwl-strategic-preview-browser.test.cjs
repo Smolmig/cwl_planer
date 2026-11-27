@@ -1,0 +1,38 @@
+"use strict";
+const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),http=require("node:http");
+const {chromium,webkit}=require("playwright"),root=path.resolve(__dirname,"..");
+const engine=process.env.CWL_TEST_BROWSER==="webkit"?webkit:chromium;
+const demo=process.env.CWL_STRATEGIC_DEMO_FILE;
+const allowed=new Set(["tests/fixtures/strategic-preview.html","tests/fixtures/strategic-preview.mjs","cwl-planning-core.js","cwl-strategic-experiment.mjs","cwl-strategic-daily.mjs","cwl-strategic-targets.mjs","cwl-strategic-presentation.mjs"]);
+test("isolated strategic UI uses actual cores, handles modes, role, disclosure and responsive themes",{timeout:120000},async()=>{
+ const server=http.createServer((req,res)=>{const name=(req.url||"/").slice(1).split("?")[0];if(!allowed.has(name)){res.writeHead(404);res.end();return}res.writeHead(200,{"content-type":name.endsWith(".html")?"text/html; charset=utf-8":"text/javascript; charset=utf-8","cache-control":"no-store"});res.end(fs.readFileSync(path.join(root,name)))});
+ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));let browser;
+ try{
+ browser=await engine.launch({headless:true,...(engine===chromium?{args:["--no-sandbox"]}:{})});
+ const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[],remote=[];
+ page.on("pageerror",e=>errors.push(e.message));page.on("request",r=>{if(!r.url().startsWith("http://127.0.0.1:")&&!r.url().startsWith("file:"))remote.push(r.url())});
+ if(demo)await page.route(/^https?:\/\//,r=>r.abort());
+ await page.goto(demo?require("node:url").pathToFileURL(demo).href:"http://127.0.0.1:"+server.address().port+"/tests/fixtures/strategic-preview.html");
+ await page.locator("#rosterRows tr").first().waitFor();assert.equal(await page.locator("#demoSettings[open]").count(),0);assert.equal(await page.locator("#rosterRows tr").count(),22);
+ await page.locator("input[value=performance]").check();assert.ok(await page.locator("#size option").count()>1);
+ await page.locator("#size").selectOption({index:1});assert.equal(await page.locator("#rosterRows tr").count(),21);
+ assert.match(await page.locator("#rosterWarning").innerText(),/Einzeln prüfen/);
+ assert.deepEqual(await page.locator(".roster-table thead th").allTextContents(),["Spieler / Datenbasis","Standard","Vorschau"]);assert.equal(await page.locator("#rosterRows th[scope=row]").count(),21);
+ await page.locator("#rowFilter").selectOption("review");assert.ok(await page.locator("#rosterRows tr").count()<21);
+ assert.match(await page.locator("#rosterRows").innerText(),/Teilnahme offen/);
+ await page.locator("#rowFilter").selectOption("all");
+ await page.locator("#comparison summary").click();assert.ok(await page.locator(".compare-table tbody tr").count()>1);
+ await page.locator("#rosterInfo summary").click();await page.locator("input[value=development]").check();assert.equal(await page.locator("#rosterInfo[open]").count(),1);
+ await page.locator("#phase").selectOption("daily");await page.locator("input[value=balanced]").check();
+ assert.match(await page.locator("#tableStatus").innerText(),/Klassenerhalt offen/);
+ assert.equal(await page.locator("#days span").count(),5);assert.match(await page.locator("#days").innerText(),/Tag 3 · Vorbereitung/);
+ await page.locator("#dismiss").waitFor();assert.match(await page.locator("#recommendation").innerText(),/Heraus:.*Hinein:/);await page.locator("#dismiss").click();assert.equal(await page.locator("#recommendation").isVisible(),false);assert.equal(await page.locator("#undo").evaluate(n=>n===document.activeElement),true);await page.locator("#undo").click();assert.equal(await page.locator("#recommendation").isVisible(),true);
+ await page.locator("#medals summary").click();await page.locator("#demoSettings summary").click();await page.locator("#role").selectOption("viewer");assert.match(await page.locator("#status").innerText(),/Lesemodus/);assert.equal(await page.locator("#medals[open]").count(),1);assert.equal(await page.locator("#dismiss").isVisible(),false);
+ const dir=process.env.CWL_UX_SCREENSHOTS;if(dir)fs.mkdirSync(dir,{recursive:true});
+ for(const width of [320,390,430,1366,1440]){await page.setViewportSize({width,height:900});for(const theme of ["dark","light","gold","cyber","cyberlight"]){await page.locator("#theme").selectOption(theme);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(dir){await page.locator("#demoSettings").evaluate(n=>n.open=false);await page.screenshot({path:path.join(dir,"strategic-daily-"+theme+"-"+width+".png"),fullPage:true});await page.locator("#demoSettings").evaluate(n=>n.open=true)}}}
+ await page.locator("#phase").selectOption("roster");await page.locator("#demoSettings").evaluate(n=>n.open=true);await page.locator("#role").selectOption("owner");await page.locator("#theme").selectOption("dark");await page.locator("#demoSettings summary").click();await page.locator("input[value=performance]").check();
+ for(const width of [320,390,430,1366,1440]){await page.setViewportSize({width,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(dir)await page.screenshot({path:path.join(dir,"strategic-roster-"+width+".png"),fullPage:true})}
+ await page.setViewportSize({width:320,height:900});await page.addStyleTag({content:"body{font-size:30px}"});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,"reflow under enlarged text");
+ if(!demo)assert.equal(await page.evaluate(()=>localStorage.length+sessionStorage.length),0);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+ }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
+});

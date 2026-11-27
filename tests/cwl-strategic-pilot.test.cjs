@@ -1,0 +1,92 @@
+"use strict";
+const {test}=require("node:test"),assert=require("node:assert/strict"),{JSDOM}=require("jsdom"),fs=require("node:fs"),path=require("node:path");
+const mod=import("../cwl-strategic-pilot.mjs"),view=import("../cwl-strategic-pilot-view.mjs"),{planCwl}=require("../cwl-planning-core.js");
+const abc="0289PYLQGRJCUV",tag=i=>"#P"+abc[Math.floor(i/13)%13]+abc[i%13],at=Date.UTC(2026,10,26);
+function data(){
+ const members=Array.from({length:18},(_,i)=>({id:"p"+i,name:"Spieler "+i,playerTag:tag(10+i),townHall:19,participating:true,statuses:[]}));
+ const context={key:"session:clan",token:"rev1",phase:"roster",ready:true,role:"owner",clanTag:tag(0),slots:15,days:7};
+ return {context,profile:{config:{slots:15,days:7},members,locks:[]},currentPlan:planCwl({members,slots:15,days:7}).dayPlans};
+}
+test("pilot uses actual core, unknown participation and no automatic roster choice",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data(),before=JSON.stringify(s),input=preparePilotInput(s);
+ assert.ok(input.members.every(m=>m.participationIntent==="unknown"));
+ const history={kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}};
+ const x=buildPilotPreview({input,history,mode:"balanced",planStandard:planCwl,now:at});
+ assert.equal(x.canApply,false);assert.equal(x.scenarios.length,1);assert.equal(x.scenarios[0].size,18);assert.equal(x.scenarios[0].metrics.conditional,18);assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>preparePilotInput({...s,profile:{...s.profile,locks:[{locked:true,lineup:[]}]}}),/pilot_existing_locks/);
+ assert.throws(()=>buildPilotPreview({input,history,mode:"balanced",planStandard:planCwl,now:at+301000}),/pilot_history_unavailable/);
+});
+test("pilot view ignores old-clan responses, preserves same-context disclosure, no apply",async()=>{
+ const {createStrategicPilotView}=await view,dom=new JSDOM('<main id="view-plan"><div id="anchor"></div></main>'),d=dom.window.document;
+ let c={...data().context},resolve;const p=createStrategicPilotView({anchor:d.querySelector("#anchor"),getContext:()=>c,load:()=>new Promise(r=>resolve=r)});
+ const root=d.querySelector("#planStrategicPilot"),button=root.querySelector("#strategicPilotCalculate");root.open=true;button.click();assert.match(root.textContent,/berechnet/);
+ p.sync();assert.equal(root.open,true);c={...c,key:"new-clan"};p.sync();assert.equal(root.open,false);
+ resolve({kind:"roster",mode:"balanced",canApply:false,historyNote:"old private name",scenarios:[]});await new Promise(r=>setImmediate(r));assert.doesNotMatch(root.textContent,/old private name/);
+ c=null;p.sync();assert.equal(root.hidden,true);assert.equal(root.querySelectorAll("button").length,2);assert.ok(root.querySelector("#strategicAutoToggle").hidden);dom.window.close();
+});
+test("cloud pilot is default off and read only with existing membership verification",()=>{
+ const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8"),begin=s.indexOf("const strategicPilotEnabled="),end=s.indexOf("const cloud={",begin),block=s.slice(begin,end);
+ assert.match(block,/globalThis\.CWLStrategicStaging===true/);assert.match(block,/cwl_clan_memberships/);assert.match(block,/stats\.readStrategicHistory/);assert.match(block,/strategic:true/);assert.match(block,/coc-cwl-strategy-beta/);assert.match(block,/action:"capability"/);assert.match(block,/\["owner","editor"\]\.includes\(role\)/);
+ const read=block.slice(block.indexOf("async function loadStrategicPilot"));assert.doesNotMatch(read,/\.insert\(|\.update\(|\.upsert\(|\.delete\(|flushPendingChanges|onLocalChange\(/);assert.match(block,/storage.getProfile\(\)\.config\.strategicMode=value/);assert.match(block,/role==="editor"&&planIsLocked\(\)/);
+});
+
+test("pilot suspends immediately at clan switch/logout and expires observations before display",()=>{
+ const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8");
+ assert.match(s,/async function chooseClan\(epoch=accountEpoch\)\{\s*if\(epoch!==accountEpoch\)return;\s*suspendStrategicPilot\(\)/);
+ assert.match(s,/async function leaveCloud\(\)\{\s*suspendStrategicPilot\(\)/);
+ assert.match(s,/!strategicPilotEnabled&&!betaAllowed\(\)/);
+ assert.match(fs.readFileSync(path.join(__dirname,"../cwl-strategic-pilot-view.mjs"),"utf8"),/stored\.expiresAt<=clock\(\)/);
+});
+
+test("next-season draft preserves previous plan, discards only previous day constraints and excludes departed players",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data();
+ s.context.previousSeason="2026-11";s.context.observedAt=at;
+ s.profile.cwlLive={season:"2026-11",clanTag:s.context.clanTag,rounds:[]};
+ s.profile.locks=[{locked:true,lineup:s.currentPlan[0].lineup}];
+ s.profile.members[0].fixed=true;s.profile.members[1].targetDays=1;s.profile.members[1].statuses=["out","must"];s.profile.members[1].participationIntent="yes";
+ s.profile.members.push({id:"old",name:"Former",playerTag:tag(100),townHall:19,cocSyncState:"kept",participating:true,statuses:[]});
+ const before=JSON.stringify(s),input=preparePilotInput(s);
+ assert.equal(input.oldSeason,true);assert.deepEqual(input.locks,[]);assert.deepEqual(input.plan,[]);assert.equal(input.members.length,18);
+ assert.equal(input.members[0].fixed,true);assert.equal(input.members[1].targetDays,null);assert.ok(input.members[1].statuses.every(x=>x==="auto"));assert.equal(input.members[1].participationIntent,"unknown");
+ const x=buildPilotPreview({input,history:{kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}},mode:"balanced",planStandard:planCwl,now:at});
+ assert.equal(x.oldSeason,true);assert.deepEqual(x.format,{slots:15,days:7});assert.equal(x.scenarios[0].metrics.conditional,18);assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>preparePilotInput({...s,context:{...s.context,previousSeason:"2026-10"}}),/pilot_existing_locks/);
+});
+
+test("optional poll and format affect only the draft, reject foreign answers and preserve hard rules",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data(),before=JSON.stringify(s);
+ const answers=[{id:"p0",tag:s.profile.members[0].playerTag,intent:"yes"},{id:"p1",tag:s.profile.members[1].playerTag,intent:"no"}];
+ const history={kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}};
+ const compute=input=>buildPilotPreview({input,history,mode:"balanced",planStandard:planCwl,now:at});
+ const input=preparePilotInput({...s,draft:{slots:15,days:5,answers}}),x=compute(input);
+ assert.deepEqual(x.participation,{yes:1,no:1,unknown:16});assert.equal(x.scenarios[0].size,17);assert.equal(x.format.days,5);
+ assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").proposed,null);assert.equal(x.scenarios[0].rows.find(r=>r.id==="p1").reason,"Absage für diesen Entwurf");assert.equal(JSON.stringify(s),before);
+ assert.throws(()=>preparePilotInput({...s,draft:{slots:15,days:5,answers:[{...answers[0],tag:"#P08"}]}}),/pilot_invalid_draft_answer/);
+ const short=compute(preparePilotInput({...s,draft:{slots:30,days:7,answers}}));assert.equal(short.scenarios.length,0);assert.match(short.issues[0],/30 Plätze.*17/);
+ s.profile.members[1].fixed=true;
+ const conflict=compute(preparePilotInput({...s,draft:{slots:15,days:7,answers}}));assert.equal(conflict.scenarios.length,0);assert.match(conflict.issues[0],/Absage widerspricht/);
+});
+
+test("one roster panel moves to members and back without duplicate controls or stale responses",async()=>{
+ const {createStrategicPilotView}=await view,dom=new JSDOM('<section id="view-plan"><div id="plan"></div></section><section id="view-members"><div id="members"></div></section>'),d=dom.window.document;
+ let c=data().context;
+ const p=createStrategicPilotView({anchor:d.querySelector("#plan"),getContext:()=>c,load:async()=>null});
+ const entry=d.querySelector("#planStrategicPilot");p.relocate(d.querySelector("#members"));p.sync();
+ assert.equal(entry.parentElement.id,"view-members");assert.match(entry.querySelector("summary").textContent,/Kaderempfehlungen/);
+ entry.open=true;p.relocate(d.querySelector("#members"));p.sync();assert.equal(entry.open,true);
+ c={...c,key:"daily",token:"rev2",phase:"daily"};p.relocate(d.querySelector("#plan"));p.sync();
+ assert.equal(entry.parentElement.id,"view-plan");assert.equal(entry.open,false);assert.equal(d.querySelectorAll("#strategicPilotCalculate").length,1);
+ assert.match(entry.querySelector("summary").textContent,/Intelligenter Planer/);dom.window.close();
+});
+test("roster suitability never turns missing form or open participation into an exclusion",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data();
+ s.profile.members[0].participating=false;s.profile.members[1].fixed=true;
+ const input=preparePilotInput(s),history={kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}};
+ for(const mode of ["performance","balanced","development"]){
+  const result=buildPilotPreview({input,history,mode,planStandard:planCwl,now:at}),rows=result.scenarios[0].rows;
+  assert.equal(rows.find(x=>x.id==="p0").suitability,"Teilnahme pausiert");
+  assert.equal(rows.find(x=>x.id==="p1").suitability,"Fix-Vorgabe");
+  assert.equal(rows.find(x=>x.id==="p2").suitability,"Form noch offen");
+  assert.equal(result.canApply,false);
+ }
+});

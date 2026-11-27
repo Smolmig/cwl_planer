@@ -11,16 +11,16 @@ test("cloud release version, banner, module cache-busting and metadata remain sy
  const sync=read("cloud-sync.mjs");
  const live=read("cwl-live.mjs");
  const json=JSON.parse(read("cloud-version.json"));
- assert.equal(json.version,"v1.37.0");
+ assert.equal(json.version,"v1.38.0");
  assert.match(json.summary,/Update-Verlauf|Mitglieder|Clanverwaltung|Clanwechsel|Statistik|Vergleich|CWL|Form|Einsatz|Freigabe|Vorschlag|Sicherung|Backup|wiederherstellen/);
- assert.equal(json.released,"2026-11-26");
- assert.match(html,/const APP_VERSION="v1\.37\.0"/);
- assert.match(html,/Neu in v1\.37\.0/);
- assert.match(html,/cloud-sync\.mjs\?v=1\.37\.0/);
- assert.match(html,/cwl-planning-core\.js\?v=1\.37\.0/);
- assert.match(html,/cwl-deployment-filters\.js\?v=1\.37\.0/);
+ assert.equal(json.released,"2026-11-27");
+ assert.match(html,/const APP_VERSION="v1\.38\.0"/);
+ assert.match(html,/Neu in v1\.38\.0/);
+ assert.match(html,/cloud-sync\.mjs\?v=1\.38\.0/);
+ assert.match(html,/cwl-planning-core\.js\?v=1\.38\.0/);
+ assert.match(html,/cwl-deployment-filters\.js\?v=1\.38\.0/);
  for(const mod of ["cloud-backups","cwl-live","cwl-stats","cwl-current-war"])
-  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.37.0"'),mod+" must be cache-busted");
+  assert.ok(sync.includes('"./'+mod+'.mjs?v=1.38.0"'),mod+" must be cache-busted");
  assert.match(live,/cwl-live-core\.mjs\?v=1\.31\.2/);
  assert.match(live,/cwl-verified-pause\.mjs\?v=1\.27\.0/);
  assert.doesNotMatch(html,/v1\.5\.2(?=["<])/,"old live version not visible");
@@ -46,3 +46,5 @@ test("preparation advice remains strictly read-only and cached lineups cannot im
  assert.match(live,/const stillCurrent=\(\)=>/);
  assert.match(live,/!stillCurrent\(\)/);
 });
+
+test("all strategic browser modules bypass offline service-worker cache",()=>{const sw=read("service-worker.js");assert.ok(sw.includes("cwl-strategic-[a-z-]+\\.mjs"));});

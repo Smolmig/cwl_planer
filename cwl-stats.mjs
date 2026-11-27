@@ -46,7 +46,7 @@ export function statsLoadNotice(wars=[]){
   return "Historie geladen · "+finishedText+pendingText+".";
 }
 export function createCloudStats({sb,context,notify,confirmAction}) {
-  let memberFormHistory=null;
+  let memberFormHistory=null,strategicSnapshot=null;
   let scope=null,wars=[],attacks=[],missedEvents=[],collectorHealth=null,loading=false,loadingClan=null,importing=false,version=0,lastCapture=new Set();
   let sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};
   let type="all",last="all",cwlSeasons="all",playerDays="all",sameHigher=false,showFormer=true,search="",order="attacks",section="overview";
@@ -961,7 +961,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     }
   }
   function reset(){
-    memberFormHistory=null;
+    memberFormHistory=null;strategicSnapshot=null;
     scope=null;wars=[];attacks=[];missedEvents=[];collectorHealth=null;
       sourceReconciliation={deduplicatedWars:0,deduplicatedAttacks:0,conflicts:[]};cachedPlayerStats.clear();cachedRecentStats.clear();
     comparableProfiles.clear();comparableSummary=null;lastComparableRowsMarkup=null;
@@ -1000,6 +1000,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
     // and render() callbacks from presenting cross-clan statistics.
     if(loading&&loadingClan===id&&!force)return;
     const epoch=++version;
+    strategicSnapshot=null;
     loading=true;loadingClan=id;
     if(scope!==id){
       // An initial load has nothing to clear. Rendering an EMPTY initial
@@ -1076,6 +1077,7 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
       const local={clanTag:ctx.clanTag,clanName:ctx.clanName||ctx.clanTag,...reconciled};
       const merged=ctx.clanTag?mergeMemberFormClans(local,linked.sources):reconciled;
       memberFormHistory={...merged,partial:!!(merged.partial||linked.partial)};
+      strategicSnapshot={clanId:id,version:epoch,at:Date.now(),sourceIds:[id,...linked.sources.map(s=>s.clanId)]};
       sourceReconciliation=reconciled;
       scope=id;wars=reconciled.wars;attacks=reconciled.attacks;
       missedEvents=reconciled.missedEvents;collectorHealth=latestHealth;
@@ -1568,5 +1570,19 @@ export function createCloudStats({sb,context,notify,confirmAction}) {
   syncPeriodChoices();
   bind();
   setStatsSection(section);
-  return {load,reset,render,captureCwl};
+  async function readStrategicHistory(members){
+    const ctx=context();
+    if(!ctx.active||!ctx.clanId||!ctx.clanTag||!["owner","editor"].includes(ctx.role))throw Error("strategic_access");
+    await load(true);
+    const captured=strategicSnapshot,history=memberFormHistory;
+    const valid=()=>captured&&strategicSnapshot===captured&&version===captured.version&&scope===ctx.clanId&&
+      context().active&&context().clanId===ctx.clanId&&context().role===ctx.role&&context().clanTag===ctx.clanTag;
+    if(!valid()||!history)throw Error("strategic_history_unavailable");
+    const {data:visible,error}=await sb.from("cwl_clans").select("id").in("id",captured.sourceIds);
+    if(error||!Array.isArray(visible)||!valid()||captured.sourceIds.some(id=>!visible.some(c=>c.id===id)))throw Error("strategic_history_scope");
+    const {adaptStrategicHistory}=await import("./cwl-strategic-history-adapter.mjs");
+    if(!valid())throw Error("strategic_history_scope");
+    return adaptStrategicHistory({history,members,selectedClanId:ctx.clanId,authorizedClanIds:captured.sourceIds,snapshotAt:captured.at,asOf:captured.at});
+  }
+  return {load,reset,render,captureCwl,readStrategicHistory};
 }
