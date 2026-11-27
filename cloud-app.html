@@ -5084,15 +5084,17 @@ function confirmedCwlPlanningLocks(){
 function calculatePlan(){
   // The browser uses the validated multi-day solver. Keep legacy code below only for isolated compatibility tests.
   if(typeof window!=="undefined"&&window.CWLPlanningCore?.planCwl){
-    const locks=confirmedCwlPlanningLocks();
+    const rawLocks=confirmedCwlPlanningLocks(),clanId=window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null;
+    const observed=window.CWLPlanningCore.strategicObservedContext?.({profile:state,clanId,locks:rawLocks})||{locks:rawLocks,live:state.cwlLive};
+    const locks=observed.locks;
     const standard=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks,slots:state.config.slots,days:state.config.days});
-    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks,standard})||{status:"none",plan:standard};
+    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:state,clanId,locks,standard,live:observed.live})||{status:"none",plan:standard};
     const plan=resolved.plan;
-    const status=document.getElementById("strategicPublishedStatus");
+    const status=typeof document!=="undefined"?document.getElementById("strategicPublishedStatus"):null;
     if(status){const mode={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"}[state.config.strategicMode]||"Ausgewogen";
       status.hidden=!window.CWLCloud?.active||(!state.strategicPlan&&!state.config.strategicMode);
       status.className="statusline"+(resolved.status==="stale"?" strategic-notice is-warning":"");
-      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+" · Übernommene Aufstellung":
+      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+(state.strategicPlan?.source==="collector"?" · Automatisch aktualisiert":" · Übernommene Aufstellung"):
        resolved.status==="stale"?"⚠ Strategische Aufstellung nicht mehr passend. Standardplan angezeigt – bitte neu berechnen.":
        "Intelligenter Planer · "+mode+" · Noch keine strategische Aufstellung übernommen.";
     }
@@ -7376,7 +7378,7 @@ window.CWLLegacy={
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
- getPlanningLocks:()=>confirmedCwlPlanningLocks(),
+ getPlanningLocks:()=>window.CWLPlanningCore.strategicObservedContext({profile:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks:confirmedCwlPlanningLocks()}).locks,
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
  toast:(message)=>showToast(message),

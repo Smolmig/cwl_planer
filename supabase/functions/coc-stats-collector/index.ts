@@ -135,7 +135,8 @@ async function loadFullyCapturedLeagueKeys(settings,clanIds){
   }
   return common||new Set();
 }
-async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),onLeague=null){
+async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),onLeague=null,strategic=false){
+  const strategicStartedAt=Date.now(),strategicResults=new Map();
   const snaps=[],seen=new Set(),notes=[];
   // /currentwar is ephemeral. Keep non-final snapshots until the API
   // actually confirms the war ended; do not invent a completed war.
@@ -157,7 +158,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),
     let calls=0;
     for(const round of group.rounds.slice(0,7)){
       if(Date.now()>deadline-10000){notes.push("time_budget_exceeded");break}
-      if(hasCapturedCwlRound(round.warTags,completedLeagueKeys))continue;
+      if(!strategic&&hasCapturedCwlRound(round.warTags,completedLeagueKeys))continue;
       const candidates=(Array.isArray(round.warTags)?round.warTags:[])
         .map(tag).filter(validTag).filter(t=>!requested.has(t)).slice(0,4);
       let ours=null,identified=false;
@@ -172,6 +173,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),
         let raw;
         try{raw=await game("/clanwarleagues/wars/"+encodeURIComponent(warTag),key)}
         catch(e){roundErrors.push(apiDiagnostic(e,"leaguewar"));continue}
+        if(strategic)strategicResults.set(warTag,raw);
         if(!raw)continue;
         // Most tags belong to the other six clans; absence of our clan
         // is not a malformed record or an error for the current tenant.
@@ -179,7 +181,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),
         identified=true;
         try{ours=buildWarSnapshot(raw,gameTag,{warType:"cwl",warTag})}
         catch(e){roundErrors.push(apiDiagnostic(e,"leaguewar"))}
-        break;
+        if(!strategic)break;
       }
       if(ours&&!seen.has(ours.war.war_key)){
         snaps.push(ours);seen.add(ours.war.war_key);
@@ -194,7 +196,7 @@ async function retrieveGames(gameTag,key,deadline,completedLeagueKeys=new Set(),
   const leagueStarts=new Set(snaps.filter(x=>x.war.war_type==="cwl")
     .map(x=>x.war.started_at));
   return {snaps:snaps.filter(x=>x.war.war_type==="cwl"||
-    !leagueStarts.has(x.war.started_at)),notes};
+    !leagueStarts.has(x.war.started_at)),notes,...(strategic?{strategicGroup:group,strategicResults,strategicStartedAt,strategicObservedAt:Date.now()}: {})};
 }
 async function rollSeasonForAppClan(settings,clanId,league){
  if(!league)return false;
@@ -299,7 +301,8 @@ export default {
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
-    let seasonRollovers=0,seasonRolloverErrors=0;
+    let seasonRollovers=0,seasonRolloverErrors=0,strategicComputed=0,strategicChanged=0,strategicSkipped=0;
+    const strategicRecords=Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS")||"";
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
@@ -318,7 +321,14 @@ export default {
         tenureSkippedProfiles+=clanIds.length;
         rosterFailureClasses[rosterError]=(rosterFailureClasses[rosterError]||0)+clanIds.length;
       }
-      let scan;
+      let scan,strategicRunner=null;
+      const strategicContexts=new Map();
+      if(strategicRecords&&clanIds.some(id=>strategicRecords.includes(id))&&Date.now()<deadline-50000){
+        try{
+          strategicRunner=await import("./collector-strategic-runner.mjs");
+          for(const id of clanIds){const c=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,records:strategicRecords});if(c)strategicContexts.set(id,c)}
+        }catch{strategicContexts.clear();strategicSkipped++}
+      }
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys,async league=>{
         // Handle a verified new group before potentially slow individual war
@@ -328,7 +338,7 @@ export default {
           try{if(await rollSeasonForAppClan(settings,id,league))seasonRollovers++}
           catch{seasonRolloverErrors++;console.warn("collector_rollover_failed")}
         }
-      })}
+      },strategicContexts.size>0)}
       catch{scan={snaps:[],notes:[ERROR.api]}}
       for(const id of clanIds){
         try{
@@ -352,6 +362,16 @@ export default {
               e?.message===ERROR.save?ERROR.save:ERROR.api);
         }
       }
+      // Optional compute-only phase, after the normal collection writes.
+      // No profile updates, no new schedule, no client-controlled grants.
+      for(const [id,context] of strategicContexts){
+        try{
+          const current=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,records:strategicRecords});
+          if(!current||current.saved.revision!==context.saved.revision||current.review.cycle_id!==context.review.cycle_id){strategicSkipped++;continue}
+          const result=await strategicRunner.calculateAutomatic({rest,settings,context:current,scan,deadline});
+          if(result.ok){strategicComputed++;if(result.changed)strategicChanged++}else strategicSkipped++;
+        }catch{strategicSkipped++}
+      }
     }
     // No tags, player identities, API keys or raw war data in logs/response.
     return response({
@@ -359,7 +379,7 @@ export default {
       tenantProfiles:processed,failedProfiles:errors,
       observedWars,observedAttacks,observedEndedWars:completed,
       tenureObservedProfiles,tenureSkippedProfiles,tenureWriteErrors,
-      rosterFailureClasses,seasonRollovers,seasonRolloverErrors,
+      rosterFailureClasses,seasonRollovers,seasonRolloverErrors,strategicComputed,strategicChanged,strategicSkipped,
       moreBatches:count>1,scheduledBatch:part+1,batches:count
     },errors||tenureWriteErrors||tenureSkippedProfiles||seasonRolloverErrors?503:200);
   }

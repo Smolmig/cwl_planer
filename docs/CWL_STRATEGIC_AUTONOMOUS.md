@@ -1,0 +1,19 @@
+# #44 – App-unabhängige strategische Planung (27.11.2026)
+
+Nutzerwunsch: Aufstellung auch bei geschlossener App neu berechnen. Read-only Live-Prüfung: pg_cron cwl-clan-collector-independent aktiv, 5,35 * * * *. Bestehender authentifizierter Collector (#104) plus GitHub-Fallback; kein neuer Cron. Referenz 7db1d85: 1038/1039, Auth, Chromium/WebKit und Import grün; isolierter VM-Test document undefined behoben.
+
+## Erster Schritt
+- Default-off `CWL_STRATEGIC_AUTO_GRANTS` serverseitige JSON-Liste exakter App-Clan UUID / Clash-Tag / Owner UUID. Zusätzlich profile.config.strategicAuto=true und expliziter Modus; offene Planfreigabe derselben Saison, keine Fremdtenant-Lesezugriffe.
+- Bestehender Collector fragt bei berechtigtem Opt-in alle Gruppenkriege innerhalb desselben Anfrage-/Zeitbudgets ab; kein paralleler unbegrenzter Fanout. Bei Budgetmangel wird Strategie übersprungen, Status/Archiv-Erfassung bleibt vorrangig. Nur aggregierte Ergebniszähler in Antwort, keine Spieler/Tags in Logs.
+- Pure Serverberechnung mit identischem Mehrtages-Solver, tenantlokalen finalisierten 30-Tage-Daten und belegten eigenen laufenden Angriffen, kein Misses-Raten. Verifizierte tatsächliche Aufstellungen, frühere Datenlücken blockieren, manuelle/gestartete Locks und Regeln erhalten, keine Modusänderung.
+- Resultat `next` ist ein eng begrenzter strategischer Snapshot, kein vollständiges Profil. Browser-Unterstützung für künftigen Collector-Snapshot: beobachtete tatsächliche Aufstellung hat Vorrang, kein gespielt-Markieren, Scope und widersprüchliche Live-Signale geprüft. Keine zusätzliche Berechtigung für Viewer.
+- **Compute-only:** optionaler Collector-Pfad berechnet Kandidaten, zählt Änderung, schreibt noch nichts. Neue CI und Deno-Bundling/UAT ausstehend. Feature ist nicht deployed/aktiviert.
+
+## Vor automatischer Veröffentlichung verbindlich
+1. Owner-/Vize-Einstellung mit Hinweis auf offene/gesperrte Planung; Rollback auf manuell, keine automatische Modusänderung. Scope pro App-Clan + bestehender Zyklus.
+2. Service-only SECURITY INVOKER RPC mit enger Parameterform (nur strategicPlan), kein generischer Profilwrite. Live-DB-Guard erlaubt derzeit nur atomaren Saisonrollover. Keinesfalls dessen GUC wiederverwenden. Neue Guard-Ausnahme nur für genau diese RPC-Transaktion, auth.uid null + service_role, identischer Restprofil-JSONB, aktuelles Owner-/Link-/Opt-in-/Zyklus-/Revision-/Unlocked-Gate; Profil-/Review-Rowlocks in bestehender Reihenfolge. Erneute Prüfung der Ablaufzeit (max 5 min / prep start), keine write on conflict, voriges Profil als Recovery, Change-Event system_action. Migration erst nach lokaler CLI-/SQL-UAT, nicht per Produktion ausprobieren.
+3. Keine unnötigen Revisionen: nur bei geänderter semantischer Aufstellung/Scope/Evidenz. Verbindliche Plansperre stoppt automatische Publikation (Neuberechnung/Empfehlung getrennt zu ergänzen). Schutz vor hektischen Änderungen (Materialität, letzte bestätigte Aufstellung als Baseline, tatsächliche gestartete Tage).
+4. Local real DB test service role vs anon/authenticated, concurrent owner edit/lock/relink/cycle/disable, repeat/noop, time budget, failed upstream, persisted plan on viewer reload without active app. Deploy only after gates, rollback per environment/setting, no extra instance required.
+5. Aktuell echter Live-CWL-Gate fordert attacksPerMember reported; prüfen ob reales Standardformat Feld weglässt. Keine in-game Änderungen möglich, keine behauptete Modellkalibrierung. Cross-clan berechtigte Partnerhistorie nicht in diesem ersten serverseitigen Pfad.
+
+Kein Release/Deploy, produktiv v1.37.0. SQL-CLI im aktuellen Arbeitscontainer nicht installiert, keine neue Migration erfunden oder produktiv angewandt.

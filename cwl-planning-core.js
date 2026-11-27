@@ -260,6 +260,34 @@ function strategicRuleKey(profile) {
   m.targetDays??null,m.rotationWeight??null,m.priority??null,m.participationIntent??null,m.statuses||[]
  ]).sort((a,b)=>String(a[0]).localeCompare(String(b[0])))]);
 }
+// Server and browser use the same accepted-plan semantics. A collector
+// observation is supplemental, never an archive or a played-day write.
+function strategicObservedContext({profile,clanId,locks=[],live=profile?.cwlLive}={}){
+ const s=profile?.strategicPlan,base={locks,live};
+ if(s?.source!=="collector"||s.clanId!==clanId||s.season!==live?.season||
+  s.clanTag!==live?.clanTag||!Array.isArray(s.observedRounds)||s.observedRounds.length!==profile.config?.days||
+  !Number.isFinite(s.observedAt)||s.observedAt>Date.now()+30000)return base;
+ const days=profile.config.days,slots=profile.config.slots;
+ const all=[...(profile.members||[]),...(profile.archivedMembers||[])],ids=new Set(all.map(m=>m.id));
+ const nextLocks=Array.from({length:days},(_,i)=>locks[i]||{locked:false,lineup:[]});
+ const rounds=Array.from({length:days},(_,i)=>live.rounds?.[i]||{available:false});
+ const order={preparation:1,inWar:2,warEnded:3};
+ for(let i=0;i<days;i++){
+  const w=s.observedRounds[i],local=rounds[i];
+  if(!w?.available)continue;
+  if(w.day!==i+1||!/^#[0289PYLQGRJCUV]{3,15}$/.test(w.warTag||"")||!Object.hasOwn(order,w.state))return base;
+  if(local.available===true&&(local.warTag!==w.warTag||!Object.hasOwn(order,local.state)))return base;
+  if(local.available&&order[local.state]>order[w.state])continue;
+  if(w.state!=="preparation"){
+   if(!Array.isArray(w.lineup)||w.lineup.length!==slots||new Set(w.lineup).size!==slots||w.lineup.some(id=>!ids.has(id)))return base;
+   if(nextLocks[i]?.locked&&(nextLocks[i].lineup.length!==slots||!w.lineup.every(id=>nextLocks[i].lineup.includes(id))))return base;
+   if(!nextLocks[i]?.locked)nextLocks[i]={locked:true,lineup:[...w.lineup],source:"coc-roster-fixed-readonly"};
+  }
+  if(!local.available||order[local.state]<order[w.state])rounds[i]={available:true,day:w.day,warTag:w.warTag,state:w.state};
+ }
+ return {locks:nextLocks,live:{...live,rounds}};
+}
+
 function resolvePublishedStrategicPlan({profile,clanId,locks,standard,live=profile?.cwlLive}={}){
  const s=profile?.strategicPlan;
  if(!s)return {status:"none",plan:standard};
@@ -306,5 +334,7 @@ function resolvePublishedStrategicPlan({profile,clanId,locks,standard,live=profi
 }
 
 // Browser is a classic script; Node's test runner imports the exact same implementation.
-if (typeof window !== "undefined") window.CWLPlanningCore = Object.freeze({planCwl,strategicRuleKey,resolvePublishedStrategicPlan});
-if (typeof module !== "undefined" && module.exports) module.exports = {planCwl,strategicRuleKey,resolvePublishedStrategicPlan};
+if (typeof window !== "undefined") window.CWLPlanningCore = Object.freeze({planCwl,strategicRuleKey,resolvePublishedStrategicPlan,strategicObservedContext});
+if (typeof module !== "undefined" && module.exports) module.exports = {planCwl,strategicRuleKey,resolvePublishedStrategicPlan,strategicObservedContext};
+// Deno Edge runs this classic script as a static side-effect import; no runtime eval.
+if (typeof Deno !== "undefined" && typeof window === "undefined") globalThis.CWLPlanningCore=Object.freeze({planCwl,strategicRuleKey,resolvePublishedStrategicPlan,strategicObservedContext});
