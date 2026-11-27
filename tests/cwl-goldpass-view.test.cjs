@@ -30,8 +30,9 @@ test("Owner preview recalculates without mutating profile and clears on loss of 
   assert.match(root.textContent,/Keine offizielle Ziehung möglich/);
   assert.match(root.textContent,/2 Lose insgesamt/);
   assert.equal(root.querySelector("img"),null);
-  assert.match(root.textContent,/2 Lose = 1 Angriffe \+ 1 3★/);
+  assert.match(root.textContent,/2 Lose = 1 Los für Angriffe \+ 1 Los für Dreier/);
   assert.equal(root.querySelector("details").open,false);
+  root.querySelector("details").open=true;
   const numberInputs=root.querySelectorAll('input[type="number"]');
   numberInputs[1].value="4";numberInputs[1].dispatchEvent(new dom.window.Event("input"));
   assert.match(root.textContent,/5 Lose insgesamt/);
@@ -112,5 +113,26 @@ test("A pending server response cannot repopulate the Goldpass view after accoun
   resolveRequest({revision:2,rules:{},eligibility:{},official:{winnerName:"Old private result"}});
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(root.textContent,"");
+ }finally{if(before===undefined)delete global.document;else global.document=before;dom.window.close()}
+});
+
+test("historical template deliberately applies complete rules, leaves eligibility decisions and requires Save",async()=>{
+ const {createGoldpassPreview}=await import("../cwl-goldpass-view.mjs");
+ const {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,rafflePreview}=await import("../cwl-goldpass-core.mjs");
+ const dom=new JSDOM("<main id='root'></main>"),before=global.document;global.document=dom.window.document;
+ try{
+  const root=document.getElementById("root"),e={complete:true,ended:5,warCount:5,players:[{tag:player,name:"Player",appearances:5,attacks:5,stars:15,one:0,two:0,three:5}]};
+  let stored={revision:1,rules:{...DEFAULT_RAFFLE_RULES},eligibility:{[player]:{discord:true}},organizerConfirmed:true};
+  const calls=[],api=async q=>{calls.push(q);if(q.action==="save")stored={...stored,revision:2,rules:q.rules,eligibility:q.eligibility};return {...stored,evidence:e,preview:rafflePreview(e,stored.rules,stored.eligibility),witness:"w"}};
+  const view=createGoldpassPreview({root,getProfile:()=>({cwlLive:snapshot("2026-11")}),getContext:()=>({owner:true,clanId:"A",clanTag:own}),api});
+  view.open();await new Promise(r=>setImmediate(r));
+  const preset=()=>[...root.querySelectorAll("select")].find(s=>[...s.options].some(o=>o.value==="october"));
+  assert.equal(preset().value,"custom");assert.match(root.textContent,/11 Lose insgesamt/);assert.equal(stored.rules.base,1);
+  preset().value="october";preset().dispatchEvent(new dom.window.Event("change"));
+  assert.match(root.textContent,/5 Lose insgesamt/);assert.equal(stored.rules.base,1);assert.equal(calls.length,1);
+  const button=t=>[...root.querySelectorAll("button")].find(b=>b.textContent===t);
+  assert.equal(button("Offiziell ziehen").disabled,true);
+  button("Regeln speichern").click();await new Promise(r=>setImmediate(r));
+  assert.deepEqual(stored.rules,RAFFLE_PRESETS.october);assert.equal(stored.eligibility[player].discord,true);assert.equal(calls.filter(q=>q.action==="draw").length,0);
  }finally{if(before===undefined)delete global.document;else global.document=before;dom.window.close()}
 });
