@@ -156,7 +156,7 @@ try{
 
 /* v9: responsive UI, themes, live-CWL workflow & safety */
 html[data-theme="light"]{--bg:#f4f7fb;--card:#fff;--text:#132238;--muted:#66758a;--line:#dce3ec;--primary:#2563eb;--green:#15803d;--greenbg:#dcfce7;--red:#b91c1c;--redbg:#fee2e2;--amber:#a16207;--amberbg:#fef3c7;--bluebg:#dbeafe;--shadow:0 8px 24px rgba(15,23,42,.08)}
-html[data-theme="dark"]{--bg:#0b1220;--card:#111827;--text:#e5edf7;--muted:#94a3b8;--line:#263244;--primary:#3b82f6;--green:#86efac;--greenbg:#153523;--red:#fca5a5;--redbg:#421f23;--amber:#fcd34d;--amberbg:#3a3017;--bluebg:#172554;--shadow:none}
+html[data-theme="dark"]{--bg:#0b1220;--card:#111827;--text:#e5edf7;--muted:#94a3b8;--line:#263244;--primary:#3b82f6;--green:#86efac;--greenbg:#153523;--red:#fca5a5;--redbg:#421f23;--amber:#ffda94;--amberbg:#3a3017;--bluebg:#172554;--shadow:none}
 html[data-theme="light"] .topbar{background:rgba(244,247,251,.94)}html[data-theme="dark"] .topbar{background:rgba(11,18,32,.94)}
 html[data-theme="light"] .bottomnav{background:rgba(255,255,255,.96)}html[data-theme="dark"] .bottomnav{background:rgba(17,24,39,.96)}
 html[data-theme="light"] .kpi,html[data-theme="light"] .player-chip,html[data-theme="light"] .rule-panel,html[data-theme="light"] .profile-active,html[data-theme="light"] .helpbox,html[data-theme="light"] .member-hint,html[data-theme="light"] .info-strip,html[data-theme="light"] .list-management,html[data-theme="light"] .help-item,html[data-theme="light"] .goal-pill,html[data-theme="light"] .goal-row{background:#f8fafc}
@@ -192,7 +192,7 @@ html[data-theme="light"] .bulk-group{background:rgba(255,255,255,.55)}
 /* Cyberpunk uses static layered backgrounds and transform-only hover motion.
    v9.2's continuously moving grid, per-card sweeps, button shimmer and repeated
    backdrop-filter were intentionally removed because they caused unnecessary repaints. */
-html[data-theme="cyber"]{--bg:#05070f;--card:#0b1020;--text:#eefcff;--muted:#91a7bd;--line:#23415b;--primary:#22d3ee;--green:#45f3a7;--greenbg:#10352e;--red:#ff5c97;--redbg:#421a31;--amber:#ffd166;--amberbg:#3c3015;--bluebg:#112b48;--shadow:0 12px 34px rgba(0,0,0,.28)}
+html[data-theme="cyber"]{--bg:#05070f;--card:#0b1020;--text:#eefcff;--muted:#91a7bd;--line:#23415b;--primary:#22d3ee;--green:#45f3a7;--greenbg:#10352e;--red:#ff5c97;--redbg:#421a31;--amber:#ffe0a3;--amberbg:#3c3015;--bluebg:#112b48;--shadow:0 12px 34px rgba(0,0,0,.28)}
 html[data-theme="cyberlight"]{--bg:#eefaff;--card:#ffffff;--text:#10243a;--muted:#60778c;--line:#b9dce7;--primary:#0284c7;--green:#047857;--greenbg:#d9fff1;--red:#d81b60;--redbg:#ffe4ef;--amber:#a85b00;--amberbg:#fff3c8;--bluebg:#ddf4ff;--shadow:0 10px 30px rgba(18,74,103,.12)}
 html[data-theme="cyber"] body,html[data-theme="cyberlight"] body{background-repeat:no-repeat;background-size:100% 100%;min-height:100vh}
 html[data-theme="cyber"] body{background:radial-gradient(circle at 14% 7%,rgba(34,211,238,.11),transparent 27rem),radial-gradient(circle at 86% 16%,rgba(255,77,141,.09),transparent 24rem),linear-gradient(135deg,#05070f 0%,#080c18 48%,#050711 100%)}
@@ -231,7 +231,7 @@ html[data-theme="cyber"] .inline-action-panel{background:linear-gradient(145deg,
 /* v9.4: stronger Cyberpunk visual identity, still static/smooth.
    No looping animation, backdrop blur or moving background is used here. */
 html[data-theme="cyber"],html[data-theme="cyberlight"]{--cy-cyan:#22e7ff;--cy-magenta:#ff3f9b;--cy-purple:#9b5cff;--cy-yellow:#ffd84a}
-html[data-theme="cyber"]{--bg:#03050b;--card:#090e1a;--text:#effdff;--muted:#8ca6bb;--line:#1f5368;--primary:#18dff5;--green:#50f6ad;--greenbg:#0b3329;--red:#ff4f91;--redbg:#3b1328;--amber:#ffdd66;--amberbg:#392e0d;--bluebg:#0a2940;--shadow:0 10px 28px rgba(0,0,0,.34)}
+html[data-theme="cyber"]{--bg:#03050b;--card:#090e1a;--text:#effdff;--muted:#8ca6bb;--line:#1f5368;--primary:#18dff5;--green:#50f6ad;--greenbg:#0b3329;--red:#ff4f91;--redbg:#3b1328;--amber:#ffe0a3;--amberbg:#392e0d;--bluebg:#0a2940;--shadow:0 10px 28px rgba(0,0,0,.34)}
 html[data-theme="cyberlight"]{--bg:#eaf8fb;--card:#fbfeff;--text:#0a2437;--muted:#587487;--line:#8acfe0;--primary:#007fa7;--green:#007a58;--greenbg:#d5fff0;--red:#c91461;--redbg:#ffe1ee;--amber:#986000;--amberbg:#fff0b7;--bluebg:#d8f5ff;--shadow:0 9px 24px rgba(0,103,132,.13)}
 html[data-theme="cyber"] body{background:radial-gradient(circle at 10% -5%,rgba(34,231,255,.20),transparent 30rem),radial-gradient(circle at 96% 8%,rgba(255,63,155,.17),transparent 28rem),linear-gradient(145deg,#02040a 0%,#060a16 52%,#04030c 100%)}
 html[data-theme="cyberlight"] body{background:radial-gradient(circle at 8% -4%,rgba(0,198,255,.24),transparent 29rem),radial-gradient(circle at 96% 8%,rgba(255,63,155,.17),transparent 27rem),linear-gradient(145deg,#f8feff 0%,#eaf8fb 52%,#fff3fa 100%)}
@@ -1494,7 +1494,7 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:525}
 html[data-theme="arena"]{
  --bg:#0a0d14;--card:#151a20;--text:#f4f0e8;--muted:#a1a7aa;
  --line:#36404a;--primary:#dfbd7a;--green:#a4d5b9;--greenbg:#20352d;
- --red:#f0a4a0;--redbg:#412a2b;--amber:#eac37d;--amberbg:#453925;
+ --red:#f0a4a0;--redbg:#412a2b;--amber:#ffd39a;--amberbg:#453925;
  --bluebg:#2b3034;--shadow:0 9px 28px rgba(0,0,0,.13);
 }
 html[data-theme="arena"] .topbar{background:#151a20}
@@ -1552,7 +1552,7 @@ html[data-theme="arena"]{color-scheme:dark;
   --bg:#0a0d14;--card:#151a20;--text:#f6f1e8;--muted:#adb5ba;
   --line:#3e4850;--primary:#dfbd7a;--green:#9fd7b7;
   --greenbg:#20352e;--red:#f2a5a4;--redbg:#462a2d;
-  --amber:#ebc57f;--amberbg:#3b3021;--bluebg:#292e32;
+  --amber:#ffd39a;--amberbg:#3b3021;--bluebg:#292e32;
   --shadow:0 12px 32px rgba(0,0,0,.25);
 }
 html[data-theme="arena"] body{
@@ -2561,6 +2561,29 @@ html:is([data-theme="light"],[data-theme="cyberlight"]) #clanActivityMembers :is
 .clan-management-criteria .subtle{font-weight:500;color:var(--muted)}
 .clan-management-criteria form{max-width:720px;padding:3px 0 0 4px}
 .clan-management-criteria p{font-size:12px;line-height:1.6;color:var(--muted);margin:5px 0 12px}
+/* Shared semantic text tokens for meaningful statuses across the Cloud app. */
+.semantic-text[data-tone="positive"],.clan-rule-path-state[data-tone="positive"],#clanRulesStatus[data-tone="positive"]{color:var(--green)}
+.semantic-text[data-tone="warning"],.clan-rule-path-state[data-tone="warning"],#clanRulesStatus[data-tone="warning"]{color:var(--amber)}
+.semantic-text[data-tone="negative"],#clanRulesStatus[data-tone="negative"]{color:var(--red)}
+.clan-rule-path-state[data-tone="neutral"],#clanRulesStatus[data-tone="neutral"]{color:var(--muted)}
+.clan-rule-group-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;justify-content:space-between;margin:12px 0 4px}
+.clan-rule-group-heading h4,.clan-rule-policy h4{margin:0;font-size:14px}
+.clan-rule-path-state{font-size:12px;font-weight:750}
+.clan-rule-policy{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.clan-rule-draft-summary[data-tone="warning"]{color:var(--amber)}
+.clan-rule-draft-summary{max-width:680px;border-top:1px solid var(--line);padding-top:12px;margin-top:16px!important}
+#clanManagementRulesForm{max-width:760px}
+#clanManagementRulesForm .clan-rule-fields{max-width:640px}
+#clanManagementRulesForm .clan-rule-fields input{max-width:100%;font-size:14px}
+#clanManagementRulesForm .clan-rule-future>summary{min-height:44px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none}
+#clanManagementRulesForm .clan-rule-future>summary::-webkit-details-marker{display:none}
+#clanManagementRulesForm .clan-rule-future>summary::after{content:"";width:8px;height:8px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-right:4px}
+#clanManagementRulesForm .clan-rule-future[open]>summary::after{transform:rotate(225deg)}
+#clanManagementRulesForm :is(input,button,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#clanManagementRulesForm .clan-rule-toggle{min-height:44px}
+#clanManagementRulesForm .clan-rule-toggle input{width:22px;height:22px;flex:none}
+html:is([data-theme="arena"],[data-theme="dark"],[data-theme="cyber"]) #clanManagementRulesForm input{color-scheme:dark}
+html:is([data-theme="light"],[data-theme="cyberlight"]) #clanManagementRulesForm input{color-scheme:light}
 .clan-rule-toggle{font-size:13px;font-weight:700;display:flex;gap:9px;align-items:center;margin:4px 0 15px}
 .clan-rule-toggle input{width:18px;height:18px;accent-color:var(--primary)}
 .clan-rule-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
@@ -3917,7 +3940,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 
  /* Semantic notices: restrained theme tint, explicit icon and title. */
  .strategic-notice{--notice-accent:var(--danger,#d65353);margin:8px 0;padding:10px 12px;border:1px solid color-mix(in srgb,var(--notice-accent) 36%,var(--line));border-radius:9px;background:color-mix(in srgb,var(--notice-accent) 8%,var(--card));color:var(--text);overflow-wrap:anywhere}
- .strategic-notice.is-positive{--notice-accent:var(--ok,#43966b)}
+ .strategic-notice.is-positive{--notice-accent:var(--green)}
  .strategic-notice strong{display:flex;align-items:baseline;gap:7px;font-size:inherit}
  .strategic-notice-icon{color:var(--notice-accent);flex:none;font-weight:800}
  .strategic-notice p{margin:4px 0 0}
@@ -4635,6 +4658,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
    <p>Für Leistungsbeförderungen zählen bestätigte Clanzeit und API-Angriffe aus abgeschlossenen Kriegen dieses Clans. Importierte ClashPerk-Angriffe zählen hierfür derzeit nicht. Im Spiel wird nichts automatisch geändert.</p>
+   <div class="clan-rule-group-heading"><h4>Angriffsleistung</h4><span id="clanPerformanceState" class="clan-rule-path-state" data-tone="positive">Aktiv</span></div>
    <label class="clan-rule-toggle"><input id="clanRuleEnabled" type="checkbox" checked> Angriffsleistung berücksichtigen</label>
    <div class="clan-rule-fields">
     <label>Mindestens bestätigte Clantage<input type="number" inputmode="numeric" min="1" max="365" step="1" id="clanRuleDays" value="14" required></label>
@@ -4643,7 +4667,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <label>Angriffe aus den letzten Tagen<input type="number" inputmode="numeric" min="7" max="730" step="1" id="clanRuleLookback" value="14" required></label>
    </div>
    <details class="clan-rule-future">
-    <summary>Treue &amp; Rückkehr <span class="subtle">· optional</span></summary>
+    <summary>Treue &amp; Rückkehr <span id="clanLoyaltyState" class="clan-rule-path-state" data-tone="neutral">Treuepfad inaktiv</span></summary>
     <p>Zusätzlich können bestätigte Clanzeit und beobachtete Spenden neue Vorschläge auslösen – auch ohne Kriegsangriffe. Eine längere belegte Abwesenheit erfordert nur eine Prüfung.</p>
     <label class="clan-rule-toggle"><input id="clanRuleLoyaltyEnabled" type="checkbox"> Clanzeit und Spenden berücksichtigen</label>
     <div class="clan-rule-fields">
@@ -4655,12 +4679,19 @@ html.cloud-startup-pending .cloud-startup-splash{
     </div>
     <p class="small">Zusätzlich muss ein bestätigter Spendenanstieg innerhalb der letzten 14 Tage vorliegen. Fehlende Beobachtungen gelten nicht als Untätigkeit; ob CW-Angriffe versäumt wurden, ist getrennt zu prüfen.</p>
    </details>
+   <p id="clanRulesDraftSummary" class="clan-rule-draft-summary" aria-live="polite"></p>
    <div class="clan-rule-actions">
     <button class="btn small primary" id="clanRulesSave" type="submit" disabled>Kriterien speichern</button>
     <span id="clanRulesStatus" role="status" aria-live="polite">Kriterien werden geladen …</span>
    </div>
   </form>
  </details>
+ <div class="clan-rule-policy" aria-labelledby="clanRulePolicyTitle">
+  <h4 id="clanRulePolicyTitle">Fehlangriffe und Aktivität</h4>
+  <p class="statusline"><span data-tone="warning" class="semantic-text">Fehlangriff prüfen</span> · Nur bestätigte Fälle aus abgeschlossenen Kriegen.</p>
+  <p class="statusline"><span data-tone="negative" class="semantic-text">Degradierung prüfen</span> · Schwere oder wiederholte Fehlangriffe nach den bestehenden Prüfregeln. Keine automatische Rangänderung.</p>
+  <p class="statusline">Diese Prüfregeln sind derzeit nicht über dieses Formular einstellbar. Vize und Clanführer sind ausgenommen. Der letzte Login ist nicht verfügbar.</p>
+ </div>
  </section>
  <section id="managementActions" class="management-workspace-panel" aria-labelledby="managementActionsTitle">
   <h3 id="managementActionsTitle">Handlungsbedarf</h3>
@@ -6812,6 +6843,28 @@ function displayClanRules(rules){
   document.getElementById(id).value=rules[key]===null?"":String(rules[key]);
  document.getElementById("clanRuleEnabled").checked=rules.performance_enabled;
  document.getElementById("clanRuleLoyaltyEnabled").checked=rules.loyalty_enabled;
+ renderClanRuleDraft();
+}
+function renderClanRuleDraft(){
+ const p=document.getElementById("clanRuleEnabled").checked,l=document.getElementById("clanRuleLoyaltyEnabled").checked;
+ const performance=document.getElementById("clanPerformanceState"),loyalty=document.getElementById("clanLoyaltyState");
+ performance.textContent=p?"Aktiv":"Inaktiv";performance.dataset.tone=p?"positive":"neutral";
+ loyalty.textContent=l?"Treuepfad aktiv":"Treuepfad inaktiv";loyalty.dataset.tone=l?"positive":"neutral";
+ const out=document.getElementById("clanRulesDraftSummary");
+ try{
+  const rules=readClanRules(),parts=[];
+  if(p)parts.push("Leistung: ab "+rules.performance_min_days+" Clantagen, "+rules.performance_min_attacks+" Angriffen und "+rules.performance_three_star_percent+" % Dreiern (letzte "+rules.performance_lookback_days+" Tage).");
+  if(l)parts.push("Treue: ab "+rules.loyalty_min_days+" Clantagen, "+rules.loyalty_min_donations+" zusätzlichen Spenden an mindestens "+rules.loyalty_min_active_days+" Tagen (letzte "+rules.loyalty_lookback_days+" Tage).");
+  if(!parts.length)parts.push("Keine leistungs- oder treuebasierte Beförderungsprüfung aktiv. Frühere Ränge und Fehlangriffe werden getrennt geprüft.");
+  out.textContent=(clanRulesDirty?"Entwurf: ":"Aktuelle Kriterien: ")+parts.join(" ");
+  out.dataset.tone="neutral";
+ }catch{
+  out.textContent="Bitte gültige Grenzwerte eingeben. Benötigte Spendentage dürfen den Zeitraum nicht überschreiten.";
+  out.dataset.tone="warning";
+ }
+}
+function setClanRulesStatus(message,tone="neutral"){
+ const label=document.getElementById("clanRulesStatus");label.textContent=message;label.dataset.tone=tone;
 }
 function readClanRules(){
  const input={
@@ -6864,7 +6917,7 @@ function clearClanManagement(){
  document.getElementById("clanManagementFilters").hidden=true;
  displayClanRules(window.CWLClanManagement.DEFAULT_RULES);
  document.getElementById("clanRulesSave").disabled=true;
- document.getElementById("clanRulesStatus").textContent="Kriterien werden geladen …";
+ setClanRulesStatus("Kriterien werden geladen …");
 }
 window.CWLClanManagementView={
  accessChanged(next){
@@ -6902,9 +6955,7 @@ window.CWLClanManagementView={
     clanRulesRevision=result.ruleRevision;
     clanRulesLoaded=true;
     document.getElementById("clanRulesSave").disabled=true;
-    document.getElementById("clanRulesStatus").textContent=
-     result.ruleRevision===null?"Standardwerte für diesen Clan":
-      "Kriterien gespeichert";
+    setClanRulesStatus(result.ruleRevision===null?"Standardwerte für diesen Clan":"Kriterien gespeichert",result.ruleRevision===null?"neutral":"positive");
    }
    if(!preview?.ok)throw Error("Die Clash-Liste ist unvollständig oder enthält doppelte Spieler-Tags.");
    clanManagementLastPreview=preview;
@@ -6974,18 +7025,18 @@ window.CWLClanManagementView={
   const save=document.getElementById("clanRulesSave"),label=document.getElementById("clanRulesStatus");
   let rules;
   try{rules=readClanRules()}catch(err){
-   label.textContent="Ungültiger Grenzwert – bitte zulässige Werte eintragen.";return;
+   setClanRulesStatus("Ungültiger Grenzwert – bitte zulässige Werte eintragen.","warning");return;
   }
-  save.disabled=true;label.textContent="Kriterien werden gespeichert …";
+  save.disabled=true;setClanRulesStatus("Kriterien werden gespeichert …");
   try{
    const result=await cloud.saveManagementRules(rules,clanRulesRevision);
    if(request!==clanManagementRequest||id!==cloud.getActiveClanId())return;
    clanRulesRevision=result.revision;clanRulesDirty=false;displayClanRules(result.rules);
-   label.textContent="Gespeichert · Bewertung wird aktualisiert.";
+   setClanRulesStatus("Gespeichert · Bewertung wird aktualisiert.","positive");
    this.refresh();
   }catch(err){
    if(request!==clanManagementRequest)return;
-   label.textContent=err?.message||"Regeln konnten nicht gespeichert werden.";
+   setClanRulesStatus(err?.message||"Regeln konnten nicht gespeichert werden.","negative");
    save.disabled=false;
   }
  }
@@ -6994,7 +7045,8 @@ document.getElementById("clanManagementCriteria").addEventListener("input",()=>{
  if(!clanRulesLoaded)return;
  clanRulesDirty=true;
  document.getElementById("clanRulesSave").disabled=false;
- document.getElementById("clanRulesStatus").textContent="Ungespeicherte Änderungen · Bewertung verwendet noch die gespeicherten Kriterien.";
+ renderClanRuleDraft();
+ setClanRulesStatus("Ungespeicherte Änderungen · Bewertung verwendet noch die gespeicherten Kriterien.","warning");
 });
 document.getElementById("clanManagementRulesForm").addEventListener("submit",event=>{
  event.preventDefault();window.CWLClanManagementView.saveRules();
