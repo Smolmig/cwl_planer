@@ -182,6 +182,16 @@ test("Action workspace search, rule drafts, refresh and clan isolation remain us
        const a=lum(style.color),b=lum(bg);return {correct:style.color===green,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
       }));
       assert.ok(tones.length&&tones.every(x=>x.correct&&x.contrast>=4.5),JSON.stringify({theme,width,tones}));
+      const otherTones=await host.locator("#clanManagementActionList").evaluate(list=>{
+       const rgb=c=>c.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number),lum=c=>rgb(c).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+       return [["severe","red"],["warning","amber"]].map(([state,token])=>{
+        const row=document.createElement("div");row.className="clan-management-person";const status=document.createElement("div");status.className="clan-management-person-status";status.dataset.review=state;status.textContent="Kontrastprüfung";row.append(status);list.append(row);
+        const fg=getComputedStyle(status).color;const probe=document.createElement("span");probe.style.color="var(--"+token+")";status.append(probe);const expected=getComputedStyle(probe).color;
+        let parent=status,bg;while(parent){bg=getComputedStyle(parent).backgroundColor;if(bg!=="rgba(0, 0, 0, 0)"&&bg!=="transparent")break;parent=parent.parentElement}
+        const a=lum(fg),b=lum(bg);row.remove();return {state,correct:fg===expected,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+       });
+      });
+      assert.ok(otherTones.every(x=>x.correct&&x.contrast>=4.5),JSON.stringify({theme,width,otherTones}));
      }
      if(dir&&["arena","dark"].includes(theme)){
       await page.evaluate(()=>scrollTo(0,0));
