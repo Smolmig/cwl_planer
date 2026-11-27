@@ -154,7 +154,17 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
      await page.evaluate(t=>{document.documentElement.dataset.theme=t;scrollTo(0,0)},theme);
      assert.ok(await view.evaluate(n=>n.scrollWidth<=n.clientWidth+2),name+" view overflow "+width+" "+theme);
      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),name+" app overflow "+width+" "+theme);
-     if(dir&&["arena","dark"].includes(theme))await page.screenshot({path:path.join(dir,"goldpass-"+name+"-"+theme+"-"+width+".png")});
+     const controls=await view.locator("select,input:not([type=checkbox])").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>{
+      const s=getComputedStyle(n),lum=c=>{const a=c.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number);return a?.length===3?a.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0):null};
+      const a=lum(s.color),b=lum(s.backgroundColor);return {height:n.getBoundingClientRect().height,ratio:a===null||b===null?0:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),scheme:s.colorScheme};
+     }));
+     assert.ok(controls.length&&controls.every(c=>c.height>=43&&c.ratio>=4.5&&c.scheme===(theme==="light"?"light":"dark")),name+" control styling "+width+" "+theme+" "+JSON.stringify(controls));
+     if(dir&&["arena","dark"].includes(theme)){
+      await page.screenshot({path:path.join(dir,"goldpass-"+name+"-"+theme+"-"+width+".png")});
+      const section=view.getByRole("heading",{name:name==="cwl"?"Teilnehmer & Gewinnchancen":"Zielvorlagen",exact:true});
+      await section.evaluate(n=>{const y=n.getBoundingClientRect().top+scrollY;const header=document.querySelector(".topbar")?.getBoundingClientRect().height||0;scrollTo({top:Math.max(0,y-header-8),behavior:"instant"})});
+      await page.screenshot({path:path.join(dir,"goldpass-detail-"+name+"-"+theme+"-"+width+".png")});
+     }
     }
    }
   }
