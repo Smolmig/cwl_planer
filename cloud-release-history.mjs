@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.39.0",
+      "releaseType": "minor",
+      "date": "2026-11-27",
+      "title": "Goldpass-Verlosungen an einem Ort",
+      "description": "CWL- und Grind-Verlosung gemeinsam öffnen, Zielvorlagen vergleichen, Machbarkeit prüfen und unverbindlich testen. Bestehende Regeln und Ziehungen bleiben erhalten."
+  },
+
+  {
       "version": "v1.38.0",
       "releaseType": "minor",
       "date": "2026-11-27",

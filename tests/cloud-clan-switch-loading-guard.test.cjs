@@ -114,7 +114,7 @@ test("a failed membership lookup does not remember an unverified clan",async()=>
  assert.equal(ctx.channel,null);
 });
 test("patch does not touch offline PWA or data format",()=>{
- assert.match(html,/const APP_VERSION="v1\.38\.0"/);
+ assert.match(html,/const APP_VERSION="v1\.39\.0"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/Clan wechseln &amp; Laden/);
  assert.match(html,/id="cloudStartupRetry"/);

@@ -1,4 +1,4 @@
-import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.37.0";
+import {sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.39.0";
 import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.37.0";
 import {ACTIVITY_PRESETS,activityPeriod,presetTargets,activityGoalPace,campaignPreview} from "./cwl-activity-campaign.mjs?v=1.37.0";
 const metrics=[

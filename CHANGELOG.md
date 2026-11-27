@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.39.0] - 2026-11-27
+
+- Ein Goldpass-Einstieg mit getrennten CWL- und Grind-Verlosungen; historische Oktober-Regel, vollständige Regelvorlagen und verständliche Losaufschlüsselung.
+- Grind-Vorlagen mit konkreten Zeitraumzielen und anpassbarer CW-Schätzung; Warnung bei rechnerisch zu hohen Zielen. Unverbindlicher Test ohne Kampagnenanlage oder Tracking.
+- Responsive, themengerechte Eingabefelder; bestehende Regeln, Ziehungen, Backend und Datenformat unverändert.
+
 ## [1.38.0] - 2026-11-27
 
 - Intelligenter CWL-Planer als appweite Beta: drei Modi, Kaderempfehlungen im Mitglieder-Tab und Gruppen-/Resttageplanung im Plan. Offene Angriffsvorschläge bleiben unverbindlich.
