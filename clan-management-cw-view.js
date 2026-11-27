@@ -16,7 +16,7 @@ function clear(){
  const panel=get("clanManagementNormalPanel");
  if(panel)panel.open=false;
  const heading=get("clanManagementNormalHeading");
- if(heading)heading.textContent="Normale CW · Angriffe prüfen";
+ if(heading)heading.textContent="Normale Clankriege · Angriffe prüfen";
  get("clanManagementNormalList")?.replaceChildren();
 }
 function render(members,payload,sourceTag,onResult=null){
@@ -28,14 +28,14 @@ function render(members,payload,sourceTag,onResult=null){
  if(typeof onResult==="function")onResult(result);
  list.replaceChildren();
  if(!result){
-  heading.textContent="Normale CW · Nachweise nicht verfügbar";
+  heading.textContent="Normale Clankriege · Nachweise nicht verfügbar";
   list.appendChild(element("p",
    "Die Kriegsnachweise oder Entscheidungen sind nicht vollständig abrufbar. Es wird kein Fehlverhalten angenommen.",
    "clan-management-empty"));
   return;
  }
  const count=result.rows.reduce((sum,p)=>sum+p.openCount,0);
- heading.textContent="Normale CW · "+count+(count===1?" offener Fall":" offene Fälle");
+ heading.textContent="Normale Clankriege · "+count+(count===1?" offener Fall":" offene Fälle");
  if(result.incompleteWars)
   list.appendChild(element("p",result.incompleteWars+
    " dokumentierte Kriege ohne vollständige Angriffsnachweise – nicht bewertet.",
@@ -51,7 +51,9 @@ function render(members,payload,sourceTag,onResult=null){
   const row=element("div","","clan-management-person");
   row.setAttribute("role","listitem");row.dataset.playerTag=person.tag;
   row.append(element("strong",person.name));
-  row.append(element("div",person.status,"clan-management-person-status"));
+  const status=element("div",person.status,"clan-management-person-status");
+  status.dataset.review=person.severe?"severe":person.openCount>0?"warning":"none";
+  row.append(status);
   row.append(element("small",person.reason));
   const disclosure=element("details","","clan-management-evidence");
   disclosure.open=expanded.has(person.tag);
