@@ -8,7 +8,7 @@ export const releaseHistory = [
       "releaseType": "minor",
       "date": "2026-11-27",
       "title": "Intelligenter CWL-Planer (Beta)",
-      "description": "Für freigeschaltete Clans: drei Leistungsmodi, gemeinsame automatische Aufstellung, Kaderempfehlungen und unverbindliche Ziele für offene Angriffe. Mitgliedervorgaben bleiben geschützt."
+      "description": "Für alle mit Clash verbundenen Cloud-Clans: drei Leistungsmodi, gemeinsame automatische Aufstellung, Kaderempfehlungen und unverbindliche Ziele für offene Angriffe. Mitgliedervorgaben bleiben geschützt."
   },
 
   {

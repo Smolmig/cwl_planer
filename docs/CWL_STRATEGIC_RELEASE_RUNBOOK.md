@@ -1,5 +1,7 @@
 # Freigabereihenfolge – Dezember-Beta #44
 
+> **Verbindliche Korrektur 27.11.: appweiter Rollout.** Die privaten Grant-Schritte unten sind historisch und durch Paket 14 ersetzt. Keine United-Fighters-Allowlist. Aktuelle tenantbezogene Autorisierung, Opt-in und globale Kill-Switches; neue service-only Queue separat migrieren und testen, dann beide Endpunkte deployen, Fast-Cron aktivieren, Frontend veröffentlichen.
+
 Ziel: v1.38.0 MINOR (neuer rückwärtskompatibler intelligenter Planer). Keine offizielle Freigabe durch reine Code-Existenz. Bestehendes v1.37.0 bleibt bis Freigabe.
 
 ## Gating und Reihenfolge
@@ -20,3 +22,6 @@ d036940: 1053/1053 + fünf CI grün, local auth UAT rot bei JSONB-Roundtrip No-o
 
 ## Paket 13
 f4320e8: fünf Prüfserien grün, 22/1056 Regressionstests scheitern ausschließlich an noch auf v1.37.0 festgelegten Erwartungen in 17 Testdateien. Versionsreferenzen auf v1.38.0 synchronisiert, keine fachlichen Assertions entfernt. Neue CI offen; prod unverändert default-off, keine Freigabe vor grün. Release-Datum bei tatsächlicher Veröffentlichung erneut prüfen.
+
+## Paket 14 – appweiter Beta-Zugang (27.11.)
+ d03eb34 1056/1056, alle sechs CI grün. Nutzerklarstellung #44/#121: keine UF-only-Freigabe. Separater Beta-Endpunkt jetzt aktuelle Owner/Editor-Mitgliedschaft und Clash-Tag/Owner-Bindung, erneute Prüfung nach externem Abruf; globaler Kill-Switch statt privater Liste. Collector nur gespeicherte Opt-ins mit aktuellem Owner-/Tag-/Saison-/Revisionskontext; Ausfall eines Tenants isoliert. Service-only appweite Claim-RPC ohne Caller-Ziel oder 50er Grantlimit, gleicher Retry-Lease, älteste unbehandelte Revision zuerst, maximal ein Claim pro Schnellabruf. Legacy-RPC bleibt für Rollback; neue additive SQL-Quelle noch nicht migriert, CLI-Artifact in isolierter SQL-CI. Regulärer bestehender Collector weiterhin begrenzt (5 Tags pro Durchlauf, bei Wachstum größere Wartezeit), minütlicher Pending-Check noch aus. Keine globale RLS-Öffnung. Zwei unabhängige echte lokale JWT-Owner in UAT, gegenseitige Fremdreads, zweite Publikation ohne Grant, Opt-out und CAS. Release-Copy angepasst, v1.38.0 bleibt MINOR-Kandidat. Neue CI offen; kein neuer Prod-Deploy/Frontend-Release. Bestehende Produktiv-Endpunkte default-off aus Paket 12. Vor Freigabe neue SQL-Abnahme, CLI-Datei übernehmen, globale Schalter und beide Deployments/Gateway prüfen, Cron, Merge. Modell-/Lastabnahme in echter CWL und #360 weiterhin offen.
