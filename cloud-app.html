@@ -2516,6 +2516,19 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
  .activity-member-row select,.activity-member-toolbar input,.activity-member-toolbar select{max-width:100%;width:100%;min-height:44px}
  .activity-member-row details button{margin-top:8px;min-height:44px}
  #clanActivityMembers .goldpass-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+/* Clan management: one visible task area, shared existing data and forms. */
+.management-workspace-nav,.management-source-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}
+.management-source-nav{grid-template-columns:repeat(4,minmax(0,1fr));margin:8px 0 16px}
+.management-workspace-nav .btn,.management-source-nav .btn{min-height:44px;min-width:0;white-space:normal;padding:8px 5px;overflow-wrap:anywhere}
+.management-workspace-nav .btn[aria-pressed="true"],.management-source-nav .btn[aria-pressed="true"]{border-color:var(--primary);color:var(--primary);background:var(--card);box-shadow:inset 0 -2px var(--primary)}
+.management-workspace-nav .btn:focus-visible,.management-source-nav .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.management-workspace-panel[hidden],.management-source-panel[hidden]{display:none!important}
+.management-workspace-panel{min-width:0}.management-workspace-panel>h3,.management-source-panel>h4{margin:10px 0 6px;font-size:15px}
+#view-clan-management .clan-management-criteria>summary{list-style:none;justify-content:space-between}
+#view-clan-management .clan-management-criteria>summary::-webkit-details-marker{display:none}
+#view-clan-management .clan-management-criteria>summary::after{content:"";width:8px;height:8px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 4px 4px auto}
+#view-clan-management .clan-management-criteria[open]>summary::after{transform:rotate(225deg);margin-bottom:0}
+@media(max-width:430px){.management-workspace-nav .btn{font-size:12px}.management-source-nav .btn{font-size:11px}}
 .clan-management-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
 .clan-management-criteria{margin:5px 0 18px;border-bottom:1px solid var(--line);padding-bottom:14px}
 .clan-management-criteria>summary{font-size:14px;font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px}
@@ -4128,7 +4141,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Hier findest du deine Clans, vergangene CWLs und weitere Einstellungen.</p></div>
  <div class="more-menu">
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Clash-Ränge und Hinweise zur Beförderung prüfen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Handlungsbedarf, Mitgliedsmerkmale und Regeln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
@@ -4572,8 +4585,8 @@ html.cloud-startup-pending .cloud-startup-splash{
 </div></section>
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
-  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Ränge prüfen</h2>
-   <p>Hier prüfst du Beförderungen, Rückkehrer und bestätigte verpasste Angriffe in CW und CWL. Für bestätigte schwere oder wiederholte Fehlangriffe gibt es manuelle Prüfhinweise, getrennt für normale CWs und die CWL. Ein Kick wegen Offlinezeit ist nicht berechenbar; im Spiel ändert sich nichts automatisch.</p>
+  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Clanverwaltung</h2>
+   <p>Empfehlungen prüfen, Mitgliedsmerkmale pflegen und Kriterien für diesen Clan einstellen. Rangänderungen führst du selbst in Clash durch.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
@@ -4581,7 +4594,17 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="btn small" id="clanManagementRefresh">↻ Clanliste aktualisieren</button>
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine Clanliste geprüft.</span>
  </div>
+ <nav class="management-workspace-nav" aria-label="Bereiche der Clanverwaltung">
+  <button type="button" class="btn" data-management-section="actions" aria-controls="managementActions" aria-pressed="true">Handlungsbedarf</button>
+  <button type="button" class="btn" data-management-section="members" aria-controls="managementMembers" aria-pressed="false">Mitgliedsmerkmale</button>
+  <button type="button" class="btn" data-management-section="rules" aria-controls="managementRules" aria-pressed="false">Regeln</button>
+ </nav>
+ <section id="managementMembers" class="management-workspace-panel" aria-labelledby="managementMembersTitle" hidden>
+  <h3 id="managementMembersTitle">Mitgliedsmerkmale</h3><p class="statusline">Discord und Haupt-/Zweitaccounts zentral für diesen Clan pflegen. Diese Angaben stehen nicht in der CWL-Aufstellung.</p>
  <details id="clanActivityMembers" class="clan-management-criteria"><summary>Mitgliedsmerkmale <span class="subtle">· Discord & Mehrfachaccounts</span></summary><div id="clanActivityMembersContent"></div></details>
+ </section>
+ <section id="managementRules" class="management-workspace-panel" aria-labelledby="managementRulesTitle" hidden>
+  <h3 id="managementRulesTitle">Regeln</h3><p class="statusline">Die gespeicherten Kriterien gelten nur für diesen Clan. Fehlangriffe werden weiterhin anhand bestätigter Kriegsdaten geprüft.</p>
  <details id="clanManagementCriteria" class="clan-management-criteria">
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
@@ -4612,12 +4635,26 @@ html.cloud-startup-pending .cloud-startup-splash{
    </div>
   </form>
  </details>
+ </section>
+ <section id="managementActions" class="management-workspace-panel" aria-labelledby="managementActionsTitle">
+  <h3 id="managementActionsTitle">Handlungsbedarf</h3>
+  <nav class="management-source-nav" aria-label="Prüfbereich">
+   <button type="button" class="btn small" data-management-source="overview" aria-controls="managementOverview" aria-pressed="true">Übersicht</button>
+   <button type="button" class="btn small" data-management-source="rank" aria-controls="managementRank" aria-pressed="false">Ränge</button>
+   <button type="button" class="btn small" data-management-source="cw" aria-controls="managementNormal" aria-pressed="false">Clankriege</button>
+   <button type="button" class="btn small" data-management-source="cwl" aria-controls="managementCwl" aria-pressed="false">CWL</button>
+  </nav>
+  <div id="managementOverview" class="management-source-panel">
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
  <details id="clanManagementActionOverview" class="clan-management-criteria" open hidden>
   <summary id="clanManagementActionHeading">Offene Prüfungen</summary>
   <p id="clanManagementActionCoverage" class="statusline"></p>
   <div id="clanManagementActionList" class="clan-management-list" role="list" aria-label="Spieler mit offenen Prüfungen"></div>
  </details>
+ <p class="statusline">Die Übersicht zählt Personen einmal. Öffne einen Prüfbereich, um Gründe und vorhandene Entscheidungen anzusehen. Keine Offline-Kick-Empfehlung ohne belegte Onlinezeit.</p>
+ </div>
+ <div id="managementRank" class="management-source-panel" hidden>
+ <h4>Beförderung und Rückkehr</h4>
  <div id="clanManagementFilters" class="clan-management-filter" role="group" aria-label="Ranghinweise anzeigen" hidden>
   <button id="clanManagementFilterOpen" type="button" data-management-filter="open" aria-pressed="true">Offene Vorschläge <span id="clanManagementOpenCount">0</span></button>
   <button id="clanManagementFilterAll" type="button" data-management-filter="all" aria-pressed="false">Gesamte Liste</button>
@@ -4625,16 +4662,24 @@ html.cloud-startup-pending .cloud-startup-splash{
  <details class="clan-management-criteria clan-management-explanation"><summary>Wie entstehen diese Vorschläge?</summary><p class="clan-management-disclaimer">Die Beobachtung startet erst ab Aktivierung; ältere Clanzeit und frühere Ränge sind unbekannt. Clanzeit wird nur zwischen bestätigten vollständigen Mitgliederlisten (maximal 3 Stunden Abstand) gutgeschrieben. Spendenzuwächse zählen ausschließlich als beobachtete positive Änderungen zwischen vollständigen API-Snapshots; nicht erfasste Spenden sind unbekannt, ein Reset des Saisonwertes ist kein Negativsignal. Ein früherer Ältestenrang kann zur Wiederherstellungsprüfung erscheinen; unbemerkte Kurzwechsel bleiben unbekannt. Längere beobachtete Abwesenheit führt nur zu einer manuellen Prüfung; keine automatische Löschung der Clanzeit. Prüfhinweise lassen sich quittieren (bis sich relevante Nachweise ändern) oder als Ausnahme bis zur bewussten Aufhebung ausblenden; beide Entscheidungen bleiben clanprivat. Keine automatische Beförderung, Degradierung oder Änderung am CWL-Plan.</p></details>
  <div id="clanManagementList" class="clan-management-list" role="list" aria-label="Prüfbare Ingame-Ränge"></div>
 
+ </div>
+ <div id="managementNormal" class="management-source-panel" hidden>
+ <h4>Normale Clankriege</h4>
  <details id="clanManagementNormalPanel" class="clan-management-criteria clan-management-explanation">
-  <summary id="clanManagementNormalHeading">Normale CW · Angriffe prüfen</summary>
+  <summary id="clanManagementNormalHeading">Normale Clankriege · Angriffe prüfen</summary>
   <div id="clanManagementNormalList" class="clan-management-list" role="list" aria-label="Verpasste Angriffe in normalen Clankriegen"></div>
   <p class="clan-management-disclaimer">Nur künftig vollständig dokumentierte, abgeschlossene normale CWs dieses Clans zählen. Bei einem Ältesten kann ein vollständig verpasster Krieg (0/2) oder ein Fehlangriff in zwei aufeinanderfolgenden dokumentierten CWs eine manuelle Degradierungsprüfung auslösen. Quittierungen und Entschuldigungen sind dokumentiert und jederzeit wieder zu öffnen. Kein Clash-Rang wird automatisch geändert. Alte Kriege und der letzte Login bleiben unbekannt.</p>
  </details>
+ </div>
+ <div id="managementCwl" class="management-source-panel" hidden>
+ <h4>CWL</h4>
  <details id="clanManagementMissedPanel" class="clan-management-criteria clan-management-explanation">
   <summary id="clanManagementMissedHeading">Verpasste CWL-Angriffe · Nachweise prüfen</summary>
   <div id="clanManagementMissedList" class="clan-management-list" role="list" aria-label="Bestätigte CWL-Fehlangriffe"></div>
   <p class="clan-management-disclaimer">Hier zählen ausschließlich abgeschlossene, vollständig belegte CWL-Kriege aus diesem Clan der letzten 90 Tage. Dokumentierte Entschuldigungen werden berücksichtigt. Normale CWs werden in einem eigenen Abschnitt geprüft, soweit künftig vollständige Belege vorliegen. Clash liefert keinen letzten Login: Eine Kick-Empfehlung wegen angeblicher Offlinezeit ist daher nicht möglich. Alle Rangänderungen bleiben manuell im Spiel.</p>
  </details>
+ </div>
+ </section>
 </section>
 <section id="view-account" class="view more-subview" aria-labelledby="cloudAccountTitle">
  <div class="card account-page">
@@ -6428,6 +6473,7 @@ function clearClanManagementActionOverview(){
 function jumpClanManagementAction(tag,source){
  const listId={rank:"clanManagementList",cw:"clanManagementNormalList",cwl:"clanManagementMissedList"}[source];
  if(!listId)return;
+ selectManagementSection("actions");selectManagementSource(source);
  if(source==="rank"){
   clanManagementFilter="open";
   renderClanManagementRows(false);
@@ -6454,7 +6500,7 @@ function renderClanManagementActionOverview(){
   preview:clanManagementLastPreview,reviewReadable:clanManagementReviewsReadable,
   cwlRows:clanManagementCwlRows,normalResult:clanManagementNormalResult});
  if(!model){clearClanManagementActionOverview();return;}
- const labels={rank:"Beförderung / Rückkehr",cw:"Normale CW",cwl:"CWL"};
+ const labels={rank:"Beförderung / Rückkehr",cw:"Normale Clankriege",cwl:"CWL"};
  const heading=document.getElementById("clanManagementActionHeading");
  heading.textContent=model.rows.length+" Spieler zu prüfen"+
   (model.complete?"":" · Daten teilweise verfügbar");
@@ -6484,7 +6530,7 @@ function renderClanManagementActionOverview(){
   const actions=document.createElement("div");actions.className="clan-rule-actions";
   for(const source of person.sources){
    const button=document.createElement("button");button.type="button";button.className="btn small";
-   button.textContent=labels[source];
+   button.textContent=labels[source]+" öffnen";
    button.setAttribute("aria-label",labels[source]+" für "+person.name+" ansehen");
    button.onclick=()=>jumpClanManagementAction(person.tag,source);
    actions.append(button);
@@ -6503,7 +6549,7 @@ function renderClanManagementReviewSummary(){
     item.state!=="acknowledged"&&item.state!=="exception")).length;
  const summary=document.getElementById("clanManagementSummary");
  summary.textContent=preview.total+" Spieler in Clash · "+openPlayers+
-  (openPlayers===1?" Spieler mit offenem Vorschlag":" Spieler mit offenen Vorschlägen")+
+  (openPlayers===1?" Spieler mit offenem Rangvorschlag":" Spieler mit offenen Rangvorschlägen")+
   (!clanManagementReviewsReadable?" · gespeicherte Prüfstände nicht abrufbar":"")+
   " · Änderungen am Rang nur in Clash";
  summary.hidden=false;
@@ -6734,8 +6780,29 @@ function readClanRules(){
  }
  return window.CWLClanManagement.normalizeRules(input);
 }
+const managementSections={actions:"managementActions",members:"managementMembers",rules:"managementRules"};
+const managementSources={overview:"managementOverview",rank:"managementRank",cw:"managementNormal",cwl:"managementCwl"};
+function selectManagementSection(key){
+ if(!Object.hasOwn(managementSections,key))return;
+ for(const [name,id] of Object.entries(managementSections))document.getElementById(id).hidden=name!==key;
+ document.querySelectorAll("[data-management-section]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.managementSection===key)));
+ if(key==="members")document.getElementById("clanActivityMembers").open=true;
+ if(key==="rules")document.getElementById("clanManagementCriteria").open=true;
+}
+function selectManagementSource(key){
+ if(!Object.hasOwn(managementSources,key))return;
+ for(const [name,id] of Object.entries(managementSources))document.getElementById(id).hidden=name!==key;
+ document.querySelectorAll("[data-management-source]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.managementSource===key)));
+ if(key==="cw")document.getElementById("clanManagementNormalPanel").open=true;
+ if(key==="cwl")document.getElementById("clanManagementMissedPanel").open=true;
+}
+document.querySelectorAll("[data-management-section]").forEach(b=>b.addEventListener("click",()=>selectManagementSection(b.dataset.managementSection)));
+document.querySelectorAll("[data-management-source]").forEach(b=>b.addEventListener("click",()=>selectManagementSource(b.dataset.managementSource)));
 function clearClanManagement(){
  clanManagementRequest++;
+ selectManagementSection("actions");selectManagementSource("overview");
+ document.getElementById("clanActivityMembers").open=false;
+ document.getElementById("clanManagementCriteria").open=false;
  document.getElementById("clanManagementList").replaceChildren();
  document.getElementById("clanManagementSummary").hidden=true;
  document.getElementById("clanManagementStatus").textContent="Noch keine Clanliste geprüft.";
