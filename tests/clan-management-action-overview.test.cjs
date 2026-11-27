@@ -56,7 +56,7 @@ test("DOM overview renders safe names and jumps to the player's existing normal-
  const end=app.indexOf("function renderClanManagementReviewSummary(){",start);
  assert.ok(start>=0&&end>start);
  const dom=new JSDOM('<details id="clanManagementActionOverview" hidden open><summary id="clanManagementActionHeading"></summary>'+
-  '<p id="clanManagementActionCoverage"></p><div id="clanManagementActionList"></div></details>'+
+  '<p id="clanManagementActionCoverage"></p><div id="managementActionSearch"><input id="managementActionQuery"><span id="managementActionMatches"></span></div><div id="clanManagementActionList"></div></details>'+
   '<details id="clanManagementNormalPanel"><summary>CW</summary><div id="clanManagementNormalList">'+
   '<div data-player-tag="#2PYL"><details><summary>Belege</summary></details></div></div></details>');
  try{
@@ -72,6 +72,16 @@ test("DOM overview renders safe names and jumps to the player's existing normal-
   assert.equal(host.hidden,false);
   assert.match(d.getElementById("clanManagementActionHeading").textContent,/3 Spieler/);
   assert.equal(host.querySelector("img"),null);
+  const query=d.getElementById("managementActionQuery");
+  query.value="#2pyq";api.renderClanManagementActionOverview();
+  assert.equal(host.querySelectorAll(".clan-management-person").length,1);
+  assert.equal(d.getElementById("managementActionMatches").textContent,"1 von 3 Spielern");
+  assert.match(d.getElementById("clanManagementActionHeading").textContent,/3 Spieler.*9 offene Fälle/);
+  query.value="nicht vorhanden";api.renderClanManagementActionOverview();
+  assert.match(host.textContent,/Keine passenden Spieler/);
+  assert.match(d.getElementById("clanManagementActionHeading").textContent,/9 offene Fälle/);
+  query.value="";api.renderClanManagementActionOverview();
+  assert.equal(host.querySelectorAll(".clan-management-person").length,3);
   const button=[...host.querySelectorAll("button")].find(b=>b.getAttribute("aria-label")==="Normale Clankriege für <img src=x onerror=alert(1)> ansehen");
   assert.ok(button);button.click();
   assert.deepEqual(navigation,["actions","cw"]);
