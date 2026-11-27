@@ -73,3 +73,36 @@ test("Grind sandbox works without a saved campaign and never calls a write or tr
   button("Test beenden").click();await tick();assert.deepEqual(calls,["list","list"]);assert.doesNotMatch(root.textContent,/Beispiel-Fortschritt/);
  }finally{if(old===undefined)delete global.document;else global.document=old;if(oldMedia===undefined)delete global.matchMedia;else global.matchMedia=oldMedia;dom.window.close()}
 });
+
+test("Grind preset estimates update live without silently rewriting draft rules",async()=>{
+ const {createActivityCampaignView}=await import("../cwl-activity-campaign-view.mjs");
+ const dom=new JSDOM("<main id='root'></main>"),old=global.document;
+ global.document=dom.window.document;
+ try{
+  const root=document.getElementById("root"),calls=[];
+  const c={owner:true,clanId:"A",clanTag:"#8PYL",session:1};
+  const view=createActivityCampaignView({root,getContext:()=>c,api:async req=>{calls.push(req.action);return []},today:()=>"2026-12-01"});
+  const btn=text=>[...root.querySelectorAll("button")].find(b=>b.textContent===text);
+  const control=label=>[...root.querySelectorAll("label")].find(e=>e.querySelector("span")?.textContent===label)?.querySelector("input,select");
+  const set=(e,value,event="change")=>{e.value=value;e.dispatchEvent(new dom.window.Event(event))};
+  view.open();await tick();btn("Testen").click();
+  set(control("Ende (einschließlich)"),"2026-12-31");btn("Aktiver Clan").click();
+  const goal=()=>root.querySelector('[aria-label="Mindestziel Normale CW-Sterne"]');
+  const info=()=>root.querySelector(".goldpass-estimate").textContent;
+  assert.equal(goal().value,"21");
+  assert.equal(btn("Aktiver Clan").getAttribute("aria-pressed"),"true");
+  assert.match(info(),/6 normale CWs · maximal 36 Sterne/);
+  assert.match(root.textContent,/21 CW-Sterne/);
+  const assumed=()=>control("Erwartete normale CWs (optional)");
+  set(assumed(),"1","input");
+  assert.equal(goal().value,"21");assert.equal(btn("Aktiver Clan").getAttribute("aria-pressed"),"false");
+  assert.match(info(),/21 verlangt, maximal 6/);
+  set(assumed(),"0","input");assert.match(info(),/kein CW-Sternziel/);
+  assert.equal(goal().value,"21");
+  btn("Ausgewogener Grind").click();assert.equal(goal(),null);
+  assert.equal(btn("Ausgewogener Grind").getAttribute("aria-pressed"),"true");
+  set(assumed(),"1.5","input");assert.equal(btn("Aktiver Clan").disabled,true);
+  set(assumed(),"","input");assert.equal(btn("Aktiver Clan").disabled,false);
+  assert.deepEqual(calls,["list"]);assert.equal(btn("Verlosung anlegen"),undefined);
+ }finally{if(old===undefined)delete global.document;else global.document=old;dom.window.close()}
+});
