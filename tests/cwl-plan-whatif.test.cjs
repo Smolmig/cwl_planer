@@ -98,7 +98,7 @@ test("simulator never fetches statistics, invents opponent data or stores anythi
  const html=fs.readFileSync(path.join(root,"cloud-app.html"),"utf8");
  assert.match(html,/id="whyWhatIf"/);
  assert.match(html,/id="whyWhatIfRun"/);
- assert.match(html,/src="\.\/cwl-plan-whatif\.js\?v=1\.37\.0"/);
+ assert.match(html,/src="\.\/cwl-plan-whatif\.js\?v=1\.38\.0"/);
  assert.match(html,/function renderWhyWhatIf\(/);
  assert.match(html,/Es wurde nichts geändert oder gespeichert/);
 });
