@@ -2523,6 +2523,12 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .management-workspace-nav .btn[aria-pressed="true"],.management-source-nav .btn[aria-pressed="true"]{border-color:var(--primary);color:var(--primary);background:var(--card);box-shadow:inset 0 -2px var(--primary)}
 .management-workspace-nav .btn:focus-visible,.management-source-nav .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .management-workspace-panel[hidden],.management-source-panel[hidden]{display:none!important}
+.management-search{display:grid;gap:4px;max-width:360px;margin:12px 0}
+.management-search[hidden]{display:none!important}
+.management-search label{font-size:12px;font-weight:700;color:var(--muted)}
+.management-search input{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text)}
+.management-search input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.management-search .statusline:empty{display:none}
 .management-case-actions .btn{min-height:44px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
 #clanManagementActionList .clan-management-person-status[data-review="severe"]{color:var(--red);border-left:3px solid var(--red);padding-left:8px}
 .management-workspace-panel{min-width:0}.management-workspace-panel>h3,.management-source-panel>h4{margin:10px 0 6px;font-size:15px}
@@ -4588,7 +4594,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
   <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Clanverwaltung</h2>
-   <p>Empfehlungen prüfen, Mitgliedsmerkmale pflegen und Kriterien für diesen Clan einstellen. Rangänderungen führst du selbst in Clash durch.</p>
+   <p>Empfehlungen aus bestätigten Clan- und Kriegsdaten prüfen, Mitgliedsmerkmale pflegen und Kriterien einstellen. Rangänderungen führst du selbst in Clash durch.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
@@ -4606,7 +4612,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <details id="clanActivityMembers" class="clan-management-criteria"><summary>Mitgliedsmerkmale <span class="subtle">· Discord & Mehrfachaccounts</span></summary><div id="clanActivityMembersContent"></div></details>
  </section>
  <section id="managementRules" class="management-workspace-panel" aria-labelledby="managementRulesTitle" hidden>
-  <h3 id="managementRulesTitle">Regeln</h3><p class="statusline">Die gespeicherten Kriterien gelten nur für diesen Clan. Fehlangriffe werden weiterhin anhand bestätigter Kriegsdaten geprüft.</p>
+  <h3 id="managementRulesTitle">Regeln</h3><p class="statusline">Die gespeicherten Kriterien gelten nur für diesen Clan. Für Fehlangriffe zählen bestätigte Kriegsdaten.</p>
  <details id="clanManagementCriteria" class="clan-management-criteria">
   <summary>Wann eine Beförderung prüfen? <span class="subtle">· für diesen Clan</span></summary>
   <form id="clanManagementRulesForm">
@@ -4651,6 +4657,11 @@ html.cloud-startup-pending .cloud-startup-splash{
  <details id="clanManagementActionOverview" class="clan-management-criteria" open hidden>
   <summary id="clanManagementActionHeading">Offene Prüfungen</summary>
   <p id="clanManagementActionCoverage" class="statusline"></p>
+  <div class="management-search" id="managementActionSearch" hidden>
+   <label for="managementActionQuery">Spieler suchen</label>
+   <input id="managementActionQuery" type="search" placeholder="Name oder Spieler-Tag" autocomplete="off">
+   <span id="managementActionMatches" class="statusline" role="status"></span>
+  </div>
   <div id="clanManagementActionList" class="clan-management-list" role="list" aria-label="Spieler mit offenen Prüfungen"></div>
  </details>
  <p class="statusline">Die Übersicht zählt Personen einmal. Öffne einen Prüfbereich, um Gründe und vorhandene Entscheidungen anzusehen. Clash liefert keine verlässliche letzte Onlinezeit. Deshalb gibt es keine automatische Kick-Empfehlung wegen Offlinezeit.</p>
@@ -6470,6 +6481,8 @@ function clearClanManagementActionOverview(){
  host.hidden=true;host.open=true;
  document.getElementById("clanManagementActionHeading").textContent="Offene Prüfungen";
  document.getElementById("clanManagementActionCoverage").textContent="";
+ const search=document.getElementById("managementActionSearch");if(search)search.hidden=true;
+ const matches=document.getElementById("managementActionMatches");if(matches)matches.textContent="";
  document.getElementById("clanManagementActionList").replaceChildren();
 }
 function jumpClanManagementAction(tag,source){
@@ -6510,14 +6523,20 @@ function renderClanManagementActionOverview(){
   (model.counts[key]===null?"nicht verfügbar":model.counts[key]+" Spieler / "+model.caseCounts[key]+" Fälle")).join(" · ")+
   ". Ein Fall ist eine Rangprüfung oder ein Krieg mit offenem Fehlangriff. Spieler werden nur einmal gezählt. Fehlende Quellen sind nicht bewertet.";
  const list=document.getElementById("clanManagementActionList");
+ const search=document.getElementById("managementActionSearch"),input=document.getElementById("managementActionQuery"),matches=document.getElementById("managementActionMatches");
+ const query=(input?.value||"").trim().toLocaleLowerCase("de");
+ const filtered=model.rows.filter(p=>!query||[p.name,p.tag].some(v=>String(v||"").toLocaleLowerCase("de").includes(query)));
+ if(search)search.hidden=!model.rows.length&&!query;
+ if(matches)matches.textContent=query?filtered.length+" von "+model.rows.length+" Spielern":"";
  list.replaceChildren();
+ if(model.rows.length&&!filtered.length){const p=document.createElement("p");p.className="clan-management-empty";p.textContent="Keine passenden Spieler mit offenen Prüfungen. Suche ändern oder leeren.";list.append(p);}
  if(!model.rows.length){
   const p=document.createElement("p");p.className="clan-management-empty";
   p.textContent=model.complete?"Keine offenen Hinweise in den erfassten Daten. Nicht beobachtete Kriege oder Aktivität bleiben unbekannt.":
    "Keine offenen Hinweise in den verfügbaren Quellen. Nicht verfügbare Quellen sind nicht bewertet.";
   list.append(p);
  }
- for(const person of model.rows){
+ for(const person of filtered){
   const row=document.createElement("div");row.className="clan-management-person";
   row.setAttribute("role","listitem");
   row.dataset.playerTag=person.tag;
@@ -6682,7 +6701,7 @@ function renderClanManagementRows(preserveViewport=true){
   empty.className="clan-management-empty";empty.setAttribute("role","listitem");
   empty.textContent=clanManagementFilter==="open"?
    (!clanManagementReviewsReadable?"Prüfentscheidungen nicht verfügbar. Vorschlagsstatus derzeit nicht bestätigt.":
-   "Keine offenen Rangvorschläge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen."):
+   "Keine offenen Vorschläge für Ränge. Für weitere Spieler und fehlende Nachweise „Gesamte Liste“ wählen."):
    "Keine Mitglieder oder Ältesten für diese Prüfung vorhanden. Vize und Clanführer sind ausgenommen.";
   list.appendChild(empty);
   const progress=clanManagementLastPreview.performanceProgress;
@@ -6809,6 +6828,7 @@ function clearClanManagement(){
  selectManagementSection("actions");selectManagementSource("overview");
  document.getElementById("clanActivityMembers").open=false;
  document.getElementById("clanManagementCriteria").open=false;
+ document.getElementById("managementActionQuery").value="";
  document.getElementById("clanManagementList").replaceChildren();
  document.getElementById("clanManagementSummary").hidden=true;
  document.getElementById("clanManagementStatus").textContent="Noch keine Clanliste geprüft.";
@@ -6967,6 +6987,7 @@ document.getElementById("clanManagementFilters").addEventListener("click",event=
  renderClanManagementRows(false);
  button.focus({preventScroll:true});
 });
+document.getElementById("managementActionQuery").addEventListener("input",()=>renderClanManagementActionOverview());
 document.getElementById("clanManagementBack").onclick=()=>showPlannerView("more");
 document.getElementById("clanManagementRefresh").onclick=()=>window.CWLClanManagementView.refresh();
 
