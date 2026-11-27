@@ -2535,6 +2535,8 @@ html:is([data-theme="light"],[data-theme="cyberlight"]) #clanActivityMembers :is
 .management-source-nav{grid-template-columns:repeat(4,minmax(0,1fr));margin:8px 0 16px}
 .management-workspace-nav .btn,.management-source-nav .btn{min-height:44px;min-width:0;white-space:normal;padding:8px 5px;overflow-wrap:anywhere}
 .management-workspace-nav .btn[aria-pressed="true"],.management-source-nav .btn[aria-pressed="true"]{border-color:var(--primary);color:var(--primary);background:var(--card);box-shadow:inset 0 -2px var(--primary)}
+.management-label-short{display:none}
+@media(max-width:480px){.management-label-wide{display:none}.management-label-short{display:inline}.management-workspace-nav .btn,.management-source-nav .btn{overflow-wrap:normal;word-break:normal;font-size:12px;padding-inline:4px}}
 .management-workspace-nav .btn:focus-visible,.management-source-nav .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .management-workspace-panel[hidden],.management-source-panel[hidden]{display:none!important}
 .management-search{display:grid;gap:4px;max-width:360px;margin:12px 0}
@@ -4634,8 +4636,8 @@ html.cloud-startup-pending .cloud-startup-splash{
 </div></section>
 <section id="view-clan-management" class="view more-subview" aria-labelledby="clanManagementTitle">
  <div class="more-detail-header">
-  <div><span class="more-eyebrow">CLANVERWALTUNG</span><h2 id="clanManagementTitle">Clanverwaltung</h2>
-   <p>Empfehlungen aus bestätigten Clan- und Kriegsdaten prüfen, Mitgliedsmerkmale pflegen und Kriterien einstellen. Rangänderungen führst du selbst in Clash durch.</p>
+  <div><span class="more-eyebrow">VERWALTUNG</span><h2 id="clanManagementTitle">Clanverwaltung</h2>
+   <p>Rangänderungen führst du selbst in Clash durch.</p>
   </div>
   <button type="button" class="btn small more-detail-back" id="clanManagementBack">Zurück zu Mehr</button>
  </div>
@@ -4644,8 +4646,8 @@ html.cloud-startup-pending .cloud-startup-splash{
   <span id="clanManagementStatus" class="statusline" role="status" aria-live="polite">Noch keine Clanliste geprüft.</span>
  </div>
  <nav class="management-workspace-nav" aria-label="Bereiche der Clanverwaltung">
-  <button type="button" class="btn" data-management-section="actions" aria-controls="managementActions" aria-pressed="true">Handlungsbedarf</button>
-  <button type="button" class="btn" data-management-section="members" aria-controls="managementMembers" aria-pressed="false">Mitgliedsmerkmale</button>
+  <button type="button" class="btn" data-management-section="actions" aria-controls="managementActions" aria-pressed="true" aria-label="Handlungsbedarf"><span class="management-label-wide">Handlungsbedarf</span><span class="management-label-short" aria-hidden="true">Prüfungen</span></button>
+  <button type="button" class="btn" data-management-section="members" aria-controls="managementMembers" aria-pressed="false" aria-label="Mitgliedsmerkmale"><span class="management-label-wide">Mitgliedsmerkmale</span><span class="management-label-short" aria-hidden="true">Merkmale</span></button>
   <button type="button" class="btn" data-management-section="rules" aria-controls="managementRules" aria-pressed="false">Regeln</button>
  </nav>
  <section id="managementMembers" class="management-workspace-panel" aria-labelledby="managementMembersTitle" hidden>
@@ -4696,9 +4698,9 @@ html.cloud-startup-pending .cloud-startup-splash{
  <section id="managementActions" class="management-workspace-panel" aria-labelledby="managementActionsTitle">
   <h3 id="managementActionsTitle">Handlungsbedarf</h3>
   <nav class="management-source-nav" aria-label="Prüfbereich">
-   <button type="button" class="btn small" data-management-source="overview" aria-controls="managementOverview" aria-pressed="true">Übersicht</button>
+   <button type="button" class="btn small" data-management-source="overview" aria-controls="managementOverview" aria-pressed="true" aria-label="Übersicht"><span class="management-label-wide">Übersicht</span><span class="management-label-short" aria-hidden="true">Alle</span></button>
    <button type="button" class="btn small" data-management-source="rank" aria-controls="managementRank" aria-pressed="false">Ränge</button>
-   <button type="button" class="btn small" data-management-source="cw" aria-controls="managementNormal" aria-pressed="false">Clankriege</button>
+   <button type="button" class="btn small" data-management-source="cw" aria-controls="managementNormal" aria-pressed="false" aria-label="Normale Clankriege"><span class="management-label-wide">Clankriege</span><span class="management-label-short" aria-hidden="true">CW</span></button>
    <button type="button" class="btn small" data-management-source="cwl" aria-controls="managementCwl" aria-pressed="false">CWL</button>
   </nav>
   <div id="managementOverview" class="management-source-panel">
