@@ -111,3 +111,38 @@ test("holdout uses only cutoff-visible corrections and treats repeated observati
  assert.equal(x.distinctWars,2);assert.equal(x.distinctPlayers,1);assert.equal(x.byKind.normal.predictions,2);assert.equal(x.byKind.cwl.mae,null);
  assert.equal(x.calibrated,false);
 });
+
+test("live target projection verifies own outstanding attacks, best stars and end time, no foreign identities",async()=>{
+ const {projectStrategicGroup}=await projection,s=data(),w=s.results.get(tag(112));
+ w.state="inWar";w.startTime="20261125T120000.000Z";w.endTime="20261126T120000.000Z";
+ let x=projectStrategicGroup(s);assert.equal(x.group.liveTargets.length,1);
+ const live=x.group.liveTargets[0];assert.equal(live.attackers.length,14);assert.equal(live.targets[0].stars,3);assert.equal(live.targets[0].hits,1);
+ assert.ok(live.targets.every(t=>!Object.hasOwn(t,"tag")));assert.ok(!live.attackers.some(m=>m.mapPosition===1));
+ const second=w.clan.members[1];second.attacks=[{attackerTag:second.tag,defenderTag:w.opponent.members[0].tag,stars:2,destructionPercentage:80,order:2}];w.clan.attacks=2;
+ x=projectStrategicGroup(s);assert.equal(x.group.liveTargets[0].attackers.length,13);assert.equal(x.group.liveTargets[0].targets[0].stars,3);assert.equal(x.group.liveTargets[0].targets[0].hits,2);
+ w.clan.attacks=3;assert.equal(projectStrategicGroup(s).group.liveTargets.length,0);w.clan.attacks=2;
+ w.endTime="20261125T235959.000Z";assert.equal(projectStrategicGroup(s).group.liveTargets.length,0);
+});
+test("live cleanup matches only unique unfinished targets and never suggests spent attacks, expires at war end",async()=>{
+ const {projectStrategicGroup}=await projection,{previewLiveStrategicTargets}=await import("../cwl-strategic-targets.mjs"),s=data(),w=s.results.get(tag(112));
+ w.state="inWar";w.startTime="20261125T120000.000Z";w.endTime="20261126T000100.000Z";
+ const group=projectStrategicGroup(s).group,evidence={asOf:now,profiles:[]},args={group,evidence,selectedClanTag:s.clanTag,season,asOf:now,now};
+ const before=JSON.stringify(group),[x]=previewLiveStrategicTargets(args);
+ assert.equal(x.openAttacks,14);assert.equal(x.suggestions.length,14);assert.equal(x.expiresAt,now+60000);
+ assert.equal(new Set(x.suggestions.map(a=>a.targetPosition)).size,14);assert.ok(x.suggestions.every(a=>a.attackerPosition!==1&&a.targetPosition!==1&&a.evidenceN===0));
+ assert.equal(JSON.stringify(group),before);assert.deepEqual(previewLiveStrategicTargets({...args,now:now+60000}),[]);
+ const modified=structuredClone(group);for(const t of modified.liveTargets[0].targets){t.stars=3;t.destruction=100;t.hits=1}
+ const [full]=previewLiveStrategicTargets({...args,group:modified});assert.ok(full.suggestions.every(a=>a.targetPosition===null));
+});
+test("live recommendations remain available when a future lineup conflicts with actual roster",async()=>{
+ const {projectStrategicGroup}=await projection,{preparePilotInput,buildPilotPreview}=await import("../cwl-strategic-pilot.mjs");
+ const s=data(),w=s.results.get(tag(112));w.state="inWar";w.startTime="20261125T120000.000Z";w.endTime="20261126T120000.000Z";
+ const members=roster(0).map((m,i)=>({id:"p"+i,name:"Player "+i,playerTag:m.tag,townHall:19,participating:true,statuses:[]}));
+ members.push({id:"extra",name:"Extra",playerTag:tag(150),townHall:19,participating:true,statuses:[]});
+ const currentPlan=Array.from({length:5},(_,i)=>({day:i+1,lineup:members.slice(1).map(m=>m.id)}));
+ const context={ready:true,phase:"daily",role:"owner",clanTag:s.clanTag,season,slots:15,days:5};
+ const input=preparePilotInput({context,profile:{config:{slots:15,days:5},members,locks:[]},currentPlan});
+ const history={kind:"current_snapshot_war_start_proxy",asOf:now-1000,facts:[],obligations:[],audit:{}};
+ const result=buildPilotPreview({input,history,projection:projectStrategicGroup(s),mode:"balanced",planStandard:require("../cwl-planning-core.js").planCwl,now:now+1});
+ assert.equal(result.rest.ok,false);assert.equal(result.publication,null);assert.equal(result.liveTargets[0].suggestions.length,14);assert.ok(result.liveTargets[0].suggestions.every(a=>!Object.hasOwn(a,"attackerTag")));
+});

@@ -124,6 +124,17 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
  function renderDaily(s){
   results.replaceChildren();rows.replaceChildren();details.hidden=false;const v=s.display;
   results.append(el("h3","Tagesstrategie"),el("p",v.tableStatus),el("p",v.dataStatus));
+  for(const w of s.liveTargets||[]){
+   const section=el("section");section.className="strategic-live-targets";
+   section.append(el("h4","Tag "+w.day+" · Offene Angriffe"),el("p",w.openAttacks+" offen · "+w.untripledBases+" Basen unter 3★"));
+   if(!w.openAttacks)notice(section,"positive","Alle Angriffe erfasst","Für diesen Krieg ist kein Angriff mehr offen.");
+   else{
+    section.append(el("p","Unverbindliche Zielvorschläge. Bitte im Spiel absprechen; Basislayout und eigene Strategie können wichtiger sein."));
+    for(const a of w.suggestions)line(section,a.name+" · #"+a.attackerPosition,
+     a.targetPosition===null?"Kein klares Ziel": "Ziel #"+a.targetPosition+" · RH"+a.targetTh+" · bisher "+a.currentStars+"★"+(a.evidenceN?" · "+a.evidenceN+" passende AG":" · grobe RH-Einschätzung"));
+   }
+   results.append(section);
+  }
   if(s.groupStrength?.length){const g=el("details"),summary=el("summary","Stärkeeinschätzung der CWL-Gruppe");summary.style.cssText="min-height:44px;padding:10px 0";g.append(summary,el("p","Registrierte Kader (stärkste Rathausstufen nach Kriegsgröße) und beobachtete gleich-RH-Angriffe. Keine bestätigte Tagesaufstellung oder Siegprognose."));for(const x of s.groupStrength)line(g,(x.rank??"–")+". "+x.name+(x.own?" · Eigener Clan":""),x.meanTopRh===null?"Kader unbekannt":"Ø RH "+x.meanTopRh.toFixed(1)+" · "+x.attack.n+" AG");results.append(g)}
   if(s.rest?.ok){results.append(el("h4","Vorschlag für alle verbleibenden Tage"));if(s.rest.provisionalDays.length)results.append(el("p","Tag "+s.rest.provisionalDays.join(", ")+": Paarung noch unbekannt – vorläufig geplant."));for(const w of s.rest.warnings)notice(results,"warning","Einsatzvorgabe prüfen",w.name+" · Tag "+w.day+": "+w.alternative+" hat eine höhere vergleichbare Angriffsleistung. Fix/MUSS bleibt erhalten.");for(const d of s.rest.changes)line(results,"Tag "+d.day+" · Heraus: "+d.removed.join(", "),"Hinein: "+d.added.join(", "));if(!s.rest.changes.length)results.append(el("p","Keine Änderung gegenüber dem bisherigen Gesamtplan."));
    const c=getContext();

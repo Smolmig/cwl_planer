@@ -2,6 +2,7 @@
 import {buildStrategicEvidence,compareSeasonRosterSizes} from "./cwl-strategic-experiment.mjs";
 import {previewDailyStrategy} from "./cwl-strategic-daily.mjs";
 import {planStrategicRest} from "./cwl-strategic-rest.mjs";
+import {previewLiveStrategicTargets} from "./cwl-strategic-targets.mjs";
 import {presentDailyStrategy,presentRosterRows} from "./cwl-strategic-presentation.mjs";
 const TAG=/^#[0289PYLQGRJCUV]{3,15}$/;
 const tag=x=>typeof x==="string"?x.trim().toUpperCase():"";
@@ -80,9 +81,15 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
  const evidence=buildStrategicEvidence({members,facts:history.facts,obligations:history.obligations,asOf});
  const rest=planStrategicRest({group,evidence,registered:projection.registered,members,currentPlan:plan,manualLocks:locks,mode,slots:c.slots,days:c.days,planStandard});
  const p=previewDailyStrategy({group,standings:projection.standings,evidence,members,registered:projection.registered,currentPlan:plan,manualLocks:locks,mode,role:c.role,asOf,season:c.season,selectedClanTag:c.clanTag,slots:c.slots,days:c.days});
- if(!p.ok)throw Error("pilot_plan_conflict");
+ const liveTargets=previewLiveStrategicTargets({group,evidence,selectedClanTag:c.clanTag,season:c.season,asOf,now}).map(w=>({...w,suggestions:w.suggestions.map(({attackerTag,...a})=>({...a,name:members.find(m=>m.playerTag===attackerTag)?.name||"Position "+a.attackerPosition}))}));
+ if(!p.ok&&!liveTargets.length)throw Error("pilot_plan_conflict");
+ // Running-war cleanup is independent of future lineup conflicts. Do not
+ // display or publish an unsafe rest-day proposal if the daily guard failed.
+ if(!p.ok)return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf+300000,validUntil,...liveTargets.map(w=>w.expiresAt)),
+  display:{tableStatus:"Aufstellung bitte prüfen",dataStatus:"Angriffsziele anhand der bestätigten laufenden Aufstellung.",recommendation:null,medals:[]},groupStrength:group.clanStrength||[],
+  rest:{ok:false,reason:p.reason},publication:null,liveTargets,editableDays:[],changes:[],targets:[],canApply:false};
  const display=presentDailyStrategy({preview:p,standings:projection.standings,group,members,role:c.role,asOf,season:c.season,selectedClanTag:c.clanTag});
  const names=ids=>ids.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler");
- return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf+300000,validUntil),display,groupStrength:group.clanStrength||[],publication:rest.ok?{season:c.season,clanTag:c.clanTag,registeredTags:[...projection.registered.tags],anchorWarTag:[...group.wars,...group.upcoming].find(w=>w.ownRoster)?.warTag||null}:null,rest:rest.ok?{...rest,changes:rest.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),warnings:rest.warnings.map(w=>({day:w.day,name:names([w.id])[0],alternative:names([w.alternative])[0]}))}:{ok:false,reason:rest.reason},editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
+ return {kind:"daily",mode,historyNote,expiresAt:Math.min(history.asOf+300000,validUntil,...liveTargets.map(w=>w.expiresAt)),display,liveTargets,groupStrength:group.clanStrength||[],publication:rest.ok?{season:c.season,clanTag:c.clanTag,registeredTags:[...projection.registered.tags],anchorWarTag:[...group.wars,...group.upcoming].find(w=>w.ownRoster)?.warTag||null}:null,rest:rest.ok?{...rest,changes:rest.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),warnings:rest.warnings.map(w=>({day:w.day,name:names([w.id])[0],alternative:names([w.alternative])[0]}))}:{ok:false,reason:rest.reason},editableDays:p.editableDays,changes:p.current.changes.map(d=>({day:d.day,removed:names(d.removed),added:names(d.added)})),
   targets:p.targetPreviews.map(t=>({day:t.day,ok:t.ok,swaps:t.ok?t.proposal.filter(x=>x.attackerPosition!==x.targetPosition).map(x=>({from:x.attackerPosition,to:x.targetPosition,n:x.evidenceN})):[]})),canApply:false};
 }

@@ -78,7 +78,28 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  const ownWars=analyzed.wars.filter(w=>w.ownRoster);
  const counters=rounds.flatMap(r=>r.matches).filter(w=>w.available&&w.state!=="preparation"&&[w.clan.tag,w.opponent.tag].includes(own))
  .every(w=>w.clan.counter&&w.opponent.counter);
- const groupView={...analyzed,clanStrength:summarizeGroupStrength({clans:group.clans,analyzed,teamSize,own}),profiles:relevant,wars:ownWars,ownMedals:{...analyzed.ownMedals,complete:analyzed.ownMedals.complete&&counters}};
+ // Only own active match, complete own attack counter and valid evidence.
+ // No enemy names, tags, army or raw foreign attack logs in this projection.
+ const liveTargets=[];
+ for(const war of ownWars.filter(w=>w.state==="inWar")){
+  const w=rounds.find(r=>r.day===war.day)?.matches.find(m=>m.available&&m.warTag===war.warTag);
+  const raw=results.get(war.warTag),endAt=preparationStart(raw?.endTime),startAt=preparationStart(raw?.startTime);
+  if(!w||w.attacksPerMember!==1||!war.completeAttackLists||!war.firstHitKnown||
+    !Number.isFinite(endAt)||!Number.isFinite(startAt)||startAt>observedAt||endAt<=observedAt)continue;
+  const a=w.clan.tag===own?w.clan:w.opponent,b=a===w.clan?w.opponent:w.clan;
+  if(!a.counter||!b.counter||!a.members.every(m=>int(m.mapPosition,1,war.teamSize))||!b.members.every(m=>int(m.mapPosition,1,war.teamSize)))continue;
+  const best=new Map(b.members.map(m=>[m.tag,{stars:0,destruction:0,hits:0}]));
+  for(const m of a.members)for(const hit of m.attacks||[]){
+   const t=best.get(hit.defenderTag);if(!t)continue;
+   t.hits++;
+   if(hit.stars>t.stars||hit.stars===t.stars&&hit.destructionPercentage>t.destruction){t.stars=hit.stars;t.destruction=hit.destructionPercentage}
+  }
+  if([...best.values()].reduce((s,t)=>s+t.stars,0)!==a.stars)continue;
+  liveTargets.push({day:war.day,warTag:war.warTag,teamSize:war.teamSize,observedAt,endAt,
+   attackers:a.members.filter(m=>m.attacks?.length===0).map(m=>({tag:m.tag,townHall:m.townHallLevel,mapPosition:m.mapPosition})),
+   targets:b.members.map(m=>({townHall:m.townHallLevel,mapPosition:m.mapPosition,...best.get(m.tag)}))});
+ }
+ const groupView={...analyzed,liveTargets,clanStrength:summarizeGroupStrength({clans:group.clans,analyzed,teamSize,own}),profiles:relevant,wars:ownWars,ownMedals:{...analyzed.ownMedals,complete:analyzed.ownMedals.complete&&counters}};
  const consistent=registered&&registered.tags.length>=teamSize&&[...ownWars,...analyzed.upcoming].every(w=>w.ownRoster.every(p=>registered.tags.includes(p.tag)));
  const scores={...snapshot,rounds:rounds.map(r=>({day:r.day,matches:r.matches.map(w=>{
  if(!w.available)return {available:false};
