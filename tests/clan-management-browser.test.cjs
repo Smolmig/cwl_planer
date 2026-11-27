@@ -174,6 +174,15 @@ test("Action workspace search, rule drafts, refresh and clan isolation remain us
      assert.ok(await host.evaluate(n=>n.scrollWidth<=n.clientWidth+3),section+" overflow "+width+" "+theme);
      const heights=await host.locator(".management-workspace-nav button,.management-source-nav button").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>n.getBoundingClientRect().height));
      assert.ok(heights.length>=3&&heights.every(h=>h>=43),JSON.stringify({width,theme,section,heights}));
+     if(section==="actions"){
+      const tones=await host.locator(".clan-management-person-status[data-review=positive]").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>{
+       const rgb=c=>c.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number),lum=c=>rgb(c).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+       const style=getComputedStyle(n),probe=document.createElement("span");probe.style.color="var(--green)";n.append(probe);const green=getComputedStyle(probe).color;probe.remove();
+       let parent=n,bg;while(parent){bg=getComputedStyle(parent).backgroundColor;if(bg!=="rgba(0, 0, 0, 0)"&&bg!=="transparent")break;parent=parent.parentElement}
+       const a=lum(style.color),b=lum(bg);return {correct:style.color===green,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+      }));
+      assert.ok(tones.length&&tones.every(x=>x.correct&&x.contrast>=4.5),JSON.stringify({theme,width,tones}));
+     }
      if(dir&&["arena","dark"].includes(theme)){
       await page.evaluate(()=>scrollTo(0,0));
       await page.screenshot({path:path.join(dir,"management-"+section+"-"+theme+"-"+width+".png")});
