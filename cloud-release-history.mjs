@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.38.0",
+      "releaseType": "minor",
+      "date": "2026-11-27",
+      "title": "Intelligenter CWL-Planer (Beta)",
+      "description": "Für freigeschaltete Clans: drei Leistungsmodi, gemeinsame automatische Aufstellung, Kaderempfehlungen und unverbindliche Ziele für offene Angriffe. Mitgliedervorgaben bleiben geschützt."
+  },
+
+  {
       "version": "v1.37.0",
       "releaseType": "minor",
       "date": "2026-11-26",

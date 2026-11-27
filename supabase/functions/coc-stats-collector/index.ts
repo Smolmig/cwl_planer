@@ -5,6 +5,7 @@ import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./colle
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
 import {officialNewLeague,buildSeasonRollover} from "./collector-season-rollover.mjs";
+import {autoGrantRecords} from "./collector-strategic-config.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -272,7 +273,7 @@ async function markFailure(settings,clanId,checkedAt,code){
 // Only the verified internal Cron route can request the bounded fast lane.
 // It never accepts caller-supplied clan IDs or writes archive/profile rows.
 async function runPendingStrategic(settings){
- const records=Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS")||"";
+ const records=autoGrantRecords(Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS"));
  if(!records)return response({ok:true,strategicComputed:0});
  const deadline=Date.now()+PER_RUN_BUDGET_MS;
  try{
@@ -323,7 +324,7 @@ export default {
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
     let seasonRollovers=0,seasonRolloverErrors=0,strategicComputed=0,strategicChanged=0,strategicSkipped=0;
-    const strategicRecords=Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS")||"";
+    const strategicRecords=autoGrantRecords(Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS"));
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}

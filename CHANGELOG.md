@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.38.0] - 2026-11-27
+
+- Intelligenter CWL-Planer als kontrollierte Beta: drei Modi, Kaderempfehlungen im Mitglieder-Tab und Gruppen-/Resttageplanung im Plan. Offene Angriffsvorschläge bleiben unverbindlich.
+- Automatische gemeinsame Aufstellung auch ohne Browser bei freigeschalteten Clans und aktivierter Automatik. Plansperre schützt freigegebene Vorgaben und Vize-Vorschläge; begonnene Kriege behalten die tatsächliche API-Aufstellung.
+- Additive Datenbankmigration, separate berechnete Aufstellung mit Revisionsprüfung, serverseitiger Collector. Normale Planung, Offline-PWA und vorhandene Profil-/Archivdaten bleiben kompatibel. Live-CWL-Bewertung noch nicht kalibriert.
+
 ## [1.37.0] - 2026-11-26
 
 - Mitgliederform 2.0: getrennte CW-/CWL-/Kombi-Ansichten, 30-Tage-Fenster und letzte dokumentierte Liga; ausgewählter Formwert bestimmt Sortierung und Karte. Aktuelles RH, Stichprobe, belegte Zuverlässigkeit und ältere Ersatzdaten getrennt kenntlich.

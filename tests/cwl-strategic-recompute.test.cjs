@@ -18,3 +18,5 @@ test("pending recompute only after verified internal cron; no caller target or a
  assert.match(sql,/q.claimed_at<clock_timestamp\(\)-interval '5 minutes'/);
  assert.match(sql,/grant execute on function public.cwl_claim_strategic_recompute\(jsonb\) to service_role/);
 });
+
+test("private deployment grants default deny and explicit empty environment disables fallback",async()=>{const {autoGrantRecords,DEPLOYMENT_AUTO_GRANTS}=await import("../supabase/functions/coc-stats-collector/collector-strategic-config.mjs");assert.equal(DEPLOYMENT_AUTO_GRANTS,"");assert.equal(autoGrantRecords(undefined),"");assert.equal(autoGrantRecords(undefined,"synthetic-grants"),"synthetic-grants");assert.equal(autoGrantRecords("","synthetic-grants"),"");assert.equal(autoGrantRecords("invalid","synthetic-grants"),"invalid");});
