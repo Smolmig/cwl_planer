@@ -159,14 +159,36 @@ test("Action workspace search, rule drafts, refresh and clan isolation remain us
   assert.equal(await host.locator('#clanManagementList [data-player-tag="#2PYL"] details').evaluate(n=>n.open),true);
   await host.locator('[data-management-section="rules"]').click();
   await host.locator("#clanRuleDays").fill("27");
+  assert.equal(await host.locator("#clanRulesStatus").getAttribute("data-tone"),"warning");
+  assert.match(await host.locator("#clanRulesDraftSummary").innerText(),/Entwurf: Leistung: ab 27 Clantagen/);
+  assert.equal(await host.locator("#clanPerformanceState").getAttribute("data-tone"),"positive");
+  await host.locator("#clanRuleEnabled").uncheck();
+  assert.equal(await host.locator("#clanPerformanceState").innerText(),"Inaktiv");
+  assert.match(await host.locator("#clanRulesDraftSummary").innerText(),/Keine leistungs- oder treuebasierte/);
+  await host.locator("#clanRuleEnabled").check();
+  await host.locator(".clan-rule-future > summary").click();
+  await host.locator("#clanRuleLoyaltyEnabled").check();
+  await host.locator("#clanRuleDonationDays").fill("31");
+  await host.locator("#clanRuleDonationWindow").fill("30");
+  assert.equal(await host.locator("#clanRulesDraftSummary").getAttribute("data-tone"),"warning");
+  assert.match(await host.locator("#clanRulesDraftSummary").innerText(),/Spendentage/);
+  await host.locator("#clanRuleDonationDays").fill("3");
+  assert.equal(await host.locator("#clanLoyaltyState").getAttribute("data-tone"),"positive");
+  assert.match(await host.locator("#clanRulesDraftSummary").innerText(),/Treue: ab/);
   await host.locator('[data-management-section="members"]').click();
   await host.locator('[data-management-section="rules"]').click();
   assert.equal(await host.locator("#clanRuleDays").inputValue(),"27");
   assert.equal(await host.locator("#clanRulesSave").isEnabled(),true);
+  assert.equal(await host.locator("#clanRuleLoyaltyEnabled").isChecked(),true);
+  assert.match(await host.locator("#clanManagementActionHeading").textContent(), /1 Spieler.*1 offener Fall/);
+  await host.locator("#clanManagementRefresh").click();
+  await page.waitForFunction(()=>!document.getElementById("clanManagementRefresh").disabled);
+  assert.equal(await host.locator("#clanRuleDays").inputValue(),"27");
+  assert.equal(await host.locator("#clanRuleLoyaltyEnabled").isChecked(),true);
   const dir=process.env.CWL_UX_SCREENSHOTS;if(dir)fs.mkdirSync(dir,{recursive:true});
   for(const width of [320,390,430,1366,1440]){
    await page.setViewportSize({width,height:900});
-   for(const theme of ["arena","dark","light"]){
+   for(const theme of ["arena","dark","light","cyber","cyberlight"]){
     await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
     for(const section of ["actions","rules"]){
      await host.locator('[data-management-section="'+section+'"]').click();
