@@ -89,7 +89,11 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
   observedAt:asOf,observedRounds};
  if(core.resolvePublishedStrategicPlan({profile:{...p,strategicPlan:s},clanId,locks,standard,live}).status!=="published")return fail("publication_invalid");
  // Compare semantic state, not the polling timestamp, to avoid revision churn.
- const semantic=x=>JSON.stringify(x?[x.clanId,x.clanTag,x.season,x.anchorWarTag,x.registeredTags,x.ruleKey,x.plan,x.observedRounds]:null);
+ // Postgres JSONB canonicalizes object keys. Compare explicit tuples, not
+ // insertion-order JSON of nested objects received via PostgREST.
+ const semantic=x=>JSON.stringify(x?[x.clanId,x.clanTag,x.season,x.anchorWarTag,x.registeredTags,x.ruleKey,
+  x.plan.map(d=>[d.day,d.lineup]),
+  x.observedRounds.map(w=>[w.day,w.available,w.warTag??null,w.state??null,w.lineup??null])]:null);
  if(saved.automatic_revision===saved.revision&&semantic(saved.automatic_snapshot)===semantic(s))return {ok:true,changed:false};
  return {ok:true,changed:true,expectedRevision:saved.revision,expectedCycle:review.cycle_id,validUntil,next:s};
 }

@@ -54,3 +54,15 @@ test("stable existing schedule is used as baseline; unchanged snapshot no-op onl
  x.saved.revision++;const refreshed=buildAutomaticStrategicCandidate(x);assert.ok(refreshed.ok,refreshed.reason);assert.equal(refreshed.changed,true);
  assert.deepEqual(refreshed.next.plan,first.next.plan);
 });
+
+test("same assignment remains a no-op after JSONB-style nested key reordering",async()=>{
+ const {buildAutomaticStrategicCandidate}=await mod,x=fixture(),first=buildAutomaticStrategicCandidate(x);
+ assert.ok(first.ok,first.reason);
+ const ordered=JSON.parse(JSON.stringify(first.next),(_k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.length-b.length||a.localeCompare(b))):v);
+ assert.notEqual(JSON.stringify(ordered),JSON.stringify(first.next));
+ x.saved.automatic_snapshot=ordered;x.saved.automatic_revision=x.saved.revision;
+ const again=buildAutomaticStrategicCandidate(x);assert.ok(again.ok,again.reason);assert.equal(again.changed,false);
+ // A newly confirmed matchup must still change the derived snapshot.
+ x.projection.group.upcoming.push({...x.projection.group.upcoming[0],day:2,warTag:tag(101)});
+ const changed=buildAutomaticStrategicCandidate(x);assert.ok(changed.ok,changed.reason);assert.equal(changed.changed,true);
+});

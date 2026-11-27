@@ -200,7 +200,10 @@ for(const name of ["viewer","editor","owner","outsider"]){
  const r=await requestRest("rpc/cwl_claim_strategic_recompute",name,"POST",{p_grants:JSON.parse(records)});assert.ok([401,403,404].includes(r.status));
  const denied=await requestRest("cwl_strategic_assignments?clan_id=eq."+a,name,"PATCH",{snapshot:{forged:true}});assert.ok([401,403].includes(denied.status));
 }
-const again=build(await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records}));assert.ok(again.ok,again.reason);assert.equal(again.changed,false);
+const storedContext=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});
+ assert.ok(storedContext.saved.automatic_snapshot,"persisted baseline must be loaded");
+ const again=build(storedContext);assert.ok(again.ok,again.reason);
+ assert.equal(again.changed,false,"same semantic snapshot after JSONB round trip must not republish");
 await rpc("owner","cwl_resolve_plan_suggestion",{p_suggestion:suggestion,p_accept:true});
 assert.deepEqual(await (await requestRest(path,"viewer")).json(),[],"old derived plan hidden after accepted revision");
 assert.equal(await publishAutomatic({rest,settings,context:ctx,result:candidate,deadline}),false,"stale CAS");
