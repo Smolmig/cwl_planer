@@ -2530,7 +2530,11 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 .management-search input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .management-search .statusline:empty{display:none}
 .management-case-actions .btn{min-height:44px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
-#clanManagementActionList .clan-management-person-status[data-review="severe"]{color:var(--red);border-left:3px solid var(--red);padding-left:8px}
+/* Semantic text, not rank changes: keep status words visible independently of color. */
+#view-clan-management .clan-management-person-status[data-review="positive"]{color:var(--green)}
+#view-clan-management .clan-management-person-status[data-review="severe"]{color:var(--red)}
+#view-clan-management .clan-management-person-status[data-review="warning"]{color:var(--amber)}
+#view-clan-management .clan-management-person-status[data-review="unknown"]{color:var(--muted)}
 .management-workspace-panel{min-width:0}.management-workspace-panel>h3,.management-source-panel>h4{margin:10px 0 6px;font-size:15px}
 #view-clan-management .clan-management-criteria>summary{list-style:none;justify-content:space-between}
 #view-clan-management .clan-management-criteria>summary::-webkit-details-marker{display:none}
@@ -6469,6 +6473,7 @@ function renderClanManagementMisses(members,payload){
   const title=document.createElement("strong");title.textContent=item.name;
   const status=document.createElement("div");status.className="clan-management-person-status";
   status.textContent=item.status;
+  status.dataset.review=item.severe?"severe":"warning";
   const note=document.createElement("small");note.textContent=item.note;
   node.append(title,status,note);list.appendChild(node);
  }
@@ -6545,7 +6550,7 @@ function renderClanManagementActionOverview(){
   const rank=document.createElement("span");rank.className="clan-management-rank";rank.textContent="Clash: "+person.rankLabel;
   head.append(name,rank);
   const status=document.createElement("div");status.className="clan-management-person-status";
-  status.dataset.review=person.severe?"severe":"open";
+  status.dataset.review=person.severe?"severe":person.sources.some(x=>x!=="rank")?"warning":"positive";
   status.textContent=person.severe?(person.conflicting?"Degradierung und Ranghinweis gemeinsam prüfen":"Degradierung prüfen"):
    person.conflicting?"Mehrere Hinweise gemeinsam prüfen":person.sources.some(x=>x!=="rank")?"Fehlangriff prüfen":person.rankReasons.some(x=>x.kind==="return_rank")?"Früheren Rang prüfen":"Beförderung prüfen";
   const missed=document.createElement("small");
@@ -6720,7 +6725,7 @@ function renderClanManagementRows(preserveViewport=true){
   head.append(name,rank);row.appendChild(head);
   const [label,reason]=managementRowSummary(person,openCases);
   const status=document.createElement("div");status.className="clan-management-person-status";
-  status.dataset.review=openCases.length?"open":person.rank==="unknown"?"unknown":"none";
+  status.dataset.review=openCases.length?(clanManagementReviewsReadable?"positive":"unknown"):person.rank==="unknown"?"unknown":"none";
   status.textContent=!clanManagementReviewsReadable&&openCases.length?"Vorläufig: "+label:label;row.appendChild(status);
   const note=document.createElement("small");note.textContent=reason;row.appendChild(note);
   const disclosure=document.createElement("details");
