@@ -22,7 +22,7 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
    p.cwlLive?.clanTag!==clanTag||p.cwlLiveIgnoredSeason===season||p.cocManualEmergency?.pending)return fail("inactive_or_scope");
  const {slots,days}=p.config,group=projection?.group,registered=projection?.registered,asOf=group?.observedAt,validUntil=projection?.quality?.validUntil;
  if(![15,30].includes(slots)||![5,7].includes(days)||projection?.status!=="preview_data"||
-   projection.format?.teamSize!==slots||projection.format.attacksPerMemberReported!==true||
+   projection.format?.teamSize!==slots||projection.format.attacksPerMember!==1||
    group?.season!==season||group?.selectedClanTag!==clanTag||!registered?.verified||
    !Number.isFinite(asOf)||asOf>now||!Number.isFinite(validUntil)||validUntil<=now||validUntil>asOf+300000||
    !Array.isArray(p.members)||!Array.isArray(p.locks)||!Array.isArray(p.archivedMembers)||!Array.isArray(p.cwlLive.rounds))return fail("unverified_group");

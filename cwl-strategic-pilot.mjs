@@ -73,7 +73,7 @@ export function buildPilotPreview({input,history,projection,mode,planStandard,no
   return {...base,issues:[],scenarios:result.scenarios.map(s=>({size:s.size,metrics:s.metrics,
    excluded:s.excluded.map(id=>members.find(m=>m.id===id)?.name||"Unbekannter Spieler"),rows:presentRosterRows({scenario:s,members}).rows})),canApply:false};
  }
- if(c.phase!=="daily"||projection?.status!=="preview_data"||projection.format?.attacksPerMemberReported!==true||!projection.group||!projection.standings||!projection.registered)throw Error("pilot_live_unavailable");
+ if(c.phase!=="daily"||projection?.status!=="preview_data"||projection.format?.attacksPerMember!==1||!projection.group||!projection.standings||!projection.registered)throw Error("pilot_live_unavailable");
  const group=projection.group,asOf=group.observedAt,validUntil=projection.quality?.validUntil;
  if(!Number.isFinite(asOf)||asOf<history.asOf||asOf>now||now-asOf>300000||group.season!==c.season||group.selectedClanTag!==c.clanTag||
  !Number.isFinite(validUntil)||validUntil<=now||validUntil>asOf+300000)throw Error("pilot_live_scope");

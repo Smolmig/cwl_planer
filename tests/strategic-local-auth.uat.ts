@@ -60,7 +60,11 @@ for(const name of ["owner","editor","viewer","outsider"]){
 }
 sql("insert into public.cwl_clans(id,name,clash_tag,owner_user_id) values ('"+a+"','Synthetic A','"+own+"','"+ids.owner.id+"'),('"+b+"','Synthetic B','"+other+"','"+ids.outsider.id+"')");
 sql("insert into public.cwl_clan_memberships(clan_id,user_id,role) values ('"+a+"','"+ids.editor.id+"','editor'),('"+a+"','"+ids.viewer.id+"','viewer')");
-sql("insert into public.cwl_cloud_profiles(clan_id,profile_json,updated_by) values ('"+a+"','{\"marker\":\"private A\"}','"+ids.owner.id+"'),('"+b+"','{\"marker\":\"private B\"}','"+ids.outsider.id+"')");
+for(const [id,name] of [[a,"owner"],[b,"outsider"]]){
+ const actor=ids[name].id;
+ sql("select set_config('request.jwt.claim.sub','"+actor+"',true); insert into public.cwl_cloud_profiles(clan_id,profile_json,updated_by) values ('"+id+"',"+literal({marker:"private "+name})+"::jsonb,'"+actor+"')");
+}
+function literal(v:unknown){return "'"+JSON.stringify(v).replaceAll("'","''")+"'";}
 const snapshot=()=>sql("select md5(coalesce(jsonb_agg(to_jsonb(p) order by clan_id)::text,'')) from public.cwl_cloud_profiles p");
 const before=snapshot();
 Deno.env.delete("CWL_STRATEGIC_SHADOW_ENABLED");
@@ -139,3 +143,71 @@ assert.ok(!(await response.text()).includes("preview_data"));
 assert.equal((await invokeBeta("owner")).status,403,"beta link changed");
 assert.equal(snapshot(),before,"profile JSON/revision must stay untouched");
 console.log("PASS: real local JWT + caller RLS + owner/editor/viewer/outsider/default-off/allowlist/revocation/relink; synthetic Clash only; profile unchanged");
+
+// End-to-end publication through the actual candidate and collector
+// publisher, real service-role RPC and caller JWTs in PostgREST. No
+// network other than this isolated local project and synthetic Clash.
+sql("update public.cwl_clans set clash_tag='"+own+"' where id='"+a+"'; insert into public.cwl_clan_memberships(clan_id,user_id,role) values ('"+a+"','"+ids.editor.id+"','editor')");
+const coreImport=await import("../cwl-planning-core.js");
+const core=globalThis.CWLPlanningCore;
+assert.ok(core?.planCwl);
+const {buildAutomaticStrategicCandidate}=await import("../supabase/functions/coc-stats-collector/collector-strategic-cycle.mjs");
+const {loadAutomaticContext,publishAutomatic,claimPendingStrategic}=await import("../supabase/functions/coc-stats-collector/collector-strategic-runner.mjs");
+const {projectStrategicGroup}=await import("../supabase/functions/coc-cwl-status/strategic-projection.mjs");
+const members=roster(0).map((m,i)=>({id:"p"+i,name:"Test "+i,playerTag:m.tag,townHall:19,participating:true,fixed:i===0,statuses:Array(5).fill("auto")}));
+const profile={id:"synthetic-profile",members,archivedMembers:[],archives:[],locks:Array.from({length:5},()=>({locked:false,lineup:[]})),config:{slots:15,days:5,strategicMode:"balanced",strategicAuto:true},cwlLive:{season,clanTag:own,rounds:[]}};
+sql("select set_config('request.jwt.claim.sub','"+ids.owner.id+"',true); update public.cwl_cloud_profiles set profile_json="+literal(profile)+"::jsonb where clan_id='"+a+"'");
+async function requestRest(path:string,name:string,method="GET",rows?:unknown){
+ const key=name==="service"?admin:anon,token=name==="service"?admin:ids[name].access;
+ const r=await originalFetch(api+"/rest/v1/"+path,{method,headers:{apikey:key,Authorization:"Bearer "+token,Accept:"application/json","Content-Type":"application/json",Prefer:"return=representation"},...(rows===undefined?{}:{body:JSON.stringify(rows)})});
+ return r;
+}
+async function rpc(name:string,method:string,rows:unknown){const r=await requestRest("rpc/"+method,name,"POST",rows);assert.ok(r.ok,method+" "+r.status+" "+await r.clone().text());return r.json()}
+const reviewState=await rpc("owner","cwl_set_plan_lock",{p_clan:a,p_locked:true});
+const approvedRev=Number(sql("select revision from public.cwl_cloud_profiles where clan_id='"+a+"'"));
+const draft=structuredClone(profile);draft.config.strategicMode="performance";
+const suggestion=await rpc("editor","cwl_submit_plan_suggestion",{p_clan:a,p_base_revision:approvedRev,p_profile:draft});
+const approvedHash=snapshot();
+const settings={};
+const rest=async(_settings,path,{method="GET",rows=null}={})=>{
+ const r=await requestRest(path,"service",method,rows??undefined);assert.ok(r.ok,path.split("?")[0]+" "+r.status+" "+await r.clone().text());return r.json();
+};
+const records=JSON.stringify([{clanId:a,clanTag:own,ownerId:ids.owner.id}]);
+assert.equal(await claimPendingStrategic({rest,settings,records:"[]"}),null);
+const claimed=await claimPendingStrategic({rest,settings,records});assert.equal(claimed.revision,approvedRev);
+assert.equal(await claimPendingStrategic({rest,settings,records}),null);
+const ctx=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});assert.equal(ctx.review.locked,true);
+const currentWar={...war};delete currentWar.attacksPerMember;
+const now=Date.now(),projection=projectStrategicGroup({group,results:new Map([[warTag,currentWar]]),clanTag:own,season,observedAt:now});
+const build=ctx=>buildAutomaticStrategicCandidate({...ctx,projection,historyRows:{wars:[],attacks:[],missedEvents:[]},core,now});
+const candidate=build(ctx);assert.ok(candidate.ok,candidate.reason);assert.equal(candidate.changed,true);
+const deadline=Date.now()+90000;
+assert.equal(await publishAutomatic({rest,settings,context:ctx,result:candidate,deadline}),true);
+assert.equal(snapshot(),approvedHash,"collector may not edit approved profile");
+assert.equal(sql("select status from public.cwl_plan_suggestions where id='"+uuid(suggestion)+"'"),"pending");
+const path="cwl_strategic_assignments?clan_id=eq."+a+"&select=snapshot,base_revision,cycle_id";
+for(const name of ["owner","editor","viewer"]){
+ const r=await requestRest(path,name);assert.equal(r.status,200);const rows=await r.json();assert.equal(rows.length,1);
+ assert.equal(rows[0].base_revision,approvedRev);assert.equal(rows[0].cycle_id,reviewState.cycle_id);
+ const p={...profile,strategicPlan:rows[0].snapshot};
+ const observed=core.strategicObservedContext({profile:p,clanId:a,locks:profile.locks});
+ const standard=core.planCwl({members,locks:observed.locks,slots:15,days:5});
+ const resolved=core.resolvePublishedStrategicPlan({profile:p,clanId:a,locks:observed.locks,standard,live:observed.live});
+ assert.equal(resolved.status,"published");assert.deepEqual(resolved.plan.dayPlans.map(d=>d.lineup),candidate.next.plan.map(d=>d.lineup));
+}
+assert.deepEqual(await (await requestRest(path,"outsider")).json(),[]);
+for(const name of ["viewer","editor","owner","outsider"]){
+ const r=await requestRest("rpc/cwl_claim_strategic_recompute",name,"POST",{p_grants:JSON.parse(records)});assert.ok([401,403,404].includes(r.status));
+ const denied=await requestRest("cwl_strategic_assignments?clan_id=eq."+a,name,"PATCH",{snapshot:{forged:true}});assert.ok([401,403].includes(denied.status));
+}
+const again=build(await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records}));assert.ok(again.ok,again.reason);assert.equal(again.changed,false);
+await rpc("owner","cwl_resolve_plan_suggestion",{p_suggestion:suggestion,p_accept:true});
+assert.deepEqual(await (await requestRest(path,"viewer")).json(),[],"old derived plan hidden after accepted revision");
+assert.equal(await publishAutomatic({rest,settings,context:ctx,result:candidate,deadline}),false,"stale CAS");
+const updated=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});
+assert.equal(updated.saved.profile_json.config.strategicMode,"performance");
+const next=build(updated);assert.ok(next.ok,next.reason);assert.equal(await publishAutomatic({rest,settings,context:updated,result:next,deadline}),true);
+assert.equal((await (await requestRest(path,"viewer")).json())[0].base_revision,approvedRev+1);
+sql("delete from public.cwl_clan_memberships where clan_id='"+a+"' and user_id='"+ids.viewer.id+"'");
+assert.deepEqual(await (await requestRest(path,"viewer")).json(),[]);
+console.log("PASS: real derived assignment RPC + JWT read across roles, locked input, pending proposal, acceptance/CAS/reload/revocation; synthetic Clash");

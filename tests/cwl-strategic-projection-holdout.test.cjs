@@ -146,3 +146,14 @@ test("live recommendations remain available when a future lineup conflicts with 
  const result=buildPilotPreview({input,history,projection:projectStrategicGroup(s),mode:"balanced",planStandard:require("../cwl-planning-core.js").planCwl,now:now+1});
  assert.equal(result.rest.ok,false);assert.equal(result.publication,null);assert.equal(result.liveTargets[0].suggestions.length,14);assert.ok(result.liveTargets[0].suggestions.every(a=>!Object.hasOwn(a,"attackerTag")));
 });
+
+test("standard CWL omission of attacksPerMember remains usable, explicit incompatible formats and multiple attacks fail closed",async()=>{
+ const {projectStrategicGroup}=await projection,s=data();
+ for(const w of s.results.values())delete w.attacksPerMember;
+ let x=projectStrategicGroup(s);assert.equal(x.status,"preview_data");assert.equal(x.format.attacksPerMember,1);assert.equal(x.format.attacksPerMemberReported,false);assert.equal(x.group.upcoming.length,1);
+ const w=s.results.get(tag(112));w.state="inWar";w.startTime="20261125T120000.000Z";w.endTime="20261126T120000.000Z";
+ x=projectStrategicGroup(s);assert.equal(x.group.liveTargets.length,1);
+ w.attacksPerMember=2;assert.equal(projectStrategicGroup(s).status,"unsupported_or_unknown_format");delete w.attacksPerMember;
+ w.clan.members[0].attacks.push({...w.clan.members[0].attacks[0],order:2});
+ assert.equal(projectStrategicGroup(s).status,"unsupported_or_unknown_format");
+});

@@ -11,3 +11,7 @@ verify_jwt = false
 # RS256 signature and exact repo/workflow/ref/audience claims. Never public-open.
 [functions.coc-stats-collector]
 verify_jwt = false
+
+# Isolated strategic beta: user JWT + current tenant membership verified internally.
+[functions.coc-cwl-strategy-beta]
+verify_jwt = false

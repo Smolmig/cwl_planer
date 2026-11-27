@@ -56,7 +56,12 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  const key=tag(v),w=TAG.test(key)?results.get(key):null;
  if(!w||!["preparation","inWar","warEnded"].includes(w.state)||![15,30].includes(w.teamSize)||
  !allowed.has(tag(w.clan?.tag))||!allowed.has(tag(w.opponent?.tag))||tag(w.clan?.tag)===tag(w.opponent?.tag))return {available:false};
- sizes.add(w.teamSize);formats.add(w.attacksPerMember??"not_reported");
+ sizes.add(w.teamSize);
+ // The league-war endpoint may omit attacksPerMember. Standard CWL has
+ // one attack. A contradictory explicit value or actual multi-attack
+ // roster is not a supported standard format.
+ formats.add(w.attacksPerMember===undefined?"not_reported":w.attacksPerMember);
+ if([w.clan,w.opponent].some(s=>Array.isArray(s?.members)&&s.members.some(m=>Array.isArray(m?.attacks)&&m.attacks.length>1)))formats.add("multiple_attacks");
  if(w.state==="preparation"){
   const start=preparationStart(w.startTime);
   if(start===null||start<=observedAt){unverifiedPreparation++;return {available:false}}
@@ -66,7 +71,7 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  if(!a||!b)return {available:false};
  if(w.state!=="preparation"&&(!a.counter||!b.counter))unverifiedCounters++;
  return {available:true,warTag:key,state:w.state,teamSize:w.teamSize,
- ...(w.attacksPerMember!==undefined?{attacksPerMember:w.attacksPerMember}:{}),clan:a,opponent:b};
+ attacksPerMember:1,clan:a,opponent:b};
  })};
  });
  if(sizes.size!==1||[...formats].some(x=>x!==1&&x!=="not_reported"))return {status:"unsupported_or_unknown_format",registered:null,group:null,standings:null};
@@ -111,7 +116,7 @@ export function projectStrategicGroup({group,results,clanTag,season,observedAt,r
  const standings=assessStrategicStandings({snapshot:scores,selectedClanTag:own,season,asOf:observedAt,teamSize,league:rules?.league,rules});
  if(rules)standings.ruleEvidence={source:rules.source,verifiedAt:rules.verifiedAt,promotionPlaces:rules.promotionPlaces,demotionPlaces:rules.demotionPlaces};
  return {status:consistent?"preview_data":"unverified_registration",registered:consistent?registered:null,group:groupView,standings,scoreSnapshot:scores,
- format:{teamSize,attacksPerMemberReported:!formats.has("not_reported")},quality:{unverifiedCounters,unverifiedPreparation,observedAt,readStartedAt,
+ format:{teamSize,attacksPerMember:1,attacksPerMemberReported:!formats.has("not_reported")},quality:{unverifiedCounters,unverifiedPreparation,observedAt,readStartedAt,
  validUntil:Math.min(readStartedAt+300000,...analyzed.upcoming.map(w=>preparationEnds.get(w.warTag))),serverReadTimeNotExactAttackTime:true},
  limitations:["shadow_only",...(rules?[]:["league_rules_not_verified"]),"not_a_historical_snapshot_store","no_automatic_apply"]};
 }

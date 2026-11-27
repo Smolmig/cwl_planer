@@ -4,6 +4,8 @@ on:
     paths:
       - 'supabase/functions/coc-cwl-status/**'
       - 'supabase/functions/coc-cwl-strategy-beta/**'
+      - 'supabase/functions/coc-stats-collector/**'
+      - 'supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql'
       - 'tests/strategic-local-auth.uat.ts'
       - '.github/workflows/strategic-local-auth-uat.yml'
       - 'supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql'
@@ -49,6 +51,8 @@ jobs:
           [[ "$DB_URL" == postgres*://*@127.0.0.1:* || "$DB_URL" == postgres*://*@localhost:* ]]
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
           sleep 3
       - name: Actual Deno handler with GoTrue JWT and caller-scoped RLS

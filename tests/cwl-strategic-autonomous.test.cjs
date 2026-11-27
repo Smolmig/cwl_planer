@@ -8,7 +8,7 @@ function fixture(){
  const roster=members.slice(0,15).map(m=>({tag:m.playerTag,townHall:19}));
  const group={season,selectedClanTag:clanTag,observedAt:now-1000,wars:[],upcoming:[{day:1,warTag:tag(100),teamSize:15,status:"confirmed_preparation_roster",opponentTag:tag(1),roster:Array.from({length:15},(_,i)=>({tag:tag(i+50),townHall:19})),ownRoster:roster}],ownMedals:{complete:false,stars:[]}};
  const saved={revision:12,profile_json:{id:"p",members,archivedMembers:[],locks:Array.from({length:7},()=>({locked:false,lineup:[]})),config:{slots:15,days:5,strategicMode:"balanced",strategicAuto:true},cwlLive:{season,clanTag,rounds:[]}}};
- return {saved,review:{cycle_id:"cycle",season,locked:false},clanId,clanTag,projection:{status:"preview_data",format:{teamSize:15,attacksPerMemberReported:true},group,registered:{verified:true,season,clanTag,observedAt:group.observedAt,tags:members.map(m=>m.playerTag)},quality:{validUntil:now+200000}},historyRows:{wars:[],attacks:[],missedEvents:[]},core,now};
+ return {saved,review:{cycle_id:"cycle",season,locked:false},clanId,clanTag,projection:{status:"preview_data",format:{teamSize:15,attacksPerMember:1,attacksPerMemberReported:false},group,registered:{verified:true,season,clanTag,observedAt:group.observedAt,tags:members.map(m=>m.playerTag)},quality:{validUntil:now+200000}},historyRows:{wars:[],attacks:[],missedEvents:[]},core,now};
 }
 test("server-only grants exact tenant, linked tag and owner; default off",async()=>{
  const {automaticGrant}=await mod,g=JSON.stringify([{clanId,clanTag,ownerId}]);

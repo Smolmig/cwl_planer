@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'supabase/experimental/strategic-assignment.sql'
+      - 'supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql'
       - 'tests/sql/strategic-assignment-fixture.sql'
       - '.github/workflows/strategic-assignment-sql.yml'
   workflow_dispatch:
@@ -40,7 +41,8 @@ jobs:
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
-          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/experimental/strategic-assignment.sql
+          cmp supabase/experimental/strategic-assignment.sql supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f tests/sql/strategic-assignment-fixture.sql
       - uses: actions/upload-artifact@v4
         if: success()
