@@ -22,6 +22,8 @@ test("Central membership: tri-state Discord, filters, explicit account links and
   let row=root.querySelector(".activity-member-row");
   const discord=control(row,"Discord");assert.equal(discord.value,"");discord.value="yes";discord.dispatchEvent(new dom.window.Event("change"));await tick();
   assert.equal(calls.at(-1).discord,true);
+  assert.equal(root.querySelector('select[data-discord="confirmed"]').value,"yes");
+  assert.match(root.querySelector(".activity-member-matches").textContent,/2 Accounts/);
   row=root.querySelector(".activity-member-row");
   const main=control(row,"Hauptaccount");main.value="#Q9QL";main.dispatchEvent(new dom.window.Event("change"));
   row.querySelector("button").click();await tick();
