@@ -94,7 +94,7 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
 
 
 test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolated test draws and confirmation",{timeout:120000},async()=>{
- const files=new Set(["cloud-app.html","cwl-planning-core.js","cwl-goldpass-view.mjs","cwl-goldpass-core.mjs","cwl-raffle-reveal.mjs","cwl-live-core.mjs","cwl-activity-campaign-view.mjs","cwl-activity-campaign.mjs","cwl-activity-raffle-core.mjs"]);
+ const files=new Set(["cloud-app.html","clan-management-core.js","clan-management-missed-core.js","clan-management-cw-core.js","clan-management-cw-view.js","cwl-deployment-filters.js","cwl-plan-whatif.js","cwl-planning-core.js","cwl-goldpass-view.mjs","cwl-goldpass-core.mjs","cwl-raffle-reveal.mjs","cwl-live-core.mjs","cwl-activity-campaign-view.mjs","cwl-activity-campaign.mjs","cwl-activity-raffle-core.mjs"]);
  const server=http.createServer((req,res)=>{
   const name=new URL(req.url||"/","http://localhost").pathname.slice(1);
   if(name==="cloud-sync.mjs"){res.writeHead(200,{"content-type":"text/javascript"});res.end("export {};");return}
@@ -106,6 +106,7 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
   browser=await engine.launch({headless:true,...(engine===chromium?{args:["--no-sandbox"]}:{})});
   const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:"reduce"});page.setDefaultTimeout(12000);
   const errors=[],remote=[];page.on("pageerror",e=>errors.push(e.message));
+  page.on("response",r=>{if(r.status()>=400&&/goldpass|activity|raffle|cwl-live-core/.test(r.url()))errors.push(r.status()+" "+r.url())});
   await page.route("**/*",r=>{if(!r.request().url().startsWith("http://127.0.0.1:")){remote.push(r.request().url());return r.abort()}return r.continue()});
   await page.goto("http://127.0.0.1:"+server.address().port+"/cloud-app.html",{waitUntil:"domcontentloaded"});
   await page.evaluate(async()=>{
@@ -117,7 +118,7 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
    let grind={id:"fixture-campaign",title:"November Grind",start:"2026-11-01",end:"2026-11-10",today:"2026-11-11",revision:1,rules:[{metric:"donations",minimum:1000}],decisions:{},ready:true,qualified:3,unknown:0,pool,rows:pool.map(p=>({...p,status:"qualified",discord:true,checks:[{metric:"donations",minimum:1000,value:1800,status:"met"}]})),witness:"grind-witness"};
    window.__goldCalls=[];window.__goldOwner=true;
    const cwlResponse=()=>({...cwl,evidence,preview:rafflePreview(evidence,cwl.rules,cwl.eligibility),witness:"cwl-"+cwl.revision});
-   window.CWLCloud={active:true,isOwner:()=>window.__goldOwner,hasApiClan:()=>true,getActiveClanId:()=>"fixture-clan",getActiveClanTag:()=>"#P02",getGoldpassSession:()=>1,getActivitySession:()=>1,
+   window.CWLCloud={active:true,onLocalChange:()=>{},isOwner:()=>window.__goldOwner,hasApiClan:()=>true,getActiveClanId:()=>"fixture-clan",getActiveClanTag:()=>"#P02",getGoldpassSession:()=>1,getActivitySession:()=>1,
     goldpassSeasons:async()=>["2026-11"],
     goldpassRequest:async q=>{
      window.__goldCalls.push("cwl:"+q.action);
@@ -138,8 +139,9 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
   await page.locator('[data-more-action="goldpass"]').click();
   const cwl=page.locator("#view-goldpass"),grind=page.locator("#view-activity-goldpass");
   const cwlBtn=name=>cwl.getByRole("button",{name,exact:true}),grindBtn=name=>grind.getByRole("button",{name,exact:true});
-  await cwl.getByLabel("Vorlage",{exact:true}).waitFor();
-  await cwl.getByLabel("Vorlage",{exact:true}).selectOption("october");
+  const preset=cwl.locator('select:has(option[value="october"])');
+  try{await preset.waitFor()}catch(e){throw Error("Goldpass did not render: "+JSON.stringify({active:await cwl.evaluate(n=>n.classList.contains("active")),content:await cwl.locator("#goldpassContent").textContent(),calls:await page.evaluate(()=>window.__goldCalls),errors}),{cause:e})}
+  await preset.selectOption("october");
   assert.match(await cwl.innerText(),/75 Lose insgesamt/);
   assert.equal(await cwlBtn("Offiziell ziehen").isDisabled(),true);
   const count=()=>page.evaluate(()=>window.__goldCalls.filter(x=>/:(save|create|draw|discord)$/.test(x)));
@@ -175,7 +177,7 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
   await check(grind,"grind-test");
   // Unsaved CWL settings and sandbox remain independent across both real tabs.
   await grindBtn("CWL-Verlosung").click();
-  assert.equal(await cwl.getByLabel("Vorlage",{exact:true}).inputValue(),"october");
+  assert.equal(await preset.inputValue(),"october");
   await cwlBtn("Regeln speichern").click();
   await cwl.getByText("Regeln gespeichert.",{exact:true}).waitFor();
   await cwlBtn("Offiziell ziehen").click();
@@ -186,7 +188,7 @@ test("Goldpass workspace in actual Cloud shell: tabs, responsive presets, isolat
   assert.equal(await cwlBtn("Offiziell ziehen").count(),0);
   await cwlBtn("Grind-Verlosung").click();await grindBtn("Test beenden").click();
   await grind.locator("select").waitFor();
-  await grind.getByLabel("Verlosung",{exact:true}).selectOption("fixture-campaign");
+  await grind.locator('select:has(option[value="fixture-campaign"])').selectOption("fixture-campaign");
   await grindBtn("Gewinner offiziell ziehen").waitFor();
   await grindBtn("Gewinner offiziell ziehen").click();
   await page.locator("#inlineActionPanel").getByRole("button",{name:"Abbrechen",exact:true}).click();
