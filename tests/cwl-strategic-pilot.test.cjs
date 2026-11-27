@@ -66,3 +66,27 @@ test("optional poll and format affect only the draft, reject foreign answers and
  s.profile.members[1].fixed=true;
  const conflict=compute(preparePilotInput({...s,draft:{slots:15,days:7,answers}}));assert.equal(conflict.scenarios.length,0);assert.match(conflict.issues[0],/Absage widerspricht/);
 });
+
+test("one roster panel moves to members and back without duplicate controls or stale responses",async()=>{
+ const {createStrategicPilotView}=await view,dom=new JSDOM('<section id="view-plan"><div id="plan"></div></section><section id="view-members"><div id="members"></div></section>'),d=dom.window.document;
+ let c=data().context;
+ const p=createStrategicPilotView({anchor:d.querySelector("#plan"),getContext:()=>c,load:async()=>null});
+ const entry=d.querySelector("#planStrategicPilot");p.relocate(d.querySelector("#members"));p.sync();
+ assert.equal(entry.parentElement.id,"view-members");assert.match(entry.querySelector("summary").textContent,/Kaderempfehlungen/);
+ entry.open=true;p.relocate(d.querySelector("#members"));p.sync();assert.equal(entry.open,true);
+ c={...c,key:"daily",token:"rev2",phase:"daily"};p.relocate(d.querySelector("#plan"));p.sync();
+ assert.equal(entry.parentElement.id,"view-plan");assert.equal(entry.open,false);assert.equal(d.querySelectorAll("#strategicPilotCalculate").length,1);
+ assert.match(entry.querySelector("summary").textContent,/Intelligenter Planer/);dom.window.close();
+});
+test("roster suitability never turns missing form or open participation into an exclusion",async()=>{
+ const {preparePilotInput,buildPilotPreview}=await mod,s=data();
+ s.profile.members[0].participating=false;s.profile.members[1].fixed=true;
+ const input=preparePilotInput(s),history={kind:"current_snapshot_war_start_proxy",asOf:at,facts:[],obligations:[],audit:{}};
+ for(const mode of ["performance","balanced","development"]){
+  const result=buildPilotPreview({input,history,mode,planStandard:planCwl,now:at}),rows=result.scenarios[0].rows;
+  assert.equal(rows.find(x=>x.id==="p0").suitability,"Teilnahme pausiert");
+  assert.equal(rows.find(x=>x.id==="p1").suitability,"Fix-Vorgabe");
+  assert.equal(rows.find(x=>x.id==="p2").suitability,"Form noch offen");
+  assert.equal(result.canApply,false);
+ }
+});

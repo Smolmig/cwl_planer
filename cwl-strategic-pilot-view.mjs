@@ -1,5 +1,5 @@
 // One entry in existing Plan. No storage, network, profile mutation or apply.
-export function createStrategicPilotView({anchor,getContext,load,setMode,publish}){
+export function createStrategicPilotView({anchor,getContext,load,setMode,publish,showMember}){
  const doc=anchor.ownerDocument,el=(tag,text="")=>{const n=doc.createElement(tag);n.textContent=text;return n};
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Beta");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
@@ -71,6 +71,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   else if(nextToken!==token||!c?.ready&&(busy||stored)){sequence++;busy=false;token=nextToken;clear("Planstand geändert oder nicht verfügbar. Bitte neu berechnen.")}
   if(stored&&stored.expiresAt<=clock())clear("Die Vorschau ist nicht mehr aktuell. Bitte neu berechnen.");
   root.hidden=!c;if(!c)return;
+  summary.textContent=c.phase==="roster"?"CWL-Kaderempfehlungen · Beta":"Intelligenter Planer · Beta";
   draftFields.hidden=c.phase!=="roster";draftFields.style.display=c.phase==="roster"?"grid":"none";setCandidates(c.phase==="roster"?c.candidates:[]);
   format.disabled=days.disabled=search.disabled=!c.ready||busy;
   for(const select of answersHost.querySelectorAll("select"))select.disabled=!c.ready||busy;
@@ -96,7 +97,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   for(const [v,t] of [["all","Alle Spieler"],["changes","Nur Änderungen"],["review","Prüfbedarf"]]){const o=el("option",t);o.value=v;filter.append(o)}
   for(const sc of s.scenarios){const o=el("option",sc.size+" Spieler"+(sc.excluded.length?" · prüfen":" · alle"));o.value=String(sc.size);choice.append(o)}
   choice.style.maxWidth="480px";filter.style.maxWidth="480px";
-  results.append(el("h3","Kadervergleich"),el("p",formatText),choice,overview);
+  results.append(el("h3","Kadervergleich"),el("p",formatText),choice,overview,el("p","Die Empfehlungen sind keine Teilnahmeentscheidung. Setze Dabei, Fix und Tagesregeln weiterhin in der Mitgliederliste."));
   if(s.participation?.no)results.append(el("p",s.participation.no===1?"Eine Absage wurde nur für diesen Entwurf berücksichtigt.":s.participation.no+" Absagen wurden nur für diesen Entwurf berücksichtigt."));
   if(s.oldSeason)results.append(el("p","Der bisherige CWL-Plan bleibt unverändert. Tagesregeln und Einsatzziele der alten Saison gelten nicht für diesen Entwurf. Fix-Spieler und allgemeine Einstellungen bleiben berücksichtigt."));
   function selected(){
@@ -114,7 +115,10 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
    const body=el("tbody");
    const shown=sc.rows.filter(x=>filter.value==="all"||filter.value==="changes"&&x.changed||filter.value==="review"&&x.review);
    for(const x of shown){const tr=el("tr"),th=el("th",x.name);th.scope="row";th.style.cssText="text-align:left;overflow-wrap:anywhere;padding:8px 2px;font-weight:600;border-bottom:1px solid var(--line)";
-    const small=el("small","RH"+x.townHall+" · "+(x.n?x.n+" passende Angriffe":"Keine passenden Angriffe")+(x.reason?" · "+x.reason:""));small.style.cssText="display:block;color:var(--muted);font-weight:400";th.append(small);tr.append(th);
+    const small=el("small","RH"+x.townHall+" · "+(x.n?x.n+" passende Angriffe":"Keine passenden Angriffe")+(x.reason?" · "+x.reason:""));small.style.cssText="display:block;color:var(--muted);font-weight:400";th.append(small);
+    if(x.suitability){const hint=el("small",x.suitability);hint.style.cssText="display:block;font-weight:600;margin-top:3px";th.append(hint)}
+    if(typeof showMember==="function"){const jump=el("button","Spieler anzeigen");jump.type="button";jump.className="btn small";jump.style.cssText="display:block;max-width:100%;white-space:normal;min-height:44px;margin-top:5px";jump.setAttribute("aria-label",x.name+" in Mitgliederliste anzeigen");jump.addEventListener("click",()=>{const c=getContext();if(stored===s&&c?.key===scope&&c?.token===token&&s.expiresAt>clock())showMember(x.id,c)});th.append(jump)}
+    tr.append(th);
     for(const n of [x.standard,x.proposed]){const td=el("td",String(n??"–"));td.style.cssText="padding:8px 2px;border-bottom:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums";tr.append(td)}body.append(tr)}
    if(!shown.length){const tr=el("tr"),td=el("td","Keine Spieler für diese Auswahl.");td.colSpan=3;tr.append(td);body.append(tr)}
    table.append(body);rows.append(table);
@@ -177,5 +181,5 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   try{await setMode(value,c,c.automatic===true)}
   catch{if(getContext()?.key===c.key){clear("Modus konnte nicht sicher gespeichert werden. Bitte Cloud-Stand prüfen.");status.classList.add("strategic-notice","is-warning")}}
   finally{if(ticket===sequence){busy=false;sync()}}
- });sync();return {sync};
+ });sync();return {sync,relocate(nextAnchor){if(nextAnchor&&root.previousElementSibling!==nextAnchor)nextAnchor.insertAdjacentElement("afterend",root)}};
 }

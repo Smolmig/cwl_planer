@@ -81,6 +81,11 @@ test("integrated pilot in actual Cloud shell: real core, responsive themes, same
   await page.evaluate(()=>{window.__pilotContext={key:"clan-b",token:"rev2",phase:"roster",ready:false,role:"vice",clanTag:"#P08",slots:15,days:7};window.__pilot.sync()});
   await entry.locator(":scope > summary").click();assert.equal(await calculate.isDisabled(),true);
   assert.equal(await page.evaluate(()=>JSON.stringify(window.__pilotProfile)===window.__pilotBefore&&localStorage.getItem("cwl_planer_mobile_v9")===window.__pilotStorage),true);
+  // Real members host: same single panel, no second copy of plan controls.
+  await page.evaluate(()=>{window.__pilotContext={...window.__pilotContext,key:"clan-c",ready:true};window.__pilot.relocate(document.getElementById("membersStrategicAnchor"));window.__pilot.sync()});
+  assert.equal(await entry.evaluate(n=>n.closest(".view")?.id),"view-members");
+  assert.equal(await page.locator("#strategicPilotCalculate").count(),1);
+  assert.match(await entry.locator(":scope > summary").textContent(),/Kaderempfehlungen/);
   assert.deepEqual(errors,[]);
   // External assets may be blocked by this synthetic shell; no real backend.
   assert.ok(remote.every(url=>!url.includes("supabase.co")));

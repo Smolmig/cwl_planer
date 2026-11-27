@@ -531,14 +531,29 @@ async function loadStrategicPilot(mode,expected,draft){
  if(!same())throw Error("strategic_context_changed");
  return result;
 }
+function strategicAnchor(c){return $(c?.phase==="roster"?"membersStrategicAnchor":"planCwlSeasonEntry")}
 function syncStrategicPilot(){
  if(!strategicPilotEnabled&&!betaAllowed()){strategicPilot?.sync();void refreshBetaGrant();return}
- if(strategicPilot){strategicPilot.sync();return}
- if(!strategicContext()||strategicPilotLoading)return;
+ const c=strategicContext();
+ if(strategicPilot){if(c)strategicPilot.relocate(strategicAnchor(c));strategicPilot.sync();return}
+ if(!c||strategicPilotLoading)return;
  strategicPilotLoading=import("./cwl-strategic-pilot-view.mjs").then(({createStrategicPilotView})=>{
-  const anchor=$("planCwlSeasonEntry");
-  if(anchor){strategicPilot=createStrategicPilotView({anchor,getContext:strategicContext,load:loadStrategicPilot,setMode:setSharedStrategicMode,publish:publishStrategicPlan});strategicPilot.sync()}
+  const current=strategicContext(),anchor=current&&strategicAnchor(current);
+  if(anchor){strategicPilot=createStrategicPilotView({anchor,getContext:strategicContext,load:loadStrategicPilot,setMode:setSharedStrategicMode,publish:publishStrategicPlan,showMember:showStrategicMember});strategicPilot.sync()}
  }).catch(()=>{}).finally(()=>{strategicPilotLoading=null});
+}
+function showStrategicMember(id,expected){
+ const c=strategicContext();
+ if(!c||c.phase!=="roster"||c.key!==expected?.key||c.token!==expected?.token)return;
+ const m=storage.getProfile().members.find(m=>m.id===id);
+ if(!m?.playerTag)return;
+ const search=$("memberSearch"),filter=$("memberFilter");
+ if(!search||!filter)return;
+ // Explicit navigation only: keep the existing member controls as the
+ // sole editing path, including the normal locked-editor proposal rules.
+ filter.value="all";filter.dispatchEvent(new Event("change",{bubbles:true}));
+ search.value=m.playerTag;search.dispatchEvent(new Event("input",{bubbles:true}));
+ search.scrollIntoView({block:"center"});search.focus({preventScroll:true});
 }
 
 const cloud={

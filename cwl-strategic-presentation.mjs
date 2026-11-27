@@ -22,7 +22,13 @@ export function presentRosterRows({scenario,members,filter="all"}={}){
   const standard=int(x.standardAppearances,0,7)?x.standardAppearances:null,proposed=int(x.scenarioAppearances,0,7)?x.scenarioAppearances:null;
   const changed=standard!==proposed,review=x.participation==="unknown"||Object.hasOwn(reasons,x.recommendation);
   const reason=m.participationIntent==="no"?"Absage für diesen Entwurf":m.participating===false?"Teilnahme pausiert":x.participation==="unknown"?"Teilnahme offen":(Object.hasOwn(reasons,x.recommendation)?reasons[x.recommendation]:null)||(m.fixed?"Fix":changed?"Einsatzverteilung geändert":"");
-  return {id:x.id,name:label(m),townHall:m.townHall,n:e.n,standard,proposed,changed,review,reason};
+  // Separate suitability from participation certainty: "open" is not a
+  // negative performance signal, and a predicted zero is never an exclusion.
+  const suitability=m.participating===false?"Teilnahme pausiert":m.participationIntent==="no"?"Absage im Entwurf":
+   proposed===null?"Nicht im Entwurf":proposed===0?"Einsatzmöglichkeit prüfen":m.fixed?"Fix-Vorgabe":
+   e.n<4?"Form noch offen":x.recommendation==="strong_candidate"?"Viele Einsätze empfohlen":
+   x.recommendation==="limited_opportunity_review"?"Wenige Einsätze – prüfen":"Geeignet für den Entwurf";
+  return {id:x.id,name:label(m),townHall:m.townHall,n:e.n,standard,proposed,changed,review,reason,suitability};
  }).sort((a,b)=>Number(b.review)-Number(a.review)||Number(b.changed)-Number(a.changed)||(b.proposed??-1)-(a.proposed??-1)||a.id.localeCompare(b.id));
  return {rows,shown:rows.filter(x=>filter==="all"||filter==="changes"&&x.changed||filter==="review"&&x.review)};
 }
