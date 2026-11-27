@@ -43,13 +43,16 @@ test("More/Clanverwaltung shows current Clash ranks without recommending actions
    await page.evaluate(()=>window.CWLClanManagementView.accessChanged("first"));
    await page.evaluate(()=>window.CWLClanManagementView.open());
    await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
-   const first=await page.locator(".clan-management-person").allTextContents();
+   assert.equal(await page.locator("#managementOverview").isVisible(),true);
+   assert.match(await page.locator("#clanManagementActionHeading").innerText(),/Mindestens 0 Spieler/);
+   await page.locator('[data-management-source="rank"]').click();
+   const first=await page.locator("#clanManagementList .clan-management-person").allTextContents();
    assert.equal(first.length,1,"open recommendations must be the default view");
    assert.match(first[0],/One/);
    assert.match(first[0],/Früheren Rang prüfen/);
-   assert.match(await page.locator("#clanManagementSummary").textContent(),/1 Spieler mit offenem Vorschlag/);
+   assert.match(await page.locator("#clanManagementSummary").textContent(),/gespeicherte Prüfstände nicht abrufbar/);
    await page.locator("#clanManagementFilterAll").click();
-   const rows=await page.locator(".clan-management-person").allTextContents();
+   const rows=await page.locator("#clanManagementList .clan-management-person").allTextContents();
    assert.equal(rows.length,2,"the full evaluated list includes members and elders");
    assert.ok(rows.some(t=>t.includes("One")&&t.includes("Mitglied")));
    assert.ok(rows.some(t=>t.includes("Two")&&t.includes("Ältester")&&t.includes("Keine Empfehlung")));
@@ -83,13 +86,13 @@ test("Discard pending API response after clan switch or lost owner permission",{
     resolvePending({clanId:"first",members:mockRoster,checkedAt:Date.now()});
    });
    await page.waitForTimeout(20);
-   assert.equal(await page.locator(".clan-management-person").count(),0);
+   assert.equal(await page.locator("#clanManagementList .clan-management-person").count(),0);
    await page.evaluate(()=>{
     owner=false;
     window.CWLClanManagementView.accessChanged(null);
    });
    assert.equal(await page.locator("#view-clan-management").getAttribute("class"),"view more-subview");
-   assert.equal(await page.locator(".clan-management-person").count(),0);
+   assert.equal(await page.locator("#clanManagementList .clan-management-person").count(),0);
   }finally{await page.close()}
  }finally{await browser.close()}
 });
@@ -105,14 +108,15 @@ test("Compact read-only management screen fits mobile Gold, Dark and Light width
      await setup(page,theme);
      await page.evaluate(()=>{window.CWLClanManagementView.accessChanged("first");window.CWLClanManagementView.open()});
      await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
+     await page.locator('[data-management-source="rank"]').click();
      await page.locator("#clanManagementFilterAll").click();
-     await page.waitForFunction(()=>document.querySelectorAll(".clan-management-person").length===2);
+     await page.waitForFunction(()=>document.querySelectorAll("#clanManagementList .clan-management-person").length===2);
      const layout=await page.evaluate(()=>({
       viewport:innerWidth,
       documentWidth:document.documentElement.scrollWidth,
       backHeight:document.getElementById("clanManagementBack").getBoundingClientRect().height,
       refreshHeight:document.getElementById("clanManagementRefresh").getBoundingClientRect().height,
-      rows:document.querySelectorAll(".clan-management-person").length
+      rows:document.querySelectorAll("#clanManagementList .clan-management-person").length
      }));
      assert.ok(layout.documentWidth<=width+3,JSON.stringify({theme,width,layout}));
      assert.ok(layout.backHeight>=40&&layout.refreshHeight>=44,JSON.stringify({theme,width,layout}));

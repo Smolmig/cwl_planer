@@ -39,7 +39,7 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.evaluate(()=>window.CWLClanManagementView.open());
     await page.waitForFunction(()=>document.getElementById("clanManagementStatus").textContent.includes("Clash zuletzt geprüft"));
     assert.match(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
-    await page.locator("#clanManagementCriteria > summary").click();
+    await page.locator('[data-management-section="rules"]').click();
     await page.locator("#clanRuleDays").fill("15");
     assert.equal(await page.locator("#clanRulesSave").isEnabled(),true);
     await page.locator("#clanRulesSave").click();
@@ -47,9 +47,12 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
     assert.equal(await page.locator("#clanManagementCriteria").evaluate(x=>x.open),true);
     assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
+    await page.locator('[data-management-section="actions"]').click();
+    await page.locator('[data-management-source="rank"]').click();
     await page.locator("#clanManagementFilterAll").click();
     await page.locator(".clan-management-evidence > summary").click();
     await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("14/15 Tage"));
+    await page.locator('[data-management-section="rules"]').click();
     await page.locator(".clan-rule-future > summary").click();
     await page.locator("#clanRuleLoyaltyEnabled").check();
     await page.locator("#clanRuleDonations").fill("80");

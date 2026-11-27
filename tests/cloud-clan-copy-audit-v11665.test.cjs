@@ -10,9 +10,9 @@ const html=read("cloud-app.html");
 test("#226 clan management shows plain actions and keeps detailed evidence behind a disclosure",()=>{
  const section=html.slice(html.indexOf('<section id="view-clan-management"'),html.indexOf('<section id="view-account"'));
  assert.ok(section.length>0);
- assert.match(section,/<h2 id="clanManagementTitle">Ränge prüfen<\/h2>/);
- assert.match(section,/im Spiel ändert sich nichts automatisch/);
- assert.match(section,/bestätigte schwere oder wiederholte Fehlangriffe/);
+ assert.match(section,/<h2 id="clanManagementTitle">Clanverwaltung<\/h2>/);
+ assert.match(section,/Rangänderungen führst du selbst in Clash durch/);
+ assert.match(section,/bestätigte Kriegsdaten/);
  assert.match(section,/data-management-filter="open"/);
  assert.match(section,/data-management-filter="all"/);
  assert.match(section,/Wann eine Beförderung prüfen\?/);

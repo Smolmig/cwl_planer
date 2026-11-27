@@ -50,6 +50,7 @@ test("Owner acknowledges, reopens and exempts a specific evidence review without
      await page.evaluate(t=>{document.documentElement.dataset.theme=t;},theme);
      await page.evaluate(()=>window.CWLClanManagementView.open());
      await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
+     await page.locator('[data-management-source="rank"]').click();
      await page.locator("#clanManagementFilterOpen").click();
      const disclosure=page.locator('.clan-management-person[data-player-tag="#2PYL"] details');
      if(!(await disclosure.evaluate(el=>el.open)))await disclosure.locator("summary").click();
@@ -59,7 +60,7 @@ test("Owner acknowledges, reopens and exempts a specific evidence review without
      await page.waitForFunction(()=>saveCalls>=1);
      await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
      assert.equal(await page.evaluate(()=>fetchCalls),calls,"reviewing does not force Clash API refresh");
-     assert.equal(await page.locator(".clan-management-person").count(),0,
+     assert.equal(await page.locator("#clanManagementList .clan-management-person").count(),0,
       "completed recommendation disappears from the open-only view");
      await page.locator("#clanManagementFilterAll").click();
      await page.getByRole("button",{name:"Leistungsprüfung für Sample: Prüfung wieder öffnen"}).click();
@@ -91,10 +92,12 @@ test("Cloud clan switch cannot reuse a different clan's private acknowledgment",
    await page.addScriptTag({content:fakeCloud});await page.addScriptTag({content:manager});
    await page.evaluate(()=>window.CWLClanManagementView.open());
    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
+   await page.locator('[data-management-source="rank"]').click();
    await page.locator(".clan-management-evidence > summary").click();
    await page.getByRole("button",{name:"Leistungsprüfung für Sample: Als geprüft markieren"}).click();
    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
    await page.evaluate(()=>{clanId="clan-b";window.CWLClanManagementView.open();});
+   assert.equal(await page.locator("#managementOverview").isVisible(),true);
    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
    assert.match(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
    assert.doesNotMatch(await page.locator("#clanManagementSummary").innerText(),/gespeicherte Prüfstände nicht abrufbar/);
