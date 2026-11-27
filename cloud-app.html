@@ -2659,6 +2659,26 @@ body:has(#inviteWelcome.open) .inline-action-panel{z-index:625}
 #view-goldpass .goldpass-result{border:1px solid var(--primary);border-radius:12px;padding:14px;margin:12px 0 18px;overflow-wrap:anywhere}
 #view-goldpass .goldpass-result h3{margin:5px 0;color:var(--primary);font-size:22px}
 #view-goldpass .goldpass-witness{overflow-wrap:anywhere}
+/* Shared Goldpass form controls follow the selected theme, not browser defaults. */
+:is(#view-goldpass,#view-activity-goldpass) :is(select,input:not([type=checkbox])){box-sizing:border-box;max-width:100%;min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);font-size:14px}
+:is(#view-goldpass,#view-activity-goldpass) :is(select,input:not([type=checkbox]),button,summary):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+html:is([data-theme="arena"],[data-theme="dark"],[data-theme="cyber"]) :is(#view-goldpass,#view-activity-goldpass) :is(select,option,input){color-scheme:dark}
+html:is([data-theme="light"],[data-theme="cyberlight"]) :is(#view-goldpass,#view-activity-goldpass) :is(select,option,input){color-scheme:light}
+#view-activity-goldpass .goldpass-controls{max-width:720px}
+#view-activity-goldpass .goldpass-field{max-width:460px}
+#view-activity-goldpass .goldpass-goal{max-width:720px;grid-template-columns:minmax(0,1fr) minmax(90px,132px)}
+#view-activity-goldpass .goldpass-controls:has(.goldpass-preset){grid-template-columns:repeat(3,minmax(0,1fr));max-width:720px}
+#view-activity-goldpass .goldpass-goal>label:first-child{min-height:44px}
+#view-activity-goldpass :is(.actions>.btn,details>summary){min-height:44px}
+#view-activity-goldpass details>summary{cursor:pointer;align-content:center}
+#view-activity-goldpass .goldpass-options .goldpass-field{min-height:44px}
+@media(max-width:540px){
+ #view-activity-goldpass .goldpass-controls:has(.goldpass-preset){grid-template-columns:1fr;gap:8px}
+ #view-activity-goldpass .goldpass-controls:has(.goldpass-preset)>div{border-bottom:1px solid var(--line);padding-bottom:8px}
+ #view-activity-goldpass .goldpass-controls:has(.goldpass-preset)>div:last-child{border-bottom:0}
+ #view-activity-goldpass .goldpass-controls:has(.goldpass-preset) .statusline{margin:4px 0}
+}
+
 /* Optional install guidance inside More, never a recurring overlay. */
 .install-suggestion{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:17px;padding:13px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .install-suggestion[hidden]{display:none!important}
