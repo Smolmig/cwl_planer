@@ -17,18 +17,17 @@ const select=(options,value)=>{const e=n("select");for(const [v,t] of options){c
 const todayVienna=()=>{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Vienna",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());return ["year","month","day"].map(k=>p.find(x=>x.type===k).value).join("-")};
 const clone=x=>JSON.parse(JSON.stringify(x));
 export function createActivityCampaignView({root,getContext,api,confirmDraw=async()=>false,today=todayVienna}){
- let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",presetInfo="",animateNextDraw=false,testMode=false;
+ let scope=null,list=[],current=null,draft=null,message="",busy=false,dirty=false,serial=0,wars="",animateNextDraw=false,testMode=false;
  const context=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const key=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
- const reset=()=>{testMode=false;animateNextDraw=false;serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";presetInfo="";root.replaceChildren()};
- function adopt(result){animateNextDraw=false;current=result;draft={id:result.id,title:result.title,start:result.start,end:result.end,rules:clone(result.rules),decisions:clone(result.decisions||{})};dirty=false;presetInfo="";wars=""}
- function fresh(sandbox=false){testMode=sandbox;const start=today();current=null;draft={id:globalThis.crypto.randomUUID(),title:"Grind-Verlosung",start,end:new Date(Date.parse(start+"T00:00:00Z")+29*86400000).toISOString().slice(0,10),rules:[],decisions:{}};dirty=true;wars="";presetInfo="";applyPreset("active");render()}
+ const reset=()=>{testMode=false;animateNextDraw=false;serial++;list=[];current=null;draft=null;busy=false;dirty=false;message="";wars="";root.replaceChildren()};
+ function adopt(result){animateNextDraw=false;current=result;draft={id:result.id,title:result.title,start:result.start,end:result.end,rules:clone(result.rules),decisions:clone(result.decisions||{})};dirty=false;wars=""}
+ function fresh(sandbox=false){testMode=sandbox;const start=today();current=null;draft={id:globalThis.crypto.randomUUID(),title:"Grind-Verlosung",start,end:new Date(Date.parse(start+"T00:00:00Z")+29*86400000).toISOString().slice(0,10),rules:[],decisions:{}};dirty=true;wars="";applyPreset("active");render()}
  function applyPreset(id){
   try{
    const opts=wars===""?{}:{normalWars:Number(wars)};
    const r=presetTargets(id,draft.start,draft.end,opts);
    draft.rules=[...r.rules,...draft.rules.filter(x=>x.metric==="onePerPerson")];
-   presetInfo=r.assumptions.normalWars+" normale CWs · maximal "+r.assumptions.maximumStars+" Sterne · "+r.assumptions.plannedAttacks+" erwartete Angriffe à "+r.assumptions.starsPerAttack+" Sterne · "+r.assumptions.donationsPerWeek+" Spenden/Woche. "+(r.assumptions.estimated?"Schätzung: 2 CWs/Woche, Tage 1–7 je Monat ausgenommen.":"Eigene CW-Anzahl.");
    dirty=true;message="";
   }catch{message="Bitte gültigen Zeitraum und realistische CW-Anzahl wählen."}
  }
@@ -85,17 +84,46 @@ export function createActivityCampaignView({root,getContext,api,confirmDraw=asyn
   const settings=n("div","","goldpass-controls");
   const title=input("text",draft.title),start=input("date",draft.start),end=input("date",draft.end);
   title.maxLength=80;title.disabled=busy;title.onchange=()=>{draft.title=title.value;dirty=true;render()};
-  for(const [key,e] of [["start",start],["end",end]]){e.disabled=busy||started;e.onchange=()=>{draft[key]=e.value;dirty=true;presetInfo="";render()}}
+  for(const [key,e] of [["start",start],["end",end]]){e.disabled=busy||started;e.onchange=()=>{draft[key]=e.value;dirty=true;render()}}
   settings.append(field("Name",title),field("Start",start),field("Ende (einschließlich)",end));root.append(settings);
   try{const p=activityPeriod(draft.start,draft.end);root.append(n("p",p.days+" Kalendertage · Zeitzone Europe/Vienna","statusline"))}catch{root.append(n("p","Ungültiger Zeitraum.","statusline"))}
   if(!started){
-   const assumed=input("number",wars);assumed.min="0";assumed.placeholder="Automatische Schätzung";assumed.disabled=busy;
-   assumed.oninput=()=>{wars=assumed.value};
+   root.append(n("h3","Zielvorlagen"),n("p","Wähle eine Vorlage oder stelle deine Ziele selbst zusammen. Änderungen am Zeitraum übernehmen keine neuen Ziele automatisch.","statusline"));
+   const assumed=input("number",wars);assumed.min="0";assumed.step="1";assumed.placeholder="Automatische Schätzung";assumed.disabled=busy;
    root.append(field("Erwartete normale CWs (optional)",assumed));
-   const presets=n("div","","actions");
-   for(const p of ACTIVITY_PRESETS)presets.append(button(p.name,()=>{applyPreset(p.id);render()},busy));
-   root.append(presets);
-   if(presetInfo)root.append(n("p",presetInfo,"statusline"));
+   const presets=n("div","","goldpass-controls"),estimate=n("div","","goldpass-estimate");
+   estimate.setAttribute("aria-live","polite");
+   const options=ACTIVITY_PRESETS.map(p=>{
+    const cell=n("div"),b=button(p.name,()=>{applyPreset(p.id);render()},busy),summary=n("p","","statusline");
+    b.classList.add("goldpass-preset");b.setAttribute("aria-pressed","false");
+    cell.append(b,n("p",p.description,"statusline"),summary);presets.append(cell);return {p,b,summary};
+   });
+   const ruleKey=rules=>JSON.stringify(rules.filter(r=>r.metric!=="onePerPerson").map(r=>[r.metric,r.minimum]).sort((a,b)=>a[0].localeCompare(b[0])));
+   function refreshEstimate(){
+    estimate.replaceChildren();
+    try{
+     const opts=wars===""?{}:{normalWars:Number(wars)};
+     const scenarios=options.map(({p})=>presetTargets(p.id,draft.start,draft.end,opts));
+     const a=scenarios[0].assumptions;
+     estimate.append(n("p",a.normalWars+" normale CWs · maximal "+a.maximumStars+" Sterne · "+a.maximumAttacks+" Angriffe je Spieler.","statusline"),
+      n("p",a.estimated?"Schätzung: 2 normale CWs/Woche, Tage 1–7 je Monat ausgenommen. Tatsächlicher Spielplan kann abweichen.":"Eigene CW-Anzahl. Tatsächliche Einsätze können abweichen.","statusline"));
+     for(const [i,{b,summary}] of options.entries()){
+      const scenario=scenarios[i],same=ruleKey(scenario.rules)===ruleKey(draft.rules);
+      b.disabled=busy;b.setAttribute("aria-pressed",String(same));
+      const stars=scenario.rules.find(r=>r.metric==="cwStars")?.minimum;
+      summary.textContent=scenario.rules[0].minimum.toLocaleString("de-AT")+" Spenden"+(stars===undefined?" · kein CW-Sternziel":" · "+stars+" CW-Sterne");
+     }
+     const caps={cwStars:a.maximumStars,cwAttacks:a.maximumAttacks,cwTriples:a.maximumAttacks};
+     const warnings=draft.rules.filter(r=>Object.hasOwn(caps,r.metric)&&r.minimum>caps[r.metric]);
+     if(warnings.length)estimate.append(n("p","⚠ "+warnings.map(r=>names[r.metric]+": "+r.minimum+" verlangt, maximal "+caps[r.metric]+" bei der angenommenen CW-Anzahl").join("; ")+". Prüfe die Ziele oder korrigiere die CW-Anzahl.","goldpass-estimate-warning"));
+     if(!a.normalWars)estimate.append(n("p","Keine normalen CWs eingeplant. Die Vorlagen enthalten deshalb kein CW-Sternziel.","statusline"));
+    }catch{
+     for(const {b,summary} of options){b.disabled=true;b.setAttribute("aria-pressed","false");summary.textContent=""}
+     estimate.append(n("p","Bitte gültigen Zeitraum und eine realistische ganze CW-Anzahl eingeben.","goldpass-estimate-warning"));
+    }
+   }
+   assumed.oninput=()=>{wars=assumed.value;refreshEstimate()};
+   root.append(presets,estimate);refreshEstimate();
   }else root.append(n("p","Ziele und Zeitraum sind ab Start fixiert. Teilnahmeentscheidungen bleiben bearbeitbar.","statusline"));
   root.append(n("h3","Ziele"));
   for(const [metric,label,def] of metrics){
