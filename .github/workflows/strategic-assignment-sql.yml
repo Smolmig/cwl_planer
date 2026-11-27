@@ -4,6 +4,7 @@ on:
     paths:
       - 'supabase/experimental/strategic-assignment.sql'
       - 'supabase/experimental/strategic-appwide-queue.sql'
+      - 'supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql'
       - 'supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql'
       - 'tests/sql/strategic-assignment-fixture.sql'
       - '.github/workflows/strategic-assignment-sql.yml'
@@ -44,7 +45,8 @@ jobs:
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
           cmp supabase/experimental/strategic-assignment.sql supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
-          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/experimental/strategic-appwide-queue.sql
+          cmp supabase/experimental/strategic-appwide-queue.sql supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127165456_cwl_strategic_appwide_queue.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f tests/sql/strategic-assignment-fixture.sql
       - uses: actions/upload-artifact@v4
         if: success()
