@@ -39,3 +39,19 @@ test("group strength uses registered RH distribution and shrunk rates, not total
  assert.ok(!JSON.stringify(rows).includes("PRIVATE")&&!JSON.stringify(rows).includes("playerTag"));
  assert.ok(rows[0].attack.adjusted<3);
 });
+
+test("stability costs suppress tiny differences without freezing material improvements",async()=>{
+ const {planStrategicRest}=await load("cwl-strategic-rest.mjs"),s=fixture(),stableDays=[1,2,3,4,5];
+ // Isolate the objective from the optimizer for a deterministic cost check.
+ let objective;
+ const planStandard=args=>{if(args.strategicObjective)objective=args.strategicObjective;return planCwl(args)};
+ planStrategicRest({...s,mode:"balanced",planStandard,stableDays:[]});const baseline=objective;
+ planStrategicRest({...s,mode:"balanced",planStandard,stableDays});const stable=objective;
+ for(const row of stable.dayCosts){
+  const original=baseline.dayCosts.find(r=>r.id===row.id);
+  for(let i=0;i<5;i++)assert.equal(row.costs[i]-original.costs[i],s.currentPlan[i].lineup.includes(row.id)?0:i===0?40:16);
+ }
+ const changed=s.members.find(m=>!m.fixed&&s.currentPlan[0].lineup.includes(m.id)&&m.targetDays==null&&m.statuses[0]==="auto");
+ changed.statuses[0]="out";
+ const result=planStrategicRest({...s,mode:"balanced",stableDays});assert.ok(result.ok,result.reason);assert.ok(!result.plan[0].lineup.includes(changed.id));
+});

@@ -23,7 +23,8 @@ create policy strategic_assignment_current_member on public.cwl_strategic_assign
  );
 create function public.cwl_publish_strategic_assignment(p_clan uuid,p_owner uuid,p_tag text,p_cycle uuid,p_revision bigint,p_valid_until timestamptz,p_snapshot jsonb)
  returns boolean language plpgsql security invoker set search_path='' as $fn$
- declare r public.cwl_plan_review_state; p public.cwl_cloud_profiles; c public.cwl_clans; prev public.cwl_strategic_assignments;
+ declare r public.cwl_plan_review_state; p public.cwl_cloud_profiles; c public.cwl_clans;
+ day_row jsonb; round_row jsonb; member_ids jsonb; d integer; days integer; slots integer;
  observed timestamptz; now_at timestamptz; affected integer;
  begin
   if current_user<>'service_role' or auth.uid() is not null then raise exception 'service_only' using errcode='42501';end if;
@@ -51,9 +52,70 @@ create function public.cwl_publish_strategic_assignment(p_clan uuid,p_owner uuid
    p.profile_json->>'cwlLiveIgnoredSeason'=r.season or
    coalesce(p.profile_json#>'{cocManualEmergency,pending}','false'::jsonb)='true'::jsonb or
    observed>now_at or p_valid_until<=now_at or p_valid_until>observed+interval '5 minutes' then return false;end if;
-  if p.profile_json#>>'{config,days}' not in ('5','7') or p.profile_json#>>'{config,slots}' not in ('15','30') then return false;end if;
+  if coalesce(p.profile_json#>>'{config,days}','') not in ('5','7') or coalesce(p.profile_json#>>'{config,slots}','') not in ('15','30') then return false;end if;
+  days:=(p.profile_json#>>'{config,days}')::integer; slots:=(p.profile_json#>>'{config,slots}')::integer;
   if jsonb_array_length(p_snapshot->'plan') is distinct from (p.profile_json#>>'{config,days}')::integer or
    jsonb_array_length(p_snapshot->'observedRounds') is distinct from (p.profile_json#>>'{config,days}')::integer then return false;end if;
+  if jsonb_typeof(p.profile_json->'members') is distinct from 'array' or
+   jsonb_typeof(coalesce(p.profile_json->'archivedMembers','[]'::jsonb)) is distinct from 'array' or
+   coalesce(p_snapshot->>'anchorWarTag','') !~ '^#[0289PYLQGRJCUV]{3,15}
+  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
+   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
+  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
+   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
+  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
+   and p_valid_until>clock_timestamp();
+  get diagnostics affected=row_count;
+  return affected=1;
+ end;$fn$;
+revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
+grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
+ or
+   jsonb_array_length(p_snapshot->'registeredTags') not between slots and 50 or
+   exists(select 1 from jsonb_array_elements(p_snapshot->'registeredTags') t where jsonb_typeof(t)<>'string' or (t#>>'{}') !~ '^#[0289PYLQGRJCUV]{3,15}
+  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
+   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
+  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
+   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
+  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
+   and p_valid_until>clock_timestamp();
+  get diagnostics affected=row_count;
+  return affected=1;
+ end;$fn$;
+revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
+grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
+) or
+   (select count(distinct t) from jsonb_array_elements(p_snapshot->'registeredTags') t)<>jsonb_array_length(p_snapshot->'registeredTags') then return false;end if;
+  member_ids:=(select coalesce(jsonb_agg(m->'id'),'[]'::jsonb) from jsonb_array_elements((p.profile_json->'members')||coalesce(p.profile_json->'archivedMembers','[]'::jsonb)) m);
+  for d in 0..days-1 loop
+   day_row:=p_snapshot->'plan'->d; round_row:=p_snapshot->'observedRounds'->d;
+   if jsonb_typeof(day_row) is distinct from 'object' or day_row->>'day' is distinct from (d+1)::text or
+    jsonb_typeof(day_row->'lineup') is distinct from 'array' or jsonb_typeof(round_row) is distinct from 'object' or
+    round_row->>'day' is distinct from (d+1)::text or jsonb_typeof(round_row->'available') is distinct from 'boolean' then return false;end if;
+   if jsonb_array_length(day_row->'lineup')<>slots or
+    (select count(distinct m) from jsonb_array_elements(day_row->'lineup') m)<>slots or
+    exists(select 1 from jsonb_array_elements(day_row->'lineup') m where jsonb_typeof(m)<>'string' or not member_ids @> jsonb_build_array(m)) then return false;end if;
+   if round_row->'available'='true'::jsonb then
+    if coalesce(round_row->>'warTag','') !~ '^#[0289PYLQGRJCUV]{3,15}
+  insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
+   values(p_clan,p_cycle,p_revision,observed,p_snapshot)
+  on conflict(clan_id) do update set cycle_id=excluded.cycle_id,base_revision=excluded.base_revision,
+   observed_at=excluded.observed_at,snapshot=excluded.snapshot,updated_at=clock_timestamp()
+  where (a.cycle_id<>excluded.cycle_id or a.base_revision<>excluded.base_revision or a.observed_at<excluded.observed_at)
+   and p_valid_until>clock_timestamp();
+  get diagnostics affected=row_count;
+  return affected=1;
+ end;$fn$;
+revoke all on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) from public,anon,authenticated,service_role;
+grant execute on function public.cwl_publish_strategic_assignment(uuid,uuid,text,uuid,bigint,timestamptz,jsonb) to service_role;
+ or coalesce(round_row->>'state','') not in ('preparation','inWar','warEnded') then return false;end if;
+    if round_row->>'state'<>'preparation' then
+     if jsonb_typeof(round_row->'lineup') is distinct from 'array' then return false;end if;
+     if jsonb_array_length(round_row->'lineup')<>slots or not (day_row->'lineup' @> round_row->'lineup' and round_row->'lineup' @> day_row->'lineup') then return false;end if;
+    end if;
+   end if;
+  end loop;
+  if not exists(select 1 from jsonb_array_elements(p_snapshot->'observedRounds') w where w->'available'='true'::jsonb and w->>'state'='preparation' and w->>'warTag'=p_snapshot->>'anchorWarTag') then return false;end if;
   -- Two overlapping collectors cannot replace newer evidence with older evidence.
   insert into public.cwl_strategic_assignments as a(clan_id,cycle_id,base_revision,observed_at,snapshot)
    values(p_clan,p_cycle,p_revision,observed,p_snapshot)

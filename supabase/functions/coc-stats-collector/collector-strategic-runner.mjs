@@ -16,7 +16,7 @@ export async function loadAutomaticContext({rest,settings,clanId,clanTag,records
     p?.profile_json?.config?.strategicAuto!==true||!r?.cycle_id)return null;
  const rows=await rest(settings,"cwl_strategic_assignments?select=base_revision,cycle_id,snapshot&clan_id=eq."+encodeURIComponent(clanId)+"&limit=1");
  const last=rows[0];
- return {saved:{...p,automatic_snapshot:last?.base_revision===p.revision&&last?.cycle_id===r.cycle_id?last.snapshot:null},review:r,clanId,clanTag,ownerId:c.owner_user_id};
+ return {saved:{...p,automatic_revision:last?.base_revision??null,automatic_snapshot:last?.cycle_id===r.cycle_id&&last.snapshot?.ruleKey===globalThis.CWLPlanningCore.strategicRuleKey(p.profile_json)?last.snapshot:null},review:r,clanId,clanTag,ownerId:c.owner_user_id};
 }
 async function readAll(rest,settings,table,query,max){
  const rows=[];

@@ -76,7 +76,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   for(const select of answersHost.querySelectorAll("select"))select.disabled=!c.ready||busy;
   subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Anmeldung und Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
   if(c.sharedMode){mode.value=c.sharedMode;modeNote.textContent=c.modeDraft?"Dein Vorschlag · noch nicht gemeinsam gespeichert.":c.canSetMode?"Gemeinsame Clan-Einstellung · gilt bis zur nächsten Änderung.":"Gemeinsamer Modus · aktuell nicht bearbeitbar."}else modeNote.textContent="";
-  autoButton.hidden=!c.sharedMode;autoButton.textContent=c.automatic?"Automatische Planung deaktivieren":"Automatische Planung aktivieren";autoButton.disabled=!c.canSetMode||!c.ready||busy;
+  autoButton.hidden=!c.sharedMode;autoButton.textContent=c.automatic?"Automatische Planung deaktivieren":"Automatische Planung aktivieren";autoButton.title=c.automatic?"Aufstellung wird serverseitig berechnet. Mitgliedervorgaben bleiben erhalten.":"Nach Freigabe der Mitgliedervorgaben berechnet der Server die Aufstellung beim nächsten Abruf.";autoButton.disabled=!c.canSetMode||!c.ready||busy;
   button.disabled=!c.ready||busy;mode.disabled=!c.ready||busy||!!c.sharedMode&&!c.canSetMode;root.setAttribute("aria-busy",String(busy));
   if(!c.ready&&!status.textContent)status.textContent="Vorschau derzeit nicht verfügbar. Bitte Planstand prüfen.";
  }

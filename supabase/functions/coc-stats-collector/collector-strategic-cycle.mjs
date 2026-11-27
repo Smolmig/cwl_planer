@@ -19,7 +19,7 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  if(!validId(clanId)||!validTag(clanTag)||!Number.isSafeInteger(saved?.revision)||!p||
    p.config?.strategicAuto!==true||!modes.includes(mode)||!review?.cycle_id||typeof review.locked!=="boolean"||
    review.season!==season||season!==new Date(now).toISOString().slice(0,7)||
-   p.cwlLive?.clanTag!==clanTag||p.cwlLiveIgnoredSeason===season||p.cocManualEmergency?.pending)return fail("inactive_or_locked");
+   p.cwlLive?.clanTag!==clanTag||p.cwlLiveIgnoredSeason===season||p.cocManualEmergency?.pending)return fail("inactive_or_scope");
  const {slots,days}=p.config,group=projection?.group,registered=projection?.registered,asOf=group?.observedAt,validUntil=projection?.quality?.validUntil;
  if(![15,30].includes(slots)||![5,7].includes(days)||projection?.status!=="preview_data"||
    projection.format?.teamSize!==slots||projection.format.attacksPerMemberReported!==true||
@@ -56,6 +56,11 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  const baseline=saved.automatic_snapshot?{...p,strategicPlan:saved.automatic_snapshot}:p;
  const previous=core.resolvePublishedStrategicPlan({profile:baseline,clanId,locks,standard,live});
  const currentPlan=previous.plan.dayPlans;
+ const stableDays=previous.status==="published"&&saved.automatic_snapshot?observedRounds.flatMap((w,i)=>{
+  const prior=saved.automatic_snapshot.observedRounds?.[i];
+  // Newly revealed matchup or a changed phase must be free to reoptimize.
+  return w.available===prior?.available&&(!w.available||w.warTag===prior.warTag&&w.state===prior.state)?[i+1]:[];
+ }):[];
  let history;
  try{
   const ns=w=>clanTag+"|"+w;
@@ -76,7 +81,7 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  let rest;
  try{
   const evidence=buildStrategicEvidence({members,facts:history.facts,obligations:history.obligations,asOf});
-  rest=planStrategicRest({group,evidence,registered,members,currentPlan,manualLocks:p.locks.slice(0,days).flatMap((l,i)=>l?.locked?[{day:i+1,lineup:l.lineup}]:[]),mode,slots,days,planStandard:core.planCwl});
+  rest=planStrategicRest({group,evidence,registered,members,currentPlan,manualLocks:p.locks.slice(0,days).flatMap((l,i)=>l?.locked?[{day:i+1,lineup:l.lineup}]:[]),mode,slots,days,planStandard:core.planCwl,stableDays});
  }catch{return fail("solver_unavailable")}
  if(!rest.ok||rest.heldDays.length)return fail("solver_conflict");
  const s={version:1,source:"collector",clanId,clanTag,season,anchorWarTag:prep[0].warTag,
@@ -85,6 +90,6 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  if(core.resolvePublishedStrategicPlan({profile:{...p,strategicPlan:s},clanId,locks,standard,live}).status!=="published")return fail("publication_invalid");
  // Compare semantic state, not the polling timestamp, to avoid revision churn.
  const semantic=x=>JSON.stringify(x?[x.clanId,x.clanTag,x.season,x.anchorWarTag,x.registeredTags,x.ruleKey,x.plan,x.observedRounds]:null);
- if(semantic(saved.automatic_snapshot)===semantic(s))return {ok:true,changed:false};
+ if(saved.automatic_revision===saved.revision&&semantic(saved.automatic_snapshot)===semantic(s))return {ok:true,changed:false};
  return {ok:true,changed:true,expectedRevision:saved.revision,expectedCycle:review.cycle_id,validUntil,next:s};
 }

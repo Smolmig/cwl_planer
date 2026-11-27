@@ -10,7 +10,7 @@ function matching(p,a,b){
  const n=cells.reduce((s,c)=>s+c.n,0),w=cells.reduce((s,c)=>s+c.n*(c.kind==="cwl"?2:1),0);
  return n>=4&&w?{n,index:cells.reduce((s,c)=>s+c.smoothedStars*c.n*(c.kind==="cwl"?2:1),0)/w}:null;
 }
-export function planStrategicRest({group,evidence,registered,members,currentPlan,manualLocks,mode,slots,days,planStandard}){
+export function planStrategicRest({group,evidence,registered,members,currentPlan,manualLocks,mode,slots,days,planStandard,stableDays=[]}){
  const fail=reason=>({ok:false,reason,changes:[],warnings:[]});
  if(!Object.hasOwn(MODES,mode)||!registered?.verified||registered.season!==group?.season||tag(registered.clanTag)!==group.selectedClanTag||registered.observedAt!==group.observedAt||
  !Array.isArray(registered.tags)||!Array.isArray(members)||!Array.isArray(currentPlan)||currentPlan.length!==days||typeof planStandard!=="function"||![15,30].includes(slots)||![5,7].includes(days))return fail("scope");
@@ -66,10 +66,15 @@ export function planStrategicRest({group,evidence,registered,members,currentPlan
   const index=(cell?.index??2.5)-Math.max(0,ref-m.townHall)*.35;
   match.set(m.id+"|"+d,{cell,ref,index,pressure});
  }
+ const stable=new Set(stableDays.filter(d=>Number.isInteger(d)&&d>=1&&d<=days));
  const dayCosts=active.map(m=>({id:m.id,costs:Array.from({length:days},(_,i)=>{
   const d=i+1,x=match.get(m.id+"|"+d),existing=base[i].lineup.includes(m.id);
   const value=(3-x.index)*180*x.pressure+Math.max(0,maxRh-m.townHall)*(known.has(d)?24:12);
-  return Math.max(0,Math.round(value)+(existing?0:8));
+  // Only penalize changes to a previously valid published schedule,
+  // not a newly constructed standard plan. A confirmed preparation day
+  // is more sensitive than a distant provisional slot.
+  const stability=stable.has(d)?(known.has(d)?48:24):8;
+  return Math.max(0,Math.round(value)+(existing?0:stability));
  })}));
  const countCosts=active.map(m=>({id:m.id,costs:Array.from({length:days},(_,i)=>{
   const n=i+1,lower=stars.get(m.playerTag)||0,need=complete?Math.ceil(Math.max(0,8-lower)/3):3;

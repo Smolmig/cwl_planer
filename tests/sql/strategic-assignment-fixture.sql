@@ -11,19 +11,21 @@ insert into public.cwl_clan_memberships(clan_id,user_id,role) values
 insert into public.cwl_plan_review_state(clan_id,cycle_id,season,locked) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',to_char(now(),'YYYY-MM'),true);
 select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
 insert into public.cwl_cloud_profiles(clan_id,profile_json,updated_by) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
- jsonb_build_object('config',jsonb_build_object('strategicAuto',true,'strategicMode','balanced','days',5,'slots',15),'cwlLive',jsonb_build_object('season',to_char(now(),'YYYY-MM'),'clanTag','#P02')),'11111111-1111-4111-8111-111111111111');
+ jsonb_build_object('config',jsonb_build_object('strategicAuto',true,'strategicMode','balanced','days',5,'slots',15),'cwlLive',jsonb_build_object('season',to_char(now(),'YYYY-MM'),'clanTag','#P02'),'members',(select jsonb_agg(jsonb_build_object('id','p'||i)) from generate_series(1,15) i)),'11111111-1111-4111-8111-111111111111');
 insert into public.cwl_plan_suggestions(clan_id,cycle_id,author_id,base_revision,suggested_profile) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','22222222-2222-4222-8222-222222222222',1,'{"draft":true}');
 select set_config('request.jwt.claim.sub','',true);
 set local role service_role;
 do $test$
 declare s jsonb; c uuid:='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'; o uuid:='11111111-1111-4111-8111-111111111111'; cy uuid:='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 begin
- s:=jsonb_build_object('source','collector','version',1,'clanId',c,'clanTag','#P02','season',to_char(now(),'YYYY-MM'),'observedAt',floor(extract(epoch from clock_timestamp())*1000),'plan','[1,2,3,4,5]'::jsonb,'observedRounds','[1,2,3,4,5]'::jsonb,'registeredTags','[]'::jsonb,'ruleKey','fixture');
+ s:=jsonb_build_object('source','collector','version',1,'clanId',c,'clanTag','#P02','season',to_char(now(),'YYYY-MM'),'observedAt',floor(extract(epoch from clock_timestamp())*1000),'plan',(select jsonb_agg(jsonb_build_object('day',d,'lineup',(select jsonb_agg('p'||i) from generate_series(1,15) i)) order by d) from generate_series(1,5) d),'observedRounds',(select jsonb_agg(case when d=1 then jsonb_build_object('day',d,'available',true,'warTag','#PQQ','state','preparation') else jsonb_build_object('day',d,'available',false) end order by d) from generate_series(1,5) d),'registeredTags',(select jsonb_agg('#P'||substr('0289PYLQGRJCUV',1+(i/13),1)||substr('0289PYLQGRJCUV',1+(i%13),1)) from generate_series(0,14) i),'anchorWarTag','#PQQ','ruleKey','fixture');
  if not public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',s) then raise exception 'locked inputs must not stop derived publication';end if;
  if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',s) then raise exception 'duplicate observation';end if;
  if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,2,clock_timestamp()+interval '1 minute',s) then raise exception 'wrong revision';end if;
  if public.cwl_publish_strategic_assignment(c,o,'#P08',cy,1,clock_timestamp()+interval '1 minute',s) then raise exception 'wrong tag';end if;
  if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()-interval '1 minute',s) then raise exception 'expired';end if;
+ if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',jsonb_set(s,'{plan,0,lineup}','["foreign"]')) then raise exception 'malformed lineup accepted';end if;
+ if public.cwl_publish_strategic_assignment(c,o,'#P02',cy,1,clock_timestamp()+interval '1 minute',jsonb_set(s,'{observedRounds,0,warTag}','"#PYY"')) then raise exception 'bad anchor accepted';end if;
  if (select revision from public.cwl_cloud_profiles where clan_id=c)<>1 or not exists(select 1 from public.cwl_plan_suggestions where clan_id=c and status='pending' and base_revision=1) then raise exception 'input or suggestion mutated';end if;
 end;$test$;
 reset role;

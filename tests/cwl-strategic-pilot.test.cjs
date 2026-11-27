@@ -19,10 +19,10 @@ test("pilot uses actual core, unknown participation and no automatic roster choi
 test("pilot view ignores old-clan responses, preserves same-context disclosure, no apply",async()=>{
  const {createStrategicPilotView}=await view,dom=new JSDOM('<main id="view-plan"><div id="anchor"></div></main>'),d=dom.window.document;
  let c={...data().context},resolve;const p=createStrategicPilotView({anchor:d.querySelector("#anchor"),getContext:()=>c,load:()=>new Promise(r=>resolve=r)});
- const root=d.querySelector("#planStrategicPilot"),button=root.querySelector("button");root.open=true;button.click();assert.match(root.textContent,/berechnet/);
+ const root=d.querySelector("#planStrategicPilot"),button=root.querySelector("#strategicPilotCalculate");root.open=true;button.click();assert.match(root.textContent,/berechnet/);
  p.sync();assert.equal(root.open,true);c={...c,key:"new-clan"};p.sync();assert.equal(root.open,false);
  resolve({kind:"roster",mode:"balanced",canApply:false,historyNote:"old private name",scenarios:[]});await new Promise(r=>setImmediate(r));assert.doesNotMatch(root.textContent,/old private name/);
- c=null;p.sync();assert.equal(root.hidden,true);assert.equal(root.querySelectorAll("button").length,1);dom.window.close();
+ c=null;p.sync();assert.equal(root.hidden,true);assert.equal(root.querySelectorAll("button").length,2);assert.ok(root.querySelector("#strategicAutoToggle").hidden);dom.window.close();
 });
 test("cloud pilot is default off and read only with existing membership verification",()=>{
  const s=fs.readFileSync(path.join(__dirname,"../cloud-sync.mjs"),"utf8"),begin=s.indexOf("const strategicPilotEnabled="),end=s.indexOf("const cloud={",begin),block=s.slice(begin,end);

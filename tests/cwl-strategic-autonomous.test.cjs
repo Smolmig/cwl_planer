@@ -44,3 +44,13 @@ test("actual started roster and manual locks override, conflicting actual roster
  x.saved.profile_json.locks[0]={locked:true,lineup:x.saved.profile_json.members.slice(1,16).map(m=>m.id)};
  assert.equal(buildAutomaticStrategicCandidate(x).reason,"lock_conflict");
 });
+
+test("stable existing schedule is used as baseline; unchanged snapshot no-op only on same revision",async()=>{
+ const {buildAutomaticStrategicCandidate}=await mod,x=fixture(),first=buildAutomaticStrategicCandidate(x);
+ assert.ok(first.ok,first.reason);x.saved.automatic_snapshot=first.next;x.saved.automatic_revision=x.saved.revision;
+ const again=buildAutomaticStrategicCandidate(x);assert.ok(again.ok,again.reason);
+ // A stable assignment should not oscillate merely because the poll repeats.
+ assert.equal(again.changed,false);
+ x.saved.revision++;const refreshed=buildAutomaticStrategicCandidate(x);assert.ok(refreshed.ok,refreshed.reason);assert.equal(refreshed.changed,true);
+ assert.deepEqual(refreshed.next.plan,first.next.plan);
+});
