@@ -10,10 +10,10 @@ function fixture(){
  const saved={revision:12,profile_json:{id:"p",members,archivedMembers:[],locks:Array.from({length:7},()=>({locked:false,lineup:[]})),config:{slots:15,days:5,strategicMode:"balanced",strategicAuto:true},cwlLive:{season,clanTag,rounds:[]}}};
  return {saved,review:{cycle_id:"cycle",season,locked:false},clanId,clanTag,projection:{status:"preview_data",format:{teamSize:15,attacksPerMember:1,attacksPerMemberReported:false},group,registered:{verified:true,season,clanTag,observedAt:group.observedAt,tags:members.map(m=>m.playerTag)},quality:{validUntil:now+200000}},historyRows:{wars:[],attacks:[],missedEvents:[]},core,now};
 }
-test("server-only grants exact tenant, linked tag and owner; default off",async()=>{
- const {automaticGrant}=await mod,g=JSON.stringify([{clanId,clanTag,ownerId}]);
- assert.equal(automaticGrant(g,clanId,clanTag,ownerId),true);
- for(const x of [null,"*",g.replace(clanTag,tag(1)),g.replace(ownerId,clanId),JSON.stringify([{clanId,clanTag,ownerId},{clanId,clanTag,ownerId}])])assert.equal(automaticGrant(x,clanId,clanTag,ownerId),false);
+test("appwide automatic scope validates current tenant, owner, mode, season and opt-in",async()=>{
+ const {automaticScope}=await mod,x=fixture(),args={...x,enabled:true,clan:{id:clanId,clash_tag:clanTag,owner_user_id:ownerId},ownerMembership:{clan_id:clanId,user_id:ownerId,role:"owner"},review:{...x.review,cycle_id:clanId}};
+ assert.equal(automaticScope(args),true);
+ for(const changed of [{enabled:false},{clan:{...args.clan,clash_tag:tag(1)}},{ownerMembership:{...args.ownerMembership,user_id:clanId}},{ownerMembership:{...args.ownerMembership,role:"editor"}},{review:{...args.review,season:"2026-11"}},{saved:{...x.saved,profile_json:{...x.saved.profile_json,config:{...x.saved.profile_json.config,strategicAuto:false}}}}])assert.equal(automaticScope({...args,...changed}),false);
 });
 test("autonomous solver creates shared candidate without browser, preserves rules and inputs",async()=>{
  const {buildAutomaticStrategicCandidate}=await mod;

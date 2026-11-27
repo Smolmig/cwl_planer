@@ -19,4 +19,14 @@ test("pending recompute only after verified internal cron; no caller target or a
  assert.match(sql,/grant execute on function public.cwl_claim_strategic_recompute\(jsonb\) to service_role/);
 });
 
-test("private deployment grants default deny and explicit empty environment disables fallback",async()=>{const {autoGrantRecords,DEPLOYMENT_AUTO_GRANTS}=await import("../supabase/functions/coc-stats-collector/collector-strategic-config.mjs");assert.equal(DEPLOYMENT_AUTO_GRANTS,"");assert.equal(autoGrantRecords(undefined),"");assert.equal(autoGrantRecords(undefined,"synthetic-grants"),"synthetic-grants");assert.equal(autoGrantRecords("","synthetic-grants"),"");assert.equal(autoGrantRecords("invalid","synthetic-grants"),"invalid");});
+test("appwide server flags have explicit global off and invalid fail closed",async()=>{
+ const {automaticEnabled}=await import("../supabase/functions/coc-stats-collector/collector-strategic-config.mjs"),{betaEnabled}=await import("../supabase/functions/coc-cwl-strategy-beta/beta-config.mjs");
+ for(const check of [automaticEnabled,betaEnabled]){assert.equal(check(undefined),true);assert.equal(check("true"),true);for(const value of ["false","",null,"*","invalid"])assert.equal(check(value),false)}
+});
+test("appwide queue is service-only, fair and opt-in; no client-selected target",()=>{
+ const sql=read("supabase/experimental/strategic-appwide-queue.sql"),runner=read("supabase/functions/coc-stats-collector/collector-strategic-runner.mjs");
+ assert.match(sql,/cwl_claim_strategic_recompute_appwide\(\)/);assert.match(sql,/pg_try_advisory_xact_lock/);assert.match(sql,/order by q.claimed_at nulls first,p.updated_at,c.id limit 1/);
+ assert.match(sql,/m.user_id=c.owner_user_id and m.role='owner'/);assert.match(sql,/strategicAuto/);
+ assert.match(sql,/grant execute on function public.cwl_claim_strategic_recompute_appwide\(\) to service_role/);
+ assert.doesNotMatch(sql,/p_grants/);assert.match(runner,/rpc\/cwl_claim_strategic_recompute_appwide/);
+});

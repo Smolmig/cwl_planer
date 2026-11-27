@@ -33,7 +33,7 @@ globalThis.fetch=async(input:RequestInfo|URL,init?:RequestInit)=>{
  }
  assert.equal(new Headers(init?.headers).get("authorization"),"Bearer synthetic-only");
  gameCalls++;
- if(url.pathname==="/v1/clans/"+encodeURIComponent(own)+"/currentwar/leaguegroup"){
+ if([own,other].some(t=>url.pathname==="/v1/clans/"+encodeURIComponent(t)+"/currentwar/leaguegroup")){
   if(afterGame){const fn=afterGame;afterGame=null;fn()}
   return Response.json(group);
  }
@@ -100,8 +100,9 @@ for(const name of ["owner","editor"]){
  assert.ok(!JSON.stringify(body).includes("private A"));
 }
 assert.equal(warCalls,2,"mutable war must be read twice, no stale preparation cache");
-const {createStrategicBetaHandler,default:disabledBeta}=await import("../supabase/functions/coc-cwl-strategy-beta/index.ts");
-const beta=createStrategicBetaHandler([{clanId:a,clanTag:own,userId:ids.owner.id}]);
+const {createStrategicBetaHandler,default:beta}=await import("../supabase/functions/coc-cwl-strategy-beta/index.ts");
+const disabledBeta=createStrategicBetaHandler(()=>false);
+Deno.env.delete("CWL_STRATEGIC_BETA_ENABLED");
 async function invokeBeta(name,clan=a,action="capability",h=beta,extra={}){
  const bearer=name?ids[name].access:null;
  return h.fetch(new Request(api+"/functions/v1/coc-cwl-strategy-beta",{method:"POST",
@@ -115,10 +116,15 @@ assert.equal((await invokeBeta("owner",b)).status,403);
 assert.equal((await invokeBeta("owner",a,"save")).status,403);
 assert.deepEqual(await (await invokeBeta("owner",a,"capability")).json(),{ok:true,enabled:true,clanTag:own});
 assert.deepEqual(await (await invokeBeta("editor",a,"capability")).json(),{ok:true,enabled:true,clanTag:own});
+assert.deepEqual(await (await invokeBeta("outsider",b,"capability")).json(),{ok:true,enabled:true,clanTag:other});
+assert.equal((await invokeBeta("editor",b)).status,403);
+Deno.env.set("CWL_STRATEGIC_BETA_ENABLED","false");assert.equal((await invokeBeta("outsider",b)).status,403);Deno.env.delete("CWL_STRATEGIC_BETA_ENABLED");
 assert.equal(gameCalls,betaCalls,"capability must never fetch game");
 const actual=await invokeBeta("owner",a,"preview",beta,{clanTag:other,userId:ids.outsider.id});
 assert.equal(actual.status,200);const bodyBeta=await actual.json();
 assert.equal(bodyBeta.clanTag,own);assert.equal(bodyBeta.strategic.status,"preview_data");
+const otherPreview=await invokeBeta("outsider",b,"preview",beta,{clanTag:own});
+assert.equal(otherPreview.status,200);assert.equal((await otherPreview.json()).clanTag,other);
 assert.equal(snapshot(),before);
 
 const record={clanId:a,clanTag:own,season,teamSize:15,anchorWarTag:warTag,league:"Master II",fullGroupSize:8,promotionPlaces:2,demotionPlaces:2,source:"in_game_current_group",verifiedAt:new Date().toISOString()};
@@ -140,7 +146,10 @@ afterGame=()=>sql("update public.cwl_clans set clash_tag='#P0G' where id='"+a+"'
 response=await invoke("owner");
 assert.equal(response.status,403,"link changed during fetch");
 assert.ok(!(await response.text()).includes("preview_data"));
-assert.equal((await invokeBeta("owner")).status,403,"beta link changed");
+assert.equal((await invokeBeta("owner")).status,200,"a legitimate newly linked tag is eligible on next request");
+afterGame=()=>sql("update public.cwl_clans set clash_tag='#P0G' where id='"+a+"'");
+sql("update public.cwl_clans set clash_tag='"+own+"' where id='"+a+"'");
+assert.equal((await invokeBeta("owner",a,"preview")).status,403,"beta relink during request denied");
 assert.equal(snapshot(),before,"profile JSON/revision must stay untouched");
 console.log("PASS: real local JWT + caller RLS + owner/editor/viewer/outsider/default-off/allowlist/revocation/relink; synthetic Clash only; profile unchanged");
 
@@ -172,11 +181,12 @@ const settings={};
 const rest=async(_settings,path,{method="GET",rows=null}={})=>{
  const r=await requestRest(path,"service",method,rows??undefined);assert.ok(r.ok,path.split("?")[0]+" "+r.status+" "+await r.clone().text());return r.json();
 };
-const records=JSON.stringify([{clanId:a,clanTag:own,ownerId:ids.owner.id}]);
-assert.equal(await claimPendingStrategic({rest,settings,records:"[]"}),null);
-const claimed=await claimPendingStrategic({rest,settings,records});assert.equal(claimed.revision,approvedRev);
-assert.equal(await claimPendingStrategic({rest,settings,records}),null);
-const ctx=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});assert.equal(ctx.review.locked,true);
+const enabled=true;
+assert.equal(await claimPendingStrategic({rest,settings,enabled:false}),null);
+assert.equal(await loadAutomaticContext({rest,settings,clanId:b,clanTag:other,enabled}),null);
+const claimed=await claimPendingStrategic({rest,settings,enabled});assert.equal(claimed.revision,approvedRev);
+assert.equal(await claimPendingStrategic({rest,settings,enabled}),null);
+const ctx=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,enabled});assert.equal(ctx.review.locked,true);
 const currentWar={...war};delete currentWar.attacksPerMember;
 const now=Date.now(),projection=projectStrategicGroup({group,results:new Map([[warTag,currentWar]]),clanTag:own,season,observedAt:now});
 const build=ctx=>buildAutomaticStrategicCandidate({...ctx,projection,historyRows:{wars:[],attacks:[],missedEvents:[]},core,now});
@@ -197,20 +207,42 @@ for(const name of ["owner","editor","viewer"]){
 }
 assert.deepEqual(await (await requestRest(path,"outsider")).json(),[]);
 for(const name of ["viewer","editor","owner","outsider"]){
- const r=await requestRest("rpc/cwl_claim_strategic_recompute",name,"POST",{p_grants:JSON.parse(records)});assert.ok([401,403,404].includes(r.status));
+ const r=await requestRest("rpc/cwl_claim_strategic_recompute_appwide",name,"POST",{});assert.ok([401,403,404].includes(r.status));
  const denied=await requestRest("cwl_strategic_assignments?clan_id=eq."+a,name,"PATCH",{snapshot:{forged:true}});assert.ok([401,403].includes(denied.status));
 }
-const storedContext=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});
+const storedContext=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,enabled});
  assert.ok(storedContext.saved.automatic_snapshot,"persisted baseline must be loaded");
  const again=build(storedContext);assert.ok(again.ok,again.reason);
  assert.equal(again.changed,false,"same semantic snapshot after JSONB round trip must not republish");
 await rpc("owner","cwl_resolve_plan_suggestion",{p_suggestion:suggestion,p_accept:true});
 assert.deepEqual(await (await requestRest(path,"viewer")).json(),[],"old derived plan hidden after accepted revision");
 assert.equal(await publishAutomatic({rest,settings,context:ctx,result:candidate,deadline}),false,"stale CAS");
-const updated=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,records});
+const updated=await loadAutomaticContext({rest,settings,clanId:a,clanTag:own,enabled});
 assert.equal(updated.saved.profile_json.config.strategicMode,"performance");
 const next=build(updated);assert.ok(next.ok,next.reason);assert.equal(await publishAutomatic({rest,settings,context:updated,result:next,deadline}),true);
 assert.equal((await (await requestRest(path,"viewer")).json())[0].base_revision,approvedRev+1);
 sql("delete from public.cwl_clan_memberships where clan_id='"+a+"' and user_id='"+ids.viewer.id+"'");
 assert.deepEqual(await (await requestRest(path,"viewer")).json(),[]);
 console.log("PASS: real derived assignment RPC + JWT read across roles, locked input, pending proposal, acceptance/CAS/reload/revocation; synthetic Clash");
+
+ // A second independent owner can opt in and publish without a private grant.
+ const membersB=roster(1).map((m,i)=>({id:"b"+i,name:"B "+i,playerTag:m.tag,townHall:19,participating:true,statuses:Array(5).fill("auto")}));
+ const profileB={...profile,id:"second-profile",members:membersB,config:{...profile.config,strategicMode:"development"},cwlLive:{season,clanTag:other,rounds:[]}};
+ sql("select set_config('request.jwt.claim.sub','"+ids.outsider.id+"',true); update public.cwl_cloud_profiles set profile_json="+literal(profileB)+"::jsonb where clan_id='"+b+"'");
+ await rpc("outsider","cwl_set_plan_lock",{p_clan:b,p_locked:false});
+ const second=await claimPendingStrategic({rest,settings,enabled});assert.equal(second.clanId,b);
+ const ctxB=await loadAutomaticContext({rest,settings,clanId:b,clanTag:other,enabled});assert.ok(ctxB);
+ assert.equal(await loadAutomaticContext({rest,settings,clanId:b,clanTag:own,enabled}),null);
+ const nowB=Date.now(),projectionB=projectStrategicGroup({group,results:new Map([[warTag,currentWar]]),clanTag:other,season,observedAt:nowB});
+ const candidateB=buildAutomaticStrategicCandidate({...ctxB,projection:projectionB,historyRows:{wars:[],attacks:[],missedEvents:[]},core,now:nowB});assert.ok(candidateB.ok,candidateB.reason);
+ assert.equal(await publishAutomatic({rest,settings,context:ctxB,result:candidateB,deadline:Date.now()+90000}),true);
+ const pathB="cwl_strategic_assignments?clan_id=eq."+b+"&select=snapshot,base_revision";
+ const bRows=await (await requestRest(pathB,"outsider")).json();assert.equal(bRows.length,1);assert.equal(bRows[0].snapshot.clanId,b);assert.ok(bRows[0].snapshot.plan.every(d=>d.lineup.every(id=>id.startsWith("b"))));
+ for(const name of ["owner","editor","viewer"])assert.deepEqual(await (await requestRest(pathB,name)).json(),[]);
+ assert.deepEqual(await (await requestRest(path,"outsider")).json(),[]);
+ const off={...profileB,config:{...profileB.config,strategicAuto:false}};
+ sql("select set_config('request.jwt.claim.sub','"+ids.outsider.id+"',true); update public.cwl_cloud_profiles set profile_json="+literal(off)+"::jsonb where clan_id='"+b+"'");
+ assert.equal(await loadAutomaticContext({rest,settings,clanId:b,clanTag:other,enabled}),null);
+ assert.deepEqual(await (await requestRest(pathB,"outsider")).json(),[]);
+ assert.equal(await publishAutomatic({rest,settings,context:ctxB,result:candidateB,deadline:Date.now()+90000}),false);
+ console.log("PASS: independent second clan without allowlist, isolated role reads and opt-out/CAS; synthetic Clash");

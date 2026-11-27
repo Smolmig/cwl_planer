@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'supabase/experimental/strategic-assignment.sql'
+      - 'supabase/experimental/strategic-appwide-queue.sql'
       - 'supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql'
       - 'tests/sql/strategic-assignment-fixture.sql'
       - '.github/workflows/strategic-assignment-sql.yml'
@@ -26,11 +27,11 @@ jobs:
           mkdir -p "$LOCAL_WORK"
           cd "$LOCAL_WORK"
           supabase init --yes
-          supabase migration new cwl_strategic_derived_assignment
+          supabase migration new cwl_strategic_appwide_queue
           mkdir -p generated
           mv supabase/migrations/*.sql generated/
           supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
-          cp "$GITHUB_WORKSPACE/supabase/experimental/strategic-assignment.sql" generated/*.sql
+          cp "$GITHUB_WORKSPACE/supabase/experimental/strategic-appwide-queue.sql" generated/*.sql
           umask 077
           supabase status -o env > local.env
       - name: Apply base schema and verify SQL contract
@@ -43,11 +44,12 @@ jobs:
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
           cmp supabase/experimental/strategic-assignment.sql supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261127111001_cwl_strategic_derived_assignment.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/experimental/strategic-appwide-queue.sql
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f tests/sql/strategic-assignment-fixture.sql
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: cli-generated-strategic-migration
+          name: cli-generated-strategic-appwide-migration
           path: ${{ env.LOCAL_WORK }}/generated/*.sql
           retention-days: 14
       - name: Stop disposable database
