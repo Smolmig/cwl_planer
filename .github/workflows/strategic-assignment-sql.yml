@@ -1,0 +1,55 @@
+name: Strategic derived assignment SQL UAT
+on:
+  pull_request:
+    paths:
+      - 'supabase/experimental/strategic-assignment.sql'
+      - 'tests/sql/strategic-assignment-fixture.sql'
+      - '.github/workflows/strategic-assignment-sql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LOCAL_WORK: /tmp/cwl-strategic-assignment-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - name: Create isolated database and CLI-generated migration
+        run: |
+          set -euo pipefail
+          mkdir -p "$LOCAL_WORK"
+          cd "$LOCAL_WORK"
+          supabase init --yes
+          supabase migration new cwl_strategic_derived_assignment
+          mkdir -p generated
+          mv supabase/migrations/*.sql generated/
+          supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          cp "$GITHUB_WORKSPACE/supabase/experimental/strategic-assignment.sql" generated/*.sql
+          umask 077
+          supabase status -o env > local.env
+      - name: Apply base schema and verify SQL contract
+        run: |
+          set -euo pipefail
+          set -a; source "$LOCAL_WORK/local.env"; set +a
+          [[ "$DB_URL" == postgres*://*@127.0.0.1:* || "$DB_URL" == postgres*://*@localhost:* ]]
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029225544_cwl_cloud_pilot_schema.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261029231032_cwl_clan_creation_owner_read_policy.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261102224500_cwl_plan_review_workflow.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/experimental/strategic-assignment.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f tests/sql/strategic-assignment-fixture.sql
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cli-generated-strategic-migration
+          path: ${{ env.LOCAL_WORK }}/generated/*.sql
+          retention-days: 14
+      - name: Stop disposable database
+        if: always()
+        run: |
+          if [[ -d "$LOCAL_WORK/supabase" ]]; then (cd "$LOCAL_WORK" && supabase stop --no-backup) || true; fi
+          rm -rf "$LOCAL_WORK"

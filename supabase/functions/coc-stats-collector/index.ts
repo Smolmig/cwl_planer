@@ -369,7 +369,7 @@ export default {
           const current=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,records:strategicRecords});
           if(!current||current.saved.revision!==context.saved.revision||current.review.cycle_id!==context.review.cycle_id){strategicSkipped++;continue}
           const result=await strategicRunner.calculateAutomatic({rest,settings,context:current,scan,deadline});
-          if(result.ok){strategicComputed++;if(result.changed)strategicChanged++}else strategicSkipped++;
+          if(result.ok){strategicComputed++;if(result.changed){if(await strategicRunner.publishAutomatic({rest,settings,context:current,result,deadline}))strategicChanged++;else strategicSkipped++}}else strategicSkipped++;
         }catch{strategicSkipped++}
       }
     }

@@ -1,6 +1,6 @@
 // Optional phase of the existing authenticated collector. The server-only
-// allowlist is empty by default. No data mutation in this first integration:
-// emit only a coarse outcome until the atomic publish RPC is installed/tested.
+// allowlist is empty by default. Publish only the separate derived snapshot,
+// never the approved profile or pending human proposals.
 import "../../../cwl-planning-core.js";
 import {projectStrategicGroup} from "../coc-cwl-status/strategic-projection.mjs";
 import {automaticGrant,buildAutomaticStrategicCandidate} from "./collector-strategic-cycle.mjs";
@@ -13,8 +13,10 @@ export async function loadAutomaticContext({rest,settings,clanId,clanTag,records
  ]);
  const c=clans[0],p=saved[0],r=review[0];
  if(!c||c.clash_tag!==clanTag||!automaticGrant(records,clanId,clanTag,c.owner_user_id)||
-    p?.profile_json?.config?.strategicAuto!==true||r?.locked!==false)return null;
- return {saved:p,review:r,clanId,clanTag};
+    p?.profile_json?.config?.strategicAuto!==true||!r?.cycle_id)return null;
+ const rows=await rest(settings,"cwl_strategic_assignments?select=base_revision,cycle_id,snapshot&clan_id=eq."+encodeURIComponent(clanId)+"&limit=1");
+ const last=rows[0];
+ return {saved:{...p,automatic_snapshot:last?.base_revision===p.revision&&last?.cycle_id===r.cycle_id?last.snapshot:null},review:r,clanId,clanTag,ownerId:c.owner_user_id};
 }
 async function readAll(rest,settings,table,query,max){
  const rows=[];
@@ -45,4 +47,13 @@ export async function calculateAutomatic({rest,settings,context,scan,deadline}){
  const now=Date.now();
  const projection=projectStrategicGroup({group:scan.strategicGroup,results:scan.strategicResults,clanTag,season:context.review.season,observedAt:scan.strategicObservedAt,readStartedAt:scan.strategicStartedAt});
  return buildAutomaticStrategicCandidate({...context,projection,historyRows:{wars,attacks,missedEvents},liveSnapshots:scan.snaps,core:globalThis.CWLPlanningCore,now});
+}
+
+export async function publishAutomatic({rest,settings,context,result,deadline}){
+ if(!result.ok||!result.changed||Date.now()>=result.validUntil||Date.now()>deadline-12000)return false;
+ const data=await rest(settings,"rpc/cwl_publish_strategic_assignment",{method:"POST",rows:{
+  p_clan:context.clanId,p_owner:context.ownerId,p_tag:context.clanTag,p_cycle:result.expectedCycle,
+  p_revision:result.expectedRevision,p_valid_until:new Date(result.validUntil).toISOString(),p_snapshot:result.next
+ },returnData:true});
+ return data===true;
 }

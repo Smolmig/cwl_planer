@@ -5085,18 +5085,19 @@ function calculatePlan(){
   // The browser uses the validated multi-day solver. Keep legacy code below only for isolated compatibility tests.
   if(typeof window!=="undefined"&&window.CWLPlanningCore?.planCwl){
     const rawLocks=confirmedCwlPlanningLocks(),clanId=window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null;
-    const observed=window.CWLPlanningCore.strategicObservedContext?.({profile:state,clanId,locks:rawLocks})||{locks:rawLocks,live:state.cwlLive};
+    const auto=window.CWLCloud?.getAutomaticStrategicPlan?.(),planningProfile=state.config.strategicAuto===true?{...state,strategicPlan:auto||null}:state;
+    const observed=window.CWLPlanningCore.strategicObservedContext?.({profile:planningProfile,clanId,locks:rawLocks})||{locks:rawLocks,live:state.cwlLive};
     const locks=observed.locks;
     const standard=window.CWLPlanningCore.planCwl({members:state.members,archivedMembers:state.archivedMembers,locks,slots:state.config.slots,days:state.config.days});
-    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:state,clanId,locks,standard,live:observed.live})||{status:"none",plan:standard};
+    const resolved=window.CWLPlanningCore.resolvePublishedStrategicPlan?.({profile:planningProfile,clanId,locks,standard,live:observed.live})||{status:"none",plan:standard};
     const plan=resolved.plan;
     const status=typeof document!=="undefined"?document.getElementById("strategicPublishedStatus"):null;
     if(status){const mode={balanced:"Ausgewogen",performance:"Leistung",development:"Förderung"}[state.config.strategicMode]||"Ausgewogen";
-      status.hidden=!window.CWLCloud?.active||(!state.strategicPlan&&!state.config.strategicMode);
+      status.hidden=!window.CWLCloud?.active||(!planningProfile.strategicPlan&&!state.config.strategicMode&&!state.config.strategicAuto);
       status.className="statusline"+(resolved.status==="stale"?" strategic-notice is-warning":"");
-      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+(state.strategicPlan?.source==="collector"?" · Automatisch aktualisiert":" · Übernommene Aufstellung"):
+      status.textContent=resolved.status==="published"?"Intelligenter Planer · "+mode+(planningProfile.strategicPlan?.source==="collector"?" · Automatisch berechnet "+new Date(planningProfile.strategicPlan.observedAt).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):" · Übernommene Aufstellung"):
        resolved.status==="stale"?"⚠ Strategische Aufstellung nicht mehr passend. Standardplan angezeigt – bitte neu berechnen.":
-       "Intelligenter Planer · "+mode+" · Noch keine strategische Aufstellung übernommen.";
+       "Intelligenter Planer · "+mode+(state.config.strategicAuto?" · Automatische Berechnung ausstehend – Standardplan":" · Noch keine strategische Aufstellung übernommen.");
     }
     // The solver counts confirmed live rosters as fixed appearances. They are
     // NOT completed wars: the "Gespielt" KPI tracks only historical locks.
@@ -7378,7 +7379,7 @@ window.CWLLegacy={
   return true;
  },
  getPlanningState:()=>({ok:lastPlan?.ok===true,conflicts:[...(lastPlan?.conflicts||[])]}),
- getPlanningLocks:()=>window.CWLPlanningCore.strategicObservedContext({profile:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks:confirmedCwlPlanningLocks()}).locks,
+ getPlanningLocks:()=>window.CWLPlanningCore.strategicObservedContext({profile:state.config.strategicAuto===true?{...state,strategicPlan:window.CWLCloud?.getAutomaticStrategicPlan?.()||null}:state,clanId:window.CWLCloud?.active?window.CWLCloud.getActiveClanId?.():null,locks:confirmedCwlPlanningLocks()}).locks,
  getPlannedLineups:()=>lastPlan?.dayPlans||[],
  copyText:(value,message)=>copyText(value,message||"Text kopiert ✓"),
  toast:(message)=>showToast(message),

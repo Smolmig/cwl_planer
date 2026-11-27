@@ -1,6 +1,6 @@
 // Autonomous computation; no HTTP, browser or database side effects.
 // Caller must verify exact tenant grant and execute an atomic CAS after
-// computation. A locked plan is never automatically published.
+// computation. Review lock protects human inputs, not derived assignments.
 import {buildStrategicEvidence} from "../../../cwl-strategic-experiment.mjs";
 import {planStrategicRest} from "../../../cwl-strategic-rest.mjs";
 import {adaptStrategicHistory} from "../../../cwl-strategic-history-adapter.mjs";
@@ -17,7 +17,7 @@ export function automaticGrant(records,clanId,clanTag,ownerId){
 export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,projection,historyRows,liveSnapshots=[],core,now=Date.now()}={}){
  const p=saved?.profile_json,season=p?.cwlLive?.season,mode=p?.config?.strategicMode;
  if(!validId(clanId)||!validTag(clanTag)||!Number.isSafeInteger(saved?.revision)||!p||
-   p.config?.strategicAuto!==true||!modes.includes(mode)||!review?.cycle_id||review.locked!==false||
+   p.config?.strategicAuto!==true||!modes.includes(mode)||!review?.cycle_id||typeof review.locked!=="boolean"||
    review.season!==season||season!==new Date(now).toISOString().slice(0,7)||
    p.cwlLive?.clanTag!==clanTag||p.cwlLiveIgnoredSeason===season||p.cocManualEmergency?.pending)return fail("inactive_or_locked");
  const {slots,days}=p.config,group=projection?.group,registered=projection?.registered,asOf=group?.observedAt,validUntil=projection?.quality?.validUntil;
@@ -53,7 +53,8 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  const members=[...p.members,...p.archivedMembers.map(m=>({...m,participating:false,cocSyncState:"former"}))];
  const standard=core.planCwl({members,locks,slots,days});
  if(!standard.ok)return fail("hard_rules");
- const previous=core.resolvePublishedStrategicPlan({profile:p,clanId,locks,standard,live});
+ const baseline=saved.automatic_snapshot?{...p,strategicPlan:saved.automatic_snapshot}:p;
+ const previous=core.resolvePublishedStrategicPlan({profile:baseline,clanId,locks,standard,live});
  const currentPlan=previous.plan.dayPlans;
  let history;
  try{
@@ -84,6 +85,6 @@ export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,pr
  if(core.resolvePublishedStrategicPlan({profile:{...p,strategicPlan:s},clanId,locks,standard,live}).status!=="published")return fail("publication_invalid");
  // Compare semantic state, not the polling timestamp, to avoid revision churn.
  const semantic=x=>JSON.stringify(x?[x.clanId,x.clanTag,x.season,x.anchorWarTag,x.registeredTags,x.ruleKey,x.plan,x.observedRounds]:null);
- if(semantic(p.strategicPlan)===semantic(s))return {ok:true,changed:false};
+ if(semantic(saved.automatic_snapshot)===semantic(s))return {ok:true,changed:false};
  return {ok:true,changed:true,expectedRevision:saved.revision,expectedCycle:review.cycle_id,validUntil,next:s};
 }

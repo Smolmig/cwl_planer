@@ -300,6 +300,7 @@ async function loadPlanReview(expected=clanId){
  planSuggestions=(suggestionResult.data||[]).filter(x=>x.cycle_id===planReview?.cycle_id);
  renderPlanReview();
  if(wasLocked!==planIsLocked())cloud.afterRender();
+ void refreshAutomaticAssignment().catch(()=>{});
 }
 async function togglePlanLock(){
  if(!clanId||role!=="owner")throw Error("Nur der Clanführer kann den Plan freigeben.");
@@ -403,11 +404,29 @@ async function openNewPlanCycle(){
 // Not an authorization mechanism. The ordinary app stays unchanged.
 const strategicPilotEnabled=globalThis.CWLStrategicStaging===true;
 let strategicPilot=null,strategicPilotLoading=null,strategicSuspended=false;
-let betaGrant=null,betaProbe=null;
+let betaGrant=null,betaProbe=null,autoAssignment=null,autoAssignmentLoading=false;
+function automaticAssignment(){
+ const p=storage.getProfile();
+ if(!cloud.active||changedSerial||p?.config?.strategicAuto!==true||autoAssignment?.clan_id!==clanId||
+   autoAssignment?.base_revision!==revision||autoAssignment?.cycle_id!==planReview?.cycle_id)return null;
+ return autoAssignment.snapshot;
+}
+async function refreshAutomaticAssignment(){
+ if(autoAssignmentLoading||!cloud.active||!clanId||!user||changedSerial||saving||hydrating||blocked||editingDialog()||!navigator.onLine)return;
+ if(storage.getProfile()?.config?.strategicAuto!==true)return;
+ const id=clanId,epoch=accountEpoch,rev=revision,cy=planReview?.cycle_id;
+ if(!cy||rev==null)return;
+ autoAssignmentLoading=true;
+ try{
+  const {data,error}=await sb.from("cwl_strategic_assignments").select("clan_id,base_revision,cycle_id,snapshot").eq("clan_id",id).eq("base_revision",rev).eq("cycle_id",cy).maybeSingle();
+  if(error||id!==clanId||epoch!==accountEpoch||rev!==revision||cy!==planReview?.cycle_id||changedSerial||saving||editingDialog())return;
+  if(JSON.stringify(data)!==JSON.stringify(autoAssignment)){autoAssignment=data;storage.rerender()}
+ }finally{autoAssignmentLoading=false}
+}
 const betaScope=()=>!strategicSuspended&&cloud.active&&user?.id&&clanId&&["owner","editor"].includes(role)&&clans.find(c=>c.id===clanId)?.clash_tag?
  JSON.stringify([accountEpoch,user.id,clanId,role,clans.find(c=>c.id===clanId).clash_tag]):null;
 function betaAllowed(){const key=betaScope();return !!key&&betaGrant?.key===key&&betaGrant.ok&&Date.now()<betaGrant.until}
-function suspendStrategicPilot(){strategicSuspended=true;betaGrant=null;betaProbe=null;strategicPilot?.sync()}
+function suspendStrategicPilot(){strategicSuspended=true;betaGrant=null;betaProbe=null;autoAssignment=null;strategicPilot?.sync()}
 async function refreshBetaGrant(force=false){
  const key=betaScope(),tag=clans.find(c=>c.id===clanId)?.clash_tag;
  if(!key||!navigator.onLine)return false;
@@ -431,12 +450,13 @@ const STRATEGIC_MODES=["balanced","performance","development"];
 function sharedStrategicMode(profile){
  return STRATEGIC_MODES.includes(profile?.config?.strategicMode)?profile.config.strategicMode:"balanced";
 }
-async function setSharedStrategicMode(value,expected){
+async function setSharedStrategicMode(value,expected,enable=true){
  const valid=()=>{const c=strategicContext();return c?.key===expected.key&&c.token===expected.token&&c.ready&&c.canSetMode};
  if(!STRATEGIC_MODES.includes(value)||!valid()||saving||hydrating||blocked||!navigator.onLine)throw Error("strategic_mode_unavailable");
  if(!await refreshBetaGrant(true)||!valid()||saving||hydrating||blocked)throw Error("strategic_mode_unavailable");
- if(storage.getProfile().config.strategicMode===value)return;
+ if(storage.getProfile().config.strategicMode===value&&storage.getProfile().config.strategicAuto===enable)return;
  storage.getProfile().config.strategicMode=value;
+ storage.getProfile().config.strategicAuto=enable;
  storage.rerender();
  cloud.onLocalChange();
  if(role==="editor"&&planIsLocked())return;
@@ -479,7 +499,8 @@ function strategicContext(){
    token:JSON.stringify([revision,planReview?.cycle_id,planReview?.locked,profile.id,profile.strategicPlan,profile.config,profile.members,profile.archivedMembers,profile.locks,plan.map(p=>[p.day,p.lineup]),lifecycle.snapshot?.rounds?.map(w=>[w.warTag,w.state,w.available]),ready]),
    phase,season,previousSeason:previousSeason||null,observedAt,clanId,clanTag:tag,role:role==="owner"?"owner":"vice",slots:profile.config.slots,days:profile.config.days,
    sharedMode:strategicPilotEnabled?null:sharedStrategicMode(profile),canSetMode:!strategicPilotEnabled&&!(role==="editor"&&planIsLocked()&&phase==="roster"),modeDraft:role==="editor"&&planIsLocked()&&!!changedSerial,
-   canPublish:!strategicPilotEnabled&&phase==="daily"&&!!planReview&&planReview.season===season&&!saving&&revision!=null&&(!changedSerial||role==="editor"&&planIsLocked()),
+   automatic:profile.config.strategicAuto===true,
+   canPublish:!strategicPilotEnabled&&profile.config.strategicAuto!==true&&phase==="daily"&&!!planReview&&planReview.season===season&&!saving&&revision!=null&&(!changedSerial||role==="editor"&&planIsLocked()),
    candidates:phase==="roster"?profile.members.filter(m=>!["former","kept"].includes(m.cocSyncState)&&m.participating!==false).map(m=>({id:m.id,tag:m.playerTag,name:m.name,fixed:!!m.fixed})):[],
    ready:ready&&!blocked&&!hydrating&&!manualRosterPending()&&navigator.onLine};
 }
@@ -523,6 +544,7 @@ function syncStrategicPilot(){
 const cloud={
  active:false,
  getActiveClanId:()=>clanId,
+ getAutomaticStrategicPlan:automaticAssignment,
  // Presentation only; never saved in a shared plan or change history.
  getMemberSortPreference(){
   if(!user?.id||!clanId)return null;
@@ -1535,7 +1557,7 @@ async function checkRemoteChanges(reason="poll"){
   if(err)throw err;
   if(id!==clanId||epoch!==accountEpoch)return;
   const remoteRev=Number(data?.revision||0),localRev=Number(revision||0);
-  if(remoteRev<=localRev)return;
+  if(remoteRev<=localRev){void refreshAutomaticAssignment().catch(()=>{});return}
   const isConflict=Boolean(changedSerial||saving||blocked);
   const isEditing=editingDialog();
   if(isConflict||isEditing){

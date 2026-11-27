@@ -30,9 +30,10 @@ test("autonomous solver creates shared candidate without browser, preserves rule
   assert.equal(core.resolvePublishedStrategicPlan({profile:p,clanId,locks:p.locks,standard,live}).status,"published");
  }
 });
-test("no computation for locked, disabled, changed season, expired or missing earlier war",async()=>{
+test("review lock protects inputs, not automatic calculation; disabled or stale contexts rejected",async()=>{
  const {buildAutomaticStrategicCandidate}=await mod;
- for(const change of [x=>x.review.locked=true,x=>x.saved.profile_json.config.strategicAuto=false,x=>x.review.season="2026-11",x=>x.projection.quality.validUntil=now,x=>x.projection.group.upcoming[0].day=2]){
+ const locked=fixture();locked.review.locked=true;assert.equal(buildAutomaticStrategicCandidate(locked).ok,true);
+ for(const change of [x=>x.saved.profile_json.config.strategicAuto=false,x=>x.review.season="2026-11",x=>x.projection.quality.validUntil=now,x=>x.projection.group.upcoming[0].day=2]){
   const x=fixture();change(x);assert.equal(buildAutomaticStrategicCandidate(x).ok,false);
  }
 });

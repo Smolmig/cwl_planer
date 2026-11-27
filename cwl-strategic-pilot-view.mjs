@@ -4,6 +4,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
  const root=el("details");root.id="planStrategicPilot";root.hidden=true;root.className="strategic-pilot";root.style.cssText="border-block:1px solid var(--line);margin:10px 0;padding:0 4px;min-width:0;overflow-wrap:anywhere";
  const summary=el("summary","Intelligenter Planer · Beta");summary.style.cssText="min-height:44px;padding:10px 0;font-weight:750";
  const inner=el("div"),subtitle=el("p"),label=el("label","Leistungsmodus"),mode=el("select"),modeNote=el("small");modeNote.className="statusline";subtitle.className="statusline";mode.id="strategicPilotMode";label.htmlFor=mode.id;
+ const autoButton=el("button");autoButton.type="button";autoButton.className="btn";autoButton.style.cssText="min-height:44px";autoButton.id="strategicAutoToggle";
  const controls=el("div");controls.style.cssText="max-width:480px;min-width:0;display:grid;gap:6px";
  const draftFields=el("div"),format=el("select"),days=el("select"),formatLabel=el("label","CWL-Format"),daysLabel=el("label","Angenommene Kriegstage");
  format.id="strategicDraftFormat";days.id="strategicDraftDays";formatLabel.htmlFor=format.id;daysLabel.htmlFor=days.id;
@@ -23,7 +24,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
  status.id="strategicPilotStatus";results.id="strategicPilotResults";details.id="strategicPilotDetails";button.id="strategicPilotCalculate";
  button.setAttribute("aria-describedby",status.id);
  status.setAttribute("role","status");status.className="statusline";ds.style.cssText="min-height:44px;padding:10px 0";
- details.append(ds,rows);controls.append(label,mode,modeNote,draftFields,button);inner.append(subtitle,controls,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
+ details.append(ds,rows);controls.append(label,mode,modeNote,autoButton,draftFields,button);inner.append(subtitle,controls,status,results,details);root.append(summary,inner);anchor.insertAdjacentElement("afterend",root);
  let scope=null,token=null,sequence=0,busy=false,stored=null,expiryTimer=null,candidates=[],candidateSignature="",answers=new Map();
  function summarize(){
   let yes=0,no=0;for(const a of answers.values()){if(a==="yes")yes++;else if(a==="no")no++}
@@ -75,6 +76,7 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   for(const select of answersHost.querySelectorAll("select"))select.disabled=!c.ready||busy;
   subtitle.textContent=c.phase==="roster"?"Kaderentwurf für die nächste CWL · Anmeldung und Teilnahme nicht bestätigt.":"Aktuelle CWL · nur bestätigte Vorbereitungstage.";
   if(c.sharedMode){mode.value=c.sharedMode;modeNote.textContent=c.modeDraft?"Dein Vorschlag · noch nicht gemeinsam gespeichert.":c.canSetMode?"Gemeinsame Clan-Einstellung · gilt bis zur nächsten Änderung.":"Gemeinsamer Modus · aktuell nicht bearbeitbar."}else modeNote.textContent="";
+  autoButton.hidden=!c.sharedMode;autoButton.textContent=c.automatic?"Automatische Planung deaktivieren":"Automatische Planung aktivieren";autoButton.disabled=!c.canSetMode||!c.ready||busy;
   button.disabled=!c.ready||busy;mode.disabled=!c.ready||busy||!!c.sharedMode&&!c.canSetMode;root.setAttribute("aria-busy",String(busy));
   if(!c.ready&&!status.textContent)status.textContent="Vorschau derzeit nicht verfügbar. Bitte Planstand prüfen.";
  }
@@ -156,11 +158,12 @@ export function createStrategicPilotView({anchor,getContext,load,setMode,publish
   }catch{if(ticket===sequence)clear("Vorschau nicht verfügbar. Bitte später erneut berechnen. Dein Plan bleibt unverändert.")}
   finally{if(ticket===sequence){busy=false;sync()}}
  }
+ autoButton.addEventListener("click",async()=>{const c=getContext();if(!c?.canSetMode||busy)return;try{await setMode(c.sharedMode,c,!c.automatic)}catch{clear("Einstellung konnte nicht gespeichert werden.")}sync()});
  button.addEventListener("click",run);mode.addEventListener("change",async()=>{
   const c=getContext(),value=mode.value;sequence++;busy=false;clear("Gewählten Modus neu berechnen.");
   if(!c?.sharedMode||!c.canSetMode||typeof setMode!=="function"){sync();return}
   const ticket=++sequence;busy=true;mode.disabled=button.disabled=true;status.textContent="Leistungsmodus wird geändert …";
-  try{await setMode(value,c)}
+  try{await setMode(value,c,c.automatic===true)}
   catch{if(getContext()?.key===c.key){clear("Modus konnte nicht sicher gespeichert werden. Bitte Cloud-Stand prüfen.");status.classList.add("strategic-notice","is-warning")}}
   finally{if(ticket===sequence){busy=false;sync()}}
  });sync();return {sync};
