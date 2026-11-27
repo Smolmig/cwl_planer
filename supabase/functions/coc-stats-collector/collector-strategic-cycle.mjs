@@ -1,5 +1,5 @@
 // Autonomous computation; no HTTP, browser or database side effects.
-// Caller must verify exact tenant grant and execute an atomic CAS after
+// Caller must verify current tenant/owner binding and execute an atomic CAS after
 // computation. Review lock protects human inputs, not derived assignments.
 import {buildStrategicEvidence} from "../../../cwl-strategic-experiment.mjs";
 import {planStrategicRest} from "../../../cwl-strategic-rest.mjs";
@@ -10,9 +10,13 @@ const validId=x=>typeof x==="string"&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f
 const modes=["balanced","performance","development"];
 const fail=reason=>({ok:false,reason});
 const same=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&new Set(a).size===a.length&&new Set(b).size===b.length&&a.every(x=>b.includes(x));
-export function automaticGrant(records,clanId,clanTag,ownerId){
- if(typeof records!=="string"||records.length>12000||!validId(clanId)||!validTag(clanTag)||!validId(ownerId))return false;
- try{const list=JSON.parse(records);return Array.isArray(list)&&list.length<=50&&list.filter(g=>g?.clanId===clanId&&g.clanTag===clanTag&&g.ownerId===ownerId).length===1}catch{return false}
+export function automaticScope({enabled,clanId,clanTag,clan,ownerMembership,saved,review,now=Date.now()}={}){
+ const p=saved?.profile_json,season=review?.season;
+ return enabled===true&&validId(clanId)&&validTag(clanTag)&&clan?.id===clanId&&clan.clash_tag===clanTag&&validId(clan.owner_user_id)&&
+  ownerMembership?.role==="owner"&&ownerMembership.user_id===clan.owner_user_id&&ownerMembership.clan_id===clanId&&
+  validId(review?.cycle_id)&&typeof review.locked==="boolean"&&Number.isSafeInteger(saved?.revision)&&
+  season===new Date(now).toISOString().slice(0,7)&&p?.cwlLive?.season===season&&p.cwlLive.clanTag===clanTag&&
+  p.config?.strategicAuto===true&&modes.includes(p.config?.strategicMode)&&p.cwlLiveIgnoredSeason!==season&&!p.cocManualEmergency?.pending;
 }
 export function buildAutomaticStrategicCandidate({saved,review,clanId,clanTag,projection,historyRows,liveSnapshots=[],core,now=Date.now()}={}){
  const p=saved?.profile_json,season=p?.cwlLive?.season,mode=p?.config?.strategicMode;

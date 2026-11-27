@@ -5,7 +5,7 @@ import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./colle
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
 import {officialNewLeague,buildSeasonRollover} from "./collector-season-rollover.mjs";
-import {autoGrantRecords} from "./collector-strategic-config.mjs";
+import {automaticEnabled} from "./collector-strategic-config.mjs";
 
 const GAME="https://cocproxy.royaleapi.dev/v1";
 const MAX_TAGS=32,MAX_CLANS_PER_RUN=5,PER_RUN_BUDGET_MS=105000;
@@ -273,14 +273,14 @@ async function markFailure(settings,clanId,checkedAt,code){
 // Only the verified internal Cron route can request the bounded fast lane.
 // It never accepts caller-supplied clan IDs or writes archive/profile rows.
 async function runPendingStrategic(settings){
- const records=autoGrantRecords(Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS"));
- if(!records)return response({ok:true,strategicComputed:0});
+ const enabled=automaticEnabled(Deno.env.get("CWL_STRATEGIC_AUTO_ENABLED"));
+ if(!enabled)return response({ok:true,strategicComputed:0});
  const deadline=Date.now()+PER_RUN_BUDGET_MS;
  try{
   const runner=await import("./collector-strategic-runner.mjs");
-  const pending=await runner.claimPendingStrategic({rest,settings,records});
+  const pending=await runner.claimPendingStrategic({rest,settings,enabled});
   if(!pending)return response({ok:true,strategicComputed:0});
-  const context=await runner.loadAutomaticContext({rest,settings,clanId:pending.clanId,clanTag:pending.clanTag,records});
+  const context=await runner.loadAutomaticContext({rest,settings,clanId:pending.clanId,clanTag:pending.clanTag,enabled});
   if(!context||context.saved.revision!==pending.revision||context.review.cycle_id!==pending.cycleId)return response({ok:true,strategicComputed:0,strategicSkipped:1});
   const scan=await retrieveGames(context.clanTag,settings.gameKey,deadline,new Set(),null,true,true);
   const result=await runner.calculateAutomatic({rest,settings,context,scan,deadline});
@@ -324,7 +324,7 @@ export default {
     let processed=0,errors=0,observedWars=0,observedAttacks=0,completed=0;
     let tenureObservedProfiles=0,tenureSkippedProfiles=0,tenureWriteErrors=0;
     let seasonRollovers=0,seasonRolloverErrors=0,strategicComputed=0,strategicChanged=0,strategicSkipped=0;
-    const strategicRecords=autoGrantRecords(Deno.env.get("CWL_STRATEGIC_AUTO_GRANTS"));
+    const strategicEnabled=automaticEnabled(Deno.env.get("CWL_STRATEGIC_AUTO_ENABLED"));
     const rosterFailureClasses={};
     for(const [gameTag,clanIds] of selected){
       if(Date.now()>deadline-15000){errors++;break}
@@ -345,11 +345,13 @@ export default {
       }
       let scan,strategicRunner=null;
       const strategicContexts=new Map();
-      if(strategicRecords&&clanIds.some(id=>strategicRecords.includes(id))&&Date.now()<deadline-50000){
-        try{
-          strategicRunner=await import("./collector-strategic-runner.mjs");
-          for(const id of clanIds){const c=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,records:strategicRecords});if(c)strategicContexts.set(id,c)}
-        }catch{strategicContexts.clear();strategicSkipped++}
+      if(strategicEnabled&&Date.now()<deadline-50000){
+        try{strategicRunner=await import("./collector-strategic-runner.mjs")}catch{strategicSkipped++}
+        if(strategicRunner)for(const id of clanIds){
+          if(Date.now()>deadline-50000)break;
+          try{const c=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,enabled:strategicEnabled});if(c)strategicContexts.set(id,c)}
+          catch{strategicSkipped++}
+        }
       }
       const capturedKeys=await loadFullyCapturedLeagueKeys(settings,clanIds);
       try{scan=await retrieveGames(gameTag,settings.gameKey,deadline,capturedKeys,async league=>{
@@ -388,7 +390,7 @@ export default {
       // No profile updates, no new schedule, no client-controlled grants.
       for(const [id,context] of strategicContexts){
         try{
-          const current=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,records:strategicRecords});
+          const current=await strategicRunner.loadAutomaticContext({rest,settings,clanId:id,clanTag:gameTag,enabled:strategicEnabled});
           if(!current||current.saved.revision!==context.saved.revision||current.review.cycle_id!==context.review.cycle_id){strategicSkipped++;continue}
           const result=await strategicRunner.calculateAutomatic({rest,settings,context:current,scan,deadline});
           if(result.ok){strategicComputed++;if(result.changed){if(await strategicRunner.publishAutomatic({rest,settings,context:current,result,deadline}))strategicChanged++;else strategicSkipped++}}else strategicSkipped++;

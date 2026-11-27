@@ -1,7 +1,3 @@
-// Server-only deployment fallback. The committed configuration denies all.
-// An explicit environment setting, including an empty string, overrides it.
-// Never commit tenant/owner UUIDs or expose grant records to clients.
-export const DEPLOYMENT_AUTO_GRANTS="";
-export function autoGrantRecords(environment,fallback=DEPLOYMENT_AUTO_GRANTS){
- return typeof environment==="string"?environment:fallback;
-}
+// App-wide, with explicit per-clan opt-in and a server kill switch.
+// Unknown configuration values fail closed; no private grant list.
+export function automaticEnabled(value){return value===undefined||value==="true"}

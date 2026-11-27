@@ -1,19 +1,20 @@
-// Optional phase of the existing authenticated collector. The server-only
-// allowlist is empty by default. Publish only the separate derived snapshot,
+// Optional phase of the existing authenticated collector. All linked opted-in
+// tenants are eligible; current owner binding is verified. Publish only the separate derived snapshot,
 // never the approved profile or pending human proposals.
 import "../../../cwl-planning-core.js";
 import {projectStrategicGroup} from "../coc-cwl-status/strategic-projection.mjs";
-import {automaticGrant,buildAutomaticStrategicCandidate} from "./collector-strategic-cycle.mjs";
-export async function loadAutomaticContext({rest,settings,clanId,clanTag,records}){
- if(!records||!records.includes(clanId))return null;
+import {automaticScope,buildAutomaticStrategicCandidate} from "./collector-strategic-cycle.mjs";
+export async function loadAutomaticContext({rest,settings,clanId,clanTag,enabled}){
+ if(enabled!==true)return null;
  const [clans,saved,review]=await Promise.all([
   rest(settings,"cwl_clans?select=id,clash_tag,owner_user_id&id=eq."+encodeURIComponent(clanId)+"&limit=1"),
   rest(settings,"cwl_cloud_profiles?select=revision,profile_json&clan_id=eq."+encodeURIComponent(clanId)+"&limit=1"),
   rest(settings,"cwl_plan_review_state?select=cycle_id,season,locked&clan_id=eq."+encodeURIComponent(clanId)+"&limit=1")
  ]);
  const c=clans[0],p=saved[0],r=review[0];
- if(!c||c.clash_tag!==clanTag||!automaticGrant(records,clanId,clanTag,c.owner_user_id)||
-    p?.profile_json?.config?.strategicAuto!==true||!r?.cycle_id)return null;
+ if(!c||c.id!==clanId||c.clash_tag!==clanTag||p?.profile_json?.config?.strategicAuto!==true||!r?.cycle_id)return null;
+ const [membership]=await rest(settings,"cwl_clan_memberships?select=clan_id,user_id,role&clan_id=eq."+encodeURIComponent(clanId)+"&user_id=eq."+encodeURIComponent(c.owner_user_id)+"&limit=1");
+ if(!automaticScope({enabled,clanId,clanTag,clan:c,ownerMembership:membership,saved:p,review:r}))return null;
  const rows=await rest(settings,"cwl_strategic_assignments?select=base_revision,cycle_id,snapshot&clan_id=eq."+encodeURIComponent(clanId)+"&limit=1");
  const last=rows[0];
  return {saved:{...p,automatic_revision:last?.base_revision??null,automatic_snapshot:last?.cycle_id===r.cycle_id&&last.snapshot?.ruleKey===globalThis.CWLPlanningCore.strategicRuleKey(p.profile_json)?last.snapshot:null},review:r,clanId,clanTag,ownerId:c.owner_user_id};
@@ -58,8 +59,7 @@ export async function publishAutomatic({rest,settings,context,result,deadline}){
  return data===true;
 }
 
-export async function claimPendingStrategic({rest,settings,records}){
- let grants;try{grants=JSON.parse(records)}catch{return null}
- if(!Array.isArray(grants)||!grants.length||grants.length>50||records.length>12000)return null;
- return await rest(settings,"rpc/cwl_claim_strategic_recompute",{method:"POST",rows:{p_grants:grants},returnData:true});
+export async function claimPendingStrategic({rest,settings,enabled}){
+ if(enabled!==true)return null;
+ return await rest(settings,"rpc/cwl_claim_strategic_recompute_appwide",{method:"POST",rows:{},returnData:true});
 }
