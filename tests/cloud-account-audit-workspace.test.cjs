@@ -13,7 +13,7 @@ const mixed=updated(5,{bereiche:["cwlLive","updatedAt"],weitere_spieler:4});
 const unknown=updated(6,{bereiche:["updatedAt"],config_geaendert:true});
 function fixture(){
  const dom=new JSDOM('<div id="cloudAudit"></div>');
- const api=new Function("document",src+"return {classifyAuditEvent,renderAuditRows};")(dom.window.document);
+ const api=new Function("document",src+"return {classifyAuditEvent,renderAuditRows,reviewAuditEntries};")(dom.window.document);
  return {dom,api,host:dom.window.document.getElementById("cloudAudit")};
 }
 test("Audit classification uses stored fields and never drops legacy or mixed evidence",()=>{
@@ -76,4 +76,39 @@ test("Audit browser: real grouped history supports disclosure and no horizontal 
    }finally{await page.close()}
   }
  }finally{await browser.close()}
+});
+
+test("Review history uses real timestamps, actors, status and cycle context; no invented old locks",()=>{
+ const {dom,api,host}=fixture();
+ try{
+  const state={cycle_id:"c1",season:"2026-11",locked:true,locked_by:"a",locked_at:"2026-11-28T09:00:00Z"};
+  const proposals=[
+   {id:"p1",cycle_id:"c1",author_id:"b",submitted_at:"2026-11-28T10:00:00Z",status:"accepted",decided_at:"2026-11-28T11:00:00Z",decided_by:"a"},
+   {id:"p2",cycle_id:"old",author_id:"b",submitted_at:"2026-10-28T10:00:00Z",status:"withdrawn",decided_at:"2026-10-28T11:00:00Z"},
+   {id:"p3",cycle_id:"c1",author_id:"b",submitted_at:"2026-11-28T12:00:00Z",status:"pending"},
+   {id:"bad",submitted_at:"invalid",status:"accepted"}
+  ];
+  const entries=api.reviewAuditEntries(state,[...proposals,proposals[0]]);
+  assert.equal(entries.length,6);
+  assert.equal(entries.find(x=>x.auditKey==="proposal:p1:decision").actor_id,"a");
+  assert.equal(entries.find(x=>x.auditKey==="proposal:p2:decision").actor_id,null);
+  assert.match(entries.find(x=>x.auditKey==="proposal:p2:submitted").reviewLines.join(" "),/nicht zugeordneter/);
+  assert.equal(api.reviewAuditEntries({...state,locked:false},[]).length,0);
+  assert.equal(api.reviewAuditEntries({...state,locked_at:null},[]).length,0);
+  api.renderAuditRows(host,[plan,technical],[],"a","scope",{entries,unavailable:true});
+  assert.equal(host.firstElementChild.dataset.auditKey,"proposal:p3:submitted");
+  assert.equal(host.querySelectorAll(".cloud-audit-item").length,8);
+  assert.match(host.textContent,/noch keine Änderung am gemeinsamen Plan/);
+  assert.match(host.textContent,/nicht vollständig geladen/);
+  assert.match(host.textContent,/gespeicherten Planänderungen stehen separat/);
+ }finally{dom.window.close()}
+});
+test("Review history reads metadata only, keeps viewer suggestion restriction and rejects stale role responses",()=>{
+ const audit=sync.slice(sync.indexOf("async function audit(){"),sync.indexOf("function stopPresence(){"));
+ assert.match(audit,/mayReadSuggestions=\["owner","editor"\]\.includes\(expectedRole\)/);
+ assert.match(audit,/mayReadSuggestions\?optional/);
+ assert.match(audit,/expectedRole!==role/);
+ assert.match(audit,/select\("id,cycle_id,author_id,status,submitted_at,decided_at,decided_by"\)/);
+ assert.doesNotMatch(audit,/suggested_profile/);
+ assert.match(audit,/stateResult.error\|\|suggestionResult.error/);
 });

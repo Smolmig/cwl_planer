@@ -324,6 +324,7 @@ async function togglePlanLock(){
  });
  if(err)throw reviewRpcError(err);
  await loadPlanReview();
+ void audit().catch(console.warn);
  storage.toast(lock?"✓ CWL-Plan freigegeben":"✓ Plan wieder zur Bearbeitung geöffnet");
 }
 async function submitPlanSuggestion(){
@@ -352,6 +353,7 @@ async function submitPlanSuggestion(){
  if(err)throw reviewRpcError(err);
  changedSerial=null;clearTimeout(debounce);
  await loadCloudProfile(true);await loadPlanReview();
+ void audit().catch(console.warn);
  storage.toast("✓ Änderungsvorschlag eingereicht");
 }
 async function decidePlanSuggestion(id,action){
@@ -386,6 +388,7 @@ async function decidePlanSuggestion(id,action){
    if(action==="accept")await loadCloudProfile(true);
  }
  await loadPlanReview();cloud.afterRender();
+ void audit().catch(console.warn);
  storage.toast(action==="accept"?"✓ Vorschlag übernommen":action==="reject"?"Vorschlag abgelehnt":"Vorschlag zurückgezogen");
 }
 async function openNewPlanCycle(){
@@ -2294,19 +2297,48 @@ function classifyAuditEvent(event){
    !d.config_geaendert&&!d.archiv_geaendert)return "technical";
  return "other";
 }
-function renderAuditRows(root,rows,people,actorId,scope){
+// Separate, server-confirmed review metadata. A current lock is a snapshot,
+// not a historical log of every lock/unlock. Never load proposed profile JSON.
+function reviewAuditEntries(state,suggestions){
+ const entries=[];
+ const dateOk=v=>typeof v==="string"&&Number.isFinite(Date.parse(v));
+ const seasonOk=v=>typeof v==="string"&&/^\d{4}-(0[1-9]|1[0-2])$/.test(v);
+ if(state?.locked===true&&state.cycle_id&&dateOk(state.locked_at)){
+  entries.push({auditKey:"lock:"+state.cycle_id+":"+state.locked_at,actor_id:state.locked_by||null,created_at:state.locked_at,
+   reviewLines:["Plan freigegeben",seasonOk(state.season)?"Saison "+state.season:"Saison nicht belegt","Letzte gespeicherte Freigabe; frühere Sperrwechsel sind hier nicht vollständig erfasst."]});
+ }
+ const decisions={accepted:"Vorschlag übernommen",rejected:"Vorschlag abgelehnt",withdrawn:"Vorschlag zurückgezogen",stale:"Vorschlag nicht mehr aktuell"};
+ const seen=new Set();
+ for(const s of Array.isArray(suggestions)?suggestions:[]){
+  if(!s?.id||seen.has(s.id)||!dateOk(s.submitted_at))continue;
+  seen.add(s.id);
+  const sameCycle=!!state?.cycle_id&&s.cycle_id===state.cycle_id;
+  const context=sameCycle&&seasonOk(state.season)?"Saison "+state.season:"Früherer oder nicht zugeordneter Planungszyklus";
+  entries.push({auditKey:"proposal:"+s.id+":submitted",actor_id:s.author_id||null,created_at:s.submitted_at,
+   reviewLines:["Vize-Vorschlag eingereicht",context,"Ein Vorschlag ist noch keine Änderung am gemeinsamen Plan."]});
+  if(Object.prototype.hasOwnProperty.call(decisions,s.status)&&dateOk(s.decided_at)&&Date.parse(s.decided_at)>=Date.parse(s.submitted_at)){
+   entries.push({auditKey:"proposal:"+s.id+":decision",actor_id:s.decided_by||null,created_at:s.decided_at,
+    reviewLines:[decisions[s.status],context,s.status==="accepted"?"Die gespeicherten Planänderungen stehen separat im Verlauf.":"Keine Übernahme dieses Vorschlags in den gemeinsamen Plan."]});
+  }
+ }
+ return entries;
+}
+function renderAuditRows(root,rows,people,actorId,scope,review={entries:[]}){
  const sameScope=root.dataset.auditScope===scope;
  const opened=new Set(sameScope?[...root.querySelectorAll("details[data-audit-key][open]")].map(x=>x.dataset.auditKey):[]);
  root.dataset.auditScope=scope;
  root.replaceChildren();
- if(!rows.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
+ const all=[...rows,...(review.entries||[])];
+ if(!all.length&&!review.unavailable){root.textContent="Noch keine gemeinsamen Änderungen.";return}
  const aliases=new Map(people.map(x=>[x.user_id,x.display_name||"Clanmitglied"]));
  const planning=[],other=[];
- for(const e of rows){
-  const changes=describeRemoteEvent(e),kind=classifyAuditEvent(e);
+ for(const e of all){
+  const changes=e.reviewLines||describeRemoteEvent(e),kind=e.reviewLines?"planning":classifyAuditEvent(e);
   const item=document.createElement("details");item.className="cloud-actor cloud-audit-item";
   // Real server event ID, not revision (multiple records may share a revision).
-  if(e.id!=null){item.dataset.auditKey="event:"+String(e.id);item.open=opened.has(item.dataset.auditKey)}
+  const key=e.auditKey||(e.id!=null?"event:"+String(e.id):null);
+  if(key){item.dataset.auditKey=key;item.open=opened.has(key)}
+  item.dataset.auditTime=String(Date.parse(e.created_at)||0);
   const summary=document.createElement("summary");
   const who=document.createElement("strong");
   const name=e.actor_id===actorId?"Du":e.actor_id?aliases.get(e.actor_id)||"Ehemaliges Clanmitglied":"System / nicht zugeordnet";
@@ -2322,7 +2354,7 @@ function renderAuditRows(root,rows,people,actorId,scope){
   item.append(details);
   (kind==="planning"?planning:other).push(item);
  }
- if(planning.length)root.append(...planning);
+ if(planning.length)root.append(...planning.sort((a,b)=>Number(b.dataset.auditTime)-Number(a.dataset.auditTime)));
  else{
   const note=document.createElement("p");note.className="statusline";note.textContent="In den zuletzt geladenen Einträgen sind keine konkreten Planänderungen belegt.";root.append(note);
  }
@@ -2332,19 +2364,30 @@ function renderAuditRows(root,rows,people,actorId,scope){
   const summary=document.createElement("summary");summary.textContent="Weitere Aktivitäten ("+other.length+")";
   group.append(summary,...other);root.append(group);
  }
+ if(review.unavailable){
+  const note=document.createElement("p");note.className="statusline";note.textContent="Freigaben oder Vorschlagsverlauf konnten nicht vollständig geladen werden.";root.append(note);
+ }
 }
 let auditRequestSerial=0;
 async function audit(){
  if(!clanId||!user)return;
- const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id,request=++auditRequestSerial;
- const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
+ const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id,expectedRole=role,request=++auditRequestSerial;
+ const mayReadSuggestions=["owner","editor"].includes(expectedRole);
+ // Preserve existing viewer boundary; optional review queries must never
+ // prevent the profile history or initial clan load from rendering.
+ const optional=async run=>{try{return await run()}catch(error){return {data:null,error}}};
+ const [{data:rows,error:err},{data:people,error:e2},stateResult,suggestionResult]=await Promise.all([
   sb.from("cwl_change_events").select("id,actor_id,event_type,details,revision,created_at")
    .eq("clan_id",expected).order("id",{ascending:false}).limit(150),
-  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",expected)
+  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",expected),
+  optional(()=>sb.from("cwl_plan_review_state").select("cycle_id,season,locked,locked_by,locked_at").eq("clan_id",expected).maybeSingle()),
+  mayReadSuggestions?optional(()=>sb.from("cwl_plan_suggestions").select("id,cycle_id,author_id,status,submitted_at,decided_at,decided_by").eq("clan_id",expected).order("submitted_at",{ascending:false}).limit(40)):Promise.resolve({data:[],error:null})
  ]);
- if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id||request!==auditRequestSerial)return;
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id||expectedRole!==role||request!==auditRequestSerial)return;
  if(err)throw err;if(e2)throw e2;
- renderAuditRows($("cloudAudit"),rows||[],people||[],expectedActor,JSON.stringify([expectedEpoch,expected,expectedActor]));
+ const entries=reviewAuditEntries(stateResult.error?null:stateResult.data,suggestionResult.error?[]:suggestionResult.data);
+ renderAuditRows($("cloudAudit"),rows||[],people||[],expectedActor,JSON.stringify([expectedEpoch,expected,expectedActor,expectedRole]),
+  {entries,unavailable:!!(stateResult.error||suggestionResult.error)});
 }
 function stopPresence(){
  if(presenceTimer!==null){clearInterval(presenceTimer);presenceTimer=null;}
