@@ -233,3 +233,74 @@ test("Action workspace search, rule drafts, refresh and clan isolation remain us
   assert.deepEqual(errors,[]);
  }finally{await browser.close()}
 });
+
+
+test("Member workspace loads real metadata view, retains filters and decisions, isolates late clan responses",{timeout:120000},async()=>{
+ const browser=await launch();
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const errors=[];page.on("pageerror",e=>errors.push(e.message));
+  await setup(page);
+  const moduleSource=fs.readFileSync(path.join(__dirname,"..","cwl-activity-member-view.mjs"),"utf8");
+  const moduleUrl="data:text/javascript;base64,"+Buffer.from(moduleSource).toString("base64");
+  const begin=html.indexOf("let activityMemberView=null"),end=html.indexOf(" let activityGoldpassView=null;",begin);
+  assert.ok(begin>0&&end>begin);
+  const bridge=html.slice(begin,end).replace("./cwl-activity-member-view.mjs?v=1.39.0",moduleUrl);
+  await page.addScriptTag({content:bridge+String.raw`
+   let memberSession=1,memberCalls=[],memberDelay=false,memberResolve=null;
+   const tagLetters="0289PYLQGRJCUV";
+   let memberRows=Array.from({length:50},(_,i)=>({tag:"#P"+tagLetters[Math.floor(i/13)]+tagLetters[i%13],name:i===0?"Sehr langer Spielername mit Sonderzeichen ★":i===1?"Main":"Spieler "+i,present:i<48,discord:i===0?null:i%3===0?true:false,primaryTag:null}));
+   function activityGoldpassContext(){return owner?{owner:true,clanId:context,clanTag:"#2PYL",session:memberSession}:null}
+   window.CWLCloud.activityMemberRequest=async req=>{
+    memberCalls.push({action:req.action,player:req.player,context:req.context});
+    if(memberDelay)return new Promise(resolve=>{memberResolve=resolve});
+    const row=memberRows.find(x=>x.tag===req.player);
+    if(req.action==="discord")row.discord=req.discord;
+    if(req.action==="link"){if(row.primaryTag!==req.expectedPrimary)throw Error("revision");row.primaryTag=req.primary}
+    return JSON.parse(JSON.stringify(memberRows));
+   };
+   window.CWLClanManagementView.open();
+  `});
+  const host=page.locator("#view-clan-management"),members=host.locator("#clanActivityMembersContent");
+  await host.locator('[data-management-section="members"]').click();
+  await members.locator(".activity-member-row").first().waitFor();
+  assert.equal(await members.locator(".activity-member-row").count(),48);
+  const search=members.getByRole("searchbox",{name:"Mitglied suchen"});
+  await search.fill("#P00");
+  assert.equal(await members.locator(".activity-member-row").count(),1);
+  const row=members.locator(".activity-member-row").first();
+  await row.getByLabel("Discord").selectOption("yes");
+  await page.waitForFunction(()=>document.querySelector('#clanActivityMembersContent select[data-discord="confirmed"]')?.value==="yes");
+  assert.equal(await search.inputValue(),"#P00");
+  await row.locator("summary").click();
+  await row.getByLabel("Hauptaccount").selectOption("#P02");
+  await row.getByRole("button",{name:"Zuordnung speichern"}).click();
+  await page.waitForFunction(()=>document.querySelector(".activity-member-row")?.textContent.includes("Zweitaccount von Main"));
+  assert.equal(await row.locator("details").evaluate(n=>n.open),true);
+  await search.fill("");
+  await members.getByLabel("Anzeigen").selectOption("linked");
+  assert.equal(await members.locator(".activity-member-row").count(),2);
+  assert.equal(await members.locator('[data-player-tag="#P00"] details').evaluate(n=>n.open),true);
+  const dir=process.env.CWL_UX_SCREENSHOTS;if(dir)fs.mkdirSync(dir,{recursive:true});
+  for(const width of [320,390,430,1366,1440]){
+   await page.setViewportSize({width,height:900});
+   for(const theme of ["arena","dark","light","cyber","cyberlight"]){
+    await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+    assert.ok(await host.evaluate(n=>n.scrollWidth<=n.clientWidth+3),JSON.stringify({width,theme}));
+    const controls=await members.locator("input,select,button,summary").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>n.getBoundingClientRect().height));
+    assert.ok(controls.length>=5&&controls.every(h=>h>=43),JSON.stringify({width,theme,controls}));
+    if(dir&&["arena","dark"].includes(theme)){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,"management-members-"+theme+"-"+width+".png")});}
+   }
+  }
+  await page.evaluate(()=>{memberDelay=true});
+  await members.getByRole("button",{name:"Mitgliedsmerkmale neu laden"}).click();
+  await page.waitForFunction(()=>typeof memberResolve==="function");
+  await page.evaluate(()=>{context="second";memberSession++;window.CWLActivityMembers.accessChanged(activityGoldpassContext());window.CWLClanManagementView.accessChanged(context);memberResolve([{tag:"#P00",name:"Private old clan",present:true,discord:true,primaryTag:null}]);});
+  assert.equal(await members.textContent(),"");
+  assert.equal(await host.locator("#managementOverview").isVisible(),true);
+  await page.evaluate(()=>{owner=false;window.CWLActivityMembers.accessChanged(null);window.CWLClanManagementView.accessChanged(null)});
+  assert.equal(await host.isVisible(),false);
+  assert.equal(await members.textContent(),"");
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close()}
+});
