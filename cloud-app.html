@@ -3969,6 +3969,20 @@ body.cloud-mode #view-settings .settings-cloud-row .statusline{margin:3px 0}
 body.cloud-mode #view-settings .settings-window .footer-note{display:none}
 body.cloud-mode #view-settings .latest-changelog{border:0;padding-inline:0;background:transparent;box-shadow:none}
 @media(max-width:480px){html[data-theme] body.cloud-mode #view-settings .settings-window>.card{padding:12px 14px}}
+
+/* #46: one calm grouped navigation surface, not a wall of tiles. */
+html[data-theme] #view-more .more-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+html[data-theme] #view-more .more-group{min-width:0}
+html[data-theme] #view-more .more-group-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.03em;margin:0 0 8px;padding:0 3px}
+html[data-theme] #view-more .more-tile{width:100%;min-height:64px;padding:10px 3px;gap:12px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html[data-theme] #view-more .more-tile:hover{background:var(--card)}
+html[data-theme] #view-more .more-tile-symbol{width:36px;height:36px;background:transparent;border:0;box-shadow:none}
+html[data-theme] #view-more .more-tile strong{font-size:15px}
+html[data-theme] #view-more .more-tile small{font-size:12px;line-height:1.4}
+html[data-theme] #view-more .more-tile>span:last-child{font-size:23px}
+body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more-action="install"]){display:none!important}
+#helpInstallOpen{min-height:44px}
+@media(max-width:699px){html[data-theme] #view-more .more-menu{grid-template-columns:minmax(0,1fr);gap:20px}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4212,19 +4226,25 @@ body.cloud-mode #view-settings .latest-changelog{border:0;padding-inline:0;backg
 </section>
 
 <section id="view-more" class="view" aria-labelledby="moreTitle">
- <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Hier findest du deine Clans, vergangene CWLs und weitere Einstellungen.</p></div>
+ <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Verwalte deinen Clan, Verlosungen und gespeicherte Daten.</p></div>
  <div class="more-menu">
+  <section class="more-group" aria-label="Clan & Planung"><h3 class="more-group-title">Clan & Planung</h3>
   <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln und Zugänge verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Handlungsbedarf, Mitgliedsmerkmale und Regeln</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
+  </section>
+  <section class="more-group" aria-label="Verlosungen & Archiv"><h3 class="more-group-title">Verlosungen & Archiv</h3>
   <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
+  </section>
+  <section class="more-group" aria-label="App & Sicherheit"><h3 class="more-group-title">App & Sicherheit</h3>
   <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="updates"><span class="more-tile-symbol" aria-hidden="true">◷</span><span><strong>Update-Verlauf</strong><small>Alle Neuerungen seit dem ersten Planer</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>JSON-Dateien sichern und wiederherstellen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
+  </section>
  </div>
  <div id="installSuggestion" class="install-suggestion" hidden>
   <span>Als App auf dem iPhone nutzen? Das geht ohne App Store.</span>
@@ -4591,7 +4611,8 @@ body.cloud-mode #view-settings .latest-changelog{border:0;padding-inline:0;backg
 <section id="view-help" class="view more-subview" aria-labelledby="helpTitle"><div class="card help-page">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Zurück zu Mehr</button></div>
   <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf bis zu sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
-  <p class="statusline">Du möchtest sehen, was sich am Planer verändert hat? Unter <b>Mehr → Update-Verlauf</b> findest du alle dokumentierten Versionen mit Datum und kurzen Erklärungen. Das neueste Update steht weiterhin unter Design & Aktualisierung.</p>
+  <p class="statusline">Alle veröffentlichten Änderungen findest du im Zahnrad unter „Alle Updates ansehen“. Ohne verbundenen Cloud-Clan bleibt auch Mehr → Update-Verlauf verfügbar.</p>
+  <button class="btn" type="button" id="helpInstallOpen">App installieren · iPhone, Android und PC</button>
   <div id="cloudHelpSection" hidden class="helpbox cloud-help">
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
@@ -7161,7 +7182,11 @@ function renderReleaseHistory(){
   old.append(list);host.append(old);
  }
 }
-async function openReleaseHistory(){
+let updatesOrigin=null;
+async function openReleaseHistory(source="more"){
+ updatesOrigin=source==="settings"?{source,view:window.__previousPlannerView||"plan",scroll:window.scrollY}:source==="appearance"?{source}:null;
+ const back=document.getElementById("updatesBack");
+ if(back)back.textContent=updatesOrigin?"Zurück zu Einstellungen":"Zurück zu Mehr";
  showPlannerView("updates");
  if(releaseHistoryData){renderReleaseHistory();return}
  const host=document.getElementById("updatesHistory");
@@ -7180,7 +7205,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   if(!action)return;
   if(action==="updates"){openReleaseHistory();return}
   if(action==="help"){showPlannerView("help");return}
-  if(action==="install"){renderInstallGuide();showPlannerView("install");return}
+  if(action==="install"){openInstallFrom("more");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
   if(action==="management"){window.CWLClanManagementView?.open?.();return}
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
@@ -7253,12 +7278,30 @@ function dismissInstallHint(){
  try{localStorage.setItem(CLOUD_INSTALL_HINT_KEY,"1")}catch{}
  updateCloudInstallSuggestion();
 }
-document.getElementById("updatesBack").onclick=()=>{showPlannerView("more");document.querySelector('[data-more-action="updates"]')?.focus({preventScroll:true})};
-document.getElementById("openReleaseHistory").onclick=openReleaseHistory;
+document.getElementById("updatesBack").onclick=()=>{
+ const origin=updatesOrigin;updatesOrigin=null;
+ if(origin?.source==="settings"){
+  showPlannerView(origin.view);window.scrollTo({top:origin.scroll||0,behavior:"instant"});showPlannerView("settings");
+  document.getElementById("openReleaseHistory").focus({preventScroll:true});return;
+ }
+ if(origin?.source==="appearance"){openMoreSettings("appearance");document.getElementById("openReleaseHistory").focus({preventScroll:true});return}
+ showPlannerView("more");document.querySelector('[data-more-action="updates"]')?.focus({preventScroll:true});
+};
+document.getElementById("openReleaseHistory").onclick=()=>openReleaseHistory(document.getElementById("view-settings").classList.contains("active")?"settings":"appearance");
 document.getElementById("updatesSearch").addEventListener("input",()=>renderReleaseHistory());
-document.getElementById("installBack").onclick=()=>showPlannerView("more");
+let installOrigin="more";
+function openInstallFrom(source){
+ installOrigin=source==="help"?"help":"more";
+ document.getElementById("installBack").textContent=installOrigin==="help"?"Zurück zur Hilfe":"Zurück zu Mehr";
+ renderInstallGuide();showPlannerView("install");
+}
+document.getElementById("installBack").onclick=()=>{
+ const source=installOrigin;installOrigin="more";showPlannerView(source);
+ if(source==="help")document.getElementById("helpInstallOpen").focus({preventScroll:true});
+};
+document.getElementById("helpInstallOpen").onclick=()=>openInstallFrom("help");
 document.getElementById("installSuggestionOpen").onclick=()=>{
- dismissInstallHint();renderInstallGuide();showPlannerView("install");
+ dismissInstallHint();openInstallFrom("more");
 };
 document.getElementById("installSuggestionDismiss").onclick=dismissInstallHint;
 updateCloudInstallSuggestion();

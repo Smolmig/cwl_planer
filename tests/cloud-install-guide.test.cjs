@@ -109,7 +109,9 @@ test("Installationshilfe erklärt die vollständige App und einen zugänglichen 
      document.body.classList.add("cloud-mode","cloud-role-viewer");
      window.showPlannerView("more");
     },theme);
-    await page.locator('.more-tile[data-more-action="install"]').click();
+    assert.equal(await page.locator('.more-tile[data-more-action="install"]').isVisible(),false);
+    await page.locator('.more-tile[data-more-action="help"]').click();
+    await page.locator("#helpInstallOpen").click();
     const guide=page.locator("#view-install");
     assert.equal(await guide.isVisible(),true);
     assert.match(await guide.locator(".install-guide-check").innerText(),

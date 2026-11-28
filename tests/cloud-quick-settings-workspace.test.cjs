@@ -61,3 +61,55 @@ test("Cloud quick settings retain detailed fallback pages and local settings at 
   }
  }finally{await browser.close()}
 });
+
+test("More groups keep unique routes, Cloud hides redundant entries, install stays reachable from help",async()=>{
+ const {JSDOM}=require("jsdom");
+ const dom=new JSDOM(html);
+ try{
+  const d=dom.window.document;
+  const groups=[...d.querySelectorAll(".more-menu .more-group")];
+  assert.deepEqual(groups.map(g=>g.getAttribute("aria-label")),["Clan & Planung","Verlosungen & Archiv","App & Sicherheit"]);
+  const routes=[...d.querySelectorAll(".more-menu [data-more-action]")].map(x=>x.dataset.moreAction);
+  assert.equal(routes.length,11);assert.equal(new Set(routes).size,11);
+  assert.ok(d.getElementById("helpInstallOpen").closest("#view-help"));
+ }finally{dom.window.close()}
+});
+test("Grouped More: compact navigation across widths, roles and local/Cloud mode",{timeout:120000},async()=>{
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ try{
+  for(const width of [320,390,430,1366,1440]){
+   const page=await browser.newPage({viewport:{width,height:900}});
+   try{
+    await page.setContent(html,{waitUntil:"domcontentloaded"});
+    for(const theme of ["arena","dark","light","cyber","cyberlight"]){
+     const m=await page.evaluate(theme=>{
+      document.documentElement.dataset.theme=theme;
+      document.body.classList.add("cloud-mode","cloud-role-viewer");
+      document.querySelectorAll(".view.active").forEach(x=>x.classList.remove("active"));
+      document.getElementById("view-more").classList.add("active");
+      const tiles=[...document.querySelectorAll(".more-menu [data-more-action]")];
+      const visible=()=>tiles.filter(x=>getComputedStyle(x).display!=="none").map(x=>({route:x.dataset.moreAction,height:x.getBoundingClientRect().height}));
+      const viewer=visible();
+      for(const key of ["management","goldpass"])document.querySelector('[data-more-action="'+key+'"]').hidden=false;
+      const owner=visible();
+      document.body.classList.remove("cloud-mode","cloud-role-viewer");
+      const local=visible();
+      document.body.classList.add("cloud-mode");return {viewer,owner,local,scroll:document.documentElement.scrollWidth};
+     },theme);
+     const routes=x=>x.map(y=>y.route);
+     assert.ok(m.scroll<=width+3,JSON.stringify({theme,width,m}));
+     for(const key of ["appearance","updates","install","profiles"])assert.ok(!routes(m.viewer).includes(key),key);
+     for(const key of ["clan","rules","archive","backup","help"])assert.ok(routes(m.viewer).includes(key),key);
+     assert.ok(routes(m.owner).includes("management")&&routes(m.owner).includes("goldpass"));
+     assert.ok(routes(m.local).includes("updates")&&routes(m.local).includes("install"));
+     assert.ok(m.owner.every(x=>x.height>=44));
+     if(theme==="arena"||theme==="dark"){
+      fs.mkdirSync(path.join(root,"ux-screenshots"),{recursive:true});
+      await page.screenshot({path:path.join(root,"ux-screenshots","grouped-more-"+theme+"-"+width+".png")});
+     }
+     await page.evaluate(()=>{for(const key of ["management","goldpass"])document.querySelector('[data-more-action="'+key+'"]').hidden=true});
+    }
+   }finally{await page.close()}
+  }
+ }finally{await browser.close()}
+});

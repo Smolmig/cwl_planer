@@ -32,7 +32,7 @@ test("public update timeline covers every official Cloud release and correctly d
  assert.equal(groups[0].date,"2026-11-28");
 });
 
-test("history is discoverable in More and alongside the existing newest-update note",()=>{
+test("history is discoverable from quick settings and retains the local More fallback",()=>{
  const app=read("cloud-app.html");
  const sw=read("service-worker.js");
  assert.match(app,/data-more-action="updates"/);
@@ -42,7 +42,9 @@ test("history is discoverable in More and alongside the existing newest-update n
  assert.match(app,/id="openReleaseHistory"/);
  assert.match(app,/id="latestChangelog"/);
  assert.match(app,/Neu in v1\.40\.0/);
- assert.match(app,/Mehr → Update-Verlauf/,"help explains the new page");
+ assert.match(app,/Zahnrad unter „Alle Updates ansehen“/,"help explains the primary entry");
+ assert.match(app,/Mehr → Update-Verlauf/,"local fallback remains discoverable");
+ assert.match(app,/updatesOrigin=source==="settings"/);
  assert.match(app,/\["help","account","archive","goldpass","activity-goldpass","more-settings","updates","install","clan-management"\]/);
  assert.match(app,/if\(action==="updates"\)\{openReleaseHistory\(\);return\}/);
  assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.40\.0"\)/);
