@@ -910,7 +910,7 @@ const cloud={
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["planRefreshSuggestions","copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
     "mobileOverviewToggle","cwlLiveRefresh","planCwlSeasonOpen","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
-    "exportProfileBtn","exportAllBtn","settingsCloudManage","moreSettingsBack","moreSettingsCloudBackup"]);
+    "exportProfileBtn","exportAllBtn","settingsCloudManage","settingsClose","openReleaseHistory","reportBugBtn","moreSettingsBack","moreSettingsCloudBackup"]);
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select,"+
     "#view-more-settings button,#view-more-settings input,#view-more-settings select")){
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}

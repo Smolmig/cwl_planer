@@ -3952,6 +3952,23 @@ html.cloud-startup-pending .cloud-startup-splash{
  .strategic-notice strong{display:flex;align-items:baseline;gap:7px;font-size:inherit;color:var(--notice-accent)}
  .strategic-notice-icon{color:var(--notice-accent);flex:none;font-weight:800}
  .strategic-notice p{margin:4px 0 0}
+
+/* Compact Cloud quick settings (#46): keep original controls and their
+   listeners; detailed settings still live under Mehr, local mode unchanged. */
+html[data-theme] body.cloud-mode #view-settings .settings-window{max-width:480px}
+body.cloud-mode #view-settings :is(#settingsRulesSection,#settingsAutoRosterBox,#settingsBackupSection){display:none!important}
+body.cloud-mode #view-more .more-tile[data-more-action="appearance"]{display:none!important}
+html[data-theme] body.cloud-mode #view-settings .settings-window>.card{padding:12px 18px}
+html[data-theme] body.cloud-mode #view-settings .settings-window .settings-subcard{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+body.cloud-mode #view-settings .settings-window .section-title:has(+ #settingsRulesSection){display:none}
+body.cloud-mode #view-settings #settingsAppearanceSection .settings-row{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+body.cloud-mode #view-settings :is(#themeSelect,#settingsClose,#settingsCloudManage,#openReleaseHistory,#reportBugBtn){min-height:44px;max-width:100%}
+body.cloud-mode #view-settings #themeSelect{width:100%;min-width:0}
+body.cloud-mode #view-settings .settings-cloud-row{gap:8px}
+body.cloud-mode #view-settings .settings-cloud-row .statusline{margin:3px 0}
+body.cloud-mode #view-settings .settings-window .footer-note{display:none}
+body.cloud-mode #view-settings .latest-changelog{border:0;padding-inline:0;background:transparent;box-shadow:none}
+@media(max-width:480px){html[data-theme] body.cloud-mode #view-settings .settings-window>.card{padding:12px 14px}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4197,7 +4214,7 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-more" class="view" aria-labelledby="moreTitle">
  <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Hier findest du deine Clans, vergangene CWLs und weitere Einstellungen.</p></div>
  <div class="more-menu">
-  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln und Zugänge verwalten</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Handlungsbedarf, Mitgliedsmerkmale und Regeln</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
   <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
@@ -4312,7 +4329,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <div class="card settings-intro">
     
     <div id="settingsCloudAccount" class="settings-cloud-account">
-      <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln, Berechtigungen verwalten und Cloud-Sicherungen ansehen.</p></div>
+      <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln und Zugänge verwalten.</p></div>
       <button class="btn" type="button" id="settingsCloudManage">Clan & Konto öffnen</button></div>
     </div>
   </div>
