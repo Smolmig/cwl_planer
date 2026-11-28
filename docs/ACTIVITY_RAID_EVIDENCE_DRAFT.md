@@ -1,0 +1,7 @@
+# Raid evidence prototype (#351)
+This draft is fixture-only. No API calls, persistence, UI wiring, migrations, new cron work, or production metric activation. The authenticated API probe in #355 is a prerequisite to integration.
+- Campaign evaluation accepts an explicit expected-weekend schedule and a separately verified clan source. Only fully contained, ended intervals count; exact bounds are inclusive for the interval endpoints. A caller must supply the real campaign cutoff and independently verify the schedule; do not label the response list itself a verified schedule.
+- Same player tag, one clan at a time; identical snapshots deduplicate, conflicting final records are quarantined. Missing player entry is unknown, not zero. A cross-clan participation policy is not implied.
+- Counts are lower bounds when evidence is incomplete; participation percentage is unknown unless all expected weekends have verified player limits. Per-member maximum is attackLimit + bonusAttackLimit. Missing gold is independent of attack coverage.
+- Completed-weekend criterion intentionally not exposed until its precise meaning and provider contract are agreed. No assumed six attacks or pre-campaign backfill.
+- Before integration: verify real provider shape, expected schedule/cutoff generation, source binding, conflict persistence, pagination and observations, campaign-only polling budget, tenant RLS, and real rollback fixture. Do not merge as a user-facing feature.
