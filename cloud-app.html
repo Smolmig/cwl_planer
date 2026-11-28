@@ -2542,6 +2542,9 @@ html:is([data-theme="light"],[data-theme="cyberlight"]) #clanActivityMembers :is
 @media(max-width:480px){.management-label-wide{display:none}.management-label-short{display:inline}.management-workspace-nav .btn,.management-source-nav .btn{overflow-wrap:normal;word-break:normal;font-size:12px;padding-inline:4px}}
 .management-workspace-nav .btn:focus-visible,.management-source-nav .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .management-workspace-panel[hidden],.management-source-panel[hidden]{display:none!important}
+#view-clan-management[data-management-section="members"] .clan-management-actions{display:none}
+#managementCoverageDetails{margin-top:8px;border-top:1px solid var(--line)}
+#managementCoverageDetails>summary{font-size:12px;color:var(--muted)}
 .management-search{display:grid;gap:4px;max-width:360px;margin:12px 0}
 .management-search[hidden]{display:none!important}
 .management-search label{font-size:12px;font-weight:700;color:var(--muted)}
@@ -4654,8 +4657,8 @@ html.cloud-startup-pending .cloud-startup-splash{
   <button type="button" class="btn" data-management-section="rules" aria-controls="managementRules" aria-pressed="false">Regeln</button>
  </nav>
  <section id="managementMembers" class="management-workspace-panel" aria-labelledby="managementMembersTitle" hidden>
-  <h3 id="managementMembersTitle">Mitgliedsmerkmale</h3><p class="statusline">Discord und Haupt-/Zweitaccounts zentral für diesen Clan pflegen. Diese Angaben stehen nicht in der CWL-Aufstellung.</p>
- <details id="clanActivityMembers" class="clan-management-criteria"><summary>Mitgliedsmerkmale <span class="subtle">· Discord & Mehrfachaccounts</span></summary><div id="clanActivityMembersContent"></div></details>
+  <h3 id="managementMembersTitle">Mitgliedsmerkmale</h3>
+ <details id="clanActivityMembers" class="clan-management-criteria"><summary>Discord &amp; Mehrfachaccounts</summary><div id="clanActivityMembersContent"></div></details>
  </section>
  <section id="managementRules" class="management-workspace-panel" aria-labelledby="managementRulesTitle" hidden>
   <h3 id="managementRulesTitle">Regeln</h3><p class="statusline">Die gespeicherten Kriterien gelten nur für diesen Clan. Für Fehlangriffe zählen bestätigte Kriegsdaten.</p>
@@ -4710,13 +4713,13 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div id="clanManagementSummary" class="clan-management-summary" hidden></div>
  <details id="clanManagementActionOverview" class="clan-management-criteria" open hidden>
   <summary id="clanManagementActionHeading">Offene Prüfungen</summary>
-  <p id="clanManagementActionCoverage" class="statusline"></p>
   <div class="management-search" id="managementActionSearch" hidden>
    <label for="managementActionQuery">Spieler suchen</label>
    <input id="managementActionQuery" type="search" placeholder="Name oder Spieler-Tag" autocomplete="off">
    <span id="managementActionMatches" class="statusline" role="status"></span>
   </div>
   <div id="clanManagementActionList" class="clan-management-list" role="list" aria-label="Spieler mit offenen Prüfungen"></div>
+  <details id="managementCoverageDetails" class="clan-management-evidence"><summary>Datenlage &amp; Zählweise</summary><p id="clanManagementActionCoverage" class="statusline"></p></details>
  </details>
  <p class="statusline">Die Übersicht zählt Personen einmal. Öffne einen Prüfbereich, um Gründe und vorhandene Entscheidungen anzusehen. Clash liefert keine verlässliche letzte Onlinezeit. Deshalb gibt es keine automatische Kick-Empfehlung wegen Offlinezeit.</p>
  </div>
@@ -6886,6 +6889,7 @@ const managementSections={actions:"managementActions",members:"managementMembers
 const managementSources={overview:"managementOverview",rank:"managementRank",cw:"managementNormal",cwl:"managementCwl"};
 function selectManagementSection(key){
  if(!Object.hasOwn(managementSections,key))return;
+ document.getElementById("view-clan-management").dataset.managementSection=key;
  for(const [name,id] of Object.entries(managementSections))document.getElementById(id).hidden=name!==key;
  document.querySelectorAll("[data-management-section]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.managementSection===key)));
  if(key==="members")document.getElementById("clanActivityMembers").open=true;
@@ -6906,6 +6910,7 @@ function clearClanManagement(){
  document.getElementById("clanActivityMembers").open=false;
  document.getElementById("clanManagementCriteria").open=false;
  document.getElementById("managementActionQuery").value="";
+ document.getElementById("managementCoverageDetails").open=false;
  document.getElementById("clanManagementList").replaceChildren();
  document.getElementById("clanManagementSummary").hidden=true;
  document.getElementById("clanManagementStatus").textContent="Noch keine Clanliste geprüft.";
