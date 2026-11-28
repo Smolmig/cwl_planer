@@ -1,0 +1,4 @@
+# Games Champion achievement evidence — fixture only
+Live probe 46151857193 (28 Nov 2026) confirmed an integer Games Champion achievement for one verified player. It did not verify event boundaries, counter update latency, resets, clan attribution or actual event score.
+The prototype validates identity and timestamp, deduplicates samples, rejects conflicting or decreasing counters and reports observed account-wide delta separately. It never emits a qualifying clanGamesPoints score. No new provider polling, storage, UI or production activation.
+Before integration: observe reliable start/end snapshots of an actual event; verify monotonicity and update behavior, define transparent account-wide criterion and campaign scope; no retrospective estimate or substitution with clan-specific points. Preserve existing rules and official draws.

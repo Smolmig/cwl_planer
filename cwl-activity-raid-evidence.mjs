@@ -9,7 +9,7 @@ function utc(value){
  const s=compact?compact[1]+"-"+compact[2]+"-"+compact[3]+"T"+compact[4]+":"+compact[5]+":"+compact[6]+(compact[7]||".000")+"Z":value;
  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(s))return null;
  const t=Date.parse(s);
- return Number.isFinite(t)&&new Date(t).toISOString()===s.replace(/(\d{2})Z$/,"$1.000Z")?t:null;
+ return Number.isFinite(t)&&new Date(t).toISOString()===(s.includes(".")?s:s.replace(/Z$/,".000Z"))?t:null;
 }
 function interval(row){
  const start=utc(row?.startTime),end=utc(row?.endTime);

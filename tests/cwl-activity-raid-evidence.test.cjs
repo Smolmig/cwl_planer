@@ -56,3 +56,10 @@ test("lower bound can establish a count threshold but never a participation perc
  assert.equal(req({metric:"raidAttacks",minimum:6},evidence).status,"unknown");
  assert.equal(req({metric:"raidParticipationPct",minimum:50},evidence).status,"unknown");
 });
+
+test("raid timestamps accept compact and ISO seconds/milliseconds but reject invalid calendar dates",async()=>{
+ const {evaluateRaidEvidence:e}=await load();
+ const r=e({...base,startTime:"2026-11-06T07:00:00Z",endTime:"2026-11-16T07:00:00.000Z",observations:[obs(a),obs(b)]});
+ assert.equal(r.evidence.raidAttacks.value,10);
+ assert.throws(()=>e({...base,startTime:"2026-11-31T07:00:00.000Z"}),/invalid_raid_window/);
+});
