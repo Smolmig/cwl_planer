@@ -1,12 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { createCloudBackups } from "./cloud-backups.mjs?v=1.40.0";
-import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.40.0";
-import { createCwlLive } from "./cwl-live.mjs?v=1.40.0";
-import { createCloudStats } from "./cwl-stats.mjs?v=1.40.0";
-import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.40.0";
-import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.40.0";
-import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.40.0";
-import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.40.0";
+import { createCloudBackups } from "./cloud-backups.mjs?v=1.41.0";
+import { createCloudPortableBackupUI } from "./cloud-portable-backup-ui.mjs?v=1.41.0";
+import { createCwlLive } from "./cwl-live.mjs?v=1.41.0";
+import { createCloudStats } from "./cwl-stats.mjs?v=1.41.0";
+import { createCurrentWarOverview } from "./cwl-current-war.mjs?v=1.41.0";
+import { createCwlSeasonView } from "./cwl-season-view.mjs?v=1.41.0";
+import { createCwlGroupArchiveView } from "./cwl-group-archive.mjs?v=1.41.0";
+import { createArchivedCwlRecapView } from "./cwl-archive-recap.mjs?v=1.41.0";
 
 const SUPABASE_URL="https://yjldnvfwposfwmzmcsow.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ej03YPfIYRjQZuASAWi1yg_I0VLmayy";
@@ -42,7 +42,7 @@ let invitePreview=null,inviteAuthMode="login",invitePreviewRequest=0,inviteSubmi
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const backups=createCloudBackups({
  sb,
- context:()=>({clanId,role,revision,clans}),
+ context:()=>({clanId,role,revision,clans,userId:user?.id||null,epoch:accountEpoch}),
  ensureSaved:()=>ensureSaved(),
  loadProfile:()=>loadCloudProfile(true),
  audit:()=>audit(),
@@ -324,6 +324,7 @@ async function togglePlanLock(){
  });
  if(err)throw reviewRpcError(err);
  await loadPlanReview();
+ void audit().catch(console.warn);
  storage.toast(lock?"✓ CWL-Plan freigegeben":"✓ Plan wieder zur Bearbeitung geöffnet");
 }
 async function submitPlanSuggestion(){
@@ -352,6 +353,7 @@ async function submitPlanSuggestion(){
  if(err)throw reviewRpcError(err);
  changedSerial=null;clearTimeout(debounce);
  await loadCloudProfile(true);await loadPlanReview();
+ void audit().catch(console.warn);
  storage.toast("✓ Änderungsvorschlag eingereicht");
 }
 async function decidePlanSuggestion(id,action){
@@ -386,6 +388,7 @@ async function decidePlanSuggestion(id,action){
    if(action==="accept")await loadCloudProfile(true);
  }
  await loadPlanReview();cloud.afterRender();
+ void audit().catch(console.warn);
  storage.toast(action==="accept"?"✓ Vorschlag übernommen":action==="reject"?"Vorschlag abgelehnt":"Vorschlag zurückgezogen");
 }
 async function openNewPlanCycle(){
@@ -895,6 +898,8 @@ const cloud={
   accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
   accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
+  toggle("cloudAutoRosterInfo",!!(this.active&&activeClan?.clash_tag));
+  syncAutoRosterSetting();
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
   toggle("guestMembersTools",!this.active);
@@ -910,9 +915,10 @@ const cloud={
   // The UI is deliberately non-editable for viewers; RLS also enforces this server-side.
   const keep=new Set(["planRefreshSuggestions","copyFullPlanBtn","singleDayMode","allDaysMode","nextDayBtn",
     "mobileOverviewToggle","cwlLiveRefresh","planCwlSeasonOpen","memberSearch","memberFilter","summarySearch","summaryFilter","themeSelect","updateAppBtn",
-    "exportProfileBtn","exportAllBtn","settingsCloudManage","moreSettingsBack","moreSettingsCloudBackup"]);
+    "exportProfileBtn","exportAllBtn","settingsCloudManage","settingsClose","openReleaseHistory","reportBugBtn","moreSettingsBack","moreSettingsCloudBackup"]);
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select,"+
     "#view-more-settings button,#view-more-settings input,#view-more-settings select")){
+    if(el.closest("#cloudAccountImportSection"))continue; // dedicated backup permissions and selection state
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
     const memberReadOnlyControl=el.closest("#view-members")&&el.matches(
       "#memberSearch,#memberFilter,#memberSortSelect,.member-edit-toggle,.toggle-rules,.member-config-help,.dup-warning,.close-duplicate");
@@ -1264,6 +1270,9 @@ function clearClanAccountDetails(){
   "cloudAudit","cloudActiveMembers"]){$(id)?.replaceChildren();}
  for(const id of ["cloudAccessCount","cloudPendingCount","cloudBlockedCount"])text(id,"");
  if($("cloudAlias"))$("cloudAlias").value="";
+ if($("cloudImportFile"))$("cloudImportFile").value="";
+ if($("cloudAccountImportSection"))$("cloudAccountImportSection").open=false;
+ if($("cloudBackupPanel"))$("cloudBackupPanel").open=false;
  for(const id of ["cloudAccessDetails","cloudBlockedDetails","cloudPendingDetails",
   "cloudAliasControls","cloudAccountAuditSection","cloudAccountImportSection",
   "cloudDangerZone","cloudReload","cloudRoleExplanation","cloudSyncFeedback",
@@ -1457,7 +1466,7 @@ function showChangeToast(message,sticky=false){
 function describeRemoteEvent(event){
  const data=event?.details||{},lines=[];
  const labels={name:"Name",fixed:"Fix",participating:"Dabei",priority:"Priorität",
-  targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",
+  targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",rotationWeight:"Rotation",
   playerTag:"Spieler-Tag",cocSyncState:"Clanstatus",cocOrder:"Clash-Reihenfolge",
   firstDay:"Erst ab",outFromDay:"Raus ab"};
  const fmt=value=>value==null?"–":typeof value==="boolean"?(value?"Ja":"Nein"):String(value);
@@ -1561,6 +1570,9 @@ async function checkRemoteChanges(reason="poll"){
    toggle("cloudInviteBox",role==="owner"||role==="editor");
    toggle("cloudImportProfile",role!=="viewer");
    toggle("cloudImportFile",role!=="viewer");
+   toggle("cloudRestoreSnapshot",role==="owner");
+   backups.reset();
+   if($("cloudImportFile"))$("cloudImportFile").value="";
    cloud.afterRender();
    loadAccessList(id).catch(console.warn);
    storage.toast("Deine Berechtigung wurde geändert: "+(role==="editor"?"Vize":role==="viewer"?"Beobachter":"Besitzer"));
@@ -1943,23 +1955,36 @@ async function joinInvite(){
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
 const autoRosterChecks=new Map();
+let autoRosterStatusScope=null;
 function isAutoRosterEnabled(){
  if(!clanId)return false;
  try{return localStorage.getItem("cwl_auto_roster_"+clanId)!=="off"}catch{return true}
 }
 function syncAutoRosterSetting(){
- const toggle=$("settingsAutoRoster"),hint=$("autoRosterStatus");
- if(toggle){toggle.checked=isAutoRosterEnabled();toggle.disabled=!["owner","editor"].includes(role)}
- if(hint&&!["owner","editor"].includes(role))hint.textContent="Automatischer Import ist für die Clanführung verfügbar.";
+ const control=$("settingsAutoRoster"),hint=$("autoRosterStatus"),label=$("resumeAutoRosterLabel");
+ const linked=!!(cloud.active&&cloud.hasApiClan?.());
+ const allowed=["owner","editor"].includes(role);
+ const enabled=isAutoRosterEnabled();
+ const scope=linked?JSON.stringify([accountEpoch,clanId,role]):null;
+ if(control){control.checked=enabled;control.disabled=!allowed||!linked}
+ if(label)label.hidden=!linked||!allowed||enabled;
+ if(hint&&scope!==autoRosterStatusScope){
+  hint.textContent=!linked?"":!allowed?"Der Abgleich erfolgt durch die Clanführung.":!enabled?
+   "Automatischer Abgleich ist auf diesem Gerät deaktiviert.":"Noch kein Abgleich in dieser Sitzung.";
+ }
+ autoRosterStatusScope=scope;
 }
 async function maybeAutoRoster(force=false){
- if(!clanId||!user||!cloud.active||manualRosterPending()||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
+ if(!clanId||!user||!cloud.active||!cloud.hasApiClan?.()||manualRosterPending()||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
     !navigator.onLine||document.hidden||rosterAutoBusy||blocked||changedSerial||saving)return;
  const now=Date.now();
  if(!force&&now-(autoRosterChecks.get(clanId)||0)<900000)return;
- autoRosterChecks.set(clanId,now);
+ const expectedClan=clanId,expectedEpoch=accountEpoch,expectedRole=role;
+ autoRosterChecks.set(expectedClan,now);
  try{await getRoster({automatic:true})}
- catch(e){text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Manuell erneut prüfen.");
+ catch(e){
+  if(clanId===expectedClan&&accountEpoch===expectedEpoch&&role===expectedRole)
+   text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Im Mitglieder-Tab erneut prüfen.");
   console.warn("Automatischer Mitgliederabgleich:",e?.message||e)}
 }
 async function getRoster({automatic=false}={}){
@@ -2261,28 +2286,71 @@ async function applyRoster(){
  if(typeof refreshRosterEmergencyUI==="function")refreshRosterEmergencyUI();
  msg("Mitgliederliste übernommen ✓");resetRoster();toggle("cloudRosterBox",false);
 }
-async function audit(){
- if(!clanId||!user)return;
- const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id;
- const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
-  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at")
-   .eq("clan_id",clanId).order("id",{ascending:false}).limit(150),
-  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",clanId)
- ]);
- if(err)throw err;if(e2)throw e2;
- if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id)return;
- const aliases=new Map((people||[]).map(x=>[x.user_id,x.display_name||"Clanmitglied "+x.user_id.slice(0,6)]));
- const root=$("cloudAudit");root.replaceChildren();
- if(!rows?.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
- let hiddenTechnical=0,shown=0;
- for(const e of rows){
-  const changes=describeRemoteEvent(e);
-  if(changes.length===1&&changes[0].startsWith("Nur Speicherzeitpunkt")){hiddenTechnical++;continue}
+// Classify stored evidence, not guessed causes. Unknown fields, truncated
+// member diffs and unrecorded legacy changes remain accessible.
+function classifyAuditEvent(event){
+ const d=event?.details;
+ if(event?.event_type==="profile_created")return "planning";
+ if(event?.event_type!=="profile_updated"||!d||typeof d!=="object"||Array.isArray(d))return "other";
+ if(d.plan_geaendert===true||d.day_goals_geaendert===true)return "planning";
+ const fields=Array.isArray(d.spieleraenderungen)?d.spieleraenderungen:[];
+ const planFields=new Set(["hinzugefuegt","entfernt","fixed","participating","priority","targetDays","statuses","firstDay","outFromDay","rotationWeight","townHall","threeStar"]);
+ if(fields.some(p=>Object.keys(p?.felder||{}).some(k=>planFields.has(k))))return "planning";
+ if(Object.keys(d.config_differenzen||{}).some(k=>k==="slots"||k==="days"))return "planning";
+ // Do not infer "only technical" from incomplete/truncated audit payloads.
+ const sections=Array.isArray(d.bereiche)?d.bereiche:[];
+ if(sections.length&&sections.every(x=>x==="updatedAt"||x==="cwlLive")&&
+   !fields.length&&!Object.keys(d.config_differenzen||{}).length&&!d.weitere_spieler&&
+   !d.config_geaendert&&!d.archiv_geaendert)return "technical";
+ return "other";
+}
+// Separate, server-confirmed review metadata. A current lock is a snapshot,
+// not a historical log of every lock/unlock. Never load proposed profile JSON.
+function reviewAuditEntries(state,suggestions){
+ const entries=[];
+ const dateOk=v=>typeof v==="string"&&Number.isFinite(Date.parse(v));
+ const seasonOk=v=>typeof v==="string"&&/^\d{4}-(0[1-9]|1[0-2])$/.test(v);
+ if(state?.locked===true&&state.cycle_id&&dateOk(state.locked_at)){
+  entries.push({auditKey:"lock:"+state.cycle_id+":"+state.locked_at,actor_id:state.locked_by||null,created_at:state.locked_at,
+   reviewLines:["Plan freigegeben",seasonOk(state.season)?"Saison "+state.season:"Saison nicht belegt","Letzte gespeicherte Freigabe; frühere Sperrwechsel sind hier nicht vollständig erfasst."]});
+ }
+ const decisions={accepted:"Vorschlag übernommen",rejected:"Vorschlag abgelehnt",withdrawn:"Vorschlag zurückgezogen",stale:"Vorschlag nicht mehr aktuell"};
+ const seen=new Set();
+ for(const s of Array.isArray(suggestions)?suggestions:[]){
+  if(!s?.id||seen.has(s.id)||!dateOk(s.submitted_at))continue;
+  seen.add(s.id);
+  const sameCycle=!!state?.cycle_id&&s.cycle_id===state.cycle_id;
+  const context=sameCycle&&seasonOk(state.season)?"Saison "+state.season:"Früherer oder nicht zugeordneter Planungszyklus";
+  entries.push({auditKey:"proposal:"+s.id+":submitted",actor_id:s.author_id||null,created_at:s.submitted_at,
+   reviewLines:["Vize-Vorschlag eingereicht",context,"Ein Vorschlag ist noch keine Änderung am gemeinsamen Plan."]});
+  if(Object.prototype.hasOwnProperty.call(decisions,s.status)&&dateOk(s.decided_at)&&Date.parse(s.decided_at)>=Date.parse(s.submitted_at)){
+   entries.push({auditKey:"proposal:"+s.id+":decision",actor_id:s.decided_by||null,created_at:s.decided_at,
+    reviewLines:[decisions[s.status],context,s.status==="accepted"?"Die gespeicherten Planänderungen stehen separat im Verlauf.":"Keine Übernahme dieses Vorschlags in den gemeinsamen Plan."]});
+  }
+ }
+ return entries;
+}
+function renderAuditRows(root,rows,people,actorId,scope,review={entries:[]}){
+ const sameScope=root.dataset.auditScope===scope;
+ const opened=new Set(sameScope?[...root.querySelectorAll("details[data-audit-key][open]")].map(x=>x.dataset.auditKey):[]);
+ root.dataset.auditScope=scope;
+ root.replaceChildren();
+ const all=[...rows,...(review.entries||[])];
+ if(!all.length&&!review.unavailable){root.textContent="Noch keine gemeinsamen Änderungen.";return}
+ const aliases=new Map(people.map(x=>[x.user_id,x.display_name||"Clanmitglied"]));
+ const planning=[],other=[];
+ for(const e of all){
+  const changes=e.reviewLines||describeRemoteEvent(e),kind=e.reviewLines?"planning":classifyAuditEvent(e);
   const item=document.createElement("details");item.className="cloud-actor cloud-audit-item";
+  // Real server event ID, not revision (multiple records may share a revision).
+  const key=e.auditKey||(e.id!=null?"event:"+String(e.id):null);
+  if(key){item.dataset.auditKey=key;item.open=opened.has(key)}
+  item.dataset.auditTime=String(Date.parse(e.created_at)||0);
   const summary=document.createElement("summary");
   const who=document.createElement("strong");
-  who.textContent=(e.actor_id===user?.id?"Du":aliases.get(e.actor_id)||"Ehemaliges Clanmitglied")+
-   " · "+new Date(e.created_at).toLocaleString("de-AT");
+  const name=e.actor_id===actorId?"Du":e.actor_id?aliases.get(e.actor_id)||"Ehemaliges Clanmitglied":"System / nicht zugeordnet";
+  const date=new Date(e.created_at);
+  who.textContent=name+" · "+(Number.isFinite(date.getTime())?date.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):"Zeitpunkt unbekannt");
   const preview=document.createElement("span");
   preview.textContent=changes[0]+(changes.length>1?" · +"+(changes.length-1)+" weitere":"");
   summary.append(who,preview);item.append(summary);
@@ -2290,14 +2358,43 @@ async function audit(){
   for(const change of changes){
    const line=document.createElement("li");line.textContent=change;details.append(line);
   }
-  item.append(details);root.append(item);shown++;
+  item.append(details);
+  (kind==="planning"?planning:other).push(item);
  }
- if(!shown)root.textContent="Keine inhaltlichen Änderungen gespeichert.";
- if(hiddenTechnical){
-  const note=document.createElement("div");note.className="statusline cloud-audit-technical";
-  note.textContent=hiddenTechnical+" rein technische Speicheraktualisierungen ausgeblendet.";
-  root.append(note);
+ if(planning.length)root.append(...planning.sort((a,b)=>Number(b.dataset.auditTime)-Number(a.dataset.auditTime)));
+ else{
+  const note=document.createElement("p");note.className="statusline";note.textContent="In den zuletzt geladenen Einträgen sind keine konkreten Planänderungen belegt.";root.append(note);
  }
+ if(other.length){
+  const group=document.createElement("details");group.className="cloud-audit-other";group.dataset.auditKey="other";
+  group.open=opened.has("other");
+  const summary=document.createElement("summary");summary.textContent="Weitere Aktivitäten ("+other.length+")";
+  group.append(summary,...other);root.append(group);
+ }
+ if(review.unavailable){
+  const note=document.createElement("p");note.className="statusline";note.textContent="Freigaben oder Vorschlagsverlauf konnten nicht vollständig geladen werden.";root.append(note);
+ }
+}
+let auditRequestSerial=0;
+async function audit(){
+ if(!clanId||!user)return;
+ const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id,expectedRole=role,request=++auditRequestSerial;
+ const mayReadSuggestions=["owner","editor"].includes(expectedRole);
+ // Preserve existing viewer boundary; optional review queries must never
+ // prevent the profile history or initial clan load from rendering.
+ const optional=async run=>{try{return await run()}catch(error){return {data:null,error}}};
+ const [{data:rows,error:err},{data:people,error:e2},stateResult,suggestionResult]=await Promise.all([
+  sb.from("cwl_change_events").select("id,actor_id,event_type,details,revision,created_at")
+   .eq("clan_id",expected).order("id",{ascending:false}).limit(150),
+  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",expected),
+  optional(()=>sb.from("cwl_plan_review_state").select("cycle_id,season,locked,locked_by,locked_at").eq("clan_id",expected).maybeSingle()),
+  mayReadSuggestions?optional(()=>sb.from("cwl_plan_suggestions").select("id,cycle_id,author_id,status,submitted_at,decided_at,decided_by").eq("clan_id",expected).order("submitted_at",{ascending:false}).limit(40)):Promise.resolve({data:[],error:null})
+ ]);
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id||expectedRole!==role||request!==auditRequestSerial)return;
+ if(err)throw err;if(e2)throw e2;
+ const entries=reviewAuditEntries(stateResult.error?null:stateResult.data,suggestionResult.error?[]:suggestionResult.data);
+ renderAuditRows($("cloudAudit"),rows||[],people||[],expectedActor,JSON.stringify([expectedEpoch,expected,expectedActor,expectedRole]),
+  {entries,unavailable:!!(stateResult.error||suggestionResult.error)});
 }
 function stopPresence(){
  if(presenceTimer!==null){clearInterval(presenceTimer);presenceTimer=null;}
@@ -2424,15 +2521,23 @@ async function exportCloud(){if(!clanId)throw Error("Kein Cloud-Clan ausgewählt
 async function importCloud(){
  if(!clanId||role==="viewer")throw Error("Kein Bearbeitungszugriff.");
  if(role==="editor"&&planIsLocked())throw Error("Plan freigegeben: Bitte einzelne Änderungen als Vorschlag einreichen.");
+ const expected={clanId,epoch:accountEpoch,actor:user?.id,role,revision};
+ const stable=()=>cloud.active&&clanId===expected.clanId&&accountEpoch===expected.epoch&&user?.id===expected.actor&&role===expected.role&&revision===expected.revision&&!(role==="editor"&&planIsLocked());
+ const requireContext=()=>{if(!stable())throw Error("Clan, Berechtigung oder Planstand geändert. Bitte Datei erneut auswählen.")};
  const f=$("cloudImportFile").files[0];if(!f)throw Error("Bitte eine JSON-Backup-Datei auswählen.");
- const b=JSON.parse(await f.text());if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
+ const b=JSON.parse(await f.text());requireContext();if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
  const p=b.kind==="cwl-profile"?b.profile:b.kind==="cwl-app-backup"?(b.app?.profiles?.find(x=>x.id===b.app?.activeProfileId)||b.app?.profiles?.[0]):null;
  if(!p||!Array.isArray(p.members)||!Array.isArray(p.locks)||!Array.isArray(p.archives))throw Error("Kein gültiges CWL-Profil in dieser Datei.");
+ await ensureSaved();requireContext();
  if(!await storage.confirmAction("Dieses Backup ersetzt den aktuellen gemeinsamen Clanplan für alle Mitglieder.",{title:"Gemeinsamen Plan ersetzen?",confirmText:"Plan ersetzen",danger:true}))return;
- await ensureSaved();hydrating=true;
+ requireContext();
+ if(changedSerial||saving||blocked)throw Error("Es sind neue Änderungen offen. Bitte zuerst speichern und erneut prüfen.");
+ hydrating=true;
  try{storage.switchToCloud(p)}finally{hydrating=false}
  cloud.onLocalChange();
- await writeCloud();close();
+ await writeCloud();
+ await ensureSaved();
+ if(clanId===expected.clanId&&accountEpoch===expected.epoch){$("cloudImportFile").value="";close()}
 }
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("planReviewToggle","click",togglePlanLock);
@@ -2586,16 +2691,17 @@ async function safeRosterRefresh(){
 bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
 bind("cloudMembersSyncBtn","click",safeRosterRefresh);
 bind("cloudEmergencyEnable","click",enableRosterEmergency);
-bind("settingsRosterRefresh","click",async()=>{
- $("settingsClose").click();
- document.querySelector('.navbtn[data-view="members"]')?.click();
- await safeRosterRefresh();
-});
 $("settingsAutoRoster").addEventListener("change",ev=>{
- if(!clanId)return;
- try{localStorage.setItem("cwl_auto_roster_"+clanId,ev.target.checked?"on":"off")}catch{}
- if(ev.target.checked){autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn)}
- else text("autoRosterStatus","Automatischer Abgleich deaktiviert · manuelle Prüfung weiterhin möglich.");
+ // This control only resumes a legacy opt-out. No silent preference migration,
+ // and no UI action can grant an observer permission to write roster changes.
+ if(!clanId||!cloud.active||!cloud.hasApiClan?.()||!["owner","editor"].includes(role)||!ev.target.checked){
+  syncAutoRosterSetting();return;
+ }
+ try{localStorage.setItem("cwl_auto_roster_"+clanId,"on")}catch{}
+ syncAutoRosterSetting();
+ if(!isAutoRosterEnabled()){text("autoRosterStatus","Einstellung konnte nicht gespeichert werden. Bitte erneut versuchen.");return}
+ text("autoRosterStatus","Automatischer Abgleich wieder aktiviert.");
+ autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn);
 });
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });

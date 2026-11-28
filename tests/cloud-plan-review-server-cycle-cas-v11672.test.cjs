@@ -43,24 +43,24 @@ test("finished season evidence is server-only and never inferred from missing 6/
 });
 test("owner sends the exact old token, never a newly read cycle after confirmation",async()=>{
  const src=sync.slice(sync.indexOf("async function togglePlanLock(){"),sync.indexOf("async function submitPlanSuggestion(){"));
- let rpc=null,cycle="cycle-one",clan="clan-one";
+ let rpc=null,cycle="cycle-one",clan="clan-one",audits=0;
  const ctx={
   clanId:clan,role:"owner",accountEpoch:1,planReview:{cycle_id:cycle},
   assertReviewSeasonAvailable:()=>{},reviewCycleToken:()=>({p_expected_cycle:cycle,p_expected_season:"2026-11"}),
   planIsLocked:()=>false,assertPlanningReady:()=>{},
   storage:{getProfile:()=>({}),confirmAction:async()=>true,toast:()=>{}},
   ensureSaved:async()=>{},sb:{rpc:async(name,args)=>{rpc={name,args};return {error:null};}},
-  reviewRpcError:e=>e,loadPlanReview:async()=>{}
+  reviewRpcError:e=>e,loadPlanReview:async()=>{},audit:async()=>{audits++},console
  };
  const run=vm.runInNewContext(src+";togglePlanLock",ctx);
  await run();
- assert.equal(rpc.name,"cwl_set_plan_lock_checked");
+ assert.equal(rpc.name,"cwl_set_plan_lock_checked");assert.equal(audits,1);
  assert.equal(rpc.args.p_expected_cycle,"cycle-one");
  assert.equal(rpc.args.p_expected_season,"2026-11");
  rpc=null;
  ctx.storage.confirmAction=async()=>{cycle="cycle-two";ctx.planReview.cycle_id=cycle;return true;};
  await assert.rejects(run(),/Clan oder Saison/);
- assert.equal(rpc,null);
+ assert.equal(rpc,null);assert.equal(audits,1);
 });
 test("proposal submit includes token and preserves backed-up played history",()=>{
  const proposalTest=read("tests/cloud-proposal-history-compat.test.cjs");

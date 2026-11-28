@@ -13,8 +13,8 @@ const c=html.indexOf('document.querySelector(".more-menu").addEventListener("cli
 const d=html.indexOf('document.getElementById("settingsOpen").onclick',c);
 assert.ok(a>0&&b>a&&c>b&&d>c);
 const script='function closeQuickClan(){}\n'+html.slice(a,b)+'\n'+html.slice(c,d)+
- '\ndocument.getElementById("helpClose").onclick=()=>showPlannerView("more");'+
- '\ndocument.getElementById("helpBtn").onclick=()=>showPlannerView("help");';
+ '\ndocument.getElementById("helpClose").onclick=returnFromHelp;'+
+ '\ndocument.getElementById("helpBtn").onclick=openHelpPage;';
 
 test("More Help is an actual accessible view, not an overlay or a demo link",()=>{
  assert.match(html,/<section id="view-help" class="view more-subview" aria-labelledby="helpTitle">/);
@@ -56,7 +56,8 @@ test("More -> Help -> Back, header help and settings keep the correct navigation
      assert.equal(await page.locator("#view-help.active").count(),1);
      assert.equal(await page.locator('.navbtn[data-view="more"].active').count(),1);
      await page.locator("#helpClose").click();
-     assert.equal(await page.locator("#view-more.active").count(),1);
+     assert.equal(await page.locator("#view-plan.active").count(),1);
+     assert.equal(await page.locator("#helpBtn").evaluate(e=>e===document.activeElement),true);
     }finally{await page.close()}
    }
   }

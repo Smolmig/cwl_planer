@@ -21,14 +21,14 @@ const navigationCode=[
  "function closeQuickClan(){}",
  html.slice(navStart,navEnd),
  html.slice(moreStart,moreEnd),
- 'document.getElementById("cloudAccountBack").onclick=()=>showPlannerView("more");',
- 'document.getElementById("helpClose").onclick=()=>showPlannerView("more");',
+ 'document.getElementById("cloudAccountBack").onclick=returnFromAccount;',
+ 'document.getElementById("helpClose").onclick=returnFromHelp;',
  "let user=null,recoveryMode=false,pendingRelease=null;",
  "const $=id=>document.getElementById(id);",
  "const installPendingRelease=()=>{};",
  sync.slice(cloudStart,cloudEnd),
- 'window.__simulateLogin=()=>{user={id:"synthetic-only"};document.getElementById("cloudAccount").hidden=false};',
- 'window.__simulateLogout=()=>{user=null;document.getElementById("cloudAccount").hidden=true;showPlannerView("plan")};',
+ 'window.__simulateLogin=()=>{user={id:"synthetic-only"};document.body.classList.add("cloud-mode");document.getElementById("cloudAccount").hidden=false};',
+ 'window.__simulateLogout=()=>{user=null;document.body.classList.remove("cloud-mode");document.getElementById("cloudAccount").hidden=true;showPlannerView("plan")};',
  'document.getElementById("cloudOpen").onclick=()=>open();',
  'document.getElementById("cloudClose").onclick=()=>close();'
 ].join("\n");
@@ -94,6 +94,22 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
      await page.locator("#cloudAccountBack").click();
      assert.equal(await page.locator("#view-more.active").count(),1);
      assert.equal(await page.locator('.navbtn[data-view="more"].active').count(),1);
+     await page.locator('.navbtn[data-view="members"]').click();
+     assert.equal(await page.locator("#cloudOpen").isVisible(),false);
+     await page.evaluate(()=>document.getElementById("cloudOpen").click());
+     assert.equal(await page.locator("#view-account.active").count(),1);
+     assert.match(await page.locator("#cloudAccountBack").innerText(),/Mitgliedern/);
+     await page.locator("#cloudAccountBack").click();
+     assert.equal(await page.locator("#view-members.active").count(),1);
+     assert.equal(await page.locator("#accountQuickButton").evaluate(e=>e===document.activeElement),true);
+     await page.evaluate(()=>showPlannerView("settings"));
+     await page.evaluate(()=>openAccountFromSettings());
+     assert.equal(await page.locator("#view-account.active").count(),1);
+     assert.match(await page.locator("#cloudAccountBack").innerText(),/Einstellungen/);
+     await page.locator("#cloudAccountBack").click();
+     assert.equal(await page.locator("#view-members.active").count(),1);
+     assert.equal(await page.locator("#view-settings.active").count(),1);
+     assert.equal(await page.locator("#settingsCloudManage").evaluate(e=>e===document.activeElement),true);
      await page.evaluate(()=>window.__simulateLogout());
      assert.equal(await page.locator("#view-plan.active").count(),1);
     }finally{await page.close()}
@@ -104,8 +120,8 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
 test("no account content is cloned and no access form writes during navigation",()=>{
  assert.doesNotMatch(html,/innerHTML\s*=.*cloudAccount/);
  assert.doesNotMatch(html,/cloneNode\(.*cloudAccount/);
- assert.match(html,/window\.CWLShowAccountPage=\(\)=>showPlannerView\("account"\)/);
- assert.match(html,/document\.getElementById\("cloudAccountBack"\)\.onclick=\(\)=>showPlannerView\("more"\)/);
+ assert.match(html,/window\.CWLShowAccountPage=openAccountPage/);
+ assert.match(html,/document\.getElementById\("cloudAccountBack"\)\.onclick=returnFromAccount/);
  assert.doesNotMatch(sync,/await sb\.from\("cwl_cloud_profiles"\).*CWLShowAccountPage/);
 });
 

@@ -17,7 +17,7 @@ test("Editor proposal reuses original server-side played histories despite norma
  const normalized={...raw,locks:[{locked:true,lineup:["m1"],snapshots:{}}],
    archivedMembers:[{id:"x",firstDay:null,statuses:Array(7).fill("auto")}],
    members:[{id:"m1",name:"Alpha",targetDays:3}]};
- let submitted=null,reloaded=0,refreshed=0;
+ let submitted=null,reloaded=0,refreshed=0,audits=0;
  const context={
    clanId:"clan-id",role:"editor",changedSerial:JSON.stringify(normalized),
    assertReviewSeasonAvailable:()=>{},
@@ -28,7 +28,7 @@ test("Editor proposal reuses original server-side played histories despite norma
    storage:{confirmAction:async()=>true,toast:()=>{}},
    sb:{rpc:async(name,payload)=>{assert.equal(name,"cwl_submit_plan_suggestion_checked");submitted=payload.p_profile;return {error:null}}},
    loadCloudProfile:async()=>{reloaded++},loadPlanReview:async()=>{refreshed++},
-   clearTimeout:()=>{},debounce:null
+   clearTimeout:()=>{},debounce:null,audit:async()=>{audits++},console
  };
  const submit=vm.runInNewContext(sync.slice(a,b)+"\nsubmitPlanSuggestion",context);
  await submit();
@@ -36,7 +36,7 @@ test("Editor proposal reuses original server-side played histories despite norma
  assert.deepEqual(JSON.parse(JSON.stringify(submitted.archives)),raw.archives);
  assert.deepEqual(JSON.parse(JSON.stringify(submitted.archivedMembers)),raw.archivedMembers);
  assert.equal(submitted.members[0].targetDays,3);
- assert.equal(reloaded,1);assert.equal(refreshed,1);
+ assert.equal(reloaded,1);assert.equal(refreshed,1);assert.equal(audits,1);
 });
 test("Vize cannot delete played members or manually edit played days during approval",()=>{
  assert.match(html,/function reviewLockedForVize\(\)/);

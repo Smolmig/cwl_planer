@@ -2,8 +2,10 @@
 export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toast,confirmAction,askAction}){
  const el=id=>document.getElementById(id);
  let entries=[],forClan=null;
+ const scope=x=>JSON.stringify([x.clanId,x.userId??null,x.epoch??null,x.role]);
+ let requestSerial=0;
  const reset=()=>{
-  entries=[];forClan=null;
+  requestSerial++;entries=[];forClan=null;
   const select=el("cloudSnapshotSelect");
   select.replaceChildren(new Option("Sicherungspunkte bei Bedarf laden",""));
   buttons();
@@ -15,12 +17,13 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   el("cloudRestoreSnapshot").disabled=!chosen||role!=="owner";
  };
  async function list(){
-  const {clanId}=context();if(!clanId)return;
+  const ctx=context(),{clanId}=ctx;if(!clanId)return;
+  const expected=scope(ctx),serial=++requestSerial;
   const {data,error}=await sb.from("cwl_profile_snapshots").select("id,revision,created_at")
     .eq("clan_id",clanId).order("created_at",{ascending:false}).order("id",{ascending:false}).limit(5);
   if(error)throw error;
-  if(clanId!==context().clanId)return;
-  entries=data||[];forClan=clanId;
+  if(expected!==scope(context())||serial!==requestSerial)return;
+  entries=data||[];forClan=expected;
   const select=el("cloudSnapshotSelect");
   select.replaceChildren(new Option(entries.length?"Sicherungspunkt auswählen":"Noch keine Sicherung vorhanden",""));
   for(const entry of entries){
@@ -32,12 +35,12 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   buttons();
  }
  async function selected(){
-  const {clanId}=context(),id=el("cloudSnapshotSelect").value;
-  if(!id||forClan!==clanId||!entries.some(x=>String(x.id)===id))throw Error("Bitte erst einen Sicherungspunkt auswählen.");
+  const ctx=context(),{clanId}=ctx,id=el("cloudSnapshotSelect").value,expected=scope(ctx);
+  if(!id||forClan!==expected||!entries.some(x=>String(x.id)===id))throw Error("Bitte erst einen Sicherungspunkt auswählen.");
   const {data,error}=await sb.from("cwl_profile_snapshots").select("revision,profile_json,created_at")
     .eq("clan_id",clanId).eq("id",id).single();
   if(error)throw error;
-  if(context().clanId!==clanId)throw Error("Der Clan wurde gewechselt.");
+  if(scope(context())!==expected)throw Error("Clan oder Anmeldung wurde gewechselt.");
   if(!data?.profile_json||!Array.isArray(data.profile_json.members)||
      !Array.isArray(data.profile_json.locks)||!Array.isArray(data.profile_json.archives))
    throw Error("Der gewählte Sicherungspunkt ist kein gültiges CWL-Profil.");
@@ -56,9 +59,10 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   toast("✓ Sicherungspunkt heruntergeladen");
  }
  async function restore(){
-  const ctx=context();
+  const ctx=context(),expected=scope(ctx);
   if(ctx.role!=="owner")throw Error("Nur der Besitzer kann den Clanstand zurücksetzen.");
   await ensureSaved();
+  if(scope(context())!==expected)throw Error("Clan oder Berechtigung wurde gewechselt.");
   const {data,id,clanId}=await selected(),{revision,clans}=context();
   const clan=clans.find(x=>x.id===clanId)?.name;
   if(!clan||revision==null||clanId!==ctx.clanId)throw Error("Kein aktueller Clanstand vorhanden.");
@@ -74,11 +78,12 @@ export function createCloudBackups({sb,context,ensureSaved,loadProfile,audit,toa
   });
   if(answer.value!=="confirm")return;
   if(answer.input!==clan){toast("Clanname stimmt nicht überein. Keine Daten geändert.");return;}
+  if(scope(context())!==expected||context().revision!==revision)throw Error("Clan, Berechtigung oder Planstand geändert. Bitte erneut prüfen.");
   const {error}=await sb.rpc("cwl_restore_profile_snapshot",{
    p_clan:clanId,p_id:Number(id),p_expected_revision:revision
   });
   if(error)throw error;
-  if(context().clanId!==clanId)return;
+  if(scope(context())!==expected)return;
   await loadProfile();
   await Promise.all([list(),audit()]);
   el("cloudBackupStatus").textContent="Wiederherstellung erfolgreich. Der zuvor aktuelle Stand ist ebenfalls gesichert.";

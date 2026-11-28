@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.41.0",
+      "releaseType": "minor",
+      "date": "2026-11-28",
+      "title": "Einstellungen und Clan & Konto übersichtlicher",
+      "description": "Kompaktes Zahnrad und neu gruppiertes Mehr-Menü. Mitgliederabgleich direkt im Mitgliederbereich, Freigaben und Vorschläge im Änderungsverlauf, Sicherungen zentral unter Backup & Import und verbesserte Rücknavigation."
+  },
+
+  {
       "version": "v1.40.0",
       "releaseType": "minor",
       "date": "2026-11-28",

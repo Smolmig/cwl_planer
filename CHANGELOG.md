@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.41.0] - 2026-11-28
+
+- Kompaktes Zahnrad, gruppiertes Mehr-Menü, Installationshilfe und Update-Verlauf am passenden Ort; verbesserte Rücknavigation.
+- Automatischer Mitgliederabgleich im Mitgliederbereich; bestehende lokale Opt-outs bleiben erhalten. Planänderungen und belegte Freigabe-/Vorschlagsmetadaten im Änderungsverlauf.
+- Backup & Import zentral; bestehende Wiederherstellungswege mit zusätzlichen Kontextprüfungen. Keine Datenmigration, keine neue Tracking-Metrik, separate Offline-PWA unverändert.
+
 ## [1.40.0] - 2026-11-28
 
 - Clanverwaltung mit getrennten Bereichen für Handlungsbedarf, Mitgliedsmerkmale und Regeln. Offene Fälle und betroffene Spieler getrennt zählen; Suche nach Name oder Tag.

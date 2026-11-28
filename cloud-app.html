@@ -3952,6 +3952,69 @@ html.cloud-startup-pending .cloud-startup-splash{
  .strategic-notice strong{display:flex;align-items:baseline;gap:7px;font-size:inherit;color:var(--notice-accent)}
  .strategic-notice-icon{color:var(--notice-accent);flex:none;font-weight:800}
  .strategic-notice p{margin:4px 0 0}
+
+/* Compact Cloud quick settings (#46): keep original controls and their
+   listeners; detailed settings still live under Mehr, local mode unchanged. */
+html[data-theme] body.cloud-mode #view-settings .settings-window{max-width:480px}
+body.cloud-mode #view-settings :is(#settingsRulesSection,#settingsAutoRosterBox,#settingsBackupSection){display:none!important}
+body.cloud-mode #view-more .more-tile[data-more-action="appearance"]{display:none!important}
+html[data-theme] body.cloud-mode #view-settings .settings-window>.card{padding:12px 18px}
+html[data-theme] body.cloud-mode #view-settings .settings-window .settings-subcard{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+body.cloud-mode #view-settings .settings-window .section-title:has(+ #settingsRulesSection){display:none}
+body.cloud-mode #view-settings #settingsAppearanceSection .settings-row{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+body.cloud-mode #view-settings :is(#themeSelect,#settingsClose,#settingsCloudManage,#openReleaseHistory,#reportBugBtn){min-height:44px;max-width:100%}
+body.cloud-mode #view-settings #themeSelect{width:100%;min-width:0}
+body.cloud-mode #view-settings .settings-cloud-row{gap:8px}
+body.cloud-mode #view-settings .settings-cloud-row .statusline{margin:3px 0}
+body.cloud-mode #view-settings .settings-window .footer-note{display:none}
+body.cloud-mode #view-settings .latest-changelog{border:0;padding-inline:0;background:transparent;box-shadow:none}
+@media(max-width:480px){html[data-theme] body.cloud-mode #view-settings .settings-window>.card{padding:12px 14px}}
+
+/* #46: one calm grouped navigation surface, not a wall of tiles. */
+html[data-theme] #view-more .more-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+html[data-theme] #view-more .more-group{min-width:0}
+html[data-theme] #view-more .more-group-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.03em;margin:0 0 8px;padding:0 3px}
+html[data-theme] #view-more .more-tile{width:100%;min-height:64px;padding:10px 3px;gap:12px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html[data-theme] #view-more .more-tile:hover{background:var(--card)}
+html[data-theme] #view-more .more-tile-symbol{width:36px;height:36px;background:transparent;border:0;box-shadow:none}
+html[data-theme] #view-more .more-tile strong{font-size:15px}
+html[data-theme] #view-more .more-tile small{font-size:12px;line-height:1.4}
+html[data-theme] #view-more .more-tile>span:last-child{font-size:23px}
+body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more-action="install"]){display:none!important}
+#helpInstallOpen{min-height:44px}
+@media(max-width:699px){html[data-theme] #view-more .more-menu{grid-template-columns:minmax(0,1fr);gap:20px}}
+
+#cloudAutoRosterInfo{min-width:0;display:grid;gap:6px}
+#cloudAutoRosterInfo[hidden],#resumeAutoRosterLabel[hidden]{display:none!important}
+#cloudAutoRosterInfo #autoRosterStatus{margin:0;overflow-wrap:anywhere}
+#resumeAutoRosterLabel{min-height:44px;display:flex;align-items:center;gap:8px}
+
+/* #37: quiet account activity list with a separate disclosure for other records. */
+#cloudAudit{display:grid;gap:0;min-width:0}
+#cloudAudit .cloud-audit-item{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;background:transparent;padding:0}
+#cloudAudit .cloud-audit-item>summary{min-height:44px;padding:10px 2px;overflow-wrap:anywhere;cursor:pointer}
+#cloudAudit .cloud-audit-item>summary:focus-visible,#cloudAudit .cloud-audit-other>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#cloudAudit .cloud-audit-other{margin-top:10px;min-width:0}
+#cloudAudit .cloud-audit-other>summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--muted);font-weight:600}
+#cloudAudit .cloud-audit-other>summary::before{content:"›";font-size:20px}
+#cloudAudit .cloud-audit-other[open]>summary::before{transform:rotate(90deg)}
+#cloudAudit .cloud-audit-changes{overflow-wrap:anywhere}
+
+#cloudAccountImportSection[hidden],body:not(.cloud-mode) #cloudAccountImportSection{display:none!important}
+#cloudAccountImportSection{margin-top:16px;min-width:0}
+#cloudAccountImportSection>summary,#cloudBackupPanel>summary{min-height:44px;cursor:pointer}
+#cloudAccountImportSection :is(button,select){min-height:44px;max-width:100%}
+#cloudImportFile{max-width:100%;min-width:0}
+
+/* Visual review of actual CI screenshots, 28.11.2026. */
+html[data-theme] #view-more .more-menu{max-width:900px}
+#view-more .more-tile-symbol svg{display:block;flex:none}
+#cloudAccountAuditSection .cloud-audit-scope{margin:0 0 8px;color:var(--muted);font-size:12px}
+#cloudAccountAuditSection .cloud-audit-scope>summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer}
+#cloudAccountAuditSection .cloud-audit-scope>summary::before{content:"›";font-size:18px}
+#cloudAccountAuditSection .cloud-audit-scope[open]>summary::before{transform:rotate(90deg)}
+#cloudAudit .cloud-audit-item>summary strong{line-height:1.4}
+@media(max-width:360px){html[data-theme] #view-more .more-tile{gap:8px;padding-inline:2px}html[data-theme] #view-more .more-tile-symbol{width:29px}}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4076,7 +4139,11 @@ html.cloud-startup-pending .cloud-startup-splash{
     </div>
     <div id="cloudMembersTools" class="cloud-member-tools" hidden>
       <button class="btn primary" type="button" id="cloudMembersSyncBtn">↻ Jetzt abgleichen</button>
-      <div class="cloud-members-hint">Mit dem Clash-Clan abgleichen · neue und ausgetretene Spieler prüfen</div>
+      <div id="cloudAutoRosterInfo" hidden>
+       <div class="cloud-members-hint">Neue Spieler und Rathauslevel werden abgeglichen, wenn der Planer geöffnet ist. Bestehende Aufstellungen bleiben geschützt.</div>
+       <div class="statusline" id="autoRosterStatus" role="status" aria-live="polite">Noch kein Abgleich in dieser Sitzung.</div>
+       <label class="settings-auto-roster" id="resumeAutoRosterLabel" hidden><input type="checkbox" id="settingsAutoRoster" checked> Automatischen Abgleich wieder aktivieren</label>
+      </div>
       <div id="cloudEmergencyStatus" class="cloud-roster-status" role="status" aria-live="polite" hidden></div>
       <button class="btn small" type="button" id="cloudEmergencyEnable" hidden>Manuelle Notfallbearbeitung</button>
       <details id="cloudManualMembers" class="cloud-minor"><summary>Spieler manuell hinzufügen</summary>
@@ -4195,19 +4262,25 @@ html.cloud-startup-pending .cloud-startup-splash{
 </section>
 
 <section id="view-more" class="view" aria-labelledby="moreTitle">
- <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Hier findest du deine Clans, vergangene CWLs und weitere Einstellungen.</p></div>
+ <div class="more-heading"><span class="more-eyebrow">VERWALTUNG</span><h2 id="moreTitle">Mehr</h2><p>Verwalte deinen Clan, Verlosungen und gespeicherte Daten.</p></div>
  <div class="more-menu">
-  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true">♙</span><span><strong>Clan & Konto</strong><small>Clans wechseln, Zugänge und Sicherungen verwalten</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true">♧</span><span><strong>Clanverwaltung</strong><small>Handlungsbedarf, Mitgliedsmerkmale und Regeln</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true">♛</span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true">▣</span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true">☷</span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true">☼</span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="updates"><span class="more-tile-symbol" aria-hidden="true">◷</span><span><strong>Update-Verlauf</strong><small>Alle Neuerungen seit dem ersten Planer</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true">▤</span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true">⇧</span><span><strong>Backup & Import</strong><small>JSON-Dateien sichern und wiederherstellen</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true">⇩</span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
-  <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true">ⓘ</span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
+  <section class="more-group" aria-label="Clan & Planung"><h3 class="more-group-title">Clan & Planung</h3>
+  <button type="button" class="more-tile" data-more-action="clan"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m2-15a3 3 0 0 1 0 6m4 9v-2a6 6 0 0 0-4-5.7"/></svg></span><span><strong>Clan & Konto</strong><small>Clans wechseln und Zugänge verwalten</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="management" hidden><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8 3v6c0 5-3 8-8 10-5-2-8-5-8-10V6z"/><path d="m8 12 3 3 5-6"/></svg></span><span><strong>Clanverwaltung</strong><small>Handlungsbedarf, Mitgliedsmerkmale und Regeln</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="rules"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 4v4m8 2v4m-5 2v4"/></svg></span><span><strong>CWL-Regeln & Grunddaten</strong><small>15/30 Spieler, Tage und Planungsvorgaben</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="profiles"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M5 17v-1a4 4 0 0 1 8 0v1m3-7h3m-3 4h3"/></svg></span><span><strong>Clanprofile</strong><small>Lokale Profile verwalten und wechseln</small></span><span aria-hidden="true">›</span></button>
+  </section>
+  <section class="more-group" aria-label="Verlosungen & Archiv"><h3 class="more-group-title">Verlosungen & Archiv</h3>
+  <button type="button" class="more-tile" data-more-action="goldpass" hidden><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8C4 8 4 2 8 3c2 0 4 5 4 5Zm0 0c8 0 8-6 4-5-2 0-4 5-4 5Z"/></svg></span><span><strong>Goldpass-Verlosung</strong><small>CWL- und Grind-Verlosungen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="archive"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v12h14V8m-10 4h6"/></svg></span><span><strong>CWL-Archiv</strong><small>Gruppenergebnisse und frühere CWL-Pläne</small></span><span aria-hidden="true">›</span></button>
+  </section>
+  <section class="more-group" aria-label="App & Sicherheit"><h3 class="more-group-title">App & Sicherheit</h3>
+  <button type="button" class="more-tile" data-more-action="appearance"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></span><span><strong>Design & Aktualisierung</strong><small>Farbschema, Version und Cloud-Abgleich</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="updates"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><strong>Update-Verlauf</strong><small>Alle Neuerungen seit dem ersten Planer</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="backup"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></span><span><strong>Backup & Import</strong><small>JSON-Dateien sichern und wiederherstellen</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="install"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4m-5-7 3 3 3-3m-3-5v8"/></svg></span><span><strong>App installieren</strong><small>iPhone, Android und PC · ohne App Store</small></span><span aria-hidden="true">›</span></button>
+  <button type="button" class="more-tile" data-more-action="help"><span class="more-tile-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 2.8c-.8.4-1 1-1 2.2m0 3h.01"/></svg></span><span><strong>Hilfe & Sicherheit</strong><small>Funktionen verstehen und Probleme melden</small></span><span aria-hidden="true">›</span></button>
+  </section>
  </div>
  <div id="installSuggestion" class="install-suggestion" hidden>
   <span>Als App auf dem iPhone nutzen? Das geht ohne App Store.</span>
@@ -4312,7 +4385,7 @@ html.cloud-startup-pending .cloud-startup-splash{
   <div class="card settings-intro">
     
     <div id="settingsCloudAccount" class="settings-cloud-account">
-      <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln, Berechtigungen verwalten und Cloud-Sicherungen ansehen.</p></div>
+      <div class="settings-cloud-row"><div><strong>Clan & Konto</strong><p class="statusline">Clans wechseln und Zugänge verwalten.</p></div>
       <button class="btn" type="button" id="settingsCloudManage">Clan & Konto öffnen</button></div>
     </div>
   </div>
@@ -4326,17 +4399,14 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="settings-subcard" id="settingsRulesSection"><h4>CWL-Grunddaten</h4><div class="settings-row"><div class="field"><label>Spieler pro Krieg</label><select id="slotsPreset"><option value="15">15 Spieler</option><option value="30">30 Spieler</option><option value="custom">Individuell / Event …</option></select><input class="hidden" type="number" id="slotsCustomInput" min="1" max="50" value="15" style="margin-top:7px"></div><div class="field"><label>Anzahl Kriege</label><input type="number" id="daysInput" min="1" max="7" value="7"></div></div><div class="config-lock-note hidden" id="configLockNote">🔒 Sobald eine CWL läuft, bleiben Kriegsgröße und Anzahl Kriege gesperrt. Für andere Grunddaten eine neue CWL starten.</div><div class="settings-note">Mit Clash verbunden: Größe und Kriegszahl kommen automatisch aus der Liga. Ohne Cloud-Verknüpfung kannst du manuell planen, auch mit historischen oder eigenen Formaten bis 50 Spielern pro Krieg.</div></div>
     <div class="settings-subcard" id="settingsAutoRosterBox">
   <h4>Clash-Mitglieder</h4>
-  <label class="settings-auto-roster"><input type="checkbox" id="settingsAutoRoster" checked> Automatisch abgleichen</label>
-  <p class="settings-note">Neue Spieler und Rathauslevel übernehmen. Austritte prüfen, ohne bestehende CWL-Aufstellungen zu verändern.</p>
-  <div class="statusline" id="autoRosterStatus" aria-live="polite">Noch kein Abgleich.</div>
-  <button class="btn small" id="settingsRosterRefresh" type="button">Jetzt prüfen</button>
-</div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">🏅 Arena · Anthrazit & Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v9</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
+  <p class="settings-note">Den automatischen Abgleich, seinen Status und die manuelle Prüfung findest du direkt im Mitglieder-Tab.</p>
+</div><div class="settings-subcard" id="settingsAppearanceSection"><h4>Darstellung</h4><div class="settings-row"><div class="field"><label>Farbschema</label><select id="themeSelect"><option value="arena">Arena · Gold (Standard)</option><option value="dark">🌙 Dunkel</option><option value="light">☀️ Hell</option><option value="system">🖥️ System</option><option value="cyber">⚡ Cyberpunk Dunkel</option><option value="cyberlight">🌤️ Cyberpunk Hell</option></select></div><div class="field"><label>App-Version</label><div class="actions"><span class="badge ok" id="appVersion">v1.41.0</span><button class="btn small" id="updateAppBtn" hidden>↻ App aktualisieren</button><span class="statusline" id="autoUpdateStatus">Aktualisiert sich automatisch</span></div>
     <div class="latest-changelog" id="latestChangelog" aria-label="Änderungen der aktuellen App-Version">
-      <div class="latest-changelog-head"><strong>Neu in v1.40.0</strong><span>Clanverwaltung</span></div>
+      <div class="latest-changelog-head"><strong>Neu in v1.41.0</strong><span>Navigation & Konto</span></div>
       <ul>
-       <li><b>Handlungsbedarf:</b> Offene Fälle je Spieler auf einen Blick, mit Suche und direkten Prüfbereichen.</li>
-       <li><b>Mitgliedsmerkmale:</b> Discord und Account-Zuordnungen kompakt pflegen.</li>
-       <li><b>Regeln:</b> Kriterien verständlich zusammenfassen; dezente Statusfarben und helleres Orange.</li>
+       <li><b>Schneller finden:</b> Kompaktes Zahnrad, gruppiertes Mehr-Menü und direkter Mitgliederabgleich.</li>
+       <li><b>Änderungen nachvollziehen:</b> Planänderungen, gespeicherte Freigaben und Vize-Vorschläge im Verlauf.</li>
+       <li><b>Sicherungen:</b> Backup & Import an einem Ort; Zurück führt zum vorherigen Hauptbereich.</li>
       </ul>
       <button type="button" class="btn small" id="openReleaseHistory">Alle Updates ansehen</button>
     </div></div></div></div>
@@ -4366,6 +4436,26 @@ html.cloud-startup-pending .cloud-startup-splash{
         <div id="cloudPortablePreviewResult" class="cloud-portable-preview-result" hidden></div>
         <button type="button" class="btn danger" id="cloudPortableApply" hidden>Geprüfte Sicherung wiederherstellen</button>
       </section>
+  <details class="cloud-minor" id="cloudAccountImportSection" hidden>
+    <summary>Erweiterte Wiederherstellung · nur CWL-Plan</summary>
+    <h4>Ältere lokale Plan-Datei übernehmen</h4>
+    <p>Nur für alte lokale Plan-Dateien: ersetzt den aktuellen gemeinsamen Plan, nicht die vollständigen Clan-Daten. Nutze für einen Gerätewechsel das portable Backup oben.</p>
+    <input type="file" id="cloudImportFile" accept="application/json,.json">
+    <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
+    <details id="cloudBackupPanel" class="cloud-minor" hidden>
+      <summary>Automatische Plan-Sicherungspunkte</summary>
+      <p class="small">Bis zu fünf Sicherungsstände des gemeinsamen CWL-Plans. Nur der Besitzer kann einen alten Planstand wiederherstellen. Kriegsstatistiken, Benutzerkonten und Zugriffsrechte sind nicht enthalten.</p>
+      <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
+      <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
+      <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
+      <div class="actions">
+        <button class="btn small" id="cloudDownloadSnapshot" type="button" disabled>Als JSON herunterladen</button>
+        <button class="btn small danger" id="cloudRestoreSnapshot" type="button" hidden disabled>Stand wiederherstellen</button>
+      </div>
+      <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
+    </details>
+  </details>
+
     </div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
@@ -4574,7 +4664,9 @@ html.cloud-startup-pending .cloud-startup-splash{
 <section id="view-help" class="view more-subview" aria-labelledby="helpTitle"><div class="card help-page">
   <div class="section-title"><div><h3 id="helpTitle">Hilfe zum CWL Planer</h3><div class="statusline">Deine Clan-War-League einfach planen und verwalten.</div></div><button class="btn small" id="helpClose" type="button">Zurück zu Mehr</button></div>
   <div class="helpbox help-intro">Der Planer verteilt eure Clanmitglieder auf bis zu sieben CWL-Kriegstage. Du legst fest, wer dabei ist, wer gesetzt wird und welche Regeln gelten. Im gemeinsamen Cloud-Clan können nach Kriegsende die tatsächlichen Einsätze und Ergebnisse ergänzt werden.</div>
-  <p class="statusline">Du möchtest sehen, was sich am Planer verändert hat? Unter <b>Mehr → Update-Verlauf</b> findest du alle dokumentierten Versionen mit Datum und kurzen Erklärungen. Das neueste Update steht weiterhin unter Design & Aktualisierung.</p>
+  <p class="statusline">Alle veröffentlichten Änderungen findest du im Zahnrad unter „Alle Updates ansehen“. Ohne verbundenen Cloud-Clan bleibt auch Mehr → Update-Verlauf verfügbar.</p>
+  <button class="btn" type="button" id="helpInstallOpen">App installieren · iPhone, Android und PC</button>
+  <p class="statusline">Das Zahnrad enthält Darstellung, App-Version und Clan &amp; Konto. Unter Mehr findest du Verwaltung, Verlosungen, Archiv und Sicherungen. Im verbundenen Clan steht der Status des automatischen Mitgliederabgleichs direkt unter Mitglieder; er läuft bei geöffneter App.</p>
   <div id="cloudHelpSection" hidden class="helpbox cloud-help">
    <h4>Gemeinsam planen</h4>
    <p>Nach der Anmeldung arbeitest du ausschließlich im ausgewählten Cloud-Clan. Änderungen werden gemeinsam gespeichert und nach Möglichkeit automatisch auf anderen Geräten übernommen. Der lokale Gastmodus bleibt getrennt.</p>
@@ -4587,11 +4679,11 @@ html.cloud-startup-pending .cloud-startup-splash{
      <div><b>Clash-Mitglieder abgleichen</b><p>Der gemeinsame Planer kann die Mitglieder automatisch abgleichen. Unter „Mehr → CWL-Regeln & Grunddaten“ lässt sich das ausschalten. Bei ausgetretenen Spielern, die noch eingeplant sind, prüfst du die Änderung vor dem Übernehmen. Bei einem Clash-Ausfall ist die manuelle Notfallbearbeitung nur nach ausdrücklicher Aktivierung möglich.</p></div>
     <div><b>Mitglieder bearbeiten</b><p>„Dabei“, „Fix“, Rotation, Einsatzziel und Notizen verwaltest du in der Mitgliederliste. Name und Rathaus kommen bei API-verknüpften Spielern aus Clash und sind normalerweise schreibgeschützt. Die Statistik berechnet Angriffskennzahlen aus vorhandenen Kriegsdaten.</p></div>
     <div><b>Was-wäre-wenn für CWL-Tage</b><p>Im Tab „Plan“ öffnest du über das Info-Symbol (ⓘ) eines noch nicht fixierten Kriegstags „Auswahl erklärt“. Unter „Was wäre, wenn …?“ kannst du für einen Teilnehmer testweise AUTO, MUSS oder RAUS setzen. Die Vorschau berechnet mit demselben fairen Planer alle Tage erneut und zeigt Wechsel, Gesamteinsätze und Regelkonflikte. Sie verändert <strong>weder deine Tagesregeln noch den Cloud-Plan oder die Aufstellung in Clash</strong>. Tatsächlich ändern kannst du die Regel nur unter „Mitglieder → Tagesregeln“. Es ist keine gegner- oder statistikorientierte Leistungsprognose.</p></div>
-    <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen.</p></div>
+    <div><b>Änderungen und Konflikte</b><p>Bei Änderungen anderer Clanführer erscheint ein Hinweis. Ist deine eigene Bearbeitung noch offen, wird nicht unbemerkt überschrieben. Unter „Clan & Konto“ kannst du den aktuellen Stand prüfen und den Änderungsverlauf ansehen. Belegte Planänderungen, die letzte gespeicherte Freigabe und Vorschlagsentscheidungen der Clanführung stehen zuerst. Ältere Freigabewechsel wurden nicht vollständig protokolliert.</p></div>
     <div id="cloudPortableHelp"><b>Vollständiges Cloud-Backup / Full Cloud backup</b>
-     <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Die letzten fünf automatischen Sicherungen unter „Clan & Konto“ betreffen weiterhin nur den gemeinsamen CWL-Plan, nicht die komplette Angriffshistorie.</p>
+     <p lang="de"><strong>Mehr → Backup & Import:</strong> Nur der Clanbesitzer kann mit „Backup herunterladen“ alle 17 Datenbereiche je ausgewähltem Clan als JSON mit serverseitigem Herkunftsbeleg sichern: Plan, gespielte und gesperrte CWL-Tage, Angriffshistorie, Archive und Entscheidungen. Das Backup enthält weder Passwörter noch Zugangsrechte. „Backup wiederherstellen“ prüft die Datei zuerst. Wähle für jeden Quellclan einen zuvor unter „Clan & Konto“ neu angelegten, noch unbenutzten eigenen Clan mit identischem Clash-Tag. Aktive Clans und alte Clan-UUIDs können nicht überschrieben werden. Prüfe die Vorschau, bestätige die Zuordnung und gib das Bestätigungswort ein. Bei mehreren Clans wird alles zusammen oder gar nichts wiederhergestellt. Die letzten fünf automatischen Sicherungen unter „Mehr → Backup & Import → Erweiterte Wiederherstellung“ betreffen weiterhin nur den gemeinsamen CWL-Plan, nicht die komplette Angriffshistorie.</p>
      <p lang="de"><strong>Bei Datenbank-Totalverlust:</strong> Die JSON-Datei allein ist kein fälschungssicherer Beleg für alte API-Angriffe. Der ursprüngliche Serverbeleg muss zusammen mit alten Auth-Konten aus einem nach Ausstellung erstellten, verschlüsselten Betreiber-Backup erhalten sein. Die App erfindet keine Konten, historischen Angriffe oder Herkunftsnachweise.</p>
-     <p lang="en"><strong>More → Backup & Import:</strong> Only a clan owner can download all 17 portable data areas per selected clan, including the plan, locked/played CWL days, verified attacks, archives and decisions, with an original server receipt. Passwords and access roles are excluded. Restore backup first checks the file, then requires a newly created, unused owner-controlled replacement clan with the same Clash tag for every source. It never overwrites an active clan or restores into the old clan UUID. Review the preview, confirm the mapping and type the confirmation word. Multiple clans restore together or not at all. Existing automatic snapshots under Clan & Account still protect only the plan.</p>
+     <p lang="en"><strong>More → Backup & Import:</strong> Only a clan owner can download all 17 portable data areas per selected clan, including the plan, locked/played CWL days, verified attacks, archives and decisions, with an original server receipt. Passwords and access roles are excluded. Restore backup first checks the file, then requires a newly created, unused owner-controlled replacement clan with the same Clash tag for every source. It never overwrites an active clan or restores into the old clan UUID. Review the preview, confirm the mapping and type the confirmation word. Multiple clans restore together or not at all. Existing automatic snapshots under More → Backup & Import → Advanced recovery still protect only the plan.</p>
      <p lang="en"><strong>Total database loss:</strong> A JSON file alone cannot establish historic API-attack provenance. An independently retained encrypted operator database backup created after the original receipt must preserve that receipt and the original Auth identities. Lost accounts, collector evidence and attack authors are never fabricated.</p></div>
     <div><b>Einladungen annehmen</b><p>Ein Link öffnet direkt ein kleines Beitrittsfenster mit Planername und Zugriffsrolle. Bereits angemeldete Personen müssen nur ihren angezeigten Namen prüfen und „Beitreten“ wählen. Ohne Konto erfolgt zunächst die Anmeldung oder Registrierung. Nach der E-Mail-Bestätigung bleibt die Einladung erhalten. Gruppenlinks gelten 24 Stunden, sieben Tage oder bis zum Widerruf.</p></div>
     <div><b>Passwort vergessen?</b><p>Bei der Anmeldung kannst du einen Wiederherstellungslink per E-Mail anfordern und ein neues Passwort vergeben. Deine Clanrechte und CWL-Daten bleiben dabei erhalten.</p></div>
@@ -4619,7 +4711,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <div class="help-item"><b>Formwerte in Mitglieder</b><div>Wähle CW-Form (30 Tage), CWL-Form (letzte dokumentierte Liga) oder Kombi-Form (CW und CWL in 30 Tagen). Der gewählte Wert steht groß auf der Karte. Angriffe gegen das gleiche eigene Rathaus zählen für die Leistung; nach einem Upgrade werden Angriffe auf dem früheren RH nur als gekennzeichneter Rückblick genutzt, wenn aktuelle vergleichbare Angriffe fehlen. Kleine Stichproben und ältere Daten werden bei der Formsortierung getrennt eingeordnet. Die 3★-Quote umfasst nur vergleichbare ausgeführte Angriffe. Zuverlässigkeit berücksichtigt alle belegten ausgeführten und verpassten Pflichtangriffe im gewählten Zeitraum, unabhängig vom RH. Die Form kombiniert 65 % Leistung und 35 % Zuverlässigkeit; unvollständige Nachweise bleiben vorläufig oder unbekannt. Die Sortierung ist deine persönliche Ansicht und verändert nicht die Planung. Bei weiteren verknüpften Clans, für die du bereits Leserechte hast, zählen dokumentierte Angriffe desselben Spielertags mit. Die Quellen stehen auf der Karte. Nicht sicher abgleichbare Doppelimporte werden für diese Form ausgelassen.</div></div>
     <div class="help-item"><b>Spielerstatistik &amp; Spielerform</b><div>In <b>Spielerstatistik</b> wählst du CW/CWL sowie Gesamt/30/90/180/365 Tage direkt; unter „Erweiterte Auswahl“ alternativ die letzten X CWs oder CWL-Durchgänge. Zeitraum und Anzahl begrenzen nicht heimlich gleichzeitig. <b>Spielerform</b> ist davon unabhängig: „Gesamtform“ (CW + CWL) und „CWL-Form“ (nur CWL), jeweils 30/90/180 Tage. Im Formtab zählen vergleichbare Angriffe derselben Rathausstufe; andere RH findest du in Angriffsdetails. Sortierung nach Formwert ist nicht dasselbe wie Sortierung nach 3★-Quote. Bei gleichem Formwert werden Ø Sterne und danach Ø Zerstörung als zusätzliche Entscheidung verwendet, sofern die Zerstörungsprozente bei beiden Spielern vollständig belegt sind. Fehlen Prozentwerte, gelten sie als unbekannt und nicht als 0 %. Ein Listenplatz ist keine garantierte Spielstärke.</div></div>
     <div class="help-item"><b>Nachweise &amp; andere Clans</b><div>Unbekannte Angriffe werden nicht als verpasst angenommen. Importierte und über Clash erfasste Angriffe bleiben mit ihrer Herkunft und Datenabdeckung nachvollziehbar. Bei berechtigtem Zugriff kannst du in „Angriffsdetails“ auch dokumentierte Angriffe eines Spielers aus anderen eigenen Clans gezielt anzeigen; sie werden nicht ungeprüft addiert. Das <b>aktuelle öffentliche Clash-Profil</b> kann mit Prüfzeitpunkt gesondert abgerufen werden und verändert historische Angriffe nicht.</div></div>
-    <div class="help-item"><b>Mehr: Goldpass-Verlosung</b><div>Der Clanbesitzer kann je CWL-Saison eine optionale Verlosung vorbereiten. Drei Losvorlagen helfen beim fairen Einstieg: ausgewogen, leistungsbetont oder teilnahmebetont. Die ausgewogene Vorlage zählt je durchgeführtem Angriff und Dreier ein Los sowie je ein Extra ab 19 und 21 Sternen (bei fünf Runden 14 und 15). Startlose gelten einmal je Teilnehmer. Mindestleistung und eigene Regeln bleiben einstellbar. Eine unverbindliche Testziehung mit Glücksrad ist jederzeit möglich, sobald gültige Lose vorhanden sind. Während der CWL ist die Vorschau vorläufig. Der Server bestätigt die vollständigen Aufstellungen und Angriffszahlen, bevor die offizielle Ziehung möglich ist. Speichere die Regeln und prüfe den Veranstalter. Erst die ausdrückliche Bestätigung zieht einen Gewinner entsprechend den Losen. Das Ergebnis ist einmalig und bleibt mit seinen Regeln und Teilnehmerdaten erhalten. Kein automatischer Kauf oder Versand.</div></div>\n    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gesicherte <b>Planaufstellungen</b> sichtbar, ohne als tatsächliche Einsätze zu gelten. Unter <b>Einsätze</b> gibt es eine Übersicht mit geplanter Aufstellung, bestätigter Clash-Aufstellung, Angriffs-/Sternbelegen und einer ausklappbaren Tagesmatrix. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Gemeinsame Plan-Sicherungen</b> enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
+    <div class="help-item"><b>Mehr: Goldpass-Verlosung</b><div>Der Clanbesitzer kann je CWL-Saison eine optionale Verlosung vorbereiten. Drei Losvorlagen helfen beim fairen Einstieg: ausgewogen, leistungsbetont oder teilnahmebetont. Die ausgewogene Vorlage zählt je durchgeführtem Angriff und Dreier ein Los sowie je ein Extra ab 19 und 21 Sternen (bei fünf Runden 14 und 15). Startlose gelten einmal je Teilnehmer. Mindestleistung und eigene Regeln bleiben einstellbar. Eine unverbindliche Testziehung mit Glücksrad ist jederzeit möglich, sobald gültige Lose vorhanden sind. Während der CWL ist die Vorschau vorläufig. Der Server bestätigt die vollständigen Aufstellungen und Angriffszahlen, bevor die offizielle Ziehung möglich ist. Speichere die Regeln und prüfe den Veranstalter. Erst die ausdrückliche Bestätigung zieht einen Gewinner entsprechend den Losen. Das Ergebnis ist einmalig und bleibt mit seinen Regeln und Teilnehmerdaten erhalten. Kein automatischer Kauf oder Versand.</div></div>\n    <div class="help-item"><b>Mehr: Clan &amp; Konto, Archiv und Sicherungen</b><div>Unter <b>Clan &amp; Konto</b> wechselst du zwischen deinen verbundenen Clans und siehst deine <b>App-Rolle</b>. Beobachter können lesen, aber nicht den CWL-Plan oder die Clanregeln bearbeiten. Vizes können je nach Planfreigabe mitplanen; der Besitzer verwaltet die wichtigsten Rechte. Diese App-Rollen sind keine Clash-Ränge. Im <b>CWL-Archiv</b> erscheint jede offiziell zugeordnete Saison nur einmal. Öffne den Monat und wechsle zwischen <b>Kriegstage, Tabelle, Spieler und Einsätze</b>. Die <b>Gruppenergebnisse aus Clash</b> und deine <b>archivierten CWL-Pläne</b> bleiben technisch unabhängig, werden aber innerhalb desselben Saisonrückblicks angezeigt. Manuelle und importierte Pläne ohne sichere Clan-Zuordnung behalten einen eigenen Eintrag – allein derselbe Monatsname reicht nicht für eine Zusammenführung. Bei fehlenden Clash-Ergebnissen bleiben gesicherte <b>Planaufstellungen</b> sichtbar, ohne als tatsächliche Einsätze zu gelten. Unter <b>Einsätze</b> gibt es eine Übersicht mit geplanter Aufstellung, bestätigter Clash-Aufstellung, Angriffs-/Sternbelegen und einer ausklappbaren Tagesmatrix. Über <b>Mit Clash abgleichen</b> kannst du bekannte Endstände erneut prüfen; unbekannte Ergebnisse werden nicht geschätzt. Nur mit Bearbeitungsrecht lassen sich einzelne gespeicherte Pläne im Reiter Einsätze löschen. <b>Automatische Plan-Sicherungspunkte</b> unter Backup &amp; Import → Erweiterte Wiederherstellung enthalten frühere CWL-Planstände, nicht die Statistik oder Benutzerkonten; nur der Besitzer kann sie wiederherstellen. Unter <b>Backup &amp; Import</b> kannst du zusätzlich eine JSON-Datei exportieren. Vor dem Löschen eines Archivplans solltest du eine eigene Sicherung anlegen.</div></div>
     <div class="help-item"><b>Statistik: Vergleiche &amp; Verlauf</b><div>Unter <b>Vergleiche</b> wählst du Kriegsart und Zeitraum unabhängig von der Spielerstatistik. Bei der Rathaus-Auswertung zählt der Vergleich von Angreifer- und Gegner-Rathaus; unbekannte Rathausstufen bleiben separat. Für einen direkten Spielervergleich brauchen beide Spieler erfasste Angriffe. <b>Verlauf &amp; Kriege</b> zeigt die 3★-Quote oder Ø Sterne <b>pro Angriff</b> nach Tag, Kalenderwoche oder Monat. <b>KW 12/26</b> heißt Kalenderwoche 12 im Jahr 2026. Jeder Wert beruht auf den tatsächlich erfassten Angriffen; fehlende Zeiträume sind keine 0-%-Ergebnisse. Öffne die Tabelle für die genaue Angriffsanzahl pro Zeitraum und darunter einen Krieg für die erfassten Einzelangriffe. Die dortige Sternsumme ist nicht das offizielle Kriegsergebnis. Wähle bei leeren Ergebnissen einen größeren Zeitraum oder eine andere Kriegsart.</div></div>
     <div class="help-item"><b>Einsatzverteilung</b><div>Im <b>gemeinsamen Cloud-Clan</b> bedeutet <b>Ausgeführt</b> einen durch Clash belegten Angriff dieser CWL – auch wenn der Krieg noch läuft. <b>Offen</b> sind geplante oder in Clash fixierte Einsätze ohne belegten Angriff; ein bereits abgeschlossener Kriegstag ohne Angriffsbeleg ist <b>ungeklärt</b>, nicht automatisch ein verpasster oder ausgeführter Angriff. <b>Gesamt</b> umfasst die dokumentierten Einsätze und die Planung. Im <b>lokalen Gastmodus</b> bleiben Gespielt/Geplant die manuell bestätigten Kriegstage. „6 von 7 Tagen verfügbar“ bedeutet: An sechs Kriegstagen gilt kein „RAUS“. Das ist <b>kein Einsatzziel</b>. Tippe auf einen Spieler für einzelne Kriegstage: geplant, in Clash fix, gespielt oder bereits angegriffen, mit belegten 0–3★-Ergebnissen; daneben stehen in der Cloud die <b>3★-Quote und Ø Sterne der aktuell erfassten CWL-Angriffe</b> mit Fallzahl. Die Mitgliederliste zeigt dagegen bevorzugt die Form aus der letzten belegten CWL, sonst ausdrücklich die letzten fünf normalen CWs; das ist eine andere Datenbasis als die aktuelle Einsatzverteilung. Das <b>8★-Ziel</b> zählt kumulierte CWL-Sterne, keine Durchschnittssterne. Bei unvollständigem Datenstand ist ein unbekannter Angriff keine 0★ und ein geplanter Angriff keine Garantie.</div></div>
     <div class="help-item"><b>Kriegsgröße und verkürzte CWL</b><div>Mit einem verknüpften Clash-Clan übernimmt die Cloud-Planung die offiziell gemeldete Größe der Tagesaufstellung (etwa 15 oder 30) und die Zahl der Kriege. Acht Clans spielen normalerweise sieben Kriege; bei sechs Clans sind es fünf. Während Clash noch keine verlässlichen Gruppendaten liefert, bleibt der bisherige Plan erhalten. Gespielte Tage werden bei einer Abweichung nicht automatisch umgeschrieben. Die Teilnehmerliste ist nicht dasselbe wie die Größe einer einzelnen Kriegsaufstellung. Für lokale Pläne ohne API kannst du Größe und Kriegstage weiterhin selbst wählen; alte 5-gegen-5-CWLs bleiben im Archiv nachvollziehbar.</div></div>
@@ -4755,7 +4847,7 @@ html.cloud-startup-pending .cloud-startup-splash{
  <div class="card account-page">
   <div class="section-title account-page-head">
    <div><span class="more-eyebrow">VERWALTUNG</span><h2 id="cloudAccountTitle">Clan & Konto</h2>
-    <p class="statusline">Deine verbundenen Clans, wer den Planer nutzen darf und gespeicherte Planstände.</p></div>
+    <p class="statusline">Deine Clans, Zugänge und gemeinsame Änderungen.</p></div>
    <button type="button" class="btn small" id="cloudAccountBack">Zurück zu Mehr</button>
   </div>
   <div id="cloudAccountMessage" class="cloud-msg" role="alert" hidden></div>
@@ -4767,7 +4859,7 @@ html.cloud-startup-pending .cloud-startup-splash{
     <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline" aria-live="polite"></div>
-    <p class="small" id="cloudRoleExplanation" hidden>Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge.</p>
+    <p class="small" id="cloudRoleExplanation" hidden>Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge. Sicherungen findest du unter Mehr → Backup & Import.</p>
     <div id="cloudSyncFeedback" hidden class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
     <div id="cloudActiveMembers" hidden class="cloud-active-members" aria-live="polite"></div>
     <details class="cloud-minor" id="cloudAccessDetails" hidden open>
@@ -4824,26 +4916,8 @@ html.cloud-startup-pending .cloud-startup-splash{
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Neue Einladungslinks findest du später unter „Aktive Einladungslinks“. Ältere Links bleiben gültig, lassen sich aber nicht erneut anzeigen.</p>
   </div>
   <div class="cloud-section" id="cloudAccountAuditSection" hidden>
-    <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
+    <h3>Änderungsverlauf</h3><p>Planänderungen und Freigaben zuerst. Weitere Aktivitäten aufklappen.</p><details class="cloud-audit-scope"><summary>Umfang des Verlaufs</summary><p>Bis zu 150 Profilereignisse, die letzte gespeicherte Freigabe und für die Clanführung bis zu 40 Vorschläge.</p></details>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
-  </div>
-  <div class="cloud-section" id="cloudAccountImportSection" hidden>
-    <h3>Lokalen Plan übernehmen</h3>
-    <p>Bei Bedarf kannst du einen zuvor exportierten lokalen CWL-Plan in diesen Cloud-Clan übernehmen. Das ist etwas anderes als einen bestehenden Cloud-Sicherungsstand wiederherzustellen. Deine lokalen Daten bleiben auf diesem Gerät erhalten.</p>
-    <input type="file" id="cloudImportFile" accept="application/json,.json">
-    <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
-    <details id="cloudBackupPanel" class="cloud-minor" hidden>
-      <summary>Gemeinsame Plan-Sicherungen</summary>
-      <p class="small">Bis zu fünf Sicherungsstände des gemeinsamen CWL-Plans. Nur der Besitzer kann einen alten Planstand wiederherstellen. Kriegsstatistiken, Benutzerkonten und Zugriffsrechte sind nicht enthalten.</p>
-      <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
-      <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
-      <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
-      <div class="actions">
-        <button class="btn small" id="cloudDownloadSnapshot" type="button" disabled>Als JSON herunterladen</button>
-        <button class="btn small danger" id="cloudRestoreSnapshot" type="button" hidden disabled>Stand wiederherstellen</button>
-      </div>
-      <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
-    </details>
   </div>
   <details class="cloud-minor" id="cloudDangerZone" hidden>
    <summary>Erweiterte Zugriffsverwaltung</summary>
@@ -5022,15 +5096,15 @@ Spieler Charlie</div></div><textarea id="bulkNames" rows="10" placeholder="Spiel
  <div class="cloud-change-actions"><button class="btn small" id="cloudChangeDetails" type="button">Änderungen ansehen</button><button class="btn small primary" id="cloudChangeReload" type="button" hidden>Cloud-Stand laden</button><button class="btn small" id="cloudChangeDismiss" type="button" aria-label="Hinweis schließen">✕</button></div>
 </div>
 <div class="toast" id="toast">Änderungen gespeichert ✓</div>
-<script src="./clan-management-core.js?v=1.40.0"></script>
-<script src="./clan-management-missed-core.js?v=1.40.0"></script>
-<script src="./clan-management-cw-core.js?v=1.40.0"></script>
-<script src="./clan-management-cw-view.js?v=1.40.0"></script>
-<script src="./cwl-deployment-filters.js?v=1.40.0"></script>
-<script src="./cwl-planning-core.js?v=1.40.0"></script>
-<script src="./cwl-plan-whatif.js?v=1.40.0"></script>
+<script src="./clan-management-core.js?v=1.41.0"></script>
+<script src="./clan-management-missed-core.js?v=1.41.0"></script>
+<script src="./clan-management-cw-core.js?v=1.41.0"></script>
+<script src="./clan-management-cw-view.js?v=1.41.0"></script>
+<script src="./cwl-deployment-filters.js?v=1.41.0"></script>
+<script src="./cwl-planning-core.js?v=1.41.0"></script>
+<script src="./cwl-plan-whatif.js?v=1.41.0"></script>
 <script>
-const APP_VERSION="v1.40.0";
+const APP_VERSION="v1.41.0";
 const DATA_VERSION=9;
 const STORAGE_KEY="cwl_planer_mobile_v9";
 const RECOVERY_KEY="cwl_planer_mobile_v9_recovery";
@@ -6412,7 +6486,56 @@ function showPlannerView(view){
  if(view!=="settings"&&!(wasSettingsOpen&&view===previousView))
   window.scrollTo({top:0,behavior:"smooth"});
 }
-window.CWLShowAccountPage=()=>showPlannerView("account");
+// Explicit return paths, not browser history mutations. Do not intercept
+// platform edge gestures or make a hidden settings form active again.
+const returnLabels={plan:"zum Plan",members:"zu Mitgliedern",summary:"zu Einsätzen",stats:"zur Statistik",more:"zu Mehr",account:"zu Clan & Konto"};
+let accountReturn=null,helpReturn=null,accountFromSettings=false;
+function captureNavigationReturn(destination,settings=false){
+ const previous=window.__previousPlannerView||"plan";
+ const view=Object.hasOwn(returnLabels,previous)&&previous!==destination?previous:"more";
+ return {view,scroll:view===previous?window.scrollY:0,settings:settings&&view===previous};
+}
+function restoreNavigationReturn(origin,focusId){
+ const target=origin||{view:"more",scroll:0,settings:false};
+ showPlannerView(target.view);
+ window.scrollTo({top:target.scroll||0,behavior:"instant"});
+ if(target.settings){showPlannerView("settings");document.getElementById("settingsCloudManage")?.focus({preventScroll:true});return}
+ const focus=target.view==="more"?document.querySelector('[data-more-action="'+(focusId==="helpBtn"?"help":"clan")+'"]'):document.getElementById(focusId);
+ // The legacy cloudOpen trigger is hidden in connected Cloud mode.
+ // Return to the visible account-menu trigger rather than a hidden button.
+ const visible=el=>el&&!el.disabled&&el.getClientRects().length>0;
+ const fallback=document.getElementById(focusId==="cloudOpen"?"accountQuickButton":"settingsOpen");
+ (visible(focus)?focus:visible(fallback)?fallback:document.getElementById("settingsOpen"))?.focus({preventScroll:true});
+}
+function openAccountPage(){
+ if(window.__previousPlannerView==="account"){
+  showPlannerView("account");return;
+ }
+ accountReturn=captureNavigationReturn("account",accountFromSettings);
+ document.getElementById("cloudAccountBack").textContent=accountReturn.settings?"Zurück zu Einstellungen":"Zurück "+returnLabels[accountReturn.view];
+ showPlannerView("account");
+}
+function returnFromAccount(){
+ const origin=accountReturn;accountReturn=null;
+ restoreNavigationReturn(origin,"cloudOpen");
+}
+function openAccountFromSettings(){
+ accountFromSettings=true;
+ try{
+  showPlannerView(window.__previousPlannerView||"plan");
+  document.getElementById("cloudOpen").click();
+ }finally{accountFromSettings=false}
+}
+function openHelpPage(){
+ if(window.__previousPlannerView==="help")return;
+ helpReturn=captureNavigationReturn("help");
+ document.getElementById("helpClose").textContent="Zurück "+returnLabels[helpReturn.view];
+ showPlannerView("help");
+}
+function returnFromHelp(){
+ const origin=helpReturn;helpReturn=null;restoreNavigationReturn(origin,"helpBtn");
+}
+window.CWLShowAccountPage=openAccountPage;
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{closeQuickClan();showPlannerView(b.dataset.view)});
 // v1.5.1: reuse the existing Supabase clan-selection flow; no parallel cloud state.
 const quickClanBtn=document.getElementById("headerClanName");
@@ -7144,13 +7267,17 @@ function renderReleaseHistory(){
   old.append(list);host.append(old);
  }
 }
-async function openReleaseHistory(){
+let updatesOrigin=null;
+async function openReleaseHistory(source="more"){
+ updatesOrigin=source==="settings"?{source,view:window.__previousPlannerView||"plan",scroll:window.scrollY}:source==="appearance"?{source}:null;
+ const back=document.getElementById("updatesBack");
+ if(back)back.textContent=updatesOrigin?"Zurück zu Einstellungen":"Zurück zu Mehr";
  showPlannerView("updates");
  if(releaseHistoryData){renderReleaseHistory();return}
  const host=document.getElementById("updatesHistory");
  try{
   // Load only when opened, never during the Cloud login or live-war refresh.
-  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.40.0");
+  releaseHistoryData=await import("./cloud-release-history.mjs?v=1.41.0");
   if(document.getElementById("view-updates").classList.contains("active"))renderReleaseHistory();
  }catch(error){
   if(document.getElementById("view-updates").classList.contains("active"))
@@ -7162,8 +7289,8 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="updates"){openReleaseHistory();return}
-  if(action==="help"){showPlannerView("help");return}
-  if(action==="install"){renderInstallGuide();showPlannerView("install");return}
+  if(action==="help"){openHelpPage();return}
+  if(action==="install"){openInstallFrom("more");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
   if(action==="management"){window.CWLClanManagementView?.open?.();return}
   if(action==="profiles"&&window.CWLCloud?.active){showPlannerView("account");return}
@@ -7236,12 +7363,30 @@ function dismissInstallHint(){
  try{localStorage.setItem(CLOUD_INSTALL_HINT_KEY,"1")}catch{}
  updateCloudInstallSuggestion();
 }
-document.getElementById("updatesBack").onclick=()=>{showPlannerView("more");document.querySelector('[data-more-action="updates"]')?.focus({preventScroll:true})};
-document.getElementById("openReleaseHistory").onclick=openReleaseHistory;
+document.getElementById("updatesBack").onclick=()=>{
+ const origin=updatesOrigin;updatesOrigin=null;
+ if(origin?.source==="settings"){
+  showPlannerView(origin.view);window.scrollTo({top:origin.scroll||0,behavior:"instant"});showPlannerView("settings");
+  document.getElementById("openReleaseHistory").focus({preventScroll:true});return;
+ }
+ if(origin?.source==="appearance"){openMoreSettings("appearance");document.getElementById("openReleaseHistory").focus({preventScroll:true});return}
+ showPlannerView("more");document.querySelector('[data-more-action="updates"]')?.focus({preventScroll:true});
+};
+document.getElementById("openReleaseHistory").onclick=()=>openReleaseHistory(document.getElementById("view-settings").classList.contains("active")?"settings":"appearance");
 document.getElementById("updatesSearch").addEventListener("input",()=>renderReleaseHistory());
-document.getElementById("installBack").onclick=()=>showPlannerView("more");
+let installOrigin="more";
+function openInstallFrom(source){
+ installOrigin=source==="help"?"help":"more";
+ document.getElementById("installBack").textContent=installOrigin==="help"?"Zurück zur Hilfe":"Zurück zu Mehr";
+ renderInstallGuide();showPlannerView("install");
+}
+document.getElementById("installBack").onclick=()=>{
+ const source=installOrigin;installOrigin="more";showPlannerView(source);
+ if(source==="help")document.getElementById("helpInstallOpen").focus({preventScroll:true});
+};
+document.getElementById("helpInstallOpen").onclick=()=>openInstallFrom("help");
 document.getElementById("installSuggestionOpen").onclick=()=>{
- dismissInstallHint();renderInstallGuide();showPlannerView("install");
+ dismissInstallHint();openInstallFrom("more");
 };
 document.getElementById("installSuggestionDismiss").onclick=dismissInstallHint;
 updateCloudInstallSuggestion();
@@ -7273,7 +7418,7 @@ async function openGoldpassPreview(){
  try{
   if(!goldpassView){
    root.textContent="Vorschau wird geladen …";
-   const module=await import("./cwl-goldpass-view.mjs?v=1.40.0");
+   const module=await import("./cwl-goldpass-view.mjs?v=1.41.0");
    const now=goldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-goldpass").classList.contains("active"))return;
    goldpassView=module.createGoldpassPreview({root,getProfile:()=>state,getContext:goldpassContext,
@@ -7307,7 +7452,7 @@ let activityMemberView=null,activityMemberImport=0,activityMemberScope=null;
   try{
    if(!activityMemberView){
     root.textContent="Mitgliedsmerkmale werden geladen …";
-    const m=await import("./cwl-activity-member-view.mjs?v=1.40.0");
+    const m=await import("./cwl-activity-member-view.mjs?v=1.41.0");
     const now=activityGoldpassContext();
     if(token!==activityMemberImport||!activityMemberPanel.open||now?.clanId!==c.clanId||now?.clanTag!==c.clanTag||now?.session!==c.session)return;
     activityMemberView=m.createActivityMemberView({root,getContext:activityGoldpassContext,api:r=>window.CWLCloud.activityMemberRequest(r)});
@@ -7331,7 +7476,7 @@ async function openActivityGoldpass(){
  try{
   if(!activityGoldpassView){
    root.textContent="Verlosungen werden geladen …";
-   const module=await import("./cwl-activity-campaign-view.mjs?v=1.40.0");
+   const module=await import("./cwl-activity-campaign-view.mjs?v=1.41.0");
    const now=activityGoldpassContext();
    if(now?.clanId!==context.clanId||now?.clanTag!==context.clanTag||now?.session!==context.session||!document.getElementById("view-activity-goldpass").classList.contains("active"))return;
    activityGoldpassView=module.createActivityCampaignView({root,getContext:activityGoldpassContext,api:request=>window.CWLCloud.activityCampaignRequest(request),
@@ -7362,7 +7507,7 @@ document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("view-settings").classList.contains("active"))showPlannerView(window.__previousPlannerView||"plan")});
-document.getElementById("settingsCloudManage").onclick=()=>void (showPlannerView(window.__previousPlannerView||"plan"),document.getElementById("cloudOpen").click());
+document.getElementById("settingsCloudManage").onclick=openAccountFromSettings;
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
@@ -7453,7 +7598,7 @@ document.getElementById("summaryList").addEventListener("click",event=>{
  renderSummary();
 });
 document.getElementById("memberSortSelect").onchange=e=>{if(window.CWLCloud?.active){window.CWLCloud.setMemberSortPreference?.(e.target.value);renderMembers();return}state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
-document.getElementById("helpBtn").onclick=()=>showPlannerView("help");
+document.getElementById("helpBtn").onclick=openHelpPage;
 const bulkTh=document.getElementById("bulkTownHallSelect");for(let v=19;v>=3;v--){const o=document.createElement("option");o.value=String(v);o.textContent=`RH ${v}`;bulkTh.appendChild(o)}document.getElementById("bulkRotationSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("rotationWeight",e.target.value);e.target.value=""}};document.getElementById("bulkTownHallSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("townHall",e.target.value==="none"?null:Number(e.target.value));e.target.value=""}};document.getElementById("bulkTownHallPicker").onclick=()=>openTownHallPicker(null,value=>applyBulkValue("townHall",value));document.getElementById("bulkStrengthSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("threeStar",e.target.value);e.target.value=""}};document.getElementById("selectAllBtn").onclick=()=>{getVisibleMembers().forEach(m=>selectedMembers.add(m.id));renderMembers()};document.getElementById("selectNoneBtn").onclick=()=>{selectedMembers.clear();renderMembers()};document.getElementById("bulkParticipatingOnBtn").onclick=()=>applyBulkValue("participating",true);document.getElementById("bulkParticipatingOffBtn").onclick=()=>applyBulkValue("participating",false);document.getElementById("bulkFixedOnBtn").onclick=()=>applyBulkValue("fixed",true);document.getElementById("bulkFixedOffBtn").onclick=()=>applyBulkValue("fixed",false);document.getElementById("deleteSelectedBtn").onclick=async()=>{if(!selectedMembers.size)return;const used=[...selectedMembers].filter(usedInLockedDay).length,msg=used?`${used} davon wurden bereits eingesetzt; ihre gespielten Line-ups bleiben erhalten.`:"Diese Aktion entfernt die ausgewählten Spieler aus der aktuellen Mitgliederliste.";if(!await confirmInline(msg,{title:`${selectedMembers.size} Mitglieder entfernen?`,confirmText:"Mitglieder entfernen",danger:true}))return;const r=removeMembers(new Set(selectedMembers));if(r.blocked)return;selectedMembers.clear();renderAll(r.archived?`${r.archived} historische Spieler erhalten · Mitglieder entfernt ✓`:"Mitglieder gelöscht ✓")};document.getElementById("deleteAllBtn").onclick=async()=>{if(!state.members.length)return;if(!await confirmInline("Spieler aus bereits gespielten Tagen bleiben in der Historie erhalten.",{title:`Alle ${state.members.length} aktuellen Mitglieder entfernen?`,confirmText:"Alle entfernen",danger:true}))return;const r=removeMembers(new Set(state.members.map(m=>m.id)));if(r.blocked)return;selectedMembers.clear();renderAll(r.archived?"Aktuelle Mitglieder entfernt · gespielte Historie erhalten ✓":"Alle Mitglieder gelöscht ✓")};
 // Profiles
 document.getElementById("newProfileBtn").onclick=createProfilePrompt;document.getElementById("copyProfileBtn").onclick=async()=>{const raw=await promptInline("Profil duplizieren","Name der vollständigen Profilkopie",state.name+" – Kopie"),name=(raw||"").trim();if(!name)return;if(profileNameExists(name)){showToast("Ein Profil mit diesem Namen existiert bereits");return}const p=cloneProfile(state,name);app.profiles.push(p);setActiveProfile(p.id)};document.getElementById("renameProfileBtn").onclick=async()=>{const raw=await promptInline("Profil umbenennen","Neuer Profilname",state.name),name=(raw||"").trim();if(!name)return;if(profileNameExists(name,state.id)){showToast("Ein Profil mit diesem Namen existiert bereits");return}state.name=name;renderAll("Profil umbenannt ✓")};document.getElementById("deleteProfileBtn").onclick=async()=>{if(!await confirmInline(`Das Profil „${state.name}“ inklusive aktueller CWL und Archive wird gelöscht.`,{title:"Profil wirklich löschen?",confirmText:"Profil löschen",danger:true}))return;app.profiles=app.profiles.filter(p=>p.id!==state.id);if(!app.profiles.length)app.profiles.push(freshProfile());app.activeProfileId=app.profiles[0].id;state=app.profiles[0];openRulePanels.clear();openDuplicatePanels.clear();selectedMembers.clear();selectionMode=false;renderAll("Profil gelöscht ✓")};
@@ -7465,8 +7610,8 @@ document.getElementById("themeSelect").onchange=e=>{uiSettings.theme=e.target.va
 document.getElementById("importFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text()),dv=Number(obj.dataVersion||obj.version||0);if(dv>DATA_VERSION)throw new Error("newer");if(obj.kind==="cwl-app-backup"&&obj.app){if(!await confirmInline(`Deine aktuell gespeicherten ${app.profiles.length} Profile werden durch den Backup-Stand ersetzt. Empfehlung: vorher ein aktuelles Backup erstellen.`,{title:"Komplettes Backup wiederherstellen?",confirmText:"Backup wiederherstellen",danger:true})){e.target.value="";return}app=normalizeApp(obj.app);state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];startupStorageIssue=null;suspendWrites=false;renderAll("Komplettes Backup wiederhergestellt ✓")}else if(obj.kind==="cwl-profile"&&obj.profile){const name=uniqueProfileName(obj.profile.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj.profile),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Profil als neues Profil importiert ✓")}else if(obj.members||obj.config){const name=uniqueProfileName(obj.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Älteres Backup als neues Profil importiert ✓")}else throw new Error("unknown")}catch(err){showToast(err.message==="newer"?"Backup ist neuer als diese App – zuerst App aktualisieren":"Backup konnte nicht gelesen werden")}e.target.value=""};
 document.getElementById("membersFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(manualRosterRestricted()){showToast("Mitglieder werden über Clash aktualisiert");e.target.value="";return}try{const choice=await askInlineAction({title:"Mitglieder importieren",message:"Wie sollen die importierten Spieler angelegt werden?",buttons:[{value:"participating",text:"Als Dabei importieren",primary:true},{value:"paused",text:"Auf Pause importieren"},{value:"cancel",text:"Abbrechen"}]});if(choice.value==="cancel"){e.target.value="";return}const res=importMemberText(await f.text(),choice.value==="participating");renderAll(`${res.added} Mitglieder importiert · Plan aktualisiert ✓`);if(res.duplicateGroups)showToast(`${res.duplicateGroups} Namensdopplung(en) markiert · Player-Tag empfohlen`)}catch(err){showToast("Mitgliederliste konnte nicht importiert werden")}e.target.value=""};
 // Modals / help
-document.getElementById("cloudAccountBack").onclick=()=>showPlannerView("more");
-document.getElementById("helpClose").onclick=()=>showPlannerView("more");document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
+document.getElementById("cloudAccountBack").onclick=returnFromAccount;
+document.getElementById("helpClose").onclick=returnFromHelp;document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
 bindModalBackdropClose("townHallPickerModal",closeTownHallPicker);
 document.getElementById("whyClose").onclick=()=>closeModalById("whyModal");bindModalBackdropClose("whyModal",()=>closeModalById("whyModal"));
 document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};bindModalBackdropClose("lineupModal",closeLineupModal);document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{
@@ -7635,6 +7780,6 @@ window.CWLLegacy={
  saveJson:()=>exportActiveProfile()
 };
 </script>
-<script type="module" src="./cloud-sync.mjs?v=1.40.0"></script>
+<script type="module" src="./cloud-sync.mjs?v=1.41.0"></script>
 </body>
 </html>
