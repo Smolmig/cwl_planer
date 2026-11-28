@@ -22,7 +22,7 @@ test("Bounded probe reads six allowlisted endpoints and reports only capabilitie
  };
  const r=await probeActivityApi(clan,read);
  assert.equal(r.requests,6);
- assert.deepEqual(calls,["/clans/%232PYL/members?limit=50","/clans/%232PYL/capitalraidseasons?limit=2",
+ assert.deepEqual(calls,["/clans/%232PYL/members?limit=50","/clans/%232PYL/capitalraidseasons?limit=5",
   "/players/%238PYL","/players/%238PYL/battlelog","/players/%238PYL/leaguehistory",
   "/leaguegroup/%23Q9QL/2026-11-23?playerTag=%238PYL"]);
  assert.equal(r.endpoints.raid.hasMemberLimits,true);
@@ -77,4 +77,40 @@ test("Probe mode requires manual signed identity, rejects cron, and exits before
  assert.match(workflow,/inputs.mode != 'activity-probe'/);
  assert.match(workflow,/inputs.mode == 'activity-probe'/);
  assert.match(workflow,/x-cwl-collector-mode: activity-probe/);
+});
+
+test("Probe prefers documented roster rank hint and distinguishes missing raid fields from empty entries",async()=>{
+ const {probeActivityApi}=await load();const calls=[];
+ const r=await probeActivityApi(clan,async p=>{
+  calls.push(p);
+  if(calls.length===1)return {status:200,body:{items:[{tag:group},{tag:player,leagueTier:{id:123}}]}};
+  if(calls.length===2)return {status:200,body:{items:[{state:"ended",members:[{tag:player,attacks:5,attackLimit:5}]},{state:"ongoing",members:[{tag:player,attacks:6,attackLimit:5,bonusAttackLimit:1,capitalResourcesLooted:100}]}]}};
+  if(calls.length===3)return {status:200,body:{tag:player}};
+  if(calls.length===4)return {status:200,body:{items:[{battleType:"RANKED",attack:false,battleTimestamp:"secret timestamp",stars:2}]}};
+  return {status:200,body:{items:[]}};
+ });
+ assert.equal(r.requests,5);assert.equal(calls[2],"/players/%238PYL");
+ assert.equal(r.endpoints.roster.selection,"tier_hint");
+ assert.equal(r.endpoints.raid.hasEndedMemberEntries,true);
+ assert.equal(r.endpoints.raid.hasAttackLimit,true);
+ assert.equal(r.endpoints.raid.hasBonusAttackLimit,false);
+ assert.equal(r.endpoints.raid.hasMemberLimits,false);
+ assert.equal(r.endpoints.raid.hasCapitalGold,false);
+ assert.equal(r.endpoints.battlelog.hasRankedType,true);
+ assert.equal(r.endpoints.battlelog.hasAttackBoolean,true);
+ assert.equal(r.endpoints.battlelog.hasRankedAttack,false);
+ assert.equal(r.endpoints.battlelog.hasDestructionField,false);
+ assert.doesNotMatch(JSON.stringify(r),/secret timestamp|#8PYL|123/);
+});
+test("Probe selects a different roster entry without a rank hint and reports ended empty arrays",async()=>{
+ const {probeActivityApi}=await load();const calls=[];
+ const r=await probeActivityApi(clan,async p=>{
+  calls.push(p);
+  if(calls.length===1)return {status:200,body:{items:[{tag:group},{tag:player}]}};
+  if(calls.length===2)return {status:200,body:{items:[{state:"ended",members:[]}]}};
+  return {status:200,body:{tag:player}};
+ });
+ assert.equal(calls[2],"/players/%238PYL");assert.equal(r.endpoints.roster.selection,"alternate");
+ assert.equal(r.endpoints.raid.hasEndedMemberArray,true);assert.equal(r.endpoints.raid.hasEndedMemberEntries,false);
+ assert.equal(r.requests,5);
 });

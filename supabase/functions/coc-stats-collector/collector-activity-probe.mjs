@@ -22,13 +22,24 @@ export async function probeActivityApi(clanTag,read){
  const mark=(name,fields)=>Object.assign(report.endpoints[name],fields);
  const clan="/clans/"+encodeURIComponent(clanTag);
  const roster=await get("roster",clan+"/members?limit=50");
- const player=items(roster)?.find(p=>validTag(p?.tag))?.tag;
- mark("roster",{shape:listShape(roster),hasPlayer:!!player});
- const raids=await get("raid",clan+"/capitalraidseasons?limit=2"),raidList=items(raids);
- const raidMembers=(raidList||[]).flatMap(x=>Array.isArray(x?.members)?x.members:[]);
+ const candidates=(items(roster)||[]).filter(p=>validTag(p?.tag));
+ const groupCandidate=candidates.find(p=>validTag(p.currentLeagueGroupTag));
+ const rankedCandidate=candidates.find(p=>object(p.leagueTier)&&nonnegative(p.leagueTier.id));
+ // Sample an alternative to the first roster entry when no rank signal exists.
+ const player=(groupCandidate||rankedCandidate||candidates[1]||candidates[0])?.tag;
+ mark("roster",{shape:listShape(roster),hasPlayer:!!player,selection:groupCandidate?"group_hint":rankedCandidate?"tier_hint":candidates.length>1?"alternate":"first_or_none"});
+ const raids=await get("raid",clan+"/capitalraidseasons?limit=5"),raidList=items(raids);
+ const ended=(raidList||[]).filter(x=>x?.state==="ended");
+ const raidMembers=ended.flatMap(x=>Array.isArray(x?.members)?x.members:[]);
  mark("raid",{shape:listShape(raids),hasSeason:sample(raidList,object),
    hasEndedSeason:sample(raidList,x=>x?.state==="ended"),
    hasStartEnd:sample(raidList,x=>typeof x?.startTime==="string"&&typeof x?.endTime==="string"),
+   hasEndedMemberArray:sample(ended,x=>Array.isArray(x.members)),
+   hasEndedMemberEntries:sample(raidMembers,object),
+   hasMemberTag:sample(raidMembers,x=>validTag(x?.tag)),
+   hasAttacks:sample(raidMembers,x=>nonnegative(x?.attacks)),
+   hasAttackLimit:sample(raidMembers,x=>nonnegative(x?.attackLimit)),
+   hasBonusAttackLimit:sample(raidMembers,x=>nonnegative(x?.bonusAttackLimit)),
    hasMemberLimits:sample(raidMembers,x=>validTag(x?.tag)&&nonnegative(x.attacks)&&nonnegative(x.attackLimit)&&nonnegative(x.bonusAttackLimit)),
    hasCapitalGold:sample(raidMembers,x=>nonnegative(x?.capitalResourcesLooted))});
  if(!player){report.playerProbe="no_observed_player";return report}
@@ -43,6 +54,15 @@ export async function probeActivityApi(clanTag,read){
  if(!verified){report.playerProbe="profile_not_verified";return report}
  const battles=await get("battlelog",path+"/battlelog"),battleList=items(battles);
  mark("battlelog",{shape:listShape(battles),hasEntries:sample(battleList,object),
+  hasBattleTypeField:sample(battleList,x=>typeof x?.battleType==="string"),
+  hasAttackBoolean:sample(battleList,x=>typeof x?.attack==="boolean"),
+  hasAttackTrue:sample(battleList,x=>x?.attack===true),
+  hasTimestampField:sample(battleList,x=>typeof x?.battleTimestamp==="string"),
+  hasStarsField:sample(battleList,x=>nonnegative(x?.stars)&&x.stars<=3),
+  hasDestructionField:sample(battleList,x=>typeof x?.destructionPercentage==="number"&&x.destructionPercentage>=0&&x.destructionPercentage<=100),
+  hasRankedType:sample(battleList,x=>x?.battleType==="RANKED"),
+  hasLegendType:sample(battleList,x=>x?.battleType==="LEGEND"),
+  hasHomeType:sample(battleList,x=>x?.battleType==="HOME_VILLAGE"),
   hasRankedAttack:sample(battleList,x=>x?.battleType==="RANKED"&&x.attack===true),
   hasAttackFields:sample(battleList,x=>x?.attack===true&&typeof x.battleTimestamp==="string"&&
    ["HOME_VILLAGE","RANKED","LEGEND"].includes(x.battleType)&&nonnegative(x.stars)&&x.stars<=3&&
