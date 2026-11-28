@@ -53,7 +53,7 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     await page.locator('[data-management-section="actions"]').click();
     await page.locator('[data-management-source="rank"]').click();
     await page.locator("#clanManagementFilterAll").click();
-    await page.locator(".clan-management-evidence > summary").click();
+    await page.locator("#clanManagementList .clan-management-evidence > summary").click();
     await page.waitForFunction(()=>document.getElementById("clanManagementList").innerText.includes("14/15 Tage"));
     await page.locator('[data-management-section="rules"]').click();
     await page.locator(".clan-rule-future > summary").click();
