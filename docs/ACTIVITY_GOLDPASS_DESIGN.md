@@ -46,3 +46,11 @@ Dokumentationsquellen:
 - https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/clans/capitalraidseasons.md
 - https://clashofclans.js.org/docs/api/interfaces/APICapitalRaidSeasonMember
 - https://clashy.clashk.ing/en/stable/miscellaneous/changelog.html
+
+
+## Read-only API-Diagnose (vorgemerkt nach v1.36.0)
+Der bestehende Collector erhält einen separaten, explizit manuellen GitHub-Workflow-Modus `activity-probe`. Der reguläre Zeitplan, Roster-Beobachtungen und CW/CWL-Speicherung bleiben unverändert. Nur signierte GitHub-OIDC-Identitäten für den vorhandenen Main-Workflow und das Ereignis workflow_dispatch dürfen diese Probe aufrufen. Cron-Anfragen werden in diesem Modus abgewiesen. Der Modus liest höchstens sechs Clash-API-Endpunkte für einen bereits verknüpften Clan und einen über die Roster-Antwort beobachteten Spieler. Kein Retry und kein neuer Collector-Zeitplan. Es werden ausschließlich HTTP-Statusklassen, Antwortformen und erlaubte Feld-Präsenz-Flags zurückgegeben, weder Spielertags, Namen, konkrete Spielerdaten, Zugangsdaten noch rohe Providerfehler. Erfolgreicher Probe-Lauf bedeutet nicht vollständige Tracking-Abdeckung.
+
+Deploy-Gate: zuerst Regressionen prüfen, anschließend den passenden Edge-Stand einschließlich des neuen Moduls bereitstellen und prüfen, erst danach den Workflow-Modus freigeben. Ein alter Edge-Stand kennt den Modus nicht; daher niemals die Probe vor dieser Deployment-Prüfung starten. Manuelle Ausführung: Actions → Collect finished Clash war statistics → Run workflow (main) → activity-probe. Ohne bestätigte Live-Antwort keine neuen Grind-Kriterien freischalten. Eine leere erfolgreiche Antwort ist nicht gleich fehlender Endpoint; für Ranked muss ggf. ein weiterer geeigneter Spieler in einer späteren Probe gewählt werden.
+
+Dokumentationsabgleich: https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/battlelog.md, https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/leaguehistory.md, https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/players/get-player.md und https://github.com/MasiaAntoine/clash-of-clan-api-doc-official/blob/en/API/leagues/leaguegroup.md.
