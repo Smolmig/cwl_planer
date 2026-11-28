@@ -312,7 +312,11 @@ test("Member workspace loads real metadata view, retains filters and decisions, 
     assert.ok(await host.evaluate(n=>n.scrollWidth<=n.clientWidth+3),JSON.stringify({width,theme}));
     const controls=await members.locator("input,select,button,summary").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>n.getBoundingClientRect().height));
     assert.ok(controls.length>=5&&controls.every(h=>h>=43),JSON.stringify({width,theme,controls}));
-    if(dir&&["arena","dark"].includes(theme)){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,"management-members-"+theme+"-"+width+".png")});}
+    if(dir&&["arena","dark"].includes(theme)){
+     await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,"management-members-"+theme+"-"+width+".png")});
+     await members.locator(".activity-member-row").first().evaluate(n=>n.scrollIntoView({block:"center"}));
+     await page.screenshot({path:path.join(dir,"management-members-detail-"+theme+"-"+width+".png")});
+    }
    }
   }
   await page.evaluate(()=>{memberDelay=true});
