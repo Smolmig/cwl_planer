@@ -20,7 +20,7 @@ const bytes=part=>{
 };
 const obj=part=>JSON.parse(new TextDecoder().decode(bytes(part)));
 export async function verifyCollectorIdentity(jwt,{
-  now=Date.now(),jwksLoader=null,expected=EXPECTED
+  now=Date.now(),jwksLoader=null,expected=EXPECTED,requiredEvent=null
 }={}){
   if(typeof jwt!=="string"||jwt.length>16000||jwt.length<100)return false;
   try{
@@ -37,6 +37,7 @@ export async function verifyCollectorIdentity(jwt,{
        claims.ref!==expected.ref||claims.workflow_ref!==expected.workflowRef||
        claims.sub!==expected.subject||
        !["schedule","workflow_dispatch","push"].includes(claims.event_name)||
+       (requiredEvent!==null&&claims.event_name!==requiredEvent)||
        !Number.isInteger(claims.exp)||claims.exp<=seconds||
        !Number.isInteger(claims.iat)||claims.iat>seconds+30||
        claims.exp-claims.iat>600||

@@ -7,6 +7,12 @@ on:
     # Editing this cron also re-registers the GitHub schedule actor.
     - cron: '17,47 * * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Normal collection or one read-only activity API capability check'
+        type: choice
+        options: [collect, activity-probe]
+        default: collect
   push:
     branches: [main]
     paths:
@@ -76,6 +82,7 @@ jobs:
           NODE
 
       - name: Collect stats for linked clans
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.mode != 'activity-probe' }}
         shell: bash
         env:
           COLLECTOR_JWT: ${{ steps.oidc.outputs.collector_jwt }}
@@ -95,3 +102,22 @@ jobs:
           fi
           jq -c '{tenantProfiles,tenureObservedProfiles,rosterFailureClasses}' "$result_file"
           echo "Protected collection completed with full roster coverage"
+
+      # Only explicitly requested manual runs, after the matching Edge version
+      # has been deployed. Do not retry or print an untrusted upstream body.
+      - name: Check activity API capabilities (read-only)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'activity-probe' }}
+        shell: bash
+        env:
+          COLLECTOR_JWT: ${{ steps.oidc.outputs.collector_jwt }}
+          COLLECTOR_URL: https://yjldnvfwposfwmzmcsow.supabase.co/functions/v1/coc-stats-collector
+        run: |
+          set -euo pipefail
+          result_file="$(mktemp)"
+          trap 'rm -f "$result_file"' EXIT
+          http="$(curl --silent --show-error --max-time 60 --output "$result_file" --write-out '%{http_code}' --request POST --header "Authorization: Bearer ${COLLECTOR_JWT}" --header 'Content-Type: application/json' --header 'x-cwl-collector-mode: activity-probe' --data '{}' "$COLLECTOR_URL")"
+          if [[ "$http" != "200" ]] || ! jq -e '.ok == true and .mode == "activity-probe" and (.requests | type == "number" and . > 0 and . <= 6)' "$result_file" >/dev/null; then
+            echo "::error::Activity probe unavailable or matching Edge version not deployed (HTTP $http)"
+            exit 1
+          fi
+          jq -c '{mode,requests,playerProbe,endpoints}' "$result_file"

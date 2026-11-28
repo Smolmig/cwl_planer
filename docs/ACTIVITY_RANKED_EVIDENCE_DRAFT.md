@@ -1,0 +1,6 @@
+# Ranked evidence prototype (#351)
+Fixture only; no provider contract verified, no live polling, no persistence or UI. The authenticated #355 probe is mandatory before integration.
+- One verified request-context player tag, half-open UTC campaign window [start,end). Only actual RANKED attacks count, not defenses, Legend or HOME_VILLAGE. Rolling logs are never declared complete.
+- Aggregate snapshots together, deduplicate repeated timestamps, tolerate a missing opponent tag without counting a second attack. Conflicting scores or more than one known opponent at a timestamp quarantine the bucket; conservative undercount is preferred to inflation. No assertion of full chronological coverage.
+- Counts/stars/triples can only establish lower bounds. Empty or unusable logs are unknown, not zero. Tournament completions, promotions and participation percentages remain unknown pending independent complete league-group evidence and real denominator.
+- Production integration still requires durable conflict handling across collections, source/context checks, campaign membership and transfer policy, sampling gaps, request budgets, and tenant-scoped persistence. No changes to existing awards or draw semantics.

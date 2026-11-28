@@ -1,6 +1,7 @@
 // Secure scheduled collection for every explicitly linked Clash clan.
 // Runs without browser sessions; clan-scoped stats and service-only season rollover.
 import {verifyCollectorIdentity} from "./collector-auth.mjs";
+import {probeActivityApi} from "./collector-activity-probe.mjs";
 import {hasCronHeaders,validCronHeaderShape,verifyIndependentCron} from "./collector-cron-auth.mjs";
 import {tag,validTag,buildWarSnapshot,hasCapturedCwlRound} from "./collector-core.mjs";
 import {rosterEvidence} from "./collector-roster.mjs";
@@ -38,6 +39,15 @@ async function game(path,apiKey) {
     try{return await r.json()}catch{throw Error(ERROR.invalid)}
   }
   throw Error(ERROR.api+":network");
+}
+// Separate probe budget: one GET per endpoint, no retries, no database writes.
+async function activityProbeRead(path,apiKey){
+ try{
+  const r=await fetch(GAME+path,{headers:{Authorization:"Bearer "+apiKey,Accept:"application/json"},
+    redirect:"error",signal:AbortSignal.timeout(6000)});
+  if(r.status!==200)return {status:r.status};
+  try{return {status:200,body:await r.json()}}catch{return {status:"invalid_json"}}
+ }catch{return {status:"network_error"}}
 }
 function apiDiagnostic(err,stage){
   // Strictly whitelist public status classes. Error messages might contain
@@ -294,8 +304,11 @@ export default {
     if(request.method!=="POST")return response({ok:false,error:"method_not_allowed"},405);
     // Two independent fail-closed identities. A request carrying Cron headers
     // can NEVER downgrade to GitHub OIDC, or combine credentials.
+    const mode=request.headers.get("x-cwl-collector-mode");
+    if(mode!==null&&mode!=="activity-probe")return response({ok:false,error:"invalid_mode"},400);
     let settings;
     if(hasCronHeaders(request)){
+      if(mode!==null)return response({ok:false,error:"unauthorized"},401);
       // Reject malformed, stale, future, or mixed-header calls before
       // consulting privileged environment variables or database RPC.
       if(!validCronHeaderShape(request))
@@ -310,7 +323,7 @@ export default {
       // GitHub's short-lived JWT is verified against its real issuer's JWKS
       // and exact immutable workflow/repository identity (unchanged).
       const match=/^Bearer ([-_a-zA-Z0-9.]+)$/.exec(request.headers.get("authorization")||"");
-      if(!match||!await verifyCollectorIdentity(match[1]))
+      if(!match||!await verifyCollectorIdentity(match[1],{requiredEvent:mode==="activity-probe"?"workflow_dispatch":null}))
         return response({ok:false,error:"unauthorized"},401);
       try{settings=adminSettings()}catch{return response({ok:false,error:ERROR.config},503)}
     }
@@ -318,6 +331,13 @@ export default {
     let groups;
     try{groups=await loadLinkedClans(settings)}
     catch{return response({ok:false,error:ERROR.save},503)}
+    if(mode==="activity-probe"){
+      if(!groups.length)return response({ok:false,error:"no_linked_clan"},409);
+      try{
+        const result=await probeActivityApi(groups[0][0],path=>activityProbeRead(path,settings.gameKey));
+        return response({ok:true,...result});
+      }catch{return response({ok:false,error:"activity_probe_failed"},503)}
+    }
     const count=Math.max(1,Math.ceil(groups.length/MAX_CLANS_PER_RUN));
     const part=Math.floor(started/7200000)%count;
     const selected=groups.slice(part*MAX_CLANS_PER_RUN,(part+1)*MAX_CLANS_PER_RUN);

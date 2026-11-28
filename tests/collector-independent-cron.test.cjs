@@ -96,7 +96,7 @@ test("Edge dispatch preserves strict GitHub OIDC and never treats Cron header as
  assert.match(src,/if\(hasCronHeaders\(request\)\)/);
  assert.match(src,/validCronHeaderShape\(request\)/);
  assert.match(src,/verifyIndependentCron\(request,settings\)/);
- assert.match(src,/verifyCollectorIdentity\(match\[1\]\)/);
+ assert.match(src,/verifyCollectorIdentity\(match\[1\],\{requiredEvent:mode==="activity-probe"\?"workflow_dispatch":null\}\)/);
  assert.match(src,/collector_verified_trigger=internal_cron/);
  assert.match(src,/if\(!match\|\|!await verifyCollectorIdentity/);
 });

@@ -117,6 +117,9 @@ test("GitHub OIDC verification requires signed exact workload identity",async()=
    "collector_verified_trigger=workflow_dispatch",
    "collector_verified_trigger=push"
  ],"Only genuinely verified, allowlisted GitHub triggers may appear in logs");
+ assert.equal(await verifyCollectorIdentity(valid,{jwksLoader,requiredEvent:"workflow_dispatch"}),false);
+ assert.equal(await verifyCollectorIdentity(await sign({...base,event_name:"push"}),{jwksLoader,requiredEvent:"workflow_dispatch"}),false);
+ assert.equal(await verifyCollectorIdentity(await sign({...base,event_name:"workflow_dispatch"}),{jwksLoader,requiredEvent:"workflow_dispatch"}),true);
  }finally{console.info=priorInfo}
 });
 
