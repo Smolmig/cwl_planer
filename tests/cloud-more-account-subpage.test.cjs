@@ -27,8 +27,8 @@ const navigationCode=[
  "const $=id=>document.getElementById(id);",
  "const installPendingRelease=()=>{};",
  sync.slice(cloudStart,cloudEnd),
- 'window.__simulateLogin=()=>{user={id:"synthetic-only"};document.getElementById("cloudAccount").hidden=false};',
- 'window.__simulateLogout=()=>{user=null;document.getElementById("cloudAccount").hidden=true;showPlannerView("plan")};',
+ 'window.__simulateLogin=()=>{user={id:"synthetic-only"};document.body.classList.add("cloud-mode");document.getElementById("cloudAccount").hidden=false};',
+ 'window.__simulateLogout=()=>{user=null;document.body.classList.remove("cloud-mode");document.getElementById("cloudAccount").hidden=true;showPlannerView("plan")};',
  'document.getElementById("cloudOpen").onclick=()=>open();',
  'document.getElementById("cloudClose").onclick=()=>close();'
 ].join("\n");
@@ -95,12 +95,13 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
      assert.equal(await page.locator("#view-more.active").count(),1);
      assert.equal(await page.locator('.navbtn[data-view="more"].active').count(),1);
      await page.locator('.navbtn[data-view="members"]').click();
-     await page.locator("#cloudOpen").click();
+     assert.equal(await page.locator("#cloudOpen").isVisible(),false);
+     await page.evaluate(()=>document.getElementById("cloudOpen").click());
      assert.equal(await page.locator("#view-account.active").count(),1);
      assert.match(await page.locator("#cloudAccountBack").innerText(),/Mitgliedern/);
      await page.locator("#cloudAccountBack").click();
      assert.equal(await page.locator("#view-members.active").count(),1);
-     assert.equal(await page.locator("#cloudOpen").evaluate(e=>e===document.activeElement),true);
+     assert.equal(await page.locator("#accountQuickButton").evaluate(e=>e===document.activeElement),true);
      await page.evaluate(()=>showPlannerView("settings"));
      await page.evaluate(()=>openAccountFromSettings());
      assert.equal(await page.locator("#view-account.active").count(),1);

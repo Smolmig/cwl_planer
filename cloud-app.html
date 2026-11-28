@@ -6500,7 +6500,11 @@ function restoreNavigationReturn(origin,focusId){
  window.scrollTo({top:target.scroll||0,behavior:"instant"});
  if(target.settings){showPlannerView("settings");document.getElementById("settingsCloudManage")?.focus({preventScroll:true});return}
  const focus=target.view==="more"?document.querySelector('[data-more-action="'+(focusId==="helpBtn"?"help":"clan")+'"]'):document.getElementById(focusId);
- focus?.focus({preventScroll:true});
+ // The legacy cloudOpen trigger is hidden in connected Cloud mode.
+ // Return to the visible account-menu trigger rather than a hidden button.
+ const visible=el=>el&&!el.disabled&&el.getClientRects().length>0;
+ const fallback=document.getElementById(focusId==="cloudOpen"?"accountQuickButton":"settingsOpen");
+ (visible(focus)?focus:visible(fallback)?fallback:document.getElementById("settingsOpen"))?.focus({preventScroll:true});
 }
 function openAccountPage(){
  if(window.__previousPlannerView==="account"){
