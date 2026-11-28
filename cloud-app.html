@@ -3999,6 +3999,12 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
 #cloudAudit .cloud-audit-other>summary::before{content:"›";font-size:20px}
 #cloudAudit .cloud-audit-other[open]>summary::before{transform:rotate(90deg)}
 #cloudAudit .cloud-audit-changes{overflow-wrap:anywhere}
+
+#cloudAccountImportSection[hidden],body:not(.cloud-mode) #cloudAccountImportSection{display:none!important}
+#cloudAccountImportSection{margin-top:16px;min-width:0}
+#cloudAccountImportSection>summary,#cloudBackupPanel>summary{min-height:44px;cursor:pointer}
+#cloudAccountImportSection :is(button,select){min-height:44px;max-width:100%}
+#cloudImportFile{max-width:100%;min-width:0}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4420,6 +4426,26 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
         <div id="cloudPortablePreviewResult" class="cloud-portable-preview-result" hidden></div>
         <button type="button" class="btn danger" id="cloudPortableApply" hidden>Geprüfte Sicherung wiederherstellen</button>
       </section>
+  <details class="cloud-minor" id="cloudAccountImportSection" hidden>
+    <summary>Erweiterte Wiederherstellung · nur CWL-Plan</summary>
+    <h4>Ältere lokale Plan-Datei übernehmen</h4>
+    <p>Nur für alte lokale Plan-Dateien: ersetzt den aktuellen gemeinsamen Plan, nicht die vollständigen Clan-Daten. Nutze für einen Gerätewechsel das portable Backup oben.</p>
+    <input type="file" id="cloudImportFile" accept="application/json,.json">
+    <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
+    <details id="cloudBackupPanel" class="cloud-minor" hidden>
+      <summary>Automatische Plan-Sicherungspunkte</summary>
+      <p class="small">Bis zu fünf Sicherungsstände des gemeinsamen CWL-Plans. Nur der Besitzer kann einen alten Planstand wiederherstellen. Kriegsstatistiken, Benutzerkonten und Zugriffsrechte sind nicht enthalten.</p>
+      <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
+      <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
+      <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
+      <div class="actions">
+        <button class="btn small" id="cloudDownloadSnapshot" type="button" disabled>Als JSON herunterladen</button>
+        <button class="btn small danger" id="cloudRestoreSnapshot" type="button" hidden disabled>Stand wiederherstellen</button>
+      </div>
+      <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
+    </details>
+  </details>
+
     </div>
     <div class="actions" style="margin-top:12px"><button class="btn danger" id="resetBtn">⚠ Profil vollständig zurücksetzen</button><button class="btn" id="reportBugBtn">🐞 Fehler / Problem melden</button></div>
     <input class="hidden" type="file" id="membersFile" accept=".csv,.txt,text/csv,text/plain">
@@ -4822,7 +4848,7 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
     <h3>Meine Clans</h3>
     <select id="cloudClanSelect" aria-label="Verknüpfter Clan"></select>
     <div id="cloudRole" class="statusline" aria-live="polite"></div>
-    <p class="small" id="cloudRoleExplanation" hidden>Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge.</p>
+    <p class="small" id="cloudRoleExplanation" hidden>Die App-Rolle bestimmt deine Rechte: Beobachter lesen mit, Vizes können im erlaubten Umfang mitplanen. Nur der Besitzer kann einen gemeinsamen Plan-Sicherungsstand wiederherstellen oder den Clanplaner löschen. Das ändert keine Clash-Ränge. Sicherungen findest du unter Mehr → Backup & Import.</p>
     <div id="cloudSyncFeedback" hidden class="statusline" role="status" aria-live="polite">Stand wird geladen …</div>
     <div id="cloudActiveMembers" hidden class="cloud-active-members" aria-live="polite"></div>
     <details class="cloud-minor" id="cloudAccessDetails" hidden open>
@@ -4881,24 +4907,6 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
   <div class="cloud-section" id="cloudAccountAuditSection" hidden>
     <h3>Änderungsverlauf</h3><p>Gemeinsame Planänderungen zuerst. Bis zu 150 Profilereignisse, die letzte gespeicherte Freigabe und für die Clanführung bis zu 40 Vorschläge. Weitere Aktivitäten sind separat aufklappbar.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
-  </div>
-  <div class="cloud-section" id="cloudAccountImportSection" hidden>
-    <h3>Lokalen Plan übernehmen</h3>
-    <p>Bei Bedarf kannst du einen zuvor exportierten lokalen CWL-Plan in diesen Cloud-Clan übernehmen. Das ist etwas anderes als einen bestehenden Cloud-Sicherungsstand wiederherzustellen. Deine lokalen Daten bleiben auf diesem Gerät erhalten.</p>
-    <input type="file" id="cloudImportFile" accept="application/json,.json">
-    <div class="actions"><button class="btn" id="cloudImportProfile">Profil übernehmen</button><button class="btn" id="cloudExportProfile" hidden>Cloud-Profil exportieren</button></div>
-    <details id="cloudBackupPanel" class="cloud-minor" hidden>
-      <summary>Gemeinsame Plan-Sicherungen</summary>
-      <p class="small">Bis zu fünf Sicherungsstände des gemeinsamen CWL-Plans. Nur der Besitzer kann einen alten Planstand wiederherstellen. Kriegsstatistiken, Benutzerkonten und Zugriffsrechte sind nicht enthalten.</p>
-      <div class="actions"><button class="btn small" id="cloudLoadSnapshots" type="button">Sicherungspunkte anzeigen</button></div>
-      <label for="cloudSnapshotSelect">Gespeicherter Stand</label>
-      <select id="cloudSnapshotSelect" aria-label="Wiederherstellungspunkt"><option value="">Noch keine Sicherung ausgewählt</option></select>
-      <div class="actions">
-        <button class="btn small" id="cloudDownloadSnapshot" type="button" disabled>Als JSON herunterladen</button>
-        <button class="btn small danger" id="cloudRestoreSnapshot" type="button" hidden disabled>Stand wiederherstellen</button>
-      </div>
-      <p id="cloudBackupStatus" class="small" aria-live="polite"></p>
-    </details>
   </div>
   <details class="cloud-minor" id="cloudDangerZone" hidden>
    <summary>Erweiterte Zugriffsverwaltung</summary>

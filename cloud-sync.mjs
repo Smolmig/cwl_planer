@@ -42,7 +42,7 @@ let invitePreview=null,inviteAuthMode="login",invitePreviewRequest=0,inviteSubmi
 let pollTimer=null,syncInFlight=false,lastNotifiedRevision=0,remotePending=false,notifyTimer=null;
 const backups=createCloudBackups({
  sb,
- context:()=>({clanId,role,revision,clans}),
+ context:()=>({clanId,role,revision,clans,userId:user?.id||null,epoch:accountEpoch}),
  ensureSaved:()=>ensureSaved(),
  loadProfile:()=>loadCloudProfile(true),
  audit:()=>audit(),
@@ -918,6 +918,7 @@ const cloud={
     "exportProfileBtn","exportAllBtn","settingsCloudManage","settingsClose","openReleaseHistory","reportBugBtn","moreSettingsBack","moreSettingsCloudBackup"]);
   for(const el of document.querySelectorAll("#view-plan button,#view-plan input,#view-plan select,#view-members button,#view-members input,#view-members select,#view-summary button,#view-summary input,#view-summary select,#view-settings button,#view-settings input,#view-settings select,"+
     "#view-more-settings button,#view-more-settings input,#view-more-settings select")){
+    if(el.closest("#cloudAccountImportSection"))continue; // dedicated backup permissions and selection state
     if(el.dataset.cloudDisabled==="1"){el.disabled=false;delete el.dataset.cloudDisabled}
     const memberReadOnlyControl=el.closest("#view-members")&&el.matches(
       "#memberSearch,#memberFilter,#memberSortSelect,.member-edit-toggle,.toggle-rules,.member-config-help,.dup-warning,.close-duplicate");
@@ -1269,6 +1270,9 @@ function clearClanAccountDetails(){
   "cloudAudit","cloudActiveMembers"]){$(id)?.replaceChildren();}
  for(const id of ["cloudAccessCount","cloudPendingCount","cloudBlockedCount"])text(id,"");
  if($("cloudAlias"))$("cloudAlias").value="";
+ if($("cloudImportFile"))$("cloudImportFile").value="";
+ if($("cloudAccountImportSection"))$("cloudAccountImportSection").open=false;
+ if($("cloudBackupPanel"))$("cloudBackupPanel").open=false;
  for(const id of ["cloudAccessDetails","cloudBlockedDetails","cloudPendingDetails",
   "cloudAliasControls","cloudAccountAuditSection","cloudAccountImportSection",
   "cloudDangerZone","cloudReload","cloudRoleExplanation","cloudSyncFeedback",
@@ -1566,6 +1570,9 @@ async function checkRemoteChanges(reason="poll"){
    toggle("cloudInviteBox",role==="owner"||role==="editor");
    toggle("cloudImportProfile",role!=="viewer");
    toggle("cloudImportFile",role!=="viewer");
+   toggle("cloudRestoreSnapshot",role==="owner");
+   backups.reset();
+   if($("cloudImportFile"))$("cloudImportFile").value="";
    cloud.afterRender();
    loadAccessList(id).catch(console.warn);
    storage.toast("Deine Berechtigung wurde geändert: "+(role==="editor"?"Vize":role==="viewer"?"Beobachter":"Besitzer"));
@@ -2514,15 +2521,23 @@ async function exportCloud(){if(!clanId)throw Error("Kein Cloud-Clan ausgewählt
 async function importCloud(){
  if(!clanId||role==="viewer")throw Error("Kein Bearbeitungszugriff.");
  if(role==="editor"&&planIsLocked())throw Error("Plan freigegeben: Bitte einzelne Änderungen als Vorschlag einreichen.");
+ const expected={clanId,epoch:accountEpoch,actor:user?.id,role,revision};
+ const stable=()=>cloud.active&&clanId===expected.clanId&&accountEpoch===expected.epoch&&user?.id===expected.actor&&role===expected.role&&revision===expected.revision&&!(role==="editor"&&planIsLocked());
+ const requireContext=()=>{if(!stable())throw Error("Clan, Berechtigung oder Planstand geändert. Bitte Datei erneut auswählen.")};
  const f=$("cloudImportFile").files[0];if(!f)throw Error("Bitte eine JSON-Backup-Datei auswählen.");
- const b=JSON.parse(await f.text());if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
+ const b=JSON.parse(await f.text());requireContext();if(Number(b.dataVersion)!==9)throw Error("Nur Datenformat 9 ist unterstützt.");
  const p=b.kind==="cwl-profile"?b.profile:b.kind==="cwl-app-backup"?(b.app?.profiles?.find(x=>x.id===b.app?.activeProfileId)||b.app?.profiles?.[0]):null;
  if(!p||!Array.isArray(p.members)||!Array.isArray(p.locks)||!Array.isArray(p.archives))throw Error("Kein gültiges CWL-Profil in dieser Datei.");
+ await ensureSaved();requireContext();
  if(!await storage.confirmAction("Dieses Backup ersetzt den aktuellen gemeinsamen Clanplan für alle Mitglieder.",{title:"Gemeinsamen Plan ersetzen?",confirmText:"Plan ersetzen",danger:true}))return;
- await ensureSaved();hydrating=true;
+ requireContext();
+ if(changedSerial||saving||blocked)throw Error("Es sind neue Änderungen offen. Bitte zuerst speichern und erneut prüfen.");
+ hydrating=true;
  try{storage.switchToCloud(p)}finally{hydrating=false}
  cloud.onLocalChange();
- await writeCloud();close();
+ await writeCloud();
+ await ensureSaved();
+ if(clanId===expected.clanId&&accountEpoch===expected.epoch){$("cloudImportFile").value="";close()}
 }
 function bind(id,event,handler){$(id).addEventListener(event,async(e)=>{try{e.preventDefault();await handler(e)}catch(err){error(err)}})}
 bind("planReviewToggle","click",togglePlanLock);
