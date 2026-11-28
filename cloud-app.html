@@ -3988,6 +3988,17 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
 #cloudAutoRosterInfo[hidden],#resumeAutoRosterLabel[hidden]{display:none!important}
 #cloudAutoRosterInfo #autoRosterStatus{margin:0;overflow-wrap:anywhere}
 #resumeAutoRosterLabel{min-height:44px;display:flex;align-items:center;gap:8px}
+
+/* #37: quiet account activity list with a separate disclosure for other records. */
+#cloudAudit{display:grid;gap:0;min-width:0}
+#cloudAudit .cloud-audit-item{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;background:transparent;padding:0}
+#cloudAudit .cloud-audit-item>summary{min-height:44px;padding:10px 2px;overflow-wrap:anywhere;cursor:pointer}
+#cloudAudit .cloud-audit-item>summary:focus-visible,#cloudAudit .cloud-audit-other>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#cloudAudit .cloud-audit-other{margin-top:10px;min-width:0}
+#cloudAudit .cloud-audit-other>summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--muted);font-weight:600}
+#cloudAudit .cloud-audit-other>summary::before{content:"›";font-size:20px}
+#cloudAudit .cloud-audit-other[open]>summary::before{transform:rotate(90deg)}
+#cloudAudit .cloud-audit-changes{overflow-wrap:anywhere}
 </style>
 <link rel="icon" type="image/svg+xml" href="./brand-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./brand-icon-192.png">
@@ -4799,7 +4810,7 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
  <div class="card account-page">
   <div class="section-title account-page-head">
    <div><span class="more-eyebrow">VERWALTUNG</span><h2 id="cloudAccountTitle">Clan & Konto</h2>
-    <p class="statusline">Deine verbundenen Clans, wer den Planer nutzen darf und gespeicherte Planstände.</p></div>
+    <p class="statusline">Deine Clans, Zugänge und gemeinsame Änderungen.</p></div>
    <button type="button" class="btn small" id="cloudAccountBack">Zurück zu Mehr</button>
   </div>
   <div id="cloudAccountMessage" class="cloud-msg" role="alert" hidden></div>
@@ -4868,7 +4879,7 @@ body.cloud-mode #view-more .more-tile:is([data-more-action="updates"],[data-more
     <button class="btn" id="cloudCopyInvite" hidden>Einladungslink kopieren</button><p class="small">Neue Einladungslinks findest du später unter „Aktive Einladungslinks“. Ältere Links bleiben gültig, lassen sich aber nicht erneut anzeigen.</p>
   </div>
   <div class="cloud-section" id="cloudAccountAuditSection" hidden>
-    <h3>Änderungsverlauf</h3><p>Zeigt die letzten 100 Änderungen und aktualisiert sich automatisch.</p>
+    <h3>Änderungsverlauf</h3><p>Gemeinsame Planänderungen zuerst. Zeigt bis zu 150 gespeicherte Einträge; weitere Aktivitäten sind separat aufklappbar.</p>
     <div class="cloud-audit" id="cloudAudit">Noch keine Änderungen.</div>
   </div>
   <div class="cloud-section" id="cloudAccountImportSection" hidden>

@@ -1459,7 +1459,7 @@ function showChangeToast(message,sticky=false){
 function describeRemoteEvent(event){
  const data=event?.details||{},lines=[];
  const labels={name:"Name",fixed:"Fix",participating:"Dabei",priority:"Priorität",
-  targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",
+  targetDays:"Einsatzziel",townHall:"Rathaus",threeStar:"3★-Stärke",rotationWeight:"Rotation",
   playerTag:"Spieler-Tag",cocSyncState:"Clanstatus",cocOrder:"Clash-Reihenfolge",
   firstDay:"Erst ab",outFromDay:"Raus ab"};
  const fmt=value=>value==null?"–":typeof value==="boolean"?(value?"Ja":"Nein"):String(value);
@@ -2276,28 +2276,42 @@ async function applyRoster(){
  if(typeof refreshRosterEmergencyUI==="function")refreshRosterEmergencyUI();
  msg("Mitgliederliste übernommen ✓");resetRoster();toggle("cloudRosterBox",false);
 }
-async function audit(){
- if(!clanId||!user)return;
- const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id;
- const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
-  sb.from("cwl_change_events").select("actor_id,event_type,details,revision,created_at")
-   .eq("clan_id",clanId).order("id",{ascending:false}).limit(150),
-  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",clanId)
- ]);
- if(err)throw err;if(e2)throw e2;
- if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id)return;
- const aliases=new Map((people||[]).map(x=>[x.user_id,x.display_name||"Clanmitglied "+x.user_id.slice(0,6)]));
- const root=$("cloudAudit");root.replaceChildren();
- if(!rows?.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
- let hiddenTechnical=0,shown=0;
+// Classify stored evidence, not guessed causes. Unknown fields, truncated
+// member diffs and unrecorded legacy changes remain accessible.
+function classifyAuditEvent(event){
+ const d=event?.details;
+ if(event?.event_type==="profile_created")return "planning";
+ if(event?.event_type!=="profile_updated"||!d||typeof d!=="object"||Array.isArray(d))return "other";
+ if(d.plan_geaendert===true||d.day_goals_geaendert===true)return "planning";
+ const fields=Array.isArray(d.spieleraenderungen)?d.spieleraenderungen:[];
+ const planFields=new Set(["hinzugefuegt","entfernt","fixed","participating","priority","targetDays","statuses","firstDay","outFromDay","rotationWeight","townHall","threeStar"]);
+ if(fields.some(p=>Object.keys(p?.felder||{}).some(k=>planFields.has(k))))return "planning";
+ if(Object.keys(d.config_differenzen||{}).some(k=>k==="slots"||k==="days"))return "planning";
+ // Do not infer "only technical" from incomplete/truncated audit payloads.
+ const sections=Array.isArray(d.bereiche)?d.bereiche:[];
+ if(sections.length&&sections.every(x=>x==="updatedAt"||x==="cwlLive")&&
+   !fields.length&&!Object.keys(d.config_differenzen||{}).length&&!d.weitere_spieler&&
+   !d.config_geaendert&&!d.archiv_geaendert)return "technical";
+ return "other";
+}
+function renderAuditRows(root,rows,people,actorId,scope){
+ const sameScope=root.dataset.auditScope===scope;
+ const opened=new Set(sameScope?[...root.querySelectorAll("details[data-audit-key][open]")].map(x=>x.dataset.auditKey):[]);
+ root.dataset.auditScope=scope;
+ root.replaceChildren();
+ if(!rows.length){root.textContent="Noch keine gemeinsamen Änderungen.";return}
+ const aliases=new Map(people.map(x=>[x.user_id,x.display_name||"Clanmitglied"]));
+ const planning=[],other=[];
  for(const e of rows){
-  const changes=describeRemoteEvent(e);
-  if(changes.length===1&&changes[0].startsWith("Nur Speicherzeitpunkt")){hiddenTechnical++;continue}
+  const changes=describeRemoteEvent(e),kind=classifyAuditEvent(e);
   const item=document.createElement("details");item.className="cloud-actor cloud-audit-item";
+  // Real server event ID, not revision (multiple records may share a revision).
+  if(e.id!=null){item.dataset.auditKey="event:"+String(e.id);item.open=opened.has(item.dataset.auditKey)}
   const summary=document.createElement("summary");
   const who=document.createElement("strong");
-  who.textContent=(e.actor_id===user?.id?"Du":aliases.get(e.actor_id)||"Ehemaliges Clanmitglied")+
-   " · "+new Date(e.created_at).toLocaleString("de-AT");
+  const name=e.actor_id===actorId?"Du":e.actor_id?aliases.get(e.actor_id)||"Ehemaliges Clanmitglied":"System / nicht zugeordnet";
+  const date=new Date(e.created_at);
+  who.textContent=name+" · "+(Number.isFinite(date.getTime())?date.toLocaleString("de-AT"):"Zeitpunkt unbekannt");
   const preview=document.createElement("span");
   preview.textContent=changes[0]+(changes.length>1?" · +"+(changes.length-1)+" weitere":"");
   summary.append(who,preview);item.append(summary);
@@ -2305,14 +2319,32 @@ async function audit(){
   for(const change of changes){
    const line=document.createElement("li");line.textContent=change;details.append(line);
   }
-  item.append(details);root.append(item);shown++;
+  item.append(details);
+  (kind==="planning"?planning:other).push(item);
  }
- if(!shown)root.textContent="Keine inhaltlichen Änderungen gespeichert.";
- if(hiddenTechnical){
-  const note=document.createElement("div");note.className="statusline cloud-audit-technical";
-  note.textContent=hiddenTechnical+" rein technische Speicheraktualisierungen ausgeblendet.";
-  root.append(note);
+ if(planning.length)root.append(...planning);
+ else{
+  const note=document.createElement("p");note.className="statusline";note.textContent="In den zuletzt geladenen Einträgen sind keine konkreten Planänderungen belegt.";root.append(note);
  }
+ if(other.length){
+  const group=document.createElement("details");group.className="cloud-audit-other";group.dataset.auditKey="other";
+  group.open=opened.has("other");
+  const summary=document.createElement("summary");summary.textContent="Weitere Aktivitäten ("+other.length+")";
+  group.append(summary,...other);root.append(group);
+ }
+}
+let auditRequestSerial=0;
+async function audit(){
+ if(!clanId||!user)return;
+ const expected=clanId,expectedEpoch=accountEpoch,expectedActor=user.id,request=++auditRequestSerial;
+ const [{data:rows,error:err},{data:people,error:e2}]=await Promise.all([
+  sb.from("cwl_change_events").select("id,actor_id,event_type,details,revision,created_at")
+   .eq("clan_id",expected).order("id",{ascending:false}).limit(150),
+  sb.from("cwl_clan_memberships").select("user_id,display_name,role").eq("clan_id",expected)
+ ]);
+ if(expected!==clanId||expectedEpoch!==accountEpoch||expectedActor!==user?.id||request!==auditRequestSerial)return;
+ if(err)throw err;if(e2)throw e2;
+ renderAuditRows($("cloudAudit"),rows||[],people||[],expectedActor,JSON.stringify([expectedEpoch,expected,expectedActor]));
 }
 function stopPresence(){
  if(presenceTimer!==null){clearInterval(presenceTimer);presenceTimer=null;}
