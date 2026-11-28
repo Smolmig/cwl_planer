@@ -93,7 +93,7 @@ test("Cloud clan switch cannot reuse a different clan's private acknowledgment",
    await page.evaluate(()=>window.CWLClanManagementView.open());
    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="1");
    await page.locator('[data-management-source="rank"]').click();
-   await page.locator(".clan-management-evidence > summary").click();
+   await page.locator("#clanManagementList .clan-management-evidence > summary").click();
    await page.getByRole("button",{name:"Leistungsprüfung für Sample: Als geprüft markieren"}).click();
    await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
    await page.evaluate(()=>{clanId="clan-b";window.CWLClanManagementView.open();});
