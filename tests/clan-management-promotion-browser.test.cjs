@@ -3,7 +3,8 @@ const {test}=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {chromium}=require("playwright");
+const {chromium,webkit}=require("playwright");
+const engine=process.env.CWL_TEST_BROWSER==="webkit"?webkit:chromium;
 const html=fs.readFileSync(path.join(__dirname,"..","cloud-app.html"),"utf8");
 const core=fs.readFileSync(path.join(__dirname,"..","clan-management-core.js"),"utf8");
 const markup=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<link\b[^>]*>/gi,"");
@@ -26,7 +27,7 @@ const fakeCloud=[
 test("Owner saves criteria and refreshes manual preview without hiding controls on mobile",{
  timeout:110000
 },async()=>{
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await engine.launch({headless:true,...(engine===chromium?{args:["--no-sandbox"]}:{})});
  try{
   for(const width of [320,390,430,1280]){
    const page=await browser.newPage({viewport:{width,height:820}});
@@ -44,6 +45,8 @@ test("Owner saves criteria and refreshes manual preview without hiding controls 
     assert.equal(await page.locator("#clanRulesSave").isEnabled(),true);
     await page.locator("#clanRulesSave").click();
     await page.waitForFunction(()=>saveCalls===1);
+    await page.waitForFunction(()=>document.getElementById("clanRulesStatus").dataset.tone==="positive");
+    assert.match(await page.locator("#clanRulesDraftSummary").innerText(),/Aktuelle Kriterien: Leistung: ab 15 Clantagen/);
     await page.waitForFunction(()=>document.getElementById("clanManagementOpenCount").textContent==="0");
     assert.equal(await page.locator("#clanManagementCriteria").evaluate(x=>x.open),true);
     assert.doesNotMatch(await page.locator("#clanManagementList").innerText(),/Beförderung prüfen/);
