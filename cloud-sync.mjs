@@ -2350,7 +2350,7 @@ function renderAuditRows(root,rows,people,actorId,scope,review={entries:[]}){
   const who=document.createElement("strong");
   const name=e.actor_id===actorId?"Du":e.actor_id?aliases.get(e.actor_id)||"Ehemaliges Clanmitglied":"System / nicht zugeordnet";
   const date=new Date(e.created_at);
-  who.textContent=name+" · "+(Number.isFinite(date.getTime())?date.toLocaleString("de-AT"):"Zeitpunkt unbekannt");
+  who.textContent=name+" · "+(Number.isFinite(date.getTime())?date.toLocaleString("de-AT",{dateStyle:"short",timeStyle:"short"}):"Zeitpunkt unbekannt");
   const preview=document.createElement("span");
   preview.textContent=changes[0]+(changes.length>1?" · +"+(changes.length-1)+" weitere":"");
   summary.append(who,preview);item.append(summary);

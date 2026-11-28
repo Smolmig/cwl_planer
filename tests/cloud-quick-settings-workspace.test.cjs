@@ -27,13 +27,16 @@ test("Cloud quick settings retain detailed fallback pages and local settings at 
       const byId=id=>document.getElementById(id);
       const display=id=>getComputedStyle(byId(id)).display;
       const box=byId("view-settings").querySelector(".settings-window").getBoundingClientRect();
+      const select=byId("themeSelect");select.value=theme;const style=getComputedStyle(select),ctx=document.createElement("canvas").getContext("2d");ctx.font=style.font;
+      const fits=ctx.measureText(select.options[select.selectedIndex].text).width<=select.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-18;
       const visible=["themeSelect","settingsClose","settingsCloudManage","openReleaseHistory","reportBugBtn"].map(id=>({id,h:byId(id).getBoundingClientRect().height}));
-      return {width:innerWidth,scroll:document.documentElement.scrollWidth,box:box.width,visible,
+      return {width:innerWidth,scroll:document.documentElement.scrollWidth,box:box.width,visible,fits,
        rules:display("settingsRulesSection"),auto:display("settingsAutoRosterBox"),backup:display("settingsBackupSection"),
        appearance:getComputedStyle(document.querySelector('[data-more-action="appearance"]')).display};
      },theme);
      assert.ok(result.scroll<=width+3,JSON.stringify({theme,width,result}));
      assert.ok(result.box<=481&&result.box>200,JSON.stringify({theme,width,result}));
+     assert.ok(result.fits,"Selected theme label must fit: "+JSON.stringify({theme,width,result}));
      assert.equal(result.rules,"none");assert.equal(result.auto,"none");assert.equal(result.backup,"none");assert.equal(result.appearance,"none");
      for(const x of result.visible)assert.ok(x.h>=43,JSON.stringify({theme,width,x}));
      if(theme==="arena"||theme==="dark"){
@@ -71,6 +74,8 @@ test("More groups keep unique routes, Cloud hides redundant entries, install sta
   assert.deepEqual(groups.map(g=>g.getAttribute("aria-label")),["Clan & Planung","Verlosungen & Archiv","App & Sicherheit"]);
   const routes=[...d.querySelectorAll(".more-menu [data-more-action]")].map(x=>x.dataset.moreAction);
   assert.equal(routes.length,11);assert.equal(new Set(routes).size,11);
+  assert.equal(d.querySelectorAll(".more-tile-symbol svg").length,11,"no font-dependent missing glyphs");
+  assert.equal(d.querySelector("#themeSelect [value=arena]").textContent,"Arena · Gold (Standard)");
   assert.ok(d.getElementById("helpInstallOpen").closest("#view-help"));
  }finally{dom.window.close()}
 });
@@ -87,6 +92,7 @@ test("Grouped More: compact navigation across widths, roles and local/Cloud mode
       document.body.classList.add("cloud-mode","cloud-role-viewer");
       document.querySelectorAll(".view.active").forEach(x=>x.classList.remove("active"));
       document.getElementById("view-more").classList.add("active");
+      document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view==="more"));
       const tiles=[...document.querySelectorAll(".more-menu [data-more-action]")];
       const visible=()=>tiles.filter(x=>getComputedStyle(x).display!=="none").map(x=>({route:x.dataset.moreAction,height:x.getBoundingClientRect().height}));
       const viewer=visible();

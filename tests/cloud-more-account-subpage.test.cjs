@@ -101,6 +101,14 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
      await page.locator("#cloudAccountBack").click();
      assert.equal(await page.locator("#view-members.active").count(),1);
      assert.equal(await page.locator("#cloudOpen").evaluate(e=>e===document.activeElement),true);
+     await page.evaluate(()=>showPlannerView("settings"));
+     await page.evaluate(()=>openAccountFromSettings());
+     assert.equal(await page.locator("#view-account.active").count(),1);
+     assert.match(await page.locator("#cloudAccountBack").innerText(),/Einstellungen/);
+     await page.locator("#cloudAccountBack").click();
+     assert.equal(await page.locator("#view-members.active").count(),1);
+     assert.equal(await page.locator("#view-settings.active").count(),1);
+     assert.equal(await page.locator("#settingsCloudManage").evaluate(e=>e===document.activeElement),true);
      await page.evaluate(()=>window.__simulateLogout());
      assert.equal(await page.locator("#view-plan.active").count(),1);
     }finally{await page.close()}
