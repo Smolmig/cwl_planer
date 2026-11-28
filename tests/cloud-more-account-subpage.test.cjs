@@ -21,8 +21,8 @@ const navigationCode=[
  "function closeQuickClan(){}",
  html.slice(navStart,navEnd),
  html.slice(moreStart,moreEnd),
- 'document.getElementById("cloudAccountBack").onclick=()=>showPlannerView("more");',
- 'document.getElementById("helpClose").onclick=()=>showPlannerView("more");',
+ 'document.getElementById("cloudAccountBack").onclick=returnFromAccount;',
+ 'document.getElementById("helpClose").onclick=returnFromHelp;',
  "let user=null,recoveryMode=false,pendingRelease=null;",
  "const $=id=>document.getElementById(id);",
  "const installPendingRelease=()=>{};",
@@ -94,6 +94,13 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
      await page.locator("#cloudAccountBack").click();
      assert.equal(await page.locator("#view-more.active").count(),1);
      assert.equal(await page.locator('.navbtn[data-view="more"].active').count(),1);
+     await page.locator('.navbtn[data-view="members"]').click();
+     await page.locator("#cloudOpen").click();
+     assert.equal(await page.locator("#view-account.active").count(),1);
+     assert.match(await page.locator("#cloudAccountBack").innerText(),/Mitgliedern/);
+     await page.locator("#cloudAccountBack").click();
+     assert.equal(await page.locator("#view-members.active").count(),1);
+     assert.equal(await page.locator("#cloudOpen").evaluate(e=>e===document.activeElement),true);
      await page.evaluate(()=>window.__simulateLogout());
      assert.equal(await page.locator("#view-plan.active").count(),1);
     }finally{await page.close()}
@@ -104,8 +111,8 @@ test("guest login stays in modal; logged-in Clan & Konto opens responsive page a
 test("no account content is cloned and no access form writes during navigation",()=>{
  assert.doesNotMatch(html,/innerHTML\s*=.*cloudAccount/);
  assert.doesNotMatch(html,/cloneNode\(.*cloudAccount/);
- assert.match(html,/window\.CWLShowAccountPage=\(\)=>showPlannerView\("account"\)/);
- assert.match(html,/document\.getElementById\("cloudAccountBack"\)\.onclick=\(\)=>showPlannerView\("more"\)/);
+ assert.match(html,/window\.CWLShowAccountPage=openAccountPage/);
+ assert.match(html,/document\.getElementById\("cloudAccountBack"\)\.onclick=returnFromAccount/);
  assert.doesNotMatch(sync,/await sb\.from\("cwl_cloud_profiles"\).*CWLShowAccountPage/);
 });
 

@@ -6475,7 +6475,52 @@ function showPlannerView(view){
  if(view!=="settings"&&!(wasSettingsOpen&&view===previousView))
   window.scrollTo({top:0,behavior:"smooth"});
 }
-window.CWLShowAccountPage=()=>showPlannerView("account");
+// Explicit return paths, not browser history mutations. Do not intercept
+// platform edge gestures or make a hidden settings form active again.
+const returnLabels={plan:"zum Plan",members:"zu Mitgliedern",summary:"zu Einsätzen",stats:"zur Statistik",more:"zu Mehr",account:"zu Clan & Konto"};
+let accountReturn=null,helpReturn=null,accountFromSettings=false;
+function captureNavigationReturn(destination,settings=false){
+ const previous=window.__previousPlannerView||"plan";
+ const view=Object.hasOwn(returnLabels,previous)&&previous!==destination?previous:"more";
+ return {view,scroll:view===previous?window.scrollY:0,settings:settings&&view===previous};
+}
+function restoreNavigationReturn(origin,focusId){
+ const target=origin||{view:"more",scroll:0,settings:false};
+ showPlannerView(target.view);
+ window.scrollTo({top:target.scroll||0,behavior:"instant"});
+ if(target.settings){showPlannerView("settings");document.getElementById("settingsCloudManage")?.focus({preventScroll:true});return}
+ const focus=target.view==="more"?document.querySelector('[data-more-action="'+(focusId==="helpBtn"?"help":"clan")+'"]'):document.getElementById(focusId);
+ focus?.focus({preventScroll:true});
+}
+function openAccountPage(){
+ if(window.__previousPlannerView==="account"){
+  showPlannerView("account");return;
+ }
+ accountReturn=captureNavigationReturn("account",accountFromSettings);
+ document.getElementById("cloudAccountBack").textContent=accountReturn.settings?"Zurück zu Einstellungen":"Zurück "+returnLabels[accountReturn.view];
+ showPlannerView("account");
+}
+function returnFromAccount(){
+ const origin=accountReturn;accountReturn=null;
+ restoreNavigationReturn(origin,"cloudOpen");
+}
+function openAccountFromSettings(){
+ accountFromSettings=true;
+ try{
+  showPlannerView(window.__previousPlannerView||"plan");
+  document.getElementById("cloudOpen").click();
+ }finally{accountFromSettings=false}
+}
+function openHelpPage(){
+ if(window.__previousPlannerView==="help")return;
+ helpReturn=captureNavigationReturn("help");
+ document.getElementById("helpClose").textContent="Zurück "+returnLabels[helpReturn.view];
+ showPlannerView("help");
+}
+function returnFromHelp(){
+ const origin=helpReturn;helpReturn=null;restoreNavigationReturn(origin,"helpBtn");
+}
+window.CWLShowAccountPage=openAccountPage;
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{closeQuickClan();showPlannerView(b.dataset.view)});
 // v1.5.1: reuse the existing Supabase clan-selection flow; no parallel cloud state.
 const quickClanBtn=document.getElementById("headerClanName");
@@ -7229,7 +7274,7 @@ document.querySelector(".more-menu").addEventListener("click",event=>{
   const action=event.target.closest("[data-more-action]")?.dataset.moreAction;
   if(!action)return;
   if(action==="updates"){openReleaseHistory();return}
-  if(action==="help"){showPlannerView("help");return}
+  if(action==="help"){openHelpPage();return}
   if(action==="install"){openInstallFrom("more");return}
   if(action==="clan"){document.getElementById("cloudOpen").click();return}
   if(action==="management"){window.CWLClanManagementView?.open?.();return}
@@ -7447,7 +7492,7 @@ document.getElementById("settingsOpen").onclick=()=>showPlannerView("settings");
 document.getElementById("settingsClose").onclick=()=>showPlannerView(window.__previousPlannerView||"plan");
 document.getElementById("view-settings").addEventListener("click",e=>{if(e.target.id==="view-settings")showPlannerView(window.__previousPlannerView||"plan")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("view-settings").classList.contains("active"))showPlannerView(window.__previousPlannerView||"plan")});
-document.getElementById("settingsCloudManage").onclick=()=>void (showPlannerView(window.__previousPlannerView||"plan"),document.getElementById("cloudOpen").click());
+document.getElementById("settingsCloudManage").onclick=openAccountFromSettings;
 document.getElementById("profileSelect").onchange=e=>{e.target.value==="__new__"?createProfilePrompt():setActiveProfile(e.target.value)};
 document.getElementById("copyFullPlanBtn").onclick=()=>copyText(buildFullPlanText(),"Gesamter CWL-Plan kopiert ✓");
 document.getElementById("singleDayMode").onclick=()=>{uiSettings.dayViewMode="single";saveUiSettings();renderMobileDays()};
@@ -7538,7 +7583,7 @@ document.getElementById("summaryList").addEventListener("click",event=>{
  renderSummary();
 });
 document.getElementById("memberSortSelect").onchange=e=>{if(window.CWLCloud?.active){window.CWLCloud.setMemberSortPreference?.(e.target.value);renderMembers();return}state.config.memberSort=e.target.value;renderAll("Sortierung gespeichert ✓")};
-document.getElementById("helpBtn").onclick=()=>showPlannerView("help");
+document.getElementById("helpBtn").onclick=openHelpPage;
 const bulkTh=document.getElementById("bulkTownHallSelect");for(let v=19;v>=3;v--){const o=document.createElement("option");o.value=String(v);o.textContent=`RH ${v}`;bulkTh.appendChild(o)}document.getElementById("bulkRotationSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("rotationWeight",e.target.value);e.target.value=""}};document.getElementById("bulkTownHallSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("townHall",e.target.value==="none"?null:Number(e.target.value));e.target.value=""}};document.getElementById("bulkTownHallPicker").onclick=()=>openTownHallPicker(null,value=>applyBulkValue("townHall",value));document.getElementById("bulkStrengthSelect").onchange=e=>{if(e.target.value!==""){applyBulkValue("threeStar",e.target.value);e.target.value=""}};document.getElementById("selectAllBtn").onclick=()=>{getVisibleMembers().forEach(m=>selectedMembers.add(m.id));renderMembers()};document.getElementById("selectNoneBtn").onclick=()=>{selectedMembers.clear();renderMembers()};document.getElementById("bulkParticipatingOnBtn").onclick=()=>applyBulkValue("participating",true);document.getElementById("bulkParticipatingOffBtn").onclick=()=>applyBulkValue("participating",false);document.getElementById("bulkFixedOnBtn").onclick=()=>applyBulkValue("fixed",true);document.getElementById("bulkFixedOffBtn").onclick=()=>applyBulkValue("fixed",false);document.getElementById("deleteSelectedBtn").onclick=async()=>{if(!selectedMembers.size)return;const used=[...selectedMembers].filter(usedInLockedDay).length,msg=used?`${used} davon wurden bereits eingesetzt; ihre gespielten Line-ups bleiben erhalten.`:"Diese Aktion entfernt die ausgewählten Spieler aus der aktuellen Mitgliederliste.";if(!await confirmInline(msg,{title:`${selectedMembers.size} Mitglieder entfernen?`,confirmText:"Mitglieder entfernen",danger:true}))return;const r=removeMembers(new Set(selectedMembers));if(r.blocked)return;selectedMembers.clear();renderAll(r.archived?`${r.archived} historische Spieler erhalten · Mitglieder entfernt ✓`:"Mitglieder gelöscht ✓")};document.getElementById("deleteAllBtn").onclick=async()=>{if(!state.members.length)return;if(!await confirmInline("Spieler aus bereits gespielten Tagen bleiben in der Historie erhalten.",{title:`Alle ${state.members.length} aktuellen Mitglieder entfernen?`,confirmText:"Alle entfernen",danger:true}))return;const r=removeMembers(new Set(state.members.map(m=>m.id)));if(r.blocked)return;selectedMembers.clear();renderAll(r.archived?"Aktuelle Mitglieder entfernt · gespielte Historie erhalten ✓":"Alle Mitglieder gelöscht ✓")};
 // Profiles
 document.getElementById("newProfileBtn").onclick=createProfilePrompt;document.getElementById("copyProfileBtn").onclick=async()=>{const raw=await promptInline("Profil duplizieren","Name der vollständigen Profilkopie",state.name+" – Kopie"),name=(raw||"").trim();if(!name)return;if(profileNameExists(name)){showToast("Ein Profil mit diesem Namen existiert bereits");return}const p=cloneProfile(state,name);app.profiles.push(p);setActiveProfile(p.id)};document.getElementById("renameProfileBtn").onclick=async()=>{const raw=await promptInline("Profil umbenennen","Neuer Profilname",state.name),name=(raw||"").trim();if(!name)return;if(profileNameExists(name,state.id)){showToast("Ein Profil mit diesem Namen existiert bereits");return}state.name=name;renderAll("Profil umbenannt ✓")};document.getElementById("deleteProfileBtn").onclick=async()=>{if(!await confirmInline(`Das Profil „${state.name}“ inklusive aktueller CWL und Archive wird gelöscht.`,{title:"Profil wirklich löschen?",confirmText:"Profil löschen",danger:true}))return;app.profiles=app.profiles.filter(p=>p.id!==state.id);if(!app.profiles.length)app.profiles.push(freshProfile());app.activeProfileId=app.profiles[0].id;state=app.profiles[0];openRulePanels.clear();openDuplicatePanels.clear();selectedMembers.clear();selectionMode=false;renderAll("Profil gelöscht ✓")};
@@ -7550,8 +7595,8 @@ document.getElementById("themeSelect").onchange=e=>{uiSettings.theme=e.target.va
 document.getElementById("importFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text()),dv=Number(obj.dataVersion||obj.version||0);if(dv>DATA_VERSION)throw new Error("newer");if(obj.kind==="cwl-app-backup"&&obj.app){if(!await confirmInline(`Deine aktuell gespeicherten ${app.profiles.length} Profile werden durch den Backup-Stand ersetzt. Empfehlung: vorher ein aktuelles Backup erstellen.`,{title:"Komplettes Backup wiederherstellen?",confirmText:"Backup wiederherstellen",danger:true})){e.target.value="";return}app=normalizeApp(obj.app);state=app.profiles.find(p=>p.id===app.activeProfileId)||app.profiles[0];startupStorageIssue=null;suspendWrites=false;renderAll("Komplettes Backup wiederhergestellt ✓")}else if(obj.kind==="cwl-profile"&&obj.profile){const name=uniqueProfileName(obj.profile.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj.profile),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Profil als neues Profil importiert ✓")}else if(obj.members||obj.config){const name=uniqueProfileName(obj.name||"Importiertes Profil"),p=cloneProfile(normalizeProfile(obj),name);app.profiles.push(p);startupStorageIssue=null;suspendWrites=false;setActiveProfile(p.id);showToast("Älteres Backup als neues Profil importiert ✓")}else throw new Error("unknown")}catch(err){showToast(err.message==="newer"?"Backup ist neuer als diese App – zuerst App aktualisieren":"Backup konnte nicht gelesen werden")}e.target.value=""};
 document.getElementById("membersFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(manualRosterRestricted()){showToast("Mitglieder werden über Clash aktualisiert");e.target.value="";return}try{const choice=await askInlineAction({title:"Mitglieder importieren",message:"Wie sollen die importierten Spieler angelegt werden?",buttons:[{value:"participating",text:"Als Dabei importieren",primary:true},{value:"paused",text:"Auf Pause importieren"},{value:"cancel",text:"Abbrechen"}]});if(choice.value==="cancel"){e.target.value="";return}const res=importMemberText(await f.text(),choice.value==="participating");renderAll(`${res.added} Mitglieder importiert · Plan aktualisiert ✓`);if(res.duplicateGroups)showToast(`${res.duplicateGroups} Namensdopplung(en) markiert · Player-Tag empfohlen`)}catch(err){showToast("Mitgliederliste konnte nicht importiert werden")}e.target.value=""};
 // Modals / help
-document.getElementById("cloudAccountBack").onclick=()=>showPlannerView("more");
-document.getElementById("helpClose").onclick=()=>showPlannerView("more");document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
+document.getElementById("cloudAccountBack").onclick=returnFromAccount;
+document.getElementById("helpClose").onclick=returnFromHelp;document.getElementById("modalClose").onclick=closeLineupModal;document.getElementById("modalCancel").onclick=closeLineupModal;document.getElementById("lineupSearch").oninput=renderModalList;document.getElementById("townHallPickerClose").onclick=closeTownHallPicker;
 bindModalBackdropClose("townHallPickerModal",closeTownHallPicker);
 document.getElementById("whyClose").onclick=()=>closeModalById("whyModal");bindModalBackdropClose("whyModal",()=>closeModalById("whyModal"));
 document.getElementById("modalSave").onclick=()=>{if(modalDay==null||modalSelection.size!==state.config.slots)return;const d=modalDay,wasLocked=!!state.locks[d]?.locked;state.locks[d]={locked:true,lineup:[...modalSelection],snapshots:Object.fromEntries([...modalSelection].map(id=>[id,playerSnapshot(lineupPlayer(id,d)||memberById(id))]).filter(x=>x[1]))};if(!wasLocked)mobileSelectedDay=Math.min(d+1,state.config.days-1);closeLineupModal();renderAll(`Tag ${d+1} gespeichert · kommende Tage aktualisiert ✓`)};bindModalBackdropClose("lineupModal",closeLineupModal);document.getElementById("bulkNames").addEventListener("input",countBulkNames);document.getElementById("bulkClose").onclick=closeBulkModal;document.getElementById("bulkCancel").onclick=closeBulkModal;document.getElementById("bulkSave").onclick=()=>{
