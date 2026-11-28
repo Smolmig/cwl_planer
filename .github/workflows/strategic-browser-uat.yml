@@ -6,6 +6,10 @@ on:
       - 'cwl-planning-core.js'
       - 'cloud-app.html'
       - 'tests/cwl-strategic-*-browser.test.cjs'
+      - 'tests/clan-management-browser.test.cjs'
+      - 'tests/clan-management-promotion-browser.test.cjs'
+      - 'cwl-activity-member-view.mjs'
+      - 'clan-management-core.js'
       - 'tests/fixtures/strategic-preview.*'
       - 'scripts/build_strategic_demo.cjs'
       - '.github/workflows/strategic-browser-uat.yml'
@@ -39,7 +43,7 @@ jobs:
           CWL_TEST_BROWSER: ${{ matrix.engine }}
           CWL_STRATEGIC_DEMO_FILE: /tmp/strategic-demo.html
           CWL_UX_SCREENSHOTS: ux-strategic
-        run: node --test tests/cwl-strategic-integrated-browser.test.cjs tests/cwl-strategic-preview-browser.test.cjs
+        run: node --test tests/cwl-strategic-integrated-browser.test.cjs tests/cwl-strategic-preview-browser.test.cjs tests/clan-management-browser.test.cjs tests/clan-management-promotion-browser.test.cjs
       - uses: actions/upload-artifact@v4
         if: success()
         with:
