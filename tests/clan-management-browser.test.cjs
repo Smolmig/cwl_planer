@@ -214,6 +214,29 @@ test("Action workspace search, rule drafts, refresh and clan isolation remain us
        });
       });
       assert.ok(otherTones.every(x=>x.correct&&x.contrast>=4.5),JSON.stringify({theme,width,otherTones}));
+      // Gradients do not appear in computed backgroundColor. Sample the painted
+      // pixels under text in the actual Cyber layouts, not transparent black.
+      if(["cyber","cyberlight"].includes(theme)&&[320,1440].includes(width)){
+       const status=host.locator("#clanManagementActionList .clan-management-person-status[data-review=positive]").first();
+       const foreground=await status.evaluate(n=>getComputedStyle(n).color);
+       let png;
+       await status.evaluate(n=>n.style.setProperty("color","transparent","important"));
+       try{png=await status.screenshot({animations:"disabled"});}
+       finally{await status.evaluate(n=>n.style.removeProperty("color"));}
+       const ratios=await page.evaluate(async({png,foreground})=>{
+        const image=new Image();image.src="data:image/png;base64,"+png;await image.decode();
+        const canvas=document.createElement("canvas");canvas.width=image.width;canvas.height=image.height;
+        const ctx=canvas.getContext("2d");ctx.drawImage(image,0,0);
+        const lum=rgb=>Array.from(rgb).slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+        const fg=lum(foreground.match(/\d+(?:\.\d+)?/g).slice(0,3).map(Number)),ratios=[];
+        for(const x of [.1,.3,.5,.7,.9])for(const y of [.25,.5,.75]){
+         const bg=lum(ctx.getImageData(Math.floor((canvas.width-1)*x),Math.floor((canvas.height-1)*y),1,1).data);
+         ratios.push((Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05));
+        }
+        return ratios;
+       },{png:png.toString("base64"),foreground});
+       assert.ok(ratios.every(x=>x>=4.5),JSON.stringify({theme,width,paintedBackgroundRatios:ratios}));
+      }
      }
      if(dir&&["arena","dark"].includes(theme)){
       await page.evaluate(()=>scrollTo(0,0));
