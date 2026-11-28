@@ -4,6 +4,14 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.40.0",
+      "releaseType": "minor",
+      "date": "2026-11-28",
+      "title": "Clanverwaltung übersichtlicher",
+      "description": "Clanverwaltung mit getrennten Bereichen für Handlungsbedarf, Mitgliedsmerkmale und Regeln. Offene Fälle je Spieler, Suche, verständliche Kriterien und dezente Statusfarben; bestehende Entscheidungen bleiben erhalten."
+  },
+
+  {
       "version": "v1.39.0",
       "releaseType": "minor",
       "date": "2026-11-27",
