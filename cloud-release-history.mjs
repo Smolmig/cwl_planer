@@ -4,6 +4,30 @@
 // Vor v1.0.0 waren Versionen anders benannt; ihre Einzeldaten sind nicht belegbar.
 export const releaseHistory = [
   {
+      "version": "v1.39.0",
+      "releaseType": "minor",
+      "date": "2026-11-27",
+      "title": "Goldpass-Verlosungen an einem Ort",
+      "description": "CWL- und Grind-Verlosung gemeinsam öffnen, Zielvorlagen vergleichen, Machbarkeit prüfen und unverbindlich testen. Bestehende Regeln und Ziehungen bleiben erhalten."
+  },
+
+  {
+      "version": "v1.38.0",
+      "releaseType": "minor",
+      "date": "2026-11-27",
+      "title": "Intelligenter CWL-Planer (Beta)",
+      "description": "Für alle mit Clash verbundenen Cloud-Clans: drei Leistungsmodi, gemeinsame automatische Aufstellung, Kaderempfehlungen und unverbindliche Ziele für offene Angriffe. Mitgliedervorgaben bleiben geschützt."
+  },
+
+  {
+      "version": "v1.37.0",
+      "releaseType": "minor",
+      "date": "2026-11-26",
+      "title": "Mitgliederform 2.0",
+      "description": "CW-, CWL- und Kombi-Form getrennt sortieren, aktuelle Rathausstufe bevorzugen und berechtigte Zweitclan-Daten berücksichtigen. RH19-Symbol und persönliche Sortierung."
+  },
+
+  {
       "version": "v1.36.0",
       "releaseType": "minor",
       "date": "2026-11-26",

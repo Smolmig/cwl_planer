@@ -10,6 +10,7 @@ const root=path.resolve(__dirname,"..");
 const outArg=process.argv[2];
 const stagingUrl=process.env.CWL_STAGING_SUPABASE_URL||"";
 const stagingKey=process.env.CWL_STAGING_PUBLISHABLE_KEY||"";
+const strategic=process.env.CWL_STAGING_STRATEGIC==="true";
 function refuse(message){throw Error("Staging-Preview abgebrochen: "+message)}
 
 if(!outArg||!path.isAbsolute(outArg))refuse("Absoluten Zielordner als Argument angeben.");
@@ -59,7 +60,8 @@ for(const name of copyNames){
   const watermark='<style id="cwl-staging-style">#cwl-staging-watermark{position:fixed;z-index:2147483647;top:calc(4px + env(safe-area-inset-top));right:calc(4px + env(safe-area-inset-right));background:#7f1d1d;color:#fff;border:2px solid #fff;border-radius:7px;font:700 11px system-ui;padding:5px 7px;pointer-events:none;box-shadow:0 2px 8px #0007}</style>';
   if(!src.includes("</head>")||!src.includes("<body>"))
    refuse("Cloud HTML unerwartet; Testkennzeichnung kann nicht sicher eingefügt werden.");
-  src=src.replace("</head>",watermark+"</head>")
+  const pilotFlag=strategic?'<script>globalThis.CWLStrategicStaging=true;</script>':"";
+  src=src.replace("</head>",watermark+pilotFlag+"</head>")
    .replace("<body>",'<body><div id="cwl-staging-watermark" role="status">TESTUMGEBUNG · Keine Echtdaten</div>')
    .replace("<title>CWL Planer</title>","<title>CWL Planer · TEST</title>");
   // Production Cloud intentionally skips SW registration on cloud-app.html.

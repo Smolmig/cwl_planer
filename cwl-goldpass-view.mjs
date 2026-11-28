@@ -1,5 +1,5 @@
-import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.36.0";
-import {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,starThresholds,raffleTicketBreakdown,collectRaffleEvidence,rafflePreview,sampleRaffle} from "./cwl-goldpass-core.mjs?v=1.36.0";
+import {renderDrawReveal} from "./cwl-raffle-reveal.mjs?v=1.37.0";
+import {DEFAULT_RAFFLE_RULES,RAFFLE_PRESETS,starThresholds,raffleTicketBreakdown,collectRaffleEvidence,rafflePreview,sampleRaffle,rafflePresetKey} from "./cwl-goldpass-core.mjs?v=1.39.0";
 const pct=new Intl.NumberFormat("de-AT",{style:"percent",maximumFractionDigits:2});
 const month=new Intl.DateTimeFormat("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
 const el=(tag,text="",className="")=>{const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n};
@@ -13,8 +13,15 @@ const formulaText=(r,warCount)=>{
  const parts=[[r.base,"einmalig je Teilnehmer"],[r.perAttack,"je durchgeführtem Angriff"],[r.one,"je 1★-Angriff"],[r.two,"je 2★-Angriff"],[r.three,"je 3★-Angriff"],[r.perStar,"je Gesamtstern"],[r.highBonus,"ab "+high+" Gesamtsternen"],[r.perfectBonus,"ab "+perfect+" Gesamtsternen"]].filter(([n])=>n>0);
  return parts.length?"Lose: "+parts.map(([n,label])=>n+" "+label).join(" + ")+".":"Keine Lose nach dieser Regel.";
 };
-const breakdownText=(p,r,warCount)=>p.tickets>0?p.tickets+" Lose = "+raffleTicketBreakdown(p,r,warCount).map(([label,n])=>n+" "+label).join(" + "):"0 Lose";
-const presetKey=r=>Object.entries(RAFFLE_PRESETS).find(([,p])=>["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].every(k=>(r[k]||0)===(p[k]||0)))?.[0]||"custom";
+const breakdownText=(p,r,warCount)=>p.tickets>0?ticketText(p.tickets)+" = "+raffleTicketBreakdown(p,r,warCount).map(([label,n])=>ticketText(n)+" "+(breakdownLabels[label]||label)).join(" + "):"0 Lose";
+const breakdownLabels={"Startlose":"einmalige Grundchance","Angriffe":"für Angriffe","1★":"für 1★-Angriffe","2★":"für 2★-Angriffe","3★":"für Dreier","Gesamtsterne":"für Gesamtsterne"};
+const ticketText=n=>n===1?"1 Los":n+" Lose";
+const presetDescriptions={
+ balanced:"1 Los je Angriff, 1 je Dreier und zwei mögliche Sternenboni. Keine Mindestleistung.",
+ performance:"1 Los je Angriff, 2 je Dreier und zwei mögliche Sternenboni. Keine Mindestleistung.",
+ participation:"2 Lose je Angriff, 1 je Dreier. Keine Mindestleistung.",
+ october:"Mindestens 4 Dreier, 1 Los je Dreier und bestätigte Discord-Mitgliedschaft. Veranstalter separat ausschließen."
+};
 const metricsText=r=>r.appearances+" Einsätze · "+r.attacks+" AG · "+r.stars+"★ · "+r.three+" Dreier · "+r.tickets+" Lose"+(r.unknown?" · "+r.unknown+" offen":"");
 export function raffleSeasons(profile,tag){
  const map=new Map();
@@ -33,11 +40,11 @@ export function raffleSeasons(profile,tag){
 }
 export function createGoldpassPreview({root,getProfile,getContext,api=null,listSeasons=null,confirmDraw=async()=>false}){
  let scope=null,season="",rules={...RAFFLE_PRESETS.balanced},eligibility=Object.create(null),seasons=[];
- let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="",animateNextDraw=false;
+ let server=null,serverSeasons=[],organizerConfirmed=false,dirty=false,busy=false,serial=0,message="",animateNextDraw=false,customOpen=false;
  const allowed=()=>{const c=getContext();return c?.owner&&c?.clanId&&c?.clanTag?c:null};
  const scopeOf=c=>c?c.clanId+"|"+c.clanTag+"|"+String(c.session??""):null;
  const matches=(token,target,context)=>token===serial&&season===target&&scope===scopeOf(context)&&scope===scopeOf(allowed());
- const resetDraft=()=>{animateNextDraw=false;rules={...RAFFLE_PRESETS.balanced};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
+ const resetDraft=()=>{animateNextDraw=false;customOpen=false;rules={...RAFFLE_PRESETS.balanced};eligibility=Object.create(null);server=null;organizerConfirmed=false;dirty=false;message=""};
  const reset=()=>{serial++;busy=false;season="";serverSeasons=[];seasons=[];resetDraft();root.replaceChildren()};
  function rebuildSeasons(){
   const c=allowed();if(!c)return;
@@ -49,7 +56,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
  function adopt(result){
   if(!result||!Number.isSafeInteger(result.revision)||result.revision<0||!result.rules||!result.eligibility||
      (!result.official&&(!result.evidence||!result.preview||typeof result.witness!=="string")))throw Error("invalid_server_response");
-  server=result;rules={...result.rules};eligibility=Object.assign(Object.create(null),result.eligibility);
+  server=result;rules={...result.rules};customOpen=rafflePresetKey(rules)==="custom";eligibility=Object.assign(Object.create(null),result.eligibility);
   organizerConfirmed=result.organizerConfirmed===true;dirty=false;
  }
  function failure(error){
@@ -155,23 +162,34 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
   root.append(status);
   const settings=el("div","","goldpass-controls"),advanced=el("details"),advancedSettings=el("div","","goldpass-controls");
   const preset=el("select");
-  for(const [key,label] of [["balanced","Ausgewogen (empfohlen)"],["performance","Leistung stärker gewichten"],["participation","Teilnahme stärker gewichten"],["custom","Eigene / bisherige Regeln"]])preset.append(option(key,label));
-  preset.value=presetKey(rules);preset.disabled=busy;
-  root.append(el("h3","Los-System"),field("Vorlage",preset),el("p","Nur tatsächlich durchgeführte Angriffe zählen. Weniger geplante Einsätze bedeuten nicht automatisch einen Ausschluss.","statusline"));
-  preset.onchange=()=>{if(preset.value==="custom"){advanced.open=true;return}const p=RAFFLE_PRESETS[preset.value];rules={...rules,...Object.fromEntries(["base","one","two","three","perStar","perAttack","highBonus","perfectBonus"].map(k=>[k,p[k]||0]))};dirty=true;render()};
+  for(const [key,label] of [["balanced","Ausgewogen (empfohlen)"],["performance","Leistung stärker gewichten"],["participation","Teilnahme stärker gewichten"],["october","Oktober-Regel (historisch)"],["custom","Eigene / bisherige Regeln"]])preset.append(option(key,label));
+  preset.value=rafflePresetKey(rules);preset.disabled=busy;
+  const presetHint=el("p","","statusline");
+  root.append(el("h3","Los-System"),field("Vorlage",preset),presetHint,el("p","Nur tatsächlich durchgeführte Angriffe zählen. Weniger geplante Einsätze bedeuten nicht automatisch einen Ausschluss.","statusline"));
+  preset.onchange=()=>{
+   if(preset.value==="custom"){customOpen=true;advanced.open=true;return}
+   const p=RAFFLE_PRESETS[preset.value];if(!p)return;
+   // Explicit selection replaces the complete rule set, never player
+   // decisions, stored results or anything on the server before Save.
+   rules={...p};customOpen=false;dirty=true;render()
+  };
   const minType=el("select");
   for(const [v,label] of [["none","Keine Mindestleistung"],["triples","Dreisterneangriffe"],["stars","Gesamtsterne"],["attacks","Durchgeführte Angriffe"]])minType.append(option(v,label));
   minType.value=rules.minimumType;minType.disabled=busy;
   const min=numberInput(rules.minimum,rules.minimumType==="stars"?21:7);min.disabled=busy||rules.minimumType==="none";
-  settings.append(field("Mindestleistung",minType),field("Mindestanzahl",min));
+  const minimumField=field("Mindestanzahl",min);minimumField.hidden=rules.minimumType==="none";
+  settings.append(field("Mindestleistung",minType),minimumField);
   const weightInputs={};
   const thresholds=starThresholds(e.warCount);
   for(const [key,label] of [["perAttack","Lose je Angriff"],["three","Bonus je 3★-Angriff"],["highBonus","Bonus ab "+thresholds.high+"★"],["perfectBonus","Bonus ab "+thresholds.perfect+"★"],["base","Startlose je Teilnehmer (einmalig)"],["one","Bonus je 1★-Angriff"],["two","Bonus je 2★-Angriff"],["perStar","Bonus je Gesamtstern"]]){
-   const input=numberInput(rules[key]||0,100);input.disabled=busy;weightInputs[key]=input;(["base","one","two","perStar"].includes(key)?advancedSettings:settings).append(field(label,input));
+   const input=numberInput(rules[key]||0,100);input.disabled=busy;weightInputs[key]=input;settings.append(field(label,input));
   }
   const discord=el("input");discord.type="checkbox";discord.checked=rules.requireDiscord;discord.disabled=busy;
-  advancedSettings.append(field("Discord-Bestätigung erforderlich",discord));advanced.append(el("summary","Erweiterte Regeln"),advancedSettings);
-  root.append(settings,advanced);
+  advancedSettings.append(field("Discord-Bestätigung erforderlich",discord));
+  advanced.append(el("summary","Eigene Regeln bearbeiten"),settings,advancedSettings);
+  advanced.open=customOpen||rafflePresetKey(rules)==="custom";
+  advanced.ontoggle=()=>{if(root.contains(advanced))customOpen=advanced.open};
+  root.append(advanced);
   const formula=el("p","","statusline"),summary=el("p","","statusline"),rows=el("div","","goldpass-rows");
   summary.setAttribute("role","status");
   const testButton=el("button","Testziehung starten","btn"),testResult=el("div");
@@ -212,7 +230,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
    let p;currentPreview=null;testButton.disabled=true;testResult.replaceChildren();
    try{p=rafflePreview(e,rules,eligibility)}catch{summary.textContent="Bitte gültige ganze Zahlen eingeben.";rows.hidden=true;updateButtons(null);return}
    if(server?.evidence?.complete&&!dirty)p=server.preview;
-   rows.hidden=false;formula.textContent=formulaText(rules,e.warCount);preset.value=presetKey(rules);currentPreview=p;testButton.disabled=busy||!p.total;
+   rows.hidden=false;formula.textContent=formulaText(rules,e.warCount);preset.value=rafflePresetKey(rules);presetHint.textContent=presetDescriptions[preset.value]||"Eigene oder früher gespeicherte Regeln. Eine Vorlage ersetzt die Regeln erst, wenn du sie auswählst und speicherst.";currentPreview=p;testButton.disabled=busy||!p.total;
    summary.textContent=p.rows.filter(r=>r.eligible).length+" zugelassen · "+p.total+" Lose insgesamt"+(p.total?"":" · Keine Gewinnchance");
    for(const r of p.rows){
     let node=rowNodes.get(r.tag);
@@ -236,7 +254,7 @@ export function createGoldpassPreview({root,getProfile,getContext,api=null,listS
    }
    updateButtons(p);
   }
-  minType.onchange=()=>{rules={...rules,minimumType:minType.value,minimum:0};dirty=true;render()};
+  minType.onchange=()=>{rules={...rules,minimumType:minType.value,minimum:0};customOpen=true;dirty=true;render()};
   min.oninput=()=>{rules.minimum=min.value===""?NaN:Number(min.value);dirty=true;update()};
   for(const [key,input] of Object.entries(weightInputs))input.oninput=()=>{rules[key]=input.value===""?NaN:Number(input.value);dirty=true;update()};
   discord.onchange=()=>{rules.requireDiscord=discord.checked;dirty=true;update()};

@@ -229,7 +229,7 @@ export function selectWarDateScope(wars,{type="all",days="all",asOf=Date.now()}=
  */
 export function computePlayerFormWindows(wars,attacks,{
   asOf=Date.now(),windows=[30,90,180],memberTags=[],memberProfiles=[],missedEvents=[],
-  warType="all",eligibleWarKeys=null
+  warType="all",eligibleWarKeys=null,currentThOnly=false
 }={}){
   const now=typeof asOf==="number"?asOf:Date.parse(asOf);
   if(!Number.isFinite(now)||!Array.isArray(windows)||!windows.length||
@@ -245,6 +245,7 @@ export function computePlayerFormWindows(wars,attacks,{
     (eligibleWarKeys===null||eligibleWarKeys.has(w.war_key)))
     .map(w=>[w.war_key,w]));
   const profiles=new Map();
+  const currentTh=new Map((memberProfiles||[]).filter(m=>int(m?.townHall,3,30)).map(m=>[cleanTag(m.playerTag),m.townHall]));
   const ensure=(tag,name="")=>{
     const key=cleanTag(tag);
     if(!validTag(key))return null;
@@ -254,10 +255,10 @@ export function computePlayerFormWindows(wars,attacks,{
           days,attacks:0,triples:0,stars:0,hitRate:null,averageStars:null,
           destructionTotal:0,destructionSamples:0,averageDestruction:null,
           destructionComplete:false,
-          normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,newest:null,
+          normal:0,cwl:0,excludedDifferentRH:0,excludedUnknownRH:0,excludedPreviousRH:0,newest:null,
           performed:0,missedKnown:0,reliability:null,reliabilityComplete:false,
           reliabilityProvisional:false,formProvisional:false,
-          formIndex:null,performanceIndex:null,_unverified:new Set()
+          formIndex:null,performanceIndex:null,_unverified:new Set(),_clans:new Set(),_wars:new Set()
         }]))});
     }
     const p=profiles.get(key);
@@ -283,7 +284,9 @@ export function computePlayerFormWindows(wars,attacks,{
       ))b._unverified.add(w.war_key);
       if(!thA||!thD){b.excludedUnknownRH++;continue}
       if(a.attacker_th!==a.defender_th){b.excludedDifferentRH++;continue}
+      if(currentThOnly&&currentTh.has(p.tag)&&a.attacker_th!==currentTh.get(p.tag)){b.excludedPreviousRH++;continue}
       b.attacks++;b.triples+=(a.stars===3?1:0);b.stars+=a.stars;
+      b._wars.add(w.war_key);if(w.formClanName)b._clans.add(w.formClanName);
       // ClashPerk Attack Log and Clash API both provide destruction.
       // Old/incomplete rows may not: never treat unknown % as a 0% hit.
       if(Number.isInteger(a.destruction)&&a.destruction>=0&&a.destruction<=100){
@@ -386,7 +389,7 @@ export function computePlayerFormWindows(wars,attacks,{
       b.formIndex=b.performanceIndex!==null&&b.reliability!==null?
         Math.round(.65*b.performanceIndex+.35*b.reliability):null;
       b.formProvisional=b.formIndex!==null&&!b.reliabilityComplete;
-      delete b._unverified;
+      b.warCount=b._wars.size;b.sourceClans=[...b._clans].sort();delete b._wars;delete b._clans;delete b._unverified;
     }
     return {...p,former:current.size>0&&!current.has(p.tag)};
   }).sort((a,b)=>a.name.localeCompare(b.name,"de"));
@@ -453,6 +456,65 @@ export function computeMemberFormSummary(wars,attacks,{
         selectedCwlDays:latestCwl?.days||0};
     })
   };
+}
+
+/**
+ * Member planning scopes. Uses the identical statistical formula and miss
+ * accounting as Statistics; only the selected evidence window differs.
+ * Older/current-other-TH results are explicitly separate fallback tiers.
+ */
+export function computeMemberFormV2(wars,attacks,{
+ asOf=Date.now(),memberTags=[],memberProfiles=[],missedEvents=[],recentDays=30
+}={}){
+ const now=new Date(asOf).getTime();
+ if(!Number.isFinite(now)||!Number.isInteger(recentDays)||recentDays<1||recentDays>90)throw Error("Ungültiges Formfenster.");
+ const ended=(wars||[]).filter(w=>w.finalized===true&&["normal","cwl"].includes(w.war_type)&&
+  Number.isFinite(Date.parse(w.started_at))&&Date.parse(w.started_at)<=now);
+ const recent=ended.filter(w=>now-Date.parse(w.started_at)<=recentDays*86400000);
+ // A month may contain CWL in several authorized clans. Select by season,
+ // not by a seven-war cap across all those clans. Current-month CWL is only
+ // included if no observed round in that season is still unfinished and
+ // at least five distinct war dates have been documented; otherwise label
+ // the previous season as the latest known closed one.
+ const month=w=>cwlSeasonOf(w);
+ const groups=[...new Set(ended.filter(w=>w.war_type==="cwl").map(month))].filter(Boolean).sort().reverse();
+ const currentMonth=new Date(now).toISOString().slice(0,7);
+ const season=groups.find(s=>s!==currentMonth||(
+  !wars.some(w=>w.war_type==="cwl"&&month(w)===s&&w.finalized!==true)&&
+  new Set(ended.filter(w=>w.war_type==="cwl"&&month(w)===s).map(w=>w.started_at.slice(0,10))).size>=5&&
+  now-Math.max(...ended.filter(w=>w.war_type==="cwl"&&month(w)===s).map(w=>Date.parse(w.started_at)))>=2*86400000
+ ))||null;
+ const scopes={cw:recent.filter(w=>w.war_type==="normal"),cwl:ended.filter(w=>w.war_type==="cwl"&&season&&month(w)===season),combined:recent};
+ const older=ended.filter(w=>now-Date.parse(w.started_at)<=180*86400000);
+ const shared={asOf,memberTags,memberProfiles,missedEvents,windows:[730]};
+ const calc=(rows,currentThOnly)=>new Map(computePlayerFormWindows(rows,attacks,{...shared,currentThOnly}).players.map(p=>[p.tag,p.windows[730]]));
+ const tags=[...new Set([...memberTags,...memberProfiles.map(m=>m.playerTag)].map(cleanTag).filter(validTag))];
+ const models={};
+ for(const [key,rows] of Object.entries(scopes)){
+  const strict=calc(rows,true),all=calc(rows,false);
+  const old=calc(older.filter(w=>key==="combined"||w.war_type===(key==="cw"?"normal":"cwl")),false);
+  models[key]=new Map(tags.map(tag=>{
+   const a=strict.get(tag),b=all.get(tag),h=old.get(tag);
+   const usable=x=>x?.attacks>0;
+   // Old RH in the selected window is not a present-RH result. Never
+   // use an older score to replace current miss-only reliability.
+   const chosen=usable(a)?a:usable(b)?b:usable(h)?h:a||b||h||null;
+   const tier=usable(a)?(a.attacks>=6?0:1):usable(b)?2:usable(h)?3:4;
+   return [tag,{...chosen,tier,scope:key,season:key==="cwl"?season:null,recentDays,
+     currentReliability:a?.reliability??null,currentMissedKnown:a?.missedKnown??0,currentReliabilityProvisional:!!a?.reliabilityProvisional,
+     historical:tier===3,previousRh:tier===2,selectedWars:rows.length}];
+  }));
+ }
+ return {latestCwl:season,recentDays,players:tags.map(tag=>({tag,cw:models.cw.get(tag),
+  cwl:models.cwl.get(tag),combined:models.combined.get(tag)}))};
+}
+export function compareMemberFormV2(a,b,{metric="form"}={}){
+ const rank=x=>metric==="stars"?x?.averageStars??-1:x?.formIndex??x?.performanceIndex??-1;
+ return (a?.tier??4)-(b?.tier??4)||rank(b)-rank(a)||
+  Number(!!a?.formProvisional)-Number(!!b?.formProvisional)||
+  (b?.averageStars??-1)-(a?.averageStars??-1)||
+  (a?.destructionComplete&&b?.destructionComplete?(b.averageDestruction-a.averageDestruction):0)||
+  (b?.attacks??0)-(a?.attacks??0);
 }
 
 /**

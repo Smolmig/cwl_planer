@@ -41,7 +41,7 @@ test("new UI offers exactly three weight choices and a conditional legacy state"
  assert.doesNotMatch(html,/class="name-input priority member-priority"/);
  assert.doesNotMatch(html,/member-prio-picker"/);
  assert.match(html,/\$\{m\.fixed\?\x60<span class="member-fixed-target"/);
- assert.match(html,/Rotation: bevorzugt zuerst/);
+ assert.match(html,/Rotation: bevorzugt → seltener/);
 });
 test("legacy priority 0 is neutral; nonzero still favors an extra slot",()=>{
  const neutral=round({priority:0,rotationWeight:null},{priority:0,rotationWeight:null});

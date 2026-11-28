@@ -114,3 +114,42 @@ test("Member form does not blend unfinished API CWL or a foreign player's identi
  assert.equal(result.players.find(x=>x.tag==="#PYYY").source,"none");
  assert.equal(result.players.find(x=>x.tag==="#PQLV").source,"cwl");
 });
+
+test("Form 2.0 separates 30-day CW, documented CWL and combined windows; same current RH first",async()=>{
+ const {computeMemberFormV2,compareMemberFormV2,computePlayerFormWindows}=await core();
+ const now="2026-11-26T12:00:00Z";
+ const wars=[
+  ...[1,2,3,4,5].map(i=>mkWar("l"+i,"cwl","2026-11-0"+i+"T12:00:00Z")),
+  ...[18,20,22].map((d,i)=>mkWar("cw"+i,"normal","2026-11-"+d+"T12:00:00Z")),
+  mkWar("old","normal","2026-09-01T12:00:00Z"),mkWar("unfinished","normal","2026-11-25T12:00:00Z",{finalized:false,source:"api"})
+ ];
+ const hit=(key,tag,stars,order=1,th=19)=>({...attack(key,tag,stars,order),attacker_th:th,defender_th:th});
+ const tags=["#PYYY","#PQLV","#8PYL","#QPYL","#2PYL"];
+ const profiles=tags.map(playerTag=>({playerTag,townHall:19}));
+ const attacks=[
+  ...[0,1,2].flatMap(i=>[hit("cw"+i,"#PYYY",2),hit("cw"+i,"#PYYY",3,2)]),
+  hit("cw0","#PQLV",3),hit("cw1","#PQLV",3,1,18),
+  ...[1,2,3,4,5].map(i=>hit("l"+i,"#PYYY",3,1,18)),
+  hit("old","#8PYL",3),hit("cw1","#QPYL",3,1,18),
+  hit("unfinished","#2PYL",3)
+ ];
+ const r=computeMemberFormV2(wars,attacks,{asOf:now,memberTags:tags,memberProfiles:profiles,missedEvents:[{war_key:"cw0",player_tag:"#PQLV",missed_count:1}]});
+ assert.equal(r.latestCwl,"2026-11");
+ const a=player(r,"#PYYY"),b=player(r,"#PQLV"),old=player(r,"#8PYL"),prev=player(r,"#QPYL"),none=player(r,"#2PYL");
+ assert.equal(a.cw.attacks,6);assert.equal(a.cw.tier,0);
+ assert.equal(a.cwl.attacks,5);assert.equal(a.cwl.previousRh,true);
+ assert.equal(a.combined.attacks,6);
+ assert.equal(b.cw.attacks,1);assert.equal(b.cw.tier,1);assert.equal(b.cw.currentMissedKnown,1);
+ assert.equal(b.cw.currentReliability,67);
+ assert.equal(old.cw.historical,true);assert.equal(prev.cw.previousRh,true);assert.equal(none.cw.tier,4);
+ assert.ok(compareMemberFormV2(a.cw,b.cw)<0);assert.ok(compareMemberFormV2(b.cw,old.cw)<0);
+ assert.ok(compareMemberFormV2(prev.cw,old.cw)<0);assert.ok(compareMemberFormV2(old.cw,none.cw)<0);
+ const stats=computePlayerFormWindows(wars.filter(w=>w.finalized),attacks,{asOf:now,windows:[30],warType:"normal",memberTags:tags,memberProfiles:profiles,currentThOnly:true});
+ assert.equal(a.cw.formIndex,player(stats,"#PYYY").windows[30].formIndex);
+});
+test("Unfinished current-month CWL cannot replace the last documented season",async()=>{
+ const {computeMemberFormV2}=await core();
+ const wars=[mkWar("oct","cwl","2026-10-05T12:00:00Z"),mkWar("nov","cwl","2026-11-05T12:00:00Z",{source:"api",finalized:false})];
+ const v=computeMemberFormV2(wars,[attack("oct","#PYYY",3),attack("nov","#PYYY",3)],{asOf:"2026-11-06T12:00:00Z",memberTags:["#PYYY"]});
+ assert.equal(v.latestCwl,"2026-10");assert.equal(player(v,"#PYYY").cwl.attacks,1);
+});

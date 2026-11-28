@@ -102,18 +102,19 @@ test("a failed membership lookup does not remember an unverified clan",async()=>
   clearTimeout(){},debounce:null,
   live:{stop(){}},currentWarOverview:{reset(){}},stats:{reset(){}},
   stopPresence(){},stopRemoteChecks(){},hideChangeToast(){},resetRoster(){},clearClanAccountDetails(){},
+  suspendStrategicPilot:()=>events.push(["suspend"]),
   rememberClan:()=>events.push(["remember"]),navigator:{onLine:true}
  };
  vm.createContext(ctx);
  vm.runInContext(src,ctx);
  await assert.rejects(()=>vm.runInContext("chooseClan()",ctx),/network denied/);
- assert.deepEqual(events.map(x=>x[0]),["begin","unsubscribed"]);
- assert.equal(events[0][2].strict,true);
+ assert.deepEqual(events.map(x=>x[0]),["suspend","begin","unsubscribed"]);
+ assert.equal(events[1][2].strict,true);
  assert.equal(ctx.clanId,"clan-B");
  assert.equal(ctx.channel,null);
 });
 test("patch does not touch offline PWA or data format",()=>{
- assert.match(html,/const APP_VERSION="v1\.36\.0"/);
+ assert.match(html,/const APP_VERSION="v1\.39\.0"/);
  assert.match(html,/const DATA_VERSION=9/);
  assert.match(html,/Clan wechseln &amp; Laden/);
  assert.match(html,/id="cloudStartupRetry"/);

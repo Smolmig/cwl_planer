@@ -6,6 +6,24 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.39.0] - 2026-11-27
+
+- Ein Goldpass-Einstieg mit getrennten CWL- und Grind-Verlosungen; historische Oktober-Regel, vollständige Regelvorlagen und verständliche Losaufschlüsselung.
+- Grind-Vorlagen mit konkreten Zeitraumzielen und anpassbarer CW-Schätzung; Warnung bei rechnerisch zu hohen Zielen. Unverbindlicher Test ohne Kampagnenanlage oder Tracking.
+- Responsive, themengerechte Eingabefelder; bestehende Regeln, Ziehungen, Backend und Datenformat unverändert.
+
+## [1.38.0] - 2026-11-27
+
+- Intelligenter CWL-Planer als appweite Beta: drei Modi, Kaderempfehlungen im Mitglieder-Tab und Gruppen-/Resttageplanung im Plan. Offene Angriffsvorschläge bleiben unverbindlich.
+- Automatische gemeinsame Aufstellung auch ohne Browser bei verbundenen Cloud-Clans mit aktivierter Automatik. Plansperre schützt freigegebene Vorgaben und Vize-Vorschläge; begonnene Kriege behalten die tatsächliche API-Aufstellung.
+- Additive Datenbankmigration, separate berechnete Aufstellung mit Revisionsprüfung, serverseitiger Collector. Normale Planung, Offline-PWA und vorhandene Profil-/Archivdaten bleiben kompatibel. Live-CWL-Bewertung noch nicht kalibriert.
+
+## [1.37.0] - 2026-11-26
+
+- Mitgliederform 2.0: getrennte CW-/CWL-/Kombi-Ansichten, 30-Tage-Fenster und letzte dokumentierte Liga; ausgewählter Formwert bestimmt Sortierung und Karte. Aktuelles RH, Stichprobe, belegte Zuverlässigkeit und ältere Ersatzdaten getrennt kenntlich.
+- Berechtigte verknüpfte Clans in der Mitgliederform read-only einbeziehen; Mehrfachprofile und unsicher abgleichbare Doppelimporte nicht addieren, Datenlücken anzeigen. Clanstatistik, Solver und Plan unverändert.
+- RH19-Symbol (ClashKingAssets), persönliche Sortierpräferenz je Nutzer/Clan; Browser-Regressionen und Screenshot-Artefakt.
+
 ## [1.36.0] - 2026-11-26
 
 - Clanverwaltung: dauerhafte Discord-Markierungen und bewusste Haupt-/Zweitaccount-Zuordnungen mit Suche und Filtern.

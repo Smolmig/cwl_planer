@@ -24,7 +24,7 @@ test("local hosted-Auth schema gate is read-only and rejects missing or incompat
 });
 
 test("restore uses current pinned v3 CLI, checks Auth in same transaction and has no production credentials",()=>{
- assert.match(workflow,/uses: supabase\/setup-cli@v1\s+with:\s+version: 3\.2\.0/);
+ assert.match(workflow,/uses: supabase\/setup-cli@v1\s+with:\s+version: 3\.4\.0/);
  assert.match(workflow,/PGPASSWORD=postgres psql -X -h 127\.0\.0\.1 -p "\$CWL_RESTORE_DB_PORT"/);
  assert.match(workflow,/--single-transaction/);
  const schema=workflow.indexOf('-f "$WORK/unpacked/cwl-backup/schema.sql"');
@@ -36,8 +36,8 @@ test("restore uses current pinned v3 CLI, checks Auth in same transaction and ha
  assert.match(workflow,/if: always\(\)/);
  assert.doesNotMatch(workflow,/SUPABASE_DB_URL|service_role|supabase db push/);
 });
-test("replay targets the same successful encrypted 18 November backup without production access",()=>{
- assert.match(drill,/backup_run_id:.*'44283214780'/);
+test("replay targets the same successful encrypted 26 November backup without production access",()=>{
+ assert.match(drill,/backup_run_id:.*'45805944787'/);
  assert.match(drill,/uses: \.\/\.github\/workflows\/test-encrypted-restore\.yml/);
  assert.match(drill,/CWL_BACKUP_PASSPHRASE: \$\{\{ secrets\.CWL_BACKUP_PASSPHRASE \}\}/);
  assert.doesNotMatch(drill,/secrets:\s*inherit|SUPABASE_DB_URL|service_role|actions\/upload-artifact/);
@@ -49,4 +49,31 @@ test("restore and Auth canary require preinstalled psql without Ubuntu package d
   assert.match(source,/psql --version/);
   assert.doesNotMatch(source,/\bapt-get\b|\bapt\s+install\b/i);
  }
+});
+
+test("new OAuth schema gate is shared by isolated canary and restore, no skipped COPY",()=>{
+ for(const col of ["custom_claims_allowlist","client_auth_method","client_assertion_audience"])assert.ok(sql.includes(col));
+ assert.match(sql,/auth\.custom_oauth_providers/);
+ assert.match(authCanary,/scripts\/restore_local_auth_compat\.sql/);
+ for(const source of [workflow,authCanary])assert.match(source,/supabase config convert --to toml/);
+ assert.match(workflow,/-f "\$WORK\/unpacked\/cwl-backup\/auth-data\.sql"/);
+});
+
+
+test("restore and real canary pin official GoTrue migration release, never patch hosted Auth",()=>{
+ for(const source of [workflow,authCanary]){
+  const start=source.indexOf("          supabase db start");
+  const pin=source.indexOf(" > supabase/.temp/gotrue-version");
+  assert.ok(pin>=0&&pin<start);
+  assert.match(source,/v2\.199\.0/);
+  assert.ok(source.includes("printf '%s' 'v2.199.0' > supabase/.temp/gotrue-version"));
+  assert.match(source,/SUPABASE_EXPERIMENTAL_STACK=0/);
+  assert.doesNotMatch(source,/supabase link|ALTER TABLE auth\./i);
+ }
+ const fixture=fs.readFileSync(path.join(root,"tests/sql/restore-auth-compat-fixture.sql"),"utf8");
+ assert.match(fixture,/CREATE TABLE auth\.custom_oauth_providers/);
+ assert.match(fixture,/custom_claims_allowlist text\[\] NOT NULL/);
+ assert.match(fixture,/client_auth_method text NOT NULL/);
+ assert.match(fixture,/client_assertion_audience text NULL/);
+ assert.match(fixture,/ROLLBACK;/);
 });
