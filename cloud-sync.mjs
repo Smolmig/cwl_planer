@@ -895,6 +895,8 @@ const cloud={
   accountBtn.title=this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren";
   accountBtn.setAttribute("aria-label",this.active?label+" · Clan und Konto öffnen":"Anmelden oder registrieren");
   const cta=$("cloudMembersSyncBtn");if(cta)cta.textContent=storage.getProfile().members.length?"↻ Mitglieder aktualisieren":"↓ Mitglieder importieren";
+  toggle("cloudAutoRosterInfo",!!(this.active&&activeClan?.clash_tag));
+  syncAutoRosterSetting();
   $("cloudOpen").classList.toggle("cloud-on",this.active);
   toggle("cloudMembersTools",!!this.active&&!!clanId);
   toggle("guestMembersTools",!this.active);
@@ -1943,23 +1945,36 @@ async function joinInvite(){
 }
 function normalizeTag(t){return String(t||"").trim().toUpperCase()}
 const autoRosterChecks=new Map();
+let autoRosterStatusScope=null;
 function isAutoRosterEnabled(){
  if(!clanId)return false;
  try{return localStorage.getItem("cwl_auto_roster_"+clanId)!=="off"}catch{return true}
 }
 function syncAutoRosterSetting(){
- const toggle=$("settingsAutoRoster"),hint=$("autoRosterStatus");
- if(toggle){toggle.checked=isAutoRosterEnabled();toggle.disabled=!["owner","editor"].includes(role)}
- if(hint&&!["owner","editor"].includes(role))hint.textContent="Automatischer Import ist für die Clanführung verfügbar.";
+ const control=$("settingsAutoRoster"),hint=$("autoRosterStatus"),label=$("resumeAutoRosterLabel");
+ const linked=!!(cloud.active&&cloud.hasApiClan?.());
+ const allowed=["owner","editor"].includes(role);
+ const enabled=isAutoRosterEnabled();
+ const scope=linked?JSON.stringify([accountEpoch,clanId,role]):null;
+ if(control){control.checked=enabled;control.disabled=!allowed||!linked}
+ if(label)label.hidden=!linked||!allowed||enabled;
+ if(hint&&scope!==autoRosterStatusScope){
+  hint.textContent=!linked?"":!allowed?"Der Abgleich erfolgt durch die Clanführung.":!enabled?
+   "Automatischer Abgleich ist auf diesem Gerät deaktiviert.":"Noch kein Abgleich in dieser Sitzung.";
+ }
+ autoRosterStatusScope=scope;
 }
 async function maybeAutoRoster(force=false){
- if(!clanId||!user||!cloud.active||manualRosterPending()||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
+ if(!clanId||!user||!cloud.active||!cloud.hasApiClan?.()||manualRosterPending()||!["owner","editor"].includes(role)||!isAutoRosterEnabled()||
     !navigator.onLine||document.hidden||rosterAutoBusy||blocked||changedSerial||saving)return;
  const now=Date.now();
  if(!force&&now-(autoRosterChecks.get(clanId)||0)<900000)return;
- autoRosterChecks.set(clanId,now);
+ const expectedClan=clanId,expectedEpoch=accountEpoch,expectedRole=role;
+ autoRosterChecks.set(expectedClan,now);
  try{await getRoster({automatic:true})}
- catch(e){text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Manuell erneut prüfen.");
+ catch(e){
+  if(clanId===expectedClan&&accountEpoch===expectedEpoch&&role===expectedRole)
+   text("autoRosterStatus","Automatischer Abgleich vorübergehend nicht verfügbar. Im Mitglieder-Tab erneut prüfen.");
   console.warn("Automatischer Mitgliederabgleich:",e?.message||e)}
 }
 async function getRoster({automatic=false}={}){
@@ -2586,16 +2601,17 @@ async function safeRosterRefresh(){
 bind("cloudFetchRoster","click",safeRosterRefresh);bind("cloudApplyRoster","click",applyRoster);
 bind("cloudMembersSyncBtn","click",safeRosterRefresh);
 bind("cloudEmergencyEnable","click",enableRosterEmergency);
-bind("settingsRosterRefresh","click",async()=>{
- $("settingsClose").click();
- document.querySelector('.navbtn[data-view="members"]')?.click();
- await safeRosterRefresh();
-});
 $("settingsAutoRoster").addEventListener("change",ev=>{
- if(!clanId)return;
- try{localStorage.setItem("cwl_auto_roster_"+clanId,ev.target.checked?"on":"off")}catch{}
- if(ev.target.checked){autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn)}
- else text("autoRosterStatus","Automatischer Abgleich deaktiviert · manuelle Prüfung weiterhin möglich.");
+ // This control only resumes a legacy opt-out. No silent preference migration,
+ // and no UI action can grant an observer permission to write roster changes.
+ if(!clanId||!cloud.active||!cloud.hasApiClan?.()||!["owner","editor"].includes(role)||!ev.target.checked){
+  syncAutoRosterSetting();return;
+ }
+ try{localStorage.setItem("cwl_auto_roster_"+clanId,"on")}catch{}
+ syncAutoRosterSetting();
+ if(!isAutoRosterEnabled()){text("autoRosterStatus","Einstellung konnte nicht gespeichert werden. Bitte erneut versuchen.");return}
+ text("autoRosterStatus","Automatischer Abgleich wieder aktiviert.");
+ autoRosterChecks.delete(clanId);maybeAutoRoster(true).catch(console.warn);
 });
 bind("cloudManualOne","click",()=>{ $("addMemberBtn").click(); });
 bind("cloudManualMany","click",()=>{ $("multiAddBtn").click(); });

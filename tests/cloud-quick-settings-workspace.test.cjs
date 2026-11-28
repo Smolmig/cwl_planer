@@ -113,3 +113,41 @@ test("Grouped More: compact navigation across widths, roles and local/Cloud mode
   }
  }finally{await browser.close()}
 });
+
+test("Roster status and legacy resume are in the member workspace, not duplicated in settings",()=>{
+ const {JSDOM}=require("jsdom");
+ const dom=new JSDOM(html);
+ try{
+  const d=dom.window.document;
+  for(const id of ["autoRosterStatus","settingsAutoRoster","resumeAutoRosterLabel","cloudMembersSyncBtn"])
+   assert.ok(d.getElementById(id)?.closest("#view-members"),id);
+  assert.equal(d.getElementById("settingsRosterRefresh"),null);
+  assert.ok(d.getElementById("resumeAutoRosterLabel").hidden);
+  assert.match(d.getElementById("cloudAutoRosterInfo").textContent,/wenn der Planer geöffnet ist/);
+ }finally{dom.window.close()}
+});
+test("Roster preference preserves prior opt-out and never resumes or schedules for unlinked/viewer contexts",()=>{
+ const {JSDOM}=require("jsdom");
+ const dom=new JSDOM(html,{url:"https://example.test"});
+ try{
+  const w=dom.window,d=w.document;
+  const start=sync.indexOf("const autoRosterChecks=new Map();"),end=sync.indexOf("async function getRoster(",start);
+  assert.ok(start>0&&end>start);
+  const scope={clanId:"a",accountEpoch:1,role:"owner",linked:true,active:true};
+  const src=sync.slice(start,end);
+  const api=new Function("document","localStorage","scope",`let clanId=scope.clanId,accountEpoch=scope.accountEpoch,role=scope.role;
+   const $=id=>document.getElementById(id);
+   const cloud={get active(){return scope.active},hasApiClan:()=>scope.linked};
+   `+src+`return {sync:()=>{clanId=scope.clanId;accountEpoch=scope.accountEpoch;role=scope.role;syncAutoRosterSetting()}};`)(d,w.localStorage,scope);
+  const label=d.getElementById("resumeAutoRosterLabel"),status=d.getElementById("autoRosterStatus");
+  api.sync();assert.equal(label.hidden,true);
+  w.localStorage.setItem("cwl_auto_roster_a","off");scope.accountEpoch++;api.sync();
+  assert.equal(label.hidden,false);assert.match(status.textContent,/deaktiviert/);
+  status.textContent="old clan status";scope.clanId="b";api.sync();assert.equal(label.hidden,true);assert.doesNotMatch(status.textContent,/old clan/);
+  scope.clanId="a";scope.role="viewer";api.sync();assert.equal(label.hidden,true);assert.match(status.textContent,/Clanführung/);
+  scope.role="owner";scope.linked=false;api.sync();assert.equal(label.hidden,true);assert.equal(status.textContent,"");
+  assert.equal(w.localStorage.getItem("cwl_auto_roster_a"),"off");
+  assert.match(src,/!cloud\.hasApiClan\?\.\(\)/);
+  assert.match(src,/clanId===expectedClan&&accountEpoch===expectedEpoch&&role===expectedRole/);
+ }finally{dom.window.close()}
+});
