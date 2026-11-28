@@ -1,5 +1,5 @@
 {
-  "version": "v1.40.0",
+  "version": "v1.41.0",
   "released": "2026-11-28",
-  "summary": "Clanverwaltung mit getrennten Bereichen für Handlungsbedarf, Mitgliedsmerkmale und Regeln. Offene Fälle je Spieler, Suche, verständliche Kriterien und dezente Statusfarben; bestehende Entscheidungen bleiben erhalten."
+  "summary": "Kompaktes Zahnrad und neu gruppiertes Mehr-Menü. Mitgliederabgleich direkt im Mitgliederbereich, Freigaben und Vorschläge im Änderungsverlauf, Sicherungen zentral unter Backup & Import und verbesserte Rücknavigation."
 }

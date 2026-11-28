@@ -41,13 +41,13 @@ test("history is discoverable from quick settings and retains the local More fal
  assert.match(app,/id="updatesBack"/);
  assert.match(app,/id="openReleaseHistory"/);
  assert.match(app,/id="latestChangelog"/);
- assert.match(app,/Neu in v1\.40\.0/);
+ assert.match(app,/Neu in v1\.41\.0/);
  assert.match(app,/Zahnrad unter „Alle Updates ansehen“/,"help explains the primary entry");
  assert.match(app,/Mehr → Update-Verlauf/,"local fallback remains discoverable");
  assert.match(app,/updatesOrigin=source==="settings"/);
  assert.match(app,/\["help","account","archive","goldpass","activity-goldpass","more-settings","updates","install","clan-management"\]/);
  assert.match(app,/if\(action==="updates"\)\{openReleaseHistory\(\);return\}/);
- assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.40\.0"\)/);
+ assert.match(app,/import\("\.\/cloud-release-history\.mjs\?v=1\.41\.0"\)/);
  assert.match(sw,/cloud-release-history\\\.mjs/,"offline service worker must not cache Cloud history");
 });
 

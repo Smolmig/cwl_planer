@@ -268,7 +268,7 @@ test("Member workspace loads real metadata view, retains filters and decisions, 
   const moduleUrl="data:text/javascript;base64,"+Buffer.from(moduleSource).toString("base64");
   const begin=html.indexOf("let activityMemberView=null"),end=html.indexOf(" let activityGoldpassView=null;",begin);
   assert.ok(begin>0&&end>begin);
-  const bridge=html.slice(begin,end).replace("./cwl-activity-member-view.mjs?v=1.40.0",moduleUrl);
+  const bridge=html.slice(begin,end).replace("./cwl-activity-member-view.mjs?v=1.41.0",moduleUrl);
   await page.addScriptTag({content:bridge+String.raw`
    let memberSession=1,memberCalls=[],memberDelay=false,memberResolve=null;
    const tagLetters="0289PYLQGRJCUV";
