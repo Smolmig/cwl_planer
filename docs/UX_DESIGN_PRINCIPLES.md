@@ -28,6 +28,14 @@ Für alle nutzerseitigen Texte zusätzlich [Textstandard und laufendes Audit #22
 - Nutze das Gold-Theme als kontrollierten Akzent, nicht als überall sichtbare Einfassung. Klare Kontraste und Lesbarkeit in allen Themes sind wichtiger als Zierlinien oder Hintergründe.
 - Maximal zwei bis drei sichtbare Hierarchieebenen in einer Ansicht; bei tieferem Detail besser eine Unteransicht/Disclosure verwenden.
 
+### Semantische Schriftfarben – appweit (27.11.2026)
+
+- Nutzerpräferenz: positive Ergebnisse und erfüllte Kriterien in dezentem Grün, Handlungsbedarf in hellem Orange, ernsthafte Warnungen oder Konflikte in Rot. Nur gezielt an passenden Stellen, insbesondere Plan, Mitgliederform, Einsätze, Statistik, Goldpass, Clanverwaltung und Einstellungen.
+- Gemeinsame Theme-Tokens `--green`, `--amber`, `--red`; für neue einfache Status-Texte `.semantic-text[data-tone="positive|warning|negative"]` verwenden. Arena-Warnton #ffd39a, Dark #ffda94, Cyber #ffe0a3; auf hellen Hintergründen ausreichend dunkler Orange-Ton statt Pastellschrift. Gold bleibt der Marken-/Navigationsakzent, nicht die universelle Warnfarbe.
+- Farbe unterstützt die Bedeutung, ersetzt niemals die eindeutige Beschriftung. Fehlende oder unbestätigte Daten neutral darstellen; keine positiven/negativen Tatsachen aus Unsicherheit ableiten. Geschlossene Fälle neutral. Vorschläge bleiben Vorschläge. Normale Auswahl-/Navigationselemente nicht nach Rot/Grün einfärben.
+- Bevorzugt nur den Status oder relevanten Wert einfärben, nicht die ganze Spielerzeile. Dezente Hintergrundfläche nur für wirklich relevante Konflikte/Handlungsbedarf; kein zusätzlicher Kartenstapel. Kontrast für normale Schrift mindestens 4,5:1 gegen die tatsächliche Oberfläche in allen Themes.
+- Bei jeder passenden UI-Überarbeitung vorhandene Statusdarstellungen daran angleichen, ohne Zahlen, fachliche Bewertung oder Rechte zu verändern. Kein blindes globales Umfärben dekorativer Diagramme oder bestehender Kategorien. Bestehende Warn-Tokens profitieren bereits von der helleren Palette; einzelne Altansichten separat prüfen.
+
 ### Einstellungs-Unterseiten: ein Rahmen genügt (05.11.2026)
 
 - Desktop: Einstellungs-Unterseiten dürfen **einen gemeinsamen ruhigen Inhaltsrahmen** haben; innere Gruppen mit Weißraum oder feinen Trennlinien, nicht mit weiteren Karten.

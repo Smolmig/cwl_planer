@@ -50,6 +50,7 @@ test("owner sees actionable promotions first, with clear summary and no fake kic
   assert.equal(rows.length,1);
   assert.equal(rows[0].dataset.playerTag,"#2PYL");
   assert.equal(rows[0].querySelector(".clan-management-person-status").textContent,"Beförderung prüfen");
+  assert.equal(rows[0].querySelector(".clan-management-person-status").dataset.review,"positive");
   assert.match(rows[0].textContent,/30\/14 Clantage/);
   assert.match(rows[0].textContent,/14\/10 Angriffe/);
   assert.equal(f.d.getElementById("clanManagementOpenCount").textContent,"1");

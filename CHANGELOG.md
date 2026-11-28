@@ -6,6 +6,12 @@ Die älteren Originalbezeichnungen und die vollständige Rückblick-Tabelle steh
 
 ## [Unreleased]
 
+## [1.40.0] - 2026-11-28
+
+- Clanverwaltung mit getrennten Bereichen für Handlungsbedarf, Mitgliedsmerkmale und Regeln. Offene Fälle und betroffene Spieler getrennt zählen; Suche nach Name oder Tag.
+- Kompaktere Mitgliedsmerkmale und verständliche Regelentwürfe; keine Änderung der Bewertungsregeln oder bestehenden Entscheidungen.
+- Dezente semantische Schriftfarben in Verwaltung und intelligentem Planer, helleres Orange in dunklen Themes; responsive Navigation und Kontrastprüfung. Cloud-Datenformat und separate Offline-PWA bleiben unverändert.
+
 ## [1.39.0] - 2026-11-27
 
 - Ein Goldpass-Einstieg mit getrennten CWL- und Grind-Verlosungen; historische Oktober-Regel, vollständige Regelvorlagen und verständliche Losaufschlüsselung.

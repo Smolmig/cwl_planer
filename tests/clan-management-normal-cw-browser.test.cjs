@@ -36,6 +36,8 @@ test("CW owner review: responsive, accessible and no horizontal clipping",{
       document.getElementById("view-clan-management").classList.add("active");},theme);
      await page.evaluate(({members,war,missed})=>{
       window.CWLNormalCwUI.render(members,{wars:[war],missed:[missed],decisions:[]},"#2PYL");
+      document.getElementById("managementOverview").hidden=true;
+      document.getElementById("managementNormal").hidden=false;
       document.getElementById("clanManagementNormalPanel").open=true;
      },{members,war,missed});
      const panel=page.locator("#clanManagementNormalPanel");

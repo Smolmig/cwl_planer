@@ -34,6 +34,10 @@ test("existing open review sources merge once per current player; severe and ove
  assert.equal(v.rows[1].missCountComplete,true);
  assert.deepEqual(v.counts,{rank:2,cw:2,cwl:2});
  assert.equal(v.complete,true);
+ assert.equal(v.openCases,9);
+ assert.deepEqual(v.caseCounts,{rank:3,cw:3,cwl:3});
+ assert.equal(v.rows[1].openCases,5);
+ assert.equal(v.rows[0].openCases,3);
  assert.equal(JSON.stringify(x),before);
 });
 test("unavailable source differs from zero; closed and excused cases do not reappear",()=>{
@@ -42,6 +46,8 @@ test("unavailable source differs from zero; closed and excused cases do not reap
  assert.deepEqual(v.rows,[]);
  assert.deepEqual(v.counts,{rank:null,cw:0,cwl:null});
  assert.equal(v.complete,false);
+ assert.equal(v.openCases,0);
+ assert.deepEqual(v.caseCounts,{rank:null,cw:0,cwl:null});
  assert.equal(core.buildActionOverview({preview:{ok:false,rows:[]}}),null);
 });
 test("DOM overview renders safe names and jumps to the player's existing normal-CW evidence",()=>{
@@ -50,22 +56,40 @@ test("DOM overview renders safe names and jumps to the player's existing normal-
  const end=app.indexOf("function renderClanManagementReviewSummary(){",start);
  assert.ok(start>=0&&end>start);
  const dom=new JSDOM('<details id="clanManagementActionOverview" hidden open><summary id="clanManagementActionHeading"></summary>'+
-  '<p id="clanManagementActionCoverage"></p><div id="clanManagementActionList"></div></details>'+
+  '<p id="clanManagementActionCoverage"></p><div id="managementActionSearch"><input id="managementActionQuery"><span id="managementActionMatches"></span></div><div id="clanManagementActionList"></div></details>'+
   '<details id="clanManagementNormalPanel"><summary>CW</summary><div id="clanManagementNormalList">'+
   '<div data-player-tag="#2PYL"><details><summary>Belege</summary></details></div></div></details>');
  try{
   const x=input();x.preview.rows[0].name="<img src=x onerror=alert(1)>";
+  const navigation=[];
   const api=new Function("document","window","clanManagementLastPreview","clanManagementReviewsReadable",
+   "selectManagementSection","selectManagementSource",
    "clanManagementCwlRows","clanManagementNormalResult",app.slice(start,end)+
    ";return {renderClanManagementActionOverview,clearClanManagementActionOverview};")(
-    dom.window.document,{CWLClanManagement:core},x.preview,true,x.cwlRows,x.normalResult);
+    dom.window.document,{CWLClanManagement:core},x.preview,true,key=>navigation.push(key),key=>navigation.push(key),x.cwlRows,x.normalResult);
   api.renderClanManagementActionOverview();
   const d=dom.window.document,host=d.getElementById("clanManagementActionOverview");
   assert.equal(host.hidden,false);
   assert.match(d.getElementById("clanManagementActionHeading").textContent,/3 Spieler/);
   assert.equal(host.querySelector("img"),null);
-  const button=[...host.querySelectorAll("button")].find(b=>b.getAttribute("aria-label")==="Normale CW für <img src=x onerror=alert(1)> ansehen");
+  const status=tag=>host.querySelector('[data-player-tag="'+tag+'"] .clan-management-person-status');
+  assert.equal(status("#2PYQ").dataset.review,"severe");
+  assert.equal(status("#2PYL").dataset.review,"warning");
+  assert.equal(status("#2PYG").dataset.review,"positive");
+  const query=d.getElementById("managementActionQuery");
+  query.value="#2pyq";api.renderClanManagementActionOverview();
+  assert.equal(host.querySelectorAll(".clan-management-person").length,1);
+  assert.equal(d.getElementById("managementActionMatches").textContent,"1 von 3 Spielern");
+  assert.match(d.getElementById("clanManagementActionHeading").textContent,/3 Spieler.*9 offene Fälle/);
+  query.value="nicht vorhanden";api.renderClanManagementActionOverview();
+  assert.match(host.textContent,/Keine passenden Spieler/);
+  assert.match(d.getElementById("clanManagementActionHeading").textContent,/9 offene Fälle/);
+  query.value="";api.renderClanManagementActionOverview();
+  assert.equal(host.querySelectorAll(".clan-management-person").length,3);
+  const button=[...host.querySelectorAll("button")].find(b=>b.getAttribute("aria-label")==="Normale Clankriege für <img src=x onerror=alert(1)> ansehen");
   assert.ok(button);button.click();
+  assert.deepEqual(navigation,["actions","cw"]);
+  assert.match(d.getElementById("clanManagementActionHeading").textContent,/9 offene Fälle/);
   assert.equal(d.getElementById("clanManagementNormalPanel").open,true);
   assert.equal(d.querySelector('#clanManagementNormalList details').open,true);
   api.clearClanManagementActionOverview();

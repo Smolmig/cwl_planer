@@ -380,19 +380,21 @@
    const key=tag(playerTag),person=current.get(key);
    if(!person)return;
    if(!byTag.has(key))byTag.set(key,{tag:key,name:person.name,rank:person.rank,
-    rankLabel:person.rankLabel,sources:[],severe:false,conflicting:false,openCwMisses:available.cw?0:null,openCwlMisses:available.cwl?0:null});
+    rankLabel:person.rankLabel,sources:[],severe:false,conflicting:false,openRankCases:available.rank?0:null,openCwCases:available.cw?0:null,openCwlCases:available.cwl?0:null,rankReasons:[],openCwMisses:available.cw?0:null,openCwlMisses:available.cwl?0:null});
    const item=byTag.get(key);
    if(!item.sources.includes(kind))item.sources.push(kind);
    if(severe&&person.rank==="elder")item.severe=true;
   }
   if(available.rank)for(const p of current.values()){
-   if((p.reviewCases||[]).some(item=>item.state==="open"))add(p.tag,"rank");
+   const cases=(p.reviewCases||[]).filter(item=>item.state==="open");
+   if(cases.length){add(p.tag,"rank");const item=byTag.get(tag(p.tag));item.openRankCases=cases.length;item.rankReasons=cases.map(c=>({kind:c.kind,label:c.label||"Rangprüfung"}));}
   }
   if(available.cw)for(const p of normalResult.rows){
    if(Number.isInteger(p.openCount)&&p.openCount>0){
     add(p.tag,"cw",p.severe===true);
     const item=byTag.get(tag(p.tag));
     if(item){
+     item.openCwCases=p.openCount;
      const events=Array.isArray(p.events)?p.events.filter(e=>e.state==="open"):null;
      item.openCwMisses=events&&events.length===p.openCount&&events.every(e=>e.missing===1||e.missing===2)?
       events.reduce((n,e)=>n+e.missing,0):null;
@@ -402,11 +404,13 @@
   if(available.cwl)for(const p of cwlRows){
    if(Number.isInteger(p.missedCount)&&p.missedCount>0){
     add(p.tag,"cwl",p.severe===true);
-    const item=byTag.get(tag(p.tag));if(item)item.openCwlMisses=p.missedCount;
+    const item=byTag.get(tag(p.tag));if(item){item.openCwlMisses=p.missedCount;item.openCwlCases=p.missedCount;}
    }
   }
   const rows=[...byTag.values()].map(p=>({...p,
    conflicting:p.sources.includes("rank")&&(p.sources.includes("cw")||p.sources.includes("cwl")),
+   openCases:(p.openRankCases??0)+(p.openCwCases??0)+(p.openCwlCases??0),
+   caseCountComplete:Object.values(available).every(Boolean),
    openMisses:(p.openCwMisses??0)+(p.openCwlMisses??0),
    missCountComplete:p.openCwMisses!==null&&p.openCwlMisses!==null}));
   rows.sort((a,b)=>Number(b.severe)-Number(a.severe)||
@@ -414,6 +418,8 @@
    Number(b.sources.some(x=>x!=="rank"))-Number(a.sources.some(x=>x!=="rank"))||
    a.name.localeCompare(b.name,"de",{sensitivity:"base"})||a.tag.localeCompare(b.tag));
   return {rows,available,complete:Object.values(available).every(Boolean),
+   openCases:rows.reduce((n,p)=>n+p.openCases,0),
+   caseCounts:{rank:available.rank?rows.reduce((n,p)=>n+p.openRankCases,0):null,cw:available.cw?rows.reduce((n,p)=>n+p.openCwCases,0):null,cwl:available.cwl?rows.reduce((n,p)=>n+p.openCwlCases,0):null},
    counts:Object.fromEntries(["rank","cw","cwl"].map(kind=>[kind,
     available[kind]?rows.filter(p=>p.sources.includes(kind)).length:null]))};
  }
